@@ -145,8 +145,12 @@ class GNFlip(GNTransform):
 
     def major_properties(self):
         res = super(GNFlip, self).major_properties()
-        res.append(('axis'), self.axis)
+        res.append(('axis', self.axis))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNFlipController
+        return GNFlipController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -183,8 +187,12 @@ class GNMirror(GNTransform):
 
     def major_properties(self):
         res = super(GNMirror, self).major_properties()
-        res.append(('axis'), self.axis)
+        res.append(('axis', self.axis))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNMirrorController
+        return GNMirrorController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

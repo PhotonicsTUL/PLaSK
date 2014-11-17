@@ -31,3 +31,30 @@ class GNClipController(GNObjectController):
         super(GNClipController, self).on_edit_enter()
         for b in self.node.bound_names():
             getattr(self, b).setText(none_to_empty(getattr(self.node, b)))
+
+
+class GNFlipMirrorController(GNObjectController):
+
+    def save_data_in_model(self):
+        super(GNFlipMirrorController, self).save_data_in_model()
+        self.node.axis = empty_to_none(self.axis.currentText())
+
+    def on_edit_enter(self):
+        super(GNFlipMirrorController, self).on_edit_enter()
+        self.axis.setEditText(none_to_empty(self.node.axis))
+
+
+class GNFlipController(GNFlipMirrorController):
+
+    def fill_form(self):
+        self.construct_group('Flip-specific settings')
+        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        super(GNFlipController, self).fill_form()
+
+
+class GNMirrorController(GNFlipMirrorController):
+
+    def fill_form(self):
+        self.construct_group('Mirror-specific settings')
+        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        super(GNMirrorController, self).fill_form()
