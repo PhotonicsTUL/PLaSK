@@ -39,7 +39,7 @@ class GNBlockController(GNLeafController):
 class GNTriangleController(GNLeafController):
 
     def fill_form(self):
-        self.construct_group('Vertexes coordinates:')
+        self.construct_group('Vertexes coordinates (other than: {}):'.format(', '.join('0' for _ in range(0, self.node.dim))))
         self.p0 = self.construct_point_controllers(row_name='first')
         self.p1 = self.construct_point_controllers(row_name='second')
         super(GNTriangleController, self).fill_form()
@@ -56,3 +56,39 @@ class GNTriangleController(GNLeafController):
         for i in range(0, self.node.dim):
             self.p0[i].setText(none_to_empty(self.node.points[0][i]))
             self.p1[i].setText(none_to_empty(self.node.points[1][i]))
+
+
+class GNCircleController(GNLeafController):
+
+    def fill_form(self):
+        self.construct_group('{} size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
+        self.radius = self.construct_line_edit('radius')
+        super(GNCircleController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNCircleController, self).save_data_in_model()
+        self.node.radius = empty_to_none(self.radius.text())
+
+    def on_edit_enter(self):
+        super(GNCircleController, self).on_edit_enter()
+        self.radius.setText(none_to_empty(self.node.radius))
+
+
+
+class GNCylinderController(GNLeafController):
+
+    def fill_form(self):
+        self.construct_group('Cylinder size:')
+        self.radius = self.construct_line_edit('radius')
+        self.height = self.construct_line_edit('height')
+        super(GNCylinderController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNCylinderController, self).save_data_in_model()
+        self.node.radius = empty_to_none(self.radius.text())
+        self.node.height = empty_to_none(self.height.text())
+
+    def on_edit_enter(self):
+        super(GNCylinderController, self).on_edit_enter()
+        self.radius.setText(none_to_empty(self.node.radius))
+        self.height.setText(none_to_empty(self.node.height))

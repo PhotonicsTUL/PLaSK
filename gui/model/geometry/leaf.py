@@ -141,6 +141,10 @@ class GNCylinder(GNLeaf):
         res.append(('height', self.height))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNCylinderController
+        return GNCylinderController(document, model, self)
+
     @classmethod
     def from_xml_3d(cls, element, conf):
         result = GNCylinder()
@@ -172,6 +176,10 @@ class GNCircle(GNLeaf):
         res = super(GNCircle, self).major_properties()
         res.append(('radius', self.radius))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNCircleController
+        return GNCircleController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
