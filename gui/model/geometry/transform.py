@@ -83,17 +83,17 @@ class GNClip(GNTransform):
             self.back = None
             self.front = None
 
+    def bound_names(self):
+        d2 = ('left', 'right', 'bottom', 'top')
+        return d2 if self.dim == 2 else d2 + ('back', 'front')
+
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNClip, self).attributes_from_xml(attribute_reader, conf)
-        xml_to_attr(attribute_reader, self, 'left', 'right', 'bottom', 'top')
-        if self.dim == 3:
-            xml_to_attr(attribute_reader, self, 'back', 'front')
+        xml_to_attr(attribute_reader, self, *self.bound_names())
 
     def attributes_to_xml(self, element, conf):
         super(GNClip, self).attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'left', 'right', 'bottom', 'top')
-        if self.dim == 3:
-            attr_to_xml(self, element, 'back', 'front')
+        attr_to_xml(self, element, *self.bound_names())
 
     def tag_name(self, full_name = True):
         return "clip{}d".format(self.dim) if full_name else "clip"
@@ -103,10 +103,12 @@ class GNClip(GNTransform):
 
     def major_properties(self):
         res = super(GNClip, self).major_properties()
-        res.extend((n, getattr(self, n)) for n in ('left', 'right', 'bottom', 'top'))
-        if self.dim == 3:
-            res.extend((n, getattr(self, n)) for n in ('back', 'front'))
+        res.extend((n, getattr(self, n)) for n in self.bound_names())
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNClipController
+        return GNClipController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

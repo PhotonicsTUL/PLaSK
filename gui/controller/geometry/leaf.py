@@ -10,8 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
-
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
 
