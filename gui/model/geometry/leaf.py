@@ -25,7 +25,8 @@ class GNLeaf(GNObject):
         
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNLeaf, self).attributes_from_xml(attribute_reader, conf)
-        xml_to_attr(attribute_reader, self, 'step-num', 'step-dist')
+        self.step_num = attribute_reader.get('step-num')
+        self.step_dist = attribute_reader.get('step-dist')
         self.set_material(attribute_reader.get('material'))
         if self.material_bottom is None:
             self.material_bottom = attribute_reader.get('material-bottom')
@@ -33,7 +34,8 @@ class GNLeaf(GNObject):
 
     def attributes_to_xml(self, element, conf):
         super(GNLeaf, self).attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'step-num', 'step-dist')
+        if self.step_num is not None: element.attrib['step-num'] = self.step_num
+        if self.step_dist is not None: element.attrib['step-dist'] = self.step_dist
         if self.material_top == self.material_bottom:
             if self.material_top is not None: element.attrib['material'] = self.material_top
         else:
