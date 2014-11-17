@@ -25,6 +25,7 @@ from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT
 from . import Controller
 from .defines import DefinesCompletionDelegate
 from .table import table_and_manipulators, table_with_manipulators
+from .defines import get_defines_completer
 
 try:
     import plask
@@ -119,7 +120,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         except ValueError: pass
         combo.insertSeparator(4)
         combo.insertSeparator(len(material_list)-index.row()+1)
-        combo.setCompleter(self.get_defines_completer(parent))
+        combo.setCompleter(get_defines_completer(self.model, parent))
         combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))

@@ -23,6 +23,21 @@ from gui.qt.QtCore import Qt
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
+try:
+    from shutil import which
+except ImportError:
+    def which(program):
+        if os.path.split(program)[0]:
+            if os.path.isfile(program) and os.access(program, os.X_OK):
+                return program
+        else:
+            for path in os.environ["PATH"].split(os.pathsep):
+                path = path.strip('"')
+                exe_file = os.path.join(path, program)
+                if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
+                    return exe_file
+        return None
+
 
 class OutputWindow(QtGui.QDockWidget):
 
@@ -234,23 +249,26 @@ class OutputWindow(QtGui.QDockWidget):
 
 class PlaskThread(QtCore.QThread):
 
-    def __init__(self, fname, dirname, lines, mutex, *args):
+    def __init__(self, program, fname, dirname, lines, mutex, main_window, *args):
         super(PlaskThread, self).__init__()
-
+        self.main_window = main_window
         try:
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
-            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
+            self.proc = subprocess.Popen([program, '-ldebug', '-u', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
-            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
+            self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
+        self.main_window.closed.connect(self.kill_process)
+
+    def __del__(self):
+        self.main_window.closed.disconnect(self.kill_process)
 
     def parse_line(self, line):
         if not line:
@@ -285,7 +303,10 @@ class PlaskThread(QtCore.QThread):
             self.parse_line(line)
 
     def kill_process(self):
-        self.proc.terminate()
+        try:
+            self.proc.terminate()
+        except OSError:
+            pass
 
 
 class Launcher(object):
@@ -293,6 +314,9 @@ class Launcher(object):
 
     def __init__(self):
         self.dirname = None
+        self.program = CONFIG['launcher_local/program']
+        if not (self.program and os.path.isfile(self.program) and os.access(self.program, os.X_OK)):
+            self.program = which('plask')
 
     def widget(self, main_window):
         widget = QtGui.QWidget()
@@ -375,7 +399,7 @@ class Launcher(object):
             dock.raise_()
 
         self.mutex = QtCore.QMutex()
-        dock.thread = PlaskThread(filename, dirname, dock.lines, self.mutex, *args)
+        dock.thread = PlaskThread(self.program, filename, dirname, dock.lines, self.mutex, main_window, *args)
         dock.thread.finished.connect(dock.thread_finished)
         dock.halt_action.triggered.connect(dock.halt_thread)
         dock.thread.start()

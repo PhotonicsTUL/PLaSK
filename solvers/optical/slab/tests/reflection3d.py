@@ -16,7 +16,7 @@ class Mat(material.Material):
         return 2.
 
 
-class Averaging_Test(unittest.TestCase):
+class Reflection3D_Test(unittest.TestCase):
 
     def setUp(self):
         config.axes = 'xyz'
