@@ -173,6 +173,7 @@ class OutputWindow(QtGui.QDockWidget):
         self.timer.timeout.connect(self.update_output)
         self.timer.start(250)
 
+        self.visibilityChanged.connect(self.on_visibility_changed)
         self.messages.setFocus()
 
     def update_view(self):
@@ -217,6 +218,10 @@ class OutputWindow(QtGui.QDockWidget):
     def thread_finished(self):
         self.setWindowTitle(self.windowTitle() + " ({})".format(strftime('%X')))
         self.halt_action.setEnabled(False)
+
+    def on_visibility_changed(self, visible):
+        if visible:
+            self.messages.setFocus()
 
     def closeEvent(self, event):
         focus = self.messages.hasFocus()

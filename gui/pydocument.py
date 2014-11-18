@@ -73,7 +73,7 @@ class PyDocument(object):
         else:
             text = text.encode('utf8')
         try:
-            shutil.copyfile(filename, filename+'~')
+            shutil.copyfile(filename, filename+'.bak')
         except (IOError, OSError):
             pass
         open(filename, 'w').write(text)

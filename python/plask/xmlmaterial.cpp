@@ -179,26 +179,35 @@ class PythonEvalMaterial : public Material
     virtual double nr(double wl, double T, double n = .0) const override { PYTHON_EVAL_CALL_3(double, nr, wl, T, n) }
     virtual double absp(double wl, double T) const override { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
     virtual dcomplex Nr(double wl, double T, double n = .0) const override {
+        if (cls->cache.Nr) return *cls->cache.Nr;
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
             return py::extract<dcomplex>(py::handle<>(py_eval(cls->Nr, locals)).get());
         }
-        if (cls->nr != NULL || cls->absp != NULL)
+        if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp)
             return dcomplex(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
         return base->Nr(wl, T, n);
     }
     virtual Tensor3<dcomplex> NR(double wl, double T, double n = .0) const override {
+        if (cls->cache.NR) return *cls->cache.NR;
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
             return py::extract<Tensor3<dcomplex>>(py::handle<>(py_eval(cls->NR, locals)).get());
         }
-        if (cls->Nr != NULL) {
-            dcomplex nc = Nr(wl, T, n);
+        if (cls->cache.Nr) {
+            dcomplex nc = *cls->cache.Nr;
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
-        if (cls->nr != NULL || cls->absp != NULL) {
+        if (cls->Nr != NULL) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            dcomplex nc = py::extract<dcomplex>(py::handle<>(py_eval(cls->Nr, locals)).get());
+            return Tensor3<dcomplex>(nc, nc, nc, 0.);
+        }
+        if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             dcomplex nc(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
