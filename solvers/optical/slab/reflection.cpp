@@ -12,7 +12,7 @@ namespace plask { namespace solvers { namespace slab {
 
 ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    writelog(LOG_DETAIL, "Initializing reflection transfer");
+    writelog(LOG_DETAIL, "Initializing Reflection Transfer");
     int N = diagonalizer->matrixSize();
     P = cmatrix(N,N);
     phas = cdiagonal(N);
@@ -43,16 +43,16 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
                0 : abs(solver->vbounds[end] - solver->vbounds[end-1]);
     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
-    mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);     // P = phas * P * phas
-    memcpy(temp.data(), P.data(), NN*sizeof(dcomplex));                     // temp = P
+    mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
+    memcpy(temp.data(), P.data(), NN*sizeof(dcomplex));                         // temp = P
 
     // temp = [ phas*P*phas - I ] [ phas*P*phas + I ]^{-1}
-    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1;            // P = P + I
-    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= 1;         // temp = temp - I
+    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1;                // P = P + I
+    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= 1;             // temp = temp - I
     int info;
-    zgetrf(N, N, P.data(), N, ipiv, info);                                  // P = LU(P)
-    ztrsm('R', 'U', 'N', 'N', N, N, 1., P.data(), N, temp.data(), N);       // temp = temp * U^{-1}
-    ztrsm('R', 'L', 'N', 'U', N, N, 1., P.data(), N, temp.data(), N);       // temp = temp * L^{-1}
+    zgetrf(N, N, P.data(), N, ipiv, info);                                      // P = LU(P)
+    ztrsm('R', 'U', 'N', 'N', N, N, 1., P.data(), N, temp.data(), N);           // temp = temp * U^{-1}
+    ztrsm('R', 'L', 'N', 'U', N, N, 1., P.data(), N, temp.data(), N);           // temp = temp * L^{-1}
     // reorder columns (there is no such function in LAPACK)
     for (int j = N-1; j >=0 ; j--) {
         int jp = ipiv[j]-1;
@@ -60,9 +60,9 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     }
 
     // M for the half of the structure
-    mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), wrk);// wrk = temp * invTE[end]
+    mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), wrk);  // wrk = temp * invTE[end]
     zgemm('N','N', N0, N0, N, mfac, diagonalizer->TH(solver->stack[end]).data(), N0,
-          work, N, add?1.:0., M.data(), N0);                                 // M = mfac * TH[end] * wrk
+          work, N, add?1.:0., M.data(), N0);                                    // M = mfac * TH[end] * wrk
 }
 
 
@@ -126,18 +126,12 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
             // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
             if (!emitting) {
-
                 gamma = diagonalizer->Gamma(solver->stack[start]);
-
                 // Aply PML
                 // F(0) + B(0) = 0 ==> P(0) = -I
                 for (int i = 0; i < N; i++) {
-                    int s = 1;
                     dcomplex g = gamma[i] * solver->vpml.factor;
-                    if (real(g) < -SMALL) { g = -g; s = -s; }
-                    if (imag(g) > SMALL) { g = -g; s = -s; }
-                    if (s == 1) P(i,i) = - exp(-2.*I*g*solver->vpml.size);  // P = phas * (-I) * phas
-                    else P(i,i) = - exp(2.*I*g*solver->vpml.size);          // P = inv(phas * (-I) * phas)
+                    P(i,i) = - exp(-2. * I * g * solver->vpml.size);                // P = phas * (-I) * phas
                 }
                 assert(!P.isnan());
 
@@ -163,22 +157,26 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 }
 
                 // Further calculations must be done only if the adjacent layers are not the same
-                if (solver->stack[n] != solver->stack[n+inc] || (emitting  && n == start)) {
+                if (solver->stack[n] != solver->stack[n+inc] || (emitting && n == start)) {
                     // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
                     assert(!diagonalizer->TE(solver->stack[n]).isnan());
                     assert(!diagonalizer->invTE(solver->stack[n]).isnan());
                     for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
-                    mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);          // wrk = TE[n] * P
-                    #ifdef OPENMP_FOUND
-                        layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
-                        #ifndef NDEBUG
-                            if (!layer_accessed[solver->stack[n+inc]]) {
-                                write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n+inc]);
-                                layer_accessed[solver->stack[n+inc]] = true;
-                            }
+                    if (solver->stack[n] != solver->stack[n+inc]) {
+                        mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);      // wrk = TE[n] * P
+                        #ifdef OPENMP_FOUND
+                            layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
+                            #ifndef NDEBUG
+                                if (!layer_accessed[solver->stack[n+inc]]) {
+                                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n+inc]);
+                                    layer_accessed[solver->stack[n+inc]] = true;
+                                }
+                            #endif
                         #endif
-                    #endif
-                    mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
+                        mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
+                    } else {
+                        std::copy_n(P.data(), NN, temp.data());
+                    }
 
                     // P = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
                     assert(!diagonalizer->TH(solver->stack[n]).isnan());
@@ -192,8 +190,10 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                                 for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
                     }
 
-                    mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);          // wrk = TH[n] * P
-                    mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, P);   // P = invTH[n+1] * wrk (= P)
+                    if (solver->stack[n] != solver->stack[n+inc]) {
+                        mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);      // wrk = TH[n] * P
+                        mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, P);// P = invTH[n+1] * wrk (= P)
+                    }
 
                     // temp := temp-P, P := temp+P
                     for (int i = 0; i < NN; i++) {
@@ -420,9 +420,13 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         gamma = diagonalizer->Gamma(next);
 
         if (next != curr || n+inc == end) {
-            for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                      // F2 := F1 - B1
-            mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);                // temp := TH * F2
-            mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);             // B2 := invTH * temp
+            if (next != curr) {
+                for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                  // F2 := F1 - B1
+                mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);            // temp := TH * F2
+                mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);         // B2 := invTH * temp
+            } else {
+                for (int i = 0; i < N; i++) B2[i] = F1[i] - B1[i];                  // B2 := F1 - B1
+            }
             // multiply rows of invTH by -1 where necessary for the outer layer
             if (n+inc == end) {
                 for (int i = 0; i < N; i++)
@@ -430,9 +434,13 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
             }
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];                      // F2 := F1 + B1
-            mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);                // temp := TE * F2
-            zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
-                  temp.data(), N0, -1., B2.data(), N);                              // B2 := invTE * temp - B2
+            if (next != curr || n+inc == end) {
+                mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);            // temp := TE * F2
+                zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
+                      temp.data(), N0, -1., B2.data(), N);                          // B2 := invTE * temp - B2
+            } else {
+                for (int i = 0; i < N; i++) B2[i] = F2[i] - B2[i];                  // B2 := F2 - B2
+            }
         } else {
             for (int i = 0; i < N; i++) B2[i] = 2. * B1[i];
         }

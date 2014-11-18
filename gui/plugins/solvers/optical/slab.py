@@ -44,6 +44,11 @@ Fourier2D = {
                 u'PML shift from the structure. (float [µm])'),
             ('size', u'Size [µm]',
                 u'PML size. (float [µm])'))),
+        ('transfer', 'Transfer algorithm settings', (
+            ('method', u'Transfer method',
+                u'Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, '
+                u'in which case the reflection computations will use reflection transfer and eigenmode search '
+                u'is done with admittance transfer.', ('auto', 'reflection', 'admittance')),)),
         ('pml', 'Horizontal PMLs', (
             ('factor', 'Scaling factor',
                 u'PML scaling factor. (complex)'),
@@ -143,6 +148,11 @@ Fourier3D = {
                 u'PML shift from the structure. (float [µm])'),
             ('size', u'Size [µm]',
                 u'PML size. (float [µm])'))),
+        ('transfer', 'Transfer algorithm settings', (
+            ('method', 'Transfer method',
+                u'Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, '
+                u'in which case the reflection computations will use reflection transfer and eigenmode search '
+                u'is done with admittance transfer.', ('auto', 'reflection', 'admittance')),)),
         ('pmls', 'Longitudinal and transverse PMLs', (
             ('factor', 'Scaling factor',
                 u'PML scaling factor. (complex)'),

@@ -8,12 +8,23 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-void SlabBase::initTransfer(Expansion& expansion) {
+void SlabBase::initTransfer(Expansion& expansion, bool emitting) {
     switch (transfer_method) {
-        case Transfer::REFLECTION:
-            this->transfer.reset(new ReflectionTransfer(this, expansion)); return;
-        case Transfer::ADMITTANCE:
-            this->transfer.reset(new AdmittanceTransfer(this, expansion)); return;
+        case Transfer::METHOD_REFLECTION:
+            emitting = true; break;
+        case Transfer::METHOD_ADMITTANCE:
+            emitting = false; break;
+        default:
+            break;
+    }
+    if (emitting) {
+        if (!this->transfer || !dynamic_cast<ReflectionTransfer*>(this->transfer.get()) ||
+            this->transfer->diagonalizer->source() != &expansion)
+        this->transfer.reset(new ReflectionTransfer(this, expansion));
+    } else {
+        if (!this->transfer || !dynamic_cast<AdmittanceTransfer*>(this->transfer.get()) ||
+            this->transfer->diagonalizer->source() != &expansion)
+        this->transfer.reset(new AdmittanceTransfer(this, expansion));
     }
 }
 
@@ -213,6 +224,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
                                    InterpolationMethod interp)
 {
     this->initCalculation();
+    initTransfer(getExpansion(), false);
     if (recompute_coefficients) {
         computeCoefficients();
         recompute_coefficients = false;

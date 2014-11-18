@@ -146,6 +146,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// Get info if the expansion is separated
     bool separated() const { return expansion.separated(); }
 
+    Expansion& getExpansion() override { return expansion; }
+
   private:
 
     /**
@@ -253,6 +255,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                    InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
+        initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -269,6 +272,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                    InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
+        initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -285,9 +289,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                   InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
+        initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
-
 
   protected:
 

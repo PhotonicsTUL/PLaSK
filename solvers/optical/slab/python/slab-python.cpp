@@ -777,14 +777,15 @@ inline void export_base(Class solver) {
                         "   ~optical.slab.PML.size\n\n"
                         "Attribute ``shape`` is ignored for vertical PML (it is always 0).\n"
                        );
-    //solver.add_property("transfer", &Solver::getTransferMethod, &Solver::setTransferMethod,
-    //                    "Preferred transfer method.\n\n"
-    //                    "Can take on of the following values:\n\n"
-    //                    "============ ==========================\n"
-    //                    "*reflection* Reflection Transfer Method\n"
-    //                    "*admittance* Admittance Transfer Method\n"
-    //                    "============ ==========================\n"
-    //                   );
+    solver.add_property("transfer", &Solver::getTransferMethod, &Solver::setTransferMethod,
+                        "Preferred transfer method.\n\n"
+                        "Can take on of the following values:\n\n"
+                        "============ ====================================\n"
+                        "*auto*       Automatically choose the best method\n"
+                        "*reflection* Reflection Transfer Method\n"
+                        "*admittance* Admittance Transfer Method\n"
+                        "============ ====================================\n"
+                       );
 }
 
 BOOST_PYTHON_MODULE(slab)
@@ -810,8 +811,9 @@ BOOST_PYTHON_MODULE(slab)
     ;
 
     py_enum<Transfer::Method>()
-        .value("REFLECTION", Transfer::REFLECTION)
-        .value("ADMITTANCE", Transfer::ADMITTANCE)
+        .value("AUTO", Transfer::METHOD_AUTO)
+        .value("REFLECTION", Transfer::METHOD_REFLECTION)
+        .value("ADMITTANCE", Transfer::METHOD_ADMITTANCE)
     ;
 
     py_enum<RootDigger::Method>()

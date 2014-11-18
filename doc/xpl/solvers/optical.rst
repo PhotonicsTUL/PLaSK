@@ -90,8 +90,8 @@ Optical solvers
 
          :attr lam0: Approximate wavelength. (float [nm])
          :attr k0: Approximate normalized frequency. (float [1/µm])
-         :attr emission: Direction of emission, necessary for over-threshold power computations (``top`` or ``bottom``)
-         :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators (float [nm])
+         :attr emission: Direction of emission, necessary for over-threshold power computations. (``top`` or ``bottom``)
+         :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators. (float [nm])
          :attr vat: Radial position of at which the vertical part of the field is calculated. (float or ``none``)
 
          Attributes ``lam0`` and ``k0`` are mutually exclusive.
@@ -165,6 +165,12 @@ Optical solvers
          :attr factor: PML scaling factor. (complex)
          :attr shift: PML shift from the structure. (float [µm])
          :attr size: PML size. (float [µm])
+
+      .. xml:tag:: <transfer> [in Fourier2D optical solver]
+      
+         Vertical field transfer settings.
+         
+         :attr method: transfer method. (``auto``, ``reflection``, or ``admittance``)
 
       .. xml:tag:: <pml> [in Fourier2D optical solver]
 
@@ -259,6 +265,12 @@ Optical solvers
          :attr factor: PML scaling factor. (complex)
          :attr shift: PML shift from the structure. (float [µm])
          :attr size: PML size. (float [µm])
+
+      .. xml:tag:: <transfer> [in Fourier3D optical solver]
+      
+         Vertical field transfer settings.
+         
+         :attr method: transfer method. (``auto``, ``reflection``, or ``admittance``)
 
       .. xml:tag:: <pmls> [in Fourier3D optical solver]
 

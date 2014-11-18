@@ -97,12 +97,13 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
             vpml.order = reader.getAttribute<double>("order", vpml.order);
             reader.requireTagEnd();
-        //} else if (param == "transfer") {
-        //    transfer_method = reader.enumAttribute<Transfer::Method>("method")
-        //        .value("reflection", Transfer::REFLECTION)
-        //        .value("reflection", Transfer::ADMITTANCE)
-        //        .get(transfer_method);
-        //    reader.requireTagEnd();
+        } else if (param == "transfer") {
+            transfer_method = reader.enumAttribute<Transfer::Method>("method")
+                .value("auto", Transfer::METHOD_AUTO)
+                .value("reflection", Transfer::METHOD_REFLECTION)
+                .value("admittance", Transfer::METHOD_ADMITTANCE)
+                .get(transfer_method);
+            reader.requireTagEnd();
         } else if (param == "pmls") {
             pml_long = pml_tran = readPML(reader);
             while (reader.requireTagOrEnd()) {
@@ -140,7 +141,6 @@ void FourierSolver3D::onInitialize()
     Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
-    initTransfer(expansion);
     this->recompute_coefficients = true;
 }
 
@@ -156,6 +156,7 @@ void FourierSolver3D::onInvalidate()
 size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
     initCalculation();
+    initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
@@ -186,6 +187,7 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
 {
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
+    initTransfer(expansion, true);
     return transfer->getReflectionVector(incidentVector(polarization, savidx), incidence);
 }
 
@@ -196,6 +198,7 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
 {
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
+    initTransfer(expansion, true);
     return transfer->getReflectionVector(incidentVector(polarization, savidx), incidence);
 }
 

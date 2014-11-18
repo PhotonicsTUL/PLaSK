@@ -48,12 +48,13 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
             vpml.order = reader.getAttribute<double>("order", vpml.order);
             reader.requireTagEnd();
-        //} else if (param == "transfer") {
-        //    transfer_method = reader.enumAttribute<Transfer::Method>("method")
-        //        .value("reflection", Transfer::REFLECTION)
-        //        .value("reflection", Transfer::ADMITTANCE)
-        //        .get(transfer_method);
-        //    reader.requireTagEnd();
+        } else if (param == "transfer") {
+            transfer_method = reader.enumAttribute<Transfer::Method>("method")
+                .value("auto", Transfer::METHOD_AUTO)
+                .value("reflection", Transfer::METHOD_REFLECTION)
+                .value("admittance", Transfer::METHOD_ADMITTANCE)
+                .get(transfer_method);
+            reader.requireTagEnd();
         } else if (param == "pml") {
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
@@ -122,7 +123,6 @@ void FourierSolver2D::onInitialize()
     Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver (%1% layers in the stack, interface after %2% layer%3%)",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
-    initTransfer(expansion);
     this->recompute_coefficients = true;
 }
 
@@ -142,6 +142,7 @@ size_t FourierSolver2D::findMode(dcomplex neff)
     klong = neff * k0;
     if (klong == 0.) klong = 1e-12;
     initCalculation();
+    initTransfer(expansion, false);
     detlog.axis_arg_name = "neff";
     auto root = getRootDigger(
         [this](const dcomplex& x) {
@@ -162,6 +163,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
+    initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
@@ -220,6 +222,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
+    initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");

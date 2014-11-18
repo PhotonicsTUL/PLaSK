@@ -29,8 +29,9 @@ struct PLASK_SOLVER_API Transfer {
 
     /// Available transfer types
     enum Method {
-        REFLECTION,    ///< Reflection transfer
-        ADMITTANCE     ///< Admittance transfer
+        METHOD_AUTO,            ///< Automatically selected transfer method
+        METHOD_REFLECTION,      ///< Reflection transfer
+        METHOD_ADMITTANCE       ///< Admittance transfer
     };
 
   protected:

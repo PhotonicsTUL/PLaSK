@@ -59,7 +59,7 @@ struct SlabBase {
         reader.requireTagEnd();
     }
 
-    void initTransfer(Expansion& expansion);
+    void initTransfer(Expansion& expansion, bool emitting);
 
   public:
 
@@ -100,7 +100,7 @@ struct SlabBase {
 
     SlabBase():
         detlog("", "modal", "unspecified", "det"),
-        transfer_method(Transfer::REFLECTION),
+        transfer_method(Transfer::METHOD_AUTO),
         interface(size_t(-1)),
         k0(NAN), klong(0.), ktran(0.),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
@@ -329,8 +329,12 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     /// Get discontinuity matrix determinant for the current parameters
     dcomplex getDeterminant() {
         this->initCalculation();
+        initTransfer(getExpansion(), false);
         return transfer->determinant();
     }
+
+    /// Get solver expansion
+    virtual Expansion& getExpansion() = 0;
 
   protected:
 

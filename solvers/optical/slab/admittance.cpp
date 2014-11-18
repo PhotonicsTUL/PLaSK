@@ -12,7 +12,7 @@ namespace plask { namespace solvers { namespace slab {
 
 AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    writelog(LOG_DETAIL, "Initializing admittance transfer");
+    writelog(LOG_DETAIL, "Initializing Admittance Transfer");
     // Reserve space for matrix multiplications...
     int N = diagonalizer->matrixSize();
     Y = cmatrix(N,N);
@@ -54,6 +54,9 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     #ifdef OPENMP_FOUND
         std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
         for (boost::mutex& mutex: layer_locks) mutex.lock();
+        #ifndef NDEBUG
+            std::vector<bool> layer_accessed(diagonalizer->lcount, false);
+        #endif
     #endif
 
     #pragma omp parallel
@@ -61,9 +64,11 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
         #pragma omp for schedule(dynamic,1) nowait
         for (int l = 0; l < diagonalizer->lcount; ++l) {
             try {
-                if (!error) diagonalizer->diagonalizeLayer(l);
+                bool worked = false;
+                if (!error) worked = diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
-                layer_locks[l].unlock();
+                    if (worked) write_debug("%s: layer %d diagonalized", solver->getId(), l);
+                    layer_locks[l].unlock();
                 #endif
             } catch(...) {
                 error = std::current_exception();
@@ -76,7 +81,12 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
 
             // PML layer
             #ifdef OPENMP_FOUND
+                write_debug("%s: entering into single region of reflection search in thread %d", solver->getId(), omp_get_thread_num());
                 layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
+                #ifndef NDEBUG
+                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[start]);
+                    layer_accessed[solver->stack[start]] = true;
+                #endif
             #endif
             gamma = diagonalizer->Gamma(solver->stack[start]);
             std::fill_n(y2.data(), N, dcomplex(1.));                    // we use y2 for tracking sign changes
@@ -107,6 +117,12 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
             {
                 #ifdef OPENMP_FOUND
                     layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
+                    #ifndef NDEBUG
+                        if (!layer_accessed[solver->stack[n]]) {
+                            write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n]);
+                            layer_accessed[solver->stack[n]] = true;
+                        }
+                    #endif
                 #endif
 
                 gamma = diagonalizer->Gamma(solver->stack[n]);
@@ -292,7 +308,11 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
     double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
-    z = d - z;
+    if (n >= solver->interface) z = d - z;
+    else if (n == 0) z += d;
+
+    if ((n == 0 || n == solver->vbounds.size()) && z < 0.)
+        return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
     cvector E(N);
@@ -331,7 +351,11 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
     double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
-    z = d - z;
+    if (n >= solver->interface) z = d - z;
+    else if (n == 0) z += d;
+
+    if ((n == 0 || n == solver->vbounds.size()) && z < 0.)
+        return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
     cvector H(N);
