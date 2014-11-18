@@ -23,20 +23,18 @@ from gui.qt.QtCore import Qt
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
-try:
-    from shutil import which
-except ImportError:
-    def which(program):
-        if os.path.split(program)[0]:
-            if os.path.isfile(program) and os.access(program, os.X_OK):
-                return program
-        else:
-            for path in os.environ["PATH"].split(os.pathsep):
-                path = path.strip('"')
-                exe_file = os.path.join(path, program)
-                if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
-                    return exe_file
-        return None
+
+def which(program):
+    if os.path.split(program)[0]:
+        if os.path.isfile(program) and os.access(program, os.X_OK):
+            return program
+    else:
+        for path in [os.path.dirname(sys.executable)] + os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
+                return exe_file
+    return None
 
 
 class OutputWindow(QtGui.QDockWidget):
@@ -321,7 +319,7 @@ class Launcher(object):
         self.dirname = None
         self.program = CONFIG['launcher_local/program']
         if not (self.program and os.path.isfile(self.program) and os.access(self.program, os.X_OK)):
-            self.program = which('plask')
+            self.program = which('plask') or 'plask'
 
     def widget(self, main_window):
         widget = QtGui.QWidget()
@@ -378,6 +376,7 @@ class Launcher(object):
         return widget
 
     def launch(self, main_window, *args):
+
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
                                                  "The file must be saved before launching local computations. "
