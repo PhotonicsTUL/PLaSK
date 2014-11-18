@@ -31,7 +31,7 @@ AlGaAsSb_Te::AlGaAsSb_Te(const Material::Composition& Comp, DopingAmountType Typ
     }
     double mob_RT_AlSb = 30. + (200. - 30.) / (1.+pow(ND/4e17,3.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
     double mob_RT_GaSb = 550. + (6300. - 550.) / (1.+pow(ND/2e17,0.786)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
-    mob_RT = 1e-4 / (Al/mob_RT_AlSb + Ga/mob_RT_GaSb + 9.6e-7*Al*Ga); // for small amount of arsenide
+    mob_RT = 1. / (Al/mob_RT_AlSb + Ga/mob_RT_GaSb + 9.6e-7*Al*Ga); // for small amount of arsenide
 }
 
 MI_PROPERTY(AlGaAsSb_Te, mob,
