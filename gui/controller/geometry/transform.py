@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 from .object import GNObjectController
+from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 
 
@@ -41,7 +42,8 @@ class GNFlipMirrorController(GNObjectController):
 
     def on_edit_enter(self):
         super(GNFlipMirrorController, self).on_edit_enter()
-        self.axis.setEditText(none_to_empty(self.node.axis))
+        with BlockQtSignals(self.axis) as ignored:
+            self.axis.setEditText(none_to_empty(self.node.axis))
 
 
 class GNFlipController(GNFlipMirrorController):

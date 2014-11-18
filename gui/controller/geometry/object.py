@@ -13,6 +13,7 @@
 
 from .node import GNodeController
 from ...model.geometry.reader import axes_to_str
+from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 
 
@@ -42,5 +43,6 @@ class GNObjectController(GNodeController):
     def on_edit_enter(self):
         self.name.setText(none_to_empty(self.node.name))
         self.role.setText(none_to_empty(self.node.role))
-        self.axes.setEditText(axes_to_str(self.node.axes))
+        with BlockQtSignals(self.axes) as ignored:
+            self.axes.setEditText(axes_to_str(self.node.axes))
         if self.in_parent_controller is not None: self.in_parent_controller.on_edit_enter()

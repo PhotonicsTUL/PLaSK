@@ -21,15 +21,11 @@ from ...model.geometry.reader import GNAligner
 class GNGeometryController(GNObjectController):
 
     def construct_border_controllers(self, row_name = None):
-        hbox = QtGui.QHBoxLayout()
+        hbox, group = self._construct_hbox(row_name)
         #TODO support for material names:
         res = tuple(self.construct_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
-        group = QtGui.QGroupBox(self.form)
-        group.setContentsMargins(0, 0, 0, 0)
-        group.setLayout(hbox)
         if row_name:
-            self._get_current_form().addRow(row_name, group)
             return res
         else:
             return res, group
@@ -49,7 +45,8 @@ class GNGeometryController(GNObjectController):
         super(GNGeometryController, self).on_edit_enter()
         for dir in range(0, self.node.dim):
             for lh in range(0, 2):
-                self.borders[dir][lh].setEditText(none_to_empty(self.node.borders[dir][lh]))
+                with BlockQtSignals(self.borders[dir][lh]) as ignored:
+                    self.borders[dir][lh].setEditText(none_to_empty(self.node.borders[dir][lh]))
 
 
 class GNCartesian2DGeometryController(GNGeometryController):

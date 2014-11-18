@@ -60,7 +60,8 @@ class GNShelfController(GNObjectController):
         super(GNShelfController, self).on_edit_enter()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
-        self.flat.setEditText(none_to_empty(self.node.flat))
+        with BlockQtSignals(self.flat) as ignored:
+            self.flat.setEditText(none_to_empty(self.node.flat))
 
 
 def controller_to_aligners(position_controllers):
@@ -73,9 +74,10 @@ def aligners_to_controllers(aligners_list, position_controllers):
     if aligners_list is None: return
     for i, pos in enumerate(position_controllers):
         aligner = aligners_list[i]
-        if aligner.position is not None:
-            pos[0].setCurrentIndex(aligner.position)
-        pos[1].setText(none_to_empty(aligner.value))
+        with BlockQtSignals(pos[0], pos[1]) as ignored:
+            if aligner.position is not None:
+                pos[0].setCurrentIndex(aligner.position)
+            pos[1].setText(none_to_empty(aligner.value))
 
 
 class GNContainerBaseController(GNObjectController):
@@ -83,7 +85,6 @@ class GNContainerBaseController(GNObjectController):
     def fill_form(self):
         self.pos_layout = self.construct_group('Default children positions')
         self.positions = self.construct_align_controllers()
-
         super(GNContainerBaseController, self).fill_form()
 
     def save_data_in_model(self):
