@@ -260,6 +260,10 @@ class GNExtrusion(GNTransform):
         res.append(('length', self.length))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNExtrusionController
+        return GNExtrusionController(document, model, self)
+
     @classmethod
     def from_xml_3d(cls, element, conf):
         result = GNExtrusion()

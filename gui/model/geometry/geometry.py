@@ -95,6 +95,10 @@ class GNCartesian(GNGeometryBase):
             res.insert(0, geometry_types_3d_core_extrusion)
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.geometry import GNGeometryController, GNCartesian2DGeometryController
+        return GNCartesian2DGeometryController(document, model, self) if self.dim == 2 else GNGeometryController(document, model, self)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNCartesian(dim=2)
@@ -121,6 +125,10 @@ class GNCylindrical(GNGeometryBase):
 
     def python_type(self):
         return 'geometry.Cylindrical2D'
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.geometry import GNGeometryController
+        return GNGeometryController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
