@@ -109,6 +109,23 @@ class MaterialsComboBox(QtGui.QComboBox):
             self.setMaxVisibleItems(len(material_list))
         self.currentIndexChanged[str].connect(self.show_components_popup)
 
+    def append_list(self, list_to_append, insert_separator = True):
+        """
+        Append list to combo-box.
+        :param list list_to_append: list to append
+        :param bool insert_separator: if True (default) separator will be added between existing items and appended once
+          (separator will be inserted only if both sets are not empty)
+        """
+        if list_to_append:
+            if insert_separator and self.count() > 0: self.insertSeparator(self.count())
+            self.addItems(list_to_append)
+
+    def append_materials_from_model(self, material_model, insert_separator = True):
+        self.append_list([e.name for e in material_model.entries], insert_separator)
+
+    def append_materials_from_db(self, db = None, insert_separator = True):
+        self.append_list(sorted(db if db is not None else plask.material.db, key=lambda x: x.lower()), insert_separator)
+
     def show_components_popup(self, text):
         pos = self.mapToGlobal(QtCore.QPoint(0, self.height()))
         self.material_edit_popup = None  # close old popup

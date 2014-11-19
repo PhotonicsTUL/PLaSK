@@ -23,7 +23,11 @@ class Controller(object):
     """
     
     def __init__(self, document=None, model=None):
-        """Optionally set document and/or model."""
+        """
+        Optionally set document and/or model.
+        :param XPLDocument document: document
+        :param model: model
+        """
         super(Controller, self).__init__()
         if document is not None:
             self.document = document

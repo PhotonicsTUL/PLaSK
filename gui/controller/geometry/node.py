@@ -1,8 +1,8 @@
 from .. import Controller
+from ..materials import MaterialsComboBox
 from ..defines import get_defines_completer
 from ...model.geometry.reader import GNAligner
 from ...qt import QtGui
-
 
 class GNodeController(Controller):
 
@@ -21,6 +21,16 @@ class GNodeController(Controller):
         res = QtGui.QComboBox()
         res.setEditable(editable)
         res.addItems(items)
+        if row_name: self._get_current_form().addRow(row_name, res)
+        res.editTextChanged.connect(self.after_field_change)
+        return res
+
+    def construct_material_combo_box(self, row_name = None, items = None):
+        res = MaterialsComboBox()
+        res.setEditable(True)
+        res.append_list(items)
+        res.append_materials_from_model(self.document.materials.model)
+        res.append_materials_from_db()
         if row_name: self._get_current_form().addRow(row_name, res)
         res.editTextChanged.connect(self.after_field_change)
         return res

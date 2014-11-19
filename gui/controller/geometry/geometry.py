@@ -23,7 +23,7 @@ class GNGeometryController(GNObjectController):
     def construct_border_controllers(self, row_name = None):
         hbox, group = self._construct_hbox(row_name)
         #TODO support for material names:
-        res = tuple(self.construct_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))
+        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
         if row_name:
             return res
