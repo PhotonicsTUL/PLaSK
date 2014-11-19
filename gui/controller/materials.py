@@ -92,15 +92,15 @@ class ComponentsPopup(QtGui.QFrame):
 
 class MaterialsComboBox(QtGui.QComboBox):
 
-    def __init__(self, parent = None, material_list = None, defines_model = None, close_cb = None):
+    def __init__(self, parent = None, material_list = None, defines_model = None, popup_select_cb = None):
         """
         :param parent: Qt Object parent
         :param material_list: list of materials to add
         :param defines_model: defines model used to completion
-        :param close_cb: called after selecting components in ComponentsPopup (it can be called after deleting internal QComboBox)
+        :param popup_select_cb: called after selecting components in ComponentsPopup (it can be called after deleting internal QComboBox)
         """
         super(MaterialsComboBox, self).__init__(parent)
-        self.close_cb = close_cb
+        self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QtGui.QComboBox.NoInsert)
         if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent))
@@ -124,7 +124,7 @@ class MaterialsComboBox(QtGui.QComboBox):
             self.setEditText(material_name)
         except:
             pass    #it is possible that internal combo box has been deleted
-        if self.close_cb is not None: self.close_cb(material_name)
+        if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
@@ -149,7 +149,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
         if not material_list: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
 
-        combo = MaterialsComboBox(parent, material_list, self.model, close_cb = lambda mat: index.model().setData(index, mat))
+        combo = MaterialsComboBox(parent, material_list, self.model, popup_select_cb = lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
         try: combo.setCurrentIndex(material_list.index(index.data()))
         except ValueError: pass
