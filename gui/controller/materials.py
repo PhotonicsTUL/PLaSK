@@ -37,11 +37,11 @@ else:
 
 class ComponentsPopup(QtGui.QFrame):
 
-    def __init__(self, index, name, groups, doping, pos=None):
+    def __init__(self, close_cb, name, groups, doping, pos=None):
         super(ComponentsPopup, self).__init__()
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         self.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
-        self.index = index
+        self.close_cb = close_cb
         self.elements = elements_re.findall(name)
         self.doping = doping
         self.edits = {}
@@ -75,7 +75,7 @@ class ComponentsPopup(QtGui.QFrame):
             self.close()
 
     def closeEvent(self, event):
-        self.index.model().popup = None
+        #self.index.model().popup = None
         mat = ''
         for el in self.elements:
             mat += el
@@ -86,7 +86,42 @@ class ComponentsPopup(QtGui.QFrame):
             mat += ':' + self.doping
             val = str(self.edits['dp'].text())
             if val: mat += '=' + val
-        self.index.model().setData(self.index, mat)
+        #self.index.model().setData(self.index, mat)
+        self.close_cb(mat)
+
+
+class MaterialsComboBox(QtGui.QComboBox):
+
+    def __init__(self, parent = None, material_list = None, defines_model = None, close_cb = None):
+        """
+        :param parent: Qt Object parent
+        :param material_list: list of materials to add
+        :param defines_model: defines model used to completion
+        :param close_cb: called after selecting components in ComponentsPopup (it can be after deleting internal QComboBox)
+        """
+        super(MaterialsComboBox, self).__init__(parent)
+        self.close_cb = close_cb
+        self.setEditable(True)
+        self.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent))
+        if material_list:
+            self.addItems(material_list)
+            self.setMaxVisibleItems(len(material_list))
+        self.currentIndexChanged[str].connect(self.show_components_popup)
+
+    def show_components_popup(self, text):
+        pos = self.mapToGlobal(QtCore.QPoint(0, self.height()))
+        self.material_edit_popup = None  # close old popup
+        name, groups, doping = parse_material_components(text)
+        if not groups and doping is None:
+            return
+        self.material_edit_popup = ComponentsPopup(self.close_popup, name, groups, doping, pos)
+        self.material_edit_popup.show()
+
+    def close_popup(self, material_name):
+        self.material_edit_popup = None
+        #self.setEditText(material_name)
+        if self.close_cb is not None: self.close_cb(material_name)
 
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
@@ -111,30 +146,17 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
         if not material_list: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
 
-        combo = QtGui.QComboBox(parent)
-        combo.setEditable(True)
-        combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
-        combo.addItems(material_list)
+        combo = MaterialsComboBox(parent, material_list, self.model, close_cb = lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
         try: combo.setCurrentIndex(material_list.index(index.data()))
         except ValueError: pass
         combo.insertSeparator(4)
         combo.insertSeparator(len(material_list)-index.row()+1)
-        combo.setCompleter(get_defines_completer(self.model, parent))
         combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
-        combo.currentIndexChanged[str].connect(lambda text: self.show_components_popup(combo, text, index))
+        #combo.currentIndexChanged[str].connect()
         return combo
-
-    def show_components_popup(self, combo, text, index):
-        pos = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
-        self.popup = None  # close old popup
-        name, groups, doping = parse_material_components(text)
-        if not groups and doping is None:
-            return
-        self.popup = ComponentsPopup(index, name, groups, doping, pos)
-        self.popup.show()
 
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
