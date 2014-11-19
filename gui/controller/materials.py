@@ -21,7 +21,7 @@ from .script import scheme
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
     parse_material_components, elements_re
 from ..utils.textedit import TextEdit
-from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT
+from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, BlockSignals, table_edit_shortcut
 from . import Controller
 from .defines import DefinesCompletionDelegate
 from .table import table_and_manipulators, table_with_manipulators
@@ -251,11 +251,17 @@ class MaterialsController(Controller):
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.materials_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        table_edit_shortcut(self.materials_table, 0, 'n')
+        table_edit_shortcut(self.materials_table, 1, 'b')
         material_selection_model = self.materials_table.selectionModel()
         material_selection_model.selectionChanged.connect(self.material_selected)
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.properties_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        table_edit_shortcut(self.properties_table, 0, 'n')
+        table_edit_shortcut(self.properties_table, 1, 'v')
         property_selection_model = self.properties_table.selectionModel()
         property_selection_model.selectionChanged.connect(self.property_selected)
 
@@ -267,8 +273,6 @@ class MaterialsController(Controller):
         self.propedit.hide()
 
         self.property_model.dataChanged.connect(self.property_data_changed)
-
-        self._update_edit = True
 
         prop_splitter.addWidget(self.propedit)
         prop_splitter.setSizes([50000, 10000])
@@ -300,20 +304,15 @@ class MaterialsController(Controller):
             self.propedit.hide()
 
     def propedit_changed(self, row):
-        if self._update_edit:
-            self._update_edit = False
-            try:
-                self.property_model.setData(self.property_model.createIndex(row, 1), self.propedit.toPlainText())
-            finally:
-                self._update_edit = True
+        self.property_model.dataChanged.disconnect(self.property_data_changed)
+        try:
+            self.property_model.setData(self.property_model.createIndex(row, 1), self.propedit.toPlainText())
+        finally:
+            self.property_model.dataChanged.connect(self.property_data_changed)
 
     def property_data_changed(self, tl, br):
-        if self._update_edit:
-            self._update_edit = False
-            try:
-                self.propedit.setPlainText(self.property_model.get(1, tl.row()))
-            finally:
-                self._update_edit = True
+        with BlockSignals(self.propedit):
+            self.propedit.setPlainText(self.property_model.get(1, tl.row()))
 
     def get_widget(self):
         return self.splitter

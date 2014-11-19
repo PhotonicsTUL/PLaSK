@@ -16,7 +16,7 @@ from ..qt.QtCore import Qt
 
 from ..model.connects import PROPS
 
-from ..utils.widgets import table_last_col_fill
+from ..utils.widgets import table_last_col_fill, table_edit_shortcut
 from ..utils.textedit import TextEdit
 from ..utils.widgets import DEFAULT_FONT
 from ..external.highlighter import SyntaxHighlighter, load_syntax
@@ -291,6 +291,8 @@ class SolversController(Controller):
         table_last_col_fill(self.solvers_table, self.model.columnCount(None), [100, 200])
         self.solvers_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.solvers_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.solvers_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        table_edit_shortcut(self.solvers_table, 2, 'n')
         self.splitter.addWidget(table_with_manipulators(self.solvers_table, self.splitter, title="Solvers"))
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()

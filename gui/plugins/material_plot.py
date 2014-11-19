@@ -302,11 +302,13 @@ class MaterialPlot(QtGui.QWidget):
             other_elements.update(dict(('dc', v) for k,v in self._parse_other_args(self.arg_button, 1)))
             arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1]
             material_name = str(self.material.currentText())
+            skip_model = False
             while True:  # loop for looking-up the base
-                if self.model is None:
+                if skip_model or self.model is None:
                     break
                 material = [e for e in self.model.entries if e.name == material_name]
                 if material:
+                    skip_model = True  # prevents infinite loop if material in the model has similarly named base in DB
                     material = material[0]
                     mprop = [p for p in material.properties if p[0] == param]
                     if mprop:

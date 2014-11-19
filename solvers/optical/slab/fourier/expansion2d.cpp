@@ -197,8 +197,11 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
             coeffs[l][i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
         }
         coeffs[l][i] *= factor;
-        coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
-        coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
+        if (coeffs[l][i].c11 != 0. && !isnan(coeffs[l][i].c11.real()) && !isnan(coeffs[l][i].c11.imag()))
+            coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
+        else coeffs[l][i].c11 = 0.;
+        if (coeffs[l][i].c22 != 0.)
+            coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
     }
 
     // Check if the layer is uniform

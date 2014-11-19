@@ -14,7 +14,7 @@ from ...qt import QtGui
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from .. import Controller
-from ...utils.widgets import table_last_col_fill
+from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
@@ -38,7 +38,11 @@ class GridsController(Controller):
         table_last_col_fill(self.grids_table, self.model.columnCount(None), 80)
         self.grids_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.grids_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        table_edit_shortcut(self.grids_table, 0, 'n')
         self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and generators"))
+        self.grids_table.setVisible(False)
+        self.grids_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.grids_table.setVisible(True)
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)

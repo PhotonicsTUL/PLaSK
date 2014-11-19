@@ -13,8 +13,8 @@
 import collections
 import sys
 
-from ..qt import QtCore
-from ..qt import QtGui
+from ..qt.QtCore import Qt
+from ..qt import QtCore, QtGui
 from ..utils.config import CONFIG
 
 
@@ -32,6 +32,30 @@ if _font_family is None:
 DEFAULT_FONT.setFamily(_font_family)
 del _font_family
 DEFAULT_FONT.setPointSize(int(CONFIG('editor/font_size', DEFAULT_FONT.pointSize())))
+
+
+class BlockSignals(object):
+    """Contex manager for blocking signals for Qt objects"""
+
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __enter__(self):
+        self._prev = self.obj.blockSignals(True)
+        return self.obj
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.obj.blockSignals(self._prev)
+
+
+def table_edit_shortcut(table, col, key):
+    def operation():
+        selected = table.selectedIndexes()
+        if selected:
+            table.edit((table.model()).index(selected[0].row(), col))
+    shortcut = QtGui.QShortcut(key, table)
+    shortcut.activated.connect(operation)
+    shortcut.setContext(Qt.WidgetShortcut)
 
 
 def table_last_col_fill(table, cols_count, col_size=0):

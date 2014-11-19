@@ -13,6 +13,8 @@
 from ..qt import QtCore, QtGui
 
 from . import Controller
+from ..utils.widgets import table_edit_shortcut, table_last_col_fill
+
 
 class TableActions(object):
 
@@ -118,6 +120,12 @@ class TableController(Controller):
 
         self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        table_last_col_fill(self.table, model.columnCount(None))
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+
+        for col in range(model.columnCount()):
+            label = model.headerData(col, QtCore.Qt.Horizontal, QtCore.Qt.DisplayRole)
+            table_edit_shortcut(self.table, col, label[0].lower())
 
     def get_widget(self):
         if self.model.is_read_only():

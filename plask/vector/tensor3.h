@@ -241,7 +241,8 @@ struct Tensor3 {
      */
     Tensor3<T> inv() const {
         T M = c00*c11 - c01*c01;
-        return Tensor3<T>(c11/M, c00/M, 1./c22, -c01/M);
+        if (M == 0.) return Tensor3<T>(0.);
+        return Tensor3<T>(c11/M, c00/M, (c22 == 0.)? 0. : 1./c22, -c01/M);
     }
 
     /**

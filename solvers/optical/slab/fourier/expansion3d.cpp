@@ -338,7 +338,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 Tensor3<double> P1(1.-P.c00, 1.-P.c11, 1., -P.c01);
                 eps = commutator(P, ieps.inv()) + commutator(P1, eps);
             }
-            eps.c22 = 1./eps.c22;
+            if (eps.c22 != 0.) eps.c22 = 1./eps.c22;
         }
     }
 
