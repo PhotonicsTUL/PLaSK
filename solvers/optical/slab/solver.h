@@ -22,7 +22,7 @@ struct PML {
 /**
  * Common base with layer details independent on the geomety
  */
-struct SlabBase {
+struct PLASK_SOLVER_API SlabBase {
 
   protected:
 
