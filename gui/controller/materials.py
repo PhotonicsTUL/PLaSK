@@ -97,7 +97,7 @@ class MaterialsComboBox(QtGui.QComboBox):
         :param parent: Qt Object parent
         :param material_list: list of materials to add
         :param defines_model: defines model used to completion
-        :param close_cb: called after selecting components in ComponentsPopup (it can be after deleting internal QComboBox)
+        :param close_cb: called after selecting components in ComponentsPopup (it can be called after deleting internal QComboBox)
         """
         super(MaterialsComboBox, self).__init__(parent)
         self.close_cb = close_cb
@@ -120,7 +120,10 @@ class MaterialsComboBox(QtGui.QComboBox):
 
     def close_popup(self, material_name):
         self.material_edit_popup = None
-        #self.setEditText(material_name)
+        try:
+            self.setEditText(material_name)
+        except:
+            pass    #it is possible that internal combo box has been deleted
         if self.close_cb is not None: self.close_cb(material_name)
 
 
