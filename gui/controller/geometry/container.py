@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -46,8 +47,19 @@ class GNShelfController(GNObjectController):
     def fill_form(self):
         self.construct_group('Shelf-specific settings')
         self.repeat = self.construct_line_edit('repeat')
+        self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
+                                'Number of repetitive occurrences of stack content.'
+                                ' This attribute allows to create periodic horizontal structures easily.'
+                                ' Defaults to 1. (integer)')
         self.shift = self.construct_line_edit('shift')
+        self.shift.setToolTip(u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
+                                u'Horizontal position of the shelf left edge in its local coordinates.'
+                                u' Defaults to 0. (float [µm])')
         self.flat = self.construct_combo_box('flat', items=['', 'yes', 'no'])
+        self.flat.setToolTip(u'&lt;shelf <b>flat</b>="" ...&gt;<br/>'
+                                u'The value of this attribute can be either true of false.'
+                                u' It specifies whether all the items in the shelf are required to have the same height'
+                                u' (therefore the top edge of the shelf is flat). Defaults to true.')
         super(GNShelfController, self).fill_form()
 
     def save_data_in_model(self):
@@ -101,8 +113,14 @@ class GNStackController(GNObjectController):
     def fill_form(self):
         self.construct_group('Stack-specific settings')
         self.repeat = self.construct_line_edit('repeat')
+        self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
+                                'Number of repetitive occurrences of stack content.'
+                                ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
+                                ' Defaults to 1. (integer))')
         self.shift = self.construct_line_edit('shift')
-
+        self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
+                                u'Vertical position of the stack bottom edge in its local coordinates.'
+                                u' Defaults to 0. (float [µm])')
         self.pos_layout = self.construct_group('Default children positions')
         self.positions = self.construct_align_controllers()
 

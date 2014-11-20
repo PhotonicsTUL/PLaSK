@@ -83,6 +83,10 @@ class GNCDelete(GNCopyChild):
     def tag_name(self, full_name=True):
         return "delete"
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNCDeleteController
+        return GNCDeleteController(document, model, self)
+
 
 class GNCReplace(GNCopyChild):
 
