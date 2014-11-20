@@ -7,7 +7,7 @@ namespace plask { namespace solvers { namespace effective {
 
 #define DLAM 1e-3
 
-EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
+EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
@@ -16,11 +16,11 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     perr(1e-3),
     k0(NAN),
     vlam(0.),
-    outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
-    outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outLightMagnitude(this, &EffectiveFrequencyCylSolver::getLightMagnitude,  &EffectiveFrequencyCylSolver::nmodes),
-    outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex),
-    outHeat(this, &EffectiveFrequencyCylSolver::getHeat) {
+    outWavelength(this, &EffectiveFrequencyCyl::getWavelength, &EffectiveFrequencyCyl::nmodes),
+    outLoss(this, &EffectiveFrequencyCyl::getModalLoss,  &EffectiveFrequencyCyl::nmodes),
+    outLightMagnitude(this, &EffectiveFrequencyCyl::getLightMagnitude,  &EffectiveFrequencyCyl::nmodes),
+    outRefractiveIndex(this, &EffectiveFrequencyCyl::getRefractiveIndex),
+    outHeat(this, &EffectiveFrequencyCyl::getHeat) {
     inTemperature = 300.;
     root.tolx = 1.0e-6;
     root.tolf_min = 1.0e-7;
@@ -32,12 +32,12 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxiter = 500;
     stripe_root.method = RootDigger::ROOT_MULLER;
-    inTemperature.changedConnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
-    inGain.changedConnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
+    inTemperature.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
+    inGain.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
 }
 
 
-void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& manager) {
+void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "mode") {
@@ -93,7 +93,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
 }
 
 
-size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
+size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
@@ -104,7 +104,7 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 }
 
 
-std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
@@ -174,7 +174,7 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
 }
 
 
-size_t EffectiveFrequencyCylSolver::setMode(dcomplex clambda, int m)
+size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     if (!initialized) {
@@ -191,7 +191,7 @@ size_t EffectiveFrequencyCylSolver::setMode(dcomplex clambda, int m)
 }
 
 
-void EffectiveFrequencyCylSolver::onInitialize()
+void EffectiveFrequencyCyl::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
 
@@ -226,7 +226,7 @@ void EffectiveFrequencyCylSolver::onInitialize()
 }
 
 
-void EffectiveFrequencyCylSolver::onInvalidate()
+void EffectiveFrequencyCyl::onInvalidate()
 {
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
@@ -237,7 +237,7 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 /********* Here are the computations *********/
 
-void EffectiveFrequencyCylSolver::updateCache()
+void EffectiveFrequencyCyl::updateCache()
 {
     bool fresh = !initCalculation();
 
@@ -318,7 +318,7 @@ void EffectiveFrequencyCylSolver::updateCache()
     }
 }
 
-void EffectiveFrequencyCylSolver::stageOne()
+void EffectiveFrequencyCyl::stageOne()
 {
     updateCache();
 
@@ -410,7 +410,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 }
 
 
-dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
+dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
                                             const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto)
 {
     if (saveto) (*saveto)[zbegin] = FieldZ(0., 1.);
@@ -505,7 +505,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
 }
 
 
-void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_integrals)
+void EffectiveFrequencyCyl::computeStripeNNg(size_t stripe, bool save_integrals)
 {
     size_t stripe0 = (rstripe < 0)? stripe : rstripe;
 
@@ -570,7 +570,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_inte
     nng[stripe] /= sum;
 }
 
-double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
+double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
 {
     double sum = 0;
     for (size_t i = 0; i != rsize; ++i) {
@@ -586,7 +586,7 @@ double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
     return 2.*M_PI * sum;
 }
 
-dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
+dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCyl::Mode& mode, bool save)
 {
     dcomplex v = freqv(lam);
     MatrixR T = MatrixR::eye();
@@ -681,7 +681,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 }
 
 
-double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
+double EffectiveFrequencyCyl::getTotalAbsorption(const Mode& mode)
 {
     double result = 0.;
     dcomplex lam0 = 2e3*M_PI / k0;
@@ -710,7 +710,7 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
     return result;
 }
 
-double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
+double EffectiveFrequencyCyl::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
@@ -725,7 +725,7 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
 }
 
 
-double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
+double EffectiveFrequencyCyl::getGainIntegral(const Mode& mode)
 {
     double result = 0.;
     dcomplex lam0 = 2e3*M_PI / k0;
@@ -746,7 +746,7 @@ double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
     return -result;
 }
 
-double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
+double EffectiveFrequencyCyl::getGainIntegral(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
@@ -761,14 +761,14 @@ double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 }
 
 
-struct EffectiveFrequencyCylSolver::LightMagnitudeDataInefficient: public LazyDataImpl<double>
+struct EffectiveFrequencyCyl::LightMagnitudeDataInefficient: public LazyDataImpl<double>
 {
-    const EffectiveFrequencyCylSolver* solver;
+    const EffectiveFrequencyCyl* solver;
     int num;
     shared_ptr<const MeshD<2>> dst_mesh;
     size_t stripe;
 
-    LightMagnitudeDataInefficient(const EffectiveFrequencyCylSolver* solver,
+    LightMagnitudeDataInefficient(const EffectiveFrequencyCyl* solver,
                                   int num,
                                   const shared_ptr<const MeshD<2>>& dst_mesh,
                                   size_t stripe):
@@ -803,15 +803,15 @@ struct EffectiveFrequencyCylSolver::LightMagnitudeDataInefficient: public LazyDa
 
 };
 
-struct EffectiveFrequencyCylSolver::LightMagnitudeDataEfficient: public LazyDataImpl<double>
+struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<double>
 {
-    const EffectiveFrequencyCylSolver* solver;
+    const EffectiveFrequencyCyl* solver;
     int num;
     shared_ptr<const RectangularMesh<2>> rect_mesh;
 
     std::vector<dcomplex> valr, valz;
 
-    LightMagnitudeDataEfficient(const EffectiveFrequencyCylSolver* solver,
+    LightMagnitudeDataEfficient(const EffectiveFrequencyCyl* solver,
                                 int num,
                                 const shared_ptr<const RectangularMesh<2>>& rect_mesh,
                                 size_t stripe):
@@ -894,7 +894,7 @@ struct EffectiveFrequencyCylSolver::LightMagnitudeDataEfficient: public LazyData
     }
 };
 
-const LazyData<double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -923,7 +923,7 @@ const LazyData<double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, c
         return LazyData<double>(new LightMagnitudeDataInefficient(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
+const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
@@ -940,14 +940,14 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveInde
 }
 
 
-struct EffectiveFrequencyCylSolver::HeatDataImpl: public LazyDataImpl<double>
+struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
 {
-    EffectiveFrequencyCylSolver* solver;
+    EffectiveFrequencyCyl* solver;
     WrappedMesh<2> mat_mesh;
     std::vector<LazyData<double>> EE;
     dcomplex lam0;
 
-    HeatDataImpl(EffectiveFrequencyCylSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
+    HeatDataImpl(EffectiveFrequencyCyl* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
         solver(solver), mat_mesh(dst_mesh, solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
     {
         for (size_t m = 0; m != solver->modes.size(); ++m)
@@ -970,7 +970,7 @@ struct EffectiveFrequencyCylSolver::HeatDataImpl: public LazyDataImpl<double>
     }
 };
 
-const LazyData<double> EffectiveFrequencyCylSolver::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
+const LazyData<double> EffectiveFrequencyCyl::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.

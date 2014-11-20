@@ -1,12 +1,13 @@
 #include <exception>
-#include "eim.h"
+#include "eim3d.h"
 
 using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
 
-EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
-    SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>>(name),
+/*
+EffectiveIndex3D::EffectiveIndex3D(const std::string& name) :
+    SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
     log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
     stripex(0.),
     polarization(TE),
@@ -14,29 +15,29 @@ EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     emission(FRONT),
     vneff(0.),
     outdist(0.1),
-    outNeff(this, &EffectiveIndex2D::getEffectiveIndex, &EffectiveIndex2D::nmodes),
-    outLightMagnitude(this, &EffectiveIndex2D::getLightMagnitude, &EffectiveIndex2D::nmodes),
-    outRefractiveIndex(this, &EffectiveIndex2D::getRefractiveIndex),
-    outHeat(this, &EffectiveIndex2D::getHeat),
+    outNeff(this, &EffectiveIndex3D::getEffectiveIndex, &EffectiveIndex3D::nmodes),
+    outLightMagnitude(this, &EffectiveIndex3D::getLightMagnitude, &EffectiveIndex3D::nmodes),
+    outRefractiveIndex(this, &EffectiveIndex3D::getRefractiveIndex),
+    outHeat(this, &EffectiveIndex3D::getHeat),
     k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-6;
-    root.tolf_min = 1.0e-7;
-    root.tolf_max = 2.0e-5;
-    root.maxiter = 500;
-    root.method = RootDigger::ROOT_MULLER;
-    stripe_root.tolx = 1.0e-6;
-    stripe_root.tolf_min = 1.0e-7;
-    stripe_root.tolf_max = 1.0e-5;
-    stripe_root.maxiter = 500;
-    stripe_root.method = RootDigger::ROOT_MULLER;
-    inTemperature.changedConnectMethod(this, &EffectiveIndex2D::onInputChange);
-    inGain.changedConnectMethod(this, &EffectiveIndex2D::onInputChange);
+    root_tran.tolx = 1.0e-6;
+    root_tran.tolf_min = 1.0e-7;
+    root_tran.tolf_max = 2.0e-5;
+    root_tran.maxiter = 500;
+    root_tran.method = RootDigger::ROOT_MULLER;
+    root_vert.tolx = 1.0e-6;
+    root_vert.tolf_min = 1.0e-7;
+    root_vert.tolf_max = 1.0e-5;
+    root_vert.maxiter = 500;
+    root_vert.method = RootDigger::ROOT_MULLER;
+    inTemperature.changedConnectMethod(this, &EffectiveIndex3D::onInputChange);
+    inGain.changedConnectMethod(this, &EffectiveIndex3D::onInputChange);
 }
 
 
-void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
+void EffectiveIndex3D::loadConfiguration(XMLReader& reader, Manager& manager) {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "mode") {
@@ -50,10 +51,10 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
             stripex = reader.getAttribute<double>("vat", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             reader.requireTagEnd();
-        } else if (param == "root") {
-            RootDigger::readRootDiggerConfig(reader, root);
-        } else if (param == "stripe-root") {
-            RootDigger::readRootDiggerConfig(reader, stripe_root);
+        } else if (param == "root_tran") {
+            RootDigger::readRootDiggerConfig(reader, root_tran);
+        } else if (param == "stripe-root_tran") {
+            RootDigger::readRootDiggerConfig(reader, root_vert);
         } else if (param == "mirrors") {
             double R1 = reader.requireAttribute<double>("R1");
             double R2 = reader.requireAttribute<double>("R2");
@@ -68,29 +69,25 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
             else reader.requireTagEnd();
             auto found = manager.meshes.find(*name);
             if (found != manager.meshes.end()) {
-                auto mesh1 = dynamic_pointer_cast<RectangularAxis>(found->second);
-                auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
-                if (mesh1) this->setHorizontalMesh(mesh1);
-                else if (mesh2) this->setMesh(mesh2);
+                auto mesh = dynamic_pointer_cast<RectangularMesh<3>>(found->second);
+                if (mesh) this->setMesh(mesh);
                 else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
-                    auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
-                    auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
-                    if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
-                    else if (generator2) this->setMesh(generator2);
+                    auto generator = dynamic_pointer_cast<MeshGeneratorD<3>>(found->second);
+                    if (generator) this->setMesh(generator);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
                 } else
                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
             }
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root-tran>, <root-vert>, or <outer>");
     }
 }
 
 
-std::vector<dcomplex> EffectiveIndex2D::searchVNeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<dcomplex> EffectiveIndex3D::searchVNeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
 {
     updateCache();
 
@@ -151,17 +148,17 @@ std::vector<dcomplex> EffectiveIndex2D::searchVNeffs(dcomplex neff1, dcomplex ne
 }
 
 
-size_t EffectiveIndex2D::findMode(dcomplex neff, Symmetry symmetry)
+size_t EffectiveIndex3D::findMode(dcomplex neff, Symmetry symmetry)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
     Mode mode(this, symmetry);
-    mode.neff = RootDigger::get(this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)->find(neff);
+    mode.neff = RootDigger::get(this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root_tran)->find(neff);
     return insertMode(mode);
 }
 
 
-std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, Symmetry symmetry, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<size_t> EffectiveIndex3D::findModes(dcomplex neff1, dcomplex neff2, Symmetry symmetry, size_t resteps, size_t imsteps, dcomplex eps)
 {
     stageOne();
 
@@ -204,7 +201,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
-        auto refine = RootDigger::get(this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
+        auto refine = RootDigger::get(this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root_tran);
         std::string msg = "Found modes at: ";
         for (auto zz: results) {
             dcomplex z;
@@ -225,22 +222,22 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
 }
 
 
-size_t EffectiveIndex2D::setMode(dcomplex neff, Symmetry sym)
+size_t EffectiveIndex3D::setMode(dcomplex neff, Symmetry symmetry_tran, Symmetry symmetry_long)
 {
     if (!initialized) {
         writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
         stageOne();
     }
-    Mode mode(this, sym);
+    Mode mode(this, symmetry_tran);
     mode.neff = neff;
     double det = abs(detS(neff, mode));
-    if (det > root.tolf_max)
+    if (det > root_tran.tolf_max)
         writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting mode at %1%", str(neff));
     return insertMode(mode);
 }
 
-void EffectiveIndex2D::onInitialize()
+void EffectiveIndex3D::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
 
@@ -275,7 +272,7 @@ void EffectiveIndex2D::onInitialize()
 }
 
 
-void EffectiveIndex2D::onInvalidate()
+void EffectiveIndex3D::onInvalidate()
 {
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
@@ -284,10 +281,9 @@ void EffectiveIndex2D::onInvalidate()
     recompute_neffs = true;
 }
 
-/********* Here are the computations *********/
+/// Here are the computations ///
 
-
-void EffectiveIndex2D::updateCache()
+void EffectiveIndex3D::updateCache()
 {
     bool fresh = !initCalculation();
 
@@ -354,7 +350,7 @@ void EffectiveIndex2D::updateCache()
 }
 
 
-void EffectiveIndex2D::stageOne()
+void EffectiveIndex3D::stageOne()
 {
     updateCache();
 
@@ -371,8 +367,8 @@ void EffectiveIndex2D::stageOne()
             writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
         }
 #endif
-        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
-        auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
+        Data3DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
+        auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, root_vert);
         if (vneff == 0.) {
             dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
                                               [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
@@ -412,7 +408,7 @@ void EffectiveIndex2D::stageOne()
     }
 }
 
-dcomplex EffectiveIndex2D::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
+dcomplex EffectiveIndex3D::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
 {
     if (save) yfields[ybegin] = Field(0., 1.);
 
@@ -498,7 +494,7 @@ dcomplex EffectiveIndex2D::detS1(const plask::dcomplex& x, const std::vector<dco
 }
 
 
-void EffectiveIndex2D::computeWeights(size_t stripe)
+void EffectiveIndex3D::computeWeights(size_t stripe)
 {
     // Compute fields
     detS1(vneff, nrCache[stripe], true);
@@ -555,7 +551,7 @@ void EffectiveIndex2D::computeWeights(size_t stripe)
 // #endif
 }
 
-void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
+void EffectiveIndex3D::normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
 
     size_t start;
 
@@ -623,7 +619,7 @@ void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,al
     for (auto& val: mode.xweights) val *= ff;
 }
 
-double EffectiveIndex2D::getTotalAbsorption(const Mode& mode)
+double EffectiveIndex3D::getTotalAbsorption(const Mode& mode)
 {
     double result = 0.;
 
@@ -639,7 +635,7 @@ double EffectiveIndex2D::getTotalAbsorption(const Mode& mode)
 }
 
 
-double EffectiveIndex2D::getTotalAbsorption(size_t num)
+double EffectiveIndex3D::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num) throw NoValue("absorption");
 
@@ -648,7 +644,7 @@ double EffectiveIndex2D::getTotalAbsorption(size_t num)
     return getTotalAbsorption(modes[num]);
 }
 
-dcomplex EffectiveIndex2D::detS(const dcomplex& x, EffectiveIndex2D::Mode& mode, bool save)
+dcomplex EffectiveIndex3D::detS(const dcomplex& x, EffectiveIndex3D::Mode& mode, bool save)
 {
     // Adjust for mirror losses
     dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses(x)); neff2 *= neff2;
@@ -704,14 +700,14 @@ dcomplex EffectiveIndex2D::detS(const dcomplex& x, EffectiveIndex2D::Mode& mode,
 }
 
 
-struct EffectiveIndex2D::LightMagnitudeDataBase: public LazyDataImpl<double>
+struct EffectiveIndex3D::LightMagnitudeDataBase: public LazyDataImpl<double>
 {
-    EffectiveIndex2D* solver;
+    EffectiveIndex3D* solver;
     int num;
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx, ky;
     size_t stripe;
 
-    LightMagnitudeDataBase(EffectiveIndex2D* solver, int num):
+    LightMagnitudeDataBase(EffectiveIndex3D* solver, int num):
         solver(solver), num(num), kx(solver->xend), ky(solver->yend),
         stripe(solver->mesh->tran()->findIndex(solver->stripex))
     {
@@ -736,11 +732,11 @@ struct EffectiveIndex2D::LightMagnitudeDataBase: public LazyDataImpl<double>
     }
 };
 
-struct EffectiveIndex2D::LightMagnitudeDataInefficient: public EffectiveIndex2D::LightMagnitudeDataBase
+struct EffectiveIndex3D::LightMagnitudeDataInefficient: public EffectiveIndex3D::LightMagnitudeDataBase
 {
     shared_ptr<const MeshD<2>> dst_mesh;
 
-     LightMagnitudeDataInefficient(EffectiveIndex2D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
+     LightMagnitudeDataInefficient(EffectiveIndex3D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
         LightMagnitudeDataBase(solver, num), dst_mesh(dst_mesh) {}
 
     size_t size() const override { return dst_mesh->size(); }
@@ -751,14 +747,14 @@ struct EffectiveIndex2D::LightMagnitudeDataInefficient: public EffectiveIndex2D:
         double y = point.vert();
 
         bool negate = false;
-        if (x < 0. && solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
-            x = -x; if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
+        if (x < 0. && solver->modes[num].symmetry != EffectiveIndex3D::SYMMETRY_NONE) {
+            x = -x; if (solver->modes[num].symmetry == EffectiveIndex3D::SYMMETRY_NEGATIVE) negate = true;
         }
         size_t ix = solver->mesh->tran()->findIndex(x);
         if (ix >= solver->xend) ix = solver->xend-1;
         if (ix < solver->xbegin) ix = solver->xbegin;
         if (ix != 0) x -= solver->mesh->tran()->at(ix-1);
-        else if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
+        else if (solver->modes[num].symmetry == EffectiveIndex3D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
         dcomplex phasx = exp(- I * kx[ix] * x);
         dcomplex val = solver->modes[num].xfields[ix].F * phasx + solver->modes[num].xfields[ix].B / phasx;
         if (negate) val = - val;
@@ -774,14 +770,14 @@ struct EffectiveIndex2D::LightMagnitudeDataInefficient: public EffectiveIndex2D:
     }
 };
 
-struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::LightMagnitudeDataBase
+struct EffectiveIndex3D::LightMagnitudeDataEfficient: public EffectiveIndex3D::LightMagnitudeDataBase
 {
     shared_ptr<const RectangularMesh<2>> rect_mesh;
     std::vector<dcomplex,aligned_allocator<dcomplex>> valx, valy;
 
     size_t size() const override { return rect_mesh->size(); }
 
-    LightMagnitudeDataEfficient(EffectiveIndex2D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
+    LightMagnitudeDataEfficient(EffectiveIndex3D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
         LightMagnitudeDataBase(solver, num), rect_mesh(rect_mesh), valx(rect_mesh->tran()->size()), valy(rect_mesh->vert()->size())
     {
         #pragma omp parallel
@@ -790,14 +786,14 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
             for (size_t idx = 0; idx < rect_mesh->tran()->size(); ++idx) {
                 double x = rect_mesh->tran()->at(idx);
                 bool negate = false;
-                if (x < 0. && solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
-                    x = -x; if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
+                if (x < 0. && solver->modes[num].symmetry != EffectiveIndex3D::SYMMETRY_NONE) {
+                    x = -x; if (solver->modes[num].symmetry == EffectiveIndex3D::SYMMETRY_NEGATIVE) negate = true;
                 }
                 size_t ix = solver->mesh->tran()->findIndex(x);
                 if (ix >= solver->xend) ix = solver->xend-1;
                 if (ix < solver->xbegin) ix = solver->xbegin;
                 if (ix != 0) x -= solver->mesh->tran()->at(ix-1);
-                else if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
+                else if (solver->modes[num].symmetry == EffectiveIndex3D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
                 dcomplex phasx = exp(- I * kx[ix] * x);
                 dcomplex val = solver->modes[num].xfields[ix].F * phasx + solver->modes[num].xfields[ix].B / phasx;
                 if (negate) val = - val;
@@ -852,7 +848,7 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
     }
 };
 
-const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+const LazyData<double> EffectiveIndex3D::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -863,7 +859,7 @@ const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<c
 }
 
 
-const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
+const LazyData<Tensor3<dcomplex>> EffectiveIndex3D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
@@ -877,14 +873,14 @@ const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_pt
 }
 
 
-struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
+struct EffectiveIndex3D::HeatDataImpl: public LazyDataImpl<double>
 {
-    EffectiveIndex2D* solver;
+    EffectiveIndex3D* solver;
     WrappedMesh<2> mat_mesh;
     std::vector<LazyData<double>> EE;
     dcomplex lam0;
 
-    HeatDataImpl(EffectiveIndex2D* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
+    HeatDataImpl(EffectiveIndex3D* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
         solver(solver), mat_mesh(dst_mesh, solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
     {
         for (size_t m = 0; m != solver->modes.size(); ++m)
@@ -907,7 +903,7 @@ struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
     }
 };
 
-const LazyData<double> EffectiveIndex2D::getHeat(shared_ptr<const MeshD<2>> dst_mesh, plask::InterpolationMethod method)
+const LazyData<double> EffectiveIndex3D::getHeat(shared_ptr<const MeshD<2>> dst_mesh, plask::InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
@@ -915,6 +911,6 @@ const LazyData<double> EffectiveIndex2D::getHeat(shared_ptr<const MeshD<2>> dst_
     if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
     return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 }
-
+*/
 
 }}} // namespace plask::solvers::effective
