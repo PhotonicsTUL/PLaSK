@@ -61,9 +61,27 @@ MI_PROPERTY(GaInSb, Me,
             MIComment("no temperature dependence")
             )
 Tensor2<double> GaInSb::Me(double T, double e, char point) const {
+    Tensor2<double> tMe(0., 0.);
+    if ((point == 'G') || (point == 'X') || (point == 'L'))
+    {
+        tMe.c00 = Ga*mGaSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00,
+        tMe.c11 = Ga*mGaSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11;
+
+    }
+    else if (point == '*')
+    {
+        char pointM;
+        if ( Eg(T,e,'G') == Eg(T,e,'*') ) pointM = 'G';
+        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) pointM = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) pointM = 'L';
+        tMe.c00 = Ga*mGaSb.Me(T,e,pointM).c00 + In*mInSb.Me(T,e,pointM).c00;
+        tMe.c11 = Ga*mGaSb.Me(T,e,pointM).c11 + In*mInSb.Me(T,e,pointM).c11;
+    }
+    return ( tMe );
+    /*
     double lMe = Ga*mGaSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00 - Ga*In*0.010,
            vMe = Ga*mGaSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11 - Ga*In*0.010;
-    return ( Tensor2<double>(lMe,vMe) );
+    return ( Tensor2<double>(lMe,vMe) );*/
 }
 
 MI_PROPERTY(GaInSb, Mhh,
