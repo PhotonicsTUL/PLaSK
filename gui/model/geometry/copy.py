@@ -62,7 +62,7 @@ class GNCopyChild(GNode):
         self.object = object
 
     def attributes_from_xml(self, attribute_reader, conf):
-        self.object = attribute_reader.require('object')
+        self.object = attribute_reader.get('object')
 
     def attributes_to_xml(self, element, conf):
         super(GNCopyChild, self).attributes_to_xml(element, conf)
@@ -165,7 +165,7 @@ class GNCopy(GNObject):
             elif t.tag == 'replace': el = GNCReplace(parent=self)
             elif t.tag == 'toblock': el = GNCToBlock(parent=self)
             else: ordered_reader.recent_was_unexpected()
-            el.from_xml(t, conf)
+            el.set_xml_element(t, conf)
 
     def tag_name(self, full_name=True):
         return "copy"

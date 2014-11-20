@@ -35,6 +35,7 @@ class GNCopyChildController(GNodeController):
 
     def fill_form(self):
         super(GNCopyChildController, self).fill_form()
+        self.construct_group('Operation settings')
         self.object = self.construct_names_before_self_combo_box('object')
 
     def save_data_in_model(self):

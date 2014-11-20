@@ -112,7 +112,7 @@ class GNStack(GNContainerBase):
                 with OrderedTagReader(c) as item_child_reader:
                     child = construct_geometry_object(item_child_reader.require(), conf)
                 with AttributeReader(c) as item_attr_reader:
-                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.aligners_dir())  #self.children_dim-2 is direction tran
+                    child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim, *self.aligners_dir())  #self.children_dim-2 is direction tran
             elif c.tag == 'zero':
                 GNZero(self, self.children_dim)
             else:

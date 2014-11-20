@@ -84,6 +84,12 @@ class AttributeReader(object):
     def get(self, key, default=None):
         self.read.add(key)
         return self.element.attrib.get(key, default)
+
+    def require(self, key):
+        res = self.get(key)
+        if res is None:
+            raise ValueError('Attribute "{}" is expected in tag <{}>{}.'.format(self.element.tag, key, at_line_str(self.element)))
+        return res
     
     def __len__(self):
         return len(self.element.attrib)
@@ -125,6 +131,7 @@ class AttributeReader(object):
 
     def __iter__(self):
         return self.element.attrib.__iter__()
+
 
 class OrderedTagReader(object):
     """Helper class to read children of XML element in required order.
