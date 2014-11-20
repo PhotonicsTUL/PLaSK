@@ -31,7 +31,7 @@ class GNAgainController(GNodeController):
 
     def on_edit_enter(self):
         super(GNAgainController, self).on_edit_enter()
-        with BlockQtSignals(self.ref) as ignored:
+        with BlockQtSignals(self.ref) as _:
             self.ref.setEditText(none_to_empty(self.node.ref))
 
 
