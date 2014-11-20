@@ -48,8 +48,7 @@ double GaAs::Dso(double T, double e) const {
 
 
 MI_PROPERTY(GaAs, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
             MIComment("no temperature dependence")
            )
 Tensor2<double> GaAs::Me(double T, double e, char point) const {
@@ -80,7 +79,7 @@ Tensor2<double> GaAs::Me(double T, double e, char point) const {
 
 
 MI_PROPERTY(GaAs, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
 Tensor2<double> GaAs::Mhh(double T, double e) const {
@@ -90,7 +89,7 @@ Tensor2<double> GaAs::Mhh(double T, double e) const {
 
 
 MI_PROPERTY(GaAs, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
 Tensor2<double> GaAs::Mlh(double T, double e) const {
@@ -201,8 +200,8 @@ double GaAs::c44(double T) const {
 
 
 MI_PROPERTY(GaAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 150, 1500)
            )
 Tensor2<double> GaAs::thermk(double T, double t) const {
@@ -221,19 +220,19 @@ Tensor2<double> GaAs::cond(double T) const {
 }
 
 MI_PROPERTY(GaAs, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
             MIComment("no temperature dependence")
             )
 double GaAs::dens(double T) const { return 5.31749e3; }
 
 MI_PROPERTY(GaAs, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
             MIComment("no temperature dependence")
             )
 double GaAs::cp(double T) const { return 0.327e3; }
 
 MI_PROPERTY(GaAs, nr,
-            MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),
+            MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
             MIComment("fit by Lukasz Piskorski")
            )
@@ -249,7 +248,7 @@ MI_PROPERTY(GaAs, absp,
             MIComment("TODO")
            )
 double GaAs::absp(double wl, double T) const {
-    return 0.;
+    throw NotImplemented("absp for GaAs");
 }
 
 

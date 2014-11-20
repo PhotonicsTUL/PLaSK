@@ -61,9 +61,23 @@ MI_PROPERTY(AlInSb, Me,
             MIComment("no temperature dependence")
             )
 Tensor2<double> AlInSb::Me(double T, double e, char point) const {
-    double lMe = Al*mAlSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00,
-           vMe = Al*mAlSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11;
-    return ( Tensor2<double>(lMe,vMe) );
+    Tensor2<double> tMe(0., 0.);
+    if ((point == 'G') || (point == 'X') || (point == 'L'))
+    {
+        tMe.c00 = Al*mAlSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00,
+        tMe.c11 = Al*mAlSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11;
+
+    }
+    else if (point == '*')
+    {
+        char pointM;
+        if ( Eg(T,e,'G') == Eg(T,e,'*') ) pointM = 'G';
+        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) pointM = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) pointM = 'L';
+        tMe.c00 = Al*mAlSb.Me(T,e,pointM).c00 + In*mInSb.Me(T,e,pointM).c00;
+        tMe.c11 = Al*mAlSb.Me(T,e,pointM).c11 + In*mInSb.Me(T,e,pointM).c11;
+    }
+    return ( tMe );
 }
 
 MI_PROPERTY(AlInSb, Mhh,
