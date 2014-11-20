@@ -43,7 +43,7 @@ def construct_by_name(type_name, *allowed_types):
     raise ValueError('Wrong name of geometry object type: {}'.format(type_name))
 
 
-def construct_using_constructor(constructor, parent = None):
+def construct_using_constructor(constructor, parent=None):
     result = constructor(None, None)
     result.parent = parent
     return result

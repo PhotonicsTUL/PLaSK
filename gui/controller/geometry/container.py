@@ -27,7 +27,7 @@ class GNGapController(GNodeController):
         self.gap_type.addItems(['gap size', 'total container size'])
         self.gap_type.currentIndexChanged.connect(self.after_field_change)
         self.gap_value = self.construct_line_edit()
-        self.form_layout.addRow(self.gap_type, self.gap_value)
+        self._get_current_form().addRow(self.gap_type, self.gap_value)
 
     def save_data_in_model(self):
         super(GNGapController, self).save_data_in_model()

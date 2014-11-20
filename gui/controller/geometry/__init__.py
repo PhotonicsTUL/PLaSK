@@ -152,14 +152,19 @@ class GeometryController(Controller):
         vbox = QtGui.QVBoxLayout()
         external.setLayout(vbox)
 
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(0)
+
         vbox.addWidget(self._construct_toolbar())
         vbox.addWidget(self._construct_tree(model))
-        tree_selection_model = self.tree.selectionModel()   #workaround of segfault in pySide, see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
+        tree_selection_model = self.tree.selectionModel()   # workaround of segfault in pySide,
+        # see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
         tree_selection_model.selectionChanged.connect(self.grid_selected)
         self.update_actions()
 
         self.splitter = QtGui.QSplitter()
         self.splitter.setOrientation(QtCore.Qt.Vertical)
+
         self.splitter.addWidget(external)
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()

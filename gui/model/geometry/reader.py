@@ -19,13 +19,13 @@ class GNAligner(object):
     POSITION_HIGH = 2
     POSITION_ORIGIN = 3
 
-    def __init__(self, position = None, value = None):
+    def __init__(self, position=None, value=None):
         super(GNAligner, self).__init__()
         self.position = position
         self.value = value
 
     @classmethod
-    def names(cls, dims, axis_names_in_dims, axis_nr, with_alternative_names = True):
+    def names(cls, dims, axis_names_in_dims, axis_nr, with_alternative_names=True):
         """
         Get name of aligners.
         :param int dims: number of dims, 2 or 3
@@ -109,7 +109,7 @@ class GNReadConf(object):
         d = self.dim
         return None if d is None else '{}d'.format(d)
 
-    def axes_names(self, dim = None):
+    def axes_names(self, dim=None):
         return axes_dim(self.axes, self.parent.dim if dim is None else dim)
 
     def axis_name(self, dim, axis_nr):
@@ -148,7 +148,7 @@ class GNReadConf(object):
                     break
         return res
 
-    def write_aligners(self, element, dims = None, aligners = {}):
+    def write_aligners(self, element, dims=None, aligners={}):
         if isinstance(aligners, (list, tuple)):
             if dims is None: dims = len(aligners)
             aligners = { axis_nr : aligners[axis_nr] for axis_nr in range(0, dims) }
@@ -160,7 +160,7 @@ class GNReadConf(object):
                 element.attrib[pos_str] = aligner.value
 
 
-def axes_to_str(axes, none_axes_result = ''):
+def axes_to_str(axes, none_axes_result=''):
     if axes is None: return none_axes_result
     if isinstance(axes, basestring): return axes
     return ', '.join(axes)

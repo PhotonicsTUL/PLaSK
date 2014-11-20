@@ -40,13 +40,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def get_xml_element(self):
         res = etree.Element(self.name)
         if self.axes: res.attrib['axes'] = self.axes
-        conf = GNReadConf(axes = self.axes)
+        conf = GNReadConf(axes=self.axes)
         for geom in self.roots: res.append(geom.get_xml_element(conf))
         return res
 
     def set_xml_element(self, element):
         with AttributeReader(element) as a: new_axes = a.get('axes')
-        conf = GNReadConf(axes = new_axes)
+        conf = GNReadConf(axes=new_axes)
         new_roots = []
         for child_element in element:
             new_roots.append(construct_geometry_object(child_element, conf, geometry_types_geometries))
@@ -65,7 +65,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def columnCount(self, parent = QtCore.QModelIndex()):
         return 2
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
             item = index.internalPointer()
@@ -94,7 +94,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         #        res |= QtCore.Qt.ItemIsEditable
         return res
 
-    def headerData(self, section, orientation, role = QtCore.Qt.DisplayRole):
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return ('tag', 'properties')[section]
         return None

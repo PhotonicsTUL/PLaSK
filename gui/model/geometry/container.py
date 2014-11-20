@@ -20,10 +20,10 @@ from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to
 
 class GNZero(GNode):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNZero, self).__init__(parent=parent, dim=dim)
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return 'zero'
 
     @classmethod
@@ -35,7 +35,7 @@ class GNZero(GNode):
 
 class GNGap(GNode):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNGap, self).__init__(parent=parent, dim=2)
         self.size = None
         self.size_is_total = False
@@ -54,7 +54,7 @@ class GNGap(GNode):
         if self.size is not None:
             element.attrib['total' if self.size_is_total else 'size'] = self.size
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return 'gap'
 
     def get_controller(self, document, model):
@@ -83,7 +83,7 @@ class GNContainerBase(GNObject):
 class GNStack(GNContainerBase):
     """2D/3D (multi-)stack"""
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNStack, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.repeat = None
         self.shift = None
@@ -128,7 +128,7 @@ class GNStack(GNContainerBase):
         else:
             return child_element
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "stack{}d".format(self.dim) if full_name else "stack"
 
     def python_type(self):
@@ -174,13 +174,13 @@ class GNStack(GNContainerBase):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNStack(dim = 2)
+        result = GNStack(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNStack(dim = 3)
+        result = GNStack(dim=3)
         result.set_xml_element(element, conf)
         return result
 
@@ -188,7 +188,7 @@ class GNStack(GNContainerBase):
 class GNShelf(GNContainerBase):
     """(multi-)shelf"""
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNShelf, self).__init__(parent=parent, dim=2, children_dim=2)
         self.repeat = None
         self.shift = None
@@ -211,7 +211,7 @@ class GNShelf(GNContainerBase):
             else:
                 construct_geometry_object(c, conf)
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "shelf{}d".format(self.dim) if full_name else "shelf"
 
     def python_type(self):
@@ -247,7 +247,7 @@ class GNShelf(GNContainerBase):
 class GNAlignContainer(GNContainerBase):
     """2D/3D align container"""
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNAlignContainer, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
 
@@ -282,7 +282,7 @@ class GNAlignContainer(GNContainerBase):
         else:
             return child_element
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "align{}d".format(self.dim) if full_name else "align"
 
     def python_type(self):
@@ -313,12 +313,12 @@ class GNAlignContainer(GNContainerBase):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNAlignContainer(dim = 2)
+        result = GNAlignContainer(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNAlignContainer(dim = 3)
+        result = GNAlignContainer(dim=3)
         result.set_xml_element(element, conf)
         return result

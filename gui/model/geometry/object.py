@@ -18,7 +18,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNObject(GNode):
     '''Base class for all nodes read by GeometryReader::readObject() in PLaSK.'''
 
-    def __init__(self, parent = None, dim = None, children_dim = None):
+    def __init__(self, parent=None, dim=None, children_dim=None):
         super(GNObject, self).__init__(parent, dim, children_dim)
         self.name = None
         self.role = None

@@ -86,7 +86,7 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
             value = AXIS_NAMES[self.generator.dim-1][value]
         return value
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())

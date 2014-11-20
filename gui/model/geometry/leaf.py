@@ -16,7 +16,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 
 class GNLeaf(GNObject):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNLeaf, self).__init__(parent=parent, dim=dim, children_dim=None)
         self.step_num = None
         self.step_dist = None
@@ -74,7 +74,7 @@ class GNLeaf(GNObject):
 
 class GNBlock(GNLeaf):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNBlock, self).__init__(parent=parent, dim=dim)
         self.size = [None for _ in range(0, dim)]
 
@@ -88,7 +88,7 @@ class GNBlock(GNLeaf):
             if self.size[a] is not None:
                 element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "block{}d".format(self.dim) if full_name else "block"
 
     def python_type(self):
@@ -105,21 +105,21 @@ class GNBlock(GNLeaf):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNBlock(dim = 2)
+        result = GNBlock(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNBlock(dim = 3)
+        result = GNBlock(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNCylinder(GNLeaf):
     
-    def __init__(self, parent = None):
-        super(GNCylinder, self).__init__(parent=parent, dim = 3)
+    def __init__(self, parent=None):
+        super(GNCylinder, self).__init__(parent=parent, dim=3)
         self.radius = None  #required in PLaSK but not in GUI
         self.height = None  #required in PLaSK but not in GUI
 
@@ -131,7 +131,7 @@ class GNCylinder(GNLeaf):
         super(GNCylinder, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius', 'height')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "cylinder"
 
     def python_type(self):
@@ -156,7 +156,7 @@ class GNCylinder(GNLeaf):
 
 class GNCircle(GNLeaf):
     
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNCircle, self).__init__(parent=parent, dim=dim)
         self.radius = None  #required in PLaSK but not in GUI
 
@@ -168,7 +168,7 @@ class GNCircle(GNLeaf):
         super(GNCircle, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "circle{}d".format(self.dim) if full_name else "circle"
 
     def python_type(self):
@@ -185,20 +185,20 @@ class GNCircle(GNLeaf):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNCircle(dim = 2)
+        result = GNCircle(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNCircle(dim = 3)
+        result = GNCircle(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNTriangle(GNLeaf):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNTriangle, self).__init__(parent=parent, dim=2)
         self.points = ((None, None), (None, None))
 
@@ -216,7 +216,7 @@ class GNTriangle(GNLeaf):
                 v = self.points[point_nr][axis_nr]
                 if v is not None: element.attrib[axis_names[axis_nr]] = v
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "triangle"
 
     def python_type(self):

@@ -49,6 +49,7 @@ class BlockSignals(object):
 
 
 def table_edit_shortcut(table, col, key):
+    table.setEditTriggers(QtGui.QAbstractItemView.SelectedClicked | QtGui.QAbstractItemView.DoubleClicked)
     def operation():
         selected = table.selectedIndexes()
         if selected:

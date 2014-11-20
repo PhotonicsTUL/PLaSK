@@ -91,7 +91,7 @@ class Controller(object):
 
 class NoConfController(Controller):
     """Controller for all models that does not require any configuration."""
-    def __init__(self, text = 'Configuration is neither required nor available.'):
+    def __init__(self, text='Configuration is neither required nor available.'):
         super(NoConfController, self).__init__()
         self.label = QtGui.QLabel(text)
         self.label.setAlignment(QtCore.Qt.AlignCenter)

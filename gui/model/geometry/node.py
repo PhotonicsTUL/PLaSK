@@ -22,7 +22,7 @@ class GNode(object):
         :param dim: number of dimension of self or None if it is unknown or not defined (like in case of again or copy)
         :param children_dim: required number of dimension of self's children or None if no or any children are allowed
     """
-    def __init__(self, parent = None, dim = None, children_dim = None):
+    def __init__(self, parent=None, dim=None, children_dim=None):
         super(GNode, self).__init__()
         self.dim = dim
         self.children_dim = children_dim
@@ -46,7 +46,7 @@ class GNode(object):
     def preset_conf(self, conf):
         conf.parent = self
 
-    def set_xml_element(self, element, conf = None):
+    def set_xml_element(self, element, conf=None):
         if conf is not None and conf.parent is not None: self.parent = conf.parent
         if element is None: return
         subtree_conf = GNReadConf(conf)
@@ -63,7 +63,7 @@ class GNode(object):
     def get_xml_element(self, conf):
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
-        res = etree.Element(self.tag_name(full_name = conf.parent is None or conf.parent.children_dim is None))
+        res = etree.Element(self.tag_name(full_name=conf.parent is None or conf.parent.children_dim is None))
         self.attributes_to_xml(res, subtree_conf)
         for c in self.children:
             res.append(self.get_child_xml_element(c, subtree_conf))
@@ -73,7 +73,7 @@ class GNode(object):
     #    self.children.append(child)
     #    child.parent = self
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         raise NotImplementedError('tag_name')
 
     def accept_new_child(self):
@@ -136,5 +136,5 @@ class GNode(object):
         ''':return: Axes configuration for this node (3D list with name of axes).'''
         return ['z', 'x', 'y'] if self._parent is None else self._parent.get_axes_conf()
 
-    def get_axes_conf_dim(self, dim = None):
+    def get_axes_conf_dim(self, dim=None):
         return axes_dim(self.get_axes_conf(), self.dim if dim is None else dim)

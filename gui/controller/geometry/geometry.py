@@ -20,7 +20,7 @@ from ...model.geometry.reader import GNAligner
 
 class GNGeometryController(GNObjectController):
 
-    def construct_border_controllers(self, row_name = None):
+    def construct_border_controllers(self, row_name=None):
         hbox, group = self._construct_hbox(row_name)
         #TODO support for material names:
         res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))

@@ -22,7 +22,7 @@ NOT_MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG('editor/not_matching_bracket_co
 
 
 _START_BRACKETS = '({['
-_END_BRACKETS = ')}]'
+_END_BRACKETS=')}]'
 _ALL_BRACKETS = _START_BRACKETS + _END_BRACKETS
 _OPOSITE_BRACKET = dict(
     (br, op) for (br, op) in zip(_START_BRACKETS + _END_BRACKETS, _END_BRACKETS + _START_BRACKETS))

@@ -82,7 +82,7 @@ class GNCartesian(GNGeometryBase):
         else:
             construct_geometry_object(el, conf)
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "cartesian{}d".format(self.dim)
 
     def python_type(self):
@@ -107,7 +107,7 @@ class GNCartesian(GNGeometryBase):
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNCartesian(dim = 3)
+        result = GNCartesian(dim=3)
         result.set_xml_element(element, conf)
         return result
 
@@ -120,7 +120,7 @@ class GNCylindrical(GNGeometryBase):
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "cylindrical{}d".format(self.dim) if full_name else "cylindrical"
 
     def python_type(self):

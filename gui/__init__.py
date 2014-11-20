@@ -461,7 +461,7 @@ class MainWindow(QtGui.QMainWindow):
             self.showsource_action.setEnabled(True)
             self.showsource_action.setChecked(show_source_enabled)
 
-    def get_show_source_state(self, do_enabled = False):
+    def get_show_source_state(self, do_enabled=False):
         if do_enabled:
             self.showsource_action.setEnabled(True)
         else:

@@ -19,7 +19,7 @@ from ...utils.xml import attr_to_xml
 
 class GNAgain(GNode):
 
-    def __init__(self, parent = None, ref = None):
+    def __init__(self, parent=None, ref=None):
         super(GNAgain, self).__init__(parent)
         self.ref = ref
 
@@ -31,7 +31,7 @@ class GNAgain(GNode):
         super(GNAgain, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'ref')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "again"
 
     def stub(self):
@@ -57,7 +57,7 @@ class GNAgain(GNode):
 
 class GNCopyChild(GNode):
 
-    def __init__(self, parent = None, object = None):
+    def __init__(self, parent=None, object=None):
         super(GNCopyChild, self).__init__(parent)
         self.object = object
 
@@ -80,13 +80,13 @@ class GNCopyChild(GNode):
 
 class GNCDelete(GNCopyChild):
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "delete"
 
 
 class GNCReplace(GNCopyChild):
 
-    def __init__(self, parent = None, object = None, replacer = None):
+    def __init__(self, parent=None, object=None, replacer=None):
         super(GNCReplace, self).__init__(parent, object)
         self.replacer = replacer    # with in PLaSK
 
@@ -105,7 +105,7 @@ class GNCReplace(GNCopyChild):
     def accept_new_child(self):
         return not self.children
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "replace"
 
     def major_properties(self):
@@ -120,7 +120,7 @@ class GNCReplace(GNCopyChild):
 
 class GNCToBlock(GNCopyChild):
 
-    def __init__(self, parent = None, object = None, material = None):
+    def __init__(self, parent=None, object=None, material=None):
         super(GNCToBlock, self).__init__(parent, object)
         self.material = material    # with in PLaSK
 
@@ -132,7 +132,7 @@ class GNCToBlock(GNCopyChild):
         super(GNCToBlock, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'material')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "toblock"
 
     def major_properties(self):
@@ -147,7 +147,7 @@ class GNCToBlock(GNCopyChild):
 
 class GNCopy(GNObject):
 
-    def __init__(self, parent = None, name = None, source = None):
+    def __init__(self, parent=None, name=None, source=None):
         super(GNCopy, self).__init__(parent, name)
         self.source = source    # from in PLaSK
 
@@ -167,7 +167,7 @@ class GNCopy(GNObject):
             else: ordered_reader.recent_was_unexpected()
             el.from_xml(t, conf)
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "copy"
 
     def stub(self):

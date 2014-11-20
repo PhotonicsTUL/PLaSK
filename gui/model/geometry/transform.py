@@ -25,7 +25,7 @@ class GNTransform(GNObject):
 
 class GNTranslation(GNTransform):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.size = [None for _ in range(0, dim)]
 
@@ -46,7 +46,7 @@ class GNTranslation(GNTransform):
             v = self.size[i]
             if v is not None: element.attrib['d' + axes_names[i]] = v
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "translation{}d".format(self.dim) if full_name else "translation"
 
     def python_type(self):
@@ -60,20 +60,20 @@ class GNTranslation(GNTransform):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNTranslation(dim = 2)
+        result = GNTranslation(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNTranslation(dim = 3)
+        result = GNTranslation(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNClip(GNTransform):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNClip, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.left = None
         self.right = None
@@ -95,7 +95,7 @@ class GNClip(GNTransform):
         super(GNClip, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, *self.bound_names())
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "clip{}d".format(self.dim) if full_name else "clip"
 
     def python_type(self):
@@ -112,20 +112,20 @@ class GNClip(GNTransform):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNClip(dim = 2)
+        result = GNClip(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNClip(dim = 3)
+        result = GNClip(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNFlip(GNTransform):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNFlip, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
@@ -137,7 +137,7 @@ class GNFlip(GNTransform):
         super(GNFlip, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'axis')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "flip{}d".format(self.dim) if full_name else "flip"
 
     def python_type(self):
@@ -154,20 +154,20 @@ class GNFlip(GNTransform):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNFlip(dim = 2)
+        result = GNFlip(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNFlip(dim = 3)
+        result = GNFlip(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNMirror(GNTransform):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNMirror, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
@@ -179,7 +179,7 @@ class GNMirror(GNTransform):
         super(GNMirror, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'axis')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "mirror{}d".format(self.dim) if full_name else "mirror"
 
     def python_type(self):
@@ -196,24 +196,24 @@ class GNMirror(GNTransform):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNMirror(dim = 2)
+        result = GNMirror(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNMirror(dim = 3)
+        result = GNMirror(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNIntersection(GNTransform):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNIntersection, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "intersection{}d".format(self.dim) if full_name else "intersection"
 
     def python_type(self):
@@ -224,20 +224,20 @@ class GNIntersection(GNTransform):
 
     @classmethod
     def from_xml_2d(cls, element, conf):
-        result = GNIntersection(dim = 2)
+        result = GNIntersection(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
     def from_xml_3d(cls, element, conf):
-        result = GNIntersection(dim = 3)
+        result = GNIntersection(dim=3)
         result.set_xml_element(element, conf)
         return result
 
 
 class GNExtrusion(GNTransform):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
         self.length = None
         
@@ -249,7 +249,7 @@ class GNExtrusion(GNTransform):
         super(GNExtrusion, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'length')
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "extrusion"
 
     def python_type(self):
@@ -273,10 +273,10 @@ class GNExtrusion(GNTransform):
 
 class GNRevolution(GNTransform):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNTransform, self).__init__(parent=parent, dim=3, children_dim=2)
 
-    def tag_name(self, full_name = True):
+    def tag_name(self, full_name=True):
         return "revolution"
 
     def python_type(self):

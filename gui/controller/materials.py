@@ -92,7 +92,7 @@ class ComponentsPopup(QtGui.QFrame):
 
 class MaterialsComboBox(QtGui.QComboBox):
 
-    def __init__(self, parent = None, material_list = None, defines_model = None, popup_select_cb = None):
+    def __init__(self, parent=None, material_list=None, defines_model=None, popup_select_cb=None):
         """
         :param parent: Qt Object parent
         :param material_list: list of materials to add
@@ -140,7 +140,7 @@ class MaterialsComboBox(QtGui.QComboBox):
         try:
             self.setEditText(material_name)
         except:
-            pass    #it is possible that internal combo box has been deleted
+            pass # it is possible that internal combo box has been deleted
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 

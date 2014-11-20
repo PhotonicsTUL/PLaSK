@@ -55,7 +55,7 @@ def xml_to_attr(src, dst_obj, *attr_names):
                  setattr(dst_obj, attr, a.get(attr, None))
 
 
-def at_line_str(element, template = ' at line {}'):
+def at_line_str(element, template=' at line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
 
 
@@ -136,7 +136,7 @@ class OrderedTagReader(object):
                 # use r.get(...) or r.require(...) to access children of parent_element
     """
 
-    def __init__(self, parent_element, first_index = 0):
+    def __init__(self, parent_element, first_index=0):
         # super(OrderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.current_index = first_index
@@ -240,7 +240,7 @@ class UnorderedTagReader(object):
                 # use r.get(...) or r.require(...) to access children of parent_element
     """
 
-    def __init__(self, parent_element, first_index = 0):
+    def __init__(self, parent_element, first_index=0):
         # super(UnorderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.read = set()
