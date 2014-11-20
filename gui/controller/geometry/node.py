@@ -4,7 +4,6 @@ from ..defines import get_defines_completer
 from ...model.geometry.reader import GNAligner
 from ...qt import QtGui
 
-
 class GNodeController(Controller):
 
     def _get_current_form(self):
@@ -35,6 +34,9 @@ class GNodeController(Controller):
         if row_name: self._get_current_form().addRow(row_name, res)
         res.editTextChanged.connect(self.after_field_change)
         return res
+
+    def construct_names_before_self_combo_box(self, row_name = None):
+        return self.construct_combo_box(row_name, items=[''] + list(self.model.names_before(self.node)))
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)
@@ -94,6 +96,12 @@ class GNodeController(Controller):
             return res, group
 
     def __init__(self, document, model, node):
+        """
+        Construct node controller,
+        :param XPLDocument document:
+        :param GeometryModel model:
+        :param model.geometry.node.GNode node:
+        """
         super(GNodeController, self).__init__(document=document, model=model)
         self.node = node
 

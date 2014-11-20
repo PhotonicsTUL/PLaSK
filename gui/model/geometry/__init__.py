@@ -180,3 +180,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         children = self.children_list(index.parent())
         r = index.row()
         return r > 0, r+1 < len(children)
+
+    def names_before(self, end_node):
+        res = set()
+        for r in self.roots:
+            if not r.names_before(res, end_node): break
+        return res
