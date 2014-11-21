@@ -70,9 +70,8 @@ Tensor2<double> AlGaSb::Me(double T, double e, char point) const {
     }
     else if (point == '*')
     {
-        char pointM;
-        if ( Eg(T,e,'G') == Eg(T,e,'*') ) pointM = 'G';
-        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) pointM = 'X';
+        char pointM = 'G';
+        if      ( Eg(T,e,'X') == Eg(T,e,'*') ) pointM = 'X';
         else if ( Eg(T,e,'L') == Eg(T,e,'*') ) pointM = 'L';
         tMe.c00 = Al*mAlSb.Me(T,e,pointM).c00 + Ga*mGaSb.Me(T,e,pointM).c00;
         tMe.c11 = Al*mAlSb.Me(T,e,pointM).c11 + Ga*mGaSb.Me(T,e,pointM).c11;

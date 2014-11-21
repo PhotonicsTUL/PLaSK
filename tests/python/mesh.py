@@ -233,3 +233,12 @@ class Aspect(unittest.TestCase):
         msh = gen(geo)
         self.assertEqual( list(msh.axis0), [-1., 0., 5., 10.] )
         self.assertEqual( list(msh.axis1), [-20., -15., -10., -5., 0., 1.] )
+
+
+class Interpolation(unittest.TestCase):
+
+    def testInterpolation(self):
+        src = plask.mesh.Rectangular2D([0, 2], [0, 2])
+        dst = plask.mesh.Rectangular2D([1], [1])
+        data = plask.Data(array([[1., 2.], [3., 4.]]), src)
+        self.assertAlmostEqual( data.interpolate(dst, 'linear')[0], 2.5 )

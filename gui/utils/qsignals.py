@@ -14,8 +14,8 @@ class BlockQtSignals(object):
     """
         Helper class to temporary block signals emitted by qt objects, usage::
 
-            with BlockSignals(obj1, obj2, ...) as x:
-                # after with signals are revert
+            with BlockQtSignals(obj1, obj2, ...) as x:
+                # after with signals are reverted
     """
 
     def __init__(self, *objects):

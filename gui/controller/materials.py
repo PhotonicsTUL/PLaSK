@@ -21,7 +21,8 @@ from .script import scheme
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
     parse_material_components, elements_re
 from ..utils.textedit import TextEdit
-from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, BlockSignals, table_edit_shortcut
+from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut
+from ..utils.qsignals import BlockQtSignals
 from . import Controller
 from .defines import DefinesCompletionDelegate
 from .table import table_and_manipulators, table_with_manipulators
@@ -328,7 +329,7 @@ class MaterialsController(Controller):
             self.property_model.dataChanged.connect(self.property_data_changed)
 
     def property_data_changed(self, tl, br):
-        with BlockSignals(self.propedit):
+        with BlockQtSignals(self.propedit):
             self.propedit.setPlainText(self.property_model.get(1, tl.row()))
 
     def get_widget(self):

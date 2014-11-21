@@ -34,20 +34,6 @@ del _font_family
 DEFAULT_FONT.setPointSize(int(CONFIG('editor/font_size', DEFAULT_FONT.pointSize())))
 
 
-class BlockSignals(object):
-    """Contex manager for blocking signals for Qt objects"""
-
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __enter__(self):
-        self._prev = self.obj.blockSignals(True)
-        return self.obj
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.obj.blockSignals(self._prev)
-
-
 def table_edit_shortcut(table, col, key):
     table.setEditTriggers(QtGui.QAbstractItemView.SelectedClicked | QtGui.QAbstractItemView.DoubleClicked)
     def operation():

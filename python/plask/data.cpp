@@ -183,8 +183,8 @@ static py::object DataVectorWrap_Array(py::object oself) {
     return py::object(py::handle<>(arr));
 }
 
-
-
+template <typename T, int dim> DataVectorWrap<T,dim>
+dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method);
 
 
 namespace detail {
@@ -452,6 +452,19 @@ void register_data_vector() {
             "Accessing this field is efficient, as only the numpy array view is created and\n"
             "no data is copied in the memory.\n"
          )
+        .def("interpolate", dataInterpolate<const T,dim>, (py::arg("mesh"), "interpolation"),
+            "Interpolate data to a different mesh.\n\n"
+
+            "This method interpolated data into a different mesh using specified\n"
+            "interpolation method. This is exactly the same interpolation that is\n"
+            "usually done by solvers in their providers.\n\n"
+
+            "Args:\n"
+            "    mesh: Mesh to interpolate into.\n"
+            "    interpoTarget mation: Requested interpolation method.\n"
+            "Returns:\n"
+            "    plask._Data: Interpolated data."
+        )
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values.")
         .def("__add__", &DataVectorWrap__add__<const T,dim>)
         .def("__sub__", &DataVectorWrap__sub__<const T,dim>)
@@ -554,6 +567,17 @@ void register_data_vectors() {
             "Construction of the data objects is efficient i.e. no data is copied in the\n"
             "memory from the provided array.\n\n"
            );
+}
+
+template <typename T, int dim> DataVectorWrap<T,dim>
+dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
+
+    // TODO add new mesh types here
+    if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
+        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
+
+    throw NotImplemented(format("interpolate(source mesh type: %s, interpolation method: %s)",
+                                typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
 
 }} // namespace plask::python
