@@ -461,7 +461,7 @@ void register_data_vector() {
 
             "Args:\n"
             "    mesh: Mesh to interpolate into.\n"
-            "    interpoTarget mation: Requested interpolation method.\n"
+            "    interpolation: Requested interpolation method.\n"
             "Returns:\n"
             "    plask._Data: Interpolated data."
         )
