@@ -48,7 +48,7 @@ class GNLeaf(GNObject):
             res.append(('material', self.material_top))
         else:
             if self.material_top is not None and self.material_bottom is not None:
-                res.append(('top / bottom materials', '{} / {}'.format(self.material_top, self.material_bottom)))
+                res.append(('bottom / top materials', '{} / {}'.format(self.material_bottom, self.material_top)))
             else:
                 res.append(('top material', self.material_top))
                 res.append(('bottom material', self.material_bottom))
@@ -63,6 +63,9 @@ class GNLeaf(GNObject):
 
     def set_material(self, material):
         self.material_bottom = self.material_top = material
+
+    def is_solid(self):
+        return self.material_bottom == self.material_top
 
     def stub(self):
         return ''

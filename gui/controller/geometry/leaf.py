@@ -12,11 +12,33 @@
 
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
+from ...qt import QtGui
+from ...utils.qsignals import BlockQtSignals
 
 class GNLeafController(GNObjectController):
 
     def fill_form(self):
-        #TODO material
+        material_form = self.construct_group('Material')
+
+        self.material_selection_type = QtGui.QComboBox()
+        self.material_selection_type.addItems(['solid', 'bottom/top'])
+        self.material_selection_type.currentIndexChanged.connect(self.after_field_change)
+
+        self.material_solid = self.construct_material_combo_box(items=[''])
+
+        material_tb_hbox, material_tb_group = self._construct_hbox()
+        self.material_bottom = self.construct_material_combo_box(items=[''])
+        self.material_top = self.construct_material_combo_box(items=[''])
+        material_tb_hbox.addWidget(self.material_bottom)
+        material_tb_hbox.addWidget(self.material_top)
+
+        self.material_group = QtGui.QStackedWidget()
+        self.material_group.addWidget(self.material_solid)
+        self.material_group.addWidget(material_tb_group)
+        self.material_selection_type.currentIndexChanged.connect(self.material_group.setCurrentIndex)
+
+        material_form.addRow(self.material_selection_type, self.material_group)
+
         self.construct_group('Mesh division settings')
         self.step_num = self.construct_line_edit('maximum number of steps')
         self.step_dist = self.construct_line_edit('minimum step size')
@@ -24,11 +46,25 @@ class GNLeafController(GNObjectController):
 
     def save_data_in_model(self):
         super(GNLeafController, self).save_data_in_model()
+        if self.material_selection_type.currentIndex() == 0:
+            self.node.set_material(empty_to_none(self.material_solid.currentText()))
+        else:
+            self.node.material_bottom = empty_to_none(self.material_bottom.currentText())
+            self.node.material_top = empty_to_none(self.material_top.currentText())
         self.node.step_num = empty_to_none(self.step_num.text())
         self.node.step_dist = empty_to_none(self.step_dist.text())
 
     def on_edit_enter(self):
         super(GNLeafController, self).on_edit_enter()
+        with BlockQtSignals(self.material_selection_type, self.material_bottom, self.material_top, self.material_solid) as _:
+            index = 0 if self.node.is_solid() else 1
+            self.material_selection_type.setCurrentIndex(index)
+            self.material_group.setCurrentIndex(index)
+            if self.node.is_solid():
+                self.material_solid.setEditText(none_to_empty(self.node.material_top))
+            else:
+                self.material_bottom.setEditText(none_to_empty(self.node.material_bottom))
+                self.material_top.setEditText(none_to_empty(self.node.material_top))
         self.step_num.setText(none_to_empty(self.node.step_num))
         self.step_dist.setText(none_to_empty(self.node.step_dist))
 
