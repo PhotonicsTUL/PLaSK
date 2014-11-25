@@ -28,6 +28,7 @@ struct AlGaInAs: public Semiconductor {
     virtual Tensor2<double> Me(double T, double e, char point) const override;
     virtual Tensor2<double> Mhh(double T, double e) const override;
     virtual Tensor2<double> Mlh(double T, double e) const override;
+    virtual Tensor2<double> Mh(double T, double e) const override;
     virtual double CB(double T, double e, char point) const override;
     virtual double VB(double T, double e, char point, char hole) const override;
     virtual double ac(double T) const override;

@@ -26,8 +26,7 @@ double InSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(0.235, 0.32e-3, 170., T);
     else if (point == 'X') tEg = phys::Varshni(0.63, 0.32e-3, 170., T);
     else if (point == 'L') tEg = phys::Varshni(0.93, 0.32e-3, 170., T);
-    else if (point == '*')
-    {
+    else if (point == '*') {
         double tEgG = phys::Varshni(0.235, 0.32e-3, 170., T);
         double tEgX = phys::Varshni(0.63, 0.32e-3, 170., T);
         double tEgL = phys::Varshni(0.93, 0.32e-3, 170., T);
@@ -109,6 +108,7 @@ double InSb::VB(double T, double e, char point, char hole) const {
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
     }
     return tVB;
 }

@@ -35,8 +35,7 @@ double AlInSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point) - Al*In*(0.43);
     else if (point == 'X') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
     else if (point == 'L') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
-    else if (point == '*')
-    {
+    else if (point == '*') {
         double tEgG = Al*mAlSb.Eg(T,e,'G') + In*mInSb.Eg(T,e,'G') - Al*In*(0.43);
         double tEgX = Al*mAlSb.Eg(T,e,'X') + In*mInSb.Eg(T,e,'X');
         double tEgL = Al*mAlSb.Eg(T,e,'L') + In*mInSb.Eg(T,e,'L');
@@ -62,20 +61,16 @@ MI_PROPERTY(AlInSb, Me,
             )
 Tensor2<double> AlInSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
-    if ((point == 'G') || (point == 'X') || (point == 'L'))
-    {
+    if ((point == 'G') || (point == 'X') || (point == 'L')) {
         tMe.c00 = Al*mAlSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00,
         tMe.c11 = Al*mAlSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11;
-
     }
-    else if (point == '*')
-    {
-        char pointM;
-        if ( Eg(T,e,'G') == Eg(T,e,'*') ) pointM = 'G';
-        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) pointM = 'X';
-        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) pointM = 'L';
-        tMe.c00 = Al*mAlSb.Me(T,e,pointM).c00 + In*mInSb.Me(T,e,pointM).c00;
-        tMe.c11 = Al*mAlSb.Me(T,e,pointM).c11 + In*mInSb.Me(T,e,pointM).c11;
+    else if (point == '*') {
+        point = 'G';
+        if ( Eg(T,e,'X') == Eg(T,e,'*') ) point = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) point = 'L';
+        tMe.c00 = Al*mAlSb.Me(T,e,point).c00 + In*mInSb.Me(T,e,point).c00;
+        tMe.c11 = Al*mAlSb.Me(T,e,point).c11 + In*mInSb.Me(T,e,point).c11;
     }
     return ( tMe );
 }
@@ -135,6 +130,7 @@ double AlInSb::VB(double T, double e, char point, char hole) const {
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
     }
     return tVB;
 }

@@ -45,8 +45,7 @@ double GaInAsSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + In*As*mInAs.Eg(T,e,point) + In*Sb*mInSb.Eg(T,e,point)
             - Ga*In*As*(0.33) - Ga*In*Sb*(0.4) - Ga*As*Sb*(1.2) - In*As*Sb*(0.6);
-    else if (point == '*')
-    {
+    else if (point == '*') {
         double tEgG = Ga*As*mGaAs.Eg(T,e,'G') + Ga*Sb*mGaSb.Eg(T,e,'G')
                 + In*As*mInAs.Eg(T,e,'G') + In*Sb*mInSb.Eg(T,e,'G')
                 - Ga*In*As*(0.477) - Ga*In*Sb*(0.415) - Ga*As*Sb*(1.43) - In*As*Sb*(0.67) - Ga*In*As*Sb*(0.75);
@@ -79,13 +78,23 @@ MI_PROPERTY(GaInAsSb, Me,
             MIComment("no temperature dependence")
             )
 Tensor2<double> GaInAsSb::Me(double T, double e, char point) const {
-    double lMe = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00
-            + In*As*mInAs.Me(T,e,point).c00 + In*Sb*mInSb.Me(T,e,point).c00
-            - Ga*In*As*(0.008) - Ga*In*Sb*(0.010) - Ga*As*Sb*(0.014) - In*As*Sb*(0.027),
-           vMe = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11
-            + In*As*mInAs.Me(T,e,point).c11 + In*Sb*mInSb.Me(T,e,point).c11
-            - Ga*In*As*(0.008) - Ga*In*Sb*(0.010) - Ga*As*Sb*(0.014) - In*As*Sb*(0.027);
-    return ( Tensor2<double>(lMe,vMe) );
+    Tensor2<double> tMe(0., 0.);
+    if ((point == 'G') || (point == 'X') || (point == 'L')) {
+        tMe.c00 = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00 + In*As*mInAs.Me(T,e,point).c00 + In*Sb*mInSb.Me(T,e,point).c00;
+        tMe.c11 = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11 + In*As*mInAs.Me(T,e,point).c11 + In*Sb*mInSb.Me(T,e,point).c11;
+    }
+    else if (point == '*') {
+        point = 'G';
+        if ( Eg(T,e,'X') == Eg(T,e,'*') ) point = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) point = 'L';
+        tMe.c00 = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00 + In*As*mInAs.Me(T,e,point).c00 + In*Sb*mInSb.Me(T,e,point).c00;
+        tMe.c11 = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11 + In*As*mInAs.Me(T,e,point).c11 + In*Sb*mInSb.Me(T,e,point).c11;
+    };
+    if (point == 'G') {
+        tMe.c00 += ( -Ga*In*As*(0.008)-Ga*In*Sb*(0.010)-Ga*As*Sb*(0.014)-In*As*Sb*(0.027) );
+        tMe.c11 += ( -Ga*In*As*(0.008)-Ga*In*Sb*(0.010)-Ga*As*Sb*(0.014)-In*As*Sb*(0.027) );
+    }
+    return ( tMe );
 }
 
 MI_PROPERTY(GaInAsSb, Mhh,
@@ -151,7 +160,7 @@ double GaInAsSb::VB(double T, double e, char point, char hole) const {
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
-        else return 0.;
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
     }
 }
 

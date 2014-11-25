@@ -35,8 +35,7 @@ double AlAsSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.8;
     else if (point == 'X') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.28;
     else if (point == 'L') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.28;
-    else if (point == '*')
-    {
+    else if (point == '*') {
         double tEgG = As*mAlAs.Eg(T,e,'G') + Sb*mAlSb.Eg(T,e,'G') - As*Sb*0.8;
         double tEgX = As*mAlAs.Eg(T,e,'X') + Sb*mAlSb.Eg(T,e,'X') - As*Sb*0.28;
         double tEgL = As*mAlAs.Eg(T,e,'L') + Sb*mAlSb.Eg(T,e,'L') - As*Sb*0.28;
@@ -61,9 +60,19 @@ MI_PROPERTY(AlAsSb, Me,
             MIComment("no temperature dependence")
             )
 Tensor2<double> AlAsSb::Me(double T, double e, char point) const {
-    double lMe = As*mAlAs.Me(T,e,point).c00 + Sb*mAlSb.Me(T,e,point).c00,
-           vMe = As*mAlAs.Me(T,e,point).c11 + Sb*mAlSb.Me(T,e,point).c11;
-    return ( Tensor2<double>(lMe,vMe) );
+    Tensor2<double> tMe(0., 0.);
+    if ((point == 'G') || (point == 'X') || (point == 'L')) {
+        tMe.c00 = As*mAlAs.Me(T,e,point).c00 + Sb*mAlSb.Me(T,e,point).c00,
+        tMe.c11 = As*mAlAs.Me(T,e,point).c11 + Sb*mAlSb.Me(T,e,point).c11;
+    }
+    else if (point == '*') {
+        point = 'G';
+        if ( Eg(T,e,'X') == Eg(T,e,'*') ) point = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) point = 'L';
+        tMe.c00 = As*mAlAs.Me(T,e,point).c00 + Sb*mAlSb.Me(T,e,point).c00;
+        tMe.c11 = As*mAlAs.Me(T,e,point).c11 + Sb*mAlSb.Me(T,e,point).c11;
+    }
+    return ( tMe );
 }
 
 MI_PROPERTY(AlAsSb, Mhh,
@@ -123,7 +132,7 @@ double AlAsSb::VB(double T, double e, char point, char hole) const {
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
-        else return 0.;
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
     }
 }
 

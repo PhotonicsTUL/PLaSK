@@ -45,8 +45,7 @@ double AlGaAsSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + Al*As*mAlAs.Eg(T,e,point) + Al*Sb*mAlSb.Eg(T,e,point)
             - Ga*As*Sb*(1.2) - Al*As*Sb*(0.28);
-    else if (point == '*')
-    {
+    else if (point == '*') {
         double tEgG = Ga*As*mGaAs.Eg(T,e,'G') + Ga*Sb*mGaSb.Eg(T,e,'G')
                 + Al*As*mAlAs.Eg(T,e,'G') + Al*Sb*mAlSb.Eg(T,e,'G')
                 - Al*Ga*As*(-0.127+1.310*Al) - Al*Ga*Sb*(-0.044+1.22*Al) - Ga*As*Sb*(1.43) - Al*As*Sb*(0.8) - Al*Ga*As*Sb*0.48;
@@ -79,13 +78,23 @@ MI_PROPERTY(AlGaAsSb, Me,
             MIComment("no temperature dependence")
             )
 Tensor2<double> AlGaAsSb::Me(double T, double e, char point) const {
-    double lMe = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00
-            + Al*As*mAlAs.Me(T,e,point).c00 + Al*Sb*mAlSb.Me(T,e,point).c00
-            - Ga*As*Sb*(0.014),
-           vMe = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11
-            + Al*As*mAlAs.Me(T,e,point).c11 + Al*Sb*mAlSb.Me(T,e,point).c11
-            - Ga*As*Sb*(0.014);
-    return ( Tensor2<double>(lMe,vMe) );
+    Tensor2<double> tMe(0., 0.);
+    if ((point == 'G') || (point == 'X') || (point == 'L')) {
+        tMe.c00 = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00 + Al*As*mAlAs.Me(T,e,point).c00 + Al*Sb*mAlSb.Me(T,e,point).c00;
+        tMe.c11 = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11 + Al*As*mAlAs.Me(T,e,point).c11 + Al*Sb*mAlSb.Me(T,e,point).c11;
+    }
+    else if (point == '*') {
+        point = 'G';
+        if ( Eg(T,e,'X') == Eg(T,e,'*') ) point = 'X';
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) point = 'L';
+        tMe.c00 = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00 + Al*As*mAlAs.Me(T,e,point).c00 + Al*Sb*mAlSb.Me(T,e,point).c00;
+        tMe.c11 = Ga*As*mGaAs.Me(T,e,point).c11 + Ga*Sb*mGaSb.Me(T,e,point).c11 + Al*As*mAlAs.Me(T,e,point).c11 + Al*Sb*mAlSb.Me(T,e,point).c11;
+    };
+    if (point == 'G') {
+        tMe.c00 += ( -Ga*As*Sb*(0.014) );
+        tMe.c11 += ( -Ga*As*Sb*(0.014) );
+    }
+    return ( tMe );
 }
 
 MI_PROPERTY(AlGaAsSb, Mhh,
@@ -151,7 +160,7 @@ double AlGaAsSb::VB(double T, double e, char point, char hole) const {
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
-        else return 0.;
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
     }
 }
 
