@@ -202,7 +202,7 @@ double AlGaAs::c44(double T) const {
 MI_PROPERTY(AlGaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion od nonlinear interpolation of resistivity: AlAs, GaAs")
+            MISource("inversion of nonlinear interpolation of resistivity: AlAs, GaAs")
             )
 Tensor2<double> AlGaAs::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + Ga/mGaAs.thermk(T,t).c00 + Al*Ga*0.32),

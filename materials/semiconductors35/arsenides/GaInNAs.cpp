@@ -227,7 +227,7 @@ double GaInNAs::c44(double T) const {
 MI_PROPERTY(GaInNAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion od nonlinear interpolation of resistivity: GaAs, InAs"),
+            MISource("inversion of nonlinear interpolation of resistivity: GaAs, InAs"),
             MIComment("no influence of nitrogen")
             )
 Tensor2<double> GaInNAs::thermk(double T, double t) const {

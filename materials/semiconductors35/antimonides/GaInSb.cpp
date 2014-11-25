@@ -205,7 +205,7 @@ double GaInSb::c44(double T) const {
 MI_PROPERTY(GaInSb, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion od nonlinear interpolation of resistivity: GaSb, InSb")
+            MISource("inversion of nonlinear interpolation of resistivity: GaSb, InSb")
             )
 Tensor2<double> GaInSb::thermk(double T, double t) const {
     double lCondT = 1./(Ga/mGaSb.thermk(T,t).c00 + In/mInSb.thermk(T,t).c00 + Ga*In*0.72),

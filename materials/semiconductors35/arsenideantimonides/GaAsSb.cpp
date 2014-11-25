@@ -205,7 +205,7 @@ double GaAsSb::c44(double T) const {
 MI_PROPERTY(GaAsSb, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion od nonlinear interpolation of resistivity: GaAs, GaSb")
+            MISource("inversion of nonlinear interpolation of resistivity: GaAs, GaSb")
             )
 Tensor2<double> GaAsSb::thermk(double T, double t) const {
     double lCondT = 1./(As/mGaAs.thermk(T,t).c00 + Sb/mGaSb.thermk(T,t).c00 + As*Sb*0.91),
