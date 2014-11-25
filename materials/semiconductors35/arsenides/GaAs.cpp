@@ -230,7 +230,7 @@ MI_PROPERTY(GaAs, absp,
             MIComment("TODO")
            )
 double GaAs::absp(double wl, double T) const {
-    throw NotImplemented("absp for GaAs");
+    return 0.;
 }
 
 MI_PROPERTY(GaAs, eps,

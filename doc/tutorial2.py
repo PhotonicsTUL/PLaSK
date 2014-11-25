@@ -16,15 +16,15 @@ efm.inGain = profile.outGain
 
 def loss_on_gain(gain):
     profile[GEO.gain_region] = gain
-    mode_number = efm.find_mode(980.)
+    mode_number = efm.find_mode(980.5)
     return efm.outLoss(mode_number)
 
 efm.lam0 = 980.
 
-threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
+threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
 profile[GEO.gain_region] = threshold_gain
-mode_number = efm.find_mode(980.)
+mode_number = efm.find_mode(980.5)
 mode_wavelength = efm.outWavelength(mode_number)
 print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"

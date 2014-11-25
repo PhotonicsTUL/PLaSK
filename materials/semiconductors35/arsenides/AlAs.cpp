@@ -214,6 +214,14 @@ double AlAs::nr(double wl, double T, double n) const {
     return ( nR296K + nR296K*4.6e-5*(T-296.) );
 }
 
+MI_PROPERTY(AlAs, absp,
+            MISource(""),
+            MIComment("TODO")
+           )
+double AlAs::absp(double wl, double T) const {
+    return 0.;
+}
+
 MI_PROPERTY(AlAs, eps,
             MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")
            )

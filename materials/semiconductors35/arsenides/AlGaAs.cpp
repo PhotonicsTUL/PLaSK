@@ -244,7 +244,7 @@ MI_PROPERTY(AlGaAs, absp,
             MIComment("TODO")
             )
 double AlGaAs::absp(double wl, double T) const {
-    throw NotImplemented("absp for AlGaAs");
+    return 0.;
 }
 
 double AlGaAs::eps(double T) const {

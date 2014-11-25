@@ -373,7 +373,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \param clambda complex wavelength of the mode
      * \return index of the set mode
      */
-    size_t setMode(plask::dcomplex clambda, int m = 0);
+    size_t setMode(plask::dcomplex clambda, int m=0);
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
@@ -384,7 +384,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \return index of the set mode
      */
     inline size_t setMode(double lambda, double loss, int m=0) {
-        return setMode(dcomplex(lambda, -lambda*lambda / (2e7*M_PI) * loss));
+        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss));
     }
 
     /**
@@ -505,7 +505,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return imag(2e4 * 2e3*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
+        return imag(4e7*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 
     struct LightMagnitudeDataInefficient;

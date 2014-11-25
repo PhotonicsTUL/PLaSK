@@ -421,7 +421,6 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.m\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.loss\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
                  ":rtype: Mode\n");
         solver.add_property("vat", &EffectiveFrequencyCyl_getStripeR, &EffectiveFrequencyCyl_setStripeR,

@@ -184,10 +184,10 @@ Effective frequency solver does not need to have a mesh defined, as it will come
 
 The first line of the above snippet creates the ``profile`` object. ``StepProfile`` class takes a geometry in which the profile is defined as an argument. It is also possible to set the default value for every object in the geometry by providing a value to the ``default`` parameter. In the next line, we specify that there is a step gain of 500 cm\ :sup:`-1` (default units for the gain in PLaSK) at the object named gain-region in the XPL file (``-`` in names is replaced with ``_`` when using the attribute access to geometry objects). Finally, we connect the gain receiver of the ``efm`` solver with the profile's gain provider. This way, all future changes to the ``profile`` be visible from the connected solver.
 
-Now we can perform the computations. First we set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) and then we look for the mode with the wavelength closest to 980nm. The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function ``efm.find_mode``, we use, returns an index of the found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use this number to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
+Now we can perform the computations. First we set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) and then we look for the mode with the wavelength closest to 980.5nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function ``efm.find_mode``, we use, returns an index of the found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use this number to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
 
    efm.lam0 = 980.
-   mode_number = efm.find_mode(980.)
+   mode_number = efm.find_mode(980.5)
    mode_wavelength = efm.outWavelength(mode_number)
    mode_loss = efm.outLoss(mode_number)
    print_log(LOG_INFO,
@@ -206,7 +206,7 @@ In this case the string ``tutorial2.xpl`` is the program argument that is read w
 Searching for the threshold gain using Scipy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We are now going to find the threshold gain of the simulated structure, which we define as the gain value in the provided ``StepProfile`` for which the material losses reach 0. This could be done by manually changing the gain value in the previous section until obtaining satisfyingly low losses, or writing an automated algorithm. But, naturally, there is better, simpler and faster solution — we may utilize the Brent root-finding algorithm from the ``scipy.optimize`` package. The function we want to use from this package is named ``brentq`` and it finds a root of a provided *f*\ (*x*) function on a provided *x* interval. You can read the function description in the *scipy* documentation at http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.optimize.brentq.html.
+We are now going to find the threshold gain of the simulated structure, which we define as the gain value in the provided ``StepProfile`` for which the material losses reach 0. This could be done by manually changing the gain value in the previous section until obtaining satisfyingly low losses, or writing an automated algorithm. But, naturally, there is better, simpler and faster solution — we may utilize the Brent root-finding algorithm from the ``scipy.optimize`` package. The function we want to use from this package is named ``fsolve`` and it finds a root of a provided *f*\ (*x*) function starting from a given *x* value. You can read the function description in the *scipy* documentation at http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.optimize.fsolve.html.
 
 In order to perform the root search, we have to import the ``scipy.optimize`` package and define a function (*f*\ (*x*)) that takes the gain value in the active region as it's argument (*x*) and returns the modal loss of the resonant mode (which must be 0 at the threshold i.e. *f*\ (*threshold gain*) = 0)::
 
@@ -214,23 +214,23 @@ In order to perform the root search, we have to import the ``scipy.optimize`` pa
 
    def loss_on_gain(gain):
        profile[GEO.gain_region] = gain
-       mode_number = efm.find_mode(980.)
+       mode_number = efm.find_mode(980.5)
        return efm.outLoss(mode_number)
 
 You notice that first, we modify the gain profile in the *gain-region* geometry object and then recompute the resonant mode. Because of the gain modification, all the modes computed ealier are lost as they become obsolete with the new gain. However, the ``mode_number`` variable in the above function will always be set to the current, recently computed, mode number we are interested in. We use this information to retrieve the computed modal loss and return it as the result of the function.
 
-Now we can provide ``loss_on_gain`` to the ``brentq`` function, together with the gain interval, in which we expect to find the threshold (we make it 0/cm – 2500/cm). The function has to be continuous on this interval and may contain exactly one root, otherwise an error might occur. Hence, we set the reference wavelength (which is always the necessary step) and run the root search as follows::
+Now we can provide ``loss_on_gain`` to the ``fsove`` function, together with the gain value, which we expect to be near the threshold (2000/cm). The function has to be continuous on this interval and may contain exactly one root, otherwise an error might occur. Hence, we set the reference wavelength (which is always the necessary step) and run the root search as follows::
 
    efm.lam0 = 980.
 
-   threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
+   threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
 The ``xtol`` argument allows us to set the desired solution's tolerance.
 
-When the ``brentq`` function completes, the ``threshold_gain`` variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log::
+When the ``fsolve`` function completes it returns a Python list with the found solutions (which in this case hase only one element), so the ``threshold_gain`` variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log::
 
    profile[GEO.gain_region] = threshold_gain
-   mode_number = efm.find_mode(980.)
+   mode_number = efm.find_mode(980.5)
    mode_wavelength = efm.outWavelength(mode_number)
    print_log(LOG_INFO,
              "Threshold material gain is %s /cm with resonant wavelength %s nm" %
@@ -267,7 +267,7 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
 
       efm.lam0 = 980.
 
-      threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
+      threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
       profile[GEO.gain_region] = threshold_gain
       mode_number = efm.find_mode(980.)

@@ -261,9 +261,6 @@ class MaterialsController(Controller):
         self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
         self.properties_table.setItemDelegateForColumn(3, self.help_delegate)
         #self.properties_table.setWordWrap(True)
-        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180, 50])
-
-        self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         prop_splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter,
                                                         title="Properties of the material"))
 
@@ -277,7 +274,11 @@ class MaterialsController(Controller):
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.properties_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180, 50])
+        self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.properties_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
+        self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        self.properties_table.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Stretch)
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
         property_selection_model = self.properties_table.selectionModel()

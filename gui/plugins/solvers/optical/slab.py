@@ -96,7 +96,7 @@ Fourier2D = {
             ('R2', 'Back reflectivity', 'Reflectivity of the back mirror.')))
     ),
     u'flow': ('inTemperature', 'inGain',
-             u'outLightMagnitude', 'outRefractiveIndex', 'outHeat', 'outLoss', 'outWavelenght'),
+             u'outLightMagnitude', 'outRefractiveIndex', 'outHeat'),
 }
 
 Fourier3D = {
