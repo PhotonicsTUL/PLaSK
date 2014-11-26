@@ -39,7 +39,7 @@ class GNAgain(GNode):
 
     def major_properties(self):
         res = super(GNAgain, self).major_properties()
-        res.append(('ref', self.ref))
+        res.append(('referenced object', self.ref))
         return res
 
     def get_controller(self, document, model):

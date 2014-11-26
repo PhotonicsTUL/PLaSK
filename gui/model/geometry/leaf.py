@@ -47,11 +47,13 @@ class GNLeaf(GNObject):
         if self.material_top == self.material_bottom:
             res.append(('material', self.material_top))
         else:
-            if self.material_top is not None and self.material_bottom is not None:
-                res.append(('bottom / top materials', '{} / {}'.format(self.material_bottom, self.material_top)))
-            else:
-                res.append(('top material', self.material_top))
-                res.append(('bottom material', self.material_bottom))
+            #if self.material_top is not None and self.material_bottom is not None:
+            #    res.append(('bottom / top materials', '{} / {}'.format(self.material_bottom, self.material_top)))
+            #else:
+            res.append('materials:')
+            res.append(('bottom', self.material_bottom))
+            res.append(('top', self.material_top))
+            res.append(None)
         return res
 
 

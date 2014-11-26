@@ -9,6 +9,13 @@ class GNGeometryBase(GNObject):
         super(GNGeometryBase, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.borders = [[None, None] for _ in range(0, dim)]
 
+    def all_borders(self):
+        """
+            :return: border if all borders all are the same or None in other cases
+        """
+        b = self.borders[0]
+        return b if all(x == b for x in self.borders) else None
+
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNGeometryBase, self).attributes_from_xml(attribute_reader, conf)
         all_names = self.get_alternative_direction_names()
@@ -45,6 +52,22 @@ class GNGeometryBase(GNObject):
 
     def children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
+
+    def major_properties(self):
+        res = super(GNGeometryBase, self).major_properties()
+        b = self.all_borders()
+        if b is not None:
+            res.append(('all borders', b[1]))
+        else:
+            if not all(b is None for b in self.borders):
+                res.append('borders:')
+                names = self.get_alternative_direction_names()
+                for axis_nr in range(0, self.dim):
+                    for lo_hi_index in range(0, 2):
+                        val = self.borders[axis_nr][lo_hi_index]
+                        if val is not None: res.append((names[axis_nr][lo_hi_index], val))
+                res.append(None)
+        return res
 
     def accept_new_child(self):
         return not self.children

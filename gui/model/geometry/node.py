@@ -120,15 +120,33 @@ class GNode(object):
         return self._parent.get_controller_for_child_inparent(document, model, self)
 
     def major_properties(self):
+        '''
+        Get major properties of geometry node represented by self.
+        :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
+        '''
         return []
 
     def minor_properties(self):
+        '''
+        Get minor properties of geometry node represented by self.
+        :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
+        '''
         return []
 
     def child_properties(self, child_in_parent):
+        '''
+        Get properties of child position in self. This is typically used by containers.
+        :param child_in_parent: is_parent field of the child
+        :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
+        '''
         return []
 
     def in_parent_properties(self):
+        '''
+        Get properties of geometry node represented by self, which are connected with its position in self.parent container.
+        Call child_properties of the self.parent to do the job.
+        :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
+        '''
         if self._parent is None: return []
         return self._parent.child_properties(self.in_parent)
 

@@ -78,11 +78,22 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 else:
                     res = ''
                 for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
-                    sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
-                    for n, v in sorted_prop:
-                        if v is None: continue
-                        if res: res += ' &nbsp; '
-                        res += '<span style="color: #766">{}</span>&nbsp;{}'.format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
+                    #sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
+                    #for n, v in sorted_prop:
+                    in_group = False
+                    for t in prop_table:
+                        if t is None:
+                            if in_group: res += '<span style="color: #769">]</span>'
+                            in_group = False
+                        elif isinstance(t, basestring):
+                            if res: res += ' &nbsp; '
+                            res += '<span style="color: #769">[{}</span>'.format(cgi.escape(t).replace(' ', '&nbsp;'))
+                            in_group = True
+                        else:
+                            n, v = t
+                            if v is None: continue
+                            if res: res += ' &nbsp;' if in_group else ' &nbsp; '
+                            res += '<span style="color: #766">{}</span>&nbsp;{}'.format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
                         #replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
 

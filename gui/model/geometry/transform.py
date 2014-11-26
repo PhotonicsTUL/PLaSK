@@ -55,7 +55,7 @@ class GNTranslation(GNTransform):
     def major_properties(self):
         res = super(GNTranslation, self).major_properties()
         if any(self.size):
-            res.append('translation', ', '.join(x if x else '?' for x in self.size))
+            res.append('delta', ', '.join(x if x else '?' for x in self.size))
         return res
 
     @classmethod
