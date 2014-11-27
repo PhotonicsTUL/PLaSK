@@ -197,3 +197,8 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         for r in self.roots:
             if not r.names_before(res, end_node): break
         return res
+
+    def paths(self):
+        res = set()
+        for r in self.roots: res |= r.paths()
+        return res

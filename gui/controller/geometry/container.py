@@ -144,9 +144,13 @@ class GNContainerChildBaseController(GNChildController):
     def fill_form(self):
         self.construct_group('Position in parent container')
         self.positions = self.construct_align_controllers()
+        self.path = self.construct_combo_box('path', items=[''] + list(self.model.paths()))
 
     def save_data_in_model(self):
         self.child_node.in_parent = controller_to_aligners(self.positions)
+        self.child_node.path = empty_to_none(self.path.currentText())
 
     def on_edit_enter(self):
         aligners_to_controllers(self.child_node.in_parent, self.positions)
+        with BlockQtSignals(self.path) as _:
+            self.path.setEditText(none_to_empty(self.child_node.path))

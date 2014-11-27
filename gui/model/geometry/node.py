@@ -28,6 +28,7 @@ class GNode(object):
         self.children_dim = children_dim
         self.children = []
         self.in_parent = None   #configuration inside parent (container)
+        self.path = None    #path inside parent (container)
         self._parent = None  #used by parent property
         self.parent = parent
 
@@ -101,6 +102,7 @@ class GNode(object):
         if self._parent is not None:
             self._parent.children.remove(self)
             self.in_parent = None
+            self.path = None
         self._parent = parent
         if self._parent is not None:
             self._parent.children.append(self)
@@ -133,10 +135,10 @@ class GNode(object):
         '''
         return []
 
-    def child_properties(self, child_in_parent):
+    def child_properties(self, child):
         '''
         Get properties of child position in self. This is typically used by containers.
-        :param child_in_parent: is_parent field of the child
+        :param child: the child
         :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
         '''
         return []
@@ -148,7 +150,7 @@ class GNode(object):
         :return list: list of properties (name, value tuples). Can also include strings (to begin groups) or None-s (to end groups).
         '''
         if self._parent is None: return []
-        return self._parent.child_properties(self.in_parent)
+        return self._parent.child_properties(self)
 
     def get_axes_conf(self):
         ''':return: Axes configuration for this node (3D list with name of axes).'''
@@ -192,3 +194,5 @@ class GNode(object):
     def names(self):
         return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse_dfs()) if n is not None)
 
+    def paths(self):
+        return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse_dfs()) if n is not None)

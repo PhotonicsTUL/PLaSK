@@ -79,6 +79,10 @@ class GNContainerBase(GNObject):
     def accept_new_child(self):
         return True
 
+    def child_properties(self, child):
+        res = super(GNContainerBase, self).child_properties(child)
+        res.append(('path', child.path))
+        return res
 
 class GNStack(GNContainerBase):
     """2D/3D (multi-)stack"""
@@ -160,9 +164,9 @@ class GNStack(GNContainerBase):
         res.append(('shift', self.shift))
         return res
 
-    def child_properties(self, child_in_parent):
-        res = super(GNStack, self).child_properties(child_in_parent)
-        return res + self._aligners_to_properties(child_in_parent)
+    def child_properties(self, child):
+        res = super(GNStack, self).child_properties(child)
+        return res + self._aligners_to_properties(child.in_parent)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNStackController
