@@ -27,6 +27,7 @@ namespace phys {
     constexpr double kB_J = 1.3806503e-23;      ///< Boltzmann constant [J/K]
     constexpr double kB_eV = 8.6173423e-5;      ///< Boltzmann constant [eV/K]
     constexpr double h_eVc1e9 = 1239.84193009;  ///< h_eV*c*1e9 [eV*m]
+    constexpr double me = 9.10938291e-31;       ///< electron mass [kg]
 
 }} // namespace plask::phys
 

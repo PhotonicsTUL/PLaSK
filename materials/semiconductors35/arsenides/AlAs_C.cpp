@@ -61,7 +61,7 @@ MI_PROPERTY(AlAs_C, absp,
 double AlAs_C::absp(double wl, double T) const {
     double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., 300.);
     double tEgT = Eg(T,0.,'X');
-    double tDWl = 1240.*(tEgRef300-tEgT)/(tEgRef300*tEgT);
+    double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
     double tWl = (wl-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um

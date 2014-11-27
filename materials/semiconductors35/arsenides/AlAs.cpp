@@ -216,10 +216,21 @@ double AlAs::nr(double wl, double T, double n) const {
 
 MI_PROPERTY(AlAs, absp,
             MISource(""),
-            MIComment("TODO")
+            MIComment("calculated as for Si-doped AlAs but with n = 1e16")
            )
 double AlAs::absp(double wl, double T) const {
-    return 0.;
+    double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., T);
+    double tEgT = Eg(T,0.,'X');
+    double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
+    double tWl = (wl-tDWl)*1e-3;
+    double tAbsp(0.);
+    double tN = 1e16; // concentration for undoped GaAs
+    if (tWl <= 6.) // 0.85-6 um
+        tAbsp = (tN/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));
+    else if (tWl <= 27.) // 6-27 um
+        tAbsp = (tN/1e18)*(-8.4+0.233*pow(tWl,2.6));
+    return ( tAbsp );
+    //return 0.;
 }
 
 MI_PROPERTY(AlAs, eps,

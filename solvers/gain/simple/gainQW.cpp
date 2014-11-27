@@ -10,12 +10,17 @@ using QW::gain;
 using QW::parametry;
 using namespace std;
 
-const double gain::kB=1.38062/1.60219*1e-4;
-const double gain::przelm=10*1.05459/(sqrt(1.60219*9.10956));
-const double gain::przels=1.05459/1.60219*1e-3;
-const double gain::ep0=8.8542*1.05459/(100*1.60219*sqrt(1.60219*9.10956));
-const double gain::c=300*sqrt(9.10956/1.60219);
-const double gain::exprng=11100;
+//const double gain::kB=1.38062/1.60219*1e-4;
+const double gain::kB=(phys::kB_J)/(phys::qe);
+//const double gain::przelm=10*1.05459/(sqrt(1.60219*9.10956));
+const double gain::przelm=1e10*(phys::hb_J)/(sqrt((phys::qe)*(phys::me)));
+//const double gain::przels=1.05459/1.60219*1e-3;
+const double gain::przels=(phys::hb_J)/(phys::qe)*1e12;
+//const double gain::ep0=8.8542*1.05459/(100*1.60219*sqrt(1.60219*9.10956));
+const double gain::ep0=(phys::epsilon0)*(phys::hb_J)/((phys::qe)*sqrt((phys::qe)*(phys::me)));
+//const double gain::c=300*sqrt(9.10956/1.60219);
+const double gain::c=phys::c*sqrt((phys::me)/(phys::qe));
+const double gain::exprng=11100.;
 
 nosnik::nosnik(): poziomy(NULL)
 {

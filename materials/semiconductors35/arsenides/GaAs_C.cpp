@@ -56,7 +56,7 @@ MI_PROPERTY(GaAs_C, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )
 double GaAs_C::absp(double wl, double T) const {
-    double tDWl = 1240.*(Eg(300.,0.,'G')-Eg(T,0.,'G'))/(Eg(300.,0.,'G')*Eg(T,0.,'G'));
+    double tDWl = phys::h_eVc1e9*(Eg(300.,0.,'G')-Eg(T,0.,'G'))/(Eg(300.,0.,'G')*Eg(T,0.,'G'));
     double tWl = (wl-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um

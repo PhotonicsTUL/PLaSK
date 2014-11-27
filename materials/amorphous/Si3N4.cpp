@@ -13,7 +13,7 @@ MI_PROPERTY(Si3N4, cond,
             MIComment("TODO")
             )
 Tensor2<double> Si3N4::cond(double T) const {
-    return ( Tensor2<double>(0., 0.) ); //TODO
+    throw NotImplemented("cond for Si3N4");
 }
 
 MI_PROPERTY(Si3N4, thermk,
@@ -21,7 +21,7 @@ MI_PROPERTY(Si3N4, thermk,
             MIComment("TODO")
             )
 Tensor2<double> Si3N4::thermk(double T, double h) const {
-    return ( Tensor2<double>(0., 0.) ); //TODO
+    throw NotImplemented("thermk for Si3N4");
 }
 
 MI_PROPERTY(Si3N4, nr,

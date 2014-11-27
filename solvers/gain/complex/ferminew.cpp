@@ -461,7 +461,8 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
     mpEc.push_back(mpLay);
     for (int i=1; i<tN-1; ++i)
     {
-        double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
+        double e = 0.;
+        if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
         double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
         double tCBaddShift(0.);
         if (region.isQW(i)) tCBaddShift = cond_qw_shift;
@@ -505,7 +506,8 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         mpEvhh.push_back(mpLay);
         for (int i=1; i<tN-1; ++i)
         {
-            double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
+            double e = 0.;
+            if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
             double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
@@ -549,7 +551,8 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         mpEvlh.push_back(mpLay);
         for (int i=1; i<tN-1; ++i)
         {
-            double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
+            double e = 0.;
+            if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
             double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
