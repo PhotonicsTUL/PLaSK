@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -19,8 +20,12 @@ class GNClipController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Clipping box')
+        sign = '-'
         for b in self.node.bound_names():
             setattr(self, b, self.construct_line_edit(b))
+            getattr(self, b).setToolTip(u'&lt;clip <b>{0}</b>=""...&gt;<br/>'
+                    u'{0} edge of the clipping rectangle. (float [µm], {1}INF by default)'.format(b, sign))
+            sign = '+' if sign == '-' else '-'
         super(GNClipController, self).fill_form()
 
     def save_data_in_model(self):
@@ -51,6 +56,8 @@ class GNFlipController(GNFlipMirrorController):
     def fill_form(self):
         self.construct_group('Flip-specific settings')
         self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        self.axis.setToolTip('&lt;flip <b>axis</b>="" ...&gt;<br/>'
+                    'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super(GNFlipController, self).fill_form()
 
 
@@ -59,6 +66,8 @@ class GNMirrorController(GNFlipMirrorController):
     def fill_form(self):
         self.construct_group('Mirror-specific settings')
         self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
+            'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super(GNMirrorController, self).fill_form()
 
 
@@ -67,6 +76,8 @@ class GNExtrusionController(GNObjectController):
     def fill_form(self):
         self.construct_group('Extrusion-specific settings')
         self.length = self.construct_line_edit('length')
+        self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
+                            u'Length of the extrusion. (float [µm], required)')
         super(GNExtrusionController, self).fill_form()
 
     def save_data_in_model(self):

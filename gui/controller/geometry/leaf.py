@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -41,7 +42,13 @@ class GNLeafController(GNObjectController):
 
         self.construct_group('Mesh division settings')
         self.step_num = self.construct_line_edit('maximum number of steps')
+        self.step_num.setToolTip(u'&lt;{} <b>steps-num</b>="" steps-dist="" ...&gt;<br/>'
+                                u'Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform. (integer)'
+                                .format(self.node.tag_name(False)))
         self.step_dist = self.construct_line_edit('minimum step size')
+        self.step_dist.setToolTip(u'&lt;{} steps-num="" <b>steps-dist</b>="" ...&gt;<br/>'
+                                u'Minimum step size if the object is non-uniform.'
+                                .format(self.node.tag_name(False)))
         super(GNLeafController, self).fill_form()
 
     def save_data_in_model(self):
@@ -113,6 +120,8 @@ class GNCircleController(GNLeafController):
     def fill_form(self):
         self.construct_group('{} size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
         self.radius = self.construct_line_edit('radius')
+        self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
+                             u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
         super(GNCircleController, self).fill_form()
 
     def save_data_in_model(self):
@@ -130,7 +139,11 @@ class GNCylinderController(GNLeafController):
     def fill_form(self):
         self.construct_group('Cylinder size:')
         self.radius = self.construct_line_edit('radius')
+        self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
+                    u'Radius of the cylinder base. (float [µm], required)')
         self.height = self.construct_line_edit('height')
+        self.radius.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
+                    u'Height of the cylinder. (float [µm], required)')
         super(GNCylinderController, self).fill_form()
 
     def save_data_in_model(self):

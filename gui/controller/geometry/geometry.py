@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -22,7 +23,6 @@ class GNGeometryController(GNObjectController):
 
     def construct_border_controllers(self, row_name=None):
         hbox, group = self._construct_hbox(row_name)
-        #TODO support for material names:
         res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
         if row_name:
@@ -54,6 +54,8 @@ class GNCartesian2DGeometryController(GNGeometryController):
     def fill_form(self):
         self.construct_group('Implicit extrusion settings')
         self.length = self.construct_line_edit('length')
+        self.length.setToolTip(u'&lt;cartesian2d <b>length</b>="" ...&gt;<br/>'
+            u'Longitudinal dimension of the geometry (float [µm]). Default value is: +infty.')
         super(GNCartesian2DGeometryController, self).fill_form()
 
     def save_data_in_model(self):
