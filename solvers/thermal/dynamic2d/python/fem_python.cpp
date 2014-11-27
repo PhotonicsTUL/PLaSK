@@ -12,7 +12,7 @@ using namespace plask::solvers::thermal;
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(fem)
+BOOST_PYTHON_MODULE(dynamic2d)
 {
     py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
