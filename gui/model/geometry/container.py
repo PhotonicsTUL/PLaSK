@@ -303,9 +303,9 @@ class GNAlignContainer(GNContainerBase):
     def major_properties(self):
         return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
 
-    def child_properties(self, child_in_parent):
-        if child_in_parent is None: return []
-        return self._aligners_to_properties(child_in_parent)
+    def child_properties(self, child):
+        if child.in_parent is None: return []
+        return self._aligners_to_properties(child.in_parent)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNContainerBaseController
