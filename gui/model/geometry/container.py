@@ -85,9 +85,25 @@ class GNContainerBase(GNObject):
         return res
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
+        '''
+        Read item tag attributes from XML.
+        Default implementation support path attribute.
+        :param child: child node
+        :param item_attr_reader: element-tree attributes reader
+        :param GNReadConf conf: read configuration (axes, etc.)
+        '''
         child.path = item_attr_reader.get('path')
 
     def child_from_xml(self, child_element, conf):
+        '''
+        Read single child from XML.
+        Default implementation support item tag (call item_attributes_from_xml to read it attributes)
+        and call construct_geometry_object(child_element, conf) for all other tags.
+        Subclasses should support custom tags before call this implementation.
+        :param child_element: element-tree element with child configuration
+        :param GNReadConf conf: read configuration (axes, etc.)
+        :return GNode: child node
+        '''
         if child_element.tag == 'item':
             with OrderedTagReader(child_element) as item_child_reader:
                 child = construct_geometry_object(item_child_reader.require(), conf)
@@ -97,22 +113,42 @@ class GNContainerBase(GNObject):
             construct_geometry_object(child_element, conf)
 
     def children_from_xml(self, ordered_reader, conf):
+        '''Call child_from_xml for each child. Subclasses shouldn't overwrite this but child_from_xml instead.'''
         for child_element in ordered_reader.iter():
             self.child_from_xml(child_element, conf)
 
-    def get_item_xml_element(self, child, child_element, conf):
+    def get_item_xml_element(self, child, conf):
+        '''
+        Construct item XML tag.
+        Default implementation support path attribute.
+        :param GNode child: children which parent-related attributes should be written to returned element
+        :param GNReadConf conf: read configuration (axes, etc.)
+        :return etree.Element: item tag (without children)
+        '''
         res = etree.Element('item')
-        res.append(child_element)
-        if child.path is not None: child_element.attrib['path'] = child.path
+        if child.path is not None: res.attrib['path'] = child.path
         return res
 
     def item_xml_element_is_required(self, child):
+        '''
+        Check if item attribute should be written (this is done using get_item_xml_element).
+        :param GNode child: child to write
+        :return bool: True only if parent-related attributes of child requires item attribute
+        '''
         return child.path is not None
     
     def get_child_xml_element(self, child, conf):
+        '''
+        Subclasses should not overwrite this but some of get_item_xml_element, item_xml_element_is_required or attributes_to_xml instead
+        (all method mentioned are used by this).
+        :param GNode child: child to get element for
+        :param GNReadConf conf: read configuration (axes, etc.)
+        :return etree.Element: XML element which represent child (possibly item tag)
+        '''
         child_element = super(GNContainerBase, self).get_child_xml_element(child, conf)
         if self.item_xml_element_is_required(child):
-            res = self.get_item_xml_element(child, child_element, conf)
+            res = self.get_item_xml_element(child, conf)
+            res.append(child_element)
             return res
         else:
             return child_element
@@ -155,8 +191,8 @@ class GNStack(GNContainerBase):
         else:
             super(GNStack, self).child_from_xml(child_element, conf)
 
-    def get_item_xml_element(self, child, child_element, conf):
-        res = super(GNStack, self).get_item_xml_element(child, child_element, conf)
+    def get_item_xml_element(self, child, conf):
+        res = super(GNStack, self).get_item_xml_element(child, conf)
         if self.in_parent is not None:
             conf.write_aligners(res, self.children_dim, self.aligners_dict(self.in_parent))
         return res
@@ -301,8 +337,8 @@ class GNAlignContainer(GNContainerBase):
         super(GNAlignContainer, self).item_attributes_from_xml(child, item_attr_reader, conf)
         child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
 
-    def get_item_xml_element(self, child, child_element, conf):
-        res = super(GNContainerBase, self).get_item_xml_element(child, child_element, conf)
+    def get_item_xml_element(self, child, conf):
+        res = super(GNContainerBase, self).get_item_xml_element(child, conf)
         if self.in_parent is not None:
             conf.write_aligners(res, self.children_dim, child.in_parent)
         return res
