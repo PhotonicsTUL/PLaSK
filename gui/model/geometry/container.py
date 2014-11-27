@@ -194,7 +194,7 @@ class GNStack(GNContainerBase):
     def get_item_xml_element(self, child, conf):
         res = super(GNStack, self).get_item_xml_element(child, conf)
         if self.in_parent is not None:
-            conf.write_aligners(res, self.children_dim, self.aligners_dict(self.in_parent))
+            conf.write_aligners(res, self.children_dim, self.aligners_dict(child.in_parent))
         return res
 
     def item_xml_element_is_required(self, child):
