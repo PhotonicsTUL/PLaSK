@@ -144,7 +144,7 @@ class GNContainerChildBaseController(GNChildController):
     def fill_form(self):
         self.construct_group('Position in parent container')
         self.positions = self.construct_align_controllers()
-        self.path = self.construct_combo_box('path', items=[''] + list(self.model.paths()))
+        self.path = self.construct_combo_box('path', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()))
         self.path.setToolTip('Name of a path that can be later on used to distinguish between multiple occurrences of the same object.')
 
     def save_data_in_model(self):

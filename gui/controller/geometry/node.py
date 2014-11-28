@@ -48,7 +48,7 @@ class GNodeController(Controller):
         return res
 
     def construct_names_before_self_combo_box(self, row_name = None):
-        return self.construct_combo_box(row_name, items=[''] + list(self.model.names_before(self.node)))
+        return self.construct_combo_box(row_name, items=[''] + sorted(self.model.names_before(self.node), key=lambda s: s.lower()))
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)

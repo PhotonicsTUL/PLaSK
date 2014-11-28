@@ -159,29 +159,27 @@ class GNode(object):
     def get_axes_conf_dim(self, dim=None):
         return axes_dim(self.get_axes_conf(), self.dim if dim is None else dim)
 
+    def traverse(self):
+        '''
+        Generator which visit all nodes in sub-tree fast but in undefined order.
+        :return: next calls return next nodes in some order
+        '''
+        l = [self]
+        while l:
+            e = l[-1]
+            yield e
+            l[-1:] = e.children
+
     def traverse_dfs(self):
         '''
-        Generator which visit all nodes in sub-tree in depth-first order
+        Generator which visit all nodes in sub-tree in depth-first order, visiting children from first to last.
         :return: next calls return next nodes in depth-first order
         '''
-        yield self
-        for c in self.children:
-            for t in c.traverse_dfs():
-                yield t
-
-    def traverse_dfs_fun(self, f):
-        '''
-        Visit all nodes in sub-tree in depth-first order and call f for each.
-        :param f: function to call for each node, should return True to continue searching and False to stop
-        :return: True if f returns True for all nodes in subtree, False in other cases
-        '''
-        if f(self):
-            for c in self.children:
-                if not c.traverse_dfs_fun(f):
-                    return False
-            return True
-        else:
-            return False
+        l = [self]
+        while l:
+            e = l[-1]
+            yield e
+            l[-1:] = reversed(e.children)
 
     def names_before(self, result_set, end_node):
         if self == end_node: return False
@@ -192,7 +190,7 @@ class GNode(object):
         return True
 
     def names(self):
-        return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse_dfs()) if n is not None)
+        return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse()) if n is not None)
 
     def paths(self):
-        return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse_dfs()) if n is not None)
+        return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
