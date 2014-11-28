@@ -172,8 +172,8 @@ class GNode(object):
 
     def traverse_dfs(self):
         '''
-        Generator which visit all nodes in sub-tree in depth-first order, visiting children from first to last.
-        :return: next calls return next nodes in depth-first order
+        Generator which visit all nodes in sub-tree in depth-first, pre-order, visiting children of each node from first to last.
+        :return: next calls return next nodes in depth-first, left-to-right, pre-order
         '''
         l = [self]
         while l:
@@ -182,6 +182,13 @@ class GNode(object):
             l[-1:] = reversed(e.children)
 
     def names_before(self, result_set, end_node):
+        '''
+        Search nodes in depth-first, left-to-right, pre-order and append all its names to result_set.
+        Stop searching when end_node is found.
+        :param set result_set: set where names are appended
+        :param end_node: node which terminates searching
+        :return: True only when all nodes in sub-tree has been visited and end_node has not been found
+        '''
         if self == end_node: return False
         name = getattr(self, 'name', None)
         if name is not None: result_set.add(name)
@@ -190,7 +197,15 @@ class GNode(object):
         return True
 
     def names(self):
+        '''
+        Calculate all names of nodes in subtree with self in root.
+        :return set: calculated set of names
+        '''
         return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse()) if n is not None)
 
     def paths(self):
+        '''
+        Calculate all path's names of nodes in subtree with self in root.
+        :return set: calculated set of path's names
+        '''
         return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
