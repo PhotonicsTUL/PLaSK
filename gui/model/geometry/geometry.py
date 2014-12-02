@@ -1,6 +1,6 @@
 from .constructor import geometry_object_names, construct_geometry_object
 from .object import GNObject
-from .transform import GNExtrusion
+from .transform import GNExtrusion, GNRevolution
 from ...utils.xml import xml_to_attr, attr_to_xml
 
 class GNGeometryBase(GNObject):
@@ -143,11 +143,27 @@ class GNCylindrical(GNGeometryBase):
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))
 
+    def children_from_xml(self, ordered_reader, conf):
+        from .types import geometry_types_3d
+        el = ordered_reader.get()
+        if el is None: return
+        if el.tag in geometry_object_names(GNRevolution.from_xml_3d, geometry_types_3d):
+            #we don't require self.length is None, our model could store some "in building" states not well defined for PLaSK
+            GNRevolution.from_xml_3d(el, conf)
+        else:
+            construct_geometry_object(el, conf)
+
     def tag_name(self, full_name=True):
         return "cylindrical{}d".format(self.dim) if full_name else "cylindrical"
 
     def python_type(self):
         return 'geometry.Cylindrical2D'
+
+    def add_child_options(self):
+        res = super(GNCylindrical, self).add_child_options()
+        from .types import geometry_types_3d_core_revolution
+        res.insert(0, geometry_types_3d_core_revolution)
+        return res
 
     def get_controller(self, document, model):
         from ...controller.geometry.geometry import GNGeometryController

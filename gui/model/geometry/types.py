@@ -63,15 +63,18 @@ geometry_types_3d_core_containers = {
 geometry_types_3d_core_extrusion = {
     'extrusion': GNExtrusion.from_xml_3d
 }
+geometry_types_3d_core_revolution = {
+    'revolution': GNRevolution.from_xml_3d
+}
 geometry_types_3d_core_transforms = {
     'clip3d': GNClip.from_xml_3d,
     'flip3d': GNFlip.from_xml_3d,
     'mirror3d': GNMirror.from_xml_3d,
     'translation3d': GNTranslation.from_xml_3d,
-    'revolution': GNRevolution.from_xml_3d,
     'intersection3d': GNIntersection.from_xml_3d
 }
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_extrusion)
+geometry_types_3d_core_transforms.update(geometry_types_3d_core_revolution)
 
 geometry_types_3d_core = {}  #only unique names of types, displayed in add menu
 geometry_types_3d_core.update(geometry_types_3d_core_leafs)
