@@ -47,7 +47,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    .. xml:contents::
 
-       Any object from section :ref:`sec-xpl-Geometry-objects-2D`.
+       Any object from section :ref:`sec-xpl-Geometry-objects-2D` or :xml:tag:`revolution`.
 
 
 

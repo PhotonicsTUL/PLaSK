@@ -244,7 +244,7 @@ void PythonManager::loadConnects(XMLReader& reader)
             }
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", in.first, in.second)); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%'.", in.first, in.second)); }
         }
 
         std::string outkey = reader.requireAttribute("out");
@@ -265,7 +265,7 @@ void PythonManager::loadConnects(XMLReader& reader)
             catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", out.first)); }
 
             try { prov = solverout.attr(out.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", out.first, out.second)); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%'.", out.first, out.second)); }
 
             if (provider == py::object()) provider = prov;
             else provider = provider + prov;

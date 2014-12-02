@@ -181,8 +181,16 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>();
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialSource );
-        static_pointer_cast<Geometry2DCylindrical>(result)->
-            setRevolution(make_shared<Revolution>(readExactlyOneChild<GeometryObjectD<2>>()));
+
+        auto child = readExactlyOneChild<GeometryObject>();
+        auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
+        if (child_as_revolution) {
+            static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(child_as_revolution);
+        } else {
+            auto child_as_2d = dynamic_pointer_cast<GeometryObjectD<2>>(child);
+            if (!child_as_2d) throw UnexpectedGeometryObjectTypeException();
+            static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(make_shared<Revolution>(child_as_2d));
+        }
 
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
