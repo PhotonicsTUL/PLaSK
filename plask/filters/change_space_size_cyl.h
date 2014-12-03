@@ -152,13 +152,14 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
 
         boost::optional<ValueType> operator()(std::size_t index) {
             Vec<3, double> p = dst_mesh->at(index);
-            std::size_t region_index = source.findRegionIndex(p,
+            std::size_t region_index = source.findRegionIndex(p/*,
                         [&](const Region& r) {
                             //check if p can be in cylinder inside r
                             const Vec<3, double> v = p - r.inTranslation;  // r.inTranslation points to center of cylinder base
                             const double radius = (r.inGeomBB.upper.lon() - r.inGeomBB.lower.lon()) * 0.5;    //TODO all regions should have same size, so this can be calc. only once
+                            std::cerr << r.inGeomBB.upper.lon() << ' ' << r.inGeomBB.lower.lon() << ' ' << radius << std::endl;
                             return std::fma(v.lon(), v.lon(), v.tran() * v.tran()) <= radius * radius;
-                        }
+                        }*/ //this is not proper becouse revolution can be somehow clipped and radius can't be calculated this way!
             );
             if (region_index == source.regions.size())
                 return boost::optional<ValueType>();
