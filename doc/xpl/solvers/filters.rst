@@ -16,8 +16,8 @@ Data filters
 
    Filter can transfer data between two geometry objects only if the first is successor of the second in the geometry graph. In case of geometries, filter can transfer data between two geometries only if main object of the first geometry is successor of main object of the second geometry. By a main object of a geometry we mean:
 
-  - in case of cartesian 3D geometry: a child of the geometry (3D object);
-  - in case of cartesian 2D geometry: a child of the geometry (extrusion) or a 2D child of this child (depending on context);
-  - in case of cylindrical geometry: a child of the geometry (revolution) or a 2D child of this child (depending on context).
+   - in case of cartesian 3D geometry: a child of the geometry (3D object);
+   - in case of cartesian 2D geometry: a child of the geometry (extrusion) or a 2D child of this child (depending on context);
+   - in case of cylindrical geometry: a child of the geometry (revolution) or a 2D child of this child (depending on context).
 
    Some information about connecting filters with solvers are in the :xml:tag:`connects` sections.
