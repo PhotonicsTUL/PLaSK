@@ -18,6 +18,6 @@ Data filters
 
    - in case of cartesian 3D geometry: a child of the geometry (3D object);
    - in case of cartesian 2D geometry, depending on context: a child of the geometry (extrusion) or a child of this child (2D object);
-   - in case of cylindrical geometry, depending on context: a child of the geometry (revolution) or a 2D child of this child (2D object).
+   - in case of cylindrical geometry, depending on context: a child of the geometry (revolution) or a child of this child (2D object).
 
    Some information about connecting filters with solvers are in the :xml:tag:`connects` sections.
