@@ -14,4 +14,6 @@ Data filters
    :attr required for: name of property type that this filter will pass (``out`` will provide data of this type), e.g.: ``Temperature``.
    :attr required geometry: Name of the geometry defined in the :xml:tag:`<geometry>` section. Filter will provide data in coordinates of given geometry.
 
+   Filter can transfer data between two geometry objects only if the first is successor of the second in the geometry graph. In case of geometries, filter can transfer data between two geometries only if main object of the first geometry is successor of main object of the second geometry. By a main object of a geometry we mean it child: 3D object (in case of cartesian 3D geometry), extrusion (in case of cartesian 2D geometry) or revolution (in case of cylindrical geometry).
+
    Some information about connecting filters with solvers are in the :xml:tag:`connects` sections.
