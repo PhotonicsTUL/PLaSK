@@ -41,6 +41,7 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
             roughness = reader.getAttribute<double>("roughness", roughness);
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
+            matrixelemscfact = reader.getAttribute<double>("matrix-elem-sc-fact", matrixelemscfact);
             cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
             vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
