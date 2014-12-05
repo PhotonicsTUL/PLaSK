@@ -112,7 +112,7 @@ class GeometryController(Controller):
         try:
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
-            manager.load(self.document.get_XPL_content(sections=self.document.SECTION_NAMES[:self.document.SECTION_NAMES.index('geometry')+1]))
+            manager.load(self.document.get_XPL_content(sections='geometry'))
             to_plot = manager.geometry[tree_element.name]
             if to_plot is not None: plot_geometry(manager.geometry[tree_element.name])
         finally:

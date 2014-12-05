@@ -87,10 +87,12 @@ class XPLDocument(object):
     def get_XPL_content(self, sections = None, update_lines = None):
         '''
         Get document content in XPL format.
-        :param list sections: if given, only selected sections will be included in result
+        :param sections: if given, only selected sections will be included in result, list or string (in such case all sections up to given one will be included)
         :param bool update_lines: if True number of lines in model will be updated (True by default only if all sections are stored)
         :return str: document content in XPL format
         '''
+        if isinstance(sections, basestring):
+            sections = XPLDocument.SECTION_NAMES[:XPLDocument.SECTION_NAMES.index(sections)+1]
         if update_lines is None: update_lines = sections is None or sections == self.SECTION_NAMES
         data = '<plask>\n\n'
         current_line_in_file = 3
