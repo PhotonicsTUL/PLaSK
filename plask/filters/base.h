@@ -205,7 +205,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return regions.size();
     }
 
-    virtual void calcConnectionParameters() {
+    virtual void calcConnectionParameters() override {
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
         std::vector<OutBox> bb = this->outputObj->getObjectBoundingBoxes(*this->inputObj, this->getPath());
@@ -240,9 +240,9 @@ struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     Vec<InputGeomObj::DIM, double> inTranslation;
 
-    virtual void calcConnectionParameters() {
+    virtual void calcConnectionParameters() override {
         std::vector<Vec<InputGeomObj::DIM, double>> pos = this->inputObj->getObjectPositions(*this->outputObj, this->getPath());
-        if (pos.size() != 1) throw Exception("Inner output geometry object has no unambiguous position in outer input geometry object.");
+        if (pos.size() != 1) throw Exception("Inner output geometry object has not unambiguous position in outer input geometry object.");
         inTranslation = pos[0];
     }
 

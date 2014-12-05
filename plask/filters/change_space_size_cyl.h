@@ -130,6 +130,8 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
     /// Type of property value in input space
     typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType InputValueType;
 
+    double r_sqr_begin, r_sqr_end;
+
     struct LazySourceImpl {
 
         std::vector<LazyData<InputValueType>> dataForRegion;
@@ -152,14 +154,13 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
 
         boost::optional<ValueType> operator()(std::size_t index) {
             Vec<3, double> p = dst_mesh->at(index);
-            std::size_t region_index = source.findRegionIndex(p/*,
+            std::size_t region_index = source.findRegionIndex(p,
                         [&](const Region& r) {
                             //check if p can be in cylinder inside r
                             const Vec<3, double> v = p - r.inTranslation;  // r.inTranslation points to center of cylinder base
-                            const double radius = (r.inGeomBB.upper.lon() - r.inGeomBB.lower.lon()) * 0.5;    //TODO all regions should have same size, so this can be calc. only once
-                            std::cerr << r.inGeomBB.upper.lon() << ' ' << r.inGeomBB.lower.lon() << ' ' << radius << std::endl;
-                            return std::fma(v.lon(), v.lon(), v.tran() * v.tran()) <= radius * radius;
-                        }*/ //this is not proper becouse revolution can be somehow clipped and radius can't be calculated this way!
+                            const double distance_from_center_sqr = std::fma(v.rad_p(), v.rad_p(), v.rad_r() * v.rad_r());
+                            return this->source.r_sqr_begin <= distance_from_center_sqr && distance_from_center_sqr <= this->source.r_sqr_end;
+                        }
             );
             if (region_index == source.regions.size())
                 return boost::optional<ValueType>();
@@ -171,6 +172,13 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
         }
 
     };
+
+    virtual void calcConnectionParameters() override {
+        InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D, Revolution>::calcConnectionParameters();
+        auto box = this->inputObj->getChild()->getBoundingBox();
+        r_sqr_begin = std::max(box.lower.rad_r(), 0.0); r_sqr_begin *= r_sqr_begin;
+        r_sqr_end = std::abs(box.upper.rad_r()); r_sqr_end *= r_sqr_end;
+    }
 
     std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
