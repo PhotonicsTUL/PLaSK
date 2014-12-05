@@ -11,12 +11,15 @@
 # GNU General Public License for more details.
 import operator
 
+import plask
+
 from ...model.geometry import GeometryModel
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core
 from ...qt import QtGui, QtCore
 
 from .. import Controller
+from .plot import plot_geometry
 from ...utils.widgets import HTMLDelegate
 
 # TODO use ControllerWithSubController (?)
@@ -59,7 +62,9 @@ class GeometryController(Controller):
 
 
     def update_actions(self):
-        self.remove_action.setEnabled(not self.tree.selectionModel().selection().isEmpty())
+        has_selected_object = not self.tree.selectionModel().selection().isEmpty()
+        self.remove_action.setEnabled(has_selected_object)
+        self.plot_action.setEnabled(has_selected_object)
         self.fill_add_menu()
 
         u, d = self.model.can_move_node_up_down(self.tree.selectionModel().currentIndex())
@@ -97,6 +102,25 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
+    def plot(self):
+        current_index = self.tree.selectionModel().currentIndex()
+        if not current_index.isValid(): return
+        tree_element = current_index.internalPointer()
+
+        #TODO support for ref element, and exclude rest non-objects
+        element_has_name = getattr(tree_element, 'name') is not None
+        try:
+            if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
+            manager = plask.Manager()
+            manager.load(self.document.get_XPL_content(sections=self.document.SECTION_NAMES[:self.document.SECTION_NAMES.index('geometry')+1]))
+            to_plot = manager.geometry[tree_element.name]
+            if to_plot is not None: plot_geometry(manager.geometry[tree_element.name])
+        finally:
+            if not element_has_name: tree_element.name = None
+
+        #plot_geometry(current_index.internalPointer())
+
+
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
         toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -130,6 +154,11 @@ class GeometryController(Controller):
         self.move_down_action.triggered.connect(self.move_current_down)
         toolbar.addAction(self.move_down_action)
 
+        self.plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('plask'), '&Plot', toolbar)
+        self.plot_action.setStatusTip('Plot selected geometry object')
+        self.plot_action.triggered.connect(self.plot)
+        toolbar.addAction(self.plot_action)
+
         return toolbar
 
     def _construct_tree(self, model):
@@ -148,9 +177,9 @@ class GeometryController(Controller):
         self._last_index = None
         self._current_controller = None
 
-        external = QtGui.QGroupBox()
+        tree_with_buttons = QtGui.QGroupBox()
         vbox = QtGui.QVBoxLayout()
-        external.setLayout(vbox)
+        tree_with_buttons.setLayout(vbox)
 
         vbox.setContentsMargins(0, 0, 0, 0)
         vbox.setSpacing(0)
@@ -162,13 +191,13 @@ class GeometryController(Controller):
         tree_selection_model.selectionChanged.connect(self.grid_selected)
         self.update_actions()
 
-        self.splitter = QtGui.QSplitter()
-        self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.vertical_splitter = QtGui.QSplitter()
+        self.vertical_splitter.setOrientation(QtCore.Qt.Vertical)
 
-        self.splitter.addWidget(external)
+        self.vertical_splitter.addWidget(tree_with_buttons)
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
-        self.splitter.addWidget(self.parent_for_editor_widget)
+        self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
     def set_current_index(self, new_index):
         """
@@ -199,7 +228,7 @@ class GeometryController(Controller):
             self.tree.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
 
     def on_edit_enter(self):
-        self.tree.selectionModel().clear()   # model could completly changed
+        self.tree.selectionModel().clear()   # model could completely changed
         #if self._last_index is not None:
         #    self.tree.selectRow(self._last_index)
 
@@ -210,4 +239,4 @@ class GeometryController(Controller):
         return True
 
     def get_widget(self):
-        return self.splitter
+        return self.vertical_splitter

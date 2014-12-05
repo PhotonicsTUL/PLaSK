@@ -84,16 +84,28 @@ class XPLDocument(object):
         self.filename = filename
         self.set_changed(False)
 
-    def save_to_file(self, filename):
-        # safe write: maybe inefficient, but does not destroy the file if the error occurs
+    def get_XPL_content(self, sections = None, update_lines = None):
+        '''
+        Get document content in XPL format.
+        :param list sections: if given, only selected sections will be included in result
+        :param bool update_lines: if True number of lines in model will be updated (True by default only if all sections are stored)
+        :return str: document content in XPL format
+        '''
+        if update_lines is None: update_lines = sections is None or sections == self.SECTION_NAMES
         data = '<plask>\n\n'
         current_line_in_file = 3
         for c in self.controllers:
-            c.update_line_numbers(current_line_in_file)
+            if sections is not None and c.model.name not in sections: continue
+            if update_lines: c.update_line_numbers(current_line_in_file)
             section_string = etree.tostring(c.model.get_file_xml_element(), encoding="UTF-8", pretty_print=True)
             data += section_string + '\n'
             current_line_in_file += section_string.count('\n') + 1
         data += '</plask>'
+        return data
+
+    def save_to_file(self, filename):
+        # safe write: maybe inefficient, but does not destroy the file if the error occurs
+        data = self.get_XPL_content()
         try:
             shutil.copyfile(filename, filename+'.bak')
         except (IOError, OSError):
