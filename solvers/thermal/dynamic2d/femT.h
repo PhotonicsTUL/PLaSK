@@ -77,11 +77,11 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
     Algorithm algorithm;   ///< Factorization algorithm to use
 
-    double maxerr;          ///< Maximum temperature correction accepted as convergence
-    double inittemp;        ///< Initial temperature
-    double dynscheme;       ///< Initial parameter determining the calculation scheme (0.5 - Crank-Nicolson, 0 - explicit, 1 - implicit)
-    double nstimestep;        ///< Time step in nanoseconds
-
+    double inittemp;       ///< Initial temperature
+    double methodparam;   ///< Initial parameter determining the calculation method (0.5 - Crank-Nicolson, 0 - explicit, 1 - implicit)
+    double timestep;       ///< Time step in nanoseconds
+    bool lumping;          ///< Wheter use lumping for matrices?
+    size_t rebuildfreq;    ///< Frequency of mass matrix rebuilding
     size_t logfreq;        ///< Frequency of iteration progress reporting
 
     /**

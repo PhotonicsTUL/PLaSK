@@ -12,11 +12,12 @@ FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::FiniteElementMethodDy
     outHeatFlux(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getHeatFluxes),
     outThermalConductivity(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getThermalConductivity),
     algorithm(ALGORITHM_CHOLESKY),
-    maxerr(0.05),
     inittemp(300.),    
-    dynscheme(0.5),
-    nstimestep(0.1),
-    logfreq(500)
+    methodparam(0.5),
+    timestep(0.1),
+    lumping(true),
+    rebuildfreq(1),
+    logfreq(25)
 {
     temperatures.reset();
     mHeatFluxes.reset();
@@ -40,8 +41,11 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::loadConfiguratio
             this->readBoundaryConditions(manager, source, temperature_boundary);
 
         else if (param == "loop") {
+            methodparam = source.getAttribute<double>("methodparam", methodparam);
+            lumping = source.getAttribute<bool>("lumping", lumping);
             inittemp = source.getAttribute<double>("inittemp", inittemp);
-            maxerr = source.getAttribute<double>("maxerr", maxerr);
+            timestep = source.getAttribute<double>("timestep", timestep);
+            rebuildfreq = source.getAttribute<size_t>("rebuildfreq", rebuildfreq);
             logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
         }
@@ -79,12 +83,12 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
-
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto heatdensities = inHeat(iMesh);
 
-    std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
+    // zero the matrices A, B and the load vector F
+    std::fill_n(A.data, A.size*(A.ld+1), 0.);
+    std::fill_n(B.data, B.size*(B.ld+1), 0.);
     F.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -115,8 +119,8 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         else
             std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp));
 
-        // elements of c lumped mass matrix
-        double cl = material->cp(temp) * material->dens(temp) / 0.25 / elemheight / elemwidth / nstimestep;
+        // element of heat capacity matrix
+        double c = material->cp(temp) * material->dens(temp) * 0.25 * 1E-12 * elemheight * elemwidth / timestep / 1E-9;
 
         kx *= elemheight; kx /= elemwidth;
         ky *= elemwidth; ky /= elemheight;
@@ -124,7 +128,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         // load vector: heat densities
         double f = 0.25e-12 * elemwidth * elemheight * heatdensities[e.getIndex()]; // 1e-12 -> to transform µm² into m²
 
-        // set symmetric matrix components
+        // set symmetric matrix components in thermal conductivity matrix
         double k44, k33, k22, k11, k43, k21, k42, k31, k32, k41;
 
         k44 = k33 = k22 = k11 = (kx + ky) / 3.;
@@ -134,41 +138,67 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 
         double f1 = f, f2 = f, f3 = f, f4 = f;
 
-        // set stiffness matrix
-        A(loleftno, loleftno) += dynscheme*k11 + cl;
-        A(lorghtno, lorghtno) += dynscheme*k22 + cl;
-        A(uprghtno, uprghtno) += dynscheme*k33 + cl;
-        A(upleftno, upleftno) += dynscheme*k44 + cl;
+        //Wheter lumping the mass matrces A, B?
+        if (lumping)
+        {
+            A(loleftno, loleftno) += methodparam*k11 + c;
+            A(lorghtno, lorghtno) += methodparam*k22 + c;
+            A(uprghtno, uprghtno) += methodparam*k33 + c;
+            A(upleftno, upleftno) += methodparam*k44 + c;
 
-        A(lorghtno, loleftno) += dynscheme*k21;
-        A(uprghtno, loleftno) += dynscheme*k31;
-        A(upleftno, loleftno) += dynscheme*k41;
-        A(uprghtno, lorghtno) += dynscheme*k32;
-        A(upleftno, lorghtno) += dynscheme*k42;
-        A(upleftno, uprghtno) += dynscheme*k43;
+            A(lorghtno, loleftno) += methodparam*k21;
+            A(uprghtno, loleftno) += methodparam*k31;
+            A(upleftno, loleftno) += methodparam*k41;
+            A(uprghtno, lorghtno) += methodparam*k32;
+            A(upleftno, lorghtno) += methodparam*k42;
+            A(upleftno, uprghtno) += methodparam*k43;
 
+            B(loleftno, loleftno) += -(1-methodparam)*k11 + c;
+            B(lorghtno, lorghtno) += -(1-methodparam)*k22 + c;
+            B(uprghtno, uprghtno) += -(1-methodparam)*k33 + c;
+            B(upleftno, upleftno) += -(1-methodparam)*k44 + c;
+
+            B(lorghtno, loleftno) += -(1-methodparam)*k21;
+            B(uprghtno, loleftno) += -(1-methodparam)*k31;
+            B(upleftno, loleftno) += -(1-methodparam)*k41;
+            B(uprghtno, lorghtno) += -(1-methodparam)*k32;
+            B(upleftno, lorghtno) += -(1-methodparam)*k42;
+            B(upleftno, uprghtno) += -(1-methodparam)*k43;
+        }
+        else
+        {
+            A(loleftno, loleftno) += methodparam*k11 + 4./9.*c;
+            A(lorghtno, lorghtno) += methodparam*k22 + 4./9.*c;
+            A(uprghtno, uprghtno) += methodparam*k33 + 4./9.*c;
+            A(upleftno, upleftno) += methodparam*k44 + 4./9.*c;
+
+            A(lorghtno, loleftno) += methodparam*k21 + 2./9.*c;
+            A(uprghtno, loleftno) += methodparam*k31 + 1./9.*c;
+            A(upleftno, loleftno) += methodparam*k41 + 2./9.*c;
+            A(uprghtno, lorghtno) += methodparam*k32 + 2./9.*c;
+            A(upleftno, lorghtno) += methodparam*k42 + 1./9.*c;
+            A(upleftno, uprghtno) += methodparam*k43 + 2./9.*c;
+
+            B(loleftno, loleftno) += -(1-methodparam)*k11 + 4./9.*c;
+            B(lorghtno, lorghtno) += -(1-methodparam)*k22 + 4./9.*c;
+            B(uprghtno, uprghtno) += -(1-methodparam)*k33 + 4./9.*c;
+            B(upleftno, upleftno) += -(1-methodparam)*k44 + 4./9.*c;
+
+            B(lorghtno, loleftno) += -(1-methodparam)*k21 + 2./9.*c;
+            B(uprghtno, loleftno) += -(1-methodparam)*k31 + 1./9.*c;
+            B(upleftno, loleftno) += -(1-methodparam)*k41 + 2./9.*c;
+            B(uprghtno, lorghtno) += -(1-methodparam)*k32 + 2./9.*c;
+            B(upleftno, lorghtno) += -(1-methodparam)*k42 + 1./9.*c;
+            B(upleftno, uprghtno) += -(1-methodparam)*k43 + 2./9.*c;
+        }
         // set load vector
         F[loleftno] += f1;
         F[lorghtno] += f2;
         F[uprghtno] += f3;
         F[upleftno] += f4;
-
-        // set B
-        B(loleftno, loleftno) += -(1-dynscheme)*k11 + cl;
-        B(lorghtno, lorghtno) += -(1-dynscheme)*k22 + cl;
-        B(uprghtno, uprghtno) += -(1-dynscheme)*k33 + cl;
-        B(upleftno, upleftno) += -(1-dynscheme)*k44 + cl;
-
-        B(lorghtno, loleftno) += -(1-dynscheme)*k21;
-        B(uprghtno, loleftno) += -(1-dynscheme)*k31;
-        B(upleftno, loleftno) += -(1-dynscheme)*k41;
-        B(uprghtno, lorghtno) += -(1-dynscheme)*k32;
-        B(upleftno, lorghtno) += -(1-dynscheme)*k42;
-        B(upleftno, uprghtno) += -(1-dynscheme)*k43;
-
     }
 
-    // boundary conditions of the first kind
+    //boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
             A(r,r) += BIG;
@@ -210,11 +240,12 @@ double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::doCompute(doub
     // store boundary conditions for current mesh
     auto btemperature = temperature_boundary(this->mesh, this->geometry);
 
-    this->writelog(LOG_INFO, "Running thermal calculations");
-
     MatrixT A(size, this->mesh->minorAxis()->size());
     MatrixT B(size, this->mesh->minorAxis()->size());
-
+    this->writelog(LOG_INFO, "Running thermal calculations");
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    maxT = *std::max_element(temperatures.begin(), temperatures.end());
+    this->writelog(LOG_RESULT, "Time %d: max(T) = %d K", 0., maxT);
 
 #   ifndef NDEBUG
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
@@ -222,16 +253,35 @@ double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::doCompute(doub
     temperatures = temperatures.claim();
     DataVector<double> F(size), T(size);
 
-    for (double t = 0; t < time; t += nstimestep) {
+    setMatrix(A, B, F, btemperature);
 
-        setMatrix(A, B, F, btemperature);
+    size_t r = rebuildfreq - 1,
+           l = logfreq - 1;
+
+    for (double t = timestep; t < time + timestep; t += timestep) {
+
+        if (rebuildfreq && r == 0)
+        {
+            setMatrix(A, B, F, btemperature);
+            r = rebuildfreq;
+        }
+
         B.mult(temperatures, T);
         for (std::size_t i = 0; i < T.size(); ++i) T[i] += F[i];
 
         solveMatrix(A, T);
 
-        this->writelog(LOG_RESULT, "Time %d: max(T) = %.3f K", t, maxT);
+        std::swap(temperatures, T);
 
+        if (logfreq && l == 0)
+        {
+            maxT = *std::max_element(temperatures.begin(), temperatures.end());
+            this->writelog(LOG_RESULT, "Time %d: max(T) = %d K", t, maxT);
+            l = logfreq;
+        }
+
+        r--;
+        l--;
     }
 
     outTemperature.fireChanged();
@@ -298,22 +348,6 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::solveMatrix(DgbM
 
     // now A contains factorized matrix and B the solutions
 }
-
-template<typename Geometry2DType>
-double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::saveTemperatures(plask::DataVector<double>& T)
-{
-    double err = 0.;
-    maxT = 0.;
-    for (auto temp = temperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
-    {
-        double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
-        if (corr > err) err = corr;
-        if (*t > maxT) maxT = *t;
-    }
-    std::swap(temperatures, T);
-    return err;
-}
-
 
 template<typename Geometry2DType>
 void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::saveHeatFluxes()

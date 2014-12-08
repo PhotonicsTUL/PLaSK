@@ -22,40 +22,17 @@ BOOST_PYTHON_MODULE(dynamic2d)
     {CLASS(FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>, "Dynamic2D",
         "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("time"));
-//        RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
-//        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
-//        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
-//        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-//        RW_FIELD(inittemp, "Initial temperature");
-        RW_FIELD(nstimestep, "Time step in ns");
-//        RW_FIELD(maxerr, "Limit for the temperature updates");
+        RW_FIELD(inittemp, "Initial temperature [K]");
+        RW_FIELD(timestep, "Time step [ns]");
+        RW_FIELD(methodparam, "Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
+        RW_FIELD(lumping, "Chosen mass matrix type from lumped or non-lumped (consistent)");
+        RW_FIELD(rebuildfreq, "Frequency of rebuild mass");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
     }
-
-//    {CLASS(FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
-//        "Finite element thermal solver for 2D Cylindrical Geometry.")
-//        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-//        RO_PROPERTY(err, getErr, "Maximum estimated error");
-//        RECEIVER(inHeat, "");
-//        solver.setattr("inHeatDensity", solver.attr("inHeat"));
-//        PROVIDER(outTemperature, "");
-//        PROVIDER(outHeatFlux, "");
-//        PROVIDER(outThermalConductivity, "");
-//        BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
-//        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
-//        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
-//        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-//        RW_FIELD(inittemp, "Initial temperature");
-//        RW_FIELD(maxerr, "Limit for the temperature updates");
-//        solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
-//        solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
-//        solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
-//        solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-//    }
 }
