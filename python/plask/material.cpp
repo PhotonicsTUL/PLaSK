@@ -827,7 +827,11 @@ void initMaterials() {
              "    dict: Dictionary with completed composition.")
         .staticmethod("complete_composition")
 
-        .add_property("name", &Material::name, "Material name.")
+        .add_property("name", &Material::name, "Material name (without composition and doping amounts).")
+
+        .add_property("dopant_name", &Material::dopantName, "Dopant material name (part of name after ':', possibly empty).")
+
+        .add_property("name_without_dopant", &Material::nameWithoutDopant, "Material name without dopant (without ':' and part of name after it).")
 
         .add_property("kind", &Material::kind, "Material kind.")
 

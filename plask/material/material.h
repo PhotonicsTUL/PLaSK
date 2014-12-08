@@ -287,6 +287,18 @@ struct PLASK_API Material {
     virtual std::string name() const = 0;
 
     /**
+     * Get dopant material name (part of name after ':', possibly empty).
+     * @return dopant material name
+     */
+    std::string dopantName() const;
+
+    /**
+     * Get material name without dopant (without ':' and part of name after it).
+     * @return material name without dopant
+     */
+    std::string nameWithoutDopant() const;
+
+    /**
      * Get full (with composition and doping amounts) name of material.
      *
      * Default implementation returns name, which is fine only for simple materials.

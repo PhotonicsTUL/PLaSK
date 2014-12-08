@@ -199,6 +199,13 @@ class GeometryController(Controller):
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
+        self.geometry_view_dock = QtGui.QDockWidget("Geometry", self.document.window)
+        #geometry_view_dock.setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+        #customerList = new QListWidget(dock);
+        #dock->setWidget(customerList);
+        self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view_dock)
+
+
     def set_current_index(self, new_index):
         """
             Try to change current script.

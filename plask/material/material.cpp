@@ -298,6 +298,15 @@ std::vector<std::string> Material::parseObjectsNames(const std::string &allNames
     return parseObjectsNames(c, c + allNames.size());
 }
 
+std::string Material::dopantName() const {
+    std::string::size_type p = this->name().rfind(':');
+    return p == std::string::npos ? "" : this->name().substr(p+1);
+}
+
+std::string Material::nameWithoutDopant() const {
+    return this->name().substr(0, this->name().rfind(':'));
+}
+
 //------------ Different material kinds -------------------------
 
 std::string Semiconductor::name() const { return NAME; }
