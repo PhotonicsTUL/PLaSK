@@ -93,11 +93,12 @@ def _add_path_Sphere(patches, trans, box, ax, hmirror, vmirror, color, lw, zorde
 _geometry_plotters[plask.geometry.Sphere] = _add_path_Sphere
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
+def plot_geometry(figure, geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
     '''Plot geometry.'''
     #TODO documentation
 
-    axes = matplotlib.pylab.gca()
+    #figure.clear()
+    axes = figure.add_subplot(111)
     patches = []
 
     if type(geometry) == plask.geometry.Cartesian3D:
