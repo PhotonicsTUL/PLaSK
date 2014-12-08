@@ -657,6 +657,7 @@ if(WIN32)
         install(FILES ${dlls} DESTINATION bin COMPONENT core)
     endif()
     set(CPACK_PACKAGE_NAME "PLaSK")
+    set(CPACK_NSIS_PACKAGE_NAME "PLaSK")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plaskgui;PLaSK GUI")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "qtplask;PLaSK Runner")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plask;PLaSK Console")
@@ -678,14 +679,14 @@ if(WIN32)
     set(CPACK_NSIS_COMPRESSOR "lzma
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
         !include ${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh")
-    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " 
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         !insertmacro UPDATEFILEASSOC
     ")
-    set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS " 
+    set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
         !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
         !insertmacro UPDATEFILEASSOC
-    ") 
+    ")
 endif()
 
 # Settings for DEB generator
