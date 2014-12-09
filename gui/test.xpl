@@ -141,7 +141,7 @@
 <script><![CDATA[
 from scipy import optimize
 
-OPTICAL.root.maxiter
+OPTICAL.find_mode
 
 class A(object):
     

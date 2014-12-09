@@ -99,8 +99,8 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
 
     shared_ptr<RectangularMesh<3>> points = mesh->getMidpointsMesh();
 
-    size_t ileft = 0, iright = points->axis0->size();
-    size_t iback = 0, ifront = points->axis1->size();
+    size_t ileft = 0, iright = points->axis1->size();
+    size_t iback = 0, ifront = points->axis0->size();
     bool in_active = false;
 
     for (size_t ver = 0; ver < points->axis2->size(); ++ver) {
@@ -289,10 +289,11 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
         double kx, ky = conds[index].c00, kz = conds[index].c11;
 
         ky *= 1e-6; kz *= 1e-6;                                         // 1/m -> 1/µm
+        kx = ky;
 
-        kx = ky/dx; kx = ky*dy; kx = ky*dz;
-        ky *= dx;   ky /= dy;   ky *= dz;
-        kz *= dx;   kz *= dy;   kz /= dz;
+        kx /= dx; kx *= dy; kx *= dz;
+        ky *= dx; ky /= dy; ky *= dz;
+        kz *= dx; kz *= dy; kz /= dz;
 
         // set symmetric matrix components
         double K[8][8];
