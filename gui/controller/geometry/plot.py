@@ -120,6 +120,7 @@ def plot_geometry(figure, geometry, color='k', lw=1.0, plane=None, set_limits=Fa
 
     for patch in patches:
         axes.add_patch(patch)
+
     if set_limits:
         box = geometry.bbox
         if hmirror:
@@ -135,7 +136,11 @@ def plot_geometry(figure, geometry, color='k', lw=1.0, plane=None, set_limits=Fa
 
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    matplotlib.pyplot.xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
-    matplotlib.pyplot.ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
+
+    #TODO changed 9 XII 2014 in order to avoid segfault in GUI:
+    # matplotlib.pyplot.xlabel -> axes.set_xlabel
+    # matplotlib.pyplot.ylabel -> axes.set_ylabel
+    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
+    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
     return patches

@@ -18,13 +18,10 @@ from ...model.geometry import GeometryModel
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core
 
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-
 from .. import Controller
-from .plot import plot_geometry
 from ...utils.widgets import HTMLDelegate
+
+from .plot_widget import PlotDock
 
 # TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
@@ -118,7 +115,7 @@ class GeometryController(Controller):
             manager = plask.Manager()
             manager.load(self.document.get_XPL_content(sections='geometry'))
             to_plot = manager.geometry[tree_element.name]
-            if to_plot is not None: plot_geometry(self.figure, manager.geometry[tree_element.name])
+            self.geometry_view_dock.update_plot(to_plot)
         finally:
             if not element_has_name: tree_element.name = None
 
@@ -174,19 +171,7 @@ class GeometryController(Controller):
         return self.tree
 
     def _construct_plot_dock(self):
-        self.geometry_view_dock = QtGui.QDockWidget("Geometry", self.document.window)
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        self.canvas.setParent(self.geometry_view_dock)
-        self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.geometry_view_dock.palette().color(QtGui.QPalette.Background).name())
-        self.canvas.updateGeometry()
-        self.plot_toolbar = NavigationToolbar(self.canvas, self.geometry_view_dock)
-
-        #plotbox = QtGui.QVBoxLayout()
-        #self.geometry_view_dock.setLayout(plotbox)
-        #plotbox.addWidget(self.plot_toolbar)
-        #plotbox.addWidget(self.canvas)
+        self.geometry_view_dock = PlotDock(self.document.window)
         self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view_dock)
 
     def __init__(self, document, model=None):
