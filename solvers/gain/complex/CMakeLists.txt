@@ -28,7 +28,7 @@ find_package(PLaSK)
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 #
-if(${Boost_VERSION} LESS 105200)
+if(${Boost_VERSION} LESS 105400)
     set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/boostfix)
 endif()
 

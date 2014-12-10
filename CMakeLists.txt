@@ -381,7 +381,7 @@ if(BUILD_PYTHON)
         if(UNIX)
             install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
             install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
-            foreach(s 24 32 48)
+            foreach(s 16 24 32 48)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plask.png
                         DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT GUI)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/mimetypes/application-x-plask.png
@@ -571,6 +571,7 @@ else()
 endif()
 
 file(GLOB examples ${CMAKE_SOURCE_DIR}/doc/*.xpl ${CMAKE_SOURCE_DIR}/doc/*.py)
+list(REMOVE_ITEM examples ${CMAKE_SOURCE_DIR}/doc/conf.py)
 install(FILES ${examples} DESTINATION ${doc_dest}/examples COMPONENT doc)
 
 add_subdirectory(doc)
@@ -689,9 +690,9 @@ if(WIN32)
     ")
 endif()
 
-# Settings for DEB generator
+# Settings for DEB and RPM generator
 if(UNIX)
-    set(CPACK_GENERATOR "DEB")
+    set(CPACK_GENERATOR "DEB;RPM")
     file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask\n")
     file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
 
@@ -707,6 +708,12 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_SUGGESTS "ipython-qtconsole (>= 0.13)")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
+    set(CPACK_RPM_PACKAGE_GROUP Applications/Engineering)
+    # set(CPACK_RPM_PACKAGE_REQUIRES "expat boost-python boost-system boost-filesystem openblas lapack scipy python-matplotlib h5py")
+    set(CPACK_RPM_PACKAGE_REQUIRES "scipy python-matplotlib h5py")
+    set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/usr;/usr/bin;/usr/include;/usr/lib;/usr/share;/usr/share/applications;/usr/share/doc;/usr/share/icons;/usr/share/icons/hicolor;/usr/share/icons/hicolor/16x16;/usr/share/icons/hicolor/16x16/apps;/usr/share/icons/hicolor/16x16/mimetypes;/usr/share/icons/hicolor/24x24;/usr/share/icons/hicolor/24x24/apps;/usr/share/icons/hicolor/24x24/mimetypes;/usr/share/icons/hicolor/32x32;/usr/share/icons/hicolor/32x32/apps;/usr/share/icons/hicolor/32x32/mimetypes;/usr/share/icons/hicolor/48x48;/usr/share/icons/hicolor/48x48/apps;/usr/share/icons/hicolor/48x48/mimetypes;/usr/share/icons/hicolor/scalable;/usr/share/icons/hicolor/scalable/apps;/usr/share/icons/hicolor/scalable/mimetypes;/usr/share/mime;/usr/share/mime/packages;/usr/share/mime/packages")
+    set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/postinst")
+    set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/prerm")
 endif()
 
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "plask-${VERSION}" CACHE INTERNAL "tarball basename")
