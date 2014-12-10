@@ -6,24 +6,39 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 
 from .plot import plot_geometry
 
-class PlotDock(QtGui.QDockWidget):
+class PlotWidget(QtGui.QGroupBox):
 
-    def __init__(self, window):
-        super(PlotDock, self).__init__('Geometry', window)
+    def __init__(self, parent = None):
+        super(PlotWidget, self).__init__(parent)
+        self.setContentsMargins(0, 0, 0, 0)
+
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
         self.canvas.updateGeometry()
         self.plot_toolbar = NavigationToolbar(self.canvas, self)
 
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.plot_toolbar)
+        vbox.addWidget(self.canvas)
+
+        self.setLayout(vbox)
+
     def resizeEvent(self, event):
-        super(PlotDock, self).resizeEvent(event)
+        super(PlotWidget, self).resizeEvent(event)
         self.figure.set_tight_layout(0)
 
     def update_plot(self, to_plot):
         self.figure.clear()
         if to_plot is not None:
             plot_geometry(self.figure, to_plot)
+            self.figure.set_tight_layout(0)
             self.canvas.draw()
+
+    def dock_window(self, window):
+        res = QtGui.QDockWidget('Geometry', window)
+        res.setContentsMargins(0, 0, 0, 0)
+        res.setWidget(self)
+        return res

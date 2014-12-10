@@ -21,7 +21,7 @@ from ...model.geometry.types import geometry_types_geometries_core
 from .. import Controller
 from ...utils.widgets import HTMLDelegate
 
-from .plot_widget import PlotDock
+from .plot_widget import PlotWidget
 
 # TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
@@ -115,7 +115,7 @@ class GeometryController(Controller):
             manager = plask.Manager()
             manager.load(self.document.get_XPL_content(sections='geometry'))
             to_plot = manager.geometry[tree_element.name]
-            self.geometry_view_dock.update_plot(to_plot)
+            self.geometry_view.update_plot(to_plot)
         finally:
             if not element_has_name: tree_element.name = None
 
@@ -171,8 +171,8 @@ class GeometryController(Controller):
         return self.tree
 
     def _construct_plot_dock(self):
-        self.geometry_view_dock = PlotDock(self.document.window)
-        self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view_dock)
+        self.geometry_view = PlotWidget()
+        self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
 
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
