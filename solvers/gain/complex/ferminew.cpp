@@ -359,7 +359,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             if (iShowSpecLogs) writelog(LOG_RESULT, "Layer %1% - strain: %2%%3%", i+1, e*100., '%');
         }
     }
-
+    // ODTAD PRZENOSIMY DO OSOBNEJ FUNKCJI
     int tStrType = buildStructure(T, region, iShowSpecLogs);
     if (tStrType == 0) writelog(LOG_INFO, "I-type QW for Ec-Evhh and Ec-Evlh.");
     else if (tStrType == 1) writelog(LOG_INFO, "I-type QW for Ec-Evhh.");
@@ -385,7 +385,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         if (iShowSpecLogs) tShowM = true;
         plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness, matrixelemscfact, tShowM)); // roughness = 0.05 for example // TODO
         aktyw->zrob_macierze_przejsc();
-
+        // TU KONCZYMY PRZENOSZENIE DO OSOBNEJ FUNKCJI BO DALEJ WCHODZI TEMPERATURA
         n = recalcConc(aktyw, n, tQWTotH, T, tQWnR); // LUKASZ
         QW::gain gainModule(aktyw, n*(tQWTotH*1e-7), T, tQWnR);
 

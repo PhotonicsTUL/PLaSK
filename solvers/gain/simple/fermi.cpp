@@ -451,7 +451,10 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     }
 
     if (!matrixelem) matrixelem = (1./gainModule.Get_electron_mass_transverse() - 1.)*(qEg+gainModule.Get_split_off())*qEg/(qEg+2.*gainModule.Get_split_off()/3.)/2.;
-    matrixelem *= matrixelemscfact;
+
+    //matrixelem *= matrixelemscfact;
+    gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
+    //writelog(LOG_INFO, "recalculated matrix elem: %1%", matrixelem*matrixelemscfact); // TEST
 
     gainModule.Set_bandgap(qEg);
     gainModule.Set_valence_depth(vdepth);
