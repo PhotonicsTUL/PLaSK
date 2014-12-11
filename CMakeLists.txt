@@ -694,12 +694,10 @@ endif()
 if(UNIX)
     set(CPACK_GENERATOR "DEB;RPM")
 
-    set(CPACK_SET_DESTDIR "ON")
-    set(CPACK_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-
-    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CPACK_INSTALL_PREFIX}/lib/plask\n")
-    file(WRITE ${CMAKE_BINARY_DIR}/rpmpostin "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CPACK_INSTALL_PREFIX}/lib/plask\n/sbin/ldconfig\n")
-    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CPACK_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/rpmpostin "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall \$RPM_INSTALL_PREFIX/lib/plask\n/sbin/ldconfig\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/rpmpreun "#!/bin/sh\nset -e\nfind \$RPM_INSTALL_PREFIX/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
     file(WRITE ${CMAKE_BINARY_DIR}/rpmpostun "#!/bin/sh\nset -e\n/sbin/ldconfig\n")
 
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
@@ -719,7 +717,7 @@ if(UNIX)
     set(CPACK_RPM_PACKAGE_REQUIRES "scipy python-matplotlib h5py")
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/usr;/usr/bin;/usr/include;/usr/lib;/usr/share;/usr/share/applications;/usr/share/doc;/usr/share/icons;/usr/share/icons/hicolor;/usr/share/icons/hicolor/16x16;/usr/share/icons/hicolor/16x16/apps;/usr/share/icons/hicolor/16x16/mimetypes;/usr/share/icons/hicolor/24x24;/usr/share/icons/hicolor/24x24/apps;/usr/share/icons/hicolor/24x24/mimetypes;/usr/share/icons/hicolor/32x32;/usr/share/icons/hicolor/32x32/apps;/usr/share/icons/hicolor/32x32/mimetypes;/usr/share/icons/hicolor/48x48;/usr/share/icons/hicolor/48x48/apps;/usr/share/icons/hicolor/48x48/mimetypes;/usr/share/icons/hicolor/scalable;/usr/share/icons/hicolor/scalable/apps;/usr/share/icons/hicolor/scalable/mimetypes;/usr/share/mime;/usr/share/mime/packages;/usr/share/mime/packages")
     set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostin")
-    set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/prerm")
+    set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpreun")
     set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostun")
 endif()
 
