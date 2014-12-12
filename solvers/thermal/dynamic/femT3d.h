@@ -1,25 +1,18 @@
-#ifndef PLASK__MODULE_THERMAL_FEMT_H
-#define PLASK__MODULE_THERMAL_FEMT_H
+#ifndef PLASK__MODULE_THERMAL_FEMT3D_H
+#define PLASK__MODULE_THERMAL_FEMT3D_H
 
 #include <plask/plask.hpp>
 
 #include "block_matrix.h"
 #include "gauss_matrix.h"
+#include "algorithm.h"
 
 namespace plask { namespace solvers { namespace thermal {
-
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< Cholesky factorization
-    ALGORITHM_GAUSS    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-//    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
-};
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-template<typename Geometry2DType>
-struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
 
@@ -30,18 +23,15 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
     DataVector<double> temperatures;           ///< Computed temperatures
 
-    DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
+    DataVector<Vec<3,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature
                   );
 
-    /// Update stored temperatures and calculate corrections
-    double saveTemperatures(DataVector<double>& T);
-
-    /// Create 2D-vector with calculated heat fluxes
+    /// Create 3D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
 
     /// Matrix preparation
@@ -65,15 +55,15 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
   public:
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<2>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<3>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
 
-    typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
+    typename ProviderFor<Temperature, Geometry3D>::Delegate outTemperature;
 
-    typename ProviderFor<HeatFlux, Geometry2DType>::Delegate outHeatFlux;
+    typename ProviderFor<HeatFlux, Geometry3D>::Delegate outHeatFlux;
 
-    typename ProviderFor<ThermalConductivity, Geometry2DType>::Delegate outThermalConductivity;
+    typename ProviderFor<ThermalConductivity, Geometry3D>::Delegate outThermalConductivity;
 
-    ReceiverFor<Heat, Geometry2DType> inHeat;
+    ReceiverFor<Heat, Geometry3D> inHeat;
 
     Algorithm algorithm;   ///< Factorization algorithm to use
 
@@ -95,29 +85,29 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodDynamicThermal2DSolver(const std::string& name="");
+    FiniteElementMethodDynamicThermal3DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const;
+    virtual std::string getClassName() const { return "thermal.Dynamic3D"; }
 
-    ~FiniteElementMethodDynamicThermal2DSolver();
+    ~FiniteElementMethodDynamicThermal3DSolver();
 
   protected:
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
-        const FiniteElementMethodDynamicThermal2DSolver* solver;
-        shared_ptr<RectangularMesh<2>> element_mesh;
-        WrappedMesh<2> target_mesh;
+        const FiniteElementMethodDynamicThermal3DSolver* solver;
+        shared_ptr<RectangularMesh<3>> element_mesh;
+        WrappedMesh<3> target_mesh;
         LazyData<double> temps;
-        ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
+        ThermalConductivityData(const FiniteElementMethodDynamicThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);
         Tensor2<double> at(std::size_t i) const;
         std::size_t size() const;
     };
 
-    const LazyData<double> getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<double> getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 
-    const LazyData<Vec<2>> getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
+    const LazyData<Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>

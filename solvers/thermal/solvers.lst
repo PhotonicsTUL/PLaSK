@@ -3,4 +3,5 @@ fem.StaticCyl
 
 fem3d.Static3D
 
-dynamic2d.Dynamic2D
+dynamic.Dynamic2D
+dynamic.Dynamic3D
