@@ -274,9 +274,9 @@ class MaterialsController(Controller):
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180, 50])
+        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [80, 180, 50])
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        self.properties_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
+        #self.properties_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
         self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
         self.properties_table.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Stretch)
         table_edit_shortcut(self.properties_table, 0, 'n')

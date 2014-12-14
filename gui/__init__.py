@@ -109,7 +109,10 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
 
-        self.setCentralWidget(self.tabs)
+        splitter = QtGui.QSplitter()
+        splitter.setOrientation(QtCore.Qt.Vertical)
+        splitter.addWidget(self.tabs)
+        self.setCentralWidget(splitter)
 
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('accessories-text-editor'),
@@ -121,23 +124,24 @@ class MainWindow(QtGui.QMainWindow):
         icon = QtGui.QIcon.fromTheme('plask')
         self.setWindowIcon(icon)
 
-        self.info_dock = QtGui.QDockWidget("Warnings", self)
-        self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
-        self.info_dock.setTitleBarWidget(QtGui.QWidget())
         self.info_model = InfoTreeModel(None)
         #self.info = QtGui.QTableView(self.plot_dock)
-        self.info_table = QtGui.QListView(self.info_dock)
+        self.info_table = QtGui.QListView()
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
         pal = self.info_table.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         self.info_table.setPalette(pal)
-        #self.info.horizontalHeader().hide()
-        #self.info.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch);
-        self.info_dock.setWidget(self.info_table)
-        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
 
-        self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
+        # self.info_dock = QtGui.QDockWidget("Warnings", self)
+        # self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+        # self.info_dock.setTitleBarWidget(QtGui.QWidget())
+        # self.info_dock.setWidget(self.info_table)
+        # self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
+        # self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
+
+        splitter.addWidget(self.info_table)
+        self.info_model.layoutChanged.connect(lambda: self.info_table.setVisible(self.info_model.rowCount() > 0))
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
             self.document = XPLDocument(self)

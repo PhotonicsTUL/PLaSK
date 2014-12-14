@@ -753,8 +753,8 @@ inline void export_base(Class solver) {
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
                         "If this property is ``True``, similar layers are grouped for efficiency.");
-    solver.add_receiver("inTemperature", &Solver::inTemperature, "");
-    solver.add_receiver("inGain", &Solver::inGain, "");
+    solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
+    solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
@@ -1089,6 +1089,5 @@ BOOST_PYTHON_MODULE(slab)
         FourierSolver3D_LongTranWrapper<PML>::register_("PMLs");
         FourierSolver3D_SymmetryLongTranWrapper::register_();
     }
-
 }
 

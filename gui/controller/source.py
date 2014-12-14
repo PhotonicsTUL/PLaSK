@@ -150,7 +150,7 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.hide()
         self.editor.setFocus()
 
-    def _find(self, cont=False, backward=False):
+    def _find(self, cont=False, backward=False, rewind=True):
         cursor = self.editor.textCursor()
         if cont:
             cursor.setPosition(cursor.selectionStart())
@@ -160,7 +160,7 @@ class SourceWidget(QtGui.QWidget):
             document = self.editor.document()
             found = document.find(findtext, cursor, QtGui.QTextDocument.FindCaseSensitively |
                                   (QtGui.QTextDocument.FindBackward if backward else 0))
-            if found.isNull():
+            if found.isNull() and rewind:
                 cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
                 found = document.find(findtext, cursor, QtGui.QTextDocument.FindCaseSensitively |
                                       (QtGui.QTextDocument.FindBackward if backward else 0))
@@ -189,8 +189,8 @@ class SourceWidget(QtGui.QWidget):
     def find_type(self):
         self._find(cont=True)
 
-    def replace_next(self):
-        if not self._find(cont=True):
+    def replace_next(self, rewind=True):
+        if not self._find(cont=True, rewind=rewind):
             return False
         pal = self.editor.palette()
         self.find_edit.setPalette(pal)
@@ -198,10 +198,11 @@ class SourceWidget(QtGui.QWidget):
         start = cursor.selectionStart()
         cursor.insertText(self.replace_edit.text())
         end = cursor.position()
-        if not self._find(cont=False):
+        if not self._find(cont=False, rewind=rewind):
             cursor.setPosition(start)
             cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
             self.editor.setTextCursor(cursor)
+            return False
         # self.editor.setFocus()
         return True
 
@@ -211,7 +212,7 @@ class SourceWidget(QtGui.QWidget):
         try:
             cursor.movePosition(QtGui.QTextCursor.Start)
             self.editor.setTextCursor(cursor)
-            while self.replace_next(): pass
+            while self.replace_next(rewind=False): pass
         finally:
             cursor.endEditBlock()
 
