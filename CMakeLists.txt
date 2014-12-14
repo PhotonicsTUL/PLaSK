@@ -82,6 +82,8 @@ option(LICENSE_CHECKING "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
+option(INSTALL_DEV "Install headers to system locations" OFF)
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
 endif(CMAKE_COMPILER_IS_GNUCXX)
@@ -235,8 +237,12 @@ add_library(libplask SHARED ${plask_src} ${plask_headers})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32 iphlpapi)
-    install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
-                             ARCHIVE DESTINATION lib COMPONENT dev)
+    if(INSTALL_DEV)
+        install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
+                                ARCHIVE DESTINATION lib COMPONENT dev)
+    else()
+        install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core)
+    endif()
 else()
     target_link_libraries(libplask dl)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
@@ -247,9 +253,11 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS -DPLAS
 #    target_link_libraries(sdsolver "pthread")
 #endif()
 
-install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+if(INSTALL_DEV)
+    install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+    install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+endif()
 
 set(PLaSK_LIBRARIES libplask)
 
@@ -305,8 +313,12 @@ if(BUILD_PYTHON)
     # endif()
 
     if(WIN32)
-        install(TARGETS libplask_python RUNTIME DESTINATION bin COMPONENT core
-                                        ARCHIVE DESTINATION lib COMPONENT dev)
+        if(INSTALL_DEV)
+            install(TARGETS libplask_python RUNTIME DESTINATION bin COMPONENT core
+                                            ARCHIVE DESTINATION lib COMPONENT dev)
+        else()
+            install(TARGETS libplask_python RUNTIME DESTINATION bin COMPONENT core)
+        endif()
     else()
         install(TARGETS libplask_python LIBRARY DESTINATION lib COMPONENT core)
     endif()
@@ -348,7 +360,9 @@ if(BUILD_PYTHON)
 
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
-    install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
+    if (INSTALL_DEV)
+        install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
+    endif()
 
     # GUI
     if(BUILD_GUI)
@@ -553,14 +567,15 @@ else()
     set(doc_dest share/doc/plask)
 endif()
 
-
 find_package(Doxygen)
 configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile)
 if(BUILD_DEVEL_DOC)
     if(DOXYGEN_FOUND)
         add_custom_target(dox ALL ${DOXYGEN} ${CMAKE_BINARY_DIR}/Doxyfile ${plask_headers} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
-                PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
+        if(INSTALL_DEV)
+            install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
+                    PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
+        endif()
     else()
         message("Doxygen not found. Building without documentation.")
     endif()

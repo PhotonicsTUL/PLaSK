@@ -64,8 +64,7 @@ macro(make_default)
     endif()
 
     if(WIN32)
-        install(TARGETS ${SOLVER_LIBRARY} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
-                                          ARCHIVE DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers_dev)
+        install(TARGETS ${SOLVER_LIBRARY} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     else()
         install(TARGETS ${SOLVER_LIBRARY} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     endif()
