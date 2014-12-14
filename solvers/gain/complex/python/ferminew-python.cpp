@@ -96,6 +96,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
@@ -131,6 +132,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),

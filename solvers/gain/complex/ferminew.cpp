@@ -8,6 +8,7 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
     outLuminescence(this, &FerminewGainSolver<GeometryType>::getLuminescence)/*, // LUKASZ
     outGainOverCarriersConcentration(this, &FerminewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
 {
+    Tref = 300.; // [K], only for this temperature energy levels are calculated
     inTemperature = 300.; // temperature receiver has some sensible value
     cond_qw_shift = 0.; // [eV]
     vale_qw_shift = 0.; // [eV]
@@ -44,6 +45,7 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
             matrixelemscfact = reader.getAttribute<double>("matrix-elem-sc-fact", matrixelemscfact);
             cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
             vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
+            Tref = reader.getAttribute<double>("Tref", Tref);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
             if_fixed_QWs_widths = reader.getAttribute<bool>("fixedQWsWidths", if_fixed_QWs_widths);
             reader.requireTagEnd();
@@ -100,7 +102,10 @@ void FerminewGainSolver<GeometryType>::onInitialize() // In this function check 
     if (!this->geometry) throw NoGeometryException(this->getId());
 
     detectActiveRegions();
-
+    // LUKASZ 11.12.2014 tu chyba trzeba wstawic budowanie obszaru czynnego i wyznaczanie poziomow dla Tref
+    // no to wstawiam
+    // findEnergyLevelsForTref(region, true);- a co z region?
+    doTrefCalc = true;
     //TODO
 
     outGain.fireChanged();
@@ -342,8 +347,99 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
 }
 
 template <typename GeometryType>
+void FerminewGainSolver<GeometryType>::findEnergyLevelsForTref(const ActiveRegionInfo& region, bool iShowSpecLogs)
+{
+    if (isnan(Tref) || Tref < 0.) throw ComputationError(this->getId(), "Wrong reference temperature (%1%K)", Tref);
+
+    if (if_strain)
+    {
+        if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
+
+        for (int i=0; i<region.size(); ++i)
+        {
+            double e = (this->materialSubstrate->lattC(Tref,'a') - region.getLayerMaterial(i)->lattC(Tref,'a')) / region.getLayerMaterial(i)->lattC(Tref,'a');
+            if (iShowSpecLogs) writelog(LOG_RESULT, "Layer %1% - strain: %2%%3%", i+1, e*100., '%');
+        }
+    }
+
+    int tStrType = buildStructure(Tref, region, iShowSpecLogs);
+    if (tStrType == 0) writelog(LOG_INFO, "I-type QW for Ec-Evhh and Ec-Evlh.");
+    else if (tStrType == 1) writelog(LOG_INFO, "I-type QW for Ec-Evhh.");
+    else if (tStrType == 2) writelog(LOG_INFO, "I-type QW for Ec-Evlh.");
+    else writelog(LOG_INFO, "No I-type QW both for Ec-Evhh and Ec-Evlh.");
+
+    double tCladEg = region.getLayerMaterial(0)->CB(Tref,0.) - region.getLayerMaterial(0)->VB(Tref,0.); // cladding Eg (eV) TODO
+
+    std::vector<QW::struktura *> tHoles; tHoles.clear();
+    if (!mEvhh)
+        tHoles.push_back(&(*mpStrEvhh));
+    if (!mEvlh)
+        tHoles.push_back(&(*mpStrEvlh));
+    if ((!mEc)&&((!mEvhh)||(!mEvlh)))
+    {
+        std::vector<double> tDso; tDso.clear();
+        for (int i=0; i<region.size(); ++i) // LUKASZ 26.06
+            tDso.push_back(region.getLayerMaterial(i)->Dso(Tref));
+        bool tShowM = false;
+        if (iShowSpecLogs) tShowM = true;
+        aktyw = plask::shared_ptr<QW::obszar_aktywny>(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness, Tref, matrixelemscfact, tShowM)); // roughness = 0.05 for example // TODO
+        aktyw->zrob_macierze_przejsc();
+    }
+}
+
+template <typename GeometryType>
 QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
+    if (isnan(n) || n < 0.) throw ComputationError(this->getId(), "Wrong carrier concentration (%1%/cm3)", n);
+    if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", T);
+
+    if (doTrefCalc)
+    {
+        findEnergyLevelsForTref(region, iShowSpecLogs);
+        doTrefCalc = false; // TODO tu ma (powinno) być false
+    }
+
+    if ((!mEc)&&((!mEvhh)||(!mEvlh)))
+    {
+        double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
+        double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
+
+        double tEgClad = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
+        writelog(LOG_DETAIL, "mEgCladT z ferminew: %1% eV", tEgClad);
+
+        writelog(LOG_INFO, "Recalculating carrier concentrations..");
+        n = recalcConc(aktyw, n, tQWTotH, T, tQWnR, tEgClad); // LUKASZ
+        writelog(LOG_INFO, "Creating gainModule..");
+        QW::gain gainModule;
+        gainModule.setGain(aktyw, n*(tQWTotH*1e-7), T, tQWnR, tEgClad);
+        //gainModule.setEgClad(tEgClad); // MW LP EgClad 13.12
+
+        if (iShowSpecLogs)
+        {
+            if (!mEc) mpStrEc->showEnergyLevels("electrons", round(region.qwtotallen/region.qwlen));
+            if (!mEvhh) mpStrEvhh->showEnergyLevels("heavy holes", round(region.qwtotallen/region.qwlen));
+            if (!mEvlh) mpStrEvlh->showEnergyLevels("light holes", round(region.qwtotallen/region.qwlen));
+        }
+        writelog(LOG_INFO, "Calculating quasi Fermi levels and carrier concentrations..");
+        double tFe = gainModule.policz_qFlc();
+        double tFp = gainModule.policz_qFlv();
+        if (iShowSpecLogs)
+        {
+            writelog(LOG_RESULT, "Quasi-Fermi level for electrons: %1% eV from cladding band edge", tFe);
+            writelog(LOG_RESULT, "Quasi-Fermi level for holes: %1% eV from cladding band edge", -tFp);
+            std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
+            for(int i = 0; i <= (int) tN.size() - 1; i++)
+                writelog(LOG_RESULT, "carrier concentration in layer %1%: %2% cm^-3", i+1, QW::struktura::koncentracja_na_cm_3(tN[i]));
+        }
+
+        return gainModule;
+    }
+    else if (mEc)
+        throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
+    else //if ((mEvhh)&&(mEvlh))
+        throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
+
+    /*
     if (isnan(n) || n < 0.) throw ComputationError(this->getId(), "Wrong carrier concentration (%1%/cm3)", n);
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", T);
 
@@ -367,7 +463,6 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
     else writelog(LOG_INFO, "No I-type QW both for Ec-Evhh and Ec-Evlh.");
 
     double tCladEg = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
-    //double tQWDso = region.materialQW->Dso(T); // QW Dso (eV)
     double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
     double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
 
@@ -407,18 +502,13 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
                 writelog(LOG_RESULT, "carrier concentration in layer %1%: %2% cm^-3", i+1, QW::struktura::koncentracja_na_cm_3(tN[i]));
         }
 
-        /*double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
-        double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);
-        //gainOnMesh[i] = tGehh+tGelh;
-        //writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);
-        writelog(LOG_RESULT, "gainOnMesh %1%", tGehh+tGelh);*/
-
         return gainModule;
     }
     else if (mEc)
         throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
     else //if ((mEvhh)&&(mEvlh))
         throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
+    */
 }
 
 template <typename GeometryType>
@@ -464,7 +554,7 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
     {
         double e = 0.;
         if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-        double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+        double tH = region.lens[i]; // tH (A)
         double tCBaddShift(0.);
         if (region.isQW(i)) tCBaddShift = cond_qw_shift;
         tEc = (region.getLayerMaterial(i)->CB(T,e)+tCBaddShift-tDEc);
@@ -509,7 +599,7 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         {
             double e = 0.;
             if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = region.lens[i]; // tH (A)
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
             tEvhh = -(region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift-tDEvhh);
@@ -554,7 +644,7 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         {
             double e = 0.;
             if (if_strain) e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = region.lens[i]; // tH (A)
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
             tEvlh = -(region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift-tDEvlh);
@@ -575,25 +665,10 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         else return -1;
 }
 
-/*template <typename GeometryType>
-double FerminewGainSolver<GeometryType>::cutNumber(double iNumber, int iN) // copied from RPSMES
-{
-    double x = iNumber;
-    int tMulti = 10;
-    int i = 0;
-    while(i<iN){tMulti *=10; i++;}
-    // obciecie do ile miejsc po przecinku
-    int y = x * tMulti;			// przesuwamy przecinek o ile+1 miejsc i pozbywamy sie reszty za przecinkiem - y jest calkowite
-    if (y % 10 >= 5) y += 10;		// jezeli cyfra jednosci >= ile+1
-    iNumber = (y / 10) * 10/tMulti;	// usuwamy ostatnia cyfre i zamieniamy na liczbe zmiennoprzecinkowa
-
-    return iNumber;
-}*/
-
 template <typename GeometryType> //LUKASZ 2014.10.13 concentration recalculation to obtain n from diffusion model
-double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR)
+double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad)
 {
-    //writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3% i %4%", iN, (iQWTotH*1*1e-7), iT, iQWnR);
+    writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3%, %4%, %5%", iN, (iQWTotH*1*1e-7), iT, iQWnR, iEgClad);
 
     double tStep = 1e-3*iN*0.25; // TODO
     double nQW=iN;
@@ -602,7 +677,11 @@ double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar
     {
         iN1=iN*10.;
 
-        QW::gain gainModule1(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
+        QW::gain gainModule1;
+        gainModule1.setGain(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR, iEgClad); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
+        writelog(LOG_DETAIL, "Eg Clad w recalc: %1%", iEgClad); // TEST
+        gainModule1.setEgClad(iEgClad);
+
         double tFlc1 = gainModule1.policz_qFlc();
         //double tFlv1 = gainModule1.policz_qFlv();
 
@@ -611,7 +690,7 @@ double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar
         auto tMaxElem = std::max_element(tN.begin(), tN.end());
         tn1 = *tMaxElem;
         tn1 = QW::struktura::koncentracja_na_cm_3(tn1);
-        //writelog(LOG_INFO, "max. conc.: %1%", tn1);
+        //writelog(LOG_INFO, "max. conc.: %1%", tn1); // TEST
         if(tn1>=nQW) iN-=tStep;
         else break;
     }
@@ -661,35 +740,11 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 
         if ((!mEc)&&((!mEvhh)||(!mEvlh)))
         {
-            /*QW::obszar_aktywny aktyw(&(*mpStrEc), tHoles, tCladEg, tQWDso, roughness); // roughness = 0.05 for example // TODO
-            aktyw.zrob_macierze_przejsc();
-            //writelog(LOG_INFO, "Do funkcji Adama idzie %1%, %2%, %3% i %4%", n, tQWTotH, T, tQWnR);
-            //n = przelicz_nQW_na_npow(aktyw, n, tQWTotH, T, tQWnR); // ADAM
-            QW::gain gainModule(&aktyw, n*(tQWTotH*1e-7), T, tQWnR); // TODO
-            writelog(LOG_INFO, "T %1%", T);
-            writelog(LOG_INFO, "n %1%", n);
-            writelog(LOG_INFO, "nPow %1%", n*(tQWTotH*1e-7));
-            writelog(LOG_INFO, "tQWnR %1%", tQWnR);
-
-            writelog(LOG_INFO, "Calculating quasi Fermi levels and carrier concentrations..");
-            double tFe = gainModule.policz_qFlc();
-            double tFp = gainModule.policz_qFlv();
-            writelog(LOG_RESULT, "Fe %1%", tFe);
-            writelog(LOG_RESULT, "Fp %1%", tFp);
-            std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
+            /* std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
             for(int i = 0; i <= (int) tN.size() - 1; i++)
-                writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
-*/
+                writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i])); */
             double L = region.qwtotallen / region.totallen; // no unit
 
-            //20.10.2014 adding lifetime
-            /*double tGehh, tGelh;
-            tGehh = tGelh = 0.;
-
-            tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0) / L;
-            tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
-
-            gainOnMesh[i] = tGehh+tGelh;*/
             if (!lifetime) gainOnMesh[i] = gainModule.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength)) / L; //20.10.2014 adding lifetime
             else gainOnMesh[i] = gainModule.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),phys::hb_eV*1e12/lifetime) / L; //20.10.2014 adding lifetime
             writelog(LOG_RESULT, "calculated gain: %1% cm-1", gainOnMesh[i]);

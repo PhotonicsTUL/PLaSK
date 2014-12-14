@@ -165,17 +165,20 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     double matrixelemscfact;        ///< scaling factor for optical matrix element [-]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
     bool fixQWsWidths;              ///< if true QW widths will not be changed for gain calculations
+    bool doTrefCalc;                ///< if true Tref calculations must be done
+    double Tref;                    ///< reference temperature [K]                                          // 11.12.2014 - dodana linia
 
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
     QW::warstwa *mpLay;
     QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
+    plask::shared_ptr<QW::obszar_aktywny> aktyw; // 11.12.2014 - dodana linia
+    //double tQWTotH, tQWnR; // 11.12.2014 - dodana linia
     int buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    //double cutNumber(double iNumber, int iN);
-    double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR);
+    double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
@@ -184,6 +187,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 //    double lambda_stop;
 //    double lambda;
 
+    void findEnergyLevelsForTref(const ActiveRegionInfo& region, bool iShowSpecLogs);
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
@@ -245,6 +249,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 
     double getValeQWShift() const { return vale_qw_shift; }
     void setValeQWShift(double iValeQWShift)  { vale_qw_shift = iValeQWShift; }
+
+    double getTref() const { return Tref; }
+    void setTref(double iTref)  { Tref = iTref; }
 
     /**
      * Reg gain spectrum object for future use;

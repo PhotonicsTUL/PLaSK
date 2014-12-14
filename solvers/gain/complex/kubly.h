@@ -227,12 +227,12 @@ class obszar_aktywny
     std::vector<double> Egcv; // Przerwy energetyczne miedzy zerami elektronowymi a dziurowymi (chyba najlepiej, zeby zera byly w skrajnych warstwach)
     std::vector<double> DeltaSO; // DeltySO w warstwach wzgledem zerowego pasma walencyjnego
     std::vector<double> el_mac; // Elementy macierzowe w warstwach
-
+    double T_ref; // Temperatura odniesienia, dla której ustawione sa przerwy energetyczne
     double element(int nr_war);
 
 public:
 
-    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo, double iMatrixElemScFact, bool iShowM); // najprostszy konstruktor: jeden elektron i wspolna przerwa
+    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo, double Temp, double iMatrixElemScFact, bool iShowM); // najprostszy konstruktor: jeden elektron i wspolna przerwa
 
     double min_przerwa_energetyczna();
     //  void policz_calki(const struktura * elektron, const struktura * dziura, A2D & macierz);
@@ -255,12 +255,14 @@ class PLASK_SOLVER_API gain
     plask::shared_ptr<obszar_aktywny> pasma;
     double nosniki_c, nosniki_v; // gestosc powierzchniowa
     double T;
+    std::vector<double> Egcv_T;
     double n_r;
+    double mEgClad;
     double qFlc; // quasi-poziom Fermiego dla elektronow wzgledem 0 struktur pasma c
     double qFlv; // quasi-poziom Fermiego dla elektronow wzgledem 0 struktur pasma v, w geometrii elektronowej, czyli studnie to gorki
     double szer_do_wzmoc; // szerokosc obszaru czynnego, ktora bedzie model optyczny rozpatrywal
     //  double posz_en; // Poszerzenie energetyczne (sigma w RN) wynikajace z chropowatosci. Uproszczone, wspolne dla wszystkich par stanow
-
+    void ustaw_przerwy(); // ustawia przerwy energetyczne dla podanej temperatury
     double sieczne(double (gain::*f)(double), double pocz, double kon);
     double przel_gest_z_cm2(double gest_w_cm2); // gestosc powierzchniowa
     double przel_gest_na_cm2(double gest_w_wew);
@@ -274,8 +276,8 @@ class PLASK_SOLVER_API gain
     double fv(double E);
 public:
     gain(); // LUKASZ remember to delete this
-    gain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double T, double wsp_zal);
-
+    void setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double T, double wsp_zal, double EgClad);
+    void setEgClad(double iEgClad);
     double nosniki_w_c(double Fl);
     double policz_qFlc();
 

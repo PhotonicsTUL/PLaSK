@@ -1926,12 +1926,13 @@ double dE_po_dl(size_t nr, chrop ch)
   double licznik = 
 }
 *****************************************************************************/
-obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, double iMatrixElemScFact, bool iShowM)
+obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, double Temp, double iMatrixElemScFact, bool iShowM)
 {
   przekr_max = 0.;
   pasmo_przew.push_back(elektron);
   pasmo_wal = dziury;
   chrop = chropo;
+  T_ref = Temp;
   double dE;
   for(int i = 0; i <= (int) pasmo_przew.size() - 1; i++) // przesuwa struktury, zeby 0 bylo w lewej
     {
@@ -2224,27 +2225,45 @@ double gain::rored_posz(double E, double E0, double mc, double mv, double sigma)
 /*****************************************************************************/
 gain::gain() // LUKASZ
 {
-
 }
 /*****************************************************************************/
-gain::gain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double temp, double wsp_zal)
-    : pasma(obsz)
+void gain::setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double temp, double wsp_zal, double EgClad) // LUKASZ
+//    : pasma(obsz)
 {
   pasma = obsz;
   nosniki_c = przel_gest_z_cm2(konc_pow);
   nosniki_v = nosniki_c;
   T = temp;
+  mEgClad = EgClad;
+  ustaw_przerwy(); //ustawia przerwy energetyczne dla danej temperatury
   n_r = wsp_zal;
   szer_do_wzmoc = pasma->pasmo_przew[0]->kawalki.back().x_kon - pasma->pasmo_przew[0]->kawalki.front().x_pocz;
   policz_qFlc();
   policz_qFlv();
 }
 /*****************************************************************************/
+void gain::ustaw_przerwy() // TODO MW
+{
+  Egcv_T.resize(pasma->Egcv.size());
+  //std::cout << "mEgCladT z funkcji ustaw_przerwy(): " << mEgClad << "eV\n";
+  for(size_t i = 0; i <= pasma->Egcv.size() - 1; i++)
+     {
+       //Egcv_T[i] = pasma->Egcv[i]; // prymitywne przepisanie z obszaru aktywnego
+       Egcv_T[i] = mEgClad; // juz nie prymitywne przepisanie z obszaru aktywnego
+     }
+}
+/*****************************************************************************/
+void gain::setEgClad(double iEgClad) // TODO MW 2
+{
+  mEgClad = iEgClad;
+  //std::cout << "mEgCladT z funkcji setEgClad(): " << mEgClad << "eV\n";
+}
+/*****************************************************************************/
 double gain::policz_qFlc()
 {
   double Fp, Fk, krok;
   double np, nk;
-  Fp = -pasma->Egcv[0]/2; // polowa przerwy
+  Fp = -Egcv_T[0]/2; // polowa przerwy
   Fk = pasma->pasmo_przew[0]->gora; // skrajna bariera
   krok = pasma->pasmo_przew[0]->gora - pasma->pasmo_przew[0]->dol;
   np = nosniki_w_c(Fp);
@@ -2270,7 +2289,7 @@ double gain::policz_qFlv()
 {
   double Fp, Fk, krok;
   double np, nk;
-  Fp = -pasma->Egcv[0]/2; // polowa przerwy
+  Fp = -Egcv_T[0]/2; // polowa przerwy
   Fk = pasma->pasmo_wal[0]->gora; // skrajna bariera
   krok = pasma->pasmo_wal[0]->gora - pasma->pasmo_wal[0]->dol;
   np = nosniki_w_v(Fp);
@@ -2346,7 +2365,7 @@ double gain::nosniki_w_v(double Fl)
   for(int i = 1; i <=  (int) pasma->pasmo_wal.size() - 1; i++)
     {
       //      std::clog<<"Drugie pasmo v\n";
-      przes = pasma->Egcv[0] - pasma->Egcv[i]; // przerwa Ev_i - Ev_0. dodatnie oznacza ze, v_1 jest blizej c, czyli poziom Fermiego trzeba podniesc dla niego (w geometrii struktury)
+      przes = Egcv_T[0] - Egcv_T[i]; // przerwa Ev_i - Ev_0. dodatnie oznacza ze, v_1 jest blizej c, czyli poziom Fermiego trzeba podniesc dla niego (w geometrii struktury)
       //      std::cerr<<"policzone przes\n";
       n += pasma->pasmo_wal[i]->ilenosnikow(Fl + przes, T);
     }
@@ -2425,7 +2444,7 @@ double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // pod
   // b energia do poszerzenia w lorentzu
   struktura * el = pasma->pasmo_przew[0];
   struktura * dziu = pasma->pasmo_wal[0];
-  double E0pop = pasma->Egcv[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom; // energia potencjalna + energia prostopadla
+  double E0pop = Egcv_T[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom; // energia potencjalna + energia prostopadla
   double E0min=E0pop;;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
     {
@@ -2433,7 +2452,7 @@ double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // pod
       for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
 	{
 	  dziu = pasma->pasmo_wal[nr_v];
-	  E0min = pasma->Egcv[nr_c] - pasma->Egcc[nr_v] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+	  E0min = Egcv_T[nr_c] - pasma->Egcc[nr_v] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
 	  E0min = (E0pop >= E0min)? E0min: E0pop;
 	}
     }
@@ -2526,8 +2545,8 @@ double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
     struktura * dziu = pasma->pasmo_wal[nr_v];
     A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
     double wzmoc = 0;
-    double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
-    double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+    double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
+    double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
     double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
     double E0;
     for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
@@ -2535,7 +2554,7 @@ double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
       {
         //std::cerr<<"\nprzekrycie w "<<nrpoz_el<<", "<<nrpoz_dziu;
         //std::cerr<<" = "<<(*m_prz)[nrpoz_el][nrpoz_dziu];
-        E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
+        E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
         if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -5*posz_en) ) // czy warto tracić czas
         {
           wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
@@ -2553,8 +2572,8 @@ double gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
   struktura * dziu = pasma->pasmo_wal[nr_v];
   A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
   double spont = 0;
-  double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
-  double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+  double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
+  double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
   double E0;
   for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
@@ -2562,7 +2581,7 @@ double gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
 	{
 	  //	  std::cerr<<"\nprzekrycie w "<<nrpoz_el<<", "<<nrpoz_dziu;
 	  //	  std::cerr<<" = "<<(*m_prz)[nrpoz_el][nrpoz_dziu];
-	  E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
+	  E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
 	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -5*posz_en) ) // czy warto tracić czas
 	    {
 	      spont += spont_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
@@ -2579,7 +2598,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   struktura * el = pasma->pasmo_przew[nr_c];
   struktura * dziu = pasma->pasmo_wal[nr_v];
   double Eg; // lokalna przerwa energetyczna
-  double E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
+  double E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
   //  std::cerr<<"\npoziom_el = "<<el->rozwiazania[poz_c].poziom<<"\n";
   //  std::cerr<<"\n\nE = "<<E<<" poziom c = "<<poz_c<<" poziom v = "<<poz_v<<" E0 = "<<E0<<"\n";
   double przekr_w_war;
@@ -2607,11 +2626,11 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   //  double srednie_k = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):0.;
   double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
   
-  double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
-  double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+  double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
+  double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
   double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
-  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //      std::cerr<<"lewa Eg = "<<Eg<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
@@ -2625,7 +2644,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   //      std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[0]<<" wynik = "<<wynik;
   for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
     {
-      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
+      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
       cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
       mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
@@ -2640,9 +2659,9 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   przekr_w_war = calki_kawalki.back();
   double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_el);
   double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_dziu);
-  double rozn_obsadzen = fc(energia_elektronu - pasma->Egcc[nr_c]) - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]);
+  double rozn_obsadzen = fc(energia_elektronu - pasma->Egcc[nr_c]) - fv(-energia_dziury + Egcv_T[0] - Egcv_T[nr_v]);
   //      std::cerr<<"\nen_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" rozn_obsadzen = "<<rozn_obsadzen<<"\n";
-  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
@@ -2663,7 +2682,7 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   struktura * el = pasma->pasmo_przew[nr_c];
   struktura * dziu = pasma->pasmo_wal[nr_v];
   double Eg; // lokalna przerwa energetyczna
-  double E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
+  double E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
   //  std::cerr<<"spont: poziom c = "<<poz_c<<" poziom v = "<<poz_v<<" E0 = "<<E0<<"\n";
   double przekr_w_war;
   std::vector<double> calki_kawalki;
@@ -2679,12 +2698,12 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   srednia_masa_dziu += dziu->rozwiazania[poz_v].prawdopodobienstwa[ost_ind]*dziu->prawa.masa_r;
   double mnoznik_pol;
 
-  double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
-  double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+  double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
+  double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
   //  double erf_dor = erf_dorored(E, E0, posz_en);
   double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
-  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
   //  std::clog<<(E-E0)<<" "<<sr_E_E0_dod<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
@@ -2697,7 +2716,7 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
     {
       //      std::cerr<<"kawalek "<<i<<"\n";
-      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
+      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
       //      cos2tet = 1.0; // na chwilę
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.0;
@@ -2710,9 +2729,9 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   przekr_w_war = calki_kawalki.back();
   double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_el); // abs, żeby mieć znak, i energie poniżej E0
   double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_dziu);
-  double obsadzenia = fc(energia_elektronu - pasma->Egcc[nr_c])*(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]));
+  double obsadzenia = fc(energia_elektronu - pasma->Egcc[nr_c])*(1 - fv(-energia_dziury + Egcv_T[0] - Egcv_T[nr_v]));
   //  std::cerr<<"\nen_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" obsadz el = "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" obsadz dziu = "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<" obsadzenia = "<<obsadzenia<<" przesunięcie w fv "<<(pasma->Egcv[0] - pasma->Egcv[nr_v])<<"\n";
-  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //    cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   //  cos2tet = 1.0; // na chwilę
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg);//:1.0;
@@ -2793,12 +2812,12 @@ double gain::moc_lumin()
 {
   struktura * el = pasma->pasmo_przew[0];
   struktura * dziu = pasma->pasmo_wal[0];
-  double min_E0 = pasma->Egcv[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+  double min_E0 = Egcv_T[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double lok_min_E0;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
     for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
       {
-	lok_min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+	lok_min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
 	min_E0 = (min_E0 < lok_min_E0)?min_E0:lok_min_E0;
       }
   double minimalna_przerwa = pasma->min_przerwa_energetyczna();
