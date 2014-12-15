@@ -1,3 +1,5 @@
+#include <type_traits>
+
 #include "femT3d.h"
 
 namespace plask { namespace solvers { namespace thermal {
@@ -14,9 +16,9 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
     inittemp(300.),    
     methodparam(0.5),
     timestep(0.1),
-    lumping(true),
+    lumping(false),
     rebuildfreq(1),
-    logfreq(25)
+    logfreq(5)
 {
     temperatures.reset();
     mHeatFluxes.reset();
@@ -78,8 +80,7 @@ template<typename MatrixT>
 void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature)
 {
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto heats = inHeat(iMesh);
+    auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrices A, B and the load vector F
     std::fill_n(A.data, A.size*(A.ld+1), 0.);
@@ -128,7 +129,7 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
         kz *= dx; kz *= dy; kz /= dz;
 
         // element of heat capacity matrix
-        double c = material->cp(temp) * material->dens(temp) * 0.125 * 1E-12 * dx * dy * dz / timestep / 1E-9;
+        double c = material->cp(temp) * material->dens(temp) * 0.125e-9 * dx * dy * dz / timestep;  //0.125e-9 = 0.5*0.5*0.5*1e-18/1E-9
 
         // load vector: heat densities
         double f = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()];   // 1e-18 -> to transform µm³ into m³
@@ -147,15 +148,13 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
 
         K[4][3] = K[5][2] = K[6][1] = K[7][0] = -(kx + ky + kz) / 36.;
 
-        double F[8];
-        std::fill_n(F, 8, f);
-
-        // updating A, B matrices with K elements
+        // updating A, B matrices with K elements and F load vector
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j <= i; ++j) {
                 A(idx[i],idx[j]) += methodparam*K[i][j];
                 B(idx[i],idx[j]) += -(1-methodparam)*K[i][j];
             }
+            F[idx[i]] += f;
         }
 
         // updating A, B matrices with C elements
@@ -169,7 +168,19 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
         }
         else
         {
-            //TODO
+            // set components of symmetric matrix K
+            double C[8][8];
+            C[0][0] = C[1][1] = C[2][2] = C[3][3] = C[4][4] = C[5][5] = C[6][6] = C[7][7] = c * 8 / 27.;
+            C[1][0] = C[3][0] = C[4][0] = C[2][1] = C[5][1] = C[3][2] = C[6][2] = C[7][3] = C[5][4] = C[7][4] = C[6][5] = C[7][6] = c * 4 / 27.;
+            C[2][0] = C[5][0] = C[7][0] = C[3][1] = C[4][1] = C[6][1] = C[5][2] = C[7][2] = C[4][3] = C[6][3] = C[6][4] = C[7][5] = c * 2 / 27.;
+            C[6][0] = C[7][1] = C[4][2] = C[5][3] = c / 27.;
+
+            for (int i = 0; i < 8; ++i) {
+                for (int j = 0; j <= i; ++j) {
+                    A(idx[i],idx[j]) += C[i][j];
+                    B(idx[i],idx[j]) += C[i][j];
+                }
+            }
         }
 
     }
@@ -215,8 +226,9 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
     // store boundary conditions for current mesh
     auto btemperature = temperature_boundary(this->mesh, this->geometry);
 
-    MatrixT A(size, this->mesh->minorAxis()->size());
-    MatrixT B(size, this->mesh->minorAxis()->size());
+    size_t size = mesh->size();
+    MatrixT A(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
+    MatrixT B(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
     this->writelog(LOG_INFO, "Running thermal calculations");
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
     maxT = *std::max_element(temperatures.begin(), temperatures.end());

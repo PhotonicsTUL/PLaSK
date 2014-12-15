@@ -6,6 +6,7 @@
 #include "block_matrix.h"
 #include "gauss_matrix.h"
 #include "algorithm.h"
+#include "iterative_matrix.h"
 
 namespace plask { namespace solvers { namespace thermal {
 

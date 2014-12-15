@@ -41,6 +41,17 @@ struct DpbMatrix {
         size(rank), ld(((major+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
         kd(major+1), data(aligned_malloc<double>(rank*(ld+1))) {}
 
+    /**
+     * Create matrix
+     * \param rank size of the matrix
+     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
+     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
+     */
+    DpbMatrix(size_t rank, size_t major, size_t minor):
+        size(rank), ld(((major+minor+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(major+minor+1), data(aligned_malloc<double>(rank*(ld+1))) {}
+
+
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
 
     ~DpbMatrix() { aligned_free(data); }
