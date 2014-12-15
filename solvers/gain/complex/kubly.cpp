@@ -268,7 +268,7 @@ double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) cons
 double warstwa::Ai(double x, double E) const
 {
   if(y_kon == y_pocz)
-      throw "Ai: Bad funtion";
+      throw "Ai: Bad function";
   // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
@@ -284,7 +284,7 @@ double warstwa::Ai(double x, double E) const
 //double warstwa::Ai_skala(double x, double E) const
 //{
 //  if(y_kon == y_pocz)
-//      throw "Ai_skala: Bad funtion";
+//      throw "Ai_skala: Bad function";
 //  // równanie: -f''(x) + (b + ax)f(x) = 0
 //  // a = 2m*pole/h^2
 //  // b = 2m(U - E)/h^2
@@ -299,7 +299,7 @@ double warstwa::Ai(double x, double E) const
 double warstwa::Ai_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
-      throw "Ai_prim: Bad funtion";
+      throw "Ai_prim: Bad function";
   double U = y_pocz - pole*x_pocz;
   double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
   double b_a23 = (U - E)/pole;
@@ -311,7 +311,7 @@ double warstwa::Ai_prim(double x, double E) const
 double warstwa::Bi(double x, double E) const
 {
   if(y_kon == y_pocz)
-      throw "Bi: Bad funtion";
+      throw "Bi: Bad function";
   // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
@@ -327,7 +327,7 @@ double warstwa::Bi(double x, double E) const
 double warstwa::Bi_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
-      throw "Bi_prim: Bad funtion";
+      throw "Bi_prim: Bad function";
   double U = y_pocz - pole*x_pocz;
   double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
   double b_a23 = (U - E)/pole;
@@ -339,7 +339,7 @@ double warstwa::Bi_prim(double x, double E) const
 double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) const
 {
   if(y_kon == y_pocz)
-      throw "airy_kwadr_pierwotna: Bad funtion";
+      throw "airy_kwadr_pierwotna: Bad function";
   double U = y_pocz - pole*x_pocz;
   double b_a23 = (U - E)/pole;
   double a = 2*masa_p(E)*pole;
