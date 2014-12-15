@@ -407,11 +407,48 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         double tEgClad = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
         this->writelog(LOG_DEBUG, "mEgCladT z ferminew: %1% eV", tEgClad);
 
-        this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
-        n = recalcConc(aktyw, n, tQWTotH, T, tQWnR, tEgClad); // LUKASZ
+
+        //n = recalcConc(aktyw, n, tQWTotH, T, tQWnR, tEgClad); // LUKASZ
+
         this->writelog(LOG_DEBUG, "Creating gainModule..");
         QW::gain gainModule;
         gainModule.setGain(aktyw, n*(tQWTotH*1e-7), T, tQWnR, tEgClad);
+
+        this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
+        double tStep = 1e-1*n; // TODO
+        double nQW=n;
+        double iN1=0.,tn1=0.;
+
+        for (int i=0; i<5; i++)
+        {
+            while(1)
+            {
+                iN1=n*10.;
+                //setGain(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR, iEgClad); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
+                gainModule.setNsurf( iN1*(tQWTotH*1*1e-7) );
+                this->writelog(LOG_DEBUG, "Eg Clad w recalc: %1%", tEgClad); // TEST
+                //gainModule.setEgClad(tEgClad);
+
+                double tFlc = gainModule.policz_qFlc();
+                //double tFlv = gainModule1.policz_qFlv();
+
+                std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFlc, T);
+
+                auto tMaxElem = std::max_element(tN.begin(), tN.end());
+                tn1 = *tMaxElem;
+                tn1 = QW::struktura::koncentracja_na_cm_3(tn1);
+                this->writelog(LOG_DEBUG, "max. conc.: %1%", tn1); // TEST
+                if(tn1>=nQW) n-=tStep;
+                else
+                {
+                    n += tStep;
+                    break;
+                }
+            }
+            tStep *= 0.1;
+        }
+
+
         //gainModule.setEgClad(tEgClad); // MW LP EgClad 13.12
 
         if (iShowSpecLogs)
@@ -665,10 +702,44 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         else return -1;
 }
 
-template <typename GeometryType> //LUKASZ 2014.10.13 concentration recalculation to obtain n from diffusion model
+/*template <typename GeometryType> //LUKASZ 2014.10.13 concentration recalculation to obtain n from diffusion model
 double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad)
 {
     //this->writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3%, %4%, %5%", iN, (iQWTotH*1*1e-7), iT, iQWnR, iEgClad);
+
+    double tStep = 1e-1*iN; // TODO
+    double nQW=iN;
+    double iN1=0.,tn1=0.;
+
+    for (int i=0; i<5; i++)
+    {
+        while(1)
+        {
+            iN1=iN*10.;
+            setGain(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR, iEgClad); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
+            this->writelog(LOG_DEBUG, "Eg Clad w recalc: %1%", iEgClad); // TEST
+            setEgClad(iEgClad);
+
+            double tFlc = gainModule1.policz_qFlc();
+            //double tFlv = gainModule1.policz_qFlv();
+
+            std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFlc, iT);
+
+            auto tMaxElem = std::max_element(tN.begin(), tN.end());
+            tn1 = *tMaxElem;
+            tn1 = QW::struktura::koncentracja_na_cm_3(tn1);
+            this->writelog(LOG_DEBUG, "max. conc.: %1%", tn1); // TEST
+            if(tn1>=nQW) iN-=tStep;
+            else
+            {
+                iN += tStep;
+                break;
+            }
+        }
+        tStep *= 0.1;
+    }
+
+    return iN1;
 
     double tStep = 1e-1*iN; // TODO
     double nQW=iN;
@@ -705,7 +776,7 @@ double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar
 
     return iN1;
 
-    /*double tStep = 1e-3*iN*0.25; // TODO
+    double tStep = 1e-3*iN*0.25; // TODO
     double nQW=iN;
     double iN1=0.,tn1=0.;
     while(1)
@@ -730,8 +801,8 @@ double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar
         else break;
     }
 
-    return iN1;*/
-}
+    return iN1;
+}*/
 
 template <typename GeometryType>
 const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)

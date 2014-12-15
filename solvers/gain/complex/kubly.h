@@ -278,6 +278,7 @@ public:
     gain(); // LUKASZ remember to delete this
     void setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double T, double wsp_zal, double EgClad);
     void setEgClad(double iEgClad);
+    void setNsurf(double iNsurf);
     double nosniki_w_c(double Fl);
     double policz_qFlc();
 

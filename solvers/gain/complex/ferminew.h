@@ -178,7 +178,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad);
+    //double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;

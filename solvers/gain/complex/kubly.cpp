@@ -2238,8 +2238,8 @@ void gain::setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, doub
   ustaw_przerwy(); //ustawia przerwy energetyczne dla danej temperatury
   n_r = wsp_zal;
   szer_do_wzmoc = pasma->pasmo_przew[0]->kawalki.back().x_kon - pasma->pasmo_przew[0]->kawalki.front().x_pocz;
-  policz_qFlc();
-  policz_qFlv();
+  //policz_qFlc();
+  //policz_qFlv();
 }
 /*****************************************************************************/
 void gain::ustaw_przerwy() // TODO MW
@@ -2257,6 +2257,12 @@ void gain::setEgClad(double iEgClad) // TODO MW 2
 {
   mEgClad = iEgClad;
   //std::cout << "mEgCladT z funkcji setEgClad(): " << mEgClad << "eV\n";
+}
+/*****************************************************************************/
+void gain::setNsurf(double iNsurf) // 15.12.2014
+{
+  nosniki_c = przel_gest_z_cm2(iNsurf);
+  nosniki_v = nosniki_c;
 }
 /*****************************************************************************/
 double gain::policz_qFlc()
