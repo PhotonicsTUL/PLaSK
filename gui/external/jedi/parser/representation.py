@@ -584,6 +584,7 @@ class Function(Scope):
         :rtype: str
         """
         l = unicode(funcname or self.name.names[-1]) + '('
+        wrap = len(l)
         lines = []
         for (i, p) in enumerate(self.params):
             code = p.get_code(False)
@@ -591,7 +592,7 @@ class Function(Scope):
                 code += ', '
             if len(l + code) > width:
                 lines.append(l[:-1] if l[-1] == ' ' else l)
-                l = code
+                l = ''.join(' '*wrap) + code
             else:
                 l += code
         if l:
@@ -917,8 +918,8 @@ class Statement(Simple, DocstringMixin):
 
     def get_code(self, new_line=True):
         def assemble(command_list, assignment=None):
-            pieces = [c.get_code() if isinstance(c, Simple) else c.string if
-isinstance(c, tokenize.Token) else unicode(c)
+            pieces = [c.get_code() if isinstance(c, Simple) else
+                      c.string if isinstance(c, tokenize.Token) else unicode(c)
                       for c in command_list]
             if assignment is None:
                 return ''.join(pieces)
@@ -1258,6 +1259,25 @@ class Param(Statement):
         if exp and isinstance(exp[0], Operator):
             return exp[0].string.count('*')
         return 0
+
+    def get_code(self, new_line=True):
+        def assemble(command_list, assignment=None):
+            pieces = [c.get_code() if isinstance(c, Simple) else
+                      c.string if isinstance(c, tokenize.Token) else unicode(c)
+                      for c in command_list]
+            if assignment is None:
+                return ''.join(pieces)
+            return '%s%s' % (''.join(pieces), assignment)
+
+        code = ''.join(assemble(*a) for a in self.assignment_details)
+        code += assemble(self.expression_list())
+        if self._doc_token:
+            code += '\n"""%s"""' % self.raw_doc
+
+        if new_line:
+            return code + '\n'
+        else:
+            return code
 
 
 class StatementElement(Simple):
