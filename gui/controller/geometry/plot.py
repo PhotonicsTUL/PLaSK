@@ -89,6 +89,7 @@ def plot_geometry_object(figure, geometry, color='k', lw=1.0, plane=None, set_li
 
     if type(geometry) == plask.geometry.Cartesian3D:
         dd = 0
+        #if plane is None: plane = 'xy'
         ax = _get_2d_axes(plane)
         dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
     else:
@@ -97,12 +98,16 @@ def plot_geometry_object(figure, geometry, color='k', lw=1.0, plane=None, set_li
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
 
-    env = DrawEnviroment(ax, color, lw)
+    env = DrawEnviroment(ax, color, lw, z_order=zorder)
 
     hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
 
     _draw_geometry_object(env, geometry, axes.transData, None)
+    if vmirror:
+        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
+    if hmirror:
+        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
     #for trans,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
     #    if box:
     #        _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, lw, zorder)
