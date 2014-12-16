@@ -52,10 +52,24 @@ def _draw_Triangle(env, geometry_object, transform, clip_box):
 
 _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
 
-#TODO:
-_geometry_drawers[plask.geometry.Circle] = _draw_Block
-_geometry_drawers[plask.geometry.Cylinder] = _draw_Block
-_geometry_drawers[plask.geometry.Sphere] = _draw_Block
+def _draw_Circle(env, geometry_object, transform, clip_box):
+    env.append(matplotlib.patches.Circle(
+                (0.0, 0.0), geometry_object.radius,
+                ec=env.color, lw=env.lw, fill=False, zorder=env.z_order, transform=transform),
+               clip_box
+    )
+
+_geometry_drawers[plask.geometry.Circle] = _draw_Circle
+_geometry_drawers[plask.geometry.Sphere] = _draw_Circle
+
+def _draw_Cylinder(env, geometry_object, transform, clip_box):
+    if env.axes != (0, 1) and env.axes != (1, 0):
+        _draw_Block(env, geometry_object, transform, clip_box)
+    else:
+        _draw_Circle(env, geometry_object, transform, clip_box)
+
+_geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
+
 
 def _draw_Translation(env, geometry_object, transform, clip_box):
     new_transform = matplotlib.transforms.Affine2D()
@@ -65,6 +79,20 @@ def _draw_Translation(env, geometry_object, transform, clip_box):
 
 _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
+
+def _draw_Flip(env, geometry_object, transform, clip_box):
+    if geometry_object.axis == 0:
+        _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clip_box)
+    else:
+        _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clip_box)
+
+_geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
+
+def _draw_Mirror(env, geometry_object, transform, clip_box):
+    _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+    _draw_Flip(env, geometry_object, transform, clip_box)
+
+_geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 
 #TODO: mirror, flip, clip
 
