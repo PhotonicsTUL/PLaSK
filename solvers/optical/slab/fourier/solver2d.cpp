@@ -160,6 +160,8 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 {
     size_t idx;
 
+    double kt = real(ktran), kl = real(klong);
+
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
@@ -178,35 +180,30 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
-    dcomplex k02 = gamma0*gamma0 + klong*klong + ktran*ktran;
-
-    double bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
-
-    int N = getSize() + 1;
+    dcomplex igamma0 = 1. / gamma0;
+    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
+    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
     if (!expansion.separated()) {
+        double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
+        int N = getSize() + 1;
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
-            dcomplex gz = klong, gx = n * bt, gy = gamma[iz];
-            assert(is_zero(gamma[ix] - gamma[iz]));
+            //assert(abs(gamma[ix] - gamma[iz]) < 1e3*SMALL);
+            double g = n*b-kt;
             dcomplex Ez = reflected[iz], Ex = reflected[ix];
-            dcomplex S = (k02 - gx*gx) * Ez*conj(Ez) + (k02 - gz*gz) * Ex*conj(Ex) + gx * gz * (Ez*conj(Ex) + conj(Ez)*Ex);
-            reflected[ix] = (gz*klong + gx*ktran + gy*gamma0) / (k02 * gy*gy) * S;
-            reflected[iz] = 0;
+            dcomplex S = (gamma[iz]*gamma[iz]+kl*kl) * Ez*conj(Ez) + (gamma[ix]*gamma[ix]+g*g) * Ex*conj(Ex) -
+                         kl * g * (Ez*conj(Ex) + conj(Ez)*Ex);
+            reflected[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
+            reflected[iz] = 0.;
         }
-    } else { // klong == 0
+    } else {
         if (expansion.polarization == Expansion::E_LONG) {
-            for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
-                size_t i = expansion.iE(n);
-                dcomplex gx = n * bt, gy = gamma[i];
-                reflected[i] = reflected[i] * conj(reflected[i]) * (gx*ktran + gy*gamma0) / k02;
-            }
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                reflected[i] = reflected[i]*conj(reflected[i]) * igamma0 * gamma[i];
         } else {
-            for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
-                size_t i = expansion.iE(n);
-                dcomplex gx = n * bt, gy = gamma[i];
-                reflected[i] = reflected[i] * conj(reflected[i]) * (gx*ktran + gy*gamma0) / (gy*gy);
-            }
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                reflected[i] = incident * reflected[i]*conj(reflected[i]) * (gamma0*gamma0+kt*kt) / gamma[i] * igamma0;
         }
     }
 
@@ -218,6 +215,8 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
                                                   Transfer::IncidentDirection incidence)
 {
     size_t idx;
+
+    double kt = real(ktran), kl = real(klong);
 
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -240,41 +239,30 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
     auto gamma = transfer->diagonalizer->Gamma(lt);
-    dcomplex gamma0 = transfer->diagonalizer->Gamma(lt)[idx];
-    dcomplex k0 = transfer->diagonalizer->Gamma(li)[idx];
-             k0 = sqrt(k0*k0 + klong*klong + ktran*ktran);
-    dcomplex g02 = gamma0*gamma0 + klong*klong + ktran*ktran;
-    dcomplex g0 = sqrt(g02);
-    dcomplex gk0 = k0 * g0;
-    dcomplex fac = g0 / k0;
-
-    double bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
-
-    int N = getSize() + 1;
-
+    dcomplex gamma0 = gamma[idx];
+    dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
+    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
+    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
     if (!expansion.separated()) {
+        double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
+        int N = getSize() + 1;
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
-            dcomplex gz = klong, gx = n * bt, gy = gamma[iz];
-            assert(is_zero(gamma[ix] - gamma[iz]));
+            //assert(abs(gamma[ix] - gamma[iz]) < 1e3*SMALL);
+            double g = n*b-kt;
             dcomplex Ez = transmitted[iz], Ex = transmitted[ix];
-            dcomplex S = (g02 - gx*gx) * Ez*conj(Ez) + (g02 - gz*gz) * Ex*conj(Ex) + gx * gz * (Ez*conj(Ex) + conj(Ez)*Ex);
-            transmitted[ix] = (gz*klong + gx*ktran + gy*gamma0) / (gk0 * gy*gy) * S;
-            transmitted[iz] = 0;
+            dcomplex S = (gamma[iz]*gamma[iz]+kl*kl) * Ez*conj(Ez) + (gamma[ix]*gamma[ix]+g*g) * Ex*conj(Ex) -
+                         kl * g * (Ez*conj(Ex) + conj(Ez)*Ex);
+            transmitted[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
+            transmitted[iz] = 0.;
         }
-    } else { // klong == 0
+    } else {
         if (expansion.polarization == Expansion::E_LONG) {
-            for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
-                size_t i = expansion.iE(n);
-                dcomplex gx = n * bt, gy = gamma[i];
-                transmitted[i] = transmitted[i] * conj(transmitted[i]) * (gx*ktran + gy*gamma0) / gk0;
-            }
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                transmitted[i] = transmitted[i] * conj(transmitted[i]) * igamma0 * gamma[i];
         } else {
-            for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
-                size_t i = expansion.iE(n);
-                dcomplex gx = n * bt, gy = gamma[i];
-                transmitted[i] = transmitted[i] * conj(transmitted[i]) * (gx*ktran + gy*gamma0) / (gy*gy) * fac;
-            }
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                transmitted[i] = incident * transmitted[i] * conj(transmitted[i]) *  (gamma0*gamma0+kt*kt) / gamma[i] * igamma0;
         }
     }
 
