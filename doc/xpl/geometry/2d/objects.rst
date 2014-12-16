@@ -40,10 +40,10 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material: Definition of the triangle material (for solid triangles).
    :attr material-bottom: Definition of the material of the bottom of the triangle (for triangles which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the triangle (see also ``material-bottom``).
-   :attr required {X}0: where **{X}** is the transverse axis name: Coordinate of the first triangle vertex. (float [µm])
-   :attr required {Y}0: where **{Y}** is the vertical axis name: Coordinate of the first triangle vertex. (float [µm])
-   :attr required {X}1: where **{X}** is the transverse axis name: Coordinate of the second triangle vertex. (float [µm])
-   :attr required {Y}1: where **{Y}** is the vertical axis name: Coordinate of the second triangle vertex. (float [µm])
+   :attr required a{X}: where **{X}** is the transverse axis name: Coordinate of the first triangle vertex. (float [µm])
+   :attr required a{Y}: where **{Y}** is the vertical axis name: Coordinate of the first triangle vertex. (float [µm])
+   :attr required b{X}: where **{X}** is the transverse axis name: Coordinate of the second triangle vertex. (float [µm])
+   :attr required b{Y}: where **{Y}** is the vertical axis name: Coordinate of the second triangle vertex. (float [µm])
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
