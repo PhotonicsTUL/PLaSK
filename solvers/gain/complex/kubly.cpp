@@ -957,11 +957,17 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
     }
   typ = co;
   dokl = 1e-6;
-  writelog(LOG_DETAIL, "Computing levels"); // LUKASZ
+
+  std::string tCo; tCo.clear();
+  if (co==QW::struktura::el) tCo = "electrons";
+  else if (co==QW::struktura::hh) tCo = "heavy holes";
+  else if (co==QW::struktura::lh) tCo = "light holes";
+
+  writelog(LOG_DETAIL, "Computing energy levels for %1%", tCo); // LUKASZ
   szukanie_poziomow(gora);
   writelog(LOG_DETAIL, "Normalisation"); // LUKASZ
   normowanie();
-  writelog(LOG_DETAIL, "Structure built"); // LUKASZ
+  writelog(LOG_DETAIL, "Structure built for %1%", tCo); // LUKASZ
   // profil(0., 1e-5);
 }
 /*****************************************************************************/
@@ -1959,7 +1965,7 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
       el_mac.push_back(element(i)*iMatrixElemScFact);
       if (iShowM) writelog(LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
     }
-  zrob_macierze_przejsc();
+  //zrob_macierze_przejsc();
 }
 /*****************************************************************************/
 void obszar_aktywny::paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v)
@@ -2246,17 +2252,18 @@ void gain::ustaw_przerwy() // TODO MW
 {
   Egcv_T.resize(pasma->Egcv.size());
   //std::cout << "mEgCladT z funkcji ustaw_przerwy(): " << mEgClad << "eV\n";
-  for(size_t i = 0; i <= pasma->Egcv.size() - 1; i++)
+  for(size_t i=0; i<pasma->Egcv.size(); ++i)
      {
        //Egcv_T[i] = pasma->Egcv[i]; // prymitywne przepisanie z obszaru aktywnego
        Egcv_T[i] = mEgClad; // juz nie prymitywne przepisanie z obszaru aktywnego
+       //writelog(LOG_DETAIL,"mEgClad po wywolaniu ustaw przerwy: %1%",mEgClad);
      }
 }
 /*****************************************************************************/
 void gain::setEgClad(double iEgClad) // TODO MW 2
 {
   mEgClad = iEgClad;
-  //std::cout << "mEgCladT z funkcji setEgClad(): " << mEgClad << "eV\n";
+  //writelog(LOG_DETAIL,"mEgClad po wywolaniu setEgClad: %1%",mEgClad);
 }
 /*****************************************************************************/
 void gain::setNsurf(double iNsurf) // 15.12.2014

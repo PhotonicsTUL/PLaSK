@@ -38,6 +38,7 @@ struct InAs: public Semiconductor {
     virtual double dens(double T) const override;
     virtual double cp(double T) const override;
     virtual double eps(double T) const override;
+    virtual ConductivityType condtype() const override;
 
   protected:
 

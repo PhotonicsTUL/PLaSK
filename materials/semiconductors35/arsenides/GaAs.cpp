@@ -214,6 +214,8 @@ MI_PROPERTY(GaAs, cp,
             )
 double GaAs::cp(double T) const { return 0.327e3; }
 
+Material::ConductivityType GaAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaAs, nr,
             MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence

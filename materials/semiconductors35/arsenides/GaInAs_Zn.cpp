@@ -59,6 +59,8 @@ Tensor2<double> GaInAs_Zn::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType GaInAs_Zn::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(GaInAs_Zn, absp,
             MISource("fit to ..."), // TODO
             MIComment("no temperature dependence")

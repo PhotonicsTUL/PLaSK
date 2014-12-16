@@ -55,6 +55,8 @@ Tensor2<double> AlAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType AlAs_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(AlAs_Si, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )

@@ -59,6 +59,8 @@ Tensor2<double> GaInAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType GaInAs_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(GaInAs_Si, absp,
             MISource("calculations of the absorption for 9.5 um are based on http://www.ioffe.ru/SVA/NSM/Semicond"), // TODO
             MIComment("temperature dependence only for the wavelength of about 9.5 um")

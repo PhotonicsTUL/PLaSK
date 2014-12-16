@@ -43,6 +43,8 @@ Tensor2<double> InAs_C::cond(double T) const {
     return (Tensor2<double>(tCond, tCond));
 }
 
+Material::ConductivityType InAs_C::condtype() const { return Material::CONDUCTIVITY_P; }
+
 bool InAs_C::isEqual(const Material &other) const {
     const InAs_C& o = static_cast<const InAs_C&>(other);
     return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && InAs::isEqual(other);

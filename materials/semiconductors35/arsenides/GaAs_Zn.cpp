@@ -46,6 +46,8 @@ Tensor2<double> GaAs_Zn::cond(double T) const {
     return (Tensor2<double>(tCond, tCond));
 }
 
+Material::ConductivityType GaAs_Zn::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(GaAs_Zn, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")

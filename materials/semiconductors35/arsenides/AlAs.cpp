@@ -203,6 +203,8 @@ MI_PROPERTY(AlAs, cp,
             )
 double AlAs::cp(double T) const { return 0.424e3; }
 
+Material::ConductivityType AlAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlAs, nr,
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence

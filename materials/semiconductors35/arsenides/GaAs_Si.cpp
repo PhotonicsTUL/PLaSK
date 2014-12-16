@@ -46,6 +46,8 @@ Tensor2<double> GaAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType GaAs_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(GaAs_Si, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )

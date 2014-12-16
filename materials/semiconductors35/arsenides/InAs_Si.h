@@ -24,6 +24,7 @@ struct InAs_Si: public InAs {
     virtual double Nf(double T) const; //TODO make sure the result is in cm^(-3)
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
+    virtual ConductivityType condtype() const override;
 
 protected:
     virtual bool isEqual(const Material& other) const;

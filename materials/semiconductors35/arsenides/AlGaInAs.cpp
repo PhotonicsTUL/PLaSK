@@ -241,6 +241,7 @@ double AlGaInAs::cp(double T) const {
     return ( Al*mAlAs.cp(T) + Ga*mGaAs.cp(T) + In*mInAs.cp(T) );
 }
 
+Material::ConductivityType AlGaInAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(AlGaInAs, nr,
             MIComment("TODO")

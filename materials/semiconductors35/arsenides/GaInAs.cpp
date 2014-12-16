@@ -231,6 +231,8 @@ double GaInAs::cp(double T) const {
     return ( Ga*mGaAs.cp(T) + In*mInAs.cp(T) );
 }
 
+Material::ConductivityType GaInAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaInAs, nr,
             MISource("S. Adachi, J. Appl. Phys. 53 (1982) 5863-5869; "),
             MISource("J. Piprek et al., IEEE Photon. Technol. Lett. 6 (1994) 139-142; "),

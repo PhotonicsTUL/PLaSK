@@ -24,6 +24,7 @@ struct InAs_C: public InAs {
     virtual double Nf(double T) const override; //TODO make sure the result is in cm^(-3)
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

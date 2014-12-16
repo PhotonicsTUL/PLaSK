@@ -83,8 +83,9 @@ BOOST_PYTHON_MODULE(complex)
     plask_import_array();
 
     {CLASS(FerminewGainSolver<Geometry2DCartesian>, "Ferminew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
-        solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
-        solver.def_readwrite("fixedQWsWidths", &__Class__::if_fixed_QWs_widths, "Fix QWs widths? (True or False)");
+        solver.def_readwrite("strains", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
+        solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
+        solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
@@ -119,8 +120,9 @@ BOOST_PYTHON_MODULE(complex)
         ;
     }
     {CLASS(FerminewGainSolver<Geometry2DCylindrical>, "FerminewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
-        solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
-        solver.def_readwrite("fixedQWsWidths", &__Class__::if_fixed_QWs_widths, "Fix QWs widths? (True or False)");
+        solver.def_readwrite("strains", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
+        solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
+        solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");

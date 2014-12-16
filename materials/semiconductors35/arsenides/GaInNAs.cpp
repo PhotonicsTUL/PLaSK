@@ -255,6 +255,8 @@ double GaInNAs::cp(double T) const {
     return ( Ga*mGaAs.cp(T) + In*mInAs.cp(T) ); // till cp for GaN(zb) and InN(zb) unknown
 }
 
+Material::ConductivityType GaInNAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaInNAs, nr,
             MIComment("TODO")
             )

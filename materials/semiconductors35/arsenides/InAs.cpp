@@ -204,6 +204,8 @@ MI_PROPERTY(InAs, cp,
             )
 double InAs::cp(double T) const { return 0.352e3; }
 
+Material::ConductivityType InAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(InAs, eps,
             MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")
 )

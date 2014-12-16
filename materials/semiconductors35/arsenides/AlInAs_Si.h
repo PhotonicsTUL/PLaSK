@@ -22,6 +22,7 @@ struct AlInAs_Si: public AlInAs {
     AlInAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
     virtual std::string name() const override;
     virtual std::string str() const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

@@ -232,6 +232,8 @@ double AlInAs::cp(double T) const {
     return ( Al*mAlAs.cp(T) + In*mInAs.cp(T) );
 }
 
+Material::ConductivityType AlInAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlInAs, nr,
             MISource("M.J. Mondry et al., IEEE Photon. Technol. Lett. 4 (1992) 627-630"),
             MIComment("data for the wavelength ranging 1000-2000 nm")

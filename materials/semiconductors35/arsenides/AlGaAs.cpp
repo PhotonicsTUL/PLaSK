@@ -228,6 +228,8 @@ double AlGaAs::cp(double T) const {
     return ( Al*mAlAs.cp(T) + Ga*mGaAs.cp(T) );
 }
 
+Material::ConductivityType AlGaAs::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlGaAs, nr,
             MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),

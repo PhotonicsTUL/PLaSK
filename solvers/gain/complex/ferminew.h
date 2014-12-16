@@ -161,11 +161,12 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     double qw_width_mod;            ///< qw width modifier [-]
     double roughness;               ///< roughness [-]
     double lifetime;                ///< lifetime [ps]
-    double matrixelem;              ///< optical matrix element [m0*eV]
-    double matrixelemscfact;        ///< scaling factor for optical matrix element [-]
+    double matrix_elem;             ///< optical matrix element [m0*eV]
+    double matrix_elem_sc_fact;     ///< scaling factor for optical matrix element [-]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
-    bool fixQWsWidths;              ///< if true QW widths will not be changed for gain calculations
-    bool doTrefCalc;                ///< if true Tref calculations must be done
+    //bool fixQWsWidths;              ///< if true QW widths will not be changed for gain calculations
+    bool calcLev;                   ///< if true energy levels will be calculated
+    //bool buildStructOnce;           //// if true the active-region structure is built only at the beginning of the gain calculations and energy levels are calculated only once (after that they are only shifted with the use of Eg(T) relation for cladding)
     double Tref;                    ///< reference temperature [K]                                          // 11.12.2014 - dodana linia
 
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
@@ -173,12 +174,10 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     QW::warstwa *mpLay;
     QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
     plask::shared_ptr<QW::obszar_aktywny> aktyw; // 11.12.2014 - dodana linia
-    //double tQWTotH, tQWnR; // 11.12.2014 - dodana linia
     int buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    //double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR, double iEgClad);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
@@ -187,7 +186,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 //    double lambda_stop;
 //    double lambda;
 
-    void findEnergyLevelsForTref(const ActiveRegionInfo& region, bool iShowSpecLogs);
+    void findEnergyLevels(const ActiveRegionInfo& region, double iT, bool iShowSpecLogs);
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
@@ -229,8 +228,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 
   public:
 
-    bool if_strain;                 ///< Consider strain in QW?
-    bool if_fixed_QWs_widths;    ///< Fix QWs widhts?
+    bool strains;            ///< Consider strain in QWs and barriers?
+    bool fixed_qw_widths;    ///< Fix widths of the QWs?
+    bool build_struct_once;  ///< Build active-region structure only once?
 
     double getRoughness() const { return roughness; }
     void setRoughness(double iRoughness)  { roughness = iRoughness; }
@@ -238,11 +238,11 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     double getLifeTime() const { return lifetime; }
     void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 
-    double getMatrixElem() const { return matrixelem; }
-    void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
+    double getMatrixElem() const { return matrix_elem; }
+    void setMatrixElem(double iMatrixElem)  { matrix_elem = iMatrixElem; }
 
-    double getMatrixElemScFact() const { return matrixelemscfact; }
-    void setMatrixElemScFact(double iMatrixElemScFact)  { matrixelemscfact = iMatrixElemScFact; }
+    double getMatrixElemScFact() const { return matrix_elem_sc_fact; }
+    void setMatrixElemScFact(double iMatrixElemScFact)  { matrix_elem_sc_fact = iMatrixElemScFact; }
 
     double getCondQWShift() const { return cond_qw_shift; }
     void setCondQWShift(double iCondQWShift)  { cond_qw_shift = iCondQWShift; }
@@ -314,7 +314,6 @@ struct GainSpectrum {
      */
     double getGain(double wavelength)
     {
-        //std::cout << "Runing getGain in spectrum\n"; // added
         //double getGain(double wavelength) {
         if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
         if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
@@ -351,7 +350,6 @@ struct LuminescenceSpectrum {
 
     LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
     {
-        //std::cout << "Setting gModExist to false\n"; // added
         gModExist = false; // added
     //LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
@@ -381,8 +379,7 @@ struct LuminescenceSpectrum {
      */
     double getLuminescence(double wavelength)
     {
-        //std::cout << "Runing getLuminescence in spectrum\n"; // added
-    //double getLuminescence(double wavelength) {
+        //double getLuminescence(double wavelength) {
         if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
         if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
         if (!gModExist) // added
