@@ -211,7 +211,7 @@ class GNTriangle(GNLeaf):
         super(GNTriangle, self).attributes_from_xml(attribute_reader, conf)
         n = conf.axes_names(2)
         r = attribute_reader
-        self.points = ((r.get(n[0] + '0'), r.get(n[1] + '0')), (r.get(n[0] + '1'), r.get(n[1] + '1')))
+        self.points = ((r.get('a' + n[0]), r.get('a' + n[1])), (r.get('b' + n[0]), r.get('b' + n[1])))
 
     def attributes_to_xml(self, element, conf):
         super(GNTriangle, self).attributes_to_xml(element, conf)
@@ -219,7 +219,7 @@ class GNTriangle(GNLeaf):
         for point_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
                 v = self.points[point_nr][axis_nr]
-                if v is not None: element.attrib[axis_names[axis_nr]] = v
+                if v is not None: element.attrib[('a', 'b')[point_nr] + axis_names[axis_nr]] = v
 
     def tag_name(self, full_name=True):
         return "triangle"
