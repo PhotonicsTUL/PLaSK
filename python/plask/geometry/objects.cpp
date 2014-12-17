@@ -629,6 +629,10 @@ void register_geometry_object()
              "Returns:\n"
              "    sequence: List of objects matching your condition.\n\n"
             )
+        .def("_children_len", &GeometryObject::getChildrenCount, "number of all children of self in geometry graph")
+        .def("_child", &GeometryObject::getChildNo, py::arg("child_no"), "child with given index")
+        .def("_real_children_len", &GeometryObject::getRealChildrenCount, "number of real (physically stored) children of self in geometry graph")
+        .def("_real_child", &GeometryObject::getRealChildNo, py::arg("child_no"), "real (physically stored) child with given index")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
     ;

@@ -830,7 +830,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     }
 
     /**
-     * Get number of object children in geometry graph.
+     * Get number of all children of this in geometry graph.
      * @return number of children
      */
     virtual std::size_t getChildrenCount() const = 0;
