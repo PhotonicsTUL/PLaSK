@@ -16,9 +16,9 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
     inittemp(300.),    
     methodparam(0.5),
     timestep(0.1),
-    lumping(false),
-    rebuildfreq(1),
-    logfreq(5)
+    lumping(true),
+    rebuildfreq(0),
+    logfreq(50)
 {
     temperatures.reset();
     mHeatFluxes.reset();
@@ -40,8 +40,6 @@ void FiniteElementMethodDynamicThermal3DSolver::loadConfiguration(XMLReader &sou
             this->readBoundaryConditions(manager, source, temperature_boundary);
 
         else if (param == "loop") {
-            methodparam = source.getAttribute<double>("methodparam", methodparam);
-            lumping = source.getAttribute<bool>("lumping", lumping);
             inittemp = source.getAttribute<double>("inittemp", inittemp);
             timestep = source.getAttribute<double>("timestep", timestep);
             rebuildfreq = source.getAttribute<size_t>("rebuildfreq", rebuildfreq);
@@ -50,6 +48,8 @@ void FiniteElementMethodDynamicThermal3DSolver::loadConfiguration(XMLReader &sou
         }
 
         else if (param == "matrix") {
+            methodparam = source.getAttribute<double>("methodparam", methodparam);
+            lumping = source.getAttribute<bool>("lumping", lumping);
             algorithm = source.enumAttribute<Algorithm>("algorithm")
                 .value("cholesky", ALGORITHM_CHOLESKY)
                 .value("gauss", ALGORITHM_GAUSS)
@@ -80,6 +80,8 @@ template<typename MatrixT>
 void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature)
 {
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+
     auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrices A, B and the load vector F
@@ -230,9 +232,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
     MatrixT A(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
     MatrixT B(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
     this->writelog(LOG_INFO, "Running thermal calculations");
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
     maxT = *std::max_element(temperatures.begin(), temperatures.end());
-    this->writelog(LOG_RESULT, "Time %d: max(T) = %d K", 0., maxT);
 
 #   ifndef NDEBUG
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
@@ -245,7 +245,8 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
     size_t r = rebuildfreq - 1,
            l = logfreq - 1;
 
-    for (double t = timestep; t < time + timestep; t += timestep) {
+    this->writelog(LOG_RESULT, "Time %d us: max(T) = %d K", 0., maxT);
+    for (double t = timestep; t <= time; t += timestep) {
 
         if (rebuildfreq && r == 0)
         {
@@ -263,7 +264,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
         if (logfreq && l == 0)
         {
             maxT = *std::max_element(temperatures.begin(), temperatures.end());
-            this->writelog(LOG_RESULT, "Time %d: max(T) = %d K", t, maxT);
+            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", t/1e3, maxT);
             l = logfreq;
         }
 
