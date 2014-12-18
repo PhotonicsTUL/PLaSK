@@ -41,6 +41,8 @@ class OutputWindow(QtGui.QDockWidget):
 
     def __init__(self, filename, launcher, parent=None):
         super(OutputWindow, self).__init__("Launch local [{}]".format(strftime('%X')), parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
+
         self.launcher = launcher
 
         font = QtGui.QFont()

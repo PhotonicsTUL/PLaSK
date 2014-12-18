@@ -189,7 +189,7 @@ struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
 
     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
     void setAspect(double value) {
-        if (value < 2.)
+        if (value != 0. && value < 2.)
             throw BadInput("DivideGenerator", "Maximum aspect must be larger than 2");
         aspect = value;
         this->fireChanged();
