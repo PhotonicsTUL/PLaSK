@@ -18,9 +18,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
   protected:
 
     int size;         ///< Number of columns in the main matrix
-    int loopno;         ///< Number of completed loops
     double maxT;        ///< Maximum temperature recorded
-    double toterr;      ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
 
     DataVector<double> temperatures;           ///< Computed temperatures
 
@@ -74,6 +72,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
     double inittemp;       ///< Initial temperature
     double methodparam;   ///< Initial parameter determining the calculation method (0.5 - Crank-Nicolson, 0 - explicit, 1 - implicit)
     double timestep;       ///< Time step in nanoseconds
+    double elapstime;    ///< Calculations elapsed time
     bool lumping;          ///< Wheter use lumping for matrices?
     size_t rebuildfreq;    ///< Frequency of mass matrix rebuilding
     size_t logfreq;        ///< Frequency of iteration progress reporting
@@ -84,8 +83,8 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
      **/
     double compute(double time);
 
-    /// Get max absolute correction for temperature
-    double getErr() const { return toterr; }
+    /// Get calculations elapsed time
+    double getElapsTime() const { return elapstime; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 

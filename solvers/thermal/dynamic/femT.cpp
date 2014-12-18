@@ -7,7 +7,6 @@ const double BIG = 1e16;
 template<typename Geometry2DType>
 FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::FiniteElementMethodDynamicThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
-    loopno(0),
     outTemperature(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getHeatFluxes),
     outThermalConductivity(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getThermalConductivity),
@@ -15,6 +14,7 @@ FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::FiniteElementMethodDy
     inittemp(300.),    
     methodparam(0.5),
     timestep(0.1),
+    elapstime(0.),
     lumping(true),
     rebuildfreq(0),
     logfreq(500)
@@ -66,7 +66,7 @@ template<typename Geometry2DType>
 void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
-    loopno = 0;
+    elapstime = 0.;
     size = this->mesh->size();
     temperatures.reset(size, inittemp);
 }
@@ -255,11 +255,10 @@ double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::doCompute(doub
 
     setMatrix(A, B, F, btemperature);
 
-    size_t r = rebuildfreq - 1,
-           l = logfreq - 1;
+    size_t r = rebuildfreq,
+           l = logfreq;
 
-    this->writelog(LOG_RESULT, "Time %d us: max(T) = %d K", 0., maxT);
-    for (double t = timestep; t <= time; t += timestep) {
+    for (double t = 0.; t < time; t += timestep) {
 
         if (rebuildfreq && r == 0)
         {
@@ -277,18 +276,20 @@ double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::doCompute(doub
         if (logfreq && l == 0)
         {
             maxT = *std::max_element(temperatures.begin(), temperatures.end());
-            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", t/1e3, maxT);
+            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", elapstime/1e3, maxT);
             l = logfreq;
         }
 
         r--;
         l--;
+        elapstime += timestep;
     }
 
+    elapstime -= timestep;
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
 
-    return toterr;
+    return 0.;
 }
 
 

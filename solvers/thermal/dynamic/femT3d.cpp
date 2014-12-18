@@ -8,7 +8,6 @@ const double BIG = 1e16;
 
 FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
-    loopno(0),
     outTemperature(this, &FiniteElementMethodDynamicThermal3DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes),
     outThermalConductivity(this, &FiniteElementMethodDynamicThermal3DSolver::getThermalConductivity),
@@ -16,6 +15,7 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
     inittemp(300.),    
     methodparam(0.5),
     timestep(0.1),
+    elapstime(0.),
     lumping(true),
     rebuildfreq(0),
     logfreq(50)
@@ -64,7 +64,7 @@ void FiniteElementMethodDynamicThermal3DSolver::loadConfiguration(XMLReader &sou
 void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
-    loopno = 0;
+    elapstime = 0.;
     size = this->mesh->size();
     temperatures.reset(size, inittemp);
 }
@@ -242,11 +242,10 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
 
     setMatrix(A, B, F, btemperature);
 
-    size_t r = rebuildfreq - 1,
-           l = logfreq - 1;
+    size_t r = rebuildfreq,
+           l = logfreq;
 
-    this->writelog(LOG_RESULT, "Time %d us: max(T) = %d K", 0., maxT);
-    for (double t = timestep; t <= time; t += timestep) {
+    for (double t = 0.; t < time; t += timestep) {
 
         if (rebuildfreq && r == 0)
         {
@@ -264,18 +263,20 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
         if (logfreq && l == 0)
         {
             maxT = *std::max_element(temperatures.begin(), temperatures.end());
-            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", t/1e3, maxT);
+            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", elapstime/1e3, maxT);
             l = logfreq;
         }
 
         r--;
         l--;
+        elapstime += timestep;
     }
 
+    elapstime -= timestep;
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
 
-    return toterr;
+    return 0.;
 }
 
 
