@@ -191,6 +191,8 @@ MI_PROPERTY(InSb, cp,
             )
 double InSb::cp(double T) const { return 0.350e3; }
 
+Material::ConductivityType InSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool InSb::isEqual(const Material &other) const {
     return true;
 }

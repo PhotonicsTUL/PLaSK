@@ -207,6 +207,8 @@ MI_PROPERTY(AlSb, cp,
             )
 double AlSb::cp(double T) const { return 0.326e3; }
 
+Material::ConductivityType AlSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool AlSb::isEqual(const Material &other) const {
     return true;
 }

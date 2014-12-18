@@ -201,6 +201,8 @@ MI_PROPERTY(AlP, cp,
             )
 double AlP::cp(double T) const { return 0.727e3; }
 
+Material::ConductivityType AlP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlP, nr,
             MIComment("TODO")
             )

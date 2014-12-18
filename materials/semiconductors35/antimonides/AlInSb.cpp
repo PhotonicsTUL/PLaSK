@@ -227,6 +227,8 @@ double AlInSb::cp(double T) const {
     return ( Al*mAlSb.cp(T) + In*mInSb.cp(T) );
 }
 
+Material::ConductivityType AlInSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlInSb, nr,
             MIComment("TODO")
             )

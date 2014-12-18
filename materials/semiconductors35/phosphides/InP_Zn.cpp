@@ -50,6 +50,8 @@ Tensor2<double> InP_Zn::cond(double T) const {
     return (Tensor2<double>(tCond, tCond));
 }
 
+Material::ConductivityType InP_Zn::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(InP_Zn, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")

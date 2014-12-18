@@ -28,6 +28,8 @@ Tensor2<double> aSiO2::thermk(double T, double h) const {
     return ( Tensor2<double>(tK*100., tK*100.) );
 }
 
+Material::ConductivityType aSiO2::condtype() const { return Material::CONDUCTIVITY_OTHER; }
+
 MI_PROPERTY(aSiO2, nr,
             MISource("I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"),
             MIArgumentRange(MaterialInfo::wl, 210, 3710)

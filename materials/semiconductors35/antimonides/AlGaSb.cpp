@@ -227,6 +227,8 @@ double AlGaSb::cp(double T) const {
     return ( Al*mAlSb.cp(T) + Ga*mGaSb.cp(T) );
 }
 
+Material::ConductivityType AlGaSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlGaSb, nr,
             MIComment("TODO")
             )

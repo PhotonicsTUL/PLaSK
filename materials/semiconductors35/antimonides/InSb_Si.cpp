@@ -48,6 +48,8 @@ Tensor2<double> InSb_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType InSb_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 bool InSb_Si::isEqual(const Material &other) const {
     const InSb_Si& o = static_cast<const InSb_Si&>(other);
     return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && InSb::isEqual(other);

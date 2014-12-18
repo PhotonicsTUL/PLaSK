@@ -59,6 +59,8 @@ Tensor2<double> GaSb_Te::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType GaSb_Te::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(GaSb_Te, nr,
             MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"),

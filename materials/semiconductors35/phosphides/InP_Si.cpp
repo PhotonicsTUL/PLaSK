@@ -44,6 +44,8 @@ Tensor2<double> InP_Si::cond(double T) const {
     return (Tensor2<double>(tCond, tCond));
 }
 
+Material::ConductivityType InP_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(InP_Si, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")

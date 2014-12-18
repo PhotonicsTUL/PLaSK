@@ -72,6 +72,8 @@ double GaSb_Si::nr(double wl, double T, double) const {
     return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
 }
 
+Material::ConductivityType GaSb_Si::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(GaSb_Si, absp,
             MIComment("fit by Lukasz Piskorski")
             )

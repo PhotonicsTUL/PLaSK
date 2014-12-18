@@ -262,6 +262,8 @@ double GaInP::cp(double T) const {
     return ( Ga*mGaP.cp(T) + In*mInP.cp(T) );
 }
 
+Material::ConductivityType GaInP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaInP, nr,
             MIComment("TODO")
             )

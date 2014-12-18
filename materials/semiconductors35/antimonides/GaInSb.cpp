@@ -231,6 +231,8 @@ double GaInSb::cp(double T) const {
     return ( Ga*mGaSb.cp(T) + In*mInSb.cp(T) );
 }
 
+Material::ConductivityType GaInSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaInSb, nr,
             MIComment("TODO")
             )

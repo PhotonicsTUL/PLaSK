@@ -206,6 +206,8 @@ MI_PROPERTY(GaP, cp,
             )
 double GaP::cp(double T) const { return 0.313e3; }
 
+Material::ConductivityType GaP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaP, nr,
             MIComment("TODO")
             )

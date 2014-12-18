@@ -218,6 +218,8 @@ MI_PROPERTY(GaSb, cp,
             )
 double GaSb::cp(double T) const { return 0.344e3; }
 
+Material::ConductivityType GaSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaSb, nr,
             MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264; "), // nR @ RT
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009; "), // nR @ RT

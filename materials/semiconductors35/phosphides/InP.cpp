@@ -206,6 +206,8 @@ MI_PROPERTY(InP, cp,
             )
 double InP::cp(double T) const { return 0.322e3; }
 
+Material::ConductivityType InP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(InP, nr,
             MISource("refractiveindex.info, Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994"),
             MISource("S. Adachi, Handbook on Physical Properties of Semiconductors, vol. 2 III-V Compound Semiconductors, Chapter 16, Kluwer Academic Publishers, 2004"),

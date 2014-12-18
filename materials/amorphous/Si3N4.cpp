@@ -24,6 +24,8 @@ Tensor2<double> Si3N4::thermk(double T, double h) const {
     throw NotImplemented("thermk for Si3N4");
 }
 
+Material::ConductivityType Si3N4::condtype() const { return Material::CONDUCTIVITY_OTHER; }
+
 MI_PROPERTY(Si3N4, nr,
             MISource("refractiveindex.info"),
             MIArgumentRange(MaterialInfo::wl, 207, 1240)

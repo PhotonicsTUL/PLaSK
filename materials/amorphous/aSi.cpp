@@ -28,6 +28,8 @@ Tensor2<double> aSi::thermk(double T, double h) const {
     return ( Tensor2<double>(tK, tK) );
 }
 
+Material::ConductivityType aSi::condtype() const { return Material::CONDUCTIVITY_OTHER; }
+
 MI_PROPERTY(aSi, nr,
             MISource("R.N. Kre et al., International Journal of the Physical Sciences 5 (2010) 675-682"),
             MIArgumentRange(MaterialInfo::wl, 2200, 3900),

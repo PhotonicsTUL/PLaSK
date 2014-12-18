@@ -758,7 +758,9 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 
             if (!lifetime) gainOnMesh[i] = gainModule.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength)) / L; //20.10.2014 adding lifetime
             else gainOnMesh[i] = gainModule.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),phys::hb_eV*1e12/lifetime) / L; //20.10.2014 adding lifetime
-            this->writelog(LOG_DATA, "point=%1%: gain=%2%cm-1", points[j].first, gainOnMesh[i]);
+            //this->writelog(LOG_DATA, "point=%1%: gain=%2%cm-1", points[j].first, gainOnMesh[i]);
+
+            this->writelog(LOG_DATA, "r=%1%um: gain=%2%cm-1", (geo_mesh->at(i)).c0, gainOnMesh[i]);
         }
         else if (mEc)
             throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");

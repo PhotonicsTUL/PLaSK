@@ -65,6 +65,9 @@ if(BUILD_TESTING)
     add_solver_test(solvers/gain/complex complexgaintest)
 endif()
 
+add_python_test(solvers/gain/complex ${CMAKE_CURRENT_SOURCE_DIR}/tests/newgain.py)
+
+
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
 make_default()
