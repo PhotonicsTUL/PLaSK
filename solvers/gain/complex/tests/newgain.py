@@ -23,9 +23,9 @@ class Well(material.Material):
 
 @material.simple()
 class Barrier(material.Material):
-    def Eg(self, T=300., e=0., point='G'): return 0.8
-    def VB(self, T=300., e=0., point='G', hole='H'): return 0.4
-    def VB(self, T=300., e=0., point='G', hole='L'): return 0.4
+    def Eg(self, T=300., e=0., point='G'): return 0.75
+    def VB(self, T=300., e=0., point='G', hole='H'): return 0.45
+    def VB(self, T=300., e=0., point='G', hole='L'): return 0.45
     def CB(self, T=300., e=0., point='G'): return 1.2
     def Dso(self, T=300., e=0.): return 0.35
     def Me(self, T=300., e=0., point='G'): return 0.050
@@ -34,10 +34,10 @@ class Barrier(material.Material):
     
 @material.simple()
 class Cladding(material.Material):
-    def Eg(self, T=300., e=0., point='G'): return 1.2
-    def VB(self, T=300., e=0., point='G', hole='H'): return 0.2
-    def VB(self, T=300., e=0., point='G', hole='L'): return 0.2
-    def CB(self, T=300., e=0., point='G'): return 1.4
+    def Eg(self, T=300., e=0., point='G'): return 0.9
+    def VB(self, T=300., e=0., point='G', hole='H'): return 0.4
+    def VB(self, T=300., e=0., point='G', hole='L'): return 0.4
+    def CB(self, T=300., e=0., point='G'): return 1.3
     def Dso(self, T=300., e=0.): return 0.35
     def Me(self, T=300., e=0., point='G'): return 0.050
     def Mhh(self, T=300., e=0.): return 0.200
@@ -46,22 +46,10 @@ class Cladding(material.Material):
 @material.simple()
 class Substrate(material.Material):
     def Eg(self, T=300., e=0., point='G'): return 1.5
-    def VB(self, T=300., e=0., point='G', hole='H'): return 0.1
-    def CB(self, T=300., e=0., point='G'): return 1.6
-    def Dso(self, T=300., e=0.): return 0.35
-    def Me(self, T=300., e=0., point='G'): return 0.050
-    def Mhh(self, T=300., e=0.): return 0.200
-    def Mlh(self, T=300., e=0.): return 0.080      
 
 @material.simple()
 class Cap(material.Material):
     def Eg(self, T=300., e=0., point='G'): return 1.5
-    def VB(self, T=300., e=0., point='G', hole='H'): return 0.1
-    def CB(self, T=300., e=0., point='G'): return 1.6
-    def Dso(self, T=300., e=0.): return 0.35
-    def Me(self, T=300., e=0., point='G'): return 0.050
-    def Mhh(self, T=300., e=0.): return 0.200
-    def Mlh(self, T=300., e=0.): return 0.080
 
 class NewGainValues(unittest.TestCase):
 
@@ -71,12 +59,12 @@ class NewGainValues(unittest.TestCase):
         
         self.rect1 = geometry.Rectangle(10., 10., Substrate())
         self.rect1.role = 'substrate'
-        self.rect2 = geometry.Rectangle(10., 50e-3, Cladding())
-        self.rect3 = geometry.Rectangle(10., 8e-3, Barrier())
-        self.rect4 = geometry.Rectangle(10., 11e-3, Well())
+        self.rect2 = geometry.Rectangle(10., 10e-3, Cladding())
+        self.rect3 = geometry.Rectangle(10., 10e-3, Barrier())
+        self.rect4 = geometry.Rectangle(10., 10e-3, Well())
         self.rect4.role = 'QW'
-        self.rect5 = geometry.Rectangle(10., 8e-3, Barrier())
-        self.rect6 = geometry.Rectangle(10., 50e-3, Cladding())
+        self.rect5 = geometry.Rectangle(10., 10e-3, Barrier())
+        self.rect6 = geometry.Rectangle(10., 10e-3, Cladding())
         self.rect7 = geometry.Rectangle(10., 20e-3, Cap())
         stackSub = geometry.Stack2D()
         stackAct = geometry.Stack2D()
@@ -108,24 +96,34 @@ class NewGainValues(unittest.TestCase):
         self.solver.Tref = 300.        
 
         self.solver.inTemperature = 300.0
-        self.solver.inCarriersConcentration = 2e18
+        self.solver.inCarriersConcentration = 4e18
 
-        wavelengths = linspace(1000, 4000, 3001)
+        wavelengths = linspace(1500, 2500, 101)
         peak = 0.
-        actlevel = 0.0635
+        actlevel = 0.025
         spectrum = self.solver.spectrum(0, actlevel)
         gains = spectrum(wavelengths)
         peak = max(zip(wavelengths,gains), key=lambda (w,g): g)
         print "Gain peak:", peak[0]
 
-        #axis0 = plask.mesh.Regular(0., 10., 100)
-        #axis1 = plask.mesh.Regular(0., 0.127, 128)
-        #msh = mesh.Rectangular2D(axis0, axis1)
+        self.assertAlmostEqual( peak[0], 2180, 1 )
 
+        axis0 = plask.mesh.Regular(0., 10., 3)
+        axis1 = plask.mesh.Regular(0., 0.050, 3)
+        msh = mesh.Rectangular2D(axis0, axis1)
 
-        #mesh = self.solver.mesh // earlier
-        #outgain = self.solver.outGain(msh,10.)
-        #print outgain
+        print "Mesh:"
+        for i in range(9):
+            print msh[i]
 
-        #self.assertAlmostEqual( 2211.000, 2.001, 1 )
-        self.assertAlmostEqual( peak[0], 2211, 1 )
+        self.solver.inTemperature = 300.
+
+        print "Outgain:"
+        outgain = self.solver.outGain(msh,2000.)
+        for i in range(9):
+            print "[",i,"]:",outgain[i],"cm-1"
+
+        self.assertAlmostEqual( outgain[1], 2527.548, 2 )
+        self.assertAlmostEqual( outgain[4], 2527.548, 2 )
+        self.assertAlmostEqual( outgain[7], 2527.548, 2 )
+
