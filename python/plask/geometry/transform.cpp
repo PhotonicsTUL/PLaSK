@@ -113,13 +113,16 @@ void setFlipDir(Cls& self, py::object val) {
     }
 }
 
+template <typename Cls> int getFlipDirNr(const Cls& self) { return int(self.flipDir); }
+
+
 DECLARE_GEOMETRY_ELEMENT_23D(Flip, "Flip", "Transfer that flips the geometry object along axis specified by name or number ("," version)")
 {
     GEOMETRY_ELEMENT_23D(Flip, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Mirror_constructor1<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .def("__init__", py::make_constructor(&Mirror_constructor2<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .add_property("axis", &getFlipDir<Flip<dim>>, &setFlipDir<Flip<dim>>, "Flip axis")
-    .def_readwrite("axis_nr", &Flip<dim>::flipDir, "Number of flip axis")
+    .add_property("axis_nr", &getFlipDirNr<Flip<dim>>, &setFlipDir<Flip<dim>>, "Number of flip axis")
     ;
 }
 
@@ -129,7 +132,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror", "Transfer that mirrors the geomet
     .def("__init__", py::make_constructor(&Mirror_constructor1<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .def("__init__", py::make_constructor(&Mirror_constructor2<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .add_property("axis", &getFlipDir<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Mirror axis")
-    .def_readwrite("axis_nr", &Mirror<dim>::flipDir, "Number of mirror axis")
+    .add_property("axis_nr", &getFlipDirNr<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Number of mirror axis")
     ;
 }
 

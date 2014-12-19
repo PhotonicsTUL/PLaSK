@@ -94,7 +94,7 @@ def _draw_Mirror(env, geometry_object, transform, clip_box):
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 
-#TODO: mirror, flip, clip
+#TODO: mirror 3D, flip 3D, clip
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
     if geometry_object is None: return
