@@ -21,7 +21,9 @@ class DrawEnviroment(object):
         self.z_order = z_order
 
     def append(self, artist, clip_box):
-        if clip_box is not None: artist.set_clip_box(clip_box)
+        if clip_box is not None:
+            artist.set_clip_box(clip_box)
+            #artist.set_clip_on(True)
         self.patches.append(artist)
 
 
@@ -55,7 +57,7 @@ _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
 def _draw_Circle(env, geometry_object, transform, clip_box):
     env.append(matplotlib.patches.Circle(
                 (0.0, 0.0), geometry_object.radius,
-                ec=env.color, lw=env.lw, fill=False, zorder=env.z_order, transform=transform),
+                ec=env.color, lw=env.lw, fill=True, zorder=env.z_order, transform=transform),
                clip_box
     )
 
@@ -93,6 +95,35 @@ def _draw_Mirror(env, geometry_object, transform, clip_box):
     _draw_Flip(env, geometry_object, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
+
+def _draw_Clip(env, geometry_object, transform, clip_box):
+    obj_box = geometry_object.clip_box
+    #new_clipbox = matplotlib.transforms.Bbox([
+    #        [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
+    #        [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
+    #    ])
+
+    new_clipbox = matplotlib.transforms.TransformedBbox(
+       matplotlib.transforms.Bbox([
+           [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
+           [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
+       ]),
+       transform
+    )
+
+    # new_clipbox = matplotlib.transforms.Bbox([
+    #        [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
+    #        [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
+    #    ]).transformed(transform)
+
+    if clip_box is None:
+        clip_box = new_clipbox
+    else:
+        clip_box = matplotlib.transforms.Bbox.intersection(clip_box, new_clipbox)
+        if clip_box is None: return # clip box is empty, nothing to draw
+    _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+
+_geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 
 #TODO: mirror 3D, flip 3D, clip
 
