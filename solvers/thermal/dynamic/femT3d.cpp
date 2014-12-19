@@ -245,6 +245,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
     size_t r = rebuildfreq,
            l = logfreq;
 
+    time += timestep/2.;
     for (double t = 0.; t < time; t += timestep) {
 
         if (rebuildfreq && r == 0)
@@ -263,7 +264,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
         if (logfreq && l == 0)
         {
             maxT = *std::max_element(temperatures.begin(), temperatures.end());
-            this->writelog(LOG_RESULT, "Time %.4f us: max(T) = %.3f K", elapstime/1e3, maxT);
+            this->writelog(LOG_RESULT, "Time %.2f ns: max(T) = %.3f K", elapstime, maxT);
             l = logfreq;
         }
 
