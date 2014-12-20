@@ -19,7 +19,7 @@ class Well(material.Material):
     def Dso(self, T=300., e=0.): return 0.35
     def Me(self, T=300., e=0., point='G'): return 0.050
     def Mhh(self, T=300., e=0.): return 0.200
-    def Mlh(self, T=300., e=0.): return 0.080               
+    def Mlh(self, T=300., e=0.): return 0.080
 
 @material.simple()
 class Barrier(material.Material):
@@ -30,8 +30,8 @@ class Barrier(material.Material):
     def Dso(self, T=300., e=0.): return 0.35
     def Me(self, T=300., e=0., point='G'): return 0.050
     def Mhh(self, T=300., e=0.): return 0.200
-    def Mlh(self, T=300., e=0.): return 0.080  
-    
+    def Mlh(self, T=300., e=0.): return 0.080
+
 @material.simple()
 class Cladding(material.Material):
     def Eg(self, T=300., e=0., point='G'): return 0.9
@@ -41,8 +41,8 @@ class Cladding(material.Material):
     def Dso(self, T=300., e=0.): return 0.35
     def Me(self, T=300., e=0., point='G'): return 0.050
     def Mhh(self, T=300., e=0.): return 0.200
-    def Mlh(self, T=300., e=0.): return 0.080  
-    
+    def Mlh(self, T=300., e=0.): return 0.080
+
 @material.simple()
 class Substrate(material.Material):
     def Eg(self, T=300., e=0., point='G'): return 1.5
@@ -56,7 +56,7 @@ class NewGainValues(unittest.TestCase):
     def setUp(self):
         self.solver = Ferminew2D("GAIN")
         plask.config.axes = 'xy'
-        
+
         self.rect1 = geometry.Rectangle(10., 10., Substrate())
         self.rect1.role = 'substrate'
         self.rect2 = geometry.Rectangle(10., 10e-3, Cladding())
@@ -82,9 +82,9 @@ class NewGainValues(unittest.TestCase):
 
         space = geometry.Cartesian2D(stackAct, left="mirror")
         self.solver.geometry = space
-        
+
     def testComputationsSpectrum(self):
-        
+
         self.solver.lifetime = 0.10
         self.solver.roughness = 0.05
         self.solver.matrix_elem = 10.
@@ -93,7 +93,7 @@ class NewGainValues(unittest.TestCase):
         self.solver.vale_qw_shift = 0.000
         self.solver.strains = False
         self.solver.build_struct_once = False
-        self.solver.Tref = 300.        
+        self.solver.Tref = 300.
 
         self.solver.inTemperature = 300.0
         self.solver.inCarriersConcentration = 4e18
@@ -103,7 +103,7 @@ class NewGainValues(unittest.TestCase):
         actlevel = 0.025
         spectrum = self.solver.spectrum(0, actlevel)
         gains = spectrum(wavelengths)
-        peak = max(zip(wavelengths,gains), key=lambda (w,g): g)
+        peak = max(zip(wavelengths,gains), key=lambda wg: wg[1])
         print "Gain peak:", peak[0]
 
         self.assertAlmostEqual( peak[0], 2180, 1 )
