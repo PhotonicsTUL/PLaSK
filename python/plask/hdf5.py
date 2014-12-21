@@ -157,13 +157,12 @@ def load_field(file, path=''):
         close = False
 
     mesh = file[path+'/mesh']
-    mst = plask.mesh.__dict__[mesh.attrs['type']]
+    mtype = mesh.attrs['type']
+    if mtype in ('Rectilinear2D', 'Regular2D'): mtype = Rectangular2D
+    if mtype in ('Rectilinear3D', 'Regular3D'): mtype = Rectangular3D
+    mst = plask.mesh.__dict__[mtype]
 
-    if mst in (plask.mesh.Regular2D, plask.mesh.Regular3D):     # backward compatibility
-        msh = mst(**dict([ (k, (v[0][0],v[0][1],int(v[0][2]))) for k,v in mesh.items() ]))
-    elif mst in (plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):       # backward compatibility
-        msh = mst(**dict(mesh.items()))
-    elif mst in (plask.mesh.Regular, plask.mesh.Ordered):
+    if mst in (plask.mesh.Regular, plask.mesh.Ordered):
         msh = load_rectangular1d(mesh)
     elif mst in (plask.mesh.Rectangular2D, plask.mesh.Rectangular3D):
         msh = mst(*tuple(load_rectangular1d(mesh[axis]) for axis in mesh))
