@@ -83,18 +83,23 @@ _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 
 def _draw_Flip(env, geometry_object, transform, clip_box):
-    if geometry_object.axis_nr == 0:
+    if geometry_object.axis_nr == env.axes[0]:
         _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clip_box)
-    else:
+    elif geometry_object.axis_nr == env.axes[1]:
         _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clip_box)
+    else:
+        _draw_geometry_object(env, geometry_object.item, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
+_geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 
 def _draw_Mirror(env, geometry_object, transform, clip_box):
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
-    _draw_Flip(env, geometry_object, transform, clip_box)
+    if geometry_object.axis_nr in env.axes:
+        _draw_Flip(env, geometry_object, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
+_geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
 def _draw_Clip(env, geometry_object, transform, clip_box):
     obj_box = geometry_object.clip_box
@@ -125,7 +130,7 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
 
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 
-#TODO: mirror 3D, flip 3D, clip
+#TODO: fix clip, clip3D
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
     if geometry_object is None: return
