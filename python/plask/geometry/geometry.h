@@ -37,7 +37,7 @@ namespace plask { namespace python {
 
 template <typename ContainerT>
 py::object Container_move(py::tuple args, py::dict kwargs) {
-    parseKwargs("move_item", args, kwargs, "self", "item");
+    parseKwargs("move_item", args, kwargs, "self", "path");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
     typename ContainerT::ChildAligner aligner = py::extract<typename ContainerT::ChildAligner>(kwargs);
     try {

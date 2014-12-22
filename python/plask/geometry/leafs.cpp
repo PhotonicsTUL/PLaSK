@@ -206,14 +206,20 @@ void register_geometry_leafs()
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
         "Triangle (2D geometry object).\n\n"
         "Triangle(a0, a1, b0, b1, material)\n"
-        "Triangle(p0, p1, material)\n"
+        "Triangle(a, b, material)\n"
         "Create a triangle with vertices at points *a*, *b* and (0, 0).\n\n"
         "Args:\n"
         "    plask.vec a: Local coordinates of the first triangle vertex.\n"
         "    plask.vec b: Local coordinates of the second triangle vertex.\n"
-        "    double a0, a1: Local coordinates of the first triangle vertex.\n"
-        "    double b0, b1: Local coordinates of the second triangle vertex.\n"
-        "    Material material: Triangle material.\n",
+        "    a0 (double): Horizontal component of the local coordinates of the first\n"
+        "                 triangle vertex.\n"
+        "    a1 (double): Vertical component of the local coordinates of the first\n"
+        "                 triangle vertex.\n"
+        "    b0 (double): Horizontal component of the local coordinates of the second\n"
+        "                 triangle vertex.\n"
+        "    b1 (double): Vertical component of the local coordinates of the second\n"
+        "                 triangle vertex.\n"
+        "    material (Material): Triangle material.\n",
         py::no_init
         ); triangle
         .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("a"), "b", "material")))

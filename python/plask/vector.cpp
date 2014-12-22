@@ -388,7 +388,7 @@ const static char* __doc__ =
     "either as the unnamed sequence or as the named keywords.\n\n"
 
     "Args:\n"
-    "    number x, y, z, r, p: Vector components.\n"
+    "    _letter_ (dtype): Vector components.\n"
     "        Their choice depends on the current value of :attr:`plask.config.axes`.\n"
     "    dtype (type): type of the vector components.\n"
     "        If this argument is omitted or `None`, the type is determined\n"

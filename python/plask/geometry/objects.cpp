@@ -171,14 +171,17 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, contains,
     "Test if the geometry object contains a point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the geometry object contains the given point.",
 
     "Test if the geometry object contains a point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the geometry object contains the given point.\n"
 )
@@ -191,7 +194,8 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, object_contains,
     "    object: Object to test.\n"
     "    path: Path specifying a particular object instance.\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the specified geometry object contains the given point.\n",
 
@@ -202,7 +206,9 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, object_contains,
     "    object: Object to test.\n"
     "    path: Path specifying a particular object instance.\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the specified geometry object contains the given point.\n"
 )
@@ -214,7 +220,8 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_material,
     "returns None.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    Material at the specified point or None.\n",
 
@@ -224,7 +231,9 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_material,
     "returns None.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    Material at the specified point or None.\n"
 )
@@ -235,7 +244,8 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_roles,
     "intersecting the specified point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    set: Set of the roles at given point.\n",
 
@@ -244,7 +254,9 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_roles,
     "intersecting the specified point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    set: Set of the roles at given point.\n"
 )
@@ -255,7 +267,8 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, has_role,
     "*role*.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the point has the role *role*.\n",
 
@@ -264,7 +277,9 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, has_role,
     "*role*.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
     "Returns:\n"
     "    bool: True if the point has the role *role*.\n"
 )
@@ -273,8 +288,9 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_paths,
     "Get subtree containing paths to all leafs covering the specified point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1: Local coordinates of the tested point.\n"
-    "    bool all: If *True* then all the leafs intersecting the point are\n"
+    "    c0 (float): Horizontal local coordinate of the tested point.\n"
+    "    c1 (float): Vertical local coordinate of the tested point.\n"
+    "    all (bool): If *True* then all the leafs intersecting the point are\n"
     "              considered. Otherwise, only the path to the topmost (i.e. visible)\n"
     "              object is returned.\n"
     "Returns:\n"
@@ -285,8 +301,10 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_paths,
     "Get subtree containing paths to all leafs covering the specified point.\n\n"
     "Args:\n"
     "    plask.vector point: Vector with local coordinates of the tested point.\n"
-    "    float c0, c1, c2: Local coordinates of the tested point.\n"
-    "    bool all: If *True* then all the leafs intersecting the point are\n"
+    "    c0 (float): Longitudinal local coordinate of the tested point.\n"
+    "    c1 (float): Transverse local coordinate of the tested point.\n"
+    "    c2 (float): Vertical local coordinate of the tested point.\n"
+    "    all (bool): If *True* then all the leafs intersecting the point are\n"
     "              considered. Otherwise, only the path to the topmost (i.e. visible)\n"
     "              object is returned.\n"
     "Returns:\n"
@@ -625,7 +643,7 @@ void register_geometry_object()
              "This method will return the very object with the role specified and not its items,\n"
              "which is against the normal behavior of the roles.\n\n"
              "Args:\n"
-             "    str role: Role to search objects with.\n"
+             "    role (str): Role to search objects with.\n"
              "Returns:\n"
              "    sequence: List of objects matching your condition.\n\n"
             )

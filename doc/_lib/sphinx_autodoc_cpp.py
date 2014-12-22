@@ -8,7 +8,7 @@
 
     :seealso: http://sphinx-doc.org/ext/autodoc.html
 
-    :copyright: Copyright 2014 Maciej Beling.
+    :copyright: Copyright 2014 Maciej Dems.
     :license: BSD, see LICENSE for details.
 """
 
@@ -18,11 +18,23 @@ import traceback
 from sphinx.ext import autodoc
 from sphinx.util.docstrings import prepare_docstring
 
+
+#: extended signature RE: with explicit module name separated by ::
+py_ext_sig_re = re.compile(
+    r'''^\s*([\w.]+::)?          # explicit module name
+          ([\w.]+\.)?            # module and/or class name(s)
+          (\w+)  \s*             # thing name
+          (?: \((.*)\)           # optional: arguments
+           (?:\s* -> \s* (.*))?  #           return annotation
+          )? $                   # and nothing more
+          ''', re.VERBOSE)
+
 # boost_signature_re = re.compile(r"^\s*(?:[\w.]+::)?(\w*)\((.*)\) -> (\w*) :$")
-boost_signature_re = re.compile(r"^\s*(\w+ )?(?:[\w.]+::)?(\w*)\(tuple args, dict kwds\) :$")
+boost_signature_re = re.compile(r"^\s*(\w+ )?(?:[\w.]+::)?(\w*)\(tuple args, dict kwds\)(?: :)?$")
+
 
 class PlaskDocMixin(object):
-    '''Mixin that can properly output multiple signatures and inherited classes'''
+    """Mixin that can properly output multiple signatures and inherited classes"""
 
     def parse_name(self):
         """Determine what module to import and what attribute to document.
@@ -87,7 +99,7 @@ class PlaskDocMixin(object):
         generic_sig = False
         todel = []
         for lineno, docline in enumerate(doclines):
-            match = autodoc.py_ext_sig_re.match(docline)
+            match = py_ext_sig_re.match(docline)
             if match:
                 exmod, path, base, args, retan = match.groups()
                 # the base name must match ours
@@ -216,10 +228,10 @@ var_type_pattre = re.compile(r'\(\w*?\)(\w+)')
 
 
 def fix_plask_namespace(signature):
-   '''Remove all "_plask." prefixes.
-      _plask module is loaded by default in plask.
-   '''
-   return signature.replace('_plask', '')
+    """Remove all "_plask." prefixes.
+    _plask module is loaded by default in plask.
+    """
+    return signature.replace('_plask', '')
 
 
 def fix_signature(what, signature):
@@ -228,7 +240,7 @@ def fix_signature(what, signature):
     signature = signature.replace(' [,', ',').replace('[', '').replace(']', '')
 
     # remove first argument, which is self named as arg1:
-    if (what == 'method' or what == 'class'):
+    if what == 'method' or what == 'class':
         # remove "(sth)arg1" and "(sth)arg1, "
         signature = re.sub(arg1_in_signature_re, r'(', signature)
 
@@ -241,7 +253,7 @@ def fix_signature(what, signature):
 def process_signature(app, what, name, obj, options, signature, retann):
     if not signature: return signature, None
     signature = fix_plask_namespace(signature)
-    if (what == 'class' or what == 'method' or what == 'function'):
+    if what == 'class' or what == 'method' or what == 'function':
         return fix_signature(what, signature), None
     else:
         return signature, None
