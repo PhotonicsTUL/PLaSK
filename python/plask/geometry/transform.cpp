@@ -145,7 +145,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Flip, "Flip",
 
 DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror",
     "Transfer that mirrors the geometry object along the specified  axis\n"
-    "("," version)\n\n."
+    "("," version).\n\n"
     "Args:\n"
     "   axis (float or str): Flip axis number or name.\n"
     "   item (GeometryObject): Geometry object to flip.\n\n"

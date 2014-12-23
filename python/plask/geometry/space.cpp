@@ -633,7 +633,7 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
-        "Geometry in 2D cylindrical space\n\n"
+        "Geometry in 2D cylindrical space.\n\n"
         "Cylindrical2D(root, **borders)\n"
         "Create a cylindrical space around a two-dimensional geometry object.\n\n"
         "Args:\n"
@@ -855,7 +855,7 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
-        "Geometry in 3D space\n\n"
+        "Geometry in 3D space.\n\n"
         "Cartesian3D(geometry, **borders)\n"
         "    Create a space around a two-dimensional geometry object.\n\n"
         "Args:\n"

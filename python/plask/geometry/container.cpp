@@ -77,7 +77,7 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
 }
 
 
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "GeometryObjectContainer", "Base class for all "," containers") {
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "GeometryObjectContainer", "Base class for all "," containers.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, GeometryObjectD<dim>)
         .def("__contains__", &Container__contains__<dim>)
         .def("__getitem__", &Container__getitem__int<dim>)

@@ -15,10 +15,10 @@ static bool STransfrom__contains__(const GeometryObjectTransformSpace<dim,cdim>&
 void register_geometry_changespace()
 {
     py::class_<GeometryObjectTransformSpace<3,2>, shared_ptr<GeometryObjectTransformSpace<3,2>>, py::bases<GeometryObjectD<3>>, boost::noncopyable>
-    ("GeometryObjectTransform2Dto3D", "Base class for all transformations which change 2D space to 3D", py::no_init)
+    ("GeometryObjectTransform2Dto3D", "Base class for all transformations which change 2D space to 3D.", py::no_init)
         .add_property("item",
                       (shared_ptr<typename GeometryObjectTransformSpace<3,2>::ChildType> (GeometryObjectTransformSpace<3,2>::*)()) &GeometryObjectTransformSpace<3,2>::getChild,
-                      &GeometryObjectTransformSpace<3,2>::setChild, "Child of the transform object")
+                      &GeometryObjectTransformSpace<3,2>::setChild, "Transformed 2D object.")
         .def("__contains__", &STransfrom__contains__<3,2>)
     ;
 

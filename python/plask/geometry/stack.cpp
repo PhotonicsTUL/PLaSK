@@ -307,8 +307,8 @@ void register_geometry_container_stack()
 
     py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>("Shelf2D",
         "Shelf2D(shift=0)\n\n"
-        "2D container that organizes its items one next to another (like books on\n"
-        "a bookshelf).\n\n"
+        "2D container that organizes its items one next to another.\n\n"
+        "The objects are placed in this container like books on a bookshelf.\n"
         "The left side of the first object is located at the `shift` position in\n"
         "container local coordinates. Each consecutive object is placed to the right of\n"
         "the previous one. All the items are vertically aligned according to its bottom\n"
@@ -356,8 +356,8 @@ void register_geometry_container_stack()
 
     py::class_<MultiStackContainer<plask::ShelfContainer2D>, shared_ptr<MultiStackContainer<ShelfContainer2D>>, py::bases<ShelfContainer2D>, boost::noncopyable>("MultiShelf2D",
         "MultiShelf2D(repeat=1, shift=0)\n\n"
-        "2D container that organizes its items one next to another (like books on\n"
-        "a bookshelf).\n\n"
+        "Shelf container that repeats its contents.\n\n"
+        "The objects are placed in this container like books on a bookshelf.\n"
         "The left side of the first object is located at the `shift` position in\n"
         "container local coordinates. Each consecutive object is placed to the right\n"
         "of the previous one. Then the whole shelf is repeated *repeat* times. All the"
