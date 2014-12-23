@@ -229,6 +229,8 @@ double GaAsP::cp(double T) const {
     return ( As*mGaAs.cp(T) + P*mGaP.cp(T) );
 }
 
+Material::ConductivityType GaAsP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaAsP, nr,
             MIComment("TODO")
             )

@@ -24,6 +24,7 @@ struct AlGaAsSb_Te: public AlGaAsSb {
     virtual double Nf(double T) const override; //TODO make sure the result is in cm^(-3)
     virtual double Dop() const; //TODO Piotr: NEW virtual method (there is no Dop() in Material), maybe it should be non-virtual?
     virtual Tensor2<double> cond(double T) const override;
+    virtual ConductivityType condtype() const override;
     virtual double nr(double wl, double T, double n = .0) const override;
     virtual double absp(double wl, double T) const override;
 

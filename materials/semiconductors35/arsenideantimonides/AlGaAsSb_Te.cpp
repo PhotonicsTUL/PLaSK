@@ -64,6 +64,8 @@ Tensor2<double> AlGaAsSb_Te::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType AlGaAsSb_Te::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(AlGaAsSb_Te, nr,
             MISource("Alibert, J. Appl. Phys (1991)"),
             //MIArgumentRange(MaterialInfo::wl, 620, 2560),

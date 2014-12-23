@@ -229,6 +229,8 @@ double GaPSb::cp(double T) const {
     return ( P*mGaP.cp(T) + Sb*mGaSb.cp(T) );
 }
 
+Material::ConductivityType GaPSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaPSb, nr,
             MIComment("TODO")
             )

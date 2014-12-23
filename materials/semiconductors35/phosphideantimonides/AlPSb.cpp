@@ -228,6 +228,8 @@ double AlPSb::cp(double T) const {
     return ( P*mAlP.cp(T) + Sb*mAlSb.cp(T) );
 }
 
+Material::ConductivityType AlPSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlPSb, nr,
             MIComment("TODO")
             )

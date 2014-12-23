@@ -261,6 +261,8 @@ double GaInAsSb::cp(double T) const {
     return ( Ga*As*mGaAs.cp(T) + Ga*Sb*mGaSb.cp(T) + In*As*mInAs.cp(T) + In*Sb*mInSb.cp(T) );
 }
 
+Material::ConductivityType GaInAsSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(GaInAsSb, nr,
             MISource("T.S. Moss, Phys. Stat. Sol. B 131 (1985) 415-427"),
             MIComment("for strained and unstrained GaInAsSb on GaSb, nr(Eg) is calculated from: nr^4 * Eg = 95 meV")

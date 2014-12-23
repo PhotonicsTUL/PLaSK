@@ -66,6 +66,8 @@ Tensor2<double> InAsSb_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+Material::ConductivityType InAsSb_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(InAsSb_Si, nr,
             MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898; "), // nR @ RT
             MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),

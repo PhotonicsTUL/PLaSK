@@ -229,6 +229,8 @@ double InPSb::cp(double T) const {
     return ( P*mInP.cp(T) + Sb*mInSb.cp(T) );
 }
 
+Material::ConductivityType InPSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(InPSb, nr,
             MIComment("TODO")
             )

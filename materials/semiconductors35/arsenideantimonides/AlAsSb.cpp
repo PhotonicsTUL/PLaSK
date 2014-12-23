@@ -228,6 +228,8 @@ double AlAsSb::cp(double T) const {
     return ( As*mAlAs.cp(T) + Sb*mAlSb.cp(T) );
 }
 
+Material::ConductivityType AlAsSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
             MIArgumentRange(MaterialInfo::wl, 500, 7000) // TODO

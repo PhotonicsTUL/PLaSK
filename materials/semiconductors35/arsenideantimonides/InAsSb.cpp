@@ -231,6 +231,8 @@ double InAsSb::cp(double T) const {
     return ( As*mInAs.cp(T) + Sb*mInSb.cp(T) );
 }
 
+Material::ConductivityType InAsSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(InAsSb, nr,
             MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898; "), // nR @ RT
             MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),

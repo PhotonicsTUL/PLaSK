@@ -229,6 +229,8 @@ double AlAsP::cp(double T) const {
     return ( As*mAlAs.cp(T) + P*mAlP.cp(T) );
 }
 
+Material::ConductivityType AlAsP::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlAsP, nr,
             MIComment("TODO")
             )

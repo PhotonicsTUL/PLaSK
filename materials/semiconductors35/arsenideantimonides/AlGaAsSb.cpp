@@ -261,6 +261,8 @@ double AlGaAsSb::cp(double T) const {
     return ( Ga*As*mGaAs.cp(T) + Ga*Sb*mGaSb.cp(T) + Al*As*mAlAs.cp(T) + Al*Sb*mAlSb.cp(T) );
 }
 
+Material::ConductivityType AlGaAsSb::condtype() const { return Material::CONDUCTIVITY_I; }
+
 MI_PROPERTY(AlGaAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211")
             )
