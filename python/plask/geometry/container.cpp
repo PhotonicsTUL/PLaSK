@@ -120,8 +120,8 @@ void register_geometry_container()
 
     py::class_<TranslationContainer<2>, shared_ptr<TranslationContainer<2>>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>
     ("AlignContainer2D",
-     "Container with its items located according to specified alignment.\n\n"
      "AlignContainer2D()\n\n"
+     "Container with its items located according to specified alignment.\n\n"
      "Container in which every item is located according to its alignment\n"
      "specification. Items in this container can overlap with each other so, although\n"
      "their order matches, you can cretate any arrangement you wish.\n\n"
@@ -181,8 +181,8 @@ void register_geometry_container()
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
     ("AlignContainer3D",
-     "Container with its items located according to specified alignment.\n\n"
      "AlignContainer3D()\n\n"
+     "Container with its items located according to specified alignment.\n\n"
      "Container in which every item is located according to its alignment\n"
      "specification. Items in this container can overlap with each other so, although\n"
      "their order matches, you can cretate any arrangement you wish.\n\n"
@@ -190,7 +190,7 @@ void register_geometry_container()
      "    To create a hollow cylinder, you can issue the following commands:\n\n"
      "    >>> hollow = plask.geometry.AlignContainer3D()\n"
      "    >>> hollow.append(plask.geometry.Cylinder(10, 2, 'GaAs'), 0, 0, 0)\n"
-     "    >>> hollow.append(plask.geometry.Cylinder(8, 2, 'air'), 0, 0, 0)\n"
+     "    >>> hollow.append(plask.geometry.Cylinder(8, 2, 'air'), 0, 0, 0)\n\n"
      "    The small cylinder (hole) now overlaps a part of the large one.\n"
     )
         .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<3>>))

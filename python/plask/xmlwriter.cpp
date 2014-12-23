@@ -110,8 +110,29 @@ void register_xml_writer()
                           ":attr:`~plask.XmlWriter.names` with other geometry objects that should be\n"
                           "explicitly named in the resulting XML. All these dictionaries must have strings\n"
                           "as their keys and corresponding objects as values.\n\n"
+                          "Args:\n"
+                          "    geo (dict): Dictionary with geometries that should be saved to the file.\n"
+                          "    mesh (dict): Dictionary with meshes that should be saved to the file.\n"
+                          "    names (dict): Dictionary with names of the geometry objects that should be\n"
+                          "                  explicitly named in the file.\n\n"
                           "The final xml can be simply retrieved as a string (``str(writer)``) or saved to\n"
-                          "an XPL file with the :meth:`~plask.XmlWriter.saveto` method.\n",
+                          "an XPL file with the :meth:`~plask.XmlWriter.saveto` method.\n\n"
+                          "Example:\n"
+                          "    Create an XML file with a simple geometry:\n\n"
+                          "    >>> rect = plask.geometry.Rectangle(2, 1, 'GaAs')\n"
+                          "    >>> geo = plask.geometry.Cartesian2D(rect)\n"
+                          "    >>> xml = plask.XmlWriter({'geo': geo}, {}, {'rect': rect})\n"
+                          "    >>> print(xml)\n"
+                          "    <plask>\n"
+                          "      <geometry>\n"
+                          "        <cartesian2d name=\"geo\" axes=\"zxy\">\n"
+                          "          <extrusion length=\"inf\">\n"
+                          "            <block2d name=\"rect\" material=\"GaAs\" dx=\"2\" dy=\"1\"/>\n"
+                          "          </extrusion>\n"
+                          "        </cartesian2d>\n"
+                          "      </geometry>\n"
+                          "      <grids/>\n"
+                          "    </plask>\n",
         py::init<py::object,py::object,py::object>((py::arg("geo")=py::object(), py::arg("msh")=py::object(), py::arg("names")=py::object())))
         .def("__str__", &XmlWriter::__str__)
         .def("saveto", &XmlWriter::saveto, py::arg("target"),

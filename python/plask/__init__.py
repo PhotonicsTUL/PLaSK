@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 PLaSK (Photonic Laser Simulation Kit) is a comprehensive toolkit for simulation
 of various micro-scale photonic devices. It is particularly well suited for
 analysis of semiconductor lasers, as it allows to perform simulations of various
@@ -20,7 +20,7 @@ Modules
    flow
    phys
    algorithm
-'''
+"""
 
 import sys
 import os as _os
@@ -72,7 +72,7 @@ material.db.load_all()
 material.update_factories()
 
 class _simple(object):
-    '''
+    """
     Decorator for custom simple material class.
 
     Args:
@@ -81,7 +81,7 @@ class _simple(object):
             complete or incomplete specification of the material.
             In either case you must initialize the base in the
             constructor of your material.
-    '''
+    """
     def __init__(self, base=None):
         if isinstance(base, type):
             raise TypeError("material.simple argument is a class (you probably forgot parenthes)")
@@ -94,7 +94,7 @@ material.simple = _simple
 del _simple
 
 class _complex(object):
-    '''
+    """
     Decorator for custom complex material class.
 
     Args:
@@ -103,7 +103,7 @@ class _complex(object):
             complete or incomplete specification of the material.
             In either case you must initialize the base in the
             constructor of your material.
-    '''
+    """
     def __init__(self, base=None):
         if isinstance(base, type):
             raise TypeError("material.complex argument is a class (you probably forgot parenthes)")
@@ -121,13 +121,28 @@ material.const = staticmethod
 ## ## plask.geometry ## ##
 
 def Stack2D(repeat=None, shift=0., **kwargs):
-    '''Stack2D(repeat=None, shift=0)
-           Create a stack, optionally repeating it 'repeat' times and with the bottom side
-           of the first object at the 'shift' position (in container local coordinates).
-           'kwargs' may contain default aligner specification.
+    """
+    Create a 2D container that organizes its items in a vertical stack.
 
-           If 'repeat' is None, this function creates SingleStack2D and MultiStack2D otherwise.
-    '''
+    The bottom side of the first object is located at the `shift` position in
+    container local coordinates. Each consecutive object is placed on the top of
+    the previous one.
+
+    Args:
+        repeat (int): Number of the stack contents repetitions. If None, this
+                      function creates SingleStack2D and MultiStack2D otherwise.
+        shift (float): Position in the local coordinates of the bottom of the stack.
+        alignment (dict): Horizontal alignment specifications. This dictionary can
+                          contain only one item. Its key can be ``left``, ``right``,
+                          ``#center``, and ``#`` where `#` is the horizontal axis
+                          name. The corresponding value is the position of the given
+                          edge/center/origin of the item. This alignment can be
+                          overriden while adding the objects to the stack.
+                          By default the alignment is ``{'left': 0}``.
+
+    See also:
+        :class:`plask.geometry.SingleStack2D`, :class:`plask.geometry.MultiStack2D`.
+    """
     if repeat is None:
         return geometry.SingleStack2D(shift, **kwargs)
     else:
@@ -136,13 +151,28 @@ geometry.Stack2D = Stack2D
 del Stack2D
 
 def Stack3D(repeat=None, shift=0., **kwargs):
-    '''Stack3D(repeat=None, shift=0)
-           Create a stack, optionally repeating it 'repeat' times and with the bottom side
-           of the first object at the 'shift' position (in container local coordinates).
-           'kwargs' may contain default aligner specification.
+    """
+    Create a 3D container that organizes its items in a vertical stack.
 
-           If 'repeat' is None, this function creates SingleStack3D and MultiStack3D otherwise.
-    '''
+    The bottom side of the first object is located at the `shift` position in
+    container local coordinates. Each consecutive object is placed on the top of
+    the previous one. Then the whole stack is repeated *repeat* times.
+
+    Args:
+        repeat (int): Number of the stack contents repetitions. If None, this
+                      function creates SingleStack3D and MultiStack3D otherwise.
+        shift (float): Position in the local coordinates of the bottom of the stack.
+        alignments (dict): Horizontal alignments specifications. Keys in this dict
+                           can be ``left``, ``right``, ``back``, ``front``,
+                           ``#center``, and ``#`` where `#` are the horizontal axis
+                           names. The corresponding value is the position of the
+                           given edge/center/origin of the item. This alignment can
+                           be overriden while adding the objects to the stack.
+                           By default the alignment is ``{'left': 0, 'back': 0}``.
+
+    See also:
+        :class:`plask.geometry.SingleStack3D`, :class:`plask.geometry.MultiStack3D`.
+    """
     if repeat is None:
         return geometry.SingleStack3D(shift, **kwargs)
     else:
@@ -150,17 +180,29 @@ def Stack3D(repeat=None, shift=0., **kwargs):
 geometry.Stack3D = Stack3D
 del Stack3D
 
-def Shelf(repeat=None, shift=0., **kwargs):
-    '''Shelf(repeat=None, shift=0)
-           Create a shelf, optionally repeating it 'repeat' times and with the bottom side
-           of the first object at the 'shift' position (in container local coordinates).
+def Shelf(repeat=None, shift=0.):
+    """
+    Create a 2D shelf container that organizes its items one next to another
+    (like books on a bookshelf).
 
-           If 'repeat' is None, this function creates Shelf2D and MultiShelf2D otherwise.
-    '''
+    The left side of the first object is located at the `shift` position in
+    container local coordinates. Each consecutive object is placed to the right of
+    the previous one. All the items are vertically aligned according to its bottom
+    edge.
+
+    Args:
+        repeat (int): Number of the shelf contents repetitions. If None, this
+                      function creates Shelf2D and MultiShelf2D otherwise.
+        shift (float): Position in the local coordinates of the left side of the
+                       shelf.Classes
+
+    See also:
+        :class:`plask.geometry.Shelf2D`, :class:`plask.geometry.MultiShelf2D`.
+    """
     if repeat is None:
-        return geometry.Shelf2D(shift, **kwargs)
+        return geometry.Shelf2D(shift)
     else:
-        return geometry.MultiShelf2D(repeat, shift, **kwargs)
+        return geometry.MultiShelf2D(repeat, shift)
 geometry.Shelf = Shelf
 del Shelf
 
@@ -170,7 +212,7 @@ geometry.Container3D = geometry.AlignContainer3D
 ## ## plask.manager ## ##
 
 def loadxpl(source, vars={}, sections=None, destination=None):
-    '''Load the XPL file.'''
+    """Load the XPL file."""
 
     if destination is None:
         try:
@@ -192,11 +234,11 @@ def loadxpl(source, vars={}, sections=None, destination=None):
     if same: current_axes = lst[0]
 
 def runxpl(source, vars={}):
-    '''Load and run the code from the XPL file.
+    """Load and run the code from the XPL file.
 
        'source' is the name of the XPL file or open file object.
        'vars' is the optional dictionary with substitution variables
-    '''
+    """
     env = globals().copy()
     env['plask'] = sys.modules["plask"]
     env.update(vars)

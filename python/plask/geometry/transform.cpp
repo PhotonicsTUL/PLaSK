@@ -17,11 +17,11 @@ static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shar
 
 
 /// Initialize class GeometryObjectTransform for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform", "Base class for all "," transform nodes") {
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform", "Base class for all "," geometry transforms.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, GeometryObjectD<dim>)
         .add_property("item",
                       (shared_ptr<typename GeometryObjectTransform<dim>::ChildType> (GeometryObjectTransform<dim>::*)()) &GeometryObjectTransform<dim>::getChild,
-                      &GeometryObjectTransform<dim>::setChild, "Child of the transform object")
+                      &GeometryObjectTransform<dim>::setChild, "Transformed item.")
         .def("__contains__", &Transfrom__contains__<dim>)
     ;
 }
@@ -73,12 +73,18 @@ static std::string Translation__repr__(const Translation<dim>& self) {
     return format("plask.geometry.Translation%1%D%2%", dim, Translation__str__<dim>(self));
 }
 
-DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transform that holds a translated geometry object together with translation vector ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",
+    "Transform that holds a translated geometry object together with its translation\n"
+    "vector ("," version).\n\n"
+    "Args:\n"
+    "item (GeomeryObject): Item to translate.\n"
+    "translation (plask.vec): Translation vector.\n"
+    "cx (float): Component of the translation vector along the *x* axis.\n")
 {
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("translation"))))
     .def("__init__", py::make_constructor(&Translation_constructor2<dim>::call, py::default_call_policies(), Translation_constructor2<dim>::args))
-    .def_readwrite("translation", &Translation<dim>::translation, "Vector of the translation.")
+    .def_readwrite("translation", &Translation<dim>::translation, "Translation vector.")
     .def("__str__", &Translation__str__<dim>)
     .def("__repr__", &Translation__repr__<dim>)
     ;
@@ -116,23 +122,47 @@ void setFlipDir(Cls& self, py::object val) {
 template <typename Cls> int getFlipDirNr(const Cls& self) { return int(self.flipDir); }
 
 
-DECLARE_GEOMETRY_ELEMENT_23D(Flip, "Flip", "Transfer that flips the geometry object along axis specified by name or number ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Flip, "Flip",
+    "Transfer that flips the geometry object along a specified axis\n"
+    "("," version).\n\n"
+    "Args:\n"
+    "   axis (float or str): Flip axis number or name.\n"
+    "   item (GeometryObject): Geometry object to flip.\n\n"
+    "The effect of this transform is a mirror reflection of a specified geometry\n"
+    "object. Its local coordinate system is negated along the specified axis.\n\n"
+    "The difference between the flip and a mirror is that the flip replaces the\n"
+    "original object with its flipped version.\n\n"
+    "See also:\n"
+    "   :class:`plask.geometry.Mirror`")
 {
     GEOMETRY_ELEMENT_23D(Flip, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Mirror_constructor1<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .def("__init__", py::make_constructor(&Mirror_constructor2<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
-    .add_property("axis", &getFlipDir<Flip<dim>>, &setFlipDir<Flip<dim>>, "Flip axis")
-    .add_property("axis_nr", &getFlipDirNr<Flip<dim>>, &setFlipDir<Flip<dim>>, "Number of flip axis")
+    .add_property("axis", &getFlipDir<Flip<dim>>, &setFlipDir<Flip<dim>>, "Flip axis.")
+    .add_property("axis_nr", &getFlipDirNr<Flip<dim>>, &setFlipDir<Flip<dim>>, "Number of the flip axis.")
     ;
 }
 
-DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror", "Transfer that mirrors the geometry object along axis specified by name or number ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror",
+    "Transfer that mirrors the geometry object along the specified  axis\n"
+    "("," version)\n\n."
+    "Args:\n"
+    "   axis (float or str): Flip axis number or name.\n"
+    "   item (GeometryObject): Geometry object to flip.\n\n"
+    "The effect of this transform is an original object with an added mirror\n"
+    "reflection. The mirroring is done with respect to the axis, so the whole\n"
+    "object should be bouned within one half-plane of its local coordinate\n"
+    "system.\n\n"
+    "The difference between the mirror and a flip is that the flip replaces the\n"
+    "original object with its flipped version.\n\n"
+    "See also:\n"
+    "   :class:`plask.geometry.Flip`")
 {
     GEOMETRY_ELEMENT_23D(Mirror, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Mirror_constructor1<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
     .def("__init__", py::make_constructor(&Mirror_constructor2<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
-    .add_property("axis", &getFlipDir<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Mirror axis")
-    .add_property("axis_nr", &getFlipDirNr<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Number of mirror axis")
+    .add_property("axis", &getFlipDir<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Mirror axis.")
+    .add_property("axis_nr", &getFlipDirNr<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Number of the mirror axis.")
     ;
 }
 
@@ -162,13 +192,74 @@ const py::detail::keywords<7> Clip_constructor2<3>::args = (py::arg("item"),
                                                             py::arg("back")=-INFINITY, py::arg("left")=-INFINITY, py::arg("bottom")=-INFINITY,
                                                             py::arg("front")=INFINITY, py::arg("right")=INFINITY, py::arg("top")=INFINITY);
 
-DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that clips the held geometry object to the specified clip-box ("," version)")
-{
-    GEOMETRY_ELEMENT_23D(Clip, GeometryObjectTransform<dim>, py::no_init)
-    .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("clip_box"))))
-    .def("__init__", py::make_constructor(&Clip_constructor2<dim>::call, py::default_call_policies(), Clip_constructor2<dim>::args))
-    .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box.")
+
+template <int dim> inline const char* ClipName();
+template <> inline const char* ClipName<2>() { return "Clip2D"; }
+template <> inline const char* ClipName<3>() { return "Clip3D"; }
+
+template <int dim> inline const char* ClipDoc();
+template <> inline const char* ClipDoc<2>() { return
+    "Clip2D(item, box)\n"
+    "Clip2D(item, left, bottom, right, top)\n\n"
+    "Transform that clips the held geometry object to the specified clip-box\n"
+    "(2D version).\n\n"
+    "This transform is used to limit the size of any complicated geometry object to\n"
+    "the specified rectangular box. This way, you can easily change e.g. a circle\n"
+    "to a half- or quarter-circle. In order to use this transform, you must\n"
+    "explicitly specify the coordinates of the clip-box in the local coordinates of\n"
+    "the clipped object. However, the original object is never expanded, co you can\n"
+    "freely make the box very large, or even infinite (which means no clipping at\n"
+    "this side).\n\n"
+    "Args:\n"
+    "    item (GeometryObject2D): Object to clip.\n"
+    "    left (float): Left side of the clipping box. *inf* by default.\n"
+    "    bottom (float): Bottom side of the clipping box. *inf* by default.\n"
+    "    right (float): Right side of the clipping box. *inf* by default.\n"
+    "    top (float): Top side of the clipping box. *inf* by default.\n"
+    "    box (Box2D): Clipping box.\n\n"
+    "Example:\n"
+    "    To make a half-circle with the flat bottom:\n\n"
+    "    >>> circle = plask.geometry.Circle(2, 'GaAs')\n"
+    "    >>> half_circle = plask.geometry.Clip2D(circle, bottom=0)\n"
     ;
+}
+template <> inline const char* ClipDoc<3>() { return
+    "Clip3D(item, box)\n"
+    "Clip3D(item, back, left, bottom, front, right, top)\n\n"
+    "Transform that clips the held geometry object to the specified clip-box\n"
+    "(3D version).\n\n"
+    "This transform is used to limit the size of any complicated geometry object to\n"
+    "the specified rectangular box. This way, you can easily change e.g. a cylinder\n"
+    "to a half- or quarter-cilinder. In order to use this transform, you must\n"
+    "explicitly specify the coordinates of the clip-box in the local coordinates of\n"
+    "the clipped object. However, the original object is never expanded, co you can\n"
+    "freely make the box very large, or even infinite (which means no clipping at\n"
+    "this side).\n\n"
+    "Args:\n"
+    "    item (GeometryObject3D): Object to clip.\n"
+    "    back (float): Back side of the clipping box. *inf* by default.\n"
+    "    left (float): Left side of the clipping box. *inf* by default.\n"
+    "    bottom (float): Bottom side of the clipping box. *inf* by default.\n"
+    "    front (float): Front side of the clipping box. *inf* by default.\n"
+    "    right (float): Right side of the clipping box. *inf* by default.\n"
+    "    top (float): Top side of the clipping box. *inf* by default.\n"
+    "    box (Box3D): Clipping box.\n\n"
+    "Example:\n"
+    "    To make a half-cylinder with the flat front side:\n\n"
+    "    >>> cylinder = plask.geometry.Cylinder(2, 1, 'GaAs')\n"
+    "    >>> half_cylinder = plask.geometry.Clip3D(cylinder, front=0)\n"
+    ;
+}
+
+template <int dim>
+inline static void init_Clip()
+{
+    py::class_<Clip<dim>, shared_ptr<Clip<dim>>, py::bases<GeometryObjectTransform<dim>>, boost::noncopyable>(
+    ClipName<dim>(), ClipDoc<dim>(), py::no_init)
+        .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("box"))))
+        .def("__init__", py::make_constructor(&Clip_constructor2<dim>::call, py::default_call_policies(), Clip_constructor2<dim>::args))
+        .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box.")
+        ;
 }
 
 template <int dim>
@@ -176,9 +267,51 @@ shared_ptr<Intersection<dim>> Intersection_constructor(shared_ptr<GeometryObject
     return make_shared<Intersection<dim>>(object, shape);
 }
 
-DECLARE_GEOMETRY_ELEMENT_23D(Intersection, "Intersection", "Transform that clips the held geometry object to the specified shape ("," version)")
+template <int dim> inline const char* IntersectionName();
+template <> inline const char* IntersectionName<2>() { return "Intersection2D"; }
+template <> inline const char* IntersectionName<3>() { return "Intersection3D"; }
+
+template <int dim> inline const char* IntersectionDoc();
+template <> inline const char* IntersectionDoc<2>() { return
+    "Intersection2D(item, shape)\n\n"
+    "Transform that clips the held geometry object to the specified envelope\n"
+    "(2D version).\n\n"
+    "This transform is a more advanced version of :class:`~plask.geometry.Clip2D`.\n"
+    "Instead of a simple box, you can specify any geometry object as a clipping\n"
+    "envelope. The material of the evelope is ignored.\n\n"
+    "Args:\n"
+    "    item (GeometryObject2D): Object to clip.\n"
+    "    shape (GeometryObject2D): Object to serve as a clipping envelope.\n\n"
+//TODO
+//    "Example:\n"
+//    "    To make a half-circle with the flat bottom:\n\n"
+//    "    >>> circle = plask.geometry.Circle(2, 'GaAs')\n"
+//    "    >>> half_circle = plask.geometry.Intersection2D(circle, bottom=0)\n"
+    ;
+}
+template <> inline const char* IntersectionDoc<3>() { return
+    "Intersection3D(item, shape)\n\n"
+    "Transform that clips the held geometry object to the specified envelope\n"
+    "(3D version).\n\n"
+    "This transform is a more advanced version of :class:`~plask.geometry.Clip3D`.\n"
+    "Instead of a simple box, you can specify any geometry object as a clipping\n"
+    "envelope. The material of the evelope is ignored.\n\n"
+    "Args:\n"
+    "    item (GeometryObject3D): Object to clip.\n"
+    "    shape (GeometryObject3D): Object to serve as a clipping envelope.\n\n"
+//TODO
+//    "Example:\n"
+//    "    To make a half-cylinder with the flat front side:\n\n"
+//    "    >>> cylinder = plask.geometry.Cylinder(2, 1, 'GaAs')\n"
+//    "    >>> half_cylinder = plask.geometry.Intersection3D(cylinder, front=0)\n"
+    ;
+}
+
+template <int dim>
+inline static void init_Intersection()
 {
-    GEOMETRY_ELEMENT_23D(Intersection, GeometryObjectTransform<dim>, py::no_init)
+    py::class_<Intersection<dim>, shared_ptr<Intersection<dim>>, py::bases<GeometryObjectTransform<dim>>, boost::noncopyable>(
+    IntersectionName<dim>(), IntersectionDoc<dim>(), py::no_init)
         .def("__init__", py::make_constructor(&Intersection_constructor<dim>, py::default_call_policies(), (py::arg("item")=shared_ptr<GeometryObjectD<dim>>(), py::arg("shape")=shared_ptr<GeometryObjectD<dim>>())))
         .add_property("envelope", &Intersection<dim>::getEnvelope, &Intersection<dim>::setEnvelope,
                       "Clipping envelope.\n\n"

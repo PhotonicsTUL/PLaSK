@@ -31,19 +31,41 @@ void register_geometry_changespace()
     // ;
 
     py::class_<Extrusion, shared_ptr<Extrusion>, py::bases<GeometryObjectTransformSpace<3,2>>, boost::noncopyable>("Extrusion",
-        "Extrusion in the longitudinal direction of the 2D object into a 3D one."
+        "Extrusion(item, length=infinity)\n\n"
+        "Extrusion in the longitudinal direction of the 2D object into a 3D one.\n\n"
         "Objects of this type can be supplied to 2D Cartesian solvers or they can be used\n"
         "as a part of the 3D geometry tree.\n\n"
-        "Extrusion(child, length=infinity)\n    Create new extrusion of given length with provided child",
+        "Args:\n"
+        "    item (2D geometry object): Two-dimensional geometry object to extrude.\n"
+        "    length (float): Extrusion length in the longitudinal direction.\n\n"
+        "Example:\n"
+        "    Instead of using :class:`~plask.geometry.Cuboid` object, you can extrude\n"
+        "    a rectangle in the following way:\n\n"
+        "    >>> rect = plask.geometry.Rectangle(2, 3, 'GaAs')\n"
+        "    >>> cuboid = plask.geometry.Extrusion(rect, 1)\n\n"
+        "    The created cuboid will have dimensions 1µm, 2µm, and 3µm along logitudinal,\n"
+        "    transverse, and vertical axes, respectively.\n\n"
+        "    **Note:** In the real-life situations, you can extrude any complicated 2D\n"
+        "    object (e.g. a stack of a shelf).\n",
         py::init<shared_ptr<GeometryObjectD<2>>,double>((py::arg("item"), py::arg("length")=INFINITY)))
-        .add_property<>("length", &Extrusion::getLength, &Extrusion::setLength, "Length of the extrusion in the longitudinal direction")
+        .add_property<>("length", &Extrusion::getLength, &Extrusion::setLength, "Length of the extrusion in the longitudinal direction.")
     ;
 
     py::class_<Revolution, shared_ptr<Revolution>, py::bases<GeometryObjectTransformSpace<3,2>>, boost::noncopyable>("Revolution",
-        "Revolution around the vertical axis of the 2D object into a 3D one."
-        "Objects of this type can be supplied to 2D cylindrical solvers or they can be used\n"
-        "as a part of the 3D geometry tree.\n\n"
-        "Revolution(child)\n    Create new revolution with provided child",
+        "Revolution(item)\n\n"
+        "Revolution around the vertical axis of the 2D object into a 3D one.\n\n"
+        "Objects of this type can be supplied to 2D cylindrical solvers or they can be\n"
+        "used as a part of the 3D geometry tree.\n\n"
+        "Args:\n"
+        "    item (2D geometry object): Two-dimensional geometry object to extrude.\n\n"
+        "Example:\n"
+        "    Instead of using :class:`~plask.geometry.Cylinder` object, you can revolve\n"
+        "    a rectangle in the following way:\n\n"
+        "    >>> rect = plask.geometry.Rectangle(1, 2, 'GaAs')\n"
+        "    >>> cylinder = plask.geometry.Revolution(rect)\n\n"
+        "    The created cylinder will have base radius of 1µm and the height 2µm.\n\n"
+        "    **Note:** In the real-life situations, you can revolve any complicated 2D\n"
+        "    object (e.g. a stack of a shelf).\n",
         py::init<shared_ptr<GeometryObjectD<2>>>((py::arg("item"))))
     ;
 }

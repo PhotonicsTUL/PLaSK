@@ -158,10 +158,11 @@ void register_geometry_leafs()
     init_GeometryObjectLeaf<3>();
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> block2D("Rectangle",
-        "Rectangular block (2D geometry object).\n\n"
         "Rectangle(width, height, material)\n"
         "Rectangle(dims, material)\n\n"
-        "Create a rectangle.\n\n"
+        "Rectangular block (2D geometry object).\n\n"
+        "Sides of the rectangle are always parallel to the axes and its origin is located\n"
+        "in the lower left corner.\n\n"
         "Args:\n"
         "    width (float): Rectangle width.\n"
         "    height (float): Rectangle height.\n"
@@ -180,10 +181,11 @@ void register_geometry_leafs()
     scope.attr("Block2D") = block2D;
 
     py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> block3D("Cuboid",
-        "Cuboidal block (3D geometry object).\n\n"
         "Cuboid(depth, width, height, material)\n"
         "Cuboid(dims, material)\n\n"
-        "Create a cuboid.\n\n"
+        "Cuboidal block (3D geometry object).\n\n"
+        "Sides of the cuboid are always parallel to the axes and its origin is located\n"
+        "in the lower left back corner.\n\n"
         "Args:\n"
         "    depth (float): Cuboid depth.\n"
         "    width (float): Cuboid width.\n"
@@ -204,10 +206,10 @@ void register_geometry_leafs()
     scope.attr("Block3D") = block3D;
 
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
-        "Triangle (2D geometry object).\n\n"
         "Triangle(a0, a1, b0, b1, material)\n"
         "Triangle(a, b, material)\n"
-        "Create a triangle with vertices at points *a*, *b* and (0, 0).\n\n"
+        "Triangle (2D geometry object).\n\n"
+        "Three triangle vertices are located at points (0, 0), *a*, and *b*.\n\n"
         "Args:\n"
         "    plask.vec a: Local coordinates of the first triangle vertex.\n"
         "    plask.vec b: Local coordinates of the second triangle vertex.\n"
@@ -235,9 +237,8 @@ void register_geometry_leafs()
     ;
 
     py::class_<Circle<2>, shared_ptr<Circle<2>>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> ("Circle",
-        "Circle (2D geometry object).\n\n"
         "Circle(radius, material)\n\n"
-        "Create a circle.\n\n"
+        "Circle (2D geometry object).\n\n"
         "Args:\n"
         "    radius (float): Circle radius.\n"
         "    material (Material): Circle material.\n",
@@ -248,9 +249,8 @@ void register_geometry_leafs()
     ;
 
     py::class_<Circle<3>, shared_ptr<Circle<3>>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Sphere",
-        "Sphere (3D geometry object).\n\n"
         "Sphere(radius, material)\n\n"
-        "Create a sphere.\n\n"
+        "Sphere (3D geometry object).\n\n"
         "Args:\n"
         "    radius (float): Sphere radius.\n"
         "    material (Material): Sphere material.\n",
@@ -261,9 +261,11 @@ void register_geometry_leafs()
     ;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
-        "Vertical cylinder (3D geometry object).\n\n"
         "Cylinder(radius, height, material)\n\n"
-        "Create a cylinder.\n\n"
+        "Vertical cylinder (3D geometry object).\n\n"
+        "The cylinder base always lies in the horizontal (longitudinal-transverse)\n"
+        "plane and it height spans in the vertical\n"
+        "direction.\n\n"
         "Args:\n"
         "    radius (float): Cylinder radius.\n"
         "    height (float): Cylinder height.\n"
