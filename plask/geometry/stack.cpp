@@ -367,7 +367,7 @@ bool MultiStackContainer<UpperClass>::reduceHeight(double& height) const {
 template <typename UpperClass>
 typename MultiStackContainer<UpperClass>::Box MultiStackContainer<UpperClass>::getBoundingBox() const {
     Box result = UpperClass::getBoundingBox();
-    result.upper[UpperClass::GROWING_DIR] =
+    result.upper[UpperClass::GROWING_DIR] = result.lower[UpperClass::GROWING_DIR] +
         (result.upper[UpperClass::GROWING_DIR] - result.lower[UpperClass::GROWING_DIR]) * repeat_count;
     return result;
 }
