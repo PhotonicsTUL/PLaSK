@@ -82,8 +82,8 @@ Containers
 
          Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
 
-        :attr size: Size of the gap. (float [µm])
-        :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
+         :attr size: Size of the gap. (float [µm])
+         :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
 
          Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
 
