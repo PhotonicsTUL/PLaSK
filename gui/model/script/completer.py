@@ -116,7 +116,7 @@ def get_completions(document, text, block, column):
     from ... import _DEBUG
     with Lock(JEDI_MUTEX) as lck:
         try:
-            prefix = PREAMBLE + document.stubs()
+            prefix = PREAMBLE + document.stubs() + '\n'
             if _DEBUG:
                 print("------------------------------------------------------------------------------------")
                 print(prefix)

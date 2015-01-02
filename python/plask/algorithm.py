@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 High-level PLaSK algorithms for computations of semiconductor lasers.
 
 TODO doc
 
-'''
-import os
+"""
+import os as _os
 import plask
+import numpy as _np
 
 try:
     import scipy
@@ -18,10 +19,10 @@ else:
     import scipy.optimize
 
 # Get unique suffix for savefiles
-if 'JOB_ID' in os.environ:
-    _suffix = "-" + os.environ['JOB_ID']
-elif 'PBS_JOBID' in os.environ:
-    _suffix = "-" + os.environ['PBS_JOBID']
+if 'JOB_ID' in _os.environ:
+    _suffix = "-" + _os.environ['JOB_ID']
+elif 'PBS_JOBID' in _os.environ:
+    _suffix = "-" + _os.environ['PBS_JOBID']
 else:
     import time
     _suffix = time.strftime("-%Y%m%d-%H%M", time.localtime())
@@ -53,7 +54,7 @@ def _h5_open(filename, group):
 
 
 class ThermoElectric(object):
-    '''
+    """
     Algorithm for thermo-electric calculations without the optical part.
 
     This algorithm performs under-threshold thermo-electrical computations.
@@ -101,7 +102,7 @@ class ThermoElectric(object):
         The code above launches the computations, assuming that `therm` is
         a configured thermal solver and ``electr`` an electrical one. Then the
         current density distribution along the junction is plotted.
-    '''
+    """
 
     def __init__(self, thermal, electrical, tfreq=6, connect=False):
         self.thermal = thermal
@@ -112,7 +113,7 @@ class ThermoElectric(object):
             self.thermal.inHeat = self.electrical.outHeat
 
     def run(self, save=True):
-        '''
+        """
         Execute the algorithm.
 
         In the beginning the solvers are invalidated and next, the thermo-
@@ -125,7 +126,7 @@ class ThermoElectric(object):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overriden by setting this parameted
                 as a string.
-        '''
+        """
         self.thermal.invalidate()
         self.electrical.invalidate()
 
@@ -139,7 +140,7 @@ class ThermoElectric(object):
             self.save(None if save is True else save)
 
     def save(self, filename=None, group='ThermoElectric'):
-        '''
+        """
         Save the computation results to the HDF5 file.
 
         Args:
@@ -149,7 +150,7 @@ class ThermoElectric(object):
                 the current time if no batch system is used.
 
             group (str): HDF5 group to save the data under.
-        '''
+        """
         h5file, group = _h5_open(filename, group)
         tmesh = self.thermal.mesh
         vmesh = self.electrical.mesh
@@ -162,9 +163,8 @@ class ThermoElectric(object):
         plask.save_field(curr, h5file, group + '/CurrentDensity')
         h5file.close()
 
-
     def plot_temperature(self, geometry_color='w', mesh_color=None, **kwargs):
-        '''
+        """
         Plot computed temperature to the current axes.
 
         Args:
@@ -174,11 +174,11 @@ class ThermoElectric(object):
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
 
-            \*\*kwargs: Keyword arguments passed to the plot function.
+            kwargs: Keyword arguments passed to the plot function.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
-        '''
+        """
         field = self.thermal.outTemperature(self.thermal.mesh)
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
@@ -189,9 +189,8 @@ class ThermoElectric(object):
             plask.plot_mesh(self.thermal.mesh, color=mesh_color)
         plask.gcf().canvas.set_window_title("Temperature")
 
-
     def plot_voltage(self, geometry_color='w', mesh_color=None, **kwargs):
-        '''
+        """
         Plot computed voltage to the current axes.
 
         Args:
@@ -201,11 +200,11 @@ class ThermoElectric(object):
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
 
-            \*\*kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
+            kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
-        '''
+        """
         field = self.electrical.outVoltage(self.electrical.mesh)
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
@@ -216,17 +215,16 @@ class ThermoElectric(object):
             plask.plot_mesh(self.electrical.mesh, color=mesh_color)
         plask.gcf().canvas.set_window_title("Voltage")
 
-
     def plot_vertical_voltage(self, at=0., **kwargs):
-        '''
+        """
         Plot computed voltage along the vertical axis
 
         Args:
             at (float): Horizontal position of the axis at which the voltage
                         is plotted.
 
-            \*\*kwargs: Keyword arguments passed to the plot function.
-        '''
+            kwargs: Keyword arguments passed to the plot function.
+        """
         mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
         plask.plot(mesh.axis1, field, **kwargs)
@@ -234,9 +232,8 @@ class ThermoElectric(object):
         plask.ylabel("Voltage [V]")
         plask.gcf().canvas.set_window_title("Voltage")
 
-
     def plot_junction_current(self, refine=16, bounds=True, **kwargs):
-        '''
+        """
         Plot current density at the active region.
 
         Args:
@@ -245,8 +242,8 @@ class ThermoElectric(object):
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
 
-            \*\*kwargs: Keyword arguments passed to the plot function.
-        '''
+            kwargs: Keyword arguments passed to the plot function.
+        """
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()
         geom = self.electrical.geometry.item
@@ -288,9 +285,8 @@ class ThermoElectric(object):
         plask.gcf().canvas.set_window_title("Current Density")
 
 
-
 class ThresholdSearch(ThermoElectric):
-    '''
+    """
     Algorithm for threshold search of semiconductor laser.
 
     This algorithm performs thermo-electrical computations followed by
@@ -344,15 +340,18 @@ class ThresholdSearch(ThermoElectric):
             in the ``electrical`` solver that is varied in order to find the
             threshold.
 
-        vmin (float): Lower voltage limit for the threshold search. This should
-             be the voltage value below the threshold.
+        vstart (float or tuple of 2 floats): Voltage staring point or limits
+             fo the threshold search
 
-        vmax (float): Upper voltage limit for the threshold search. This should
-             be the voltage value above the threshold.
-
-        approx_mode (float): Approximation of the optical mode
+        optstart (float): Approximation of the optical mode
             (either the effective index or the wavelength) needed for optical
             computations.
+
+        optname (str): Name of the optical solver ``find_mode`` argument to
+            vary. Is None than simple the first unnamed argument is varied.
+
+        optargs (dict): Dictionary with optional ``find_mode`` arguments for
+            optical solver.
 
         loss (str): Loss parameter returned by optical computations.
             Threshold is assumed to be found if either this value (for 'loss')
@@ -397,10 +396,10 @@ class ThresholdSearch(ThermoElectric):
         a configured thermal solver and ``electr`` an electrical one. Then the
         current density distribution along the junction is plotted.
 
-    '''
+    """
 
     def __init__(self, thermal, electrical, diffusion, gain, optical,
-                 ivolt, vmin, vmax, approx_mode, loss='auto', tfreq=6,
+                 ivolt, vstart, optstart, optname=None, optargs=None, loss='auto', tfreq=6,
                  vtol=1e-6, invalidate=False, quick=False, connect=False):
         ThermoElectric.__init__(self, thermal, electrical, tfreq, connect)
         if diffusion is not None:
@@ -417,11 +416,12 @@ class ThresholdSearch(ThermoElectric):
             optical.inGain = gain.outGain
         self.gain = gain
         self.optical = optical
-        self.vmin = vmin
-        self.vmax = vmax
+        self.vstart = vstart
         self.ivb = ivolt
         self.vtol = vtol
-        self.optstart = approx_mode
+        self.optstart = optstart
+        self.optname = optname
+        self.optargs = optargs if optargs is not None else {}
         self.invalidate = invalidate
         self.threshold_current = None
         if quick:
@@ -440,7 +440,7 @@ class ThresholdSearch(ThermoElectric):
             raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
 
     def run(self, save=True):
-        '''
+        """
         Execute the algorithm.
 
         In the beginning the solvers are invalidated and next, the self-
@@ -461,7 +461,7 @@ class ThresholdSearch(ThermoElectric):
 
             >>> electrical.get_total_current()
             123.0
-        '''
+        """
 
         self.thermal.invalidate()
         self.electrical.invalidate()
@@ -469,11 +469,16 @@ class ThresholdSearch(ThermoElectric):
         self.optical.invalidate()
 
         def func(volt):
-            '''Function to search zero of'''
+            """Function to search zero of"""
+            try: volt = volt[0]
+            except TypeError: pass
             self.electrical.voltage_boundary[self.ivb].value = volt
             if self.invalidate:
                 self.thermal.invalidate()
                 self.electrical.invalidate()
+                self.diffusion.invalidate()
+                self.gain.invalidate()
+                self.optical.invalidate()
             verr = 2. * self.electrical.maxerr
             terr = 2. * self.thermal.maxerr
             while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
@@ -481,13 +486,28 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
             try: self.diffusion.compute_threshold()
             except AttributeError: pass
-            nm = self.optical.find_mode(self.optstart)
-            val = self.optical.modes[nm].__getattribute__(self.loss)
-            if self.loss != 'loss': val = val.imag
-            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g}{}".format(volt, val, '' if self.loss == 'neff' else ' / cm'))
+            if self.optname is None:
+                self.modeno = self.optical.find_mode(self.optstart, **self.optargs)
+            else:
+                okwargs = {self.optname: self.optstart}
+                okwargs.update(self.optargs)
+                self.modeno = self.optical.find_mode(**okwargs)
+            val = self.optical.modes[self.modeno].__getattribute__(self.loss)
+            if self.loss != 'loss':
+                if self.loss == 'wavelength':
+                    val = (4e7*_np.pi / val).imag
+                else:
+                    val = val.imag
+            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g}{}"
+                            .format(volt, val, '' if self.loss == 'neff' else ' / cm'))
             return val
 
-        result = scipy.optimize.brentq(func, self.vmin, self.vmax, xtol=self.vtol)
+        try:
+            vmin, vmax = self.vstart
+        except TypeError:
+            result = scipy.optimize.fsolve(func, [self.vstart], xtol=self.vtol)[0]
+        else:
+            result = scipy.optimize.brentq(func, vmin, vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
 
         if save:
@@ -496,7 +516,7 @@ class ThresholdSearch(ThermoElectric):
         return result
 
     def save(self, filename=None, group='ThresholdSearch'):
-        '''
+        """
         Save the computation results to the HDF5 file.
 
         Args:
@@ -506,7 +526,7 @@ class ThresholdSearch(ThermoElectric):
                 the current time if no batch system is used.
 
             group (str): HDF5 group to save the data under.
-        '''
+        """
         h5file, group = _h5_open(filename, group)
         ThermoElectric.save(self, h5file, group)
 

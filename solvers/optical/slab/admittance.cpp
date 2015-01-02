@@ -81,7 +81,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
 
             // PML layer
             #ifdef OPENMP_FOUND
-                write_debug("%s: entering into single region of reflection search in thread %d", solver->getId(), omp_get_thread_num());
+                write_debug("%s: entering into single region of admittance search in thread %d", solver->getId(), omp_get_thread_num());
                 layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
                 #ifndef NDEBUG
                     write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[start]);

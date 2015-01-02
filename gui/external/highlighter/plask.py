@@ -41,6 +41,7 @@ syntax = {
             'plot_geometry',
             'plot_mesh',
             'plot_boundary',
+            'plot_profile',
         ], '(^|[^\\.\\w]|\\bplask\\.)', '[\x08\\W]'),
         ('log', 'LOG_[A-Z]+(?!\w)'),
         ('loaded', [

@@ -4,6 +4,7 @@ utilsdir=`dirname $0`/../utils
 
 for s in 16 24 32 48; do
     inkscape -e ${iconsdir}/${s}x${s}/apps/plask.png ${iconsdir}/scalable/apps/plask.svg -C -w $s -h $s
+    inkscape -e ${iconsdir}/${s}x${s}/apps/plaskgui.png ${iconsdir}/scalable/apps/plaskgui.svg -C -w $s -h $s
     inkscape -e ${iconsdir}/${s}x${s}/mimetypes/application-x-plask.png \
         ${iconsdir}/scalable/mimetypes/application-x-plask.svg -C -w ${s} -h ${s}
 done

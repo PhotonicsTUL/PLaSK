@@ -186,7 +186,7 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(WIN32)
-                add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
+        add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
         set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
     else()
         find_package(DW)
@@ -397,6 +397,8 @@ if(BUILD_PYTHON)
             install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
             foreach(s 16 24 32 48)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plask.png
+                        DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT core)
+                install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plaskgui.png
                         DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT GUI)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/mimetypes/application-x-plask.png
                         DESTINATION share/icons/hicolor/${s}x${s}/mimetypes COMPONENT GUI)

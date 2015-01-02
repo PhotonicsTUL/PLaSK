@@ -2,7 +2,7 @@
 Comment=
 Exec=plaskgui
 GenericName=Photonic Laser Simulation Kit
-Icon=plask
+Icon=plaskgui
 MimeType=application/x-plask
 Name=PLaSK GUI
 Path=

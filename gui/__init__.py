@@ -12,7 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-_DEBUG = False
 
 OPERATIONS = []
 
@@ -22,10 +21,17 @@ import ctypes
 import subprocess
 import pkgutil
 
+try:
+    _DEBUG = eval(os.environ['PLASKGUI_DEBUG'].title())
+except KeyError:
+    _DEBUG = False
+
+
 from .qt import QtGui, QtCore, qt4
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
+
 
 # Set-up correct backend for matplotlib
 try:
@@ -121,8 +127,7 @@ class MainWindow(QtGui.QMainWindow):
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
 
-        icon = QtGui.QIcon.fromTheme('plask')
-        self.setWindowIcon(icon)
+        self.setWindowIcon(QtGui.QIcon.fromTheme('plaskgui'))
 
         self.info_model = InfoTreeModel(None)
         #self.info = QtGui.QTableView(self.plot_dock)
@@ -215,7 +220,7 @@ class MainWindow(QtGui.QMainWindow):
 
         menu_button = QtGui.QPushButton(self)
         menu_button.setText("&Operations")
-        menu_button.setIcon(icon)
+        menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         menu_button.setPalette(pal)
