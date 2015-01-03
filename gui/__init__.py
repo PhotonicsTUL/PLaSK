@@ -335,13 +335,27 @@ class MainWindow(QtGui.QMainWindow):
             new_window.setWindowModified(False)
             new_window.close()
 
+    def _save_document(self, filename):
+        try:
+            self.document.save_to_file(str(filename))
+        except Exception as err:
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("Save Error")
+            msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            msgbox.exec_()
+            return False
+        else:
+            update_recent_files(filename)
+            return True
+
     def save(self):
         if self.document.filename is not None:
             if not self.before_save():
                 return False
-            self.document.save_to_file(self.document.filename)
-            update_recent_files(self.document.filename)
-            return True
+            return self._save_document(self.document.filename)
         else:
             return self.save_as()
 
@@ -355,9 +369,7 @@ class MainWindow(QtGui.QMainWindow):
             filename = filename[0]
         if not filename:
             return False
-        self.document.save_to_file(filename)
-        update_recent_files(filename)
-        return True
+        return self._save_document(filename)
 
     def before_save(self):
         """"Is called just before save, return True if document can be saved."""
