@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 This is an interface to Matplotlib and pylab.
 
 It contains some helper functions helping with plotting PLaSK
@@ -9,7 +9,9 @@ Additional functions defined here are:
 
 TODO
 
-'''
+"""
+
+import os as _os
 
 import matplotlib
 import matplotlib.colors
@@ -17,8 +19,15 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
+try:
+    backend = _os.environ['MATPLOTLIB_BACKEND']
+except KeyError:
+    backend = matplotlib.rcParams['backend']
+else:
+    matplotlib.use(backend)
+
 # Specify Qt4 API v2 while it is not too late
-if matplotlib.rcParams['backend'] == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
+if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
     try:
         import sip
         for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"): sip.setapi(n, 2)

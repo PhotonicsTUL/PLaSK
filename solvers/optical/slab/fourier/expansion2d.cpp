@@ -306,24 +306,34 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = 0; i <= order; ++i) {
                     double gi = b * double(i);
+                    size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
                         int aj = abs(j);
-                        RE(iH(i), iE(aj)) += fz * (- gi * gj * imuyy(l,ij) + k02 * epszz(l,ij) );
-                        RH(iE(i), iH(aj)) += fz *                            k02 * muxx(l,ij);
+                        size_t je = iE(aj), jh = iH(aj);
+                        RE(ih, je) += fz * (- gi * gj * imuyy(l,ij) + k02 * epszz(l,ij) );
+                        RH(ie, jh) += fz *                            k02 * muxx(l,ij);
                     }
+                    // Ugly hack to avoid singularity
+                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
+                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
                 }
             } else {                                        // Ex & Hz
                 for (int i = 0; i <= order; ++i) {
                     double gi = b * double(i);
+                    size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
                         int aj = abs(j);
-                        RE(iH(i), iE(aj)) += fx *                             k02 * epsxx(l,ij);
-                        RH(iE(i), iH(aj)) += fx * (- gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                        size_t je = iE(aj), jh = iH(aj);
+                        RE(ih, je) += fx *                             k02 * epsxx(l,ij);
+                        RH(ie, jh) += fx * (- gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij) );
                     }
+                    // Ugly hack to avoid singularity
+                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
+                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
                 }
             }
         } else {
@@ -331,20 +341,30 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
+                    size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RE(iH(i), iE(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                        RH(iE(i), iH(j)) = f *                              k02 * muxx(l,ij);
+                        size_t je = iE(j), jh = iH(j);
+                        RE(ih, je) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                        RH(ie, jh) = f *                              k02 * muxx(l,ij);
                     }
+                    // Ugly hack to avoid singularity
+                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
+                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
                 }
             } else {                                        // Ex & Hz
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
+                    size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RE(iH(i), iE(j)) = f *                               k02 * epsxx(l,ij);
-                        RH(iE(i), iH(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                        size_t je = iE(j), jh = iH(j);
+                        RE(ih, je) = f *                               k02 * epsxx(l,ij);
+                        RH(ie, jh) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
                     }
+                    // Ugly hack to avoid singularity
+                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
+                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
                 }
             }
         }
@@ -355,44 +375,50 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
             for (int i = 0; i <= order; ++i) {
                 double gi = b * double(i);
+                size_t iex = iEx(i), iez = iEz(i), ihx = iHx(i), ihz = iHz(i);
                 for (int j = -order; j <= order; ++j) {
                     int ij = abs(i-j);   double gj = b * double(j);
                     dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
                     dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
                     int aj = abs(j);
-                    RE(iHz(i), iEx(aj)) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(iHx(i), iEx(aj)) += fx * (  beta* gi  * imuyy(l,ij)                     );
-                    RE(iHz(i), iEz(aj)) += fz * (  beta* gj  * imuyy(l,ij)                     );
-                    RE(iHx(i), iEz(aj)) += fz * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                    RH(iEx(i), iHz(aj)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iEz(i), iHz(aj)) += fx * (- beta* gj  * iepsyy(l,ij)                    );
-                    RH(iEx(i), iHx(aj)) += fz * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iEz(i), iHx(aj)) += fz * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
-                    // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
-                    // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
-                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
+                    size_t jex = iEx(aj), jez = iEz(aj), jhx = iHx(aj), jhz = iHz(aj);
+                    RE(ihz, jex) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(ihx, jex) += fx * (  beta* gi  * imuyy(l,ij)                     );
+                    RE(ihz, jez) += fz * (  beta* gj  * imuyy(l,ij)                     );
+                    RE(ihx, jez) += fz * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iex, jhz) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iez, jhz) += fx * (- beta* gj  * iepsyy(l,ij)                    );
+                    RH(iex, jhx) += fz * (- beta* gi  * iepsyy(l,ij)                    );
+                    RH(iez, jhx) += fz * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
                 }
+                // Ugly hack to avoid singularity
+                if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
+                if (RE(iez, iez) == 0.) RE(iez, iez) = 1e-32;
+                if (RH(ihx, ihx) == 0.) RH(ihx, ihx) = 1e-32;
+                if (RH(ihz, ihz) == 0.) RH(ihz, ihz) = 1e-32;
             }
         } else {
             // Full asymmetric()
             for (int i = -order; i <= order; ++i) {
                 dcomplex gi = b * double(i) - kx;
+                size_t iex = iEx(i), iez = iEz(i), ihx = iHx(i), ihz = iHz(i);
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
-                    RE(iHz(i), iEz(j)) = f * (  beta* gj  * imuyy(l,ij) - k02 * epsxz(l,ij) );
-                    RE(iHx(i), iEz(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iEz(i), iHz(j)) = f * (- beta* gj  * iepsyy(l,ij)                    );
-                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iEz(i), iHx(j)) = f * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
-                    // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
-                    // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
-                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
+                    size_t jex = iEx(j), jez = iEz(j), jhx = iHx(j), jhz = iHz(j);
+                    RE(ihz, jex) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(ihx, jex) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
+                    RE(ihz, jez) = f * (  beta* gj  * imuyy(l,ij) - k02 * epsxz(l,ij) );
+                    RE(ihx, jez) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iex, jhz) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iez, jhz) = f * (- beta* gj  * iepsyy(l,ij)                    );
+                    RH(iex, jhx) = f * (- beta* gi  * iepsyy(l,ij)                    );
+                    RH(iez, jhx) = f * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
                 }
+                // Ugly hack to avoid singularity
+                if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
+                if (RE(iez, iez) == 0.) RE(iez, iez) = 1e-32;
+                if (RH(ihx, ihx) == 0.) RH(ihx, ihx) = 1e-32;
+                if (RH(ihz, ihz) == 0.) RH(ihz, ihz) = 1e-32;
             }
         }
     }

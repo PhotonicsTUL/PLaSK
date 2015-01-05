@@ -469,41 +469,28 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
     std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
 
     for (int iy = (symy ? 0 : -ordt); iy <= ordt; ++iy) {
-
         dcomplex gy = iy * Gy - ktran;
-
         for (int ix = (symx ? 0 : -ordl); ix <= ordl; ++ix) {
-
             dcomplex gx = ix * Gx - klong;
-
             size_t iex = iEx(ix, iy), iey = iEy(ix, iy);
             size_t ihx = iHx(ix, iy), ihy = iHy(ix, iy);
 
             for (int jy = -ordt; jy <= ordt; ++jy) {
-
                 dcomplex py = jy * Gy - ktran;
-
                 int ijy = iy - jy; if (symy && ijy < 0) ijy = - ijy;
-
                 for (int jx = -ordl; jx <= ordl; ++jx) {
-
                     dcomplex px = jx * Gx - klong;
-
                     int ijx = ix - jx; if (symx && ijx < 0) ijx = - ijx;
-
                     size_t jex = iEx(jx, jy), jey = iEy(jx, jy);
                     size_t jhx = iHx(jx, jy), jhy = iHy(jx, jy);
-
                     double fx = 1., fy = 1.;
                     if (symx && jx < 0) { fx *= symx; fy *= -symx; }
                     if (symy && jy < 0) { fx *= symy; fy *= -symy; }
-
                     dcomplex ieps = iepszz(lay, ijx, ijy) * ik0;
                     RH(iex,jhy) += fx * (- gx * px * ieps + k0 * muyy(lay, ijx, ijy));
                     RH(iey,jhy) += fx * (- gy * px * ieps);
                     RH(iex,jhx) += fy * (- gx * py * ieps);
                     RH(iey,jhx) += fy * (- gy * py * ieps + k0 * muxx(lay, ijx, ijy));
-
                     dcomplex imu = imuzz(lay, ijx, ijy) * ik0;
                     RE(ihy,jex) += fx * (- gy * py * imu + k0 * epsxx(lay, ijx, ijy));
                     RE(ihx,jex) += fx * (  gx * py * imu + k0 * epsyx(lay, ijx, ijy));
@@ -511,6 +498,12 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
                     RE(ihx,jey) += fy * (- gx * px * imu + k0 * epsyy(lay, ijx, ijy));
                 }
             }
+
+            // Ugly hack to avoid singularity
+            if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
+            if (RE(iey, iey) == 0.) RE(iey, iey) = 1e-32;
+            if (RH(ihx, ihx) == 0.) RH(ihx, ihx) = 1e-32;
+            if (RH(ihy, ihy) == 0.) RH(ihy, ihy) = 1e-32;
         }
     }
 }
