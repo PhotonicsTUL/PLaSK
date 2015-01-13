@@ -81,7 +81,8 @@ SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<
 {
     const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size();
 
-    if (n0 == 0 || n1 == 0) throw BadMesh("interpolate", "Source mesh empty");
+    if (n0 == 0 || n1 == 0)
+        throw BadMesh("interpolate", "Source mesh empty");
 
     size_t stride0 = src_mesh->index(1, 0),
            stride1 = src_mesh->index(0, 1);
@@ -161,7 +162,8 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
 {
     const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size(), n2 = src_mesh->axis2->size();
 
-    if (n0 == 0 || n1 == 0 || n2 == 0) throw BadMesh("interpolate", "Source mesh empty");
+    if (n0 == 0 || n1 == 0 || n2 == 0)
+        throw BadMesh("interpolate", "Source mesh empty");
 
     if (n0 > 1) {
         size_t stride0 = src_mesh->index(1, 0, 0);

@@ -8,7 +8,13 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
+from zlib import adler32
+
 _geometry_drawers = {}
+
+def material_to_color(material):
+    i = adler32(str(material))      #maybe crc32?
+    return i & 0xff / 255, (i >> 8) & 0xff / 255, (i >> 16) & 0xff / 255
 
 class DrawEnviroment(object):
 
@@ -32,9 +38,10 @@ def _draw_Block(env, geometry_object, transform, clip_box):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
-        ec=env.color, #color
+        edgecolor=env.color,
+        facecolor=material_to_color(geometry_object.representative_material),
         lw=env.lw, #line(?)
-        fill = False,
+        fill = True,
         zorder = env.z_order,
         transform = transform
     )

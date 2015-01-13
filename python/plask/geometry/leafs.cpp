@@ -14,6 +14,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base cla
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
        .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &GeometryObjectLeaf<dim>::setMaterial,
                      "material of the geometry object (or None if there is no single material for the object)")
+       .add_property("representative_material", &GeometryObjectLeaf<dim>::getRepresentativeMaterial)
     ;
 }
 
