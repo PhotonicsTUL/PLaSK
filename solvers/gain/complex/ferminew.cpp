@@ -415,7 +415,21 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
     if ((!mEc)&&((!mEvhh)||(!mEvlh)))
     {
         double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
-        double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
+
+        // calculating nR
+        double tQWnR = 0.; // sty
+        int tNoOfQWs = 0;
+        int tN = region.size(); // number of all layers int the active region (QW, barr, external)
+        for (int i=1; i<tN-1; ++i)
+        {
+            if (region.isQW(i))
+            {
+                tQWnR += region.getLayerMaterial(i)->nr(wavelength,T);
+                tNoOfQWs++;
+            }
+        }
+        tQWnR /= (tNoOfQWs*1.);
+        //double tQWnR = region.materialQW->nr(wavelength,T); // QW nR // earlier
 
         double tEgClad = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
         //this->writelog(LOG_DEBUG, "mEgCladT z ferminew: %1% eV", tEgClad);

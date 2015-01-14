@@ -67,8 +67,8 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
         std::vector< shared_ptr<Material> > actMaterials; ///< All materials in the active region
         std::vector<double> lens; ///< Thicknesses of the layers in the active region
 
-        shared_ptr<Material> materialQW;        ///< Quantum well material
-        shared_ptr<Material> materialBarrier;   ///< Barrier material
+        //shared_ptr<Material> materialQW;        ///< Quantum well material
+        //shared_ptr<Material> materialBarrier;   ///< Barrier material
         double qwlen;                           ///< Single quantum well thickness [Å]
         double qwtotallen;                      ///< Total quantum wells thickness [Å]
         double totallen;                        ///< Total active region thickness [Å]
@@ -91,10 +91,10 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                 if (!material) throw plask::Exception("FerminewGainSolver requires solid layers.");
                 if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW"))
                 {
-                    if (!materialQW)
+                    /*if (!materialQW)
                         materialQW = material;
                     else if (*material != *materialQW)
-                        throw Exception("%1%: Multiple quantum well materials in active region.", solver->getId());
+                        throw Exception("%1%: Multiple quantum well materials in active region.", solver->getId());*/
                     auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
                     qwtotallen += bbox.upper[1] - bbox.lower[1];
                     if (lastbarrier) ++qwn;
@@ -103,9 +103,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                 }
                 else //if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier")) // TODO 4.09.2014
                 {
-                    if (!materialBarrier)
+                    /*if (!materialBarrier)
                         materialBarrier = material;
-                    /*else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
+                    else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
                              !is_zero(material->Me(300).c11 - materialBarrier->Me(300).c11) ||
                              !is_zero(material->Mhh(300).c00 - materialBarrier->Mhh(300).c00) ||
                              !is_zero(material->Mhh(300).c11 - materialBarrier->Mhh(300).c11) ||
