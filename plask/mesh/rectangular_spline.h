@@ -25,7 +25,7 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh) {
-        //You can have few SplineRect2DLazyDataImpl variants and choose one here
+        // You can have few SplineRect2DLazyDataImpl variants and choose one here
         return new SplineRect2DLazyDataImpl<typename std::remove_const<DstT>::type, typename std::remove_const<SrcT>::type>(src_mesh, src_vec, dst_mesh);
     }
 
@@ -49,7 +49,7 @@ struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_SPLI
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh) {
-        //You can have few SplineRect3DLazyDataImpl variants and choose one here
+        // You can have few SplineRect3DLazyDataImpl variants and choose one here
         return new SplineRect3DLazyDataImpl<typename std::remove_const<DstT>::type, typename std::remove_const<SrcT>::type>(src_mesh, src_vec, dst_mesh);
     }
 

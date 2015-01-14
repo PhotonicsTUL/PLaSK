@@ -168,7 +168,7 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
     if (n0 > 1) {
         size_t stride0 = src_mesh->index(1, 0, 0);
         for (size_t i2 = 0; i2 < src_mesh->axis2->size(); ++i2) {
-            for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i2) {
+            for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i1) {
                 size_t offset = src_mesh->index(0, i1, i2);
                 detail::computeDiffs(diff0.data()+offset, src_mesh->axis0, src_vec.data()+offset, stride0);
             }
@@ -213,7 +213,7 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
     double d0 = this->src_mesh->axis0->at(i0) - this->src_mesh->axis0->at(i0? i0-1 : 0),
            d1 = this->src_mesh->axis1->at(i1) - this->src_mesh->axis1->at(i1? i1-1 : 0),
-           d2 = this->src_mesh->axis1->at(i2) - this->src_mesh->axis1->at(i2? i2-1 : 0);
+           d2 = this->src_mesh->axis2->at(i2) - this->src_mesh->axis2->at(i2? i2-1 : 0);
     double x0 = i0? (p.c0 - this->src_mesh->axis0->at(i0-1)) / d0 : 0.,
            x1 = i1? (p.c1 - this->src_mesh->axis1->at(i1-1)) / d1 : 0.,
            x2 = i2? (p.c2 - this->src_mesh->axis2->at(i2-1)) / d2 : 0.;
