@@ -14,19 +14,28 @@ _geometry_drawers = {}
 
 def material_to_color(material):
     i = adler32(str(material))      #maybe crc32?
-    return i & 0xff / 255, (i >> 8) & 0xff / 255, (i >> 16) & 0xff / 255
+    return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
 
 class DrawEnviroment(object):
 
-    def __init__(self, axes, color = 'k', lw = 1.0, z_order=3.0):
+    def __init__(self, axes, fill = False, color = 'k', lw = 1.0, z_order=3.0):
         super(DrawEnviroment, self).__init__()
         self.patches = []
+        self.fill = fill
         self.color = color
         self.lw = lw
         self.axes = axes
         self.z_order = z_order
 
-    def append(self, artist, clip_box):
+    def append(self, artist, clip_box, geometry_object):
+        if self.fill:
+            artist.set_fill(True)
+            artist.set_facecolor(material_to_color(geometry_object.representative_material))
+        else:
+            artist.set_fill(False)
+        artist.set_linewidth(self.lw)
+        artist.set_ec(self.color)
+        artist.set_zorder(self.z_order)
         if clip_box is not None:
             artist.set_clip_box(clip_box)
             #artist.set_clip_on(True)
@@ -38,14 +47,10 @@ def _draw_Block(env, geometry_object, transform, clip_box):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
-        edgecolor=env.color,
-        facecolor=material_to_color(geometry_object.representative_material),
-        lw=env.lw, #line(?)
-        fill = True,
-        zorder = env.z_order,
         transform = transform
     )
-    env.append(block, clip_box)
+    #if env.fill: block.
+    env.append(block, clip_box, geometry_object)
 
 _geometry_drawers[plask.geometry.Block2D] = _draw_Block
 _geometry_drawers[plask.geometry.Block3D] = _draw_Block
@@ -53,19 +58,15 @@ _geometry_drawers[plask.geometry.Block3D] = _draw_Block
 def _draw_Triangle(env, geometry_object, transform, clip_box):
     p1 = geometry_object.a
     p2 = geometry_object.b
-    env.append(matplotlib.patches.Polygon(
-                ((0.0, 0.0), (p1[0], p1[1]), (p2[0], p2[1])),
-                closed=True, ec=env.color, lw=env.lw, fill=False, zorder=env.z_order, transform=transform),
-               clip_box
+    env.append(matplotlib.patches.Polygon(((0.0, 0.0), (p1[0], p1[1]), (p2[0], p2[1])), closed=True, transform=transform),
+               clip_box, geometry_object
     )
 
 _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
 
 def _draw_Circle(env, geometry_object, transform, clip_box):
-    env.append(matplotlib.patches.Circle(
-                (0.0, 0.0), geometry_object.radius,
-                ec=env.color, lw=env.lw, fill=True, zorder=env.z_order, transform=transform),
-               clip_box
+    env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.radius, transform=transform),
+               clip_box, geometry_object
     )
 
 _geometry_drawers[plask.geometry.Circle] = _draw_Circle
@@ -153,7 +154,7 @@ def _draw_geometry_object(env, geometry_object, transform, clip_box):
     else:
         drawer(env, geometry_object, transform, clip_box)
 
-def plot_geometry_object(figure, geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
+def plot_geometry_object(figure, geometry, fill = False, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
     '''Plot geometry.'''
     #TODO documentation
 
@@ -171,7 +172,7 @@ def plot_geometry_object(figure, geometry, color='k', lw=1.0, plane=None, set_li
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
 
-    env = DrawEnviroment(ax, color, lw, z_order=zorder)
+    env = DrawEnviroment(ax, fill, color, lw, z_order=zorder)
 
     hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
