@@ -18,9 +18,9 @@ def material_to_color(material):
 
 class DrawEnviroment(object):
 
-    def __init__(self, axes, fill = False, color = 'k', lw = 1.0, z_order=3.0):
+    def __init__(self, axes, artist_dst, fill = False, color = 'k', lw = 1.0, z_order=3.0):
         super(DrawEnviroment, self).__init__()
-        self.patches = []
+        self.patches = artist_dst
         self.fill = fill
         self.color = color
         self.lw = lw
@@ -36,10 +36,13 @@ class DrawEnviroment(object):
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
         artist.set_zorder(self.z_order)
+        self.patches.add_patch(artist)
         if clip_box is not None:
+            #artist.set_clip_box(matplotlib.transforms.Bbox.intersection(clip_box, artist.get_clip_box()))
             artist.set_clip_box(clip_box)
             #artist.set_clip_on(True)
-        self.patches.append(artist)
+            #artist.set_clip_path(clip_box)
+
 
 
 def _draw_Block(env, geometry_object, transform, clip_box):
@@ -124,6 +127,13 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
        transform
     )
 
+    #new_clipbox = matplotlib.patches.Rectangle(
+    #    (obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]),
+    #    obj_box.upper[env.axes[0]]-obj_box.lower[env.axes[0]], obj_box.upper[env.axes[1]]-obj_box.lower[env.axes[1]],
+    #    transform = transform
+    #)
+    #env.patches.add_patch(new_clipbox)
+
     # new_clipbox = matplotlib.transforms.Bbox([
     #        [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
     #        [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
@@ -132,7 +142,7 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
     if clip_box is None:
         clip_box = new_clipbox
     else:
-        clip_box = matplotlib.transforms.Bbox.intersection(clip_box, new_clipbox)
+        clip_box = matplotlib.transforms.Bbox.intersection(clip_box, new_clipbox)  #TODO
         if clip_box is None: return # clip box is empty, nothing to draw
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
 
@@ -172,7 +182,7 @@ def plot_geometry_object(figure, geometry, fill = False, color='k', lw=1.0, plan
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
 
-    env = DrawEnviroment(ax, fill, color, lw, z_order=zorder)
+    env = DrawEnviroment(ax, axes, fill, color, lw, z_order=zorder)
 
     hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
@@ -186,8 +196,8 @@ def plot_geometry_object(figure, geometry, fill = False, color='k', lw=1.0, plan
     #    if box:
     #        _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, lw, zorder)
 
-    for patch in env.patches:
-        axes.add_patch(patch)
+    #for patch in env.patches:
+    #    axes.add_patch(patch)
 
     if set_limits:
         box = geometry.bbox
