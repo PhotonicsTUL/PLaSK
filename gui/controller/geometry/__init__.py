@@ -114,7 +114,7 @@ class GeometryController(Controller):
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
             manager.load(self.document.get_XPL_content(sections='geometry'))
-            to_plot = manager.geometry[tree_element.name]
+            to_plot = manager.geometry[str(tree_element.name)]
             self.geometry_view.update_plot(to_plot)
         finally:
             if not element_has_name: tree_element.name = None
@@ -170,9 +170,9 @@ class GeometryController(Controller):
         self.tree.setColumnWidth(0, 200)
         return self.tree
 
-    def _construct_plot_dock(self):
-        self.geometry_view = PlotWidget()
-        self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
+    #def _construct_plot_dock(self):
+    #    self.geometry_view = PlotWidget()
+    #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
 
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
@@ -204,7 +204,13 @@ class GeometryController(Controller):
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
-        self._construct_plot_dock()
+        self.geometry_view = PlotWidget()
+
+        self.main_splitter = QtGui.QSplitter()
+        self.main_splitter.addWidget(self.vertical_splitter)
+        self.main_splitter.addWidget(self.geometry_view)
+
+        #self._construct_plot_dock()
 
 
     def set_current_index(self, new_index):
@@ -247,4 +253,4 @@ class GeometryController(Controller):
         return True
 
     def get_widget(self):
-        return self.vertical_splitter
+        return self.main_splitter
