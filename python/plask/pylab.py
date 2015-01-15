@@ -40,22 +40,6 @@ from matplotlib.pylab import *
 
 # Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
 if True:
-    class _subRC(object):
-        def __init__(self, group):
-            self.__dict__['_group'] = group
-
-        def __setattr__(self, attr, value):
-            name = _Rc.aliases.get(attr) or attr
-            key = self._group + '.' + name
-            if key not in rcParams:
-                raise KeyError(u'Unrecognized key "{}"'.format(key))
-            rcParams[key] = value
-
-        def __getattr__(self, attr):
-            name = _Rc.aliases.get(attr) or attr
-            newgroup = self._group + '.' + name
-            return _subRC(newgroup)
-
     class _Rc(object):
         """
         Set the current rc params.  There are two alternative ways of using
@@ -111,7 +95,7 @@ if True:
         Use :func:`~matplotlib.pyplot.rcdefaults` to restore the default
         rc params after changes.
 
-        Another way of using this object is to use the python syntax like::
+        Another way of using this object is to use the Python syntax like::
 
         rc.figure.subplot.top = 0.9
 
@@ -130,6 +114,25 @@ if True:
             'aa'  : 'antialiased',
             'sans': 'sans-serif'
         }
+
+        class Group(object):
+            def __init__(self, group):
+                self.__dict__['_group'] = group
+
+            def __setattr__(self, attr, value):
+                name = _Rc.aliases.get(attr, attr)
+                key = self._group + '.' + name
+                if key not in rcParams:
+                    raise KeyError(u'Unrecognized key "{}"'.format(key))
+                rcParams[key] = value
+
+            def __getattr__(self, attr):
+                name = _Rc.aliases.get(attr) or attr
+                newgroup = self._group + '.' + name
+                if newgroup in rcParams:
+                    return rcParams[newgroup]
+                else:
+                    return _Rc.Group(newgroup)
 
         def __call__(self, group, **kwargs):
             if matplotlib.is_string_like(group):
@@ -151,7 +154,7 @@ if True:
 
         def __getattribute__(self, attr):
             if attr[:2] != '__':
-                return _subRC(attr)
+                return _Rc.Group(attr)
             else:
                 raise AttributeError
 
