@@ -6,20 +6,6 @@ analysis of semiconductor lasers, as it allows to perform simulations of various
 physical phenomena with different models: thermal, electrical, quantum and optical.
 PLaSK takes care of considering mutual interactions between these models and
 allows to easily perform complex self-consistent analysis of complete devices.
-
-Modules
-=======
-
-.. autosummary::
-   :toctree: plask
-   :template: module.rst
-
-   geometry
-   mesh
-   material
-   flow
-   phys
-   algorithm
 """
 
 import sys

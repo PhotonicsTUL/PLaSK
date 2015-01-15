@@ -6,6 +6,19 @@
 
 .. automodule:: plask
 
+Modules
+=======
+
+.. autosummary::
+   :toctree: plask
+   :template: module.rst
+
+   geometry
+   mesh
+   material
+   flow
+   phys
+   algorithm
 
 Classes
 =======
