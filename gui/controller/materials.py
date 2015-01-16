@@ -239,7 +239,6 @@ class MaterialsController(Controller):
         self.materials_table.setModel(self.model)
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
                                                                               self.materials_table))
-        #self.materialsTableActions = TableActions(self.materials_table)
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
@@ -292,6 +291,12 @@ class MaterialsController(Controller):
         self.propedit.hide()
 
         self.property_model.dataChanged.connect(self.property_data_changed)
+
+        focus_action = QtGui.QAction(self.materials_table)
+        focus_action.triggered.connect(lambda: self.properties_table.setFocus())
+        focus_action.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Return))
+        focus_action.setShortcutContext(QtCore.Qt.WidgetShortcut)
+        self.materials_table.addAction(focus_action)
 
         prop_splitter.addWidget(self.propedit)
         prop_splitter.setSizes([50000, 10000])

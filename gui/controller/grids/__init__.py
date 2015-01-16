@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 from ...qt import QtGui
+from ...qt.QtCore import Qt
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from .. import Controller
@@ -46,6 +47,12 @@ class GridsController(Controller):
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
+
+        focus_action = QtGui.QAction(self.grids_table)
+        focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
+        focus_action.setShortcut(QtGui.QKeySequence(Qt.Key_Return))
+        focus_action.setShortcutContext(Qt.WidgetShortcut)
+        self.grids_table.addAction(focus_action)
 
         self.splitter.setSizes([10000,26000])
 

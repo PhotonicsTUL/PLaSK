@@ -198,7 +198,7 @@ class OutputWindow(QtGui.QDockWidget):
                     if cat == 'DEBUG' and not self.action_debug.isChecked(): continue
                     lines.append(line)
                 if lines:
-                    self.messages.append("<br/>\n".join(lines))
+                    self.messages.append(u"<br/>\n".join(lines))
                 self.printed_lines = total_lines
             else:
                 move = False

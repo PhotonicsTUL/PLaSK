@@ -300,6 +300,12 @@ class SolversController(Controller):
 
         self.splitter.setSizes([10000, 20000])
 
+        focus_action = QtGui.QAction(self.solvers_table)
+        focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
+        focus_action.setShortcut(QtGui.QKeySequence(Qt.Key_Return))
+        focus_action.setShortcutContext(Qt.WidgetShortcut)
+        self.solvers_table.addAction(focus_action)
+
         selection_model = self.solvers_table.selectionModel()
         selection_model.selectionChanged.connect(self.solver_selected)
 

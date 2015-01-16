@@ -56,21 +56,25 @@ class TableActions(object):
         self.add_action.setStatusTip('Add new entry to the list')
         self.add_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
         self.add_action.triggered.connect(self.add_entry)
+        self.add_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
 
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', parent)
         self.remove_action.setStatusTip('Remove selected entry from the list')
         # self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
         self.remove_action.triggered.connect(self.remove_entry)
+        self.remove_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
 
         self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', parent)
         self.move_up_action.setStatusTip('Change order of entries: move current entry up')
         self.move_up_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
         self.move_up_action.triggered.connect(self.move_up)
+        self.move_up_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
 
         self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', parent)
         self.move_down_action.setStatusTip('Change order of entries: move current entry down')
         self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
         self.move_down_action.triggered.connect(self.move_down)
+        self.move_down_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
@@ -79,7 +83,9 @@ def table_and_manipulators(table, parent=None, model=None, title=None):
     toolbar = QtGui.QToolBar()
     toolbar.setStyleSheet("QToolBar { border: 0px }")
     table.table_manipulators_actions = TableActions(table, model)
-    toolbar.addActions(table.table_manipulators_actions.get(parent))
+    actions = table.table_manipulators_actions.get(table)
+    toolbar.addActions(actions)
+    table.addActions(actions)
 
     vbox = QtGui.QVBoxLayout()
     vbox.addWidget(toolbar)
@@ -134,11 +140,13 @@ class TableController(Controller):
         layout = QtGui.QVBoxLayout()
         toolbar = QtGui.QToolBar(widget)
         toolbar.setStyleSheet("QToolBar { border: 0px }")
-        for a in self.get_table_edit_actions():
+        actions = self.get_table_edit_actions()
+        for a in actions:
             if not a:
                 toolbar.addSeparator()
             else:
                 toolbar.addAction(a)
+        self.table.addActions(actions)
         layout.addWidget(toolbar)
         layout.addWidget(self.table)
         layout.setContentsMargins(0, 0, 0, 0)
