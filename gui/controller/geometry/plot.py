@@ -12,6 +12,39 @@ from zlib import adler32
 
 _geometry_drawers = {}
 
+class BBoxIntersection(matplotlib.transforms.BboxBase):
+    """
+    A :class:`Bbox` equals to intersection of 2 other bounding boxes.
+    When any of the children box changes, the bounds of this bbox will update accordingly.
+    """
+    def __init__(self, bbox1, bbox2, **kwargs):
+        """
+        :param bbox1: a first child :class:`Bbox`
+        :param bbox2: a second child :class:`Bbox`
+        """
+        assert bbox1.is_bbox
+        assert bbox2.is_bbox
+
+        matplotlib.transforms.BboxBase.__init__(self, **kwargs)
+        self._bbox1 = bbox1
+        self._bbox2 = bbox2
+        self.set_children(bbox1, bbox2)
+
+    def __repr__(self):
+        return "BBoxIntersection(%r, %r)" % (self._bbox, self._bbox)
+
+    def get_points(self):
+        if self._invalid:
+            box = matplotlib.transforms.Bbox.intersection(self._bbox1, self._bbox2)
+            if box is not None:
+                self._points = box.get_points()
+            else:
+                self._points = matplotlib.transforms.Bbox.from_bounds(0, 0, -1, -1).get_points()
+            self._invalid = 0
+        return self._points
+    get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
+
+
 def material_to_color(material):
     i = adler32(str(material))      #maybe crc32?
     return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
@@ -38,8 +71,8 @@ class DrawEnviroment(object):
         artist.set_zorder(self.z_order)
         self.patches.add_patch(artist)
         if clip_box is not None:
-            #artist.set_clip_box(matplotlib.transforms.Bbox.intersection(clip_box, artist.get_clip_box()))
-            artist.set_clip_box(clip_box)
+            artist.set_clip_box(BBoxIntersection(clip_box, artist.get_clip_box()))
+            #artist.set_clip_box(clip_box)
             #artist.set_clip_on(True)
             #artist.set_clip_path(clip_box)
 
@@ -114,10 +147,6 @@ _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
 def _draw_Clip(env, geometry_object, transform, clip_box):
     obj_box = geometry_object.clip_box
-    #new_clipbox = matplotlib.transforms.Bbox([
-    #        [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
-    #        [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
-    #    ])
 
     new_clipbox = matplotlib.transforms.TransformedBbox(
        matplotlib.transforms.Bbox([
@@ -127,28 +156,16 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
        transform
     )
 
-    #new_clipbox = matplotlib.patches.Rectangle(
-    #    (obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]),
-    #    obj_box.upper[env.axes[0]]-obj_box.lower[env.axes[0]], obj_box.upper[env.axes[1]]-obj_box.lower[env.axes[1]],
-    #    transform = transform
-    #)
-    #env.patches.add_patch(new_clipbox)
-
-    # new_clipbox = matplotlib.transforms.Bbox([
-    #        [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
-    #        [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
-    #    ]).transformed(transform)
-
     if clip_box is None:
         clip_box = new_clipbox
     else:
-        clip_box = matplotlib.transforms.Bbox.intersection(clip_box, new_clipbox)  #TODO
-        if clip_box is None: return # clip box is empty, nothing to draw
+        clip_box = BBoxIntersection(clip_box, new_clipbox)
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
+_geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
-#TODO: fix clip, clip3D
+
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
     if geometry_object is None: return
