@@ -149,10 +149,11 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
     obj_box = geometry_object.clip_box
 
     new_clipbox = matplotlib.transforms.TransformedBbox(
-       matplotlib.transforms.Bbox([
-           [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
-           [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
-       ]),
+       #matplotlib.transforms.Bbox([
+       #    [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
+       #    [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
+       #]),
+       matplotlib.transforms.Bbox.from_extents(obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]], obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]),
        transform
     )
 
