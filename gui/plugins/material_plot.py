@@ -65,7 +65,10 @@ class MaterialPlot(QtGui.QWidget):
         self.par_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.mat_toolbar = QtGui.QToolBar()
         self.mat_toolbar.setStyleSheet("QToolBar { border: 0px }")
+
         self.arguments = {}
+        self.mat_params = {}
+        self.prop_params = {}
 
         # self.model.changed.connect(self.update_materials)
 
@@ -159,7 +162,7 @@ class MaterialPlot(QtGui.QWidget):
 
     def set_toolbar(self, toolbar, values, old, what):
         """
-        :param what: 0: comonent, 1: doping, 2: property argument
+        :param what: 0: component, 1: doping, 2: property argument
         """
         first = None
         for name,descr in values:
@@ -182,9 +185,10 @@ class MaterialPlot(QtGui.QWidget):
             val2 = QtGui.QLineEdit()
             val2.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
             val2.returnPressed.connect(self.update_plot)
-            if select.text() in old:
-                val1.setText(old[select.text()][0])
-                val2.setText(old[select.text()][1])
+            select_text = 'dc' if what == 1 else select.text()[:-1]
+            if select_text in old:
+                val1.setText(old[select_text][0])
+                val2.setText(old[select_text][1])
             act2 = toolbar.addWidget(val2)
             act2.setVisible(False)
             self.arguments[select] = val1, val2, (sep, act2), what
@@ -218,9 +222,12 @@ class MaterialPlot(QtGui.QWidget):
             self.info.hide()
 
     def material_changed(self):
-        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
         for child in self.mat_toolbar.children():
             if child in self.arguments:
+                key = child.text()[:-1]
+                if key.startswith('['): key = 'dc'
+                val = self.arguments[child]
+                self.mat_params[key] = val[0].text(), val[1].text()
                 del self.arguments[child]
         self.mat_toolbar.clear()
         material = self.material.currentText()
@@ -229,7 +236,7 @@ class MaterialPlot(QtGui.QWidget):
 
         if groups:
             elements = tuple(itertools.chain(*(g + [None] for g in groups if len(g) > 1)))[:-1]
-            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
+            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), self.mat_params, 0)
         else:
             elements = None
 
@@ -237,17 +244,20 @@ class MaterialPlot(QtGui.QWidget):
             if elements:
                 self.mat_toolbar.addSeparator()
             self.set_toolbar(self.mat_toolbar,
-                             [("["+dope+"]", dope + "doping concentration [1/cm<sup>3</sup>]")], old, 1)
+                             [("["+dope+"]", dope + " doping concentration [1/cm<sup>3</sup>]")],
+                             self.mat_params, 1)
 
         self.update_info()
 
     def property_changed(self):
-        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
         for child in self.par_toolbar.children():
             if child in self.arguments:
+                key = child.text()[:-1]
+                val = self.arguments[child]
+                self.prop_params[key] = val[0].text(), val[1].text()
                 del self.arguments[child]
         self.par_toolbar.clear()
-        self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], old, 2)
+        self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], self.prop_params, 2)
 
         self.update_info()
 
@@ -272,7 +282,10 @@ class MaterialPlot(QtGui.QWidget):
                     val = float(val)
                 except ValueError:
                     val = str(val)
-                yield str(k.text())[:-1], val
+                if cat == 1:
+                    yield 'dc', val
+                else:
+                    yield str(k.text())[:-1], val
 
     def update_plot(self):
         self.figure.clear()
