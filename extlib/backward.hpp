@@ -364,8 +364,9 @@ public:
     const T operator->() const { return _val; }
 
     typedef typename rm_ptr<T>::type& ref_t;
+    typedef const typename rm_ptr<T>::type& const_ref_t;
     ref_t operator*() { return *_val; }
-    const ref_t operator*() const { return *_val; }
+    const_ref_t operator*() const { return *_val; }
     ref_t operator[](size_t idx) { return _val[idx]; }
 
     // Watch out, we've got a badass over here
@@ -1935,9 +1936,9 @@ private:
 #	warning ":/ sorry, ain't know no nothing none not of your architecture!"
 #endif
         if (error_addr) {
-            st.load_from(error_addr, 128);
+            st.load_from(error_addr, 32);
         } else {
-            st.load_here(128);
+            st.load_here(32);
         }
 
         Printer printer;
