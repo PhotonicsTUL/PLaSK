@@ -640,6 +640,10 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         data.resize(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
         {
+            if (regpoints[reg]->size() == 0) {
+                data[reg] = LazyData<double>(dest_mesh->size(), 0.);
+                continue;
+            }
             DataVector<double> values(regpoints[reg]->size());
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
@@ -682,7 +686,7 @@ struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
-        //if (isnan(conc) || (conc<0.)) return 0.; // odkomentowac poki sa problemy z liczeniem dyfuzji obok obszaru czynnego
+        if (conc < 0.) conc = 0.;
         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
         double len = (this->solver->extern_levels)? region.qwtotallen : region.qwlen;
         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
@@ -699,12 +703,21 @@ struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::
     {
         double len = region.qwlen;
         if (this->solver->extern_levels) len = region.qwtotallen;
-        double h = 0.5*this->solver->differenceQuotient;
+        double h = 0.5 * this->solver->differenceQuotient;
+        double conc1, conc2;
+        if (conc < 0.) {
+            conc = 1.;
+            conc1 = 0.;
+            conc2 = 2.*h;
+        } else {
+            conc1 = (1.-h)*conc;
+            conc2 = (1.+h)*conc;
+        }
         double gain1 =
-            this->solver->getGainModule(wavelength, temp, (1.-h)*conc, region)
+            this->solver->getGainModule(wavelength, temp, conc1, region)
                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
         double gain2 =
-            this->solver->getGainModule(wavelength, temp, (1.+h)*conc, region)
+            this->solver->getGainModule(wavelength, temp, conc2, region)
                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
         return (gain2 - gain1) / (2.*h*conc);
     }
