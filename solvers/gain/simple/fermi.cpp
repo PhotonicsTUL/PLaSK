@@ -398,7 +398,6 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
             if (bstrain<0.)
             {
                 std::vector<double> tLevHH;
-                tLevHH.clear();
                 double tDelEv = bEvhh-bEvlh;
                 for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i)
                     tLevHH.push_back(gainModule.Get_heavy_hole_level_depth(i)+tDelEv);
@@ -414,7 +413,6 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
             if (bstrain>0.)
             {
                 std::vector<double> tLevLH;
-                tLevLH.clear();
                 double tDelEv = bEvhh-bEvlh;
                 for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i)
                     tLevLH.push_back(gainModule.Get_light_hole_level_depth(i)-tDelEv);

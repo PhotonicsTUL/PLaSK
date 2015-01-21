@@ -12,7 +12,7 @@ py::object UFUNC(F f, py::object input) {
     } catch (py::error_already_set) {
         PyErr_Clear();
 
-//         if (py::len(input) == 0) return 
+//         if (py::len(input) == 0) return
 
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::typenum<T>());
 
@@ -103,7 +103,7 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
                 npy_intp size = *innersizeptr;
                 char *src = dataptrarray[0], *dst = dataptrarray[1];
                 for(i = 0; i < size; i++, src += innerstride, dst += itemsize) {
-                    #pragma omp task
+                    #pragma omp task firstprivate(src) firstprivate(dst)
                     {
                         if (!error) try {
                             *((T*)dst) = f(*((T*)src));

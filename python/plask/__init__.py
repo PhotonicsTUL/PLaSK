@@ -335,8 +335,7 @@ class StepProfile(object):
         else: return self.steps[key]
 
     def __setitem__(self, key, val):
-        # We use '== operator instead of 'is'
-        present = [step for step in self.steps if key == step]
+        present = [step for step in self.steps if key == step]  # find item in dict by using '==' instead of 'is'
         if present: self.steps[present[0]] = val
         else: self.steps[key] = val
         for prov in self.providers.values(): prov.set_changed()
