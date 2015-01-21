@@ -329,19 +329,21 @@ class StepProfile(object):
         self.dtype = dtype if dtype is not None else float if type(default) is int else type(default)
         self.providers = _weakref.WeakValueDictionary()
 
+    def _fix_key(self, key):
+        if type(key) is tuple: present = [step for step in self.steps if key[0] == step[0] and key[1] == step[1]]
+        else: present = [step for step in self.steps if key == step]
+        if present: return present[0]
+        else: return key
+
     def __getitem__(self, key):
-        present = [step for step in self.steps if key == step]
-        if present: return self.steps[present[0]]
-        else: return self.steps[key]
+        return self.steps[self._fix_key(key)]
 
     def __setitem__(self, key, val):
-        present = [step for step in self.steps if key == step]  # find item in dict by using '==' instead of 'is'
-        if present: self.steps[present[0]] = val
-        else: self.steps[key] = val
+        self.steps[self._fix_key(key)] = val
         for prov in self.providers.values(): prov.set_changed()
 
     def __delitem__(self, key):
-        del self.steps[key]
+        del self.steps[self._fix_key(key)]
         for prov in self.providers.values(): prov.set_changed()
 
     def __getattr__(self, name):

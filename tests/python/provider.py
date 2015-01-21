@@ -126,7 +126,9 @@ class ProfileTest(unittest.TestCase):
         geom = plask.geometry.Cylindrical2D(stack)
 
         profile1 = plask.StepProfile(geom)
+        profile1[warm, top] = 1e9
         profile1[warm, top] = 1e7
+        profile1[hot] = 1e9
         profile1[hot] = 1e7
 
         profile2 = plask.StepProfile(geom)

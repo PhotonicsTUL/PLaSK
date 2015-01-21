@@ -51,6 +51,10 @@ namespace detail {
     };
 }
 
+static bool Hint__eq__(const PathHints::Hint& first, const PathHints::Hint& second) {
+    return first.first == second.second && first.second == second.second;
+}
+
 static shared_ptr<PathHints> Hint__add__(const PathHints::Hint& first, const PathHints::Hint& second) {
     auto hints = make_shared<PathHints>();
     *hints += first;
@@ -60,7 +64,7 @@ static shared_ptr<PathHints> Hint__add__(const PathHints::Hint& first, const Pat
 
 static std::string PathHints__repr__(const PathHints& self) {
     if (self.hintFor.size() == 0) return "plask.geometry.PathHints()";
-    return format("plask.geometry.PathHints(<%1% hints>)", self.hintFor.size());
+    return format("plask.geometry.PathHints(<%1% hint%2%>)", self.hintFor.size(), (self.hintFor.size()==1)?"":"s" );
 }
 
 namespace detail {
@@ -104,6 +108,7 @@ void register_geometry_path()
                                 "PathHints, or to retrieve the container, child, or translation objects.",
                                 py::no_init)
         .def("__add__", &Hint__add__)
+        .def("__eq__", Hint__eq__)
     ;
 
     set_to_python_list_conventer<shared_ptr<GeometryObject>>();
@@ -125,6 +130,7 @@ void register_geometry_path()
              "Args:\n"
              "    container (GeometryObject): Container to get items from.")
         .def("cleanup",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects.")
+        .def(py::self == py::other<PathHints>())
     ;
 
     py::implicitly_convertible<PathHints::Hint,PathHints>();
@@ -170,6 +176,7 @@ void register_geometry_path()
         .def(py::self += py::other<GeometryObject>())
         .def(py::self += py::other<GeometryObject::Subtree>())
         .def(py::self += py::other<std::vector<shared_ptr<const GeometryObject>>>())
+        .def("__eq__", __is__<Path>)
     ;
     py::implicitly_convertible<Path,PathHints>();
 
@@ -180,6 +187,7 @@ void register_geometry_path()
         .def("__nonzero__", &Subtree__nonzero__)
         .add_property("brached", &GeometryObject::Subtree::hasBranches, "Bool indicating whether the subtree has more than one branch.")
         .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree.")
+        .def("__eq__", __is__<GeometryObject::Subtree>)
     ;
     py::implicitly_convertible<GeometryObject::Subtree,PathHints>();
     py::implicitly_convertible<GeometryObject::Subtree,Path>();

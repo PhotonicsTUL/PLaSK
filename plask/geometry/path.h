@@ -44,7 +44,7 @@ struct PLASK_API PathHints {
      */
     typedef Edge Hint;
 
-    ///Hints map.
+    /// Hints map.
     HintMap hintFor;
 
     /**
@@ -111,6 +111,11 @@ struct PLASK_API PathHints {
     PathHints& operator+=(const Hint& hint) {
         addHint(hint);
         return *this;
+    }
+
+    /// Comparison operator
+    inline bool operator==(const PathHints& comp) const {
+        return !(hintFor < comp.hintFor && comp.hintFor < hintFor);
     }
 
     /// Comparison operator for using PathHints as map keys
