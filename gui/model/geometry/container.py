@@ -338,13 +338,13 @@ class GNAlignContainer(GNContainerBase):
         child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
 
     def get_item_xml_element(self, child, conf):
-        res = super(GNContainerBase, self).get_item_xml_element(child, conf)
+        res = super(GNAlignContainer, self).get_item_xml_element(child, conf)
         if self.in_parent is not None:
             conf.write_aligners(res, self.children_dim, child.in_parent)
         return res
 
     def item_xml_element_is_required(self, child):
-        return child.in_parent is not None or super(GNContainerBase, self).item_xml_element_is_required(child)
+        return child.in_parent is not None or super(GNAlignContainer, self).item_xml_element_is_required(child)
 
     def tag_name(self, full_name=True):
         return "align{}d".format(self.dim) if full_name else "align"

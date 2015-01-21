@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # ### plot_geometry ###
+import math
 
 import plask
 import matplotlib
@@ -146,6 +147,9 @@ _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
 def _draw_Clip(env, geometry_object, transform, clip_box):
+    def _b(bound):
+        return math.copysign(1e100, bound) if math.isinf(bound) else bound
+
     obj_box = geometry_object.clip_box
 
     new_clipbox = matplotlib.transforms.TransformedBbox(
@@ -153,7 +157,8 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
        #    [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
        #    [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
        #]),
-       matplotlib.transforms.Bbox.from_extents(obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]], obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]),
+       matplotlib.transforms.Bbox.from_extents(_b(obj_box.lower[env.axes[0]]), _b(obj_box.lower[env.axes[1]]),
+                                               _b(obj_box.upper[env.axes[0]]), _b(obj_box.upper[env.axes[1]])),
        transform
     )
 
