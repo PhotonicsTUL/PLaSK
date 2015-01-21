@@ -16,7 +16,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 
 class GNTransform(GNObject):
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
     def accept_new_child(self):
@@ -29,8 +29,8 @@ class GNTranslation(GNTransform):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.size = [None for _ in range(0, dim)]
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNTranslation, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNTranslation, self)._attributes_from_xml(attribute_reader, conf)
         axes_names = conf.axes_names(self.dim)
         alternative_names = ('depth', 'width', 'height')[(3-self.dim):]
         self.size = [None for _ in range(0, self.dim)]
@@ -39,8 +39,8 @@ class GNTranslation(GNTransform):
             if self.size[i] is None:
                 self.size[i] = attribute_reader.get(alternative_names[i])
                 
-    def attributes_to_xml(self, element, conf):
-        super(GNTranslation, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNTranslation, self)._attributes_to_xml(element, conf)
         axes_names = conf.axes_names(self.dim)
         for i in range(0, self.dim):
             v = self.size[i]
@@ -87,12 +87,12 @@ class GNClip(GNTransform):
         d2 = ('left', 'right', 'bottom', 'top')
         return d2 if self.dim == 2 else d2 + ('back', 'front')
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNClip, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNClip, self)._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, *self.bound_names())
 
-    def attributes_to_xml(self, element, conf):
-        super(GNClip, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNClip, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, *self.bound_names())
 
     def tag_name(self, full_name=True):
@@ -129,12 +129,12 @@ class GNFlip(GNTransform):
         super(GNFlip, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNFlip, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNFlip, self)._attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNFlip, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNFlip, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'axis')
 
     def tag_name(self, full_name=True):
@@ -171,12 +171,12 @@ class GNMirror(GNTransform):
         super(GNMirror, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNMirror, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNMirror, self)._attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNMirror, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNMirror, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'axis')
 
     def tag_name(self, full_name=True):
@@ -241,12 +241,12 @@ class GNExtrusion(GNTransform):
         super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
         self.length = None
         
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNExtrusion, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNExtrusion, self)._attributes_from_xml(attribute_reader, conf)
         self.length = attribute_reader.get('length')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNExtrusion, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNExtrusion, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'length')
 
     def tag_name(self, full_name=True):

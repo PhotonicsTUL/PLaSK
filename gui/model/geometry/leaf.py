@@ -23,8 +23,8 @@ class GNLeaf(GNObject):
         self.material_top = None
         self.material_bottom = None
         
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNLeaf, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNLeaf, self)._attributes_from_xml(attribute_reader, conf)
         self.step_num = attribute_reader.get('step-num')
         self.step_dist = attribute_reader.get('step-dist')
         self.set_material(attribute_reader.get('material'))
@@ -32,8 +32,8 @@ class GNLeaf(GNObject):
             self.material_bottom = attribute_reader.get('material-bottom')
             self.material_top = attribute_reader.get('material-top')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNLeaf, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNLeaf, self)._attributes_to_xml(element, conf)
         if self.step_num is not None: element.attrib['step-num'] = self.step_num
         if self.step_dist is not None: element.attrib['step-dist'] = self.step_dist
         if self.material_top == self.material_bottom:
@@ -83,12 +83,12 @@ class GNBlock(GNLeaf):
         super(GNBlock, self).__init__(parent=parent, dim=dim)
         self.size = [None for _ in range(0, dim)]
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNBlock, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNBlock, self)._attributes_from_xml(attribute_reader, conf)
         self.size = [attribute_reader.get('d'+a) for a in conf.axes_names(self.dim)]
 
-    def attributes_to_xml(self, element, conf):
-        super(GNBlock, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNBlock, self)._attributes_to_xml(element, conf)
         for a in range(0, self.dim):
             if self.size[a] is not None:
                 element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
@@ -128,12 +128,12 @@ class GNCylinder(GNLeaf):
         self.radius = None  #required in PLaSK but not in GUI
         self.height = None  #required in PLaSK but not in GUI
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCylinder, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCylinder, self)._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'radius', 'height')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCylinder, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCylinder, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius', 'height')
 
     def tag_name(self, full_name=True):
@@ -165,12 +165,12 @@ class GNCircle(GNLeaf):
         super(GNCircle, self).__init__(parent=parent, dim=dim)
         self.radius = None  #required in PLaSK but not in GUI
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCircle, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCircle, self)._attributes_from_xml(attribute_reader, conf)
         self.radius = attribute_reader.get('radius')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCircle, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCircle, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius')
 
     def tag_name(self, full_name=True):
@@ -207,14 +207,14 @@ class GNTriangle(GNLeaf):
         super(GNTriangle, self).__init__(parent=parent, dim=2)
         self.points = ((None, None), (None, None))
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNTriangle, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNTriangle, self)._attributes_from_xml(attribute_reader, conf)
         n = conf.axes_names(2)
         r = attribute_reader
         self.points = ((r.get('a' + n[0]), r.get('a' + n[1])), (r.get('b' + n[0]), r.get('b' + n[1])))
 
-    def attributes_to_xml(self, element, conf):
-        super(GNTriangle, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNTriangle, self)._attributes_to_xml(element, conf)
         axis_names = conf.axes_names(2)
         for point_nr in range(0, 2):
             for axis_nr in range(0, self.dim):

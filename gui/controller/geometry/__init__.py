@@ -113,9 +113,13 @@ class GeometryController(Controller):
         try:
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
-            manager.load(self.document.get_XPL_content(sections='geometry'))
-            to_plot = manager.geometry[str(tree_element.name)]
-            self.geometry_view.update_plot(to_plot)
+            try:
+                manager.load(self.document.get_XPL_content(sections='geometry'))
+                to_plot = manager.geometry[str(tree_element.name)]
+                self.geometry_view.update_plot(to_plot)
+            except Exception as e:
+                QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
+                                       "Geometry can not be plotted due to the error in XPL content:\n{}".format(str(e)))
         finally:
             if not element_has_name: tree_element.name = None
 

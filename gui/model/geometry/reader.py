@@ -91,7 +91,7 @@ class GNReadConf(object):
 
     def __init__(self, conf=None, axes=None, parent=None):
         super(GNReadConf, self).__init__()
-        self._axes = ['z', 'x', 'y']
+        self._axes = ['long', 'tran', 'vert']
         if conf is not None:
             self.axes = conf.axes
             self.parent = conf.parent

@@ -40,8 +40,8 @@ class GNGap(GNode):
         self.size = None
         self.size_is_total = False
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNGap, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNGap, self)._attributes_from_xml(attribute_reader, conf)
         self.size = attribute_reader.get('size')
         if self.size is not None:
             self.size_is_total = False
@@ -49,8 +49,8 @@ class GNGap(GNode):
             self.size = attribute_reader.get('total')
             if self.size is not None: self.size_is_total = True
 
-    def attributes_to_xml(self, element, conf):
-        super(GNGap, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNGap, self)._attributes_to_xml(element, conf)
         if self.size is not None:
             element.attrib['total' if self.size_is_total else 'size'] = self.size
 
@@ -112,7 +112,7 @@ class GNContainerBase(GNObject):
         else:
             construct_geometry_object(child_element, conf)
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         '''Call child_from_xml for each child. Subclasses shouldn't overwrite this but child_from_xml instead.'''
         for child_element in ordered_reader.iter():
             self.child_from_xml(child_element, conf)
@@ -170,14 +170,14 @@ class GNStack(GNContainerBase):
         if not aligners: aligners = self.aligners
         return dict(zip(self.aligners_dir(), aligners))
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNStack, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNStack, self)._attributes_from_xml(attribute_reader, conf)
         self.repeat = attribute_reader.get('repeat')
         self.shift = attribute_reader.get('shift')
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim, *self.aligners_dir())
 
-    def attributes_to_xml(self, element, conf):
-        super(GNStack, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNStack, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift')
         conf.write_aligners(element, self.children_dim, self.aligners_dict())
 
@@ -266,12 +266,12 @@ class GNShelf(GNContainerBase):
         self.shift = None
         self.flat = None
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNShelf, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNShelf, self)._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'repeat', 'shift', 'flat')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNShelf, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNShelf, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift', 'flat')
 
     def child_from_xml(self, child_element, conf):
@@ -325,12 +325,12 @@ class GNAlignContainer(GNContainerBase):
     def aligners_dir(self):
         return range(0, self.children_dim)
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNAlignContainer, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNAlignContainer, self)._attributes_from_xml(attribute_reader, conf)
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
 
-    def attributes_to_xml(self, element, conf):
-        super(GNAlignContainer, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNAlignContainer, self)._attributes_to_xml(element, conf)
         conf.write_aligners(element, self.children_dim, self.aligners)
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):

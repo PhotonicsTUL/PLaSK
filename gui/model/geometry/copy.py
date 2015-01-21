@@ -23,12 +23,12 @@ class GNAgain(GNode):
         super(GNAgain, self).__init__(parent)
         self.ref = ref
 
-    def attributes_from_xml(self, attribute_reader, reader):
-        super(GNAgain, self).attributes_from_xml(attribute_reader, reader)
+    def _attributes_from_xml(self, attribute_reader, reader):
+        super(GNAgain, self)._attributes_from_xml(attribute_reader, reader)
         self.ref = attribute_reader.get('ref')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNAgain, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNAgain, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'ref')
 
     def tag_name(self, full_name=True):
@@ -61,11 +61,11 @@ class GNCopyChild(GNode):
         super(GNCopyChild, self).__init__(parent)
         self.object = object
 
-    def attributes_from_xml(self, attribute_reader, conf):
+    def _attributes_from_xml(self, attribute_reader, conf):
         self.object = attribute_reader.get('object')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCopyChild, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCopyChild, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'object')
 
     def major_properties(self):
@@ -94,15 +94,15 @@ class GNCReplace(GNCopyChild):
         super(GNCReplace, self).__init__(parent, object)
         self.replacer = replacer    # with in PLaSK
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCReplace, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCReplace, self)._attributes_from_xml(attribute_reader, conf)
         self.replacer = attribute_reader.get('with')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCReplace, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCReplace, self)._attributes_to_xml(element, conf)
         if self.replacer is not None: element.attrib['with'] = self.replacer
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         if self.replacer is None:
             construct_geometry_object(ordered_reader.require(), conf)
 
@@ -128,12 +128,12 @@ class GNCToBlock(GNCopyChild):
         super(GNCToBlock, self).__init__(parent, object)
         self.material = material    # with in PLaSK
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCToBlock, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCToBlock, self)._attributes_from_xml(attribute_reader, conf)
         self.material = attribute_reader.get('material')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCToBlock, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCToBlock, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'material')
 
     def tag_name(self, full_name=True):
@@ -155,15 +155,15 @@ class GNCopy(GNObject):
         super(GNCopy, self).__init__(parent, name)
         self.source = source    # from in PLaSK
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCopy, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCopy, self)._attributes_from_xml(attribute_reader, conf)
         self.source = attribute_reader.get('from')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCopy, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCopy, self)._attributes_to_xml(element, conf)
         if self.source is not None: element.attrib['from'] = self.source
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         for t in ordered_reader.iter():
             if t.tag == 'delete': el = GNCDelete(parent=self)
             elif t.tag == 'replace': el = GNCReplace(parent=self)

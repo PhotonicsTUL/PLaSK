@@ -16,8 +16,8 @@ class GNGeometryBase(GNObject):
         b = self.borders[0]
         return b if all(x == b for x in self.borders) else None
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNGeometryBase, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNGeometryBase, self)._attributes_from_xml(attribute_reader, conf)
         all_names = self.get_alternative_direction_names()
         planar_names = all_names[:-1]
 
@@ -42,15 +42,15 @@ class GNGeometryBase(GNObject):
                 else:
                     if b is not None: self.borders[axis_nr][lo_hi_index] = b
 
-    def attributes_to_xml(self, element, conf):
-        super(GNGeometryBase, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNGeometryBase, self)._attributes_to_xml(element, conf)
         names = self.get_alternative_direction_names()
         for axis_nr in range(0, self.dim):
             for lo_hi_index in range(0, 2):
                 val = self.borders[axis_nr][lo_hi_index]
                 if val is not None: element.attrib[names[axis_nr][lo_hi_index]] = val
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
     def major_properties(self):
@@ -85,17 +85,17 @@ class GNCartesian(GNGeometryBase):
         if self.dim == 3: planar = (('back', 'front'),) + planar
         return planar + (('bottom', 'top'),)
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNCartesian, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNCartesian, self)._attributes_from_xml(attribute_reader, conf)
         if self.dim == 2:
             self.length = attribute_reader.get('length')
 
-    def attributes_to_xml(self, element, conf):
-        super(GNCartesian, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNCartesian, self)._attributes_to_xml(element, conf)
         if self.dim == 2:
             attr_to_xml(self, element, 'length')
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         from .types import geometry_types_3d
         el = ordered_reader.get()
         if el is None: return
@@ -143,7 +143,7 @@ class GNCylindrical(GNGeometryBase):
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))
 
-    def children_from_xml(self, ordered_reader, conf):
+    def _children_from_xml(self, ordered_reader, conf):
         from .types import geometry_types_3d
         el = ordered_reader.get()
         if el is None: return

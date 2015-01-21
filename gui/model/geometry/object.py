@@ -24,13 +24,13 @@ class GNObject(GNode):
         self.role = None
         self.axes = None
 
-    def attributes_from_xml(self, attribute_reader, conf):
-        super(GNObject, self).attributes_from_xml(attribute_reader, conf)
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNObject, self)._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')
         if self.axes is not None: conf.axes = self.axes
 
-    def attributes_to_xml(self, element, conf):
-        super(GNObject, self).attributes_to_xml(element, conf)
+    def _attributes_to_xml(self, element, conf):
+        super(GNObject, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'name', 'role', 'axes')
         if self.axes is not None: conf.axes = self.axes
 
