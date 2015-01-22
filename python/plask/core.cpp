@@ -180,7 +180,7 @@ py::dict xml_globals;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
 #endif
-int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false) {
+int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
     PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 
@@ -215,29 +215,25 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
         while (traceback) {
             int lineno = traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            int flineno = (scriptname != nullptr && filename == scriptname)? startline + lineno : lineno;
-            // std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, flineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, flineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
                     std::string form = message;
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        int flineno = startline + lineno;
-                        // std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, flineno, error_name, msg);
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
                         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                     }
                 } else
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, flineno, funcname, error_name, message);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -248,9 +244,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    int flineno = startline + lineno;
-                    // std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, flineno, error_name, msg);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
                     plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                 }
@@ -382,7 +376,7 @@ BOOST_PYTHON_MODULE(_plask)
     py::scope().attr("ComputationError") = py::handle<>(py::incref(computation_error));
 
     py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
-            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("scriptname")="", py::arg("second_is_script")=false));
+            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false));
 
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION
         py::def("_print_stack", &printStack, "Print C stack (for debug purposes_");

@@ -39,7 +39,7 @@ py::dict globals;
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
-    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
+    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
 
     PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
@@ -150,7 +150,7 @@ static inline void fixMatplotlibBug() {
 
 
 //******************************************************************************
-int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) {
+int handlePythonException(const char* scriptname=nullptr) {
     PyObject* value;
     PyObject* type;
     PyObject* original_traceback;
@@ -159,7 +159,7 @@ int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) 
     PyErr_NormalizeException(&type, &value, &original_traceback);
 
     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-    return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
+    return plask::python::printPythonException(type, py::object(value_h), original_traceback, scriptname);
 }
 
 
@@ -330,8 +330,6 @@ int main(int argc, const char *argv[])
             }
         }
 
-        unsigned scriptline = 0;
-
         try
         {
             std::string filename = argv[1];
@@ -374,7 +372,7 @@ int main(int argc, const char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 plask::python::PythonManager_load(omanager, py::str(filename), locals);
-                scriptline = manager->scriptline;
+                manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
                 globals.update(manager->locals);
                 plask::python::PythonManager::export_dict(omanager, globals);
 
@@ -452,7 +450,7 @@ int main(int argc, const char *argv[])
             }
 #       endif
         catch (py::error_already_set) {
-            int exitcode = handlePythonException(scriptline, argv[1]);
+            int exitcode = handlePythonException(argv[1]);
             endPlask();
             return exitcode;
         }

@@ -330,8 +330,7 @@ class StepProfile(object):
         self.providers = _weakref.WeakValueDictionary()
 
     def _fix_key(self, key):
-        if type(key) is tuple: present = [step for step in self.steps if key[0] == step[0] and key[1] == step[1]]
-        else: present = [step for step in self.steps if key == step]
+        present = [step for step in self.steps if key == step]
         if present: return present[0]
         else: return key
 

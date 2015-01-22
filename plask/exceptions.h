@@ -378,7 +378,7 @@ struct PLASK_API NoSuchAxisNames: public Exception {
  * Exceptions of this class are thrown when solvers don't have mesh set
  */
 struct PLASK_API NoMeshException: public Exception {
-    NoMeshException(const std::string& where): Exception("$1$: No mesh specified", where) {}
+    NoMeshException(const std::string& where): Exception("%1%: No mesh specified", where) {}
 };
 
 

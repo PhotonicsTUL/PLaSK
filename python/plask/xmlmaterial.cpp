@@ -238,7 +238,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         else if (reader.getNodeName() == funcname) { \
             constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
             if (constructor->func == nullptr) \
-            throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \
@@ -257,7 +257,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         else if (reader.getNodeName() == funcname) { \
             constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
             if (constructor->func == nullptr) \
-            throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \

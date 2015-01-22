@@ -26,24 +26,6 @@ extern LogLevel maxLoglevel;
 extern bool forcedLoglevel;
 
 /**
- * Log a message
- * \param level log level to log
- * \param msg log message
- */
-PLASK_API void writelog(LogLevel level, const std::string& msg);
-
-/**
- * Log a message
- * \param level log level to log
- * \param msg log message
- * \param params parameters passed to format
- **/
-template<typename... Args>
-inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
-    writelog(level, format(msg, std::forward<Args>(params)...));
-}
-
-/**
  * Logger switch.
  * Creating objects of these class temporarily turns off logging.
  */
@@ -73,7 +55,9 @@ class PLASK_API Logger {
     bool silent;
 
     friend class NoLogging;
-    friend void writelog(LogLevel, const std::string&);
+
+    template<typename... Args>
+    friend void writelog(LogLevel level, const std::string& msg, Args&&... params);
 
   public:
 
@@ -94,6 +78,22 @@ class PLASK_API Logger {
  * Pointer to the logger
  */
 extern shared_ptr<Logger> default_logger;
+
+PLASK_API void createDefaultLogger();
+
+/**
+ * Log a message
+ * \param level log level to log
+ * \param msg log message
+ * \param params parameters passed to format
+ **/
+template<typename... Args>
+inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
+    if (!default_logger) createDefaultLogger();
+    if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
+        default_logger->writelog(level, format(msg, std::forward<Args>(params)...));
+    }
+}
 
 }   // namespace plask
 

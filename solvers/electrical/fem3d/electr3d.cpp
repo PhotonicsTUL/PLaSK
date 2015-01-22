@@ -508,7 +508,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
     if (info < 0) {
         throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singular (at %1%)", info);
     }
 
     // Find solutions
@@ -531,7 +531,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix& A, Dat
         int iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
     } catch (DCGError err) {
-        throw ComputationError(getId(), "Conjugate gradient failed:, %1%", err.what());
+        throw ComputationError(getId(), "Conjugate gradient failed: %1%", err.what());
     }
 
     B = X;

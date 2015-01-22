@@ -34,7 +34,7 @@ namespace py = boost::python;
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
-    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
+    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
 
     shared_ptr<Logger> makePythonLogger();
 }}
@@ -99,7 +99,7 @@ static py::object initPlask(int argc, const char* argv[])
 }
 
 //******************************************************************************
-int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) {
+int handlePythonException(const char* scriptname=nullptr) {
     PyObject* value;
     PyObject* type;
     PyObject* original_traceback;
@@ -184,7 +184,7 @@ int main(int argc, const char *argv[])
         endPlask();
         return 3;
     } catch (py::error_already_set) {
-        int exitcode = handlePythonException(0, argv[0]);
+        int exitcode = handlePythonException(argv[0]);
         endPlask();
         return exitcode;
     } catch (std::runtime_error& err) {
