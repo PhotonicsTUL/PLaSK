@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 from .object import GNObject
 from .constructor import construct_geometry_object
 from ...utils.xml import xml_to_attr, attr_to_xml
@@ -123,30 +124,54 @@ class GNClip(GNTransform):
         return result
 
 
-class GNFlip(GNTransform):
+class GNAxisBaseTransform(GNTransform):
+    '''Base class common for GNFlip and GNMirror. Includes axis attribute.'''
 
     def __init__(self, parent=None, dim=None):
-        super(GNFlip, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super(GNAxisBaseTransform, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
+    def set_axis(self, axis, conf = None):
+        '''
+            :param axis: new axis value (int or string)
+            :param GNReadConf conf: configuration to get axes names from
+        '''
+        try:
+            self.axis = (self.get_axes_conf_dim() if conf is None else conf.axes_names(self.dim)).index(axis)
+        except Exception:
+            self.axis = axis
+
+    def axis_str(self, conf = None):
+        '''
+        Get axis as string.
+        :param GNReadConf conf: configuration to get axes names from
+        '''
+        if self.axis is None or isinstance(self.axis, basestring): return self.axis
+        if conf is not None: return conf.axis_name(self.dim, self.axis)
+        return self.get_axes_conf_dim()[self.axis]
+
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNFlip, self)._attributes_from_xml(attribute_reader, conf)
-        self.axis = attribute_reader.get('axis')
+        super(GNAxisBaseTransform, self)._attributes_from_xml(attribute_reader, conf)
+        self.set_axis(attribute_reader.get('axis'), conf)
 
     def _attributes_to_xml(self, element, conf):
-        super(GNFlip, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'axis')
+        super(GNAxisBaseTransform, self)._attributes_to_xml(element, conf)
+        a_str = self.axis_str(conf)
+        if a_str is not None: element.attrib['axis'] = a_str
+
+    def major_properties(self):
+        res = super(GNAxisBaseTransform, self).major_properties()
+        res.append(('axis', self.axis_str()))
+        return res
+
+
+class GNFlip(GNAxisBaseTransform):
 
     def tag_name(self, full_name=True):
         return "flip{}d".format(self.dim) if full_name else "flip"
 
     def python_type(self):
         return 'geometry.Flip{}D'.format(self.dim)
-
-    def major_properties(self):
-        res = super(GNFlip, self).major_properties()
-        res.append(('axis', self.axis))
-        return res
 
     def get_controller(self, document, model):
         from ...controller.geometry.transform import GNFlipController
@@ -165,30 +190,13 @@ class GNFlip(GNTransform):
         return result
 
 
-class GNMirror(GNTransform):
-
-    def __init__(self, parent=None, dim=None):
-        super(GNMirror, self).__init__(parent=parent, dim=dim, children_dim=dim)
-        self.axis = None
-
-    def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNMirror, self)._attributes_from_xml(attribute_reader, conf)
-        self.axis = attribute_reader.get('axis')
-
-    def _attributes_to_xml(self, element, conf):
-        super(GNMirror, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'axis')
+class GNMirror(GNAxisBaseTransform):
 
     def tag_name(self, full_name=True):
         return "mirror{}d".format(self.dim) if full_name else "mirror"
 
     def python_type(self):
         return 'geometry.Mirror{}D'.format(self.dim)
-
-    def major_properties(self):
-        res = super(GNMirror, self).major_properties()
-        res.append(('axis', self.axis))
-        return res
 
     def get_controller(self, document, model):
         from ...controller.geometry.transform import GNMirrorController

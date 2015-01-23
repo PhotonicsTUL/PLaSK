@@ -43,12 +43,12 @@ class GNFlipMirrorController(GNObjectController):
 
     def save_data_in_model(self):
         super(GNFlipMirrorController, self).save_data_in_model()
-        self.node.axis = empty_to_none(self.axis.currentText())
+        self.node.set_axis(empty_to_none(self.axis.currentText()))
 
     def on_edit_enter(self):
         super(GNFlipMirrorController, self).on_edit_enter()
         with BlockQtSignals(self.axis) as ignored:
-            self.axis.setEditText(none_to_empty(self.node.axis))
+            self.axis.setEditText(none_to_empty(self.node.axis_str()))
 
 
 class GNFlipController(GNFlipMirrorController):
