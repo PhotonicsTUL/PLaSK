@@ -33,7 +33,7 @@ class PlotWidget(QtGui.QGroupBox):
     def update_plot(self, to_plot):
         self.figure.clear()
         if to_plot is not None:
-            plot_geometry_object(self.figure, to_plot, fill=True, set_limits=True)
+            plot_geometry_object(figure=self.figure, geometry=to_plot, fill=True, set_limits=True)
             self.figure.set_tight_layout(0)
             self.canvas.draw()
 
