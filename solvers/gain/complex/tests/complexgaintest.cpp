@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_SUITE(gain)
 
 BOOST_AUTO_TEST_CASE(detect_active_region)
 {
-    // nowy kod uwzgledniajacy to, ze nowe wzmocnienie dodaje do "region" warstwy sasiadujace z obszarem czynnym
+    // nowy kod uwzgledniajacy to, ze nowe wzmocnienie dodaje do "region" warstwy sasiadujacej z obszarem czynnym
 
     MaterialsDB::loadAllToDefault(prefixPath() + V ".." V ".." V ".." V "lib" V "plask" V "materials");
     MaterialsDB& materials = MaterialsDB::getDefault();
