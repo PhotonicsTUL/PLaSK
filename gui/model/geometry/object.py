@@ -18,11 +18,18 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNObject(GNode):
     '''Base class for all nodes read by GeometryReader::readObject() in PLaSK.'''
 
+    next_serial_nr = 0
+
     def __init__(self, parent=None, dim=None, children_dim=None):
         super(GNObject, self).__init__(parent, dim, children_dim)
         self.name = None
         self.role = None
         self.axes = None
+        self.serial_nr = GNObject.next_serial_nr
+        GNObject.next_serial_nr += 1
+
+    def serial_name(self):
+        return '#GUI{}'.format(self.serial_nr)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNObject, self)._attributes_from_xml(attribute_reader, conf)
