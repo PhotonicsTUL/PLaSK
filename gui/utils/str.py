@@ -18,6 +18,7 @@ def empty_to_none(str):
         :return: None if str is empty or consists only with white characters, str in other cases"""
     return None if len(str) == 0 or str.isspace() else str
 
+
 def none_to_empty(str):
     return '' if str is None else str
 
@@ -25,11 +26,17 @@ _re_i = re.compile("<i>(.*?)</i>")
 _re_sub = re.compile("<sub>(.*?)</sub>")
 _re_sup = re.compile("<sup>(.*?)</sup>")
 
+
 def html_to_tex(s):
     """Poor man's HTML to MathText conversion"""
-    s = s.replace(" ", "\/")
-    s = _re_i.sub(r"\mathit{\g<1>}", s)
-    s = _re_sub.sub(r"_{\g<1>}", s)
-    s = _re_sup.sub(r"^{\g<1>}", s)
-    return r"$\sf " + s + "$"
+    # s = s.replace(" ", "\/")
+    s = _re_i.sub(r"$\g<1>$", s)
+    s = _re_sub.sub(r"$_{\g<1>}$", s)
+    s = _re_sup.sub(r"$^{\g<1>}$", s)
+    l = s.split('$')
+    if len(l) < 2:
+        return s
+    if s.startswith('$'): l.insert(0, '')
+    if s.endswith('$'): l.append('')
+    return l[0] + '$' + ''.join(l[1:-1]) + '$' + l[-1]
 

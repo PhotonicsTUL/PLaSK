@@ -267,6 +267,7 @@ class A(object):
         
 a = A()
 print a.a
+
 ]]></script>
 
 </plask>

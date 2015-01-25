@@ -28,7 +28,7 @@ from .utils.xml import XML_parser, OrderedTagReader
 
 class XPLDocument(object):
 
-    SECTION_NAMES = ["defines", "materials", "geometry", "grids", "solvers", "connects", "script"]
+    SECTION_NAMES = ['defines', 'materials', 'geometry', 'grids', 'solvers', 'connects', 'script']
 
     def __init__(self, window, filename=None):
         self.window = window
@@ -84,13 +84,13 @@ class XPLDocument(object):
         self.filename = filename
         self.set_changed(False)
 
-    def get_XPL_content(self, sections = None, update_lines = None):
-        '''
+    def get_content(self, sections=None, update_lines=None):
+        """
         Get document content in XPL format.
         :param sections: if given, only selected sections will be included in result, list or string (in such case all sections up to given one will be included)
         :param bool update_lines: if True number of lines in model will be updated (True by default only if all sections are stored)
         :return str: document content in XPL format
-        '''
+        """
         if isinstance(sections, basestring):
             sections = XPLDocument.SECTION_NAMES[:XPLDocument.SECTION_NAMES.index(sections)+1]
         if update_lines is None: update_lines = sections is None or sections == self.SECTION_NAMES
@@ -107,7 +107,7 @@ class XPLDocument(object):
 
     def save_to_file(self, filename):
         # safe write: maybe inefficient, but does not destroy the file if the error occurs
-        data = self.get_XPL_content()
+        data = self.get_content()
         try:
             shutil.copyfile(filename, filename+'.bak')
         except (IOError, OSError):

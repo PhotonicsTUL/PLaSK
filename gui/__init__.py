@@ -28,18 +28,17 @@ except KeyError:
 
 
 from .qt import QtGui, QtCore, qt4
+from .qt.QtCore import Qt
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
-
 
 # Set-up correct backend for matplotlib
 try:
     import matplotlib
 except ImportError:
-    pass
-else:
-    matplotlib.rc('backend', qt4=qt4)
+    matplotlib = None
+
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
@@ -105,6 +104,18 @@ SECTION_ICONS = {
 
 class MainWindow(QtGui.QMainWindow):
 
+    SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshes ",
+                          solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
+
+    SECTION_TIPS = {
+        'defines': "Edit the list of pre-defined variables for use in the rest of the file (Alt+D)",
+        'materials': "Edit custom materials (Alt+M)",
+        'geometry': "Edit geometries of your structures (Alt+G)",
+        'grids': "Edit computational meshes or set-up automatic mesh generators (Alt+E)",
+        'solvers': "Create and configure computational solvers (Alt+S)",
+        'connects': "Define connections between computational solvers (Alt+C)",
+        'script': "Edit control script for your computations (Alt+R)"}
+
     closed = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
 
     def __init__(self, filename=None):
@@ -122,7 +133,8 @@ class MainWindow(QtGui.QMainWindow):
 
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('accessories-text-editor'),
-            '&Show source', self)
+            'Show Sour&ce', self)
+        self.showsource_action.setShortcut(QtGui.QKeySequence(Qt.Key_F4))
         self.showsource_action.setCheckable(True)
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
@@ -186,7 +198,7 @@ class MainWindow(QtGui.QMainWindow):
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QtGui.QAction('&Go to Line...', self)
-        goto_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_L)
+        goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.goto_line)
 
@@ -209,8 +221,9 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(save_action)
         self.menu.addAction(saveas_action)
         self.menu.addSeparator()
-        self.menu.addAction(launch_action)
         self.menu.addAction(goto_action)
+        self.menu.addAction(self.showsource_action)
+        self.menu.addAction(launch_action)
         if OPERATIONS:
             self.menu.addSeparator()
             for op in OPERATIONS:   # for plugins use
@@ -224,6 +237,8 @@ class MainWindow(QtGui.QMainWindow):
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         menu_button.setPalette(pal)
+        menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
+        menu_button.setToolTip("Show operations menu  (F2)")
 
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
@@ -260,6 +275,10 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.setGeometry(geometry)
 
+        fs = int(1.3 * QtGui.QFont().pointSize())
+        self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
+        menu_button.setStyleSheet("font-size: {}pt;".format(fs))
+
         self.show()
 
     def update_recent_list(self):
@@ -292,10 +311,9 @@ class MainWindow(QtGui.QMainWindow):
     def setup_model(self):
         self.tabs.clear()
         for m in self.document.SECTION_NAMES:
-            self.tabs.addTab(self.document.controller_by_name(m).get_widget(), m.title())
-            # self.tabs.setTabIcon(self.tabs.count()-1,
-            #                      QtGui.QIcon.fromTheme(SECTION_ICONS[m],
-            #                                            QtGui.QIcon(':/' + SECTION_ICONS[m])))
+            self.tabs.addTab(self.document.controller_by_name(m).get_widget(), self.SECTION_TITLES[m])
+            self.tabs.setTabToolTip(self.tabs.count()-1, self.SECTION_TIPS[m])
+            # self.tabs.setTabIcon(self.tabs.count()-1, QtGui.QIcon.fromTheme(SECTION_ICONS[m]))
         self.current_tab_index = -1
         if isinstance(self.document, PyDocument):
             self.tab_change(0)
@@ -467,7 +485,7 @@ class MainWindow(QtGui.QMainWindow):
             if indx is not None:
                 self.tabs.setCurrentIndex(indx)
                 self.tab_change(indx)
-                if not self.showsource_action.isChecked():
+                if self.showsource_action.isEnabled() and not self.showsource_action.isChecked():
                     self.showsource_action.trigger()
                 editor = cntrl.get_source_widget().editor
                 cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
@@ -550,6 +568,22 @@ def main():
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
         loader.find_module(modname).load_module(modname)
+
+    if matplotlib:
+        ft = QtGui.QWidget().font()
+        pd = APPLICATION.desktop()
+        matplotlib.rcParams.update({
+            'backend.qt4': qt4,
+            'figure.dpi': pd.logicalDpiY(),
+            'font.size': ft.pointSize() + 1,
+            'font.family': ft.family(),
+            'mathtext.fontset': 'custom',
+            'mathtext.cal': ft.family(),
+            'mathtext.rm': ft.family(),
+            'mathtext.it': ft.family() + ':italic',
+            'mathtext.bf': ft.family() + ':bold',
+            'mathtext.sf': ft.family()
+        })
 
     if len(sys.argv) > 1:
         filename = os.path.abspath(sys.argv[1])

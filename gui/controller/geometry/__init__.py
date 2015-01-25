@@ -114,7 +114,7 @@ class GeometryController(Controller):
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
             try:
-                manager.load(self.document.get_XPL_content(sections='geometry'))
+                manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.name)]
                 self.geometry_view.update_plot(to_plot)
             except Exception as e:
