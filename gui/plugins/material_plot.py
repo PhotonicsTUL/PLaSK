@@ -1,3 +1,4 @@
+# coding: utf8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -353,10 +354,11 @@ class MaterialPlot(QtGui.QWidget):
             self.error.clear()
             self.error.hide()
             axes.set_xlabel(html_to_tex(self.arg_button.descr))
+        axes.set_ylabel('[]')
+        self.figure.tight_layout(pad=0.2)
         axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
-        self.figure.set_tight_layout(0)
         self.canvas.draw()
         warnings.showwarning = old_showwarning
         if warns:

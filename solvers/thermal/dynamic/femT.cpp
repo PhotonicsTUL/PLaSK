@@ -393,7 +393,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 
 template<typename Geometry2DType>
 const LazyData<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const {
-    this->writelog(LOG_DETAIL, "Getting temperatures");
+    this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return DataVector<const double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, temperatures, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), method);
@@ -402,7 +402,7 @@ const LazyData<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
 
 template<typename Geometry2DType>
 const LazyData<Vec<2>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-    this->writelog(LOG_DETAIL, "Getting heat fluxes");
+    this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return DataVector<const Vec<2>>(dst_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -441,7 +441,7 @@ ThermalConductivityData::size() const { return target_mesh.size(); }
 
 template<typename Geometry2DType>
 const LazyData<Tensor2<double>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) const {
-    this->writelog(LOG_DETAIL, "Getting thermal conductivities");
+    this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new
         FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::ThermalConductivityData(this, dst_mesh)
     );

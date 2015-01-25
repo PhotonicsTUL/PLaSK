@@ -896,7 +896,7 @@ struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<d
 
 const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-    this->writelog(LOG_DETAIL, "Getting light intensity");
+    this->writelog(LOG_DEBUG, "Getting light intensity");
 
     if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
 
@@ -925,7 +925,7 @@ const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const s
 
 const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
-    this->writelog(LOG_DETAIL, "Getting refractive indices");
+    this->writelog(LOG_DEBUG, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
     updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
@@ -975,7 +975,7 @@ const LazyData<double> EffectiveFrequencyCyl::getHeat(const shared_ptr<const Mes
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
-    writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+    writelog(LOG_DEBUG, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
     if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
     return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 }

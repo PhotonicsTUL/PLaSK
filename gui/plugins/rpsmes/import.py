@@ -476,7 +476,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
                 out('xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('ylabel("current density [kA/cm$^2$]")')
-                out('simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')
+                out('simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
                 out('for x in simplemesh.axis0:')
                 out('    axvline(x, ls=":", color="k")')
                 out('xlim(0., simplemesh.axis0[-2])')
@@ -490,7 +490,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
 
 def load_dan(parent):
-    """Convert _temp.dan file to .xpl, save it to disk and open oi PLaSK"""
+    """Convert _temp.dan file to .xpl, save it to disk and open in PLaSK"""
 
     remove_self = parent.document.filename is None and not parent.isWindowModified()
 

@@ -650,7 +650,7 @@ template<typename Geometry2DType>
 const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
     if (!potentials) throw NoValue("Potential");
-    this->writelog(LOG_DETAIL, "Getting potentials");
+    this->writelog(LOG_DEBUG, "Getting potentials");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, potentials, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), method);
 }
@@ -660,7 +660,7 @@ template<typename Geometry2DType>
 const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Current density");
-    this->writelog(LOG_DETAIL, "Getting current densities");
+    this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
     auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method);
@@ -676,7 +676,7 @@ template<typename Geometry2DType>
 const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Heat density");
-    this->writelog(LOG_DETAIL, "Getting heat density");
+    this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
@@ -692,7 +692,7 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
 template<typename Geometry2DType>
 const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod) {
     this->initCalculation();
-    this->writelog(LOG_DETAIL, "Getting conductivities");
+    this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivities();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(target_mesh.size(),

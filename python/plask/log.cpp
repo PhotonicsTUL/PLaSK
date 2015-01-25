@@ -156,6 +156,9 @@ const char* PythonSysLogger::head(LogLevel level) {
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+//     PyFrameObject* frame = PyEval_GetFrame();
+//     if (frame)
+//         pyinfo = format("%2%:%1%: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
             PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());

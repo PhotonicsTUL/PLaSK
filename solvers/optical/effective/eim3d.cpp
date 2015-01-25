@@ -849,7 +849,7 @@
 //
 // const LazyData<double> EffectiveIndex3D::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 // {
-//     this->writelog(LOG_DETAIL, "Getting light intensity");
+//     this->writelog(LOG_DEBUG, "Getting light intensity");
 //
 //     if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
 //         return LazyData<double>(new LightMagnitudeDataEfficient(this, num, rect_mesh));
@@ -859,7 +859,7 @@
 //
 //
 // const LazyData<Tensor3<dcomplex>> EffectiveIndex3D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
-//     this->writelog(LOG_DETAIL, "Getting refractive indices");
+//     this->writelog(LOG_DEBUG, "Getting refractive indices");
 //     updateCache();
 //     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
 //     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
@@ -906,7 +906,7 @@
 // {
 //     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
 //     // in case of fast varying light intensity and too sparse mesh.
-//     writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+//     writelog(LOG_DEBUG, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
 //     if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
 //     return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 // }

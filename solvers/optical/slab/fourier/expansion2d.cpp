@@ -130,9 +130,9 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     size_t M = refine * nN;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, M, omp_get_thread_num());
+        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, M, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
+        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
     #endif
 
     auto mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(xmesh), make_shared<OrderedAxis>(axis1), RectangularMesh<2>::ORDER_01);
@@ -142,11 +142,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     auto temperature = SOLVER->inTemperature(mesh);
 
     LazyData<double> gain;
-    bool have_gain = false;
-    if (SOLVER->inGain.hasProvider()) {
-        gain = SOLVER->inGain(mesh, lambda);
-        have_gain = true;
-    }
+    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     double factor = 1. / refine;
     double maty = axis1[0]; // at each point along any vertical axis material is the same
@@ -171,9 +167,13 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
-            if (have_gain) {
+            if (gain_connected) {
                 auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                    if (!gain_computed) {
+                        gain = SOLVER->inGain(mesh, lambda);
+                        gain_computed = true;
+                    }
                     double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
                     double ni = lambda * g/axis1.size() * (0.25e-7/M_PI);
                     nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);

@@ -638,7 +638,7 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 
 const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const {
     if (!potential) throw NoValue("Potential");
-    this->writelog(LOG_DETAIL, "Getting potential");
+    this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(mesh, potential, make_shared<const WrappedMesh<3>>(dst_mesh, geometry), method);
 }
@@ -646,7 +646,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(share
 
 const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
-    this->writelog(LOG_DETAIL, "Getting current density");
+    this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
     auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method);
@@ -660,7 +660,7 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
 
 const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Heat density");
-    this->writelog(LOG_DETAIL, "Getting heat density");
+    this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
@@ -675,7 +675,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
 
 const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     initCalculation();
-    this->writelog(LOG_DETAIL, "Getting conductivities");
+    this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivity();
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
     return LazyData<Tensor2<double>>(target_mesh.size(),

@@ -212,9 +212,9 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%", l, Ml, Mt, omp_get_thread_num());
+        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%", l, Ml, Mt, omp_get_thread_num());
     #else
-        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
     #endif
 
     auto mesh = make_shared<RectangularMesh<3>>
@@ -229,11 +229,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     auto temperature = SOLVER->inTemperature(mesh);
 
     LazyData<double> gain;
-    bool have_gain = false;
-    if (SOLVER->inGain.hasProvider()) {
-        gain = SOLVER->inGain(mesh, lambda);
-        have_gain = true;
-    }
+    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     // Average material parameters
     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
@@ -264,9 +260,13 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
-                    if (have_gain) {
+                    if (gain_connected) {
                         auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                            if (!gain_computed) {
+                                gain = SOLVER->inGain(mesh, lambda);
+                                gain_computed = true;
+                            }
                             double g = 0.; // average gain in all vertical points
                             for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v < end; ++v) g += gain[v];
                             double ni = lambda * g/axis2.size() * (0.25e-7/M_PI);

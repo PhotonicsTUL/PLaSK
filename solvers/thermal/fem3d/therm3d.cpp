@@ -483,7 +483,7 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
 
 
 const LazyData<double> FiniteElementMethodThermal3DSolver::getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
-    this->writelog(LOG_DETAIL, "Getting temperatures");
+    this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return DataVector<const double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, temperatures, make_shared<const WrappedMesh<3>>(dst_mesh, this->geometry), method);
@@ -491,7 +491,7 @@ const LazyData<double> FiniteElementMethodThermal3DSolver::getTemperatures(const
 
 
 const LazyData<Vec<3>> FiniteElementMethodThermal3DSolver::getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-    this->writelog(LOG_DETAIL, "Getting heat fluxes");
+    this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return DataVector<const Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -528,7 +528,7 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
 std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return target_mesh.size(); }
 
 const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
-    this->writelog(LOG_DETAIL, "Getting thermal conductivities");
+    this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new FiniteElementMethodThermal3DSolver::ThermalConductivityData(this, dst_mesh));
 }
 
