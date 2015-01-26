@@ -196,6 +196,7 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
+#TODO intersection approximated support: clip to bounding box
 
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
