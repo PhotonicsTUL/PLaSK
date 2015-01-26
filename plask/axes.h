@@ -92,7 +92,7 @@ struct PLASK_API AxisNames {
     /// Get absolute names.
     static const AxisNames& getAbsoluteNames();
 
-    /// Name of axises (by index).
+    /// Name of axes (by index).
     std::string byIndex[3];
 
     /// Construct uninitialized object, with empty names of axes.

@@ -167,19 +167,18 @@ def _draw_Mirror(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
-def _draw_Clip(env, geometry_object, transform, clip_box):
+def _draw_clipped(env, geometry_object, transform, clip_box, new_clip_box):
+    '''Used by _draw_Clip and _draw_Intersection.'''
     def _b(bound):
         return math.copysign(1e100, bound) if math.isinf(bound) else bound
-
-    obj_box = geometry_object.clip_box
 
     new_clipbox = matplotlib.transforms.TransformedBbox(
        #matplotlib.transforms.Bbox([
        #    [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],
        #    [obj_box.upper[env.axes[0]], obj_box.upper[env.axes[1]]]
        #]),
-       matplotlib.transforms.Bbox.from_extents(_b(obj_box.lower[env.axes[0]]), _b(obj_box.lower[env.axes[1]]),
-                                               _b(obj_box.upper[env.axes[0]]), _b(obj_box.upper[env.axes[1]])),
+       matplotlib.transforms.Bbox.from_extents(_b(new_clip_box.lower[env.axes[0]]), _b(new_clip_box.lower[env.axes[1]]),
+                                               _b(new_clip_box.upper[env.axes[0]]), _b(new_clip_box.upper[env.axes[1]])),
        transform
     )
 
@@ -190,13 +189,21 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
 
     x0, y0, x1, y1 = clip_box.extents
     if x0 < x1 and y0 < y1:
-        _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+        _draw_geometry_object(env, geometry_object, transform, clip_box)
     # else, if clip_box is empty now, it will be never non-empty, so all will be clipped-out
+
+
+def _draw_Clip(env, geometry_object, transform, clip_box):
+    _draw_clipped(env, geometry_object.item, transform, clip_box, geometry_object.clip_box)
 
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
-#TODO intersection approximated support: clip to bounding box
+def _draw_Intersection(env, geometry_object, transform, clip_box):
+    _draw_clipped(env, geometry_object.item, transform, clip_box, geometry_object.envelope.bbox)
+
+_geometry_drawers[plask.geometry.Intersection2D] = _draw_Intersection
+_geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection
 
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
@@ -233,6 +240,9 @@ def plot_geometry_object(figure, geometry, color='k', lw=1.0, plane=None, set_li
         :param bool mirror:
         :param bool fill: if True, geometry objects will be filled with colors which depends on their material,
             This is not supported when geometry is of type Cartesian3D, and then the fill parameter is ignored.
+
+        Limitations: Intersection is not drawn precisely (item is clipped to bonding box of envelop).
+        Filling are not supported when Cartesian3D geometry is drawn.
     '''
 
     #figure.clear()
