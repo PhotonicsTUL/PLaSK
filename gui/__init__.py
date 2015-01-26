@@ -28,6 +28,7 @@ except KeyError:
 
 
 from .qt import QtGui, QtCore, qt4
+from .qt.QtCore import Qt
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
@@ -37,6 +38,8 @@ try:
     import matplotlib
 except ImportError:
     matplotlib = None
+else:
+    matplotlib.rc('backend', qt4=qt4)
 
 
 from .xpldocument import XPLDocument
@@ -133,7 +136,7 @@ class MainWindow(QtGui.QMainWindow):
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('accessories-text-editor'),
             'Show Sour&ce', self)
-        self.showsource_action.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F4))
+        self.showsource_action.setShortcut(QtGui.QKeySequence(Qt.Key_F4))
         self.showsource_action.setCheckable(True)
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
