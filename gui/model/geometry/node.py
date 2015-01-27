@@ -134,9 +134,9 @@ class GNode(object):
                            geometry_types_other
         result = []
         if self.children_dim is None or self.children_dim == 2:
-            result.extend((geometry_types_2d_core_containers, geometry_types_2d_core_leafs, geometry_types_2d_core_transforms))
+            result.extend((geometry_types_2d_core_leafs, geometry_types_2d_core_containers, geometry_types_2d_core_transforms))
         if self.children_dim is None or self.children_dim == 3:
-            result.extend((geometry_types_3d_core_containers, geometry_types_3d_core_leafs, geometry_types_3d_core_transforms))
+            result.extend((geometry_types_3d_core_leafs, geometry_types_3d_core_containers, geometry_types_3d_core_transforms))
         result.append(geometry_types_other)
         return result
 

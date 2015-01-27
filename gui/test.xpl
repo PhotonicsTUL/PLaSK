@@ -59,13 +59,13 @@
       <block name="p-contact" material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
-  <cylindrical2d name="GeoO" axes="x, y, z" outer="extend" bottom="GaAs" top="air">
+  <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
   <cartesian3d>
     <align>
       <item>
-        <block material="air" dlong="10" dtran="20" dvert="30"/>
+        <stack/>
       </item>
     </align>
   </cartesian3d>

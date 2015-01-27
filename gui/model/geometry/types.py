@@ -11,69 +11,24 @@
 # GNU General Public License for more details.
 
 
-GNAMES = {
-    'circle': "Circle",
-
-    'align': "Align",
-    'stack': "Stack",
-    'shelf': "Shelf",
-
-    'clip': "Clip",
-    'flip': "Flip",
-    'mirror': "Mirror",
-    'translation': "Translation",
-    'intersection': "Intersection",
-
-    'block': "Block",
-
-
-    'rectangle': "Rectangle",
-    'circle2d': "Circle2D",
-    'triangle': "Triangle",
-
-    'align2d': "Align2D",
-    'stack2d': "Stack2D",
-    'shelf2d': "Shelf2D",
-
-    'clip2d': "Clip2D",
-    'flip2d': "Flip2D",
-    'mirror2d': "Mirror2D",
-    'translation2d': "Translation2D",
-    'intersection2d': "Intersection2D",
-
-    'block2d': "Block2D",
-
-    'cuboid': "Cuboid",
-    'sphere': "Sphere",
-    'cylinder': "Cylinder",
-
-    'align3d': "Align3D",
-    'stack3d': "Stack3D",
-
-    'extrusion': "Extrusion",
-    'revolution': "Revolution",
-
-    'clip3d': "Clip3D",
-    'flip3d': "Flip3D",
-    'mirror3d': "mirror3D",
-    'translation3d': "translation3D",
-    'intersection3d': "intersection3D",
-
-    'block3d': "Block3D",
-    'circle3d': "Circle3D",
-
-    'again': "Again",
-    'copy': "Copy",
-
-    'cartesian2d': "Cartesian2D",
-    'cartesian3d': "Cartesian3D",
-    'cylindrical': "Cylindrical",
-    'cylindrical2d': "Cylindrical2D",
+_NAMES = {
+    'zero': "<set zero here>",
+    'gap': "<insert gap>",
+    'replace': "<replace object>",
+    'toblock': "<make simple block>",
+    'delete': "<delete object>",
+    'again': "[Repeat object]",
+    'copy': "[Copy and modify object]"
 }
 
 
 def gname(key):
-    return GNAMES.get(key, key)
+    try:
+        return _NAMES[key]
+    except KeyError:
+        if key.endswith('2d') or key.endswith('3d'):
+            return key.title()[:-1] + 'D'
+        return key.title()
 
 
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
@@ -83,7 +38,7 @@ from .copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
 geometry_types_2d_core_leafs = {  # only unique names of types, displayed in add menu
-    'rectangle': GNBlock.from_xml_2d,
+    'block2d': GNBlock.from_xml_2d,
     'circle2d': GNCircle.from_xml_2d,
     'triangle': GNTriangle.from_xml_2d
 }
@@ -108,7 +63,7 @@ geometry_types_2d_core.update(geometry_types_2d_core_transforms)
 geometry_types_2d = {   # all names: geometry_types_2d_core + aliases
 
     # leafs:
-    'block2d': GNBlock.from_xml_2d,
+    'rectangle': GNBlock.from_xml_2d,
 
     # containers:
     'container2d': GNAlignContainer.from_xml_2d,
@@ -118,7 +73,7 @@ geometry_types_2d = {   # all names: geometry_types_2d_core + aliases
 geometry_types_2d.update(geometry_types_2d_core)
 
 geometry_types_3d_core_leafs = {
-    'cuboid': GNBlock.from_xml_3d,
+    'block3d': GNBlock.from_xml_3d,
     'sphere': GNCircle.from_xml_3d,
     'cylinder': GNCylinder.from_xml_3d,
 }
@@ -150,7 +105,7 @@ geometry_types_3d_core.update(geometry_types_3d_core_transforms)
 geometry_types_3d = {   # all names: geometry_types_2d_core + aliases
 
     # leafs:
-    'block3d': GNBlock.from_xml_3d,
+    'cuboid': GNBlock.from_xml_3d,
     'circle3d': GNCircle.from_xml_3d,
 
     # containers:

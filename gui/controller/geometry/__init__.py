@@ -32,6 +32,12 @@ class GeometryController(Controller):
         self.model.beginInsertRows(parent_index, pos, pos)
         construct_using_constructor(type_constructor, parent_index.internalPointer())
         self.model.endInsertRows()
+        self.tree.setExpanded(parent_index, True)
+        new_index = self.model.index(pos, 0, parent_index)
+        self.tree.selectionModel().select(new_index,
+                                          QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                          QtGui.QItemSelectionModel.Rows)
+        self.tree.setCurrentIndex(new_index)
         self.update_actions()
 
     def _get_add_child_menu(self, geometry_node_index):
@@ -80,6 +86,11 @@ class GeometryController(Controller):
 
     def append_geometry_node(self, type_name):
         self.tree.model().append_geometry(type_name)
+        new_index = self.model.index(len(self.tree.model().roots)-1, 0)
+        self.tree.selectionModel().select(new_index,
+                                          QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                          QtGui.QItemSelectionModel.Rows)
+        self.tree.setCurrentIndex(new_index)
 
     def remove_node(self):
         index = self.tree.selectionModel().currentIndex()
@@ -126,7 +137,6 @@ class GeometryController(Controller):
             if not element_has_name: tree_element.name = None
 
         #plot_geometry(current_index.internalPointer())
-
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
