@@ -70,16 +70,16 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
-                return item.tag_name(full_name=True)
+                return item.display_name(full_name=False)
             else:
                 name = getattr(item, 'name', '')
                 if name:
-                    res = '<span style="color: #866">name</span> <b>{}</b>'.format(cgi.escape(name))
+                    res = '<span style="color: #866">name:</span> <b>{}</b>'.format(cgi.escape(name))
                 else:
                     res = ''
                 for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
-                    #sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
-                    #for n, v in sorted_prop:
+                    # sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
+                    # for n, v in sorted_prop:
                     in_group = False
                     for t in prop_table:
                         if t is None:
@@ -93,8 +93,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                             n, v = t
                             if v is None: continue
                             if res: res += ' &nbsp;' if in_group else ' &nbsp; '
-                            res += '<span style="color: #766">{}</span>&nbsp;{}'.format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
-                        #replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
+                            res += '<span style="color: #766">{}:</span>&nbsp;{}'\
+                                .format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
+                        # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
 
     def flags(self, index):

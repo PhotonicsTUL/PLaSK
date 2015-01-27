@@ -21,6 +21,7 @@ def geometry_object_names(constructor, *allowed_types):
             if c == constructor: res.append(n)
     return res
 
+
 def construct_geometry_object(element, conf, *allowed_types):
     if element is None: return None
     if len(allowed_types) == 0:
@@ -35,6 +36,7 @@ def construct_geometry_object(element, conf, *allowed_types):
         if c is None and s is not None: c = m.get(element.tag + s)
         if c is not None: return c(element, conf)
     raise ValueError('Unexpected tag: <{}>'.format(element.tag))
+
 
 def construct_by_name(type_name, *allowed_types):
     for m in allowed_types:

@@ -21,7 +21,7 @@ class GNAgainController(GNodeController):
     def fill_form(self):
         super(GNAgainController, self).fill_form()
         self.construct_group('Again settings')
-        self.ref = self.construct_names_before_self_combo_box('referenced object')
+        self.ref = self.construct_names_before_self_combo_box('Referenced object:')
         self.ref.setToolTip('&lt;again <b>ref</b>=""/&gt;<br/>'
                             'Name of the referenced object.')
 
@@ -40,7 +40,7 @@ class GNCopyChildController(GNodeController):
     def fill_form(self):
         super(GNCopyChildController, self).fill_form()
         self.construct_group('Operation settings')
-        self.object = self.construct_names_before_self_combo_box('object')
+        self.object = self.construct_names_before_self_combo_box('Object:')
 
     def save_data_in_model(self):
         super(GNCopyChildController, self).save_data_in_model()
@@ -66,7 +66,7 @@ class GNCReplaceController(GNCopyChildController):
         super(GNCReplaceController, self).fill_form()
         self.object.setToolTip('&lt;replace <b>object</b>="" with=""/&gt;<br/>'
                                 'Name of the object to delete (replace). Required.')
-        self.replacer = self.construct_names_before_self_combo_box('with')
+        self.replacer = self.construct_names_before_self_combo_box('With:')
         self.replacer.setToolTip('&lt;replace object="" <b>with</b>=""/&gt;<br/>'
             'Name of the object to replace with. This object does not need to be located in the subtree of the copied object.')
 
@@ -104,7 +104,7 @@ class GNCopyController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Copy-specific settings')
-        self.source = self.construct_names_before_self_combo_box('from')
+        self.source = self.construct_names_before_self_combo_box('From:')
         self.source.setToolTip('&lt;copy <b>from</b>="" ...&gt;<br/>'
                                 'Name of the source two or three dimensional object to make modified copy of.'
                                 ' Usually it is some container that has some other named its items or sub-items.'

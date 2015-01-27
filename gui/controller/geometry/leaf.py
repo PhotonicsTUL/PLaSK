@@ -22,7 +22,7 @@ class GNLeafController(GNObjectController):
         material_form = self.construct_group('Material')
 
         self.material_selection_type = QtGui.QComboBox()
-        self.material_selection_type.addItems(['solid', 'bottom/top'])
+        self.material_selection_type.addItems(['Solid', 'Gradual'])
         self.material_selection_type.currentIndexChanged.connect(self.after_field_change)
 
         self.material_solid = self.construct_material_combo_box(items=[''])
@@ -40,16 +40,18 @@ class GNLeafController(GNObjectController):
 
         material_form.addRow(self.material_selection_type, self.material_group)
 
-        self.construct_group('Mesh division settings')
-        self.step_num = self.construct_line_edit('maximum number of steps')
+        super(GNLeafController, self).fill_form()
+
+        self.construct_group('Meshing settings')
+        self.step_num = self.construct_line_edit('Maximum steps number:')
         self.step_num.setToolTip(u'&lt;{} <b>steps-num</b>="" steps-dist="" ...&gt;<br/>'
-                                u'Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform. (integer)'
+                                u'Maximum number of the mesh steps in each direction the object is divided into '
+                                u'if it is non-uniform. (integer)'
                                 .format(self.node.tag_name(False)))
-        self.step_dist = self.construct_line_edit('minimum step size')
+        self.step_dist = self.construct_line_edit('Minimum step size:')
         self.step_dist.setToolTip(u'&lt;{} steps-num="" <b>steps-dist</b>="" ...&gt;<br/>'
                                 u'Minimum step size if the object is non-uniform.'
                                 .format(self.node.tag_name(False)))
-        super(GNLeafController, self).fill_form()
 
     def save_data_in_model(self):
         super(GNLeafController, self).save_data_in_model()
@@ -80,7 +82,7 @@ class GNBlockController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('Block-specific settings')
-        self.size = self.construct_point_controllers(row_name='size')
+        self.size = self.construct_point_controllers(row_name='Size:')
         super(GNBlockController, self).fill_form()
 
     def save_data_in_model(self):

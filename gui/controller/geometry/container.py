@@ -25,7 +25,7 @@ class GNGapController(GNodeController):
     def fill_form(self):
         super(GNGapController, self).fill_form()
         self.gap_type = QtGui.QComboBox()
-        self.gap_type.addItems(['gap size', 'total container size'])
+        self.gap_type.addItems(['Gap size', 'Total container size'])
         self.gap_type.currentIndexChanged.connect(self.after_field_change)
         self.gap_value = self.construct_line_edit()
         self._get_current_form().addRow(self.gap_type, self.gap_value)
@@ -46,16 +46,16 @@ class GNShelfController(GNObjectController):
     
     def fill_form(self):
         self.construct_group('Shelf-specific settings')
-        self.repeat = self.construct_line_edit('repeat')
+        self.repeat = self.construct_line_edit('Repeat:')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
                                 'Number of repetitive occurrences of stack content.'
                                 ' This attribute allows to create periodic horizontal structures easily.'
                                 ' Defaults to 1. (integer)')
-        self.shift = self.construct_line_edit('shift')
+        self.shift = self.construct_line_edit('Shift:')
         self.shift.setToolTip(u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
                                 u'Horizontal position of the shelf left edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
-        self.flat = self.construct_combo_box('flat', items=['', 'yes', 'no'])
+        self.flat = self.construct_combo_box('Flat:', items=['', 'yes', 'no'])
         self.flat.setToolTip(u'&lt;shelf <b>flat</b>="" ...&gt;<br/>'
                                 u'The value of this attribute can be either true of false.'
                                 u' It specifies whether all the items in the shelf are required to have the same height'
@@ -81,6 +81,7 @@ def controller_to_aligners(position_controllers):
     for i, pos in enumerate(position_controllers):
         aligners_list.append(GNAligner(pos[0].currentIndex(), empty_to_none(pos[1].text())))
     return aligners_list
+
 
 def aligners_to_controllers(aligners_list, position_controllers):
     if aligners_list is None: return
@@ -112,12 +113,12 @@ class GNStackController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Stack-specific settings')
-        self.repeat = self.construct_line_edit('repeat')
+        self.repeat = self.construct_line_edit('Repeat:')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
                                 'Number of repetitive occurrences of stack content.'
                                 ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
                                 ' Defaults to 1. (integer))')
-        self.shift = self.construct_line_edit('shift')
+        self.shift = self.construct_line_edit('Shift:')
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
@@ -144,8 +145,9 @@ class GNContainerChildBaseController(GNChildController):
     def fill_form(self):
         self.construct_group('Position in parent container')
         self.positions = self.construct_align_controllers()
-        self.path = self.construct_combo_box('path', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()))
-        self.path.setToolTip('Name of a path that can be later on used to distinguish between multiple occurrences of the same object.')
+        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()))
+        self.path.setToolTip('Name of a path that can be later on used to distinguish '
+                             'between multiple occurrences of the same object.')
 
     def save_data_in_model(self):
         self.child_node.in_parent = controller_to_aligners(self.positions)

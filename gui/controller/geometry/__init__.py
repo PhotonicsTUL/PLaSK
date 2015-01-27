@@ -16,12 +16,13 @@ import plask
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
-from ...model.geometry.types import geometry_types_geometries_core
+from ...model.geometry.types import geometry_types_geometries_core, gname
 
 from .. import Controller
 from ...utils.widgets import HTMLDelegate
 
 from .plot_widget import PlotWidget
+
 
 # TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
@@ -43,7 +44,9 @@ class GeometryController(Controller):
                 result.addSeparator()
             first = False
             for type_name, type_constructor in sorted(section.items(), key=operator.itemgetter(0)):
-                a = QtGui.QAction(type_name, result)
+                if type_name.endswith('2d') or type_name.endswith('3d'):
+                    type_name = type_name[:-2]
+                a = QtGui.QAction(gname(type_name), result)
                 a.triggered[()].connect(lambda type_constructor=type_constructor, parent_index=geometry_node_index:
                                         self._add_child(type_constructor, parent_index))
                 result.addAction(a)
@@ -55,12 +58,11 @@ class GeometryController(Controller):
         if current_index.isValid():
             add_child_menu = self._get_add_child_menu(current_index)
             if add_child_menu:
-                self.add_menu.addAction('child').setMenu(add_child_menu)
+                self.add_menu.addAction('Item').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
-            a = QtGui.QAction(n, self.add_menu)
+            a = QtGui.QAction(gname(n), self.add_menu)
             a.triggered[()].connect(lambda n=n: self.append_geometry_node(n))
             self.add_menu.addAction(a)
-
 
     def update_actions(self):
         has_selected_object = not self.tree.selectionModel().selection().isEmpty()
@@ -109,7 +111,7 @@ class GeometryController(Controller):
         tree_element = current_index.internalPointer()
 
         #TODO support for ref element, and exclude rest non-objects
-        element_has_name = getattr(tree_element, 'name') is not None
+        element_has_name = getattr(tree_element, 'name', None) is not None
         try:
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
@@ -215,7 +217,6 @@ class GeometryController(Controller):
         self.main_splitter.addWidget(self.geometry_view)
 
         #self._construct_plot_dock()
-
 
     def set_current_index(self, new_index):
         """

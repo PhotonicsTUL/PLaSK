@@ -10,11 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from ...qt import QtGui
+
 from .. import Controller
 from ..materials import MaterialsComboBox
 from ..defines import get_defines_completer
 from ...model.geometry.reader import GNAligner
-from ...qt import QtGui
+
 
 class GNodeController(Controller):
 
@@ -32,6 +34,7 @@ class GNodeController(Controller):
     def construct_combo_box(self, row_name=None, items=[], editable=True):
         res = QtGui.QComboBox()
         res.setEditable(editable)
+        res.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
         res.editTextChanged.connect(self.after_field_change)
@@ -43,12 +46,15 @@ class GNodeController(Controller):
         res.append_list(items)
         res.append_materials_from_model(self.document.materials.model)
         res.append_materials_from_db()
+        res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
         res.editTextChanged.connect(self.after_field_change)
         return res
 
     def construct_names_before_self_combo_box(self, row_name = None):
-        return self.construct_combo_box(row_name, items=[''] + sorted(self.model.names_before(self.node), key=lambda s: s.lower()))
+        return self.construct_combo_box(row_name,
+                                        items=[''] +
+                                        sorted(self.model.names_before(self.node), key=lambda s: s.lower()))
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)
@@ -68,22 +74,27 @@ class GNodeController(Controller):
         return form_layout
 
     def construct_align_controllers(self, dim=None, add_to_current=True, *aligners_dir):
-        ''':return: list of controllers pairs, first is combo box to select aligner type, second is line edit for its value'''
+        """:return: list of controllers pairs, first is combo box to select aligner type,
+                    second is line edit for its value"""
         if len(aligners_dir) == 0:
             return self.construct_align_controllers(dim, add_to_current, *self.node.aligners_dir())
         if dim is None: dim = self.node.children_dim
         positions = []
-        axes_conf = self.node.get_axes_conf_dim(dim)
-        for c in aligners_dir:
+        layout = QtGui.QGridLayout(None)
+        layout.setContentsMargins(0, 0, 0, 0)
+        for r,c in enumerate(aligners_dir):
+            axis = QtGui.QLabel(('Longitudinal:', 'Transverse:', 'Vertical:')[c+3-dim])
+            layout.addWidget(axis, r, 0)
             position = QtGui.QComboBox()
-            position.addItems(
-                [('{} origin at' if i == 3 else '{} at').format(x)
-                for i, x in enumerate(GNAligner.names(dim, axes_conf, c, False))]
-            )
+            position.addItems(GNAligner.display_names(dim, c))
+            layout.addWidget(position, r, 1)
+            at = QtGui.QLabel('at')
+            layout.addWidget(at, r, 2)
             position.currentIndexChanged.connect(self.after_field_change)
             pos_value = self.construct_line_edit()
-            if add_to_current: self._get_current_form().addRow(position, pos_value)
+            layout.addWidget(pos_value, r, 3)
             positions.append((position, pos_value))
+        if add_to_current: self._get_current_form().addRow(layout)
         return positions
 
     def _construct_hbox(self, row_name=None):

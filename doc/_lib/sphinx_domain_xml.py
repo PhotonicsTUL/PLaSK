@@ -141,9 +141,9 @@ def depart_field_list(self, node):
 
 
 class XMLContents(BaseAdmonition):
-    '''
+    """
     Directive for XML node contents
-    '''
+    """
     node_class = xmlcontents_node
 
 

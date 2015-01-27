@@ -46,8 +46,8 @@ class GNAgain(GNode):
         from ...controller.geometry.copy import GNAgainController
         return GNAgainController(document, model, self)
 
-    @classmethod
-    def from_xml(cls, element, conf):
+    @staticmethod
+    def from_xml(element, conf):
         result = GNAgain()
         result.set_xml_element(element, conf)
         return result
@@ -193,8 +193,8 @@ class GNCopy(GNObject):
         from ...controller.geometry.copy import GNCopyController
         return GNCopyController(document, model, self)
 
-    @classmethod
-    def from_xml(cls, element, conf):
+    @staticmethod
+    def from_xml(element, conf):
         result = GNCopy()
         result.set_xml_element(element, conf)
         return result

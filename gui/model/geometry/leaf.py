@@ -108,14 +108,14 @@ class GNBlock(GNLeaf):
         from ...controller.geometry.leaf import GNBlockController
         return GNBlockController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNBlock(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNBlock(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -152,8 +152,8 @@ class GNCylinder(GNLeaf):
         from ...controller.geometry.leaf import GNCylinderController
         return GNCylinderController(document, model, self)
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNCylinder()
         result.set_xml_element(element, conf)
         return result
@@ -188,14 +188,14 @@ class GNCircle(GNLeaf):
         from ...controller.geometry.leaf import GNCircleController
         return GNCircleController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNCircle(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNCircle(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -237,8 +237,8 @@ class GNTriangle(GNLeaf):
         from ...controller.geometry.leaf import GNTriangleController
         return GNTriangleController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNTriangle()
         result.set_xml_element(element, conf)
         return result

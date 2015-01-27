@@ -26,8 +26,8 @@ class GNZero(GNode):
     def tag_name(self, full_name=True):
         return 'zero'
 
-    @classmethod
-    def from_xml(cls, element, conf):
+    @staticmethod
+    def from_xml(element, conf):
         result = GNZero()
         result.set_xml_element(element, conf)
         return result
@@ -67,8 +67,8 @@ class GNGap(GNode):
             res.append(('total container size' if self.size_is_total else 'gap size', self.size))
         return res
 
-    @classmethod
-    def from_xml(cls, element, conf):
+    @staticmethod
+    def from_xml(element, conf):
         result = GNGap()
         result.set_xml_element(element, conf)
         return result
@@ -244,14 +244,14 @@ class GNStack(GNContainerBase):
         from ...controller.geometry.container import GNContainerChildBaseController
         return GNContainerChildBaseController(document, model, self, child)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNStack(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNStack(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -308,8 +308,8 @@ class GNShelf(GNContainerBase):
         from ...controller.geometry.container import GNShelfController
         return GNShelfController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNShelf()
         result.set_xml_element(element, conf)
         return result
@@ -375,14 +375,14 @@ class GNAlignContainer(GNContainerBase):
         from ...controller.geometry.container import GNContainerChildBaseController
         return GNContainerChildBaseController(document, model, self, child)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNAlignContainer(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNAlignContainer(dim=3)
         result.set_xml_element(element, conf)
         return result

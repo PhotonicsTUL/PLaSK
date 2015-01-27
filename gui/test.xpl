@@ -53,13 +53,22 @@
         <block material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
       </stack>
       <zero/>
-      <block material="GaAs:C=2e+18" dr="200." dz="150."/>
+      <item>
+        <block material="GaAs:C=2e+18" dr="200." dz="150."/>
+      </item>
       <block name="p-contact" material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
-  <cylindrical2d name="GeoO" axes="rz" outer="extend" bottom="GaAs" top="air">
+  <cylindrical2d name="GeoO" axes="x, y, z" outer="extend" bottom="GaAs" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
+  <cartesian3d>
+    <align>
+      <item>
+        <block material="air" dlong="10" dtran="20" dvert="30"/>
+      </item>
+    </align>
+  </cartesian3d>
 </geometry>
 
 <grids>

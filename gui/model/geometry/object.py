@@ -16,7 +16,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 
 
 class GNObject(GNode):
-    '''Base class for all nodes read by GeometryReader::readObject() in PLaSK.'''
+    """Base class for all nodes read by GeometryReader::readObject() in PLaSK."""
 
     next_serial_nr = 0
 

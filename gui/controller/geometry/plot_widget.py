@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 
+
 class PlotWidget(QtGui.QGroupBox):
 
     def __init__(self, parent = None):
@@ -17,6 +18,7 @@ class PlotWidget(QtGui.QGroupBox):
         self.canvas.setParent(self)
         #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
+        self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.plot_toolbar = NavigationToolbar(self.canvas, self)
 
@@ -34,7 +36,8 @@ class PlotWidget(QtGui.QGroupBox):
         self.figure.clear()
         if to_plot is not None:
             plask.plot_geometry(figure=self.figure, geometry=to_plot, fill=True, set_limits=True)
-            self.figure.set_tight_layout(0)
+            axes = self.figure.axes[0]
+            # axes.grid(zorder=100)
             self.canvas.draw()
 
     def dock_window(self, window):

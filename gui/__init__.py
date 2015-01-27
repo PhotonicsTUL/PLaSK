@@ -39,7 +39,7 @@ try:
 except ImportError:
     matplotlib = None
 else:
-    matplotlib.rc('backend', qt4=qt4)
+    matplotlib.rcParams['backend.qt4'] = qt4
 
 
 from .xpldocument import XPLDocument
@@ -575,7 +575,6 @@ def main():
         ft = QtGui.QWidget().font()
         pd = APPLICATION.desktop()
         matplotlib.rcParams.update({
-            'backend.qt4': qt4,
             'figure.dpi': pd.logicalDpiY(),
             'font.size': ft.pointSize() + 1,
             'font.family': ft.family(),

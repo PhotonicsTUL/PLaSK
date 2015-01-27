@@ -25,19 +25,21 @@ class GNObjectController(GNodeController):
 
     def fill_form(self):
         self.construct_group('Basic settings')
-        self.name = self.construct_line_edit('name')
+        self.name = self.construct_line_edit('Name:')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'
                                 ' In the script section, the object is available by GEO table,'
                                 ' which is indexed by names of geometry objects.'.format(self.node.tag_name(False)))
-        self.role = self.construct_line_edit('roles')
+        self.role = self.construct_line_edit('Roles:')
         self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
                                 'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
-        self.axes = self.construct_combo_box('axes', ['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])
+        self.axes = self.construct_combo_box('Axes:',
+                                             ['', 'x,y,z', 'z,x,y', 'p,r,z', 'l,t,v', 'long,tran,vert'])
         self.axes.setToolTip('&lt;{} <b>axes</b>="" ...&gt;<br/>'
                             'Specification of the axes.'
                             ' Most popular values are <it>xy</it>, <it>yz</it>, <it>rz</it>'
-                            ' (letters are names of the horizontal and vertical axis, respectively).'.format(self.node.tag_name(False)))
+                            ' (letters are names of the horizontal and vertical axis, respectively).'
+                             .format(self.node.tag_name(False)))
         self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())

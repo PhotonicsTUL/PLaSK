@@ -59,14 +59,14 @@ class GNTranslation(GNTransform):
             res.append('delta', ', '.join(x if x else '?' for x in self.size))
         return res
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNTranslation(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNTranslation(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -111,14 +111,14 @@ class GNClip(GNTransform):
         from ...controller.geometry.transform import GNClipController
         return GNClipController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNClip(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNClip(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -177,14 +177,14 @@ class GNFlip(GNAxisBaseTransform):
         from ...controller.geometry.transform import GNFlipController
         return GNFlipController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNFlip(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNFlip(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -202,14 +202,14 @@ class GNMirror(GNAxisBaseTransform):
         from ...controller.geometry.transform import GNMirrorController
         return GNMirrorController(document, model, self)
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNMirror(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNMirror(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -230,14 +230,14 @@ class GNIntersection(GNTransform):
     def accept_new_child(self):
         return len(self.children) < 2
 
-    @classmethod
-    def from_xml_2d(cls, element, conf):
+    @staticmethod
+    def from_xml_2d(element, conf):
         result = GNIntersection(dim=2)
         result.set_xml_element(element, conf)
         return result
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNIntersection(dim=3)
         result.set_xml_element(element, conf)
         return result
@@ -272,8 +272,8 @@ class GNExtrusion(GNTransform):
         from ...controller.geometry.transform import GNExtrusionController
         return GNExtrusionController(document, model, self)
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNExtrusion()
         result.set_xml_element(element, conf)
         return result
@@ -290,8 +290,8 @@ class GNRevolution(GNTransform):
     def python_type(self):
         return 'geometry.Revolution'
 
-    @classmethod
-    def from_xml_3d(cls, element, conf):
+    @staticmethod
+    def from_xml_3d(element, conf):
         result = GNRevolution()
         result.set_xml_element(element, conf)
         return result
