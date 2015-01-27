@@ -9,6 +9,7 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
+import collections
 from zlib import adler32
 
 from pylab import _get_2d_axes
@@ -229,7 +230,23 @@ def _draw_geometry_object(env, geometry_object, transform, clip_box):
     else:
         drawer(env, geometry_object, transform, clip_box)
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False, fill = False, figure = None):
+
+class ColorFromDict(object):
+    '''Get color from dict: material name string -> color or using material_to_color (for names which are not present in dict).'''
+
+    def __init__(self, material_dict):
+        super(ColorFromDict, self).__init__()
+        self.material_dict = dict
+
+    def __call__(self, material):
+        try:
+            return self.material_dict[str(material)]
+        except KeyError:
+            return material_to_color(material)
+
+
+def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False,
+                  fill = False, figure = None, get_color = material_to_color):
     '''
         Plot geometry.
         :param figure: destination figure (to which axes with geometry plot should be added)
@@ -242,10 +259,17 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
         :param bool mirror:
         :param bool fill: if True, geometry objects will be filled with colors which depends on their material,
             This is not supported when geometry is of type Cartesian3D, and then the fill parameter is ignored.
+        :param figure: destination figure, wher axes should be appended
+        :param get_color: Callable which get color for material given as parameter or dictionary from material names (strings) to colors.
+            Material should be given as triple (float, float, float) of red, green, blue components, each in range [0, 1].
+            Any other format accepted by set_facecolor() method of mpl Artist should work as well.
 
         Limitations: Intersection is not drawn precisely (item is clipped to bonding box of envelop).
         Filling are not supported when Cartesian3D geometry is drawn.
     '''
+
+    if not isinstance(get_color, collections.Callable):
+        get_color = ColorFromDict(get_color)
 
     #figure.clear()
     if figure is None:
@@ -292,9 +316,6 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
 
-    #TODO changed 9 XII 2014 in order to avoid segfault in GUI:
-    # matplotlib.pyplot.xlabel -> axes.set_xlabel
-    # matplotlib.pyplot.ylabel -> axes.set_ylabel
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
