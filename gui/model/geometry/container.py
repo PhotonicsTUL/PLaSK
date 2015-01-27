@@ -193,7 +193,7 @@ class GNStack(GNContainerBase):
 
     def get_item_xml_element(self, child, conf):
         res = super(GNStack, self).get_item_xml_element(child, conf)
-        if self.in_parent is not None:
+        if child.in_parent is not None:
             conf.write_aligners(res, self.children_dim, self.aligners_dict(child.in_parent))
         return res
 
@@ -339,7 +339,7 @@ class GNAlignContainer(GNContainerBase):
 
     def get_item_xml_element(self, child, conf):
         res = super(GNAlignContainer, self).get_item_xml_element(child, conf)
-        if self.in_parent is not None:
+        if child.in_parent is not None:
             conf.write_aligners(res, self.children_dim, child.in_parent)
         return res
 

@@ -32,10 +32,10 @@ class PlotWidget(QtGui.QGroupBox):
         super(PlotWidget, self).resizeEvent(event)
         self.figure.set_tight_layout(0)
 
-    def update_plot(self, to_plot):
+    def update_plot(self, to_plot, set_limits = True):
         self.figure.clear()
         if to_plot is not None:
-            plask.plot_geometry(figure=self.figure, geometry=to_plot, fill=True, set_limits=True)
+            plask.plot_geometry(figure=self.figure, geometry=to_plot, fill=True, set_limits=set_limits)
             axes = self.figure.axes[0]
             # axes.grid(zorder=100)
             self.canvas.draw()
