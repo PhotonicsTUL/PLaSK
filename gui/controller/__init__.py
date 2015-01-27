@@ -26,7 +26,7 @@ class Controller(object):
         """
         Optionally set document and/or model.
         :param XPLDocument document: document
-        :param model: model
+        :param model.SectionModel model: model
         """
         super(Controller, self).__init__()
         if document is not None:

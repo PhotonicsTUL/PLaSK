@@ -179,8 +179,9 @@ class GeometryController(Controller):
         toolbar.addAction(self.plot_action)
 
         self.plot_auto_refresh_action = QtGui.QAction(QtGui.QIcon.fromTheme('view-refresh'), '&Auto-refresh plot', toolbar)
+        self.plot_auto_refresh_action.setCheckable(True)
         self.plot_auto_refresh_action.setStatusTip('Refresh plot after each change of geometry.')
-        self.plot_auto_refresh_action.triggered.connect(self.plot)
+        #self.plot_auto_refresh_action.triggered.connect(self.plot)
         toolbar.addAction(self.plot_auto_refresh_action)
 
 
@@ -194,6 +195,11 @@ class GeometryController(Controller):
         self.tree.setColumnWidth(0, 200)
         return self.tree
 
+    def on_model_change(self, *args, **kwargs):
+        if self.plot_auto_refresh_action.isChecked():
+            #TODO refresh plot
+            pass
+
     #def _construct_plot_dock(self):
     #    self.geometry_view = PlotWidget()
     #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
@@ -201,6 +207,7 @@ class GeometryController(Controller):
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
         Controller.__init__(self, document, model)
+        self.model.changed.connect(self.on_model_change)
 
         self._current_index = None
         self._last_index = None
@@ -217,7 +224,7 @@ class GeometryController(Controller):
         vbox.addWidget(self._construct_tree(model))
         tree_selection_model = self.tree.selectionModel()   # workaround of segfault in pySide,
         # see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
-        tree_selection_model.selectionChanged.connect(self.grid_selected)
+        tree_selection_model.selectionChanged.connect(self.object_selected)
         self.update_actions()
 
         self.vertical_splitter = QtGui.QSplitter()
@@ -238,9 +245,9 @@ class GeometryController(Controller):
 
     def set_current_index(self, new_index):
         """
-            Try to change current script.
-            :param QtCore.QModelIndex new_index: index of new current script
-            :return: False only when script should restore old selection
+            Try to change current object.
+            :param QtCore.QModelIndex new_index: index of new current object
+            :return: False only when object should restore old selection
         """
         if self._current_index == new_index: return True
         if self._current_controller is not None:
@@ -258,7 +265,7 @@ class GeometryController(Controller):
         self.update_actions()
         return True
 
-    def grid_selected(self, new_selection, old_selection):
+    def object_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0] if indexes else None)):
