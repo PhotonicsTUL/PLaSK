@@ -83,8 +83,6 @@ class NewGainValues(unittest.TestCase):
         space = geometry.Cartesian2D(stackAct, left="mirror")
         self.solver.geometry = space
 
-    def testComputationsSpectrum(self):
-
         self.solver.lifetime = 0.10
         self.solver.roughness = 0.05
         self.solver.matrix_elem = 10.
@@ -94,6 +92,8 @@ class NewGainValues(unittest.TestCase):
         self.solver.strains = False
         self.solver.build_struct_once = False
         self.solver.Tref = 300.
+
+    def testComputationsSpectrum(self):
 
         self.solver.inTemperature = 300.0
         self.solver.inCarriersConcentration = 4e18
