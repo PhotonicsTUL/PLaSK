@@ -171,10 +171,18 @@ class GeometryController(Controller):
         self.move_down_action.triggered.connect(self.move_current_down)
         toolbar.addAction(self.move_down_action)
 
-        self.plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('plask'), '&Plot', toolbar)
+        toolbar.addSeparator()
+
+        self.plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('applications-graphics'), '&Plot', toolbar)
         self.plot_action.setStatusTip('Plot selected geometry object')
         self.plot_action.triggered.connect(self.plot)
         toolbar.addAction(self.plot_action)
+
+        self.plot_auto_refresh_action = QtGui.QAction(QtGui.QIcon.fromTheme('view-refresh'), '&Auto-refresh plot', toolbar)
+        self.plot_auto_refresh_action.setStatusTip('Refresh plot after each change of geometry.')
+        self.plot_auto_refresh_action.triggered.connect(self.plot)
+        toolbar.addAction(self.plot_auto_refresh_action)
+
 
         return toolbar
 

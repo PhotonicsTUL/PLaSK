@@ -119,7 +119,7 @@ class GNContainerBase(GNObject):
 
     def get_item_xml_element(self, child, conf):
         '''
-        Construct item XML tag.
+        Construct empty (but with attributes) item XML tag which describe child position in self.
         Default implementation support path attribute.
         :param GNode child: children which parent-related attributes should be written to returned element
         :param GNReadConf conf: read configuration (axes, etc.)
