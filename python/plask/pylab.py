@@ -200,7 +200,7 @@ def _get_component(comp, total):
 
 
 def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, **kwargs):
-    '''Plot scalar real fields as two-dimensional color map'''
+    """Plot scalar real fields as two-dimensional color map"""
     #TODO documentation
 
     data = field.array
@@ -256,7 +256,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
 
 def plot_profile(field, comp=None, swap_axes=False, **kwargs):
-    '''Plot scalar real fields as two-dimensional color map'''
+    """Plot scalar real fields as two-dimensional color map"""
     #TODO documentation
 
     data = field.array
@@ -306,7 +306,7 @@ def plot_profile(field, comp=None, swap_axes=False, **kwargs):
 
 
 def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
-    '''Plot vector field'''
+    """Plot vector field"""
     #TODO documentation
 
     m = field.mesh
@@ -337,7 +337,7 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
 
 
 def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
-    '''Plot vector field as a streamlines'''
+    """Plot vector field as a streamlines"""
     #TODO documentation
 
     m = field.mesh
@@ -382,7 +382,7 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
 
 
 def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
-    '''Plot points of specified boundary'''
+    """Plot points of specified boundary"""
     #TODO documentation
 
     if not isinstance(mesh, plask.mesh.Mesh):
@@ -417,7 +417,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 # ### plot_mesh ###
 
 def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2):
-    '''Plot two-dimensional rectilinear mesh.'''
+    """Plot two-dimensional rectilinear mesh."""
     #TODO documentation
 
     axes = matplotlib.pylab.gca()
@@ -464,4 +464,4 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2)
     return lines
 
 
-from .plot_geom import plot_geometry
+from ._plot_geometry import plot_geometry

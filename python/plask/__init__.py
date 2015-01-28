@@ -38,7 +38,7 @@ material.db = material.MaterialsDB.get_default()
 material.get = lambda *args, **kwargs: material.db.get(*args, **kwargs)
 
 def update_factories():
-    '''For each material in default database make factory in ``plask.material``.'''
+    """For each material in default database make factory in ``plask.material``."""
     def factory(name):
         func = lambda **kwargs: material.db.get(name, **kwargs)
         func.__doc__ = u"Create material {}.\n\n:rtype: Material".format(name)
@@ -367,11 +367,11 @@ class StepProfile(object):
 
     @property
     def default(self):
-        '''Default value of the profile.
+        """Default value of the profile.
 
            This value is returned for all mesh points that are located outside any
            of the geometry objects with a specified value.
-        '''
+        """
         return self._default
 
     @default.setter
@@ -381,7 +381,7 @@ class StepProfile(object):
 
     @property
     def geometry(self):
-        '''Profile geometry. (read only)'''
+        """Profile geometry. (read only)"""
         return self._geometry
 
 ## ##  ## ##

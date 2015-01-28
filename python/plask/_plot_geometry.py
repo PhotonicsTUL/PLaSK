@@ -16,6 +16,7 @@ from pylab import _get_2d_axes
 
 _geometry_drawers = {}
 
+
 class BBoxIntersection(matplotlib.transforms.BboxBase):
     """
     A :class:`Bbox` equals to intersection of 2 other bounding boxes.
@@ -50,28 +51,29 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
 
 
 def material_to_color(material):
-    '''
+    """
         Generate color for given material.
         :param plask.Material material: material
         :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
-    '''
+    """
     i = adler32(str(material))      #maybe crc32?
     return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
 
+
 class DrawEnviroment(object):
-    '''
+    """
         Drawing configuration.
-    '''
+    """
 
     def __init__(self, axes, artist_dst, fill = False, color = 'k', lw = 1.0, z_order=3.0):
-        '''
+        """
         :param axes: plane to draw (important in 3D)
         :param artist_dst: mpl axis where artist should be appended
         :param bool fill: True if artists should be filled
         :param color: edge color (mpl format)
         :param lw: line width
         :param z_order: artists z order
-        '''
+        """
         super(DrawEnviroment, self).__init__()
         self.patches = artist_dst
         self.fill = fill
@@ -81,12 +83,12 @@ class DrawEnviroment(object):
         self.z_order = z_order
 
     def append(self, artist, clip_box, geometry_object):
-        '''
+        """
         Configure and append artist to destination axis object.
         :param artist: artist to append
         :param matplotlib.transforms.BboxBase clip_box: clipping box for artist, optional
         :param geometry_object: plask's geometry object which is represented by artist
-        '''
+        """
         if self.fill:
             artist.set_fill(True)
             artist.set_facecolor(material_to_color(geometry_object.representative_material))
@@ -171,7 +173,7 @@ _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
 def _draw_clipped(env, geometry_object, transform, clip_box, new_clip_box):
-    '''Used by _draw_Clip and _draw_Intersection.'''
+    """Used by _draw_Clip and _draw_Intersection."""
     def _b(bound):
         return math.copysign(1e100, bound) if math.isinf(bound) else bound
 
@@ -210,13 +212,13 @@ _geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection
 
 
 def _draw_geometry_object(env, geometry_object, transform, clip_box):
-    '''
+    """
     Draw geometry object.
     :param DrawEnviroment env: drawing configuration
     :param geometry_object: object to draw
     :param transform: transform from a plot coordinates to the geometry_object
     :param matplotlib.transforms.BboxBase clip_box: clipping box in plot coordinates
-    '''
+    """
     if geometry_object is None: return
     drawer = _geometry_drawers.get(type(geometry_object))
     if drawer is None:
@@ -232,7 +234,7 @@ def _draw_geometry_object(env, geometry_object, transform, clip_box):
 
 
 class ColorFromDict(object):
-    '''Get color from dict: material name string -> color or using material_to_color (for names which are not present in dict).'''
+    """Get color from dict: material name string -> color or using material_to_color (for names which are not present in dict)."""
 
     def __init__(self, material_dict):
         super(ColorFromDict, self).__init__()
@@ -247,7 +249,7 @@ class ColorFromDict(object):
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False,
                   fill = False, figure = None, get_color = material_to_color):
-    '''
+    """
         Plot geometry.
         :param figure: destination figure (to which axes with geometry plot should be added)
         :param geometry: geometry object to draw
@@ -266,7 +268,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
 
         Limitations: Intersection is not drawn precisely (item is clipped to bonding box of envelop).
         Filling are not supported when Cartesian3D geometry is drawn.
-    '''
+    """
 
     if not isinstance(get_color, collections.Callable):
         get_color = ColorFromDict(get_color)
