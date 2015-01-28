@@ -28,10 +28,12 @@
         </shelf>
       </item>
       <stack name="VCSEL">
-        <stack name="top-DBR" repeat="24">
-          <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-          <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-        </stack>
+        <item>
+          <stack name="top-DBR" repeat="4">
+            <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+            <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+          </stack>
+        </item>
         <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
         <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
         <shelf>
@@ -72,7 +74,17 @@
     </align>
   </cartesian3d>
   <cartesian2d>
-    <block material="GaN" dtran="1" dvert="1"/>
+    <stack>
+      <item>
+        <block material="GaN" dtran="1" dvert="0.2"/>
+      </item>
+      <item>
+        <block material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
+      </item>
+      <item>
+        <block material="GaN" dtran="2" dvert="1"/>
+      </item>
+    </stack>
   </cartesian2d>
 </geometry>
 

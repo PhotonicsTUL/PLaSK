@@ -256,6 +256,9 @@ class GNStack(GNContainerBase):
         result.set_xml_element(element, conf)
         return result
 
+    def new_child_pos(self):
+        return 0
+
 
 class GNShelf(GNContainerBase):
     """(multi-)shelf"""

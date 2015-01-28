@@ -32,7 +32,7 @@ class GNode(object):
         self.in_parent = None   #configuration inside parent (container)
         self.path = None    #path inside parent (container)
         self._parent = None  #used by parent property
-        self.parent = parent
+        self.set_parent(parent)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         """
@@ -62,7 +62,7 @@ class GNode(object):
         :param etree.Element element: source XML node
         :param GNReadConf conf: reader configuration
         """
-        if conf is not None and conf.parent is not None: self.parent = conf.parent
+        if conf is not None and conf.parent is not None: self.set_parent(conf.parent)
         if element is None: return
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
@@ -148,8 +148,7 @@ class GNode(object):
         """
         return self._parent
 
-    @parent.setter
-    def parent(self, parent):
+    def set_parent(self, parent, atend=True):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
@@ -161,7 +160,10 @@ class GNode(object):
             self.path = None
         self._parent = parent
         if self._parent is not None:
-            self._parent.children.append(self)
+            if atend:
+                self._parent.children.append(self)
+            else:
+                self._parent.children.insert(self._parent.new_child_pos(), self)
 
     def stub(self):
         """
@@ -292,3 +294,7 @@ class GNode(object):
         :return set: calculated set of path's names
         """
         return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
+
+    def new_child_pos(self):
+        """Return position of a new child"""
+        return len(self.children)

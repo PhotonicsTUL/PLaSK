@@ -14,6 +14,9 @@ from zlib import adler32
 
 from pylab import _get_2d_axes
 
+__all__ = ('plot_geometry')
+
+
 _geometry_drawers = {}
 
 
@@ -249,29 +252,67 @@ class ColorFromDict(object):
             return material_to_color(material)
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False,
-                  fill=False, axes=None, figure=None, get_color=material_to_color):
+def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=False, fill=False,
+                  axes=None, figure=None, margin=None, get_color=material_to_color, set_limits=None):
     """
-        Plot geometry.
-        :param geometry: geometry object to draw
-        :param color: edges color
-        :param lw: width of edges
-        :param plane: planes to draw (important for 3D geometries)
-        :param set_limits:
-        :param zorder:
-        :param bool mirror:
-        :param bool fill: if True, geometry objects will be filled with colors which depends on their material,
-            This is not supported when geometry is of type Cartesian3D, and then the fill parameter is ignored.
-        :param axes: destination axes.
-        :param figure: destination figure, where axes should be appended (ignored when axes is given)
-        :param get_color: Callable which get color for material given as parameter or dictionary from material names (strings) to colors.
-            Material should be given as triple (float, float, float) of red, green, blue components, each in range [0, 1].
-            Any other format accepted by set_facecolor() method of mpl Artist should work as well.
-        :return matplotlib.axes.Axes: appended or given axes object
+    Plot specified geometry.
+    
+    Args:
+        geometry (plask.Geometry): Geometry to draw.
 
-        Limitations: Intersection is not drawn precisely (item is clipped to bonding box of envelop).
-        Filling are not supported when Cartesian3D geometry is drawn.
+        color (str): Color of the edges of drawn elements.
+
+        lw (float): Width of the edges of drawn elements.
+
+        plane (str): Planes to draw. Should be a string with two letters
+                specifying axis names of the drawn plane. This argument
+                is required if 3D geometry is plotted and ignored for
+                2D geometries.
+
+        zorder (float): Ordering index of the geometry plot in the graph.
+                Elements with higher `zorder` are drawn on top of the ones
+                with the lower one.
+
+        mirror (bool): If *True* then the geometry is mirrored if its
+                specification says so (i.e. some borders are set to
+                *mirror* of the geometry is a cylindrical one).
+
+        fill (bool): If True, drawn geometry objects will be filled with colors
+                that depends on their material. For Cartesian3D geometry this
+                is not supported and then the `fill` parameter is ignored.
+
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
+        margin (float of None): The margins around the structure (as a fraction
+                of the structure bounding box) to which the plot limits should
+                be set. If None, the axes limits are not adjusted.
+
+        get_color (callable): Callable that gets color for material given as
+                its parameter or dictionary from material names (strings)
+                to colors. Material color should be given as a triple
+                (float, float, float) of red, green, blue components, each in
+                range [0, 1]. Any other format accepted by set_facecolor()
+                method of matplotlib Artist should work as well.
+
+    Returns:
+        matplotlib.axes.Axes: appended or given axes object
+
+    Limitations:
+        Intersection is not drawn precisely (item is clipped to bonding box of
+        the envelope).
+
+        Filling is not supported when Cartesian3D geometry is drawn.
     """
+
+    if set_limits is not None:
+        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolette, set 'margin' instead")
+        if margin is None:
+            margin = 0.
 
     if not isinstance(get_color, collections.Callable):
         get_color = ColorFromDict(get_color)
@@ -305,18 +346,22 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
     if hmirror:
         _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
 
-    if set_limits:
+    if margin is not None:
         box = geometry.bbox
         if hmirror:
             m = max(abs(box.lower[ax[0]]), abs(box.upper[ax[0]]))
+            m += m * 2. * margin
             axes.set_xlim(-m, m)
         else:
-            axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
+            m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin
+            axes.set_xlim(box.lower[ax[0]] - m, box.upper[ax[0]] + m)
         if vmirror:
             m = max(abs(box.lower[ax[1]]), abs(box.upper[ax[1]]))
+            m += m * 2. * margin
             axes.set_ylim(-m, m)
         else:
-            axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
+            m = (box.upper[ax[1]] - box.lower[ax[1]]) * margin
+            axes.set_ylim(box.lower[ax[1]] - m, box.upper[ax[1]] + m)
 
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()

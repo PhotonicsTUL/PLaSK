@@ -15,6 +15,7 @@ import plask
 
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
+from ...model.geometry.geometry import GNGeometryBase
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core, gname
 
@@ -28,9 +29,10 @@ from .plot_widget import PlotWidget
 class GeometryController(Controller):
 
     def _add_child(self, type_constructor, parent_index):
-        pos = len(parent_index.internalPointer().children)
+        parent = parent_index.internalPointer()
+        pos = parent.new_child_pos()
         self.model.beginInsertRows(parent_index, pos, pos)
-        construct_using_constructor(type_constructor, parent_index.internalPointer())
+        construct_using_constructor(type_constructor, parent)
         self.model.endInsertRows()
         self.tree.setExpanded(parent_index, True)
         new_index = self.model.index(pos, 0, parent_index)
@@ -117,7 +119,7 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
-    def plot_element(self, tree_element, show_errors = True, set_limits = True):
+    def plot_element(self, tree_element, show_errors=True, set_limits=True):
         #TODO support for ref element, and exclude rest non-objects
         element_has_name = getattr(tree_element, 'name', None) is not None
         try:
@@ -144,7 +146,6 @@ class GeometryController(Controller):
         tree_element = current_index.internalPointer()
         if self.plot_element(tree_element):
             self.plotted_tree_element = tree_element
-
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh_action.isChecked():
@@ -193,10 +194,10 @@ class GeometryController(Controller):
 
         self.plot_auto_refresh_action = QtGui.QAction(QtGui.QIcon.fromTheme('view-refresh'), '&Auto-refresh plot', toolbar)
         self.plot_auto_refresh_action.setCheckable(True)
+        self.plot_auto_refresh_action.setChecked(True)
         self.plot_auto_refresh_action.setStatusTip('Refresh plot after each change of geometry.')
         #self.plot_auto_refresh_action.triggered.connect(self.plot)
         toolbar.addAction(self.plot_auto_refresh_action)
-
 
         return toolbar
 
@@ -251,8 +252,6 @@ class GeometryController(Controller):
         self.main_splitter.addWidget(self.vertical_splitter)
         self.main_splitter.addWidget(self.geometry_view)
 
-        #self._construct_plot_dock()
-
     def set_current_index(self, new_index):
         """
             Try to change current object.
@@ -273,6 +272,11 @@ class GeometryController(Controller):
             self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
             self._current_controller.on_edit_enter()
         self.update_actions()
+
+        geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
+        if isinstance(geometry_node, GNGeometryBase):
+            self.plot()
+
         return True
 
     def object_selected(self, new_selection, old_selection):
@@ -282,9 +286,13 @@ class GeometryController(Controller):
             self.tree.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
 
     def on_edit_enter(self):
-        self.tree.selectionModel().clear()   # model could completely changed
-        #if self._last_index is not None:
-        #    self.tree.selectRow(self._last_index)
+        self.tree.selectionModel().clear()   # model could have been completely changed
+        new_index = self.model.index(0, 0)
+        self.tree.selectionModel().select(new_index,
+                                          QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                          QtGui.QItemSelectionModel.Rows)
+        self.tree.setCurrentIndex(new_index)
+        self.plot()
 
     def on_edit_exit(self):
         if self._current_controller is not None:
