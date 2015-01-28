@@ -91,6 +91,7 @@ class GeometryController(Controller):
                                           QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
                                           QtGui.QItemSelectionModel.Rows)
         self.tree.setCurrentIndex(new_index)
+        self.update_actions()
 
     def remove_node(self):
         index = self.tree.selectionModel().currentIndex()

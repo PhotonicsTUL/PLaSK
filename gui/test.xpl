@@ -21,10 +21,12 @@
 <geometry>
   <cylindrical2d name="GeoTE" axes="rz">
     <stack>
-      <shelf>
-        <gap total="{mesaRadius-1}"/>
-        <block name="n-contact" material="Au" dr="4" dz="0.0500"/>
-      </shelf>
+      <item>
+        <shelf>
+          <gap total="{mesaRadius-1}"/>
+          <block name="n-contact" material="Au" dr="4" dz="0.0500"/>
+        </shelf>
+      </item>
       <stack name="VCSEL">
         <stack name="top-DBR" repeat="24">
           <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
@@ -69,6 +71,9 @@
       </item>
     </align>
   </cartesian3d>
+  <cartesian2d>
+    <block material="GaN" dtran="1" dvert="1"/>
+  </cartesian2d>
 </geometry>
 
 <grids>

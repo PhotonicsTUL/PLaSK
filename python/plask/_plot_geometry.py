@@ -65,14 +65,14 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, axes, artist_dst, fill = False, color = 'k', lw = 1.0, z_order=3.0):
+    def __init__(self, axes, artist_dst, fill = False, color = 'k', lw = 1.0, zorder=3.0):
         """
         :param axes: plane to draw (important in 3D)
         :param artist_dst: mpl axis where artist should be appended
         :param bool fill: True if artists should be filled
         :param color: edge color (mpl format)
         :param lw: line width
-        :param z_order: artists z order
+        :param zorder: artists z order
         """
         super(DrawEnviroment, self).__init__()
         self.patches = artist_dst
@@ -80,14 +80,14 @@ class DrawEnviroment(object):
         self.color = color
         self.lw = lw
         self.axes = axes
-        self.z_order = z_order
+        self.zorder = zorder
 
     def append(self, artist, clip_box, geometry_object):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
         :param matplotlib.transforms.BboxBase clip_box: clipping box for artist, optional
-        :param geometry_object: plask's geometry object which is represented by artist
+        :param geometry_object: plask's geometry object which is represented by the artist
         """
         if self.fill:
             artist.set_fill(True)
@@ -96,14 +96,13 @@ class DrawEnviroment(object):
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
-        artist.set_zorder(self.z_order)
         self.patches.add_patch(artist)
         if clip_box is not None:
             artist.set_clip_box(BBoxIntersection(clip_box, artist.get_clip_box()))
             #artist.set_clip_box(clip_box)
             #artist.set_clip_on(True)
             #artist.set_clip_path(clip_box)
-
+        artist.set_zorder(self.zorder)
 
 
 def _draw_Block(env, geometry_object, transform, clip_box):
@@ -111,12 +110,13 @@ def _draw_Block(env, geometry_object, transform, clip_box):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
-        transform = transform
+        transform=transform
     )
     env.append(block, clip_box, geometry_object)
 
 _geometry_drawers[plask.geometry.Block2D] = _draw_Block
 _geometry_drawers[plask.geometry.Block3D] = _draw_Block
+
 
 def _draw_Triangle(env, geometry_object, transform, clip_box):
     p1 = geometry_object.a
@@ -125,7 +125,9 @@ def _draw_Triangle(env, geometry_object, transform, clip_box):
                clip_box, geometry_object
     )
 
+
 _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
+
 
 def _draw_Circle(env, geometry_object, transform, clip_box):
     env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.radius, transform=transform),
@@ -166,7 +168,7 @@ _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 
 def _draw_Mirror(env, geometry_object, transform, clip_box):
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
-    if geometry_object.axis_nr in env.axes: #in 3D this must not be true
+    if geometry_object.axis_nr in env.axes: # in 3D this must not be true
         _draw_Flip(env, geometry_object, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
@@ -248,10 +250,9 @@ class ColorFromDict(object):
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False,
-                  fill = False, figure = None, get_color = material_to_color):
+                  fill=False, axes=None, figure=None, get_color=material_to_color):
     """
         Plot geometry.
-        :param figure: destination figure (to which axes with geometry plot should be added)
         :param geometry: geometry object to draw
         :param color: edges color
         :param lw: width of edges
@@ -261,6 +262,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
         :param bool mirror:
         :param bool fill: if True, geometry objects will be filled with colors which depends on their material,
             This is not supported when geometry is of type Cartesian3D, and then the fill parameter is ignored.
+        :param axes: destination axes.
         :param figure: destination figure, wher axes should be appended
         :param get_color: Callable which get color for material given as parameter or dictionary from material names (strings) to colors.
             Material should be given as triple (float, float, float) of red, green, blue components, each in range [0, 1].
@@ -273,11 +275,11 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
     if not isinstance(get_color, collections.Callable):
         get_color = ColorFromDict(get_color)
 
-    #figure.clear()
-    if figure is None:
-        axes = matplotlib.pylab.gca()
-    else:
-        axes = figure.add_subplot(111)
+    if axes is None:
+        if figure is None:
+            axes = matplotlib.pylab.gca()
+        else:
+            axes = figure.add_subplot(111)
 
     if type(geometry) == plask.geometry.Cartesian3D:
         fill = False    # we ignore fill parameter in 3D
@@ -291,7 +293,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
 
-    env = DrawEnviroment(ax, axes, fill, color, lw, z_order=zorder)
+    env = DrawEnviroment(ax, axes, fill, color, lw, zorder=zorder)
 
     hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
