@@ -208,6 +208,10 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
     virtual void calcConnectionParameters() override {
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
+        for (auto& p: pos) {
+            if (std::isnan(p.c0))
+                throw plask::Exception("Filter error: the place of some source geometry inside a destination geometry can't be described by translation.\nThis can be caused by flip or mirror on the path from the source to the destination.");
+        }
         std::vector<OutBox> bb = this->outputObj->getObjectBoundingBoxes(*this->inputObj, this->getPath());
         for (std::size_t i = 0; i < pos.size(); ++i)
             regions.emplace_back(bb[i], pos[i]);
