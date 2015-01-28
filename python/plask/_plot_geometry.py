@@ -75,7 +75,7 @@ class DrawEnviroment(object):
         :param zorder: artists z order
         """
         super(DrawEnviroment, self).__init__()
-        self.patches = artist_dst
+        self.artist_dst = artist_dst
         self.fill = fill
         self.color = color
         self.lw = lw
@@ -96,7 +96,7 @@ class DrawEnviroment(object):
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
-        self.patches.add_patch(artist)
+        self.artist_dst.add_patch(artist)
         if clip_box is not None:
             artist.set_clip_box(BBoxIntersection(clip_box, artist.get_clip_box()))
             #artist.set_clip_box(clip_box)
@@ -263,10 +263,11 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
         :param bool fill: if True, geometry objects will be filled with colors which depends on their material,
             This is not supported when geometry is of type Cartesian3D, and then the fill parameter is ignored.
         :param axes: destination axes.
-        :param figure: destination figure, wher axes should be appended
+        :param figure: destination figure, where axes should be appended (ignored when axes is given)
         :param get_color: Callable which get color for material given as parameter or dictionary from material names (strings) to colors.
             Material should be given as triple (float, float, float) of red, green, blue components, each in range [0, 1].
             Any other format accepted by set_facecolor() method of mpl Artist should work as well.
+        :return matplotlib.axes.Axes: appended or given axes object
 
         Limitations: Intersection is not drawn precisely (item is clipped to bonding box of envelop).
         Filling are not supported when Cartesian3D geometry is drawn.
@@ -281,7 +282,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
         else:
             axes = figure.add_subplot(111)
 
-    if type(geometry) == plask.geometry.Cartesian3D:
+    if isinstance(geometry, plask.geometry.Cartesian3D):
         fill = False    # we ignore fill parameter in 3D
         dd = 0
         #if plane is None: plane = 'xy'
@@ -323,4 +324,4 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zor
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
-    return env.patches
+    return axes
