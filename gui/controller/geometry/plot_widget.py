@@ -42,7 +42,7 @@ class PlotWidget(QtGui.QGroupBox):
         self.axes.cla()
         if to_plot is not None:
             self.axes.grid(zorder=10)
-            plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, set_limits=set_limits)
+            plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, set_limits=set_limits, plane='xy', zorder=1)
             self.canvas.draw()
 
 

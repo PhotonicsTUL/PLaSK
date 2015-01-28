@@ -117,11 +117,7 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
-    def plot(self):
-        current_index = self.tree.selectionModel().currentIndex()
-        if not current_index.isValid(): return
-        tree_element = current_index.internalPointer()
-
+    def plot_element(self, tree_element, show_errors = True, set_limits = True):
         #TODO support for ref element, and exclude rest non-objects
         element_has_name = getattr(tree_element, 'name', None) is not None
         try:
@@ -130,14 +126,30 @@ class GeometryController(Controller):
             try:
                 manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.name)]
-                self.geometry_view.update_plot(to_plot)
+                self.geometry_view.update_plot(to_plot, set_limits=set_limits)
             except Exception as e:
-                QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
+                if show_errors:
+                    QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
                                        "Geometry can not be plotted due to the error in XPL content:\n{}".format(str(e)))
+                return False
         finally:
             if not element_has_name: tree_element.name = None
+        return True
 
         #plot_geometry(current_index.internalPointer())
+
+    def plot(self):
+        current_index = self.tree.selectionModel().currentIndex()
+        if not current_index.isValid(): return
+        tree_element = current_index.internalPointer()
+        if self.plot_element(tree_element):
+            self.plotted_tree_element = tree_element
+
+
+    def on_model_change(self, *args, **kwargs):
+        if self.plotted_tree_element is not None and self.plot_auto_refresh_action.isChecked():
+            if not self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=False):
+                pass
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -196,11 +208,6 @@ class GeometryController(Controller):
         self.tree.setColumnWidth(0, 200)
         return self.tree
 
-    def on_model_change(self, *args, **kwargs):
-        if self.plot_auto_refresh_action.isChecked():
-            #TODO refresh plot
-            pass
-
     #def _construct_plot_dock(self):
     #    self.geometry_view = PlotWidget()
     #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
@@ -208,6 +215,8 @@ class GeometryController(Controller):
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
         Controller.__init__(self, document, model)
+
+        self.plotted_tree_element = None
         self.model.changed.connect(self.on_model_change)
 
         self._current_index = None
