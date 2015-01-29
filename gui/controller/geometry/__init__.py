@@ -16,6 +16,7 @@ import plask
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.geometry import GNGeometryBase
+from ...model.geometry.copy import GNAgain
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core, gname
 
@@ -121,13 +122,14 @@ class GeometryController(Controller):
 
     def plot_element(self, tree_element, show_errors=True, set_limits=True):
         #TODO support for ref element, and exclude rest non-objects
-        element_has_name = getattr(tree_element, 'name', None) is not None
+        is_ref = isinstance(tree_element, GNAgain)
+        element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
         try:
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
             manager = plask.Manager()
             try:
                 manager.load(self.document.get_content(sections='geometry'))
-                to_plot = manager.geometry[str(tree_element.name)]
+                to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
                 checked_plane_action = self.plane_select_action_group.checkedAction()
                 self.geometry_view.update_plot(to_plot, set_limits=set_limits,
                                                plane='12' if checked_plane_action is None else checked_plane_action.text())
@@ -156,7 +158,7 @@ class GeometryController(Controller):
 
     def on_plane_change(self):
         if self.plotted_tree_element is not None and getattr(self.plotted_tree_element, 'dim') == 3:
-            self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=True)
+            self.plot_element(self.plotted_tree_element, show_errors=True, set_limits=True)
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
