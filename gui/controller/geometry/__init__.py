@@ -128,7 +128,9 @@ class GeometryController(Controller):
             try:
                 manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.name)]
-                self.geometry_view.update_plot(to_plot, set_limits=set_limits)
+                checked_plane_action = self.plane_select_action_group.checkedAction()
+                self.geometry_view.update_plot(to_plot, set_limits=set_limits,
+                                               plane='12' if checked_plane_action is None else checked_plane_action.text())
             except Exception as e:
                 if show_errors:
                     QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
@@ -151,6 +153,10 @@ class GeometryController(Controller):
         if self.plotted_tree_element is not None and self.plot_auto_refresh_action.isChecked():
             if not self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=False):
                 pass
+
+    def on_plane_change(self):
+        if self.plotted_tree_element is not None and getattr(self.plotted_tree_element, 'dim') == 3:
+            self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=True)
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -198,6 +204,15 @@ class GeometryController(Controller):
         self.plot_auto_refresh_action.setStatusTip('Refresh plot after each change of geometry.')
         #self.plot_auto_refresh_action.triggered.connect(self.plot)
         toolbar.addAction(self.plot_auto_refresh_action)
+
+        self.plane_select_action_group = QtGui.QActionGroup(toolbar)
+        for plane in ('01', '02', '12'):
+            a = QtGui.QAction(plane, self.plane_select_action_group)
+            a.setCheckable(True)
+            if plane == '12': a.setChecked(True)
+            a.setActionGroup(self.plane_select_action_group)
+            toolbar.addAction(a)
+        self.plane_select_action_group.triggered.connect(self.on_plane_change)
 
         return toolbar
 

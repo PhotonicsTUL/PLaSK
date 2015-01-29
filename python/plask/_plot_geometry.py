@@ -109,7 +109,7 @@ class DrawEnviroment(object):
 
 
 def _draw_Block(env, geometry_object, transform, clip_box):
-    bbox = geometry_object.bbox
+    bbox = geometry_object.bbox #we have to use bbox because this code is using to draw non-block also
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
@@ -140,13 +140,42 @@ def _draw_Circle(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Circle] = _draw_Circle
 _geometry_drawers[plask.geometry.Sphere] = _draw_Circle
 
+
 def _draw_Cylinder(env, geometry_object, transform, clip_box):
-    if env.axes != (0, 1) and env.axes != (1, 0):
-        _draw_Block(env, geometry_object, transform, clip_box)
-    else:
+    if env.axes == (0, 1) or env.axes == (1, 0):
         _draw_Circle(env, geometry_object, transform, clip_box)
+    else:
+        _draw_Block(env, geometry_object, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
+
+
+def _draw_Extrusion(env, geometry_object, transform, clip_box):
+    if env.axes == (1, 2) or env.axes == (2, 1):
+        try:
+            env.axes = (x-1 for x in env.axes)  #change axes to 2D
+            _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+        finally:    #revert axes settings, change back to 3D:
+            env.axes = (x+1 for x in env.axes)
+    else:
+        _draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
+
+_geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
+
+
+def _draw_Revolution(env, geometry_object, transform, clip_box):
+    if env.axes == (0, 1) or env.axes == (1, 0):    #view from top
+        obj2d = geometry_object.item
+        bbox = obj2d.bbox
+        env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.upper[0], transform=transform), clip_box, obj2d)
+        if bbox.lower[0] > 0:
+            env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.lower[0], transform=transform), clip_box, obj2d)
+    else:
+        _draw_Block(env, geometry_object, transform, clip_box)
+        #TODO draw obj2d mirrored to axis 0
+
+
+_geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
 
 
 def _draw_Translation(env, geometry_object, transform, clip_box):
@@ -158,13 +187,16 @@ def _draw_Translation(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 
-def _draw_Flip(env, geometry_object, transform, clip_box):
-    if geometry_object.axis_nr == env.axes[0]:
-        _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clip_box)
-    elif geometry_object.axis_nr == env.axes[1]:
-        _draw_geometry_object(env, geometry_object.item, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clip_box)
+def _draw_Flipped(env, geometry_object, transform, clip_box, axis_nr):
+    if axis_nr == env.axes[0]:
+        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clip_box)
+    elif axis_nr == env.axes[1]:
+        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clip_box)
     else:
-        _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+        _draw_geometry_object(env, geometry_object, transform, clip_box)
+
+def _draw_Flip(env, geometry_object, transform, clip_box):
+    _draw_Flipped(env, geometry_object.item, transform, clip_box, geometry_object.axis_nr)
 
 _geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
 _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
@@ -306,7 +338,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=Fa
         Intersection is not drawn precisely (item is clipped to bonding box of
         the envelope).
 
-        Filling is not supported when Cartesian3D geometry is drawn.
+        Filling is not supported when 3D geometry object or Cartesian3D geometry is drawn.
     """
 
     if set_limits is not None:
@@ -323,7 +355,8 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=Fa
         else:
             axes = figure.add_subplot(111)
 
-    if isinstance(geometry, plask.geometry.Cartesian3D):
+    #if isinstance(geometry, plask.geometry.Cartesian3D):
+    if geometry.DIMS == 3:
         fill = False    # we ignore fill parameter in 3D
         dd = 0
         #if plane is None: plane = 'xy'
@@ -337,8 +370,12 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=Fa
 
     env = DrawEnviroment(ax, axes, fill, color, lw, zorder=zorder)
 
-    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
-    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+    try:
+        hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
+        vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+    except AttributeError:  #we draw non-Geometry object
+        hmirror = False
+        vmirror = False
 
     _draw_geometry_object(env, geometry, axes.transData, None)
     if vmirror:
