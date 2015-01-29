@@ -17,6 +17,7 @@ from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.geometry.copy import GNAgain
+from ...model.geometry.object import GNObject
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core, gname
 
@@ -290,9 +291,11 @@ class GeometryController(Controller):
             self._current_controller.on_edit_enter()
         self.update_actions()
 
-        geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
+        #geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
+        geometry_node = self._current_index.internalPointer()
         if isinstance(geometry_node, GNGeometryBase):
             self.plot()
+        self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
 
