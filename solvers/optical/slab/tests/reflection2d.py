@@ -40,7 +40,7 @@ class Reflection2D_Test(unittest.TestCase):
         #X = linspace(3.00, 3.50, 200)
         #plot(X, [abs(self.solver.determinant(neff=x)) for x in X])
         #show()
-        nm = self.solver.find_mode(3.1996)
+        nm = self.solver.find_mode(neff=3.1996)
         #figure()
         #plot_field(self.solver.outLightMagnitude(nm,
             #mesh.Rectangular2D(mesh.Regular(-0.75, 0.75, 100), mesh.Regular(-0.25, 0.75, 100))))

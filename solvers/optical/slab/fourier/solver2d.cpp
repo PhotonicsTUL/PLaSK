@@ -135,22 +135,36 @@ void FourierSolver2D::onInvalidate()
 }
 
 
-size_t FourierSolver2D::findMode(dcomplex neff)
+size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 {
-    if (expansion.polarization != Expansion::E_UNSPECIFIED)
-        throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
-    klong = neff * k0;
-    if (klong == 0.) klong = 1e-12;
+    this->recompute_coefficients = true;
     initCalculation();
     initTransfer(expansion, false);
-    detlog.axis_arg_name = "neff";
-    auto root = getRootDigger(
-        [this](const dcomplex& x) {
-            this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0;
-            return transfer->determinant();
-        }
-    );
-    klong =  k0 * root->find(neff);
+    std::unique_ptr<RootDigger> root;
+    switch (what) {
+        case FourierSolver2D::WHAT_WAVELENGTH:
+            detlog.axis_arg_name = "lam";
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });
+            break;
+        case FourierSolver2D::WHAT_K0:
+            detlog.axis_arg_name = "k0";
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return transfer->determinant(); });
+            break;
+        case FourierSolver2D::WHAT_NEFF:
+            if (expansion.polarization != Expansion::E_UNSPECIFIED)
+                throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
+            detlog.axis_arg_name = "neff";
+            root = getRootDigger([this](const dcomplex& x) {
+                    this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0;
+                    return transfer->determinant();
+                });
+            break;
+        case FourierSolver2D::WHAT_KTRAN:
+            detlog.axis_arg_name = "ktran";
+            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
+            break;
+    }
+    root->find(start);
     return insertMode();
 }
 

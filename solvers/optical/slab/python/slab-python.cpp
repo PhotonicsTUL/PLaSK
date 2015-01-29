@@ -278,6 +278,33 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     return py::object();
 }
 
+size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("find_mode() takes exactly one non-keyword argument (%1% given)", py::len(args));
+    FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
+
+    if (py::len(kwargs) != 1)
+        throw TypeError("find_mode() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+    std::string key = py::extract<std::string>(kwargs.keys()[0]);
+    dcomplex value = py::extract<dcomplex>(kwargs[key]);
+    AxisNames* axes = getCurrentAxes();
+    FourierSolver2D::What what;
+
+    if (key == "lam" || key == "wavelength")
+        what = FourierSolver2D::WHAT_WAVELENGTH;
+    else if (key == "k0")
+        what = FourierSolver2D::WHAT_K0;
+    else if (key == "neff")
+        what = FourierSolver2D::WHAT_NEFF;
+    else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
+        what = FourierSolver2D::WHAT_KTRAN;
+    else
+        throw TypeError("find_mode() got unexpected keyword argument '%1%'", key);
+
+    return self->findMode(what, value);
+}
+
+
 template <typename SolverT>
 py::object FourierSolver_computeReflectivity(SolverT* self,
                                              py::object wavelength,
@@ -706,11 +733,11 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("find_mode() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
     if (py::len(kwargs) != 1)
-        throw TypeError("get_determinant() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+        throw TypeError("find_mode() takes exactly one keyword argument (%1% given)", py::len(kwargs));
     std::string key = py::extract<std::string>(kwargs.keys()[0]);
     dcomplex value = py::extract<dcomplex>(kwargs[key]);
     AxisNames* axes = getCurrentAxes();
@@ -725,7 +752,7 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
         what = FourierSolver3D::WHAT_KTRAN;
     else
-        throw TypeError("get_determinant() got unexpected keyword argument '%1%'", key);
+        throw TypeError("find_mode() got unexpected keyword argument '%1%'", key);
 
     return self->findMode(what, value);
 }
@@ -845,11 +872,15 @@ BOOST_PYTHON_MODULE(slab)
         "and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
         PROVIDER(outNeff, "Effective index of the last computed mode.");
-        METHOD(find_mode, findMode,
-               "Compute the mode near the specified effective index.\n\n"
-               "Args:\n"
-               "    neff (complex): Starting effective index.\n"
-               , "neff");
+        solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
+                   "Compute the mode near the specified effective index.\n\n"
+                   "Only one of the following arguments can be given through a keyword.\n"
+                   "It is the starting point for search of the specified parameter.\n\n"
+                   "Args:\n"
+                   "    lam (complex): Wavelength.\n"
+                   "    k0 (complex): Normalized frequency.\n"
+                   "    neff (complex): Longitudinal effective index.\n"
+                   "    ktran (complex): Transverse wavevector.\n");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
@@ -860,7 +891,7 @@ BOOST_PYTHON_MODULE(slab)
                    "Args:\n"
                    "    lam (complex): Wavelength.\n"
                    "    k0 (complex): Normalized frequency.\n"
-                   "    neff (complex): Effective index.\n"
+                   "    neff (complex): Longitudinal effective index.\n"
                    "    ktran (complex): Transverse wavevector.\n"
                    "    dispersive (bool): If ``False`` then material coefficients are not\n"
                    "                       recomputed even if the wavelength is changed.\n");

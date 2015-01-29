@@ -16,10 +16,18 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     std::string getClassName() const { return "optical.Fourier2D"; }
 
+    /// Indication of parameter to search
+    enum What {
+        WHAT_WAVELENGTH,    ///< Search for wavelength
+        WHAT_K0,            ///< Search for normalized frequency
+        WHAT_NEFF,         ///< Search for longitudinal effective index
+        WHAT_KTRAN          ///< Search for transverse wavevector
+    };
+
     struct Mode {
         FourierSolver2D* solver;                            ///< Solver this mode belongs to
-        Expansion::Component symmetry;                  ///< Mode horizontal symmetry
-        Expansion::Component polarization;              ///< Mode polarization
+        Expansion::Component symmetry;                      ///< Mode horizontal symmetry
+        Expansion::Component polarization;                  ///< Mode polarization
         dcomplex k0;                                        ///< Stored mode frequency
         dcomplex beta;                                      ///< Stored mode effective index
         dcomplex ktran;                                     ///< Stored mode transverse wavevector
@@ -75,10 +83,11 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /**
      * Find the mode around the specified effective index.
      * This method remembers the determined mode, for retrieval of the field profiles.
-     * \param neff initial effective index to search the mode around
+     * \param what what to search for
+     * \param start initial value of \a what to search the mode around
      * \return determined effective index
      */
-    size_t findMode(dcomplex neff);
+    size_t findMode(FourierSolver2D::What what, dcomplex start);
 
     /// Get order of the orthogonal base
     size_t getSize() const { return size; }
@@ -130,7 +139,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     /// Return current mode polarization
     Expansion::Component getPolarization() const { return expansion.polarization; }
-    
+
     /// Set new mode polarization
     void setPolarization(Expansion::Component polarization) {
         if ((expansion.separated() && polarization == Expansion::E_UNSPECIFIED) ||

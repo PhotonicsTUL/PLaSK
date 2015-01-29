@@ -25,9 +25,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     };
 
     struct Mode {
-        FourierSolver3D* solver;                            ///< Solver this mode belongs to
-        Expansion::Component symmetry_long;                 ///< Mode symmetry in long direction
-        Expansion::Component symmetry_tran;                 ///< Mode symmetry in tran direction
+        FourierSolver3D* solver;                                ///< Solver this mode belongs to
+        Expansion::Component symmetry_long;                     ///< Mode symmetry in long direction
+        Expansion::Component symmetry_tran;                     ///< Mode symmetry in tran direction
         dcomplex k0;                                            ///< Stored mode frequency
         dcomplex klong;                                         ///< Stored mode effective index
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
