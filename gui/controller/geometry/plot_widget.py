@@ -45,10 +45,7 @@ class NavigationToolbar(NavigationToolbar2QT):
                 if checked is not None:
                     a.setCheckable(True)
                     if checked: a.setChecked(True)
-                # elif callback == 'plot' and self.controller is not None:
-                #     self.controller.plot_action = a
-                setattr(self, callback+'_action', a)
-                print callback+'_action'
+                self._actions[callback] = a
                 if tooltip_text is not None:
                     a.setToolTip(tooltip_text)
         self.buttons = {}
@@ -96,9 +93,9 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 
     def _select_plane(self, plane):
-        self.plane01_action.setChecked(plane == '01')
-        self.plane02_action.setChecked(plane == '02')
-        self.plane12_action.setChecked(plane == '12')
+        self._actions['plane01'].setChecked(plane == '01')
+        self._actions['plane02'].setChecked(plane == '02')
+        self._actions['plane12'].setChecked(plane == '12')
         self.controller.checked_plane = plane
         if self.controller.plotted_tree_element is not None and \
            getattr(self.controller.plotted_tree_element, 'dim') == 3:
