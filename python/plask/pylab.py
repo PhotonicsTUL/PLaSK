@@ -416,7 +416,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=1.5):
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, zorder=1.5, set_limits=None):
     """Plot two-dimensional rectilinear mesh."""
     #TODO documentation
 
@@ -449,11 +449,17 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=1.
     else:
         raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
 
+    if set_limits is not None:
+        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolette, set 'margin' instead")
+        if margin is None: margin = 0.
+
     for line in lines:
         axes.add_line(line)
-    if set_limits:
-        axes.set_xlim(x_min, x_max)
-        axes.set_ylim(y_min, y_max)
+    if margin:
+        m0 = (x_max - x_min) * margin
+        m1 = (y_max - y_min) * margin
+        axes.set_xlim(x_min - m0, x_max + m0)
+        axes.set_ylim(y_min - m1, y_max + m1)
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()

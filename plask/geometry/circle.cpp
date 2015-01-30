@@ -50,8 +50,7 @@ shared_ptr<GeometryObject> read_circle(GeometryReader& reader) {
 template struct PLASK_API Circle<2>;
 template struct PLASK_API Circle<3>;
 
-static GeometryReader::RegisterObjectReader circle2D_reader(Circle<2>::NAME, read_circle<2>);
-static GeometryReader::RegisterObjectReader circle3D_reader(Circle<3>::NAME, read_circle<3>);
-static GeometryReader::RegisterObjectReader sphere_reader("sphere", read_circle<3>);
+static GeometryReader::RegisterObjectReader circle_reader(Circle<2>::NAME, read_circle<2>);
+static GeometryReader::RegisterObjectReader sphere_reader(Circle<3>::NAME, read_circle<3>);
 
 }   // namespace plask

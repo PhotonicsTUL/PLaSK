@@ -24,43 +24,43 @@
       <item>
         <shelf>
           <gap total="{mesaRadius-1}"/>
-          <block name="n-contact" material="Au" dr="4" dz="0.0500"/>
+          <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
         </shelf>
       </item>
       <stack name="VCSEL">
         <item>
-          <stack name="top-DBR" repeat="4">
-            <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-            <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+          <stack name="top-DBR" repeat="24">
+            <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+            <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
           </stack>
         </item>
-        <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-        <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
+        <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
         <shelf>
-          <block name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
-          <block name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
+          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
+          <rectangle name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
         </shelf>
-        <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
-        <block material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
+        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
+        <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
         <stack name="junction" role="active">
-          <block role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+          <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
           <stack repeat="4">
-            <block material="GaAs" dr="{mesaRadius}" dz="0.005"/>
-            <block role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+            <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
+            <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
           </stack>
         </stack>
-        <block material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
+        <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
         <stack name="bottom-DBR" repeat="29">
-          <block material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-          <block material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+          <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+          <rectangle material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
         </stack>
-        <block material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+        <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
       </stack>
       <zero/>
       <item>
-        <block material="GaAs:C=2e+18" dr="200." dz="150."/>
+        <rectangle material="GaAs:C=2e+18" dr="200." dz="150."/>
       </item>
-      <block name="p-contact" material="Cu" dr="2500." dz="5000."/>
+      <rectangle name="p-contact" material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
   <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">
@@ -69,20 +69,22 @@
   <cartesian3d>
     <align>
       <item>
-        <stack/>
+        <revolution>
+          <again ref="VCSEL"/>
+        </revolution>
       </item>
     </align>
   </cartesian3d>
   <cartesian2d>
     <stack>
       <item>
-        <block material="GaN" dtran="1" dvert="0.2"/>
+        <rectangle material="GaN" dtran="1" dvert="0.2"/>
       </item>
       <item>
-        <block material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
+        <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       </item>
       <item>
-        <block material="GaN" dtran="2" dvert="1"/>
+        <rectangle material="GaN" dtran="2" dvert="1"/>
       </item>
     </stack>
   </cartesian2d>
@@ -272,11 +274,11 @@ xlabel(u"r [\xb5m]")
 ylabel(u"z [\xb5m]")
 
 figure()
-plot_geometry(GEO.GeoTE, set_limits=True)
+plot_geometry(GEO.GeoTE, margin=0.01)
 gcf().canvas.set_window_title("GEO TE")
 
 figure()
-plot_geometry(GEO.GeoTE, set_limits=True)
+plot_geometry(GEO.GeoTE, margin=0.01)
 defmesh = MSG.default(GEO.GeoTE.item)
 plot_mesh(defmesh, color="0.75")
 plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")

@@ -1,6 +1,11 @@
 #!/bin/sh
 guidir=`dirname $0`/../gui
-icons=$(grep -r fromTheme ${guidir}/* | perl -ne "print \$2.\"\n\" if /fromTheme\(('|\")(.*)\\1\)/" | sort | uniq)
+
+if [ "$1" = "" ]; then
+    icons=$(grep -r fromTheme ${guidir}/* | perl -ne "print \$2.\"\n\" if /fromTheme\(('|\")(.*)\\1\)/" | sort | uniq)
+else
+    icons=$@
+fi
 
 for icon in ${icons}; do
     for size in 16 24 32; do

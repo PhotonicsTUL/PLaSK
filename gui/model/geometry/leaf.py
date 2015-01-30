@@ -94,7 +94,8 @@ class GNBlock(GNLeaf):
                 element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
 
     def tag_name(self, full_name=True):
-        return "block{}d".format(self.dim) if full_name else "block"
+        return ('rectangle', 'cuboid')[self.dim-2]
+        # return "block{}d".format(self.dim) if full_name else "block"
 
     def python_type(self):
         return 'geometry.Block{}D'.format(self.dim)

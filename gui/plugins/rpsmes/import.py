@@ -434,7 +434,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
         out('h5file.close()')
 
-    out('\nplot_geometry(GEO.main, set_limits=True)')
+    out('\nplot_geometry(GEO.main, margin=0.01)')
     out('defmesh = MSG.default(GEO.main.item)')
     out('plot_mesh(defmesh, color="0.75")')
     if electr:

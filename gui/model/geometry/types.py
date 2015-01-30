@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from collections import OrderedDict
 
 _NAMES = {
     'zero': "<set zero here>",
@@ -38,8 +39,8 @@ from .copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
 geometry_types_2d_core_leafs = {  # only unique names of types, displayed in add menu
-    'block2d': GNBlock.from_xml_2d,
-    'circle2d': GNCircle.from_xml_2d,
+    'rectangle': GNBlock.from_xml_2d,
+    'circle': GNCircle.from_xml_2d,
     'triangle': GNTriangle.from_xml_2d
 }
 geometry_types_2d_core_containers = {  # only unique names of types, displayed in add menu
@@ -55,7 +56,7 @@ geometry_types_2d_core_transforms = {  # only unique names of types, displayed i
     'intersection2d': GNIntersection.from_xml_2d
 }
 
-geometry_types_2d_core = {}  # only unique names of types, displayed in add menu
+geometry_types_2d_core = OrderedDict()
 geometry_types_2d_core.update(geometry_types_2d_core_leafs)
 geometry_types_2d_core.update(geometry_types_2d_core_containers)
 geometry_types_2d_core.update(geometry_types_2d_core_transforms)
@@ -63,7 +64,7 @@ geometry_types_2d_core.update(geometry_types_2d_core_transforms)
 geometry_types_2d = {   # all names: geometry_types_2d_core + aliases
 
     # leafs:
-    'rectangle': GNBlock.from_xml_2d,
+    'block2d': GNBlock.from_xml_2d,
 
     # containers:
     'container2d': GNAlignContainer.from_xml_2d,
@@ -72,28 +73,29 @@ geometry_types_2d = {   # all names: geometry_types_2d_core + aliases
 }
 geometry_types_2d.update(geometry_types_2d_core)
 
-geometry_types_3d_core_leafs = {
-    'block3d': GNBlock.from_xml_3d,
-    'sphere': GNCircle.from_xml_3d,
-    'cylinder': GNCylinder.from_xml_3d,
-}
-geometry_types_3d_core_containers = {
-    'align3d': GNAlignContainer.from_xml_3d,
-    'stack3d': GNStack.from_xml_3d,
-}
-geometry_types_3d_core_extrusion = {
-    'extrusion': GNExtrusion.from_xml_3d
-}
-geometry_types_3d_core_revolution = {
-    'revolution': GNRevolution.from_xml_3d
-}
-geometry_types_3d_core_transforms = {
-    'clip3d': GNClip.from_xml_3d,
-    'flip3d': GNFlip.from_xml_3d,
-    'mirror3d': GNMirror.from_xml_3d,
-    'translation3d': GNTranslation.from_xml_3d,
-    'intersection3d': GNIntersection.from_xml_3d
-}
+# Only unique names of types, displayed in add menu
+geometry_types_3d_core_leafs = OrderedDict((
+    ('cuboid', GNBlock.from_xml_3d),
+    ('sphere', GNCircle.from_xml_3d),
+    ('cylinder', GNCylinder.from_xml_3d),
+))
+geometry_types_3d_core_containers = OrderedDict((
+    ('align3d', GNAlignContainer.from_xml_3d),
+    ('stack3d', GNStack.from_xml_3d),
+))
+geometry_types_3d_core_extrusion = OrderedDict((
+    ('extrusion', GNExtrusion.from_xml_3d),
+))
+geometry_types_3d_core_revolution = OrderedDict((
+    ('revolution', GNRevolution.from_xml_3d),
+))
+geometry_types_3d_core_transforms = OrderedDict((
+    ('clip3d', GNClip.from_xml_3d),
+    ('flip3d', GNFlip.from_xml_3d),
+    ('mirror3d', GNMirror.from_xml_3d),
+    ('translation3d', GNTranslation.from_xml_3d),
+    ('intersection3d', GNIntersection.from_xml_3d),
+))
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_extrusion)
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_revolution)
 
@@ -105,8 +107,7 @@ geometry_types_3d_core.update(geometry_types_3d_core_transforms)
 geometry_types_3d = {   # all names: geometry_types_2d_core + aliases
 
     # leafs:
-    'cuboid': GNBlock.from_xml_3d,
-    'circle3d': GNCircle.from_xml_3d,
+    'block3d': GNBlock.from_xml_3d,
 
     # containers:
     'container3d': GNAlignContainer.from_xml_3d,

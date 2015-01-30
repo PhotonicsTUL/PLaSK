@@ -388,7 +388,7 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
         colorbar()
 
         figure()
-        plot_geometry(GEO["main"], set_limits=True)
+        plot_geometry(GEO["main"], margin=0.01)
         plot_mesh(electr.mesh)
 
         pos = GEO["main"].get_object_positions(GEO["junction"])[0]

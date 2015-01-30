@@ -77,7 +77,7 @@ class GeometryController(Controller):
     def update_actions(self):
         has_selected_object = not self.tree.selectionModel().selection().isEmpty()
         self.remove_action.setEnabled(has_selected_object)
-        self.plot_action.setEnabled(has_selected_object)
+        # self.plot_action.setEnabled(has_selected_object)
         self.fill_add_menu()
 
         u, d = self.model.can_move_node_up_down(self.tree.selectionModel().currentIndex())
@@ -121,7 +121,7 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
-    def plot_element(self, tree_element, show_errors=True, set_limits=True):
+    def plot_element(self, tree_element, show_errors=True, margin=0.01):
         #TODO support for ref element, and exclude rest non-objects
         is_ref = isinstance(tree_element, GNAgain)
         element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
@@ -131,9 +131,7 @@ class GeometryController(Controller):
             try:
                 manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-                checked_plane_action = self.plane_select_action_group.checkedAction()
-                self.geometry_view.update_plot(to_plot, set_limits=set_limits,
-                                               plane='12' if checked_plane_action is None else checked_plane_action.text())
+                self.geometry_view.update_plot(to_plot, margin=margin, plane=self.checked_plane)
             except Exception as e:
                 if show_errors:
                     QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
@@ -153,13 +151,9 @@ class GeometryController(Controller):
             self.plotted_tree_element = tree_element
 
     def on_model_change(self, *args, **kwargs):
-        if self.plotted_tree_element is not None and self.plot_auto_refresh_action.isChecked():
-            if not self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=False):
+        if self.plotted_tree_element is not None and self.plot_auto_refresh:
+            if not self.plot_element(self.plotted_tree_element, show_errors=False, margin=False):
                 pass
-
-    def on_plane_change(self):
-        if self.plotted_tree_element is not None and getattr(self.plotted_tree_element, 'dim') == 3:
-            self.plot_element(self.plotted_tree_element, show_errors=True, set_limits=True)
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -196,26 +190,7 @@ class GeometryController(Controller):
 
         toolbar.addSeparator()
 
-        self.plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('applications-graphics'), '&Plot', toolbar)
-        self.plot_action.setStatusTip('Plot selected geometry object')
-        self.plot_action.triggered.connect(self.plot)
-        toolbar.addAction(self.plot_action)
-
-        self.plot_auto_refresh_action = QtGui.QAction(QtGui.QIcon.fromTheme('view-refresh'), '&Auto-refresh plot', toolbar)
-        self.plot_auto_refresh_action.setCheckable(True)
-        self.plot_auto_refresh_action.setChecked(True)
-        self.plot_auto_refresh_action.setStatusTip('Refresh plot after each change of geometry.')
-        #self.plot_auto_refresh_action.triggered.connect(self.plot)
-        toolbar.addAction(self.plot_auto_refresh_action)
-
-        self.plane_select_action_group = QtGui.QActionGroup(toolbar)
-        for plane in ('01', '02', '12'):
-            a = QtGui.QAction(plane, self.plane_select_action_group)
-            a.setCheckable(True)
-            if plane == '12': a.setChecked(True)
-            a.setActionGroup(self.plane_select_action_group)
-            toolbar.addAction(a)
-        self.plane_select_action_group.triggered.connect(self.on_plane_change)
+        self.plot_auto_refresh = True
 
         return toolbar
 
@@ -256,6 +231,8 @@ class GeometryController(Controller):
         tree_selection_model.selectionChanged.connect(self.object_selected)
         self.update_actions()
 
+        self.checked_plane = '12'
+
         self.vertical_splitter = QtGui.QSplitter()
         self.vertical_splitter.setOrientation(QtCore.Qt.Vertical)
 
@@ -264,7 +241,7 @@ class GeometryController(Controller):
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
-        self.geometry_view = PlotWidget()
+        self.geometry_view = PlotWidget(self)
 
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
@@ -292,10 +269,14 @@ class GeometryController(Controller):
         self.update_actions()
 
         #geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
-        geometry_node = self._current_index.internalPointer()
-        if isinstance(geometry_node, GNGeometryBase):
-            self.plot()
-        self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
+        try:
+            geometry_node = self._current_index.internalPointer()
+        except AttributeError:
+            pass
+        else:
+            if isinstance(geometry_node, GNGeometryBase):
+                self.plot()
+            # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
 

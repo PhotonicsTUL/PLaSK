@@ -144,11 +144,11 @@
 <script><![CDATA[
 
 figure()
-plot_geometry(GEO.GeoTE, set_limits=True)
+plot_geometry(GEO.GeoTE, margin=0.01)
 gcf().canvas.set_window_title("GEO TE")
 
 figure()
-plot_geometry(GEO.GeoTE, set_limits=True)
+plot_geometry(GEO.GeoTE, margin=0.01)
 defmesh = MSG.default(GEO.GeoTE.item)
 plot_mesh(defmesh, color="0.75")
 plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")
