@@ -100,7 +100,7 @@ class GeometryController(Controller):
     def remove_node(self):
         index = self.tree.selectionModel().currentIndex()
         model = self.tree.model()
-        if (model.removeRow(index.row(), index.parent())):
+        if model.removeRow(index.row(), index.parent()):
             self.update_actions()
 
     def _swap_neighbour_nodes(self, parent_index, row1, row2):
@@ -121,7 +121,7 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
-    def plot_element(self, tree_element, show_errors=True, margin=0.01):
+    def plot_element(self, tree_element, show_errors=True, set_limits=True):
         #TODO support for ref element, and exclude rest non-objects
         is_ref = isinstance(tree_element, GNAgain)
         element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
@@ -131,7 +131,7 @@ class GeometryController(Controller):
             try:
                 manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-                self.geometry_view.update_plot(to_plot, margin=margin, plane=self.checked_plane)
+                self.geometry_view.update_plot(to_plot, set_limits=set_limits, plane=self.checked_plane)
             except Exception as e:
                 if show_errors:
                     QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
@@ -152,8 +152,7 @@ class GeometryController(Controller):
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:
-            if not self.plot_element(self.plotted_tree_element, show_errors=False, margin=False):
-                pass
+            self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=False)
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()

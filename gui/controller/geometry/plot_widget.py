@@ -99,7 +99,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.controller.checked_plane = plane
         if self.controller.plotted_tree_element is not None and \
            getattr(self.controller.plotted_tree_element, 'dim') == 3:
-            self.controller.plot_element(self.controller.plotted_tree_element, show_errors=True, margin=0.01)
+            self.controller.plot_element(self.controller.plotted_tree_element, show_errors=True, margin=True)
 
     def plane01(self):
         self._select_plane('01')
@@ -146,7 +146,7 @@ class PlotWidget(QtGui.QGroupBox):
         super(PlotWidget, self).resizeEvent(event)
         self.figure.set_tight_layout(0)
 
-    def update_plot(self, to_plot, margin=0.01, plane='12'):
+    def update_plot(self, to_plot, set_limits=True, plane='12'):
         # self.figure.clear()
         self.axes.cla()
         self.axes.minorticks_on()
@@ -155,7 +155,7 @@ class PlotWidget(QtGui.QGroupBox):
             self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
             self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
-            margin = 0.02 if margin else None
+            margin = 0.1 if set_limits else None
             plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, margin=margin, zorder=1,
                                 plane=plane, lw=1.5)
             for ax in self.axes.xaxis, self.axes.yaxis:

@@ -390,14 +390,14 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         box = geometry.bbox
         if hmirror:
             m = max(abs(box.lower[ax[0]]), abs(box.upper[ax[0]]))
-            m += m * 2. * margin
+            m += 2. * m * margin
             axes.set_xlim(-m, m)
         else:
             m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin
             axes.set_xlim(box.lower[ax[0]] - m, box.upper[ax[0]] + m)
         if vmirror:
             m = max(abs(box.lower[ax[1]]), abs(box.upper[ax[1]]))
-            m += m * 2. * margin
+            m += 2. * m * margin
             axes.set_ylim(-m, m)
         else:
             m = (box.upper[ax[1]] - box.lower[ax[1]]) * margin

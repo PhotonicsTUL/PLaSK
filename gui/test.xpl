@@ -27,35 +27,41 @@
           <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
         </shelf>
       </item>
-      <stack name="VCSEL">
-        <item>
-          <stack name="top-DBR" repeat="24">
+      <item>
+        <stack name="VCSEL">
+          <item>
+            <stack name="top-DBR" repeat="24">
+              <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+              <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+            </stack>
+          </item>
+          <item>
             <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-            <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-          </stack>
-        </item>
-        <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
-        <shelf>
-          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
-          <rectangle name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
-        </shelf>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
-        <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
-        <stack name="junction" role="active">
-          <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
-          <stack repeat="4">
-            <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
+          </item>
+          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
+          <shelf>
+            <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
+            <rectangle name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
+          </shelf>
+          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
+          <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
+          <stack name="junction" role="active">
             <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+            <stack repeat="4">
+              <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
+              <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+            </stack>
           </stack>
-        </stack>
-        <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
-        <stack name="bottom-DBR" repeat="29">
+          <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
+          <item>
+            <stack name="bottom-DBR" repeat="29">
+              <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+              <rectangle material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+            </stack>
+          </item>
           <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-          <rectangle material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
         </stack>
-        <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-      </stack>
+      </item>
       <zero/>
       <item>
         <rectangle material="GaAs:C=2e+18" dr="200." dz="150."/>
