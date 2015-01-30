@@ -386,6 +386,7 @@ class StepProfile(object):
 
 ## ##  ## ##
 
+#from .pylab import *
 try:
     from .pylab import *
 except ImportError:
@@ -397,6 +398,7 @@ except ImportError:
 else:
     has_pylab = True
 
+#from .hdf5 import *
 try:
     from .hdf5 import *
 except ImportError:

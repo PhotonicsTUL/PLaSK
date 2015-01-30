@@ -170,11 +170,20 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
         // thermal conductivity
         double kx, ky, kz;
-        auto leaf = dynamic_pointer_cast<const GeometryObjectD<3>>(geometry->getMatchingAt(middle, &GeometryObject::PredicateIsLeaf));
-        if (leaf)
-            std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp, leaf->getBoundingBox().height()));
-        else
-            std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp));
+        double top = elem.getUpper2(), bottom = elem.getLower2();
+        for (size_t r = elem.getIndex2(); r > 0; r--) {
+            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) bottom = e.getLower2();                   //TODO ignore doping
+            else break;
+        }
+        for (size_t r = elem.getIndex2()+1; r < this->mesh->axis2->size()-1; r++) {
+            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) top = e.getUpper2();                     //TODO ignore doping
+            else break;
+        }
+        std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp, top-bottom));
 
         ky *= 1e-6; kz *= 1e-6;                                         // W/m -> W/µm
         kx = ky;
@@ -501,10 +510,10 @@ const LazyData<Vec<3>> FiniteElementMethodThermal3DSolver::getHeatFluxes(const s
 
 FiniteElementMethodThermal3DSolver::
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh):
-    solver(solver), element_mesh(solver->mesh->getMidpointsMesh()), target_mesh(dst_mesh, solver->geometry)
+    solver(solver), target_mesh(dst_mesh, solver->geometry)
 {
-    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, element_mesh, INTERPOLATION_LINEAR);
-    else temps = LazyData<double>(element_mesh->size(), solver->inittemp);
+    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
+    else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
 }
 Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
         auto point = target_mesh[i];
@@ -514,15 +523,23 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
         if (x == 0 || y == 0 || z == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size() || z == solver->mesh->axis2->size())
             return Tensor2<double>(NAN);
         else {
-            size_t idx = element_mesh->index(x-1, y-1, z-1);
-            auto point = element_mesh->at(idx);
+            auto elem = solver->mesh->elements(x-1, y-1, z-1);
+            auto point = elem.getMidpoint();
             auto material = solver->geometry->getMaterial(point);
-            Tensor2<double> result;
-            if (auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(solver->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf)))
-                result = material->thermk(temps[idx], leaf->getBoundingBox().height());
-            else
-                result = material->thermk(temps[idx]);
-            return result;
+            double top = elem.getUpper2(), bottom = elem.getLower2();
+            for (size_t r = elem.getIndex2(); r > 0; r--) {
+                auto e = solver->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
+                auto m = solver->geometry->getMaterial(e.getMidpoint());
+                if (m == material) bottom = e.getLower2();                   //TODO ignore doping
+                else break;
+            }
+            for (size_t r = elem.getIndex2()+1; r < solver->mesh->axis2->size()-1; r++) {
+                auto e = solver->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
+                auto m = solver->geometry->getMaterial(e.getMidpoint());
+                if (m == material) top = e.getUpper2();                     //TODO ignore doping
+                else break;
+            }
+            return material->thermk(temps[elem.getIndex()], top-bottom);
         }
 }
 std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return target_mesh.size(); }

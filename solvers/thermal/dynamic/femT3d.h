@@ -95,7 +95,6 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
         const FiniteElementMethodDynamicThermal3DSolver* solver;
-        shared_ptr<RectangularMesh<3>> element_mesh;
         WrappedMesh<3> target_mesh;
         LazyData<double> temps;
         ThermalConductivityData(const FiniteElementMethodDynamicThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);

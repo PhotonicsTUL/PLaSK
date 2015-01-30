@@ -11,7 +11,7 @@ FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::FiniteElementMethodDy
     outHeatFlux(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getHeatFluxes),
     outThermalConductivity(this, &FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getThermalConductivity),
     algorithm(ALGORITHM_CHOLESKY),
-    inittemp(300.),    
+    inittemp(300.),
     methodparam(0.5),
     timestep(0.1),
     elapstime(0.),
@@ -94,20 +94,20 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
     F.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto e: this->mesh->elements)
+    for (auto elem: this->mesh->elements)
     {
         // nodes numbers for the current element
-        size_t loleftno = e.getLoLoIndex();
-        size_t lorghtno = e.getUpLoIndex();
-        size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex();
+        size_t loleftno = elem.getLoLoIndex();
+        size_t lorghtno = elem.getUpLoIndex();
+        size_t upleftno = elem.getLoUpIndex();
+        size_t uprghtno = elem.getUpUpIndex();
 
         // element size
-        double elemwidth = e.getUpper0() - e.getLower0();
-        double elemheight = e.getUpper1() - e.getLower1();
+        double elemwidth = elem.getUpper0() - elem.getLower0();
+        double elemheight = elem.getUpper1() - elem.getLower1();
 
         // point and material in the middle of the element
-        Vec<2,double> midpoint = e.getMidpoint();
+        Vec<2,double> midpoint = elem.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
         // average temperature on the element
@@ -115,11 +115,20 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 
         // thermal conductivity
         double kx, ky;
-        auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(midpoint, &GeometryObject::PredicateIsLeaf));
-        if (leaf)
-            std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, leaf->getBoundingBox().height()));
-        else
-            std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp));
+        double top = elem.getUpper1(), bottom = elem.getLower1();
+        for (size_t r = elem.getIndex1(); r > 0; r--) {
+            auto e = this->mesh->elements(elem.getIndex0(), r-1);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
+            else break;
+        }
+        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
+            auto e = this->mesh->elements(elem.getIndex0(), r);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) top = e.getUpper1();                     //TODO ignore doping
+            else break;
+        }
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
 
         // element of heat capacity matrix
         double c = material->cp(temp) * material->dens(temp) * 0.25 * 1E-12 * elemheight * elemwidth / timestep / 1E-9;
@@ -128,7 +137,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         ky *= elemwidth; ky /= elemheight;
 
         // load vector: heat densities
-        double f = 0.25e-12 * elemwidth * elemheight * heatdensities[e.getIndex()]; // 1e-12 -> to transform µm² into m²
+        double f = 0.25e-12 * elemwidth * elemheight * heatdensities[elem.getIndex()]; // 1e-12 -> to transform µm² into m²
 
         // set symmetric matrix components in thermal conductivity matrix
         double k44, k33, k22, k11, k43, k21, k42, k31, k32, k41;
@@ -412,11 +421,12 @@ const LazyData<Vec<2>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
 
 template<typename Geometry2DType> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-    solver(solver), element_mesh(solver->mesh->getMidpointsMesh()), target_mesh(dst_mesh, solver->geometry)
+    solver(solver), target_mesh(dst_mesh, solver->geometry)
 {
-    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, element_mesh, INTERPOLATION_LINEAR);
-    else temps = LazyData<double>(element_mesh->size(), solver->inittemp);
+    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
+    else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
 }
+
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::at(std::size_t i) const {
     auto point = target_mesh[i];
@@ -425,17 +435,27 @@ ThermalConductivityData::at(std::size_t i) const {
     if (x == 0 || y == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size())
         return Tensor2<double>(NAN);
     else {
-        size_t idx = element_mesh->index(x-1, y-1);
-        auto point = element_mesh->at(idx);
+        auto elem = solver->mesh->elements(x-1, y-1);
+        auto point = elem.getMidpoint();
         auto material = solver->geometry->getMaterial(point);
         Tensor2<double> result;
-        if (auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(solver->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf)))
-            result = material->thermk(temps[idx], leaf->getBoundingBox().height());
-        else
-            result = material->thermk(temps[idx]);
-        return result;
+        double top = elem.getUpper1(), bottom = elem.getLower1();
+        for (size_t r = elem.getIndex1(); r > 0; r--) {
+            auto e = solver->mesh->elements(elem.getIndex0(), r-1);
+            auto m = solver->geometry->getMaterial(e.getMidpoint());
+            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
+            else break;
+        }
+        for (size_t r = elem.getIndex1()+1; r < solver->mesh->axis1->size()-1; r++) {
+            auto e = solver->mesh->elements(elem.getIndex0(), r);
+            auto m = solver->geometry->getMaterial(e.getMidpoint());
+            if (m == material) top = e.getUpper1();                     //TODO ignore doping
+            else break;
+        }
+        return material->thermk(temps[elem.getIndex()], top-bottom);
     }
 }
+
 template<typename Geometry2DType> std::size_t FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::size() const { return target_mesh.size(); }
 
