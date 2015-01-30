@@ -331,10 +331,10 @@ In the second line above, there is a global dictionary ``GEO``, which contains a
 Apart from the results it may be also useful to see the computational mesh. In order to do this, we create a new plot window using ``figure()`` command and plot the structure together with the computational mesh (actually the mesh is the same for both solvers, so you may get it from either one)::
 
     figure()
-    plot_geometry(GEO["main"], set_limits=True)
+    plot_geometry(GEO["main"], margin=0.01)
     plot_mesh(electr.mesh)
 
-Additional argument ``set_limits`` of :func:`plot_geometry <plask.pylab.plot_geometry>` set to ``true`` ensures that the axes limits will be adjusted to match the whole structure. In the previous figure it was automatically done by :func:`plot_field <plask.pylab.plot_field>` [#plot_field-limit]_.
+Additional argument ``margin`` of :func:`plot_geometry <plask.pylab.plot_geometry>` set to ``true`` ensures that the axes limits will be adjusted to match the whole structure with 1% margin around it. In the previous figure the figure boundaries were automatically done by the :func:`plot_field <plask.pylab.plot_field>` function [#plot_field-limit]_.
 
 In order to see the plots, you should add the command at the end of your script [#show]_::
 

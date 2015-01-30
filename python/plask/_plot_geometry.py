@@ -284,11 +284,11 @@ class ColorFromDict(object):
             return material_to_color(material)
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=False, fill=False,
+def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, fill=False,
                   axes=None, figure=None, margin=None, get_color=material_to_color, set_limits=None):
     """
     Plot specified geometry.
-    
+
     Args:
         geometry (plask.Geometry): Geometry to draw.
 
@@ -367,6 +367,9 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=2.0, mirror=Fa
         ax = (0,1)
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
+
+    if zorder is None:
+        zorder = 0.5 if fill else 2.0
 
     env = DrawEnviroment(ax, axes, fill, color, lw, zorder=zorder)
 

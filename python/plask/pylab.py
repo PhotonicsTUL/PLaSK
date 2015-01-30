@@ -416,7 +416,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2.2):
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=1.5):
     """Plot two-dimensional rectilinear mesh."""
     #TODO documentation
 
@@ -447,7 +447,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2.
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
 
     else:
-        raise NotImplementedError("plot_mesh can be only used for data rectangular")
+        raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
 
     for line in lines:
         axes.add_line(line)
