@@ -193,6 +193,15 @@ class ScriptEditor(TextEdit):
                         if not (cursor.atBlockStart()):
                             unindent(self, col)
                             return
+        elif key == Qt.Key_Home:
+            cursor = self.textCursor()
+            txt = cursor.block().text()
+            col = cursor.positionInBlock()
+            if txt[:col].strip():
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                cursor.movePosition(QtGui.QTextCursor.NextWord)
+                self.setTextCursor(cursor)
+                return
 
         if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
             super(ScriptEditor, self).keyPressEvent(event)
