@@ -199,7 +199,8 @@ class ScriptEditor(TextEdit):
             col = cursor.positionInBlock()
             if txt[:col].strip():
                 cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-                cursor.movePosition(QtGui.QTextCursor.NextWord)
+                while self.document().characterAt(cursor.position()) in [' ', '\t']:
+                    cursor.movePosition(QtGui.QTextCursor.Right)
                 self.setTextCursor(cursor)
                 return
 

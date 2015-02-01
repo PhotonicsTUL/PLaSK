@@ -175,7 +175,7 @@
 <script><![CDATA[
 from scipy import optimize
 
-OPTICAL.find_mode
+# OPTICAL.find_mode
 
 class A(object):
     
