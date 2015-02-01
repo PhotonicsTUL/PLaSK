@@ -70,6 +70,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     // reset mesh to original value
     z = getZQWCoordinate();
+    if (!this->mesh) throw NoMeshException(this->getId());
     mesh2->setAxis0(this->mesh);
     mesh2->setAxis1(make_shared<plask::RegularAxis>(z, z, 1));
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);
