@@ -98,6 +98,8 @@ class NewGainValues(unittest.TestCase):
         self.solver.inTemperature = 300.0
         self.solver.inCarriersConcentration = 4e18
 
+        self.solver.invalidate()
+
         wavelengths = linspace(1500, 2500, 101)
         print wavelengths
         peak = 0.
