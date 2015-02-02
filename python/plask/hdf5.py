@@ -16,7 +16,7 @@ def save_rectangular1d(dest_group, mesh):
     dest_group.attrs['type'] = mesh_type.__name__
     if mesh_type is plask.mesh.Regular:
         axis = dest_group.create_dataset('points', (1,), dtype=numpy.dtype([('start', float), ('stop', float), ('num', int)]))
-        axis[0] = ax.start, ax.stop, len(mesh)
+        axis[0] = mesh.start, mesh.stop, len(mesh)
         return axis
     else:
         return dest_group.create_dataset('points', data=numpy.array(mesh))
