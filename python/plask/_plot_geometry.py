@@ -374,16 +374,17 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     env = DrawEnviroment(ax, axes, fill, color, lw, zorder=zorder)
 
     try:
-        hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
+        hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or
+                              type(geometry) == plask.geometry.Cylindrical2D)
         vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
     except AttributeError:  #we draw non-Geometry object
         hmirror = False
         vmirror = False
 
     _draw_geometry_object(env, geometry, axes.transData, None)
-    if vmirror:
-        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
     if hmirror:
+        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
+    if vmirror:
         _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
 
     if margin is not None:

@@ -94,7 +94,7 @@ class SourceWidget(QtGui.QWidget):
         self.find_toolbar.addWidget(next_button)
         self.find_toolbar.addWidget(prev_button)
         replace_button = QtGui.QPushButton(self)
-        replace_button.setText("R&eplace one")
+        replace_button.setText("Rep&lace one")
         replace_button.setFixedWidth(150)  # TODO from maximum text+icon width
         replace_button.pressed.connect(self.replace_next)
         replace_all_button = QtGui.QPushButton(self)
