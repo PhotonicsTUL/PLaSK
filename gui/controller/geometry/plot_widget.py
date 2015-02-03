@@ -110,6 +110,7 @@ class NavigationToolbar(NavigationToolbar2QT):
     def plane12(self):
         self._select_plane('12')
 
+
 class PlotWidget(QtGui.QGroupBox):
 
     def __init__(self, controller=None, parent=None):

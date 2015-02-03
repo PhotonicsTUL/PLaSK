@@ -135,18 +135,26 @@ class GeometryController(Controller):
             except Exception as e:
                 if show_errors:
                     QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
-                                       "Geometry can not be plotted due to the error in XPL content:\n{}".format(str(e)))
+                                               "Geometry can not be plotted due to the error in XPL content:\n{}"
+                                               .format(str(e)))
+                else:
+                    self.status_bar.showMessage(str(e))
+                    self.status_bar.setAutoFillBackground(True)
                 return False
+            else:
+                self.status_bar.showMessage('')
+                self.status_bar.setAutoFillBackground(False)
         finally:
             if not element_has_name: tree_element.name = None
         return True
 
         #plot_geometry(current_index.internalPointer())
 
-    def plot(self):
-        current_index = self.tree.selectionModel().currentIndex()
-        if not current_index.isValid(): return
-        tree_element = current_index.internalPointer()
+    def plot(self, tree_element=None):
+        if tree_element is None:
+            current_index = self.tree.selectionModel().currentIndex()
+            if not current_index.isValid(): return
+            tree_element = current_index.internalPointer()
         if self.plot_element(tree_element):
             self.plotted_tree_element = tree_element
 
@@ -242,9 +250,23 @@ class GeometryController(Controller):
 
         self.geometry_view = PlotWidget(self)
 
+        self.status_bar = QtGui.QStatusBar()
+        self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        palette = self.status_bar.palette()
+        palette.setColor(QtGui.QPalette.Background, '#ff8888')
+        self.status_bar.setPalette(palette)
+
+        geometry_widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        geometry_widget.setLayout(layout)
+        layout.addWidget(self.geometry_view)
+        layout.addWidget(self.status_bar)
+
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
-        self.main_splitter.addWidget(self.geometry_view)
+        self.main_splitter.addWidget(geometry_widget)
 
     def set_current_index(self, new_index):
         """
@@ -269,12 +291,13 @@ class GeometryController(Controller):
 
         #geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
         try:
-            geometry_node = self._current_index.internalPointer()
+            plotted_root = self.plotted_tree_element.root
+            current_root = self._current_index.internalPointer().root
         except AttributeError:
             pass
         else:
-            if isinstance(geometry_node, GNGeometryBase):
-                self.plot()
+            if current_root != plotted_root:
+                self.plot(current_root)
             # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True

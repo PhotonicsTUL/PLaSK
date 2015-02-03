@@ -47,5 +47,5 @@ def construct_by_name(type_name, *allowed_types):
 
 def construct_using_constructor(constructor, parent=None):
     result = constructor(None, None)
-    result.set_parent(parent, atend=False)
+    result.set_parent(parent, at_end=False)
     return result

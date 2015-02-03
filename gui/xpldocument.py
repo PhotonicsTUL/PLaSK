@@ -25,6 +25,10 @@ from .controller import materials
 from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
 
+try:
+    import plask
+except ImportError:
+    plask = None
 
 class XPLDocument(object):
 
@@ -35,7 +39,7 @@ class XPLDocument(object):
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
         from . import _DEBUG
-        if _DEBUG:
+        if plask is not None:
             self.geometry = GUIAndSourceController(GeometryController(self))
         else:
             self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))

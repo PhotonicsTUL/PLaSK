@@ -148,7 +148,7 @@ class GNode(object):
         """
         return self._parent
 
-    def set_parent(self, parent, atend=True):
+    def set_parent(self, parent, at_end=True):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
@@ -160,10 +160,14 @@ class GNode(object):
             self.path = None
         self._parent = parent
         if self._parent is not None:
-            if atend:
+            if at_end:
                 self._parent.children.append(self)
             else:
                 self._parent.children.insert(self._parent.new_child_pos(), self)
+
+    @property
+    def root(self):
+        return self if self._parent is None else self._parent.root
 
     def stub(self):
         """

@@ -18,24 +18,19 @@ XMLWriter::Element& GeometryObjectLeaf<dim>::MixedCompositionMaterial::writeXML(
 
 template <int dim>
 GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
-    if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
-        this->setMaterialFast(src.getMaterial(*matstr));
-    else
+    auto top_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR);
+    auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
+    if (!top_attr && !bottom_attr) {
         if (src.materialsAreRequired) {
-            this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(
-                        src.source.requireAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR),
-                        src.source.requireAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR)
-                        ));
-        } else {
-            auto top_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR);
-            auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
-            if (top_attr && bottom_attr)
-                this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr));
-            else
-                if (top_attr || bottom_attr)
-                    src.source.throwException(format("If \"%1%\" or \"%2%\" attribute is given, the second one is also required.",
-                                                     GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
-        }
+            this->setMaterialFast(src.getMaterial(src.source.requireAttribute(GeometryReader::XML_MATERIAL_ATTR)));
+        } else if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
+            this->setMaterialFast(src.getMaterial(*matstr));
+    } else {
+        if (!top_attr || !bottom_attr)
+            src.source.throwException(format("If \"%1%\" or \"%2%\" attribute is given, the second one is also required.",
+                                                GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr));
+    }
     return src;
 }
 
