@@ -17,10 +17,12 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
   protected:
 
-    int size;         ///< Number of columns in the main matrix
+    int size;           ///< Number of columns in the main matrix
     double maxT;        ///< Maximum temperature recorded
 
-    DataVector<double> temperatures;           ///< Computed temperatures
+    DataVector<double> temperatures;            ///< Computed temperatures
+
+    DataVector<double> thickness;               ///< Thicknesses of the layers
 
     DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
@@ -109,7 +111,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
     const LazyData<Vec<2>> getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>

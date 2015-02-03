@@ -72,12 +72,45 @@ void FiniteElementMethodThermal3DSolver::onInitialize() {
     if (!this->mesh) throw NoMeshException(this->getId());
     loopno = 0;
     temperatures.reset(this->mesh->size(), inittemp);
+
+    thickness.reset(this->mesh->elements.size(), NAN);
+    // Set stiffness matrix and load vector
+    for (auto elem: this->mesh->elements)
+    {
+        if (!isnan(thickness[elem.getIndex()])) continue;
+        auto material = this->geometry->getMaterial(elem.getMidpoint());
+        double top = elem.getUpper2(), bottom = elem.getLower2();
+        size_t row = elem.getIndex2();
+        size_t itop = row+1, ibottom = row;
+        for (size_t r = row; r > 0; r--) {
+            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) {                            //TODO ignore doping
+                bottom = e.getLower2();
+                ibottom = r-1;
+            }
+            else break;
+        }
+        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
+            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) {                            //TODO ignore doping
+                top = e.getUpper2();
+                itop = r+1;
+            }
+            else break;
+        }
+        double h = top - bottom;
+        for (size_t r = ibottom; r != itop; ++r)
+            thickness[this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r).getIndex()] = h;
+    }
 }
 
 
 void FiniteElementMethodThermal3DSolver::onInvalidate() {
     temperatures.reset();
     fluxes.reset();
+    thickness.reset();
 }
 
 void FiniteElementMethodThermal3DSolver::setAlgorithm(Algorithm alg) {
@@ -170,20 +203,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
         // thermal conductivity
         double kx, ky, kz;
-        double top = elem.getUpper2(), bottom = elem.getLower2();
-        for (size_t r = elem.getIndex2(); r > 0; r--) {
-            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) bottom = e.getLower2();                   //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex2()+1; r < this->mesh->axis2->size()-1; r++) {
-            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) top = e.getUpper2();                     //TODO ignore doping
-            else break;
-        }
-        std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+        std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
         ky *= 1e-6; kz *= 1e-6;                                         // W/m -> W/µm
         kx = ky;
@@ -516,35 +536,23 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodTherma
     else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
 }
 Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
-        auto point = target_mesh[i];
-        size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
-        size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
-        size_t z = std::upper_bound(solver->mesh->axis2->begin(), solver->mesh->axis2->end(), point[2]) - solver->mesh->axis2->begin();
-        if (x == 0 || y == 0 || z == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size() || z == solver->mesh->axis2->size())
-            return Tensor2<double>(NAN);
-        else {
-            auto elem = solver->mesh->elements(x-1, y-1, z-1);
-            auto point = elem.getMidpoint();
-            auto material = solver->geometry->getMaterial(point);
-            double top = elem.getUpper2(), bottom = elem.getLower2();
-            for (size_t r = elem.getIndex2(); r > 0; r--) {
-                auto e = solver->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
-                auto m = solver->geometry->getMaterial(e.getMidpoint());
-                if (m == material) bottom = e.getLower2();                   //TODO ignore doping
-                else break;
-            }
-            for (size_t r = elem.getIndex2()+1; r < solver->mesh->axis2->size()-1; r++) {
-                auto e = solver->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
-                auto m = solver->geometry->getMaterial(e.getMidpoint());
-                if (m == material) top = e.getUpper2();                     //TODO ignore doping
-                else break;
-            }
-            return material->thermk(temps[elem.getIndex()], top-bottom);
-        }
+    auto point = target_mesh[i];
+    size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
+    size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
+    size_t z = std::upper_bound(solver->mesh->axis2->begin(), solver->mesh->axis2->end(), point[2]) - solver->mesh->axis2->begin();
+    if (x == 0 || y == 0 || z == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size() || z == solver->mesh->axis2->size())
+        return Tensor2<double>(NAN);
+    else {
+        auto elem = solver->mesh->elements(x-1, y-1, z-1);
+        auto material = solver->geometry->getMaterial(elem.getMidpoint());
+        size_t idx = elem.getIndex();
+        return material->thermk(temps[idx], solver->thickness[idx]);
+    }
 }
 std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return target_mesh.size(); }
 
-const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
+const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+    this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new FiniteElementMethodThermal3DSolver::ThermalConductivityData(this, dst_mesh));
 }

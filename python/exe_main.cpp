@@ -358,6 +358,10 @@ int main(int argc, const char *argv[])
                 std::fclose(file);
                 if (c == '<') xml_input.reset(true);
                 else xml_input.reset(false);
+            } else if (*xml_input) {
+                FILE* file = std::fopen(filename.c_str(), "r");
+                if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                std::fclose(file);
             }
 
             if (*xml_input) {

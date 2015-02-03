@@ -50,6 +50,8 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 
     DataVector<double> temperatures;            ///< Computed temperatures
 
+    DataVector<double> thickness;               ///< Thicknesses of the layers
+
     DataVector<Vec<3,double>> fluxes;           ///< Computed (only when needed) heat fluxes on our own mesh
 
     /**
@@ -166,7 +168,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 
     const LazyData<Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 };
 
 }} //namespaces

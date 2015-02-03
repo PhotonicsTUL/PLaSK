@@ -75,12 +75,46 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
     loopno = 0;
     size = this->mesh->size();
     temperatures.reset(size, inittemp);
+
+    thickness.reset(this->mesh->elements.size(), NAN);
+    // Set stiffness matrix and load vector
+    for (auto elem: this->mesh->elements)
+    {
+        if (!isnan(thickness[elem.getIndex()])) continue;
+        auto material = this->geometry->getMaterial(elem.getMidpoint());
+        double top = elem.getUpper1(), bottom = elem.getLower1();
+        size_t row = elem.getIndex1();
+        size_t itop = row+1, ibottom = row;
+        size_t c = elem.getIndex0();
+        for (size_t r = row; r > 0; r--) {
+            auto e = this->mesh->elements(c, r-1);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) {                            //TODO ignore doping
+                bottom = e.getLower1();
+                ibottom = r-1;
+            }
+            else break;
+        }
+        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
+            auto e = this->mesh->elements(c, r);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) {                            //TODO ignore doping
+                top = e.getUpper1();
+                itop = r+1;
+            }
+            else break;
+        }
+        double h = top - bottom;
+        for (size_t r = ibottom; r != itop; ++r)
+            thickness[this->mesh->elements(c, r).getIndex()] = h;
+    }
 }
 
 
 template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInvalidate() {
     temperatures.reset();
     mHeatFluxes.reset();
+    thickness.reset();
 }
 
 enum BoundarySide { LEFT, RIGHT, TOP, BOTTOM };
@@ -174,20 +208,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
 
         // thermal conductivity
         double kx, ky;
-        double top = elem.getUpper1(), bottom = elem.getLower1();
-        for (size_t r = elem.getIndex1(); r > 0; r--) {
-            auto e = this->mesh->elements(elem.getIndex0(), r-1);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
-            auto e = this->mesh->elements(elem.getIndex0(), r);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) top = e.getUpper1();                     //TODO ignore doping
-            else break;
-        }
-        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
         kx *= elemheight; kx /= elemwidth;
         ky *= elemwidth; ky /= elemheight;
@@ -313,21 +334,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
 
         // thermal conductivity
         double kx, ky;
-        double top = elem.getUpper1(), bottom = elem.getLower1();
-        size_t c = elem.getIndex0();
-        for (size_t r = elem.getIndex1(); r > 0; r--) {
-            auto e = this->mesh->elements(c, r-1);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
-            auto e = this->mesh->elements(c, r);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) top = e.getUpper1();                     //TODO ignore doping
-            else break;
-        }
-        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
         kx = kx * elemheight / elemwidth;
         ky = ky * elemwidth / elemheight;
@@ -651,20 +658,8 @@ ThermalConductivityData::at(std::size_t i) const {
     else {
         auto elem = solver->mesh->elements(x-1, y-1);
         auto material = solver->geometry->getMaterial(elem.getMidpoint());
-        double top = elem.getUpper1(), bottom = elem.getLower1();
-        for (size_t r = elem.getIndex1(); r > 0; r--) {
-            auto e = solver->mesh->elements(elem.getIndex0(), r-1);
-            auto m = solver->geometry->getMaterial(e.getMidpoint());
-            if (*m == *material) bottom = e.getLower1();                  //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex1()+1; r < solver->mesh->axis1->size()-1; r++) {
-            auto e = solver->mesh->elements(elem.getIndex0(), r);
-            auto m = solver->geometry->getMaterial(e.getMidpoint());
-            if (*m == *material) top = e.getUpper1();                     //TODO ignore doping
-            else break;
-        }
-        return material->thermk(temps[elem.getIndex()], top-bottom);
+        size_t idx = elem.getIndex();
+        return material->thermk(temps[idx], solver->thickness[idx]);
     }
 }
 
@@ -672,7 +667,8 @@ template<typename Geometry2DType> std::size_t FiniteElementMethodThermal2DSolver
 ThermalConductivityData::size() const { return target_mesh.size(); }
 
 template<typename Geometry2DType>
-const LazyData<Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) const {
+const LazyData<Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) {
+    this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new
         FiniteElementMethodThermal2DSolver<Geometry2DType>::ThermalConductivityData(this, dst_mesh)

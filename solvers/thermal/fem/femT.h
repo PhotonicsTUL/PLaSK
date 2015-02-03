@@ -50,6 +50,8 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 
     DataVector<double> temperatures;           ///< Computed temperatures
 
+    DataVector<double> thickness;               ///< Thicknesses of the layers
+
     DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
@@ -139,7 +141,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 
     const LazyData<Vec<2>> getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
 
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {

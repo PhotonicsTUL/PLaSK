@@ -22,6 +22,8 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
     DataVector<double> temperatures;           ///< Computed temperatures
 
+    DataVector<double> thickness;               ///< Thicknesses of the layers
+
     DataVector<Vec<3,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
@@ -106,7 +108,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
     const LazyData<Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
