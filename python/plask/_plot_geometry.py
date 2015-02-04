@@ -92,7 +92,7 @@ class DrawEnviroment(object):
         :param matplotlib.transforms.BboxBase clip_box: clipping box for artist, optional
         :param geometry_object: plask's geometry object which is represented by the artist
         """
-        if self.fill:
+        if self.fill and geometry_object is not None:
             artist.set_fill(True)
             artist.set_facecolor(material_to_color(geometry_object.representative_material))
         else:
@@ -107,15 +107,17 @@ class DrawEnviroment(object):
             #artist.set_clip_path(clip_box)
         artist.set_zorder(self.zorder)
 
-
-def _draw_Block(env, geometry_object, transform, clip_box):
-    bbox = geometry_object.bbox #we have to use bbox because this code is using to draw non-block also
+def _draw_bbox(env, geometry_object, bbox, transform, clip_box):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
         transform=transform
     )
     env.append(block, clip_box, geometry_object)
+
+
+def _draw_Block(env, geometry_object, transform, clip_box):
+    _draw_bbox(env, geometry_object, geometry_object.bbox, transform, clip_box)
 
 _geometry_drawers[plask.geometry.Block2D] = _draw_Block
 _geometry_drawers[plask.geometry.Block3D] = _draw_Block
@@ -158,7 +160,11 @@ def _draw_Extrusion(env, geometry_object, transform, clip_box):
         finally:    #revert axes settings, change back to 3D:
             env.axes = (x+1 for x in env.axes)
     else:
-        _draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
+        #_draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
+        for leaf_bbox in geometry_object.get_leafs_bboxes():
+            _draw_bbox(env, leaf_bbox, transform, clip_box)
+
+
 
 _geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
 

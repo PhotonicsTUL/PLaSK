@@ -93,7 +93,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 
     def _select_plane(self, plane):
-        self._actions['plane01'].setChecked(plane == '01')
+        self._actions['plane01'].setChecked(plane == '01')  #QActionGroup should be used
         self._actions['plane02'].setChecked(plane == '02')
         self._actions['plane12'].setChecked(plane == '12')
         self.controller.checked_plane = plane
