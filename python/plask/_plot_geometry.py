@@ -162,7 +162,7 @@ def _draw_Extrusion(env, geometry_object, transform, clip_box):
     else:
         #_draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
         for leaf_bbox in geometry_object.get_leafs_bboxes():
-            _draw_bbox(env, leaf_bbox, transform, clip_box)
+            _draw_bbox(env, None, leaf_bbox, transform, clip_box)
 
 
 
