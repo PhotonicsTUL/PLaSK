@@ -73,6 +73,12 @@ class GNGeometryBase(GNObject):
     def accept_new_child(self):
         return not self.children
 
+    def accept_as_child(self, node):
+        from again_copy import GNCopy, GNAgain
+        if not self.accept_new_child() or isinstance(node, GNGeometryBase): return False
+        return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
+                isinstance(node, GNCopy) or isinstance(node, GNAgain)
+
 
 class GNCartesian(GNGeometryBase):
 
@@ -80,6 +86,10 @@ class GNCartesian(GNGeometryBase):
         super(GNCartesian, self).__init__(parent=parent, dim=dim)
         if dim == 2:
             self.length = None
+
+    def accept_as_child(self, node):
+        if not self.accept_new_child(): return False
+        return super(GNCartesian, self).accept_as_child(node) or isinstance(node, GNExtrusion)
 
     def get_alternative_direction_names(self):
         planar = (('left', 'right'),)
@@ -141,6 +151,10 @@ class GNCylindrical(GNGeometryBase):
     def __init__(self, parent=None):
         super(GNCylindrical, self).__init__(parent=parent, dim=2)
 
+    def accept_as_child(self, node):
+        if not self.accept_new_child(): return False
+        return super(GNCartesian, self).accept_as_child(node) or isinstance(node, GNRevolution)
+
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))
 
@@ -149,7 +163,6 @@ class GNCylindrical(GNGeometryBase):
         el = ordered_reader.get()
         if el is None: return
         if el.tag in geometry_object_names(GNRevolution.from_xml_3d, geometry_types_3d):
-            #we don't require self.length is None, our model could store some "in building" states not well defined for PLaSK
             GNRevolution.from_xml_3d(el, conf)
         else:
             construct_geometry_object(el, conf)

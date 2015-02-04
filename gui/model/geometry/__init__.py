@@ -211,7 +211,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if not isinstance(moved_obj, GNGeometryBase): return False
                 if row == -1: row = len(destination_list)
             else:
-                if not parent.accept_as_child(moved_obj): return False
+                if moved_obj in parent.path_to_root or not parent.accept_as_child(moved_obj): return False
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
             moved_obj = copy(moved_obj)
@@ -223,6 +223,18 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             destination_list.insert(row, moved_obj)
             self.endInsertRows()
             return True #removeRows will be called and remove current moved_obj
+        return False
+
+    def canDropMimeData(self, mime_data, action, row, column, parentIndex): #TODO this is optional but why qt doesn't call this??
+    #     #return super(GeometryModel, self).canDropMimeData(mime_data, action, row, column, parentIndex)
+        if action == QtCore.Qt.MoveAction:
+            moved_obj = mime_data.itemInstance()
+            parent = parentIndex.internalPointer()
+            if parent is None:
+                from .geometry import GNGeometryBase
+                return isinstance(moved_obj, GNGeometryBase)
+            else:
+                return moved_obj not in parent.path_to_root and parent.accept_as_child(moved_obj)
         return False
 
     #def moveRow(sourceParent, sourceRow, destinationParent, destinationChild):

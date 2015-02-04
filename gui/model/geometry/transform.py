@@ -18,7 +18,8 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNTransform(GNObject):
 
     def accept_as_child(self, node):
-        if not self.accept_new_child(): return False
+        from .geometry import GNGeometryBase
+        if not self.accept_new_child() or isinstance(node, GNGeometryBase): return False
         from again_copy import GNCopy, GNAgain
         return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
                 isinstance(node, GNCopy) or isinstance(node, GNAgain)

@@ -306,3 +306,10 @@ class GNode(object):
     def new_child_pos(self):
         """Return position of a new child"""
         return len(self.children)
+
+    @property
+    def path_to_root(self):
+        p = self
+        while p != None:
+            yield p
+            p = p.parent

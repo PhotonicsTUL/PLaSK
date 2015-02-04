@@ -80,6 +80,8 @@ class GNContainerBase(GNObject):
         return True
 
     def accept_as_child(self, node):
+        from .geometry import GNGeometryBase
+        if isinstance(node, GNGeometryBase): return False
         from again_copy import GNCopy, GNAgain
         return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
                 isinstance(node, GNCopy) or isinstance(node, GNAgain)
