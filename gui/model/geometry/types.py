@@ -35,7 +35,7 @@ def gname(key):
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
 from .container import GNStack, GNAlignContainer, GNShelf
 from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation, GNIntersection
-from .copy import GNCopy, GNAgain
+from .again_copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
 geometry_types_2d_core_leafs = {  # only unique names of types, displayed in add menu

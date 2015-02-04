@@ -12,6 +12,7 @@
 import cgi
 
 from lxml import etree
+from copy import copy
 import operator
 import cStringIO
 import pickle
@@ -132,10 +133,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return res
 
     def flags(self, index):
-        if not index.isValid(): return QtCore.Qt.NoItemFlags
+        if not index.isValid(): return QtCore.Qt.NoItemFlags #if self.is_read_only() else QtCore.Qt.ItemIsDropEnabled
         res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         if not self.is_read_only():
-            res |= QtCore.Qt.ItemIsDragEnabled |  QtCore.Qt.ItemIsDropEnabled
+            res |= QtCore.Qt.ItemIsDragEnabled
+            if index.internalPointer().accept_new_child():
+                   res |= QtCore.Qt.ItemIsDropEnabled
 
         #if not self.is_read_only():
         #    if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
@@ -214,7 +217,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if not parent.accept_as_child(moved_obj): return False
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
+            moved_obj = copy(moved_obj)
             moved_obj._parent = parent
+            moved_obj.path = None
             moved_obj.in_parent = None  #TODO does not remove this always and what with path?
             destination_list.insert(row, moved_obj)
             self.endInsertRows()

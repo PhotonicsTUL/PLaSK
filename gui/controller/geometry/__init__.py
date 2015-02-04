@@ -16,7 +16,7 @@ import plask
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.geometry import GNGeometryBase
-from ...model.geometry.copy import GNAgain
+from ...model.geometry.again_copy import GNAgain
 from ...model.geometry.object import GNObject
 from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core, gname
@@ -121,7 +121,7 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
-    def plot_element(self, tree_element, show_errors=True, set_limits=True):
+    def plot_element(self, tree_element, set_limits=True):
         #TODO support for ref element, and exclude rest non-objects
         is_ref = isinstance(tree_element, GNAgain)
         element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
@@ -133,14 +133,14 @@ class GeometryController(Controller):
                 to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
                 self.geometry_view.update_plot(to_plot, set_limits=set_limits, plane=self.checked_plane)
             except Exception as e:
-                if show_errors:
-                    QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
-                                               "Geometry can not be plotted due to the error in XPL content:\n{}"
-                                               .format(str(e)))
-                else:
-                    if not element_has_name: tree_element.name = None   #this is in finally but next lines can cause displaying fake name in tree
-                    self.status_bar.showMessage(str(e))
-                    self.status_bar.setAutoFillBackground(True)
+                #if show_errors:
+                #    QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
+                #                               "Geometry can not be plotted due to the error in XPL content:\n{}"
+                #                               .format(str(e)))
+                #else:
+                if not element_has_name: tree_element.name = None   #this is in finally but next lines can cause displaying fake name in tree
+                self.status_bar.showMessage(str(e))
+                self.status_bar.setAutoFillBackground(True)
                 return False
             else:
                 if not element_has_name: tree_element.name = None       #this is in finally but next lines can cause displaying fake name in tree
@@ -162,7 +162,7 @@ class GeometryController(Controller):
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:
-            self.plot_element(self.plotted_tree_element, show_errors=False, set_limits=False)
+            self.plot_element(self.plotted_tree_element, set_limits=False)
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()

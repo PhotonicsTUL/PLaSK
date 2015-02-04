@@ -32,7 +32,7 @@ class GNode(object):
         self.in_parent = None   #configuration inside parent (container)
         self.path = None    #path inside parent (container)
         self._parent = None  #used by parent property
-        self.set_parent(parent)
+        self.set_parent(parent, -1)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         """
