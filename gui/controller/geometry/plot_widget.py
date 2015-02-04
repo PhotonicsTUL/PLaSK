@@ -99,7 +99,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.controller.checked_plane = plane
         if self.controller.plotted_tree_element is not None and \
            getattr(self.controller.plotted_tree_element, 'dim') == 3:
-            self.controller.plot_element(self.controller.plotted_tree_element, show_errors=True, margin=True)
+            self.controller.plot_element(self.controller.plotted_tree_element, show_errors=True, set_limits=True)
 
     def plane01(self):
         self._select_plane('01')
