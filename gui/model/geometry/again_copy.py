@@ -182,6 +182,9 @@ class GNCopy(GNObject):
     def accept_new_child(self):
         return True
 
+    def accept_as_child(self, node):
+        return isinstance(node, GNCopyChild)
+
     def add_child_options(self):
         return [{
                 'delete': lambda i1, i2: GNCDelete(),

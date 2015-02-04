@@ -133,16 +133,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return res
 
     def flags(self, index):
-        if not index.isValid(): return QtCore.Qt.NoItemFlags #if self.is_read_only() else QtCore.Qt.ItemIsDropEnabled
+        if not index.isValid():
+            return QtCore.Qt.NoItemFlags if self.is_read_only() else QtCore.Qt.ItemIsDropEnabled
         res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
         if not self.is_read_only():
             res |= QtCore.Qt.ItemIsDragEnabled
             if index.internalPointer().accept_new_child():
                    res |= QtCore.Qt.ItemIsDropEnabled
-
-        #if not self.is_read_only():
-        #    if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
-        #        res |= QtCore.Qt.ItemIsEditable
         return res
 
     def supportedDropActions(self):
@@ -218,9 +215,11 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
             moved_obj = copy(moved_obj)
+            if type(parent) != type(moved_obj._parent): moved_obj.in_parent = None
+            from .container import GNContainerBase
+            if not isinstance(parent, GNContainerBase): moved_obj.path = None
+            #if moved_obj._parent != parent: moved_obj.path = None  #mayby this is better strategy?
             moved_obj._parent = parent
-            moved_obj.path = None
-            moved_obj.in_parent = None  #TODO does not remove this always and what with path?
             destination_list.insert(row, moved_obj)
             self.endInsertRows()
             return True #removeRows will be called and remove current moved_obj

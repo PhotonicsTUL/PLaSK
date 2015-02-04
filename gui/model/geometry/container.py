@@ -80,7 +80,9 @@ class GNContainerBase(GNObject):
         return True
 
     def accept_as_child(self, node):
-        return isinstance(node, GNObject) and node.dim == self.children_dim
+        from again_copy import GNCopy, GNAgain
+        return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
+                isinstance(node, GNCopy) or isinstance(node, GNAgain)
 
     def child_properties(self, child):
         res = super(GNContainerBase, self).child_properties(child)
@@ -165,6 +167,9 @@ class GNStack(GNContainerBase):
         self.repeat = None
         self.shift = None
         self.aligners = [GNAligner(None, None) for _ in range(0, dim-1)]
+
+    def accept_as_child(self, node):
+        return super(GNStack, self).accept_as_child(node) or isinstance(node, GNZero)
 
     def aligners_dir(self):
         return (0,) if self.children_dim == 2 else (0, 1)
@@ -271,6 +276,9 @@ class GNShelf(GNContainerBase):
         self.repeat = None
         self.shift = None
         self.flat = None
+
+    def accept_as_child(self, node):
+        return super(GNStack, self).accept_as_child(node) or isinstance(node, GNZero) or isinstance(node, GNGap)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNShelf, self)._attributes_from_xml(attribute_reader, conf)
