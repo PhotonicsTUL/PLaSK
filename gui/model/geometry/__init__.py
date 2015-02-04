@@ -13,6 +13,9 @@ import cgi
 
 from lxml import etree
 import operator
+import cStringIO
+import pickle
+
 from ...qt import QtCore
 
 from .. import SectionModel
@@ -25,6 +28,36 @@ from .types import geometry_types_geometries
 import sys
 
 __author__ = 'qwak'
+
+
+
+class PyObjMime(QtCore.QMimeData):
+    MIMETYPE = 'application/x-pyobj'
+
+    def __init__(self, data=None):
+        super(PyObjMime, self).__init__()
+        self.data = data
+        if data is not None:
+            # Try to pickle data
+            try:
+                pdata = pickle.dumps(data)
+            except:
+                return
+            self.setData(self.MIMETYPE, pickle.dumps(data.__class__) + pdata)
+
+    def itemInstance(self):
+        if self.data is not None:
+            return self.data
+        io = cStringIO.StringIO(str(self.data(self.MIMETYPE)))
+        try:
+            # Skip the type.
+            pickle.load(io)
+            # Recreate the data.
+            return pickle.load(io)
+        except:
+            pass
+
+        return None
 
 
 class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
@@ -101,10 +134,16 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def flags(self, index):
         if not index.isValid(): return QtCore.Qt.NoItemFlags
         res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        if not self.is_read_only():
+            res |= QtCore.Qt.ItemIsDragEnabled |  QtCore.Qt.ItemIsDropEnabled
+
         #if not self.is_read_only():
         #    if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
         #        res |= QtCore.Qt.ItemIsEditable
         return res
+
+    def supportedDropActions(self):
+        return QtCore.Qt.MoveAction
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
@@ -154,6 +193,38 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         self.endRemoveRows()
         self.fire_changed()
         return True
+
+    def mimeTypes(self):
+        return [PyObjMime.MIMETYPE]
+
+    def mimeData(self, indexes):
+        return PyObjMime(indexes[0].internalPointer())
+
+    def dropMimeData(self, mime_data, action, row, column, parentIndex):
+        if action == QtCore.Qt.IgnoreAction: return True
+        if action == QtCore.Qt.MoveAction:
+            moved_obj = mime_data.itemInstance()
+            parent = parentIndex.internalPointer()  #this can be None for root
+            destination_list = self.children_list(parentIndex)
+            if parent is None:
+                from .geometry import GNGeometryBase
+                if not isinstance(moved_obj, GNGeometryBase): return False
+                if row == -1: row = len(destination_list)
+            else:
+                if not parent.accept_as_child(moved_obj): return False
+                if row == -1: row = parent.new_child_pos()
+            self.beginInsertRows(parentIndex, row, row)
+            moved_obj._parent = parent
+            destination_list.insert(row, moved_obj)
+            self.endInsertRows()
+            return True #removeRows will be called and remove current moved_obj
+        return False
+
+    #def moveRow(sourceParent, sourceRow, destinationParent, destinationChild):
+    #    return False
+
+    #def insertRows(self, row, count, parent = QtCore.QModelIndex()):
+    #    pass
 
     # other actions:
     def index_for_node(self, node):

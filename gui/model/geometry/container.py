@@ -79,6 +79,9 @@ class GNContainerBase(GNObject):
     def accept_new_child(self):
         return True
 
+    def accept_as_child(self, node):
+        return isinstance(node, GNObject) and node.dim == self.children_dim
+
     def child_properties(self, child):
         res = super(GNContainerBase, self).child_properties(child)
         res.append(('path', child.path))

@@ -138,10 +138,12 @@ class GeometryController(Controller):
                                                "Geometry can not be plotted due to the error in XPL content:\n{}"
                                                .format(str(e)))
                 else:
+                    if not element_has_name: tree_element.name = None   #this is in finally but next lines can cause displaying fake name in tree
                     self.status_bar.showMessage(str(e))
                     self.status_bar.setAutoFillBackground(True)
                 return False
             else:
+                if not element_has_name: tree_element.name = None       #this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage('')
                 self.status_bar.setAutoFillBackground(False)
         finally:
@@ -207,6 +209,12 @@ class GeometryController(Controller):
         self.properties_delegate = HTMLDelegate(self.tree)
         self.tree.setItemDelegateForColumn(1, self.properties_delegate)
         self.tree.setColumnWidth(0, 200)
+
+        self.tree.dragEnabled()
+        self.tree.acceptDrops()
+        self.tree.showDropIndicator()
+        self.tree.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+
         return self.tree
 
     #def _construct_plot_dock(self):

@@ -62,7 +62,7 @@ class GNode(object):
         :param etree.Element element: source XML node
         :param GNReadConf conf: reader configuration
         """
-        if conf is not None and conf.parent is not None: self.set_parent(conf.parent)
+        if conf is not None and conf.parent is not None: self.set_parent(conf.parent, -1)
         if element is None: return
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
@@ -140,6 +140,9 @@ class GNode(object):
         result.append(geometry_types_other)
         return result
 
+    def accept_as_child(self, node):
+        return False
+
     @property
     def parent(self):
         """
@@ -148,7 +151,7 @@ class GNode(object):
         """
         return self._parent
 
-    def set_parent(self, parent, at_end=True):
+    def set_parent(self, parent, index=None):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
@@ -160,10 +163,11 @@ class GNode(object):
             self.path = None
         self._parent = parent
         if self._parent is not None:
-            if at_end:
-                self._parent.children.append(self)
-            else:
-                self._parent.children.insert(self._parent.new_child_pos(), self)
+            if index is None:
+                index = self._parent.new_child_pos()
+            if index < 0:
+                index = len(self._parent.children) + 1 - index
+            self._parent.children.insert(index, self)
 
     @property
     def root(self):
