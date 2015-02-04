@@ -215,6 +215,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
             moved_obj._parent = parent
+            moved_obj.in_parent = None  #TODO does not remove this always
             destination_list.insert(row, moved_obj)
             self.endInsertRows()
             return True #removeRows will be called and remove current moved_obj
