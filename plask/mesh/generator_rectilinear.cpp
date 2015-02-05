@@ -116,13 +116,13 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
     for (auto ref: refinements[dir]) {
         auto object = ref.first.first.lock();
         if (!object) {
-             if (warn_missing) writelog(LOG_WARNING, "RectilinearMeshDivideGenerator: Refinement defined for object not existing any more");
+             if (warn_missing) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object not existing any more");
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getObjectBoundingBoxes(*object, path);
             auto origins = geometry->getObjectPositions(*object, path);
-            if (warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMeshDivideGenerator: Refinement defined for object absent from the geometry");
-            else if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMeshDivideGenerator: Single refinement defined for more than one object");
+            if (warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
+            else if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
             auto box = boxes.begin();
             auto origin = origins.begin();
             for (; box != boxes.end(); ++box, ++origin) {
@@ -131,8 +131,8 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
                     if (warn_outside && (x < lower || x > upper))
-                        writelog(LOG_WARNING, "RectilinearMeshDivideGenerator: Refinement at %1% outside of the object (%2% to %3%).",
-                                            x, lower, upper);
+                        writelog(LOG_WARNING, "DivideGenerator: Refinement at specified at %1% lying at %2% in global coords. is outside of the object (%3% to %4%)",
+                                            x, x+zero, lower+zero, upper+zero);
                     result.addPoint(zero + x);
                 }
             }

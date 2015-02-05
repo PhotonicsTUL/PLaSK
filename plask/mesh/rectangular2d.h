@@ -64,10 +64,10 @@ inline bool getLineHi(std::size_t& line, const RectangularAxis& axis, double box
  * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
  */
 inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const RectangularAxis& axis, double box_lower, double box_upper) {
-    assert(box_lower <= box_upper);
+    if(box_lower > box_upper) return false;
     begInd = axis.findIndex(box_lower);
     endInd = axis.findIndex(box_upper);
-    if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    //endInd is exluded
+    if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    // endInd is exluded
     return begInd != endInd;
 }
 
