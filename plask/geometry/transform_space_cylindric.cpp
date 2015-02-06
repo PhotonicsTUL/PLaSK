@@ -41,6 +41,7 @@ GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) cons
 }
 
 bool Revolution::childIsClipped() const {
+    if (!this->getChild()) return false;
     return this->getChild()->getBoundingBox().lower.tran() < 0;
 }
 
@@ -70,12 +71,11 @@ Box3D Revolution::parentBox(const ChildBox& r) {
 
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    auto line_nr = reader.source.getLineNr();
-    auto res = make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>());
-    if (res->childIsClipped()) {
+    bool auto_clip = reader.source.getAttribute("auto_clip", false);
+    return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(), auto_clip);
+    /*if (res->childIsClipped()) {
         writelog(LOG_WARNING, "Child of <revolution>, read from XPL line %1%, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
-    }
-    return res;
+    }*/
 }
 
 static GeometryReader::RegisterObjectReader revolution_reader(Revolution::NAME, read_revolution);

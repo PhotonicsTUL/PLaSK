@@ -57,7 +57,8 @@ void register_geometry_changespace()
         "Objects of this type can be supplied to 2D cylindrical solvers or they can be\n"
         "used as a part of the 3D geometry tree.\n\n"
         "Args:\n"
-        "    item (2D geometry object): Two-dimensional geometry object to extrude.\n\n"
+        "    item (2D geometry object): Two-dimensional geometry object to revolve.\n"
+        "    auto_clip (bool): If True, item will be implicitly clipped to non-negative tran. coordinates. False by default.\n\n"
         "Example:\n"
         "    Instead of using :class:`~plask.geometry.Cylinder` object, you can revolve\n"
         "    a rectangle in the following way:\n\n"
@@ -66,7 +67,7 @@ void register_geometry_changespace()
         "    The created cylinder will have base radius of 1µm and the height 2µm.\n\n"
         "    **Note:** In the real-life situations, you can revolve any complicated 2D\n"
         "    object (e.g. a stack of a shelf).\n",
-        py::init<shared_ptr<GeometryObjectD<2>>>((py::arg("item"))))
+        py::init<shared_ptr<GeometryObjectD<2>>>((py::arg("item"), py::arg("auto_clip")=false)))
     ;
 }
 

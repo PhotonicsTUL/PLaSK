@@ -14,9 +14,13 @@ namespace plask {
 struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     /**
-     * @param child object to revolve, must have getBoundingBox().lower.tran() >= 0
+     * @param child object to revolve
+     * @param auto_clip if false child must have getBoundingBox().lower.tran() >= 0, if true it will be cliped
      */
-    Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryObjectTransformSpace<3, 2>(child) {}
+    Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>(), bool auto_clip = false): GeometryObjectTransformSpace<3, 2>(child) {
+        if (!auto_clip && childIsClipped())
+            throw Exception("Child of Revolution must have bouding box with possitive tran. coordinates (when auto clipping is off).");
+    }
 
     static constexpr const char* NAME = "revolution";
 
