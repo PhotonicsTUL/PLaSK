@@ -107,9 +107,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    .. xml:contents::
 
-       A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. All the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane.
-
-
+       A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. All the boundaries of its bounding box should have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane. If not, they will be implicitly clipped.
 
 
 
