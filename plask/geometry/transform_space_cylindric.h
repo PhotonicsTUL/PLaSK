@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Represent 3D geometry object which is an effect of revolving a 2D object (child) around the up axis.
  *
- * Child must have getBoundingBox().lower.tran() >= 0.
+ * Child should have getBoundingBox().lower.tran() >= 0. When it doesn't have, it is implicitly clipped.
  * @ingroup GEOMETRY_OBJ
  */
 struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
@@ -56,6 +56,12 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
      * @return rectangle in child space
      */
     //static ChildBox childBox(const Box& r);
+
+    /**
+     * Check if child can be clipped.
+     * @return @c true if child has getBoundingBox().lower.tran() < 0
+     */
+    bool childIsClipped() const;
 
 private:
     /**

@@ -40,6 +40,10 @@ GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) cons
     return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(childVec(point), all));
 }
 
+bool Revolution::childIsClipped() const {
+    return this->getChild()->getBoundingBox().lower.tran() < 0;
+}
+
 // void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
 //     if (predicate(*this)) {
 //         dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
@@ -66,7 +70,12 @@ Box3D Revolution::parentBox(const ChildBox& r) {
 
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>());
+    auto line_nr = reader.source.getLineNr();
+    auto res = make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>());
+    if (res->childIsClipped()) {
+        writelog(LOG_WARNING, "Child of <revolution>, read from XPL line %1%, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
+    }
+    return res;
 }
 
 static GeometryReader::RegisterObjectReader revolution_reader(Revolution::NAME, read_revolution);
