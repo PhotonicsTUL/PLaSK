@@ -294,11 +294,11 @@ class GNRevolution(GNTransform):
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNRevolution, self)._attributes_from_xml(attribute_reader, conf)
-        self.auto_clip = attribute_reader.get('auto_clip')
+        self.auto_clip = attribute_reader.get('auto-clip')
 
     def _attributes_to_xml(self, element, conf):
         super(GNRevolution, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'auto_clip')
+        if self.auto_clip is not None: element.attrib['auto-clip'] = self.auto_clip
 
     def tag_name(self, full_name=True):
         return "revolution"
@@ -308,7 +308,7 @@ class GNRevolution(GNTransform):
 
     def major_properties(self):
         res = super(GNRevolution, self).major_properties()
-        res.append(('auto_clip', self.auto_clip))
+        res.append(('auto-clip', self.auto_clip))
         return res
 
     def get_controller(self, document, model):
