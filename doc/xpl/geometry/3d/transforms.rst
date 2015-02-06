@@ -104,11 +104,11 @@ Transforms always contain a single geometry object (possibly container) as their
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
-   :attr auto_clip: If true item will be implicitly clipped to non-negative tran. coordinates. (bool, false by default)
+   :attr auto-clip: If true item will be implicitly clipped to non-negative tran. coordinates. (bool, false by default)
 
    .. xml:contents::
 
-       A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. If auto_clip is off, all the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane. If auto_clip is on, they will be implicitly clipped.
+       A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. If auto-clip is off, all the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane. If auto-clip is on, they will be implicitly clipped.
 
 
 
