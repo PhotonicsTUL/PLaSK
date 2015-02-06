@@ -396,7 +396,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
             : current_boundary(current_boundary_end), current_boundary_end(current_boundary_end)
         {}
 
-        bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const {
+        bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const override {
             const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
             if (current_boundary != o.current_boundary) return false;   //other outer-loop boundaries
             //same outer-loop boundaries:
@@ -404,15 +404,15 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
             return in_boundary == o.in_boundary;    //both are no ends, compare inner-loop iterators
         }
 
-        virtual IteratorImpl* clone() const {
+        virtual IteratorImpl* clone() const override {
             return new IteratorImpl(*this);
         }
 
-        virtual std::size_t dereference() const {
+        virtual std::size_t dereference() const override {
             return *in_boundary;
         }
 
-        virtual void increment() {
+        virtual void increment() override {
             if (current_boundary != current_boundary_end) return;
             ++in_boundary;
             fixCurrentBoundary();
@@ -424,23 +424,23 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
     SumBoundaryImpl(Args&&... args):
         boundaries(std::forward<Args>(args)...) {   }
 
-    virtual bool contains(std::size_t mesh_index) const {
+    virtual bool contains(std::size_t mesh_index) const override {
         for (auto& b: boundaries)
             if (b.contains(mesh_index)) return true;
         return false;
     }
 
-    typename BoundaryLogicImpl::Iterator begin() const {
+    typename BoundaryLogicImpl::Iterator begin() const override {
         if (boundaries.empty()) //boundaries.begin() == boundaries.end()
             return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
     }
 
-    typename BoundaryLogicImpl::Iterator end() const {
+    typename BoundaryLogicImpl::Iterator end() const override {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
     }
 
-    std::size_t size() const {
+    std::size_t size() const override {
         std::size_t s = 0;
         for (auto bound: boundaries) s += bound.size();
         return s;
@@ -477,7 +477,7 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
                ++this->meshIterator;  //go to first element which fulfill predicate
        }
 
-        virtual std::size_t dereference() const {
+        virtual std::size_t dereference() const override {
             return meshIterator.getIndex();
         }
 
@@ -489,17 +489,17 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
 
       public:
 
-        virtual void increment() {
+        virtual void increment() override {
             do {
                 ++meshIterator;
             } while (meshIterator != meshIteratorEnd && !check_predicate());
         }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new PredicateIteratorImpl(*this);
         }
 
@@ -525,15 +525,15 @@ private:
 
 public:
 
-    virtual bool contains(std::size_t mesh_index) const {
+    virtual bool contains(std::size_t mesh_index) const override {
         return this->check_predicate(mesh_index);
     }
 
-    typename BoundaryLogicImpl::Iterator begin() const {
+    typename BoundaryLogicImpl::Iterator begin() const override {
         return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::begin(this->mesh)));
     }
 
-    typename BoundaryLogicImpl::Iterator end() const {
+    typename BoundaryLogicImpl::Iterator end() const override {
         return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
     }
 

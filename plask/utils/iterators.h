@@ -130,14 +130,14 @@ struct PolymorphicForwardIterator:
 
     /**
      * Copy constructor. Clone implementation object.
-     * @param src Iterator from which implementation object should be clone. It mustn't hold @c nullptr.
+     * @param src Iterator from which implementation object should be clone.
      */
-    PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl->clone(); }
+    PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl ? src.impl->clone() : nullptr; }
     
     PolymorphicForwardIterator& operator=(const PolymorphicForwardIterator& src) {
         if (this->impl != src.impl) {   //not self-assigned?
             delete this->impl;
-            this->impl = src.impl->clone();
+            this->impl = src.impl ? src.impl->clone() : nullptr;
         }
         return *this;
     }
@@ -147,7 +147,7 @@ struct PolymorphicForwardIterator:
      * Move ownership of wrapped implementation object from @a src to this.
      * @param src iterator from which implementation object should be moved
      */
-    PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = 0; }
+    PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = nullptr; }
     
     /**
      * Swap values of @c this and @p to_swap.

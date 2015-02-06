@@ -57,9 +57,10 @@ GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) cons
 }*/ //TODO bugy
 
 Box3D Revolution::parentBox(const ChildBox& r) {
+    double tran = std::max(r.upper.tran(), 0.0);
     return Box3D(
-            vec(-r.upper.tran(), -r.upper.tran(), r.lower.vert()),
-            vec(r.upper.tran(),  r.upper.tran(),  r.upper.vert())
+            vec(-tran, -tran, r.lower.vert()),
+            vec(tran,  tran,  r.upper.vert())
            );
 }
 
