@@ -290,12 +290,30 @@ class GNRevolution(GNTransform):
 
     def __init__(self, parent=None):
         super(GNTransform, self).__init__(parent=parent, dim=3, children_dim=2)
+        self.auto_clip = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNRevolution, self)._attributes_from_xml(attribute_reader, conf)
+        self.auto_clip = attribute_reader.get('auto_clip')
+
+    def _attributes_to_xml(self, element, conf):
+        super(GNRevolution, self)._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'auto_clip')
 
     def tag_name(self, full_name=True):
         return "revolution"
 
     def python_type(self):
         return 'geometry.Revolution'
+
+    def major_properties(self):
+        res = super(GNRevolution, self).major_properties()
+        res.append(('auto_clip', self.auto_clip))
+        return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNRevolutionController
+        return GNRevolutionController(document, model, self)
 
     @staticmethod
     def from_xml_3d(element, conf):

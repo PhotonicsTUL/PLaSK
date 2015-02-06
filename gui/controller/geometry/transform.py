@@ -87,3 +87,24 @@ class GNExtrusionController(GNObjectController):
     def on_edit_enter(self):
         super(GNExtrusionController, self).on_edit_enter()
         self.length.setText(none_to_empty(self.node.length))
+
+
+class GNRevolutionController(GNObjectController):
+
+    def fill_form(self):
+        self.construct_group('Revolution-specific settings')
+        self.auto_clip = self.construct_combo_box('Auto clip:', items=['', 'yes', 'no'])
+        self.auto_clip.setToolTip(u'&lt;revolution <b>auto_clip</b>="" ...&gt;<br/>'
+                                u'The value of this attribute can be either true of false.'
+                                u' It specifies whether item will be implicitly clipped to non-negative tran. coordinates'
+                                u' Defaults to false.')
+        super(GNRevolutionController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNRevolutionController, self).save_data_in_model()
+        self.node.auto_clip = empty_to_none(self.auto_clip.currentText())
+
+    def on_edit_enter(self):
+        super(GNRevolutionController, self).on_edit_enter()
+        with BlockQtSignals(self.auto_clip):
+            self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))

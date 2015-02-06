@@ -72,7 +72,7 @@ class GNShelfController(GNObjectController):
         super(GNShelfController, self).on_edit_enter()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
-        with BlockQtSignals(self.flat) as ignored:
+        with BlockQtSignals(self.flat):
             self.flat.setEditText(none_to_empty(self.node.flat))
 
 
