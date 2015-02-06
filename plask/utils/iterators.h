@@ -61,7 +61,7 @@ struct PolymorphicForwardIteratorImpl: public PolymorphicForwardIteratorImplBase
 
     /**
      * Clone this iterator.
-     * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
+     * @return clone of @c *this, allocated with @a new operator (clone caller must trust to delete it)
      */
     virtual PolymorphicForwardIteratorImpl<ValueT, ReferenceT>* clone() const = 0;
 };

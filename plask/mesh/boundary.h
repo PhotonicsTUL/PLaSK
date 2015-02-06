@@ -232,6 +232,48 @@ struct PLASK_API BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
 };
 
 /**
+ * Implementation of empty boundary logic.
+ *
+ * This boundary represents empty index set.
+ */
+struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
+
+    struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+
+        virtual std::size_t dereference() const {
+            throw Exception("Dereference of empty boundary iterator.");
+        }
+
+        virtual void increment() {}
+
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+            return true;
+        }
+
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+            return new IteratorImpl;
+        }
+
+    };
+
+    virtual bool contains(std::size_t mesh_index) const { return false; }
+
+    virtual typename BoundaryLogicImpl::const_iterator begin() const {
+        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
+    }
+
+    virtual typename BoundaryLogicImpl::const_iterator end() const {
+        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
+    }
+
+    std::size_t size() const {
+        return 0;
+    }
+
+    virtual bool empty() const { return true; }
+};
+
+/**
  * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
  * This mesh must be a specific type @p MeshType.
  *
@@ -254,7 +296,7 @@ public:
 
     Boundary(std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create_fun): create(create_fun) {}
 
-    Boundary() = default;
+    Boundary() {}
 
     //Boundary(const Boundary<MeshType>&) = default;
     //Boundary(Boundary<MeshType>&&) = default;
@@ -265,6 +307,7 @@ public:
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
     WithMesh operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        if (isNull()) return new EmptyBoundaryImpl();
         return this->create(mesh, geometry);
     }
 
@@ -274,6 +317,7 @@ public:
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
     WithMesh operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        if (isNull()) return new EmptyBoundaryImpl();
         return this->create(*mesh, geometry);
     }
 
@@ -283,6 +327,7 @@ public:
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
     WithMesh get(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        if (isNull()) return new EmptyBoundaryImpl();
         return this->create(mesh, geometry);
     }
 
@@ -292,6 +337,7 @@ public:
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
     WithMesh get(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        if (isNull()) return new EmptyBoundaryImpl();
         return this->create(*mesh, geometry);
     }
 
@@ -301,11 +347,12 @@ public:
      * @return @c true only if this represents empty set of indexes of given @p mesh
      */
     bool empty(const MeshType& mesh) const {
+        if (isNull()) return true;
         return get(mesh).empty();
     }
 
     /**
-     * Check if boundary is null (doesn't hold valid creator)
+     * Check if boundary is null (doesn't hold valid creator). Null boundary behaves simillar to empty one.
      * @return @c true only if boundary doesn't hold valid creator
      */
     bool isNull() const {
@@ -403,48 +450,6 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
 
     void push_back(typename Boundary<MeshType>::WithMesh&& to_append) { boundaries.push_back(to_append); }
 
-};
-
-/**
- * Implementation of empty boundary logic.
- *
- * This boundary represents empty index set.
- */
-struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
-
-    struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
-
-        virtual std::size_t dereference() const {
-            throw Exception("Dereference of empty boundary iterator.");
-        }
-
-        virtual void increment() {}
-
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
-            return true;
-        }
-
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
-            return new IteratorImpl;
-        }
-
-    };
-
-    virtual bool contains(std::size_t mesh_index) const { return false; }
-
-    virtual typename BoundaryLogicImpl::const_iterator begin() const {
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
-    }
-
-    virtual typename BoundaryLogicImpl::const_iterator end() const {
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
-    }
-
-    std::size_t size() const {
-        return 0;
-    }
-
-    virtual bool empty() const { return true; }
 };
 
 /**
