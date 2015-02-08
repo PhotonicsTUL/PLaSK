@@ -59,7 +59,7 @@ def material_to_color(material):
         :param plask.Material material: material
         :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
     """
-    i = adler32(str(material))      #maybe crc32?
+    i = adler32(str(material))      # maybe crc32?
     return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
 
 

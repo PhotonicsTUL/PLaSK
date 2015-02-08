@@ -138,16 +138,25 @@ class GeometryController(Controller):
                 #                               "Geometry can not be plotted due to the error in XPL content:\n{}"
                 #                               .format(str(e)))
                 #else:
-                if not element_has_name: tree_element.name = None   #this is in finally but next lines can cause displaying fake name in tree
+                if not element_has_name:
+                    tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage(str(e))
+                palette = self.status_bar.palette()
+                palette.setColor(QtGui.QPalette.Background, '#ff8888')
+                self.status_bar.setPalette(palette)
                 self.status_bar.setAutoFillBackground(True)
                 return False
             else:
-                if not element_has_name: tree_element.name = None       #this is in finally but next lines can cause displaying fake name in tree
+                if not element_has_name:
+                    tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage('')
+                palette = self.status_bar.palette()
+                palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
+                self.status_bar.setPalette(palette)
                 self.status_bar.setAutoFillBackground(False)
         finally:
-            if not element_has_name: tree_element.name = None
+            if not element_has_name:
+                tree_element.name = None
         return True
 
         #plot_geometry(current_index.internalPointer())
@@ -261,7 +270,7 @@ class GeometryController(Controller):
         self.status_bar = QtGui.QStatusBar()
         self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         palette = self.status_bar.palette()
-        palette.setColor(QtGui.QPalette.Background, '#ff8888')
+        self.statusbar_color = palette.color(QtGui.QPalette.Background)
         self.status_bar.setPalette(palette)
 
         geometry_widget = QtGui.QWidget()

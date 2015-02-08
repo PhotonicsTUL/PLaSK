@@ -43,7 +43,7 @@ class GNAgain(GNode):
         return res
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNAgainController
+        from ...controller.geometry.again_copy import GNAgainController
         return GNAgainController(document, model, self)
 
     @staticmethod
@@ -74,7 +74,7 @@ class GNCopyChild(GNode):
         return res
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNCopyChildController
+        from ...controller.geometry.again_copy import GNCopyChildController
         return GNCopyChildController(document, model, self)
 
 
@@ -84,7 +84,7 @@ class GNCDelete(GNCopyChild):
         return "delete"
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNCDeleteController
+        from ...controller.geometry.again_copy import GNCDeleteController
         return GNCDeleteController(document, model, self)
 
 
@@ -118,7 +118,7 @@ class GNCReplace(GNCopyChild):
         return res
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNCReplaceController
+        from ...controller.geometry.again_copy import GNCReplaceController
         return GNCReplaceController(document, model, self)
 
 
@@ -145,7 +145,7 @@ class GNCToBlock(GNCopyChild):
         return res
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNCToBlockController
+        from ...controller.geometry.again_copy import GNCToBlockController
         return GNCToBlockController(document, model, self)
 
 
@@ -193,7 +193,7 @@ class GNCopy(GNObject):
                 }]
 
     def get_controller(self, document, model):
-        from ...controller.geometry.copy import GNCopyController
+        from ...controller.geometry.again_copy import GNCopyController
         return GNCopyController(document, model, self)
 
     @staticmethod

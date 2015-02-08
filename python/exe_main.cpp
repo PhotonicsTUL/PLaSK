@@ -376,7 +376,8 @@ int main(int argc, const char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 plask::python::PythonManager_load(omanager, py::str(filename), locals);
-                manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
+                if (manager->scriptline)
+                    manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
                 globals.update(manager->locals);
                 plask::python::PythonManager::export_dict(omanager, globals);
 

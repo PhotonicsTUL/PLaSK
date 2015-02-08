@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import sys
+from copy import copy
 
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
