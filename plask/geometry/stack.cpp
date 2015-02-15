@@ -297,7 +297,7 @@ bool ShelfContainer2D::isFlat() const {
     std::size_t first = 0;
     while (first < children.size() && children[first]->getChildType() == GeometryObject::TYPE_SEPARATOR)
         ++first;
-    if (first >= children.size()-2)
+    if (first+2 >= children.size()) //will we outside when we go 2 steps forward?
         return true;    //(almost) same separators
     const double height = children[first]->getBoundingBoxSize().vert();
     for (std::size_t i = first+1; i < children.size(); ++i)
