@@ -607,20 +607,6 @@ public:
     void remove() { remove<Material>(MaterialType::static_name); }
 
     /**
-     * Check if dopant is included in @p material_name.
-     * @param material_name full material name
-     * @return @c true only if dopant is included in @p material_name.
-     */
-    static bool isNameWithDopant(const std::string& material_name);
-
-    /**
-     * Check if @p material_name is name of simple material.
-     * @param material_name full material name or name without dopant (only part before ':')
-     * @return @c true only if @p material_name is name of simple material (does not have composition).
-     */
-    static bool isSimpleMaterialName(const std::string& material_name);
-
-    /**
      * Check if a material (given without patameters) is simple.
      * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
      * @return @c true only if the material is simple

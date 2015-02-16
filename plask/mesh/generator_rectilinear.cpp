@@ -11,7 +11,7 @@ inline static void addPoints(OrderedAxis& dst, double lo, double up, bool single
     if (!singleMaterial) {
         const double ply = abs(up - lo);
         const unsigned points = (min_ply != 0.)? std::min(unsigned(std::ceil(ply / abs(min_ply))), max_points) : max_points;
-        for (long i = points - 1; i > 0; --i) {
+        for (long i = long(points) - 1; i > 0; --i) {
             dst.addPoint(lo + i * ply / points, 0.5*ply/points);
         }
     }

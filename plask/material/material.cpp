@@ -46,12 +46,30 @@ std::string Material::StringBuilder::dopant(const std::string& dopantName, char 
     return str.str();
 }
 
+void Material::Parameters::parse(const std::string &full_material_str) {
+    std::string dopant;
+    std::tie(this->name, dopant) = splitString2(full_material_str, ':');
+    std::tie(this->name, this->label) = splitString2(this->name, '_');
+    if (!dopant.empty())
+        Material::parseDopant(dopant, this->dopant_name, this->dopantAmountType, this->dopantAmount);
+    else
+        this->dopantAmountType = Material::NO_DOPING;
+    if (isSimpleMaterialName(name))
+        composition.clear();
+    else
+        composition = Material::parseComposition(name);
+}
+
+Material::Composition Material::Parameters::completeComposition() const {
+    return Material::completeComposition(composition);
+}
+
 std::string Material::str() const {
     return name();
 }
 
 bool Material::isSimple() const {
-    return MaterialsDB::isSimpleMaterialName(str());
+    return isSimpleMaterialName(str());
 }
 
 double Material::A(double T) const { throwNotImplemented("A(double T)"); return 0; }

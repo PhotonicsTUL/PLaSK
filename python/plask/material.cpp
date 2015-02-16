@@ -629,7 +629,8 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     Material::Composition composition;
     kwargs2MaterialComposition(kwargs, name, dopant, doping_type, doping_concentration, composition);
     if (composition.empty())
-        return DB->get(name, std::vector<double>(), doping_type, doping_concentration);
+        return DB->get(name, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
+        //return DB->get(name, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
     else
         return DB->get(composition, dopant, doping_type, doping_concentration);
 }

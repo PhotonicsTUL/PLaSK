@@ -95,7 +95,23 @@ struct PLASK_API Material {
 
   public:
 
-    /*
+    /**
+     * Check if dopant is included in @p material_name.
+     * @param material_name full material name
+     * @return @c true only if dopant is included in @p material_name.
+     */
+    static bool isNameWithDopant(const std::string& material_name) { return material_name.find(':') != std::string::npos; }
+
+
+
+    /**
+     * Check if @p material_name is name of simple material.
+     * @param material_name full material name or name without dopant (only part before ':')
+     * @return @c true only if @p material_name is name of simple material (does not have composition).
+     */
+    static bool isSimpleMaterialName(const std::string &material_name) { return material_name.find('(') == std::string::npos; }
+
+    /**
      * Parameters of material, information about: name, composition and dopant.
      *
      * It stores all information which are represented by material string,
@@ -103,11 +119,13 @@ struct PLASK_API Material {
      *
      * Can be obtained either from string (see parse(std::string)) or material (see getParameters()).
      */
-    /*struct PLASK_API Parameters {
+    class PLASK_API Parameters {
 
-        /// short (without composition and doping amounts) name of material
+        /// short (without composition, label and doping amounts) name of material
         /// only for simple material(?)
         std::string name;
+
+        std::string label;
 
         Composition composition;
 
@@ -122,7 +140,11 @@ struct PLASK_API Material {
         bool isSimple() const { return composition.empty(); }
 
         bool hasDopant() const { return dopantAmountType != NO_DOPING; }
-    };*/
+
+        void parse(const std::string& full_material_str);
+
+        Composition completeComposition() const;
+    };
 
     /**
      * Helper class for easy constructing string representations of complex materials.

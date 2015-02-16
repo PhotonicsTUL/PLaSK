@@ -21,8 +21,8 @@ void PathHints::addHint(weak_ptr<GeometryObject> container, weak_ptr<GeometryObj
 }
 
 void PathHints::addAllHintsFromPath(const std::vector< shared_ptr<const GeometryObject> >& pathObjects) {
-    int possibleContainers_size = pathObjects.size() - 1;
-    for (int i = 0; i < possibleContainers_size; ++i)
+    long possibleContainers_size = long(pathObjects.size()) - 1;
+    for (long i = 0; i < possibleContainers_size; ++i)
         if (pathObjects[i]->isContainer())
             addHint(const_pointer_cast<GeometryObject>(pathObjects[i]), const_pointer_cast<GeometryObject>(pathObjects[i+1]));
 }
