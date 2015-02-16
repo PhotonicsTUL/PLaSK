@@ -74,6 +74,23 @@ std::string complexDbKey(const std::string& fullComplexName) {
     return complexDbKey(name_dopant.first, name_dopant.second);
 }
 
+std::string dbKey(const Material::Parameters& parameters) {
+    std::string res;
+    if (parameters.isSimple())
+        res = parameters.name;
+    else
+        for (auto c: parameters.composition) res += c.first;
+    if (!parameters.label.empty()) {
+        res += '_';
+        res += parameters.label;
+    }
+    if (!parameters.hasDopant()) {
+        res += ':';
+        res += parameters.dopantName;
+    }
+    return res;
+}
+
 
 MaterialsDB& MaterialsDB::getDefault() {
     static MaterialsDB defaultDb;
@@ -160,6 +177,11 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return getConstructor(complexDbKey(composition, dopant_name), composition, dopant_name);
 }
 
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material) const
+{
+    return getConstructor(dbKey(material), material.composition, material.dopantName);
+}
+
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     return get(complexDbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
@@ -217,7 +239,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(pair.first, pair.second);
 }
 
-shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
+/*shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
                                                  const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const
 {
     if (Material::isSimpleMaterialName(material1name_with_components)) {  // simple material, without parsing composition, still dopants can be mixed
@@ -256,10 +278,45 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const M
                                                 material1composition, material2composition,
                                                 dopAmountType, m1DopAmount, m2DopAmount)
                 );
-}
+}*/
 
 shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
-    std::string m1comp, m1dop, m2comp, m2dop;
+    Material::Parameters m1, m2;
+    m1.parse(material1_fullname);
+    m2.parse(material2_fullname);
+    if (m1.dopantName != m2.dopantName)
+        throw MaterialParseException("Cannot mix materials with different doping: '%1%' and '%2%'", material1_fullname, material2_fullname);
+    if (m1.dopantAmountType != m2.dopantAmountType)
+        throw MaterialParseException("Cannot mix materials for which doping is given in different formats: '%1%' and '%2%'", material1_fullname, material2_fullname);
+    if ((m1.label != m2.label) || (m1.isSimple() != m2.isSimple()))
+        throw MaterialParseException("Cannot mix different materials: '%1%' and '%2%'", material1_fullname, material2_fullname);
+
+    if (m1.isSimple()) {  // simple material, without parsing composition, still dopants can be mixed
+        if (m1.name != m2.name)
+            throw MaterialParseException("Cannot mix different materials: '%1%' and '%2%'", material1_fullname, material2_fullname);
+
+        if (!m1.hasDopant()) //??
+            throw MaterialParseException("%1%: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);
+
+        return shared_ptr<MaterialsDB::MixedCompositionFactory>(
+                    new MixedDopantFactory(getConstructor(m1), m1.dopantAmountType, m1.dopantAmount, m2.dopantAmount)
+                    );
+    }
+
+    //complex materials:
+    if (m1.hasDopant()) //both dopped
+        return shared_ptr<MaterialsDB::MixedCompositionFactory>(
+                    new MixedCompositionAndDopantFactory(getConstructor(m1),
+                                                    m1.composition, m2.composition,
+                                                    m1.dopantAmountType, m1.dopantAmount, m2.dopantAmount)
+                    );
+
+    //both undopped
+    return shared_ptr<MaterialsDB::MixedCompositionFactory>(
+            new MixedCompositionOnlyFactory(getConstructor(m1), m1.composition, m2.composition)
+    );
+
+    /*std::string m1comp, m1dop, m2comp, m2dop;
     std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
     std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
     std::string m1_dop_name, m2_dop_name;
@@ -271,7 +328,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
         throw MaterialParseException("Cannot mix materials with different doping: '%1%' and '%2%'", material1_fullname, material2_fullname);
     if (m1_dop_type != m2_dop_type)
         throw MaterialParseException("Cannot mix materials for which doping is given in different formats: '%1%' and '%2%'", material1_fullname, material2_fullname);
-    return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);
+    return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);*/
 }
 
 /*void MaterialsDB::addSimple(const MaterialConstructor* constructor) {

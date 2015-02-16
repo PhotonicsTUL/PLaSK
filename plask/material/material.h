@@ -119,7 +119,7 @@ struct PLASK_API Material {
      *
      * Can be obtained either from string (see parse(std::string)) or material (see getParameters()).
      */
-    class PLASK_API Parameters {
+    struct PLASK_API Parameters {
 
         /// short (without composition, label and doping amounts) name of material
         /// only for simple material(?)
@@ -129,11 +129,13 @@ struct PLASK_API Material {
 
         Composition composition;
 
-        std::string dopant_name;
+        std::string dopantName;
 
         double dopantAmount;
 
         Material::DopingAmountType dopantAmountType;
+
+        Parameters(): dopantAmountType(NO_DOPING) {}
 
         explicit Parameters(const std::string& name): name(name), dopantAmountType(NO_DOPING) {}
 

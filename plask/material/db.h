@@ -471,7 +471,7 @@ public:
      * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
      * @return constructed factory
      */
-    shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
+    //shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
 
     /**
      * Construct mixed material factory.
@@ -482,8 +482,8 @@ public:
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory
      */
-    shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
-                                        Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
+    //shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
+    //                                    Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
      * Construct mixed material factory.
@@ -494,8 +494,8 @@ public:
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory created using new operator, should by delete by caller
      */
-    shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
-                                        const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
+    //shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
+    //                                    const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
      * Construct mixed material factory.
@@ -620,6 +620,8 @@ public:
      * @param dopant_name name of dopant (if any)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
+
+    shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material) const;
 
 private:
 
