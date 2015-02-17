@@ -415,7 +415,7 @@ public:
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label, const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -426,7 +426,7 @@ public:
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -438,7 +438,7 @@ public:
      */
     shared_ptr<Material> get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const;
 
-    /**
+    /*
      * Create material object.
      * @param name_with_components objects composition in format object1(amount1)...objectN(amountN), where some amounts are optional for example: "Al(0.7)GaN"
      * @param doping_descr empty string if there is no doping or description of dopant in format objectname=amount or objectname p/n=amount, for example: "Mg=7e18" or "Mg p=7e18"
@@ -446,15 +446,17 @@ public:
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @throw MaterialParseException if can't parse @p name_with_components or @p doping_descr
      */
-    shared_ptr<Material> get(const std::string& name_with_components, const std::string& doping_descr) const;
+    //shared_ptr<Material> get(const std::string& name_with_components, const std::string& doping_descr) const;
 
     /**
      * Get constructor of material.
-     * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
+     * @param name_without_composition material name, without encoded parameters, in format composition[_label][:dopant]
      * @return constructor of material or nullptr if there is no such material in database
      * @throw NoSuchMaterial if database doesn't know material with name @p name_without_composition
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& name_without_composition) const;
+
+    shared_ptr<Material> get(const Material::Parameters& param) const;
 
     /**
      * Create material object.
@@ -466,40 +468,8 @@ public:
     shared_ptr<Material> get(const std::string& full_name) const;
 
     /**
-     * Construct mixed material factory, for materials without dopant.
-     * @param material1composition incomplate composition of first material
-     * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
-     * @return constructed factory
-     */
-    //shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
-
-    /**
      * Construct mixed material factory.
-     * @param material1composition incomplate composition of first material
-     * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
-     * @param dopant_name name of dopant, empty if there is no dopant
-     * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
-     * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
-     * @return constructed factory
-     */
-    //shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
-    //                                    Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
-
-    /**
-     * Construct mixed material factory.
-     * @param material1_name_with_components composition of first material
-     * @param material2_name_with_components composition of second material, must be defined for the same objects as @p material1composition
-     * @param dopant_name name of dopant, common for both materials, empty if there is no dopant
-     * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
-     * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
-     * @return constructed factory created using new operator, should by delete by caller
-     */
-    //shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
-    //                                    const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
-
-    /**
-     * Construct mixed material factory.
-     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
+     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[_label][:dopant],
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory
      */
@@ -614,12 +584,12 @@ public:
      */
     bool isSimple(const std::string& material_name) const;
 
-    /**
+    /*
      * Get complex material constructor object.
      * @param composition objects composition
      * @param dopant_name name of dopant (if any)
      */
-    shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
+    shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& label = "", const std::string& dopant_name = "") const;
 
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material) const;
 
@@ -627,7 +597,7 @@ private:
 
     /**
      * Get material constructor object.
-     * @param dbKey key in database
+     * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
      * @param composition objects composition, empty composition for simple materials, used for error checking and mesages
      * @param dopant_name name of dopant (if any), use for error mesages
      */

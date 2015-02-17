@@ -403,7 +403,7 @@ void registerComplexMaterial(const std::string& name, py::object material_class,
 }
 
 
-inline static void kwargs2MaterialComposition(const py::dict& kwargs, std::string& name,
+inline static void kwargs2MaterialComposition(const py::dict& kwargs, std::string& name, std::string& label,
                                               std::string& dopant,
                                               Material::DopingAmountType& doping_type,
                                               double& doping_concentration,
@@ -515,8 +515,9 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         Material::DopingAmountType doping_type;
         double doping_concentration;
         Material::Composition composition;
+        std::string label;  //TODO ?????????????
         kwargs2MaterialComposition(kwargs,
-                                   factory->base_constructor.materialName, dopant, doping_type,
+                                   factory->base_constructor.materialName, label, dopant, doping_type,
                                    doping_concentration, composition);
         ptr = new PythonMaterial(factory->base_constructor(Material::completeComposition(composition),
                                                            doping_type, doping_concentration));
@@ -627,12 +628,21 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     Material::DopingAmountType doping_type;
     double doping_concentration;
     Material::Composition composition;
-    kwargs2MaterialComposition(kwargs, name, dopant, doping_type, doping_concentration, composition);
-    if (composition.empty())
+    std::string label;
+    kwargs2MaterialComposition(kwargs, name, label, dopant, doping_type, doping_concentration, composition);
+    if (composition.empty()) {
+        /*Material::Parameters p;
+        p.parse(name);
+        p.label = label;
+        p.dopantName = dopant;
+        p.dopantAmountType = doping_type;
+        p.dopantAmount = doping_concentration;
+        return DB->get(p);*/
+        //return DB->get(name, label, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
         return DB->get(name, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
-        //return DB->get(name, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
-    else
-        return DB->get(composition, dopant, doping_type, doping_concentration);
+        //return DB->get(name);
+    } else
+        return DB->get(composition, label, dopant, doping_type, doping_concentration);
 }
 
 py::dict Material__completeComposition(py::dict src, std::string name) {
