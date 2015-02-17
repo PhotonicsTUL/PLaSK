@@ -84,7 +84,7 @@ std::string dbKey(const Material::Parameters& parameters) {
         res += '_';
         res += parameters.label;
     }
-    if (!parameters.hasDopant()) {
+    if (parameters.hasDopant()) {
         res += ':';
         res += parameters.dopantName;
     }
@@ -235,8 +235,9 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
-    auto pair = splitString2(full_name, ':');
-    return get(pair.first, pair.second);
+    Material::Parameters m;
+    m.parse(full_name);
+    return (*getConstructor(m))(m.composition, m.dopantAmountType, m.dopantAmount);
 }
 
 /*shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
