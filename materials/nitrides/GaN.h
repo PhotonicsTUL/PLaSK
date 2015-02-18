@@ -32,6 +32,16 @@ protected:
 
 };
 
+/**
+ * Represent undoped bulk (substrate) GaN, its physical properties.
+ */
+struct GaN_bulk: public GaN {
+
+    static constexpr const char* NAME = "GaN_bulk";
+
+    virtual Tensor2<double> thermk(double T, double t) const override;
+
+};
 
 }} // namespace plask::materials
 

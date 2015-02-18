@@ -120,6 +120,17 @@ bool GaN::isEqual(const Material &other) const {
     return true;
 }
 
+MI_PROPERTY(GaN_bulk, thermk,
+            MISource("C. Mion et al., App. Phys. Lett. 89 (2006) 092123"),
+            MIArgumentRange(MaterialInfo::T, 300, 450)
+            )
+Tensor2<double> GaN_bulk::thermk(double T, double t) const {
+    double tCondT = 230 * pow((T/300.), -1.43);
+    return(Tensor2<double>(tCondT,tCondT));
+}
+
 static MaterialsDB::Register<GaN> materialDB_register_GaN;
+
+static MaterialsDB::Register<GaN_bulk> materialDB_register_GaN_bulk;
 
 }}       // namespace plask::materials
