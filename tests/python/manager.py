@@ -189,12 +189,12 @@ class Manager(unittest.TestCase):
         self.assertEqual( plask.material.XmlMatSimple().NR(900, 300), (3.5, 3.5, 3.5, 0.) )
 
 
-        mad = plask.material.XmlMat(dp="Mg", dc=1e18)
-        self.assertEqual( mad.cond(300), material.GaN(dp="Mg", dc=1e18).cond(300) )
+        mad = plask.material.XmlMat(dop="Mg", dc=1e18)
+        self.assertEqual( mad.cond(300), material.GaN(dop="Mg", dc=1e18).cond(300) )
         self.assertEqual( mad.absp(900, 300), 300 * 1e18 )
 
         mad20 = plask.material.XmlMatMg20()
-        self.assertEqual( mad20.cond(300), material.GaN(dp="Mg", dc=1e20).cond(300) )
+        self.assertEqual( mad20.cond(300), material.GaN(dop="Mg", dc=1e20).cond(300) )
 
 
     def testVariables(self):

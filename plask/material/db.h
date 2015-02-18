@@ -108,12 +108,12 @@ struct PLASK_API MaterialsDB {
 
         virtual ~MaterialConstructor() {}
 
-        static void ensureCompositionIsEmpty(const Material::Composition& composition) {
-            if (!composition.empty()) throw Exception("Redundant composition given for material \"%1%\".");
+        void ensureCompositionIsEmpty(const Material::Composition& composition) const {
+            if (!composition.empty()) throw Exception("Redundant composition given for material '%1%'", materialName);
         }
 
-        static void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) {
-            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material \"%1%\".");
+        void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) const {
+            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material '%1%'", materialName);
         }
     };
 
@@ -389,7 +389,6 @@ public:
         virtual shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override {
             if (material) {
                 ensureCompositionIsEmpty(comp);
-                ensureDopantIsNo(dopt);
                 return material;
             } else if (composition.empty()) {
                 return (*constructor)(comp, dopt, dop);

@@ -403,83 +403,65 @@ void registerComplexMaterial(const std::string& name, py::object material_class,
 }
 
 
-inline static void kwargs2MaterialComposition(const py::dict& kwargs, std::string& name, std::string& label,
-                                              std::string& dopant,
-                                              Material::DopingAmountType& doping_type,
-                                              double& doping_concentration,
-                                              Material::Composition& composition)
+static void kwargs2MaterialComposition(const std::string& full_name, const py::dict& kwargs,
+                                       std::string& dopant, Material::DopingAmountType& doping_type,
+                                       double& doping_concentration, Material::Composition& composition)
 {
     // Get doping
-    std::tie(name, dopant) = splitString2(name, ':');
+    std::string name;
+    std::tie(name, dopant) = splitString2(full_name, ':');
     bool doping = dopant != "";
     int doping_keys = 0;
-    try {
-        dopant = py::extract<std::string>(kwargs["dp"]);
-        doping = true;
-        ++doping_keys;
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
     doping_type = Material::NO_DOPING;
     doping_concentration = 0;
     py::object cobj;
-    bool has_dc = false;
     try {
         cobj = kwargs["dc"];
         doping_type = Material::DOPANT_CONCENTRATION;
-        has_dc = true;
         ++doping_keys;
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
     try {
         cobj = kwargs["cc"];
+        if (doping_type == Material::DOPANT_CONCENTRATION)
+            throw ValueError("doping and carrier concentrations specified simultaneously");
         doping_type = Material::CARRIER_CONCENTRATION;
         ++doping_keys;
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
-    if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
-        throw ValueError("doping and carrier concentrations specified simultanously");
-    }
     if (doping) {
         if (doping_type == Material::NO_DOPING) {
-            throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
+            Material::parseDopant(std::string(dopant), dopant, doping_type, doping_concentration);
+            if (doping_type == Material::NO_DOPING)
+                throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
         } else {
+            if (dopant.find('=') != std::string::npos)
+                throw ValueError("doping or carrier concentrations specified in both full name and argument");
             doping_concentration = py::extract<double>(cobj);
         }
     } else {
         if (doping_type != Material::NO_DOPING) {
-            throw ValueError("%s concentration given, but no dopant specified", has_dc?"doping":"carrier");
-        }
-    }
-
-    std::size_t sep = name.find(':');
-    if (sep != std::string::npos) {
-        if (doping) {
-            throw ValueError("doping specified in **kwargs, but name contains ':'");
-        } else {
-           Material::parseDopant(name.substr(sep+1), dopant, doping_type, doping_concentration);
+            throw ValueError("%s concentration given for undoped material",
+                             (doping_type==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
         }
     }
 
     py::list keys = kwargs.keys();
 
     // Test if kwargs contains only doping information
-    if (py::len(keys) == doping_keys) {
-        if (dopant != "") {
-            name += ":"; name += dopant;
-        }
-        return;
-    }
+    if (py::len(keys) == doping_keys) return;
 
-    // So, kwargs contains compostion
+    name = splitString2(name, '_').first;
+
+    // So, kwargs contains composition
     std::vector<std::string> objects = Material::parseObjectsNames(name);
     py::object none;
     // test if only correct objects are given
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dp" && k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
+        if (k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
             throw TypeError("'%s' not allowed in material %s", k, name);
         }
     }
@@ -515,10 +497,8 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         Material::DopingAmountType doping_type;
         double doping_concentration;
         Material::Composition composition;
-        std::string label;  //TODO ?????????????
-        kwargs2MaterialComposition(kwargs,
-                                   factory->base_constructor.materialName, label, dopant, doping_type,
-                                   doping_concentration, composition);
+        kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs,
+                                   dopant, doping_type, doping_concentration, composition);
         ptr = new PythonMaterial(factory->base_constructor(Material::completeComposition(composition),
                                                            doping_type, doping_concentration));
     } else {
@@ -628,21 +608,22 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     Material::DopingAmountType doping_type;
     double doping_concentration;
     Material::Composition composition;
-    std::string label;
-    kwargs2MaterialComposition(kwargs, name, label, dopant, doping_type, doping_concentration, composition);
+    kwargs2MaterialComposition(name, kwargs, dopant, doping_type, doping_concentration, composition);
     if (composition.empty()) {
-        /*Material::Parameters p;
-        p.parse(name);
-        p.label = label;
-        p.dopantName = dopant;
-        p.dopantAmountType = doping_type;
-        p.dopantAmount = doping_concentration;
-        return DB->get(p);*/
-        //return DB->get(name, label, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
-        return DB->get(name, /*std::vector<double>(),*/ doping_type, doping_concentration); //TODO test
+        // Material::Parameters p;
+        // p.parse(name);
+        // p.label = label;
+        // p.dopantName = dopant;
+        // p.dopantAmountType = doping_type;
+        // p.dopantAmount = doping_concentration;
+        // return DB->get(p);
+        // return DB->get(name, label, doping_type, doping_concentration); //TODO test
+        return DB->get(name, doping_type, doping_concentration); //TODO test
         //return DB->get(name);
-    } else
+    } else {
+        std::string label = splitString2(splitString2(name, ':').first, '_').second;
         return DB->get(composition, label, dopant, doping_type, doping_concentration);
+    }
 }
 
 py::dict Material__completeComposition(py::dict src, std::string name) {
@@ -651,7 +632,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
     py::object none;
     for(int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dp" && k != "dc" && k != "cc") {
+        if (k != "dc" && k != "cc") {
             py::object s = src[keys[i]];
             comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
         }

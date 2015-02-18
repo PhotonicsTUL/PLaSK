@@ -15,8 +15,12 @@ inline std::pair<std::string, int> el_g(const std::string& g, int p) { return st
 
 int objectGroup(const std::string& objectName) {
     static const std::map<std::string, int> objectGroups =
-        { el_g("Al", 3), el_g("Ga", 3), el_g("In", 3),
-          el_g("N", 5), el_g("P", 5), el_g("As", 5), el_g("Sb", 5), el_g("Bi", 5) };
+        { el_g("Be", 2), el_g("Mg", 2), el_g("Ca", 2), el_g("Sr", 2), el_g("Ba", 2),
+          el_g("B", 3), el_g("Al", 3), el_g("Ga", 3), el_g("In", 3), el_g("Tl", 3),
+          el_g("C", 4), el_g("Si", 4), el_g("Ge", 4), el_g("Sn", 4), el_g("Pb", 4),
+          el_g("N", 5), el_g("P", 5), el_g("As", 5), el_g("Sb", 5), el_g("Bi", 5),
+          el_g("O", 6), el_g("S", 6), el_g("Se", 6), el_g("Te", 6)
+        };
     return map_find(objectGroups, objectName, 0);
 }
 
@@ -279,7 +283,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
          throw MaterialParseException("No dopant name");
     dopant_elem_name.assign(begin, name_end);
     if (*name_end == '=') {
-        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentation");
+        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration");
         doping_amount_type = Material::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
         return;
@@ -288,6 +292,8 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         doping_amount = 0.;
         return;
     }
+    if (name_end == end)
+        throw MaterialParseException("Unexpected end of input while reading doping concentration");
     if (!isspace(*name_end))
         throw MaterialParseException("Expected space or '=' but found '%1%' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
@@ -307,7 +313,7 @@ std::vector<std::string> Material::parseObjectsNames(const char *begin, const ch
     std::vector<std::string> elemenNames;
     do {
         const char* new_begin = getObjectEnd(begin, end);
-        if (new_begin == begin) throw MaterialParseException("Ill-formated name \"%1%\"", std::string(full_name, end));
+        if (new_begin == begin) throw MaterialParseException("Ill-formatted name \"%1%\"", std::string(full_name, end));
         elemenNames.push_back(std::string(begin, new_begin));
         begin = new_begin;
     } while (begin != end);

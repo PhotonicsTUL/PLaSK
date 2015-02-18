@@ -40,7 +40,13 @@ material.get = lambda *args, **kwargs: material.db.get(*args, **kwargs)
 def update_factories():
     """For each material in default database make factory in ``plask.material``."""
     def factory(name):
-        func = lambda **kwargs: material.db.get(name, **kwargs)
+        def func(**kwargs):
+            if 'dop' in kwargs:
+                kwargs = kwargs.copy()
+                dop = kwargs.pop('dop')
+                return material.db.get(name+':'+dop, **kwargs)
+            else:
+                return material.db.get(name, **kwargs)
         func.__doc__ = u"Create material {}.\n\n:rtype: Material".format(name)
         return func
     for mat in material.db:

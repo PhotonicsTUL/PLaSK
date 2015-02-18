@@ -137,19 +137,16 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
     if (name != "") {
         if (name.find("=") != std::string::npos)    // base material has defined dopant
             material = db.get(name);
-        else {  //doping amount is not given
-            if (name.find(":") != std::string::npos) {  // but dopant type is given
-                if (name.find("(") != std::string::npos) {  // material is complex
-                    std::string base_name, label, dopant_name;
-                    std::tie(base_name, dopant_name) = splitString2(name, ':');
-                    std::tie(base_name, label) = splitString2(base_name, '_');
-                    composition = Material::parseComposition(name);
-                    constructor = db.getConstructor(composition, label, dopant_name);
-                } else { // material is simple or complex generic
-                    constructor = db.getConstructor(name);
-                }
-            } else // dopant type is not given
-                material = db.get(name);
+        else {  // doping amount is not given
+            std::string base_name, label, dopant_name;
+            std::tie(base_name, dopant_name) = splitString2(name, ':');
+            if (base_name.find("(") != std::string::npos) {  // material is complex
+                std::tie(base_name, label) = splitString2(base_name, '_');
+                composition = Material::parseComposition(base_name);
+                constructor = db.getConstructor(composition, label, dopant_name);
+            } else { // material is simple or complex generic
+                constructor = db.getConstructor(name);
+            }
         }
     } else {
         material = make_shared<EmptyMaterial>();
@@ -164,7 +161,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
-            //check if material is complex, but user forget to provide composition:
+            // check if material is complex, but user forgot to provide composition:
             std::string complex_DbKey;
             try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception& e) {}
             if (constructors.find(complex_DbKey) != constructors.end())  //material is complex
@@ -211,7 +208,7 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
 shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     std::string name_with_components, dopant_name;
     std::tie(name_with_components, dopant_name) = splitString2(name_with_dopant, ':');
-    if (Material::isSimpleMaterialName(name_with_components)) {  //simple case, without parsing composition
+    if (Material::isSimpleMaterialName(name_with_components)) {  // simple case, without parsing composition
         std::string dbKey = name_with_components;
         appendDopant(dbKey, dopant_name);
         return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
@@ -220,9 +217,9 @@ shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Mater
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& name_without_composition) const {
-    auto it = constructors.find(name_without_composition);  //try get as simple
+    auto it = constructors.find(name_without_composition);  // try get as simple
     if (it != constructors.end()) return it->second;
-    it = constructors.find(complexDbKey(name_without_composition)); //try get as complex
+    it = constructors.find(complexDbKey(name_without_composition)); // try get as complex
     if (it != constructors.end()) return it->second;
     throw NoSuchMaterial(name_without_composition);
 }

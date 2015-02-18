@@ -10,10 +10,10 @@ import plasktest as ptest
 
 class Material(unittest.TestCase):
 
-    @plask.material.complex()
-    class AlGaAs(plask.material.Material):
+    @plask.material.complex('AlGaAs')
+    class AlGaAs_fake(plask.material.Material):
         def __init__(self, **kwargs):
-            super(Material.AlGaAs, self).__init__()
+            super(Material.AlGaAs_fake, self).__init__(**kwargs)
             ptest.print_ptr(self)
         def __del__(self):
             ptest.print_ptr(self)
@@ -63,16 +63,20 @@ class Material(unittest.TestCase):
         '''Test creation of custom materials'''
 
         self.assertIn( "AlGaAs", plask.material.db )
+        self.assertIn( "AlGaAs_fake", plask.material.db )
 
-        m = Material.AlGaAs()
-        self.assertEqual(m.name, "AlGaAs")
+        m = Material.AlGaAs_fake(Al=0.1)
+        self.assertEqual(m.name, "AlGaAs_fake")
         self.assertEqual( m.VB(1.0), 2.0 )
         self.assertEqual( m.nr(980., 300.), 3.5 )
         self.assertEqual( m.NR(980., 300.), (3.5, 3.5, 3.5, 0.) )
+        self.assertEqual( m.thermk(), plask.material.AlGaAs(Al=0.1).thermk() )
+        self.assertNotEqual( m.nr(980., 300.), plask.material.AlGaAs(Al=0.1).nr(980., 300.) )
+        self.assertEqual( m, plask.material.get('AlGaAs_fake', Al=0.1) )
         del m
 
-        self.assertEqual( ptest.material_name("Al(0.2)GaAs", plask.material.db), "AlGaAs" )
-        self.assertEqual( ptest.material_VB("Al(0.2)GaAs", plask.material.db, 1.0), 2.0 )
+        self.assertEqual( ptest.material_name("Al(0.2)GaAs_fake", plask.material.db), "AlGaAs_fake" )
+        self.assertEqual( ptest.material_VB("Al(0.2)GaAs_fake", plask.material.db, 1.0), 2.0 )
 
         print(plask.material.db.all)
         with self.assertRaises(ValueError): plask.material.db.get("Al(0.2)GaAs:Np=1e14")
@@ -87,8 +91,7 @@ class Material(unittest.TestCase):
 
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
-        AlGaAs = lambda **kwargs: plask.material.db.get("AlGaAs", **kwargs)
-        m = AlGaAs(Al=0.2, dp="Dp", dc=5.0)
+        m = material.AlGaAs(Al=0.2, dop="Dp", dc=5.0)
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VB(), 1500.0 )
         correct = dict(Al=0.2, Ga=0.8, As=1.0)
@@ -103,11 +106,10 @@ class Material(unittest.TestCase):
         with self.assertRaisesRegexp(NotImplementedError, "Method not implemented"): c.VB(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
 
-
     def testDefaultMaterials(self):
         self.assertIn( "GaN", plask.material.db )
         self.assertEqual( str(plask.material.AlGaN(Al=0.2)), "Al(0.2)GaN" )
-        self.assertRegexpMatches( str(plask.material.AlGaN(Ga=0.8, dp="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
+        self.assertRegexpMatches( str(plask.material.AlGaN(Ga=0.8, dop="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
