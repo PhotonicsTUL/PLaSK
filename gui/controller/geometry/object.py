@@ -43,8 +43,6 @@ class GNObjectController(GNodeController):
         self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
-            #self.construct_group('Position in container', position=0)
-            #self._current_form.addChildWidget(in_parent_widget)
 
     def save_data_in_model(self):
         self.node.name = empty_to_none(self.name.text())

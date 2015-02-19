@@ -24,6 +24,9 @@ class GNAgainController(GNodeController):
         self.ref = self.construct_names_before_self_combo_box('Referenced object:')
         self.ref.setToolTip('&lt;again <b>ref</b>=""/&gt;<br/>'
                             'Name of the referenced object.')
+        self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
+        if self.in_parent_controller is not None:
+            self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
     def save_data_in_model(self):
         super(GNAgainController, self).save_data_in_model()

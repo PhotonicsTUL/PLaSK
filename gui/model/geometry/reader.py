@@ -35,10 +35,9 @@ class GNAligner(object):
         :return: tuple with aligner names: lo, center, hi, origin, center (alternative name)
         """
         a = axis_names_in_dims[axis_nr]
-        if dims == 2: axis_nr += 1
-        if axis_nr == 0: return 'back', 'longcenter', 'front', a, a + 'center'
-        elif axis_nr == 1: return 'left', 'trancenter', 'right', a, a + 'center'
-        else: return 'top', 'vertcenter', 'bottom', a, a + 'center'
+        return (('back', 'longcenter', 'front', a, a + 'center'),
+                ('left', 'trancenter', 'right', a, a + 'center'),
+                ('bottom', 'vertcenter', 'top', a, a + 'center'))[(axis_nr + 1) if dims == 2 else axis_nr]
 
     @staticmethod
     def display_names(dims, axis_nr):
@@ -48,10 +47,9 @@ class GNAligner(object):
         :param int axis_nr: axis number, from 0 to dims-1
         :return: tuple with aligner names: lo, center, hi, origin, center (alternative name)
         """
-        if dims == 2: axis_nr += 1
-        if axis_nr == 0: return 'back', 'center', 'front', 'origin'
-        elif axis_nr == 1: return 'left', 'center', 'right', 'orign'
-        else: return 'top', 'center', 'bottom', 'origin'
+        return (('back', 'center', 'front', 'origin'),
+                ('left', 'center', 'right', 'orign'),
+                ('bottom', 'center', 'top', 'origin'))[(axis_nr + 1) if dims == 2 else axis_nr]
 
     @property
     def position(self):
@@ -60,14 +58,16 @@ class GNAligner(object):
     @position.setter
     def position(self, value):
         if isinstance(value, basestring):
-            if not 'value':
+            if not value:
                 self._position = None
             elif 'center' in value:
                 self._position = GNAligner.POSITION_CENTER
+            elif value in ('back', 'left', 'bottom'):
+                self._position = GNAligner.POSITION_LOW
+            elif value in ('front', 'right', 'top'):
+                self._position = GNAligner.POSITION_HIGH
             else:
-                if value in ('back', 'left', 'bottom'): self._position = GNAligner.POSITION_LOW
-                elif value in ('front', 'right', 'top'): self._position = GNAligner.POSITION_HIGH
-                else: self._position = GNAligner.POSITION_ORIGIN
+                self._position = GNAligner.POSITION_ORIGIN
         else:
             self._position = value
 
@@ -150,7 +150,7 @@ class GNReadConf(object):
         :return: list of GNAligner for each axis to read (GNAligner with None-s if aligner for given axis was not read)
         """
         if dims is None: dims = self.parent.dim
-        to_read = range(0, dims) if len(axes_to_read) == 0 else axes_to_read
+        to_read = range(0, dims) if not axes_to_read else axes_to_read
         res = [GNAligner(None, None) for _ in to_read]
         for axis_nr in to_read:
             for position_name in self.aligners(dims, axis_nr):

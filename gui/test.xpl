@@ -70,7 +70,9 @@
     </stack>
   </cylindrical2d>
   <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">
-    <again ref="VCSEL"/>
+    <align left="0" bottom="0">
+      <again ref="VCSEL"/>
+    </align>
   </cylindrical2d>
   <cartesian3d>
     <align>
