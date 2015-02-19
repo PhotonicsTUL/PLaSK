@@ -285,16 +285,18 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
     if (name_end == begin)
          throw MaterialParseException("No dopant name");
     dopant_elem_name.assign(begin, name_end);
+    if (name_end == end) {
+        if (!allow_dopant_without_amount)
+            throw MaterialParseException("Unexpected end of input while reading doping concentration");
+        // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
+        doping_amount_type = Material::NO_DOPING;
+        doping_amount = 0.;
+        return;
+    }
     if (*name_end == '=') {
         if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration");
         doping_amount_type = Material::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
-        return;
-    } else if (name_end == end) { // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
-        if (!allow_dopant_without_amount)
-            throw MaterialParseException("Unexpected end of input while reading doping concentration");
-        doping_amount_type = Material::NO_DOPING;
-        doping_amount = 0.;
         return;
     }
     if (!isspace(*name_end))
