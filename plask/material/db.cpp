@@ -134,7 +134,18 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor():
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::string& name, const MaterialsDB& db):
     MaterialsDB::MaterialConstructor(name)
 {
-    if (name != "") {
+    if (name.empty()) {
+        material = make_shared<EmptyMaterial>();
+    } else {
+        Material::Parameters p;
+        p.parse(name, true);
+        if (p.hasDopant())  // base material has defined dopant
+            material = db.get(p);
+        else  // (dopant name without ammount still can be defined here)
+            constructor = db.getConstructor(p, true);
+    }
+
+    /*if (name != "") {
         if (name.find("=") != std::string::npos)    // base material has defined dopant
             material = db.get(name);
         else {  // doping amount is not given
@@ -150,23 +161,28 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
         }
     } else {
         material = make_shared<EmptyMaterial>();
-    }
+    }*/
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr<Material>& material):
     MaterialsDB::MaterialConstructor(material->name()), material(material)
 {}
 
-shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name) const {
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, bool allow_complex_without_composition) const {
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
             // check if material is complex, but user forgot to provide composition:
             std::string complex_DbKey;
             try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception& e) {}
-            if (constructors.find(complex_DbKey) != constructors.end())  //material is complex
-                throw MaterialParseException(format("Material composition is required for %1%", db_Key));
-            throw NoSuchMaterial(db_Key);
+            auto c = constructors.find(complex_DbKey);
+            if (c != constructors.end()) { //material is complex
+                if (allow_complex_without_composition)
+                    return c->second;
+                else
+                    throw MaterialParseException(format("Material composition is required for %1%", db_Key));
+            } else
+                throw NoSuchMaterial(db_Key);
         }
         throw NoSuchMaterial(composition, dopant_name);
     }
@@ -181,9 +197,9 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return getConstructor(complexDbKey(composition, label, dopant_name), composition, dopant_name);
 }
 
-shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material) const
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material, bool allow_complex_without_composition) const
 {
-    return getConstructor(dbKey(material), material.composition, material.dopantName);
+    return getConstructor(dbKey(material), material.composition, material.dopantName, allow_complex_without_composition);
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& label, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
@@ -206,14 +222,13 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
 }*/
 
 shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    std::string name_with_components, dopant_name;
-    std::tie(name_with_components, dopant_name) = splitString2(name_with_dopant, ':');
-    if (Material::isSimpleMaterialName(name_with_components)) {  // simple case, without parsing composition
-        std::string dbKey = name_with_components;
-        appendDopant(dbKey, dopant_name);
-        return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
-    } else // parse composition:
-        return get(Material::parseComposition(name_with_components), "", dopant_name, doping_amount_type, doping_amount);
+    Material::Parameters p;
+    p.parse(name_with_dopant, true);
+    if (p.hasDopantName()) {
+        p.dopantAmount = doping_amount;
+        p.dopantAmountType = doping_amount_type;
+    }
+    return get(p);
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& name_without_composition) const {

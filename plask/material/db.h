@@ -429,7 +429,7 @@ public:
 
     /**
      * Create material object.
-     * @param name_with_dopant material name with dopant name in format material[:dopant_name], for example: "Al(0.2)GaN" or "Al(0.2)GaN:Mg"
+     * @param name_with_dopant material name with dopant name in format material[_label][:dopant_name], for example: "Al(0.2)GaN" or "Al(0.2)GaN:Mg"
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
      * @return constructed material
@@ -590,7 +590,7 @@ public:
      */
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& label = "", const std::string& dopant_name = "") const;
 
-    shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material) const;
+    shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material, bool allow_complex_without_composition = false) const;
 
 private:
 
@@ -598,9 +598,10 @@ private:
      * Get material constructor object.
      * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
      * @param composition objects composition, empty composition for simple materials, used for error checking and mesages
-     * @param dopant_name name of dopant (if any), use for error mesages
+     * @param dopant_name name of dopant (if any), use for error messages
+     * @param allow_complex_without_composition if true complex material can be obtained if composition is empty (if false exception will be throwed in such situation when dbKey is not simple material)
      */
-    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name = "") const;
+    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name = "", bool allow_complex_without_composition = false) const;
 
     /**
      * Create material object.
