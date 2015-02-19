@@ -54,16 +54,10 @@ void Material::Parameters::parse(const std::string &full_material_str, bool allo
     std::string dopant;
     std::tie(this->name, dopant) = splitString2(full_material_str, ':');
     std::tie(this->name, this->label) = splitString2(this->name, '_');
-    if (!dopant.empty()) {
-        if (allow_dopant_without_amount && dopant.find('=') == std::string::npos) {
-            //TODO sprawdzić czy dopant jest pojedynczym słowem
-            this->setDopant(dopant, Material::NO_DOPING, 0.0);
-        } else
-            Material::parseDopant(dopant, this->dopantName, this->dopantAmountType, this->dopantAmount);
-    } else {
-        //this->setDopant("", Material::NO_DOPING, std::numeric_limits<double>::quiet_NaN());
+    if (!dopant.empty())
+        Material::parseDopant(dopant, this->dopantName, this->dopantAmountType, this->dopantAmount, allow_dopant_without_amount);
+    else
         this->setDopant("", Material::NO_DOPING, 0.0);
-    }
     if (isSimpleMaterialName(name))
         composition.clear();
     else
@@ -286,7 +280,7 @@ Material::Composition Material::parseComposition(const std::string& str) {
     return parseComposition(c, c + str.size());
 }
 
-void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount) {
+void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount) {
     const char* name_end = getObjectEnd(begin, end);
     if (name_end == begin)
          throw MaterialParseException("No dopant name");
@@ -296,13 +290,13 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         doping_amount_type = Material::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
         return;
-    } else if (name_end+1 == end) { // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
+    } else if (name_end == end) { // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
+        if (!allow_dopant_without_amount)
+            throw MaterialParseException("Unexpected end of input while reading doping concentration");
         doping_amount_type = Material::NO_DOPING;
         doping_amount = 0.;
         return;
     }
-    if (name_end == end)
-        throw MaterialParseException("Unexpected end of input while reading doping concentration");
     if (!isspace(*name_end))
         throw MaterialParseException("Expected space or '=' but found '%1%' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
@@ -312,9 +306,9 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
     doping_amount = toDouble(p.second);
 }
 
-void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DopingAmountType &doping_amount_type, double &doping_amount) {
+void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DopingAmountType &doping_amount_type, double &doping_amount, bool allow_dopant_without_amount) {
     const char* c = dopant.data();
-    parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount);
+    parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount, allow_dopant_without_amount);
 }
 
 std::vector<std::string> Material::parseObjectsNames(const char *begin, const char *end) {

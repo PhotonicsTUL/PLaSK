@@ -157,7 +157,7 @@ struct PLASK_API Material {
          *
          * Part before label is always put in name, also for complex materials.
          * @param full_material_str
-         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopantAmountType is set to NO_DOPING)
+         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopantAmountType is set to NO_DOPING and dopantAmount to 0.0)
          */
         void parse(const std::string& full_material_str, bool allow_dopant_without_amount = false);
 
@@ -288,8 +288,9 @@ struct PLASK_API Material {
      * Throws exception in case of parsing errors.
      * @param[in] begin, end [begin, end) string or range in string
      * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
+     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_amount_type is set to NO_DOPING and doping_amount to 0.0)
      */
-    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
+    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount = false);
 
     /**
      * Parse information about dopant from string.
@@ -297,8 +298,9 @@ struct PLASK_API Material {
      * Throws exception in case of parsing errors.
      * @param[in] dopant string to parse
      * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
+     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_amount_type is set to NO_DOPING and doping_amount to 0.0)
      */
-    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
+    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount = false);
 
     /**
      * Split object name to objects.
