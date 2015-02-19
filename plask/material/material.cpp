@@ -56,6 +56,7 @@ void Material::Parameters::parse(const std::string &full_material_str, bool allo
     std::tie(this->name, this->label) = splitString2(this->name, '_');
     if (!dopant.empty()) {
         if (allow_dopant_without_amount && dopant.find('=') == std::string::npos) {
+            //TODO sprawdzić czy dopant jest pojedynczym słowem
             this->setDopant(dopant, Material::NO_DOPING, 0.0);
         } else
             Material::parseDopant(dopant, this->dopantName, this->dopantAmountType, this->dopantAmount);

@@ -121,8 +121,7 @@ struct PLASK_API Material {
      */
     struct PLASK_API Parameters {
 
-        /// short (without composition, label and doping amounts) name of material
-        /// only for simple material(?)
+        /// name of material, part before label, can be undefined for complex materials
         std::string name;
 
         std::string label;
@@ -154,7 +153,9 @@ struct PLASK_API Material {
         bool hasDopant() const { return dopantAmountType != NO_DOPING; }
 
         /**
-         * Parse material in format name[_label][:dopant]
+         * Parse material in format name[_label][:dopant].
+         *
+         * Part before label is always put in name, also for complex materials.
          * @param full_material_str
          * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopantAmountType is set to NO_DOPING)
          */

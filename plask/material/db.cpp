@@ -144,24 +144,6 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
         else  // (dopant name without ammount still can be defined here)
             constructor = db.getConstructor(p, true);
     }
-
-    /*if (name != "") {
-        if (name.find("=") != std::string::npos)    // base material has defined dopant
-            material = db.get(name);
-        else {  // doping amount is not given
-            std::string base_name, label, dopant_name;
-            std::tie(base_name, dopant_name) = splitString2(name, ':');
-            if (base_name.find("(") != std::string::npos) {  // material is complex
-                std::tie(base_name, label) = splitString2(base_name, '_');
-                composition = Material::parseComposition(base_name);
-                constructor = db.getConstructor(composition, label, dopant_name);
-            } else { // material is simple or complex generic
-                constructor = db.getConstructor(name);
-            }
-        }
-    } else {
-        material = make_shared<EmptyMaterial>();
-    }*/
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr<Material>& material):
