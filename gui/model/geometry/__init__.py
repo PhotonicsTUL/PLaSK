@@ -22,11 +22,8 @@ from ...qt import QtCore
 from .. import SectionModel
 from .reader import GNReadConf
 from .constructor import construct_geometry_object, construct_by_name
-from ...utils.str import none_to_empty
 from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries
-
-import sys
 
 __author__ = 'qwak'
 
@@ -112,8 +109,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 else:
                     res = ''
                 for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
-                    # sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
-                    # for n, v in sorted_prop:
                     in_group = False
                     for t in prop_table:
                         if t is None:

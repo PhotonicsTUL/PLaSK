@@ -142,7 +142,7 @@ elements_re = re.compile("[A-Z][a-z]*")
 
 def parse_material_components(material):
     """ Parse info on materials.
-        :param minimum: remove last element from each group
+        :return: name, label, groups, doping
     """
     if plask:
         try:
@@ -158,12 +158,16 @@ def parse_material_components(material):
     else:
         name = material
         doping = None
+    if '_' in name:
+        name, label = name.split('_')
+    else:
+        label = ''
     if not simple:
         elements = elements_re.findall(name)
         groups = [[e for e in elements if e in g] for g in ELEMENT_GROUPS]
     else:
         groups = []
-    return name, groups, doping
+    return name, label, groups, doping
 
 
 

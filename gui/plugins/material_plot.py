@@ -233,7 +233,7 @@ class MaterialPlot(QtGui.QWidget):
         self.mat_toolbar.clear()
         material = self.material.currentText()
 
-        name, groups, dope = parse_material_components(material)
+        name, label, groups, dope = parse_material_components(material)
 
         if groups:
             elements = tuple(itertools.chain(*(g + [None] for g in groups if len(g) > 1)))[:-1]

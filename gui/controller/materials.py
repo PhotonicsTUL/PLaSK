@@ -38,28 +38,29 @@ else:
 
 class ComponentsPopup(QtGui.QFrame):
 
-    def __init__(self, close_cb, name, groups, doping, pos=None):
+    def __init__(self, close_cb, name, label, groups, doping, pos=None):
         super(ComponentsPopup, self).__init__()
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         self.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
         self.close_cb = close_cb
         self.elements = elements_re.findall(name)
+        self.label = label
         self.doping = doping
         self.edits = {}
         first = None
         box = QtGui.QHBoxLayout()
         for el in tuple(itertools.chain(*(g for g in groups if len(g) > 1))):
-            label = QtGui.QLabel(' ' + el + ':')
+            qlabel = QtGui.QLabel(' ' + el + ':')
             edit = QtGui.QLineEdit(self)
             if first is None: first = edit
-            box.addWidget(label)
+            box.addWidget(qlabel)
             box.addWidget(edit)
             self.edits[el] = edit
         if doping:
-            label = QtGui.QLabel(' [' + doping + ']:')
+            qlabel = QtGui.QLabel(' [' + doping + ']:')
             edit = QtGui.QLineEdit(self)
             if first is None: first = edit
-            box.addWidget(label)
+            box.addWidget(qlabel)
             box.addWidget(edit)
             self.edits['dp'] = edit
         box.setContentsMargins(2, 1, 2, 1)
@@ -83,6 +84,9 @@ class ComponentsPopup(QtGui.QFrame):
             if self.edits.has_key(el):
                 val = str(self.edits[el].text())
                 if val: mat += '(' + val + ')'
+        if self.label:
+            mat += '_'
+            mat += self.label
         if self.doping:
             mat += ':' + self.doping
             val = str(self.edits['dp'].text())
@@ -130,10 +134,10 @@ class MaterialsComboBox(QtGui.QComboBox):
     def show_components_popup(self, text):
         pos = self.mapToGlobal(QtCore.QPoint(0, self.height()))
         self.material_edit_popup = None  # close old popup
-        name, groups, doping = parse_material_components(text)
+        name, label, groups, doping = parse_material_components(text)
         if not groups and doping is None:
             return
-        self.material_edit_popup = ComponentsPopup(self.close_popup, name, groups, doping, pos)
+        self.material_edit_popup = ComponentsPopup(self.close_popup, name, label, groups, doping, pos)
         self.material_edit_popup.show()
 
     def close_popup(self, material_name):
