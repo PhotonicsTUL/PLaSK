@@ -35,7 +35,7 @@ else:
 
 class MaterialPlot(QtGui.QWidget):
 
-    def __init__(self, model=None, parent=None):
+    def __init__(self, model=None, parent=None, init_material=None):
         super(MaterialPlot, self).__init__(parent)
 
         self.model = model
@@ -138,6 +138,9 @@ class MaterialPlot(QtGui.QWidget):
         self.update_materials()
         self.property_changed()
 
+        if init_material is not None: self.set_material(init_material)
+        
+
     def resizeEvent(self, event):
         if self.error.isVisible():
             self.error.setFixedHeight(self.error.document().size().height())
@@ -222,7 +225,7 @@ class MaterialPlot(QtGui.QWidget):
         else:
             self.info.hide()
 
-    def material_changed(self):
+    def set_material(self, material):
         for child in self.mat_toolbar.children():
             if child in self.arguments:
                 key = child.text()[:-1]
@@ -231,7 +234,6 @@ class MaterialPlot(QtGui.QWidget):
                 self.mat_params[key] = val[0].text(), val[1].text()
                 del self.arguments[child]
         self.mat_toolbar.clear()
-        material = self.material.currentText()
 
         name, label, groups, dope = parse_material_components(material)
 
@@ -249,6 +251,10 @@ class MaterialPlot(QtGui.QWidget):
                              self.mat_params, 1)
 
         self.update_info()
+
+
+    def material_changed(self):
+        self.set_material(self.material.currentText())
 
     def property_changed(self):
         for child in self.par_toolbar.children():
@@ -368,7 +374,7 @@ class MaterialPlot(QtGui.QWidget):
             self.error.setFixedHeight(self.error.document().size().height())
 
 
-def show_material_plot(parent, model):
+def show_material_plot(parent, model, init_material = None):
     # plot_window = QtGui.QDockWidget("Parameter Plot", self.document.window)
     # plot_window.setFeatures(QtGui.QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
@@ -376,7 +382,7 @@ def show_material_plot(parent, model):
     # self.document.window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, plot_window)
     plot_window = QtGui.QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
-    plot_window.setCentralWidget(MaterialPlot(model))
+    plot_window.setCentralWidget(MaterialPlot(model, init_material))
     plot_window.show()
 
 
