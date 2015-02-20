@@ -411,8 +411,8 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     py::object cobj;
     try {
         cobj = kwargs["dc"];
-        if (result.hasDopant()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
-        result.dopantAmountType = Material::DOPANT_CONCENTRATION;
+        if (result.hasDoping()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
+        result.dopingAmountType = Material::DOPANT_CONCENTRATION;
         had_doping_key = true;
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -420,8 +420,8 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     try {
         cobj = kwargs["cc"];
         if (had_doping_key) throw ValueError("doping and carrier concentrations specified simultaneously");
-        if (result.hasDopant()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
-        result.dopantAmountType = Material::CARRIER_CONCENTRATION;
+        if (result.hasDoping()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
+        result.dopingAmountType = Material::CARRIER_CONCENTRATION;
         had_doping_key = true;
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -429,10 +429,10 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     if (had_doping_key) {
         if (!result.hasDopantName())
             throw ValueError("%s concentration given for undoped material",
-                             (result.dopantAmountType==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
-        result.dopantAmount = py::extract<double>(cobj);
+                             (result.dopingAmountType==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
+        result.dopingAmount = py::extract<double>(cobj);
     } else {
-        if (result.hasDopantName() && !result.hasDopant())
+        if (result.hasDopantName() && !result.hasDoping())
             throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
     }
 
@@ -440,6 +440,8 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
 
     // Test if kwargs contains only doping information
     if (py::len(keys) == int(had_doping_key)) return result;
+
+    if (!result.composition.empty()) throw ValueError("composition specified in both full name and arguments");
 
     // So, kwargs contains composition
     std::vector<std::string> objects = Material::parseObjectsNames(result.name);
@@ -482,7 +484,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         shared_ptr<PythonMaterialConstructor> factory
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
         Material::Parameters p = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
-        ptr.reset(new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopantAmountType, p.dopantAmount)));
+        ptr.reset(new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopingAmountType, p.dopingAmount)));
     } else {
         ptr.reset(new PythonMaterial());
     }

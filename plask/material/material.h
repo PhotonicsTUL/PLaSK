@@ -134,20 +134,20 @@ struct PLASK_API Material {
         std::string dopantName;
 
         /// ammount of dopant (0.0 if there is no dopant)
-        double dopantAmount;
+        double dopingAmount;
 
         /// type of dopant
-        Material::DopingAmountType dopantAmountType;
+        Material::DopingAmountType dopingAmountType;
 
         /// Construct empty parameters info.
-        Parameters(): dopantAmount(0.0), dopantAmountType(NO_DOPING) {}
+        Parameters(): dopingAmount(0.0), dopingAmountType(NO_DOPING) {}
 
         /**
          * Construct parameters filled with information parsed from format name[_label][:dopant].
          *
          * Part before label is always put in name, also for complex materials.
          * @param full_material_str material in format name[_label][:dopant]
-         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopantAmountType is set to NO_DOPING and dopantAmount to 0.0)
+         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopingAmountType is set to NO_DOPING and dopingAmount to 0.0)
          */
         explicit Parameters(const std::string& full_name, bool allow_dopant_without_amount = false)
             { parse(full_name, allow_dopant_without_amount); }
@@ -160,7 +160,7 @@ struct PLASK_API Material {
 
         /**
          * Check if dopant name is known.
-         * @return true only if dopant name is known (dopantAmountType still can be equal NO_DOPING if name of dopant was given without ammount)
+         * @return true only if dopant name is known (dopingAmountType still can be equal NO_DOPING if name of dopant was given without ammount)
          */
         bool hasDopantName() const { return !dopantName.empty(); }
 
@@ -168,14 +168,14 @@ struct PLASK_API Material {
          * Check if has full dopant information (with ammount).
          * @return true if has full dopant information
          */
-        bool hasDopant() const { return dopantAmountType != NO_DOPING; }
+        bool hasDoping() const { return dopingAmountType != NO_DOPING; }
 
         /**
          * Parse material in format name[_label][:dopant].
          *
          * Part before label is always put in name, also for complex materials.
          * @param full_material_str material in format name[_label][:dopant]
-         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopantAmountType is set to NO_DOPING and dopantAmount to 0.0)
+         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopingAmountType is set to NO_DOPING and dopingAmount to 0.0)
          */
         void parse(const std::string& full_material_str, bool allow_dopant_without_amount = false);
 
@@ -186,10 +186,17 @@ struct PLASK_API Material {
         Composition completeComposition() const;
 
         /**
-         * Set dopant parameters.
-         * @param dopantName, dopantAmountType, dopantAmount new dopant parameters
+         * Set doping parameters.
+         * @param dopantName, dopingAmountType, dopingAmount new dopant parameters
          */
-        void setDopant(const std::string& dopantName, Material::DopingAmountType dopantAmountType, double dopantAmount);
+        void setDoping(const std::string& dopantName, Material::DopingAmountType dopingAmountType, double dopingAmount);
+
+        /**
+         * Clear doping parameters.
+         */
+        void clearDoping() {
+            setDoping("", Material::NO_DOPING, 0.0);
+        }
     };
 
     /**

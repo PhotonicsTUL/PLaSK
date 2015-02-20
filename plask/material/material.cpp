@@ -55,9 +55,9 @@ void Material::Parameters::parse(const std::string &full_material_str, bool allo
     std::tie(this->name, dopant) = splitString2(full_material_str, ':');
     std::tie(this->name, this->label) = splitString2(this->name, '_');
     if (!dopant.empty())
-        Material::parseDopant(dopant, this->dopantName, this->dopantAmountType, this->dopantAmount, allow_dopant_without_amount);
+        Material::parseDopant(dopant, this->dopantName, this->dopingAmountType, this->dopingAmount, allow_dopant_without_amount);
     else
-        this->setDopant("", Material::NO_DOPING, 0.0);
+        this->clearDoping();
     if (isSimpleMaterialName(name))
         composition.clear();
     else
@@ -68,10 +68,10 @@ Material::Composition Material::Parameters::completeComposition() const {
     return Material::completeComposition(composition);
 }
 
-void Material::Parameters::setDopant(const std::string& dopantName, Material::DopingAmountType dopantAmountType, double dopantAmount) {
+void Material::Parameters::setDoping(const std::string& dopantName, Material::DopingAmountType dopingAmountType, double dopingAmount) {
     this->dopantName = dopantName;
-    this->dopantAmountType = dopantAmountType;
-    this->dopantAmount = dopantAmount;
+    this->dopingAmountType = dopingAmountType;
+    this->dopingAmount = dopingAmount;
 }
 
 std::string Material::str() const {

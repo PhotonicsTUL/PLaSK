@@ -278,6 +278,37 @@ py::docstring_options doc_options(
 #   endif
 #endif
 
+// struct IntFromInt64 {
+//     IntFromInt64() {
+//         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<int>());
+//     }
+//
+//     // Determine if obj can be converted into an Aligner
+//     static void* convertible(PyObject* obj) {
+//         if (!) return NULL;
+//         return obj;
+//     }
+//
+//     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+//         void* storage = ((boost::python::converter::rvalue_from_python_storage<Vec<dim,T>>*)data)->storage.bytes;
+//         try {
+//             if (PyArray_Check(obj)) {
+//                 if (PyArray_NDIM((PyArrayObject*)obj) != 1 || PyArray_DIMS((PyArrayObject*)obj)[0] != dim) throw py::error_already_set();
+//                 MakeVecFromNumpyImpl<dim,T>::call(storage, obj);
+//             } else {
+//                 auto seq = py::object(py::handle<>(py::borrowed(obj)));
+//                 if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM((PyArrayObject*)obj) != 1)) throw py::error_already_set();
+//                 py::stl_input_iterator<T> begin(seq);
+//                 new(storage) Vec<dim,T>(Vec<dim,T>::fromIterator(begin));
+//             }
+//             data->convertible = storage;
+//         } catch (py::error_already_set) {
+//             throw TypeError("Must provide either plask.vector or a sequence of length %1% of proper dtype", dim);
+//         }
+//     }
+// };
+
+
 BOOST_PYTHON_MODULE(_plask)
 {
     // Initialize numpy

@@ -137,12 +137,15 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
     if (name.empty()) {
         material = make_shared<EmptyMaterial>();
     } else {
-        Material::Parameters p(name, true);
-        if (p.hasDopant())  // base material has defined dopant
-            material = db.get(p);
-        else  // (dopant name without ammount still can be defined here)
+        try {
+            material = db.get(name);
+        } catch (plask::MaterialParseException) {
+            Material::Parameters p(name, true);
             constructor = db.getConstructor(p, true);
+            composition = p.composition;
+        }
     }
+    assert(material || constructor);
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr<Material>& material):
@@ -205,8 +208,8 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
 shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     Material::Parameters p(name_with_dopant, true);
     if (p.hasDopantName()) {
-        p.dopantAmount = doping_amount;
-        p.dopantAmountType = doping_amount_type;
+        p.dopingAmount = doping_amount;
+        p.dopingAmountType = doping_amount_type;
     }
     return get(p);
 }
@@ -220,7 +223,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Parameters &m) const {
-    return (*getConstructor(m))(m.composition, m.dopantAmountType, m.dopantAmount);
+    return (*getConstructor(m))(m.composition, m.dopingAmountType, m.dopingAmount);
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
@@ -231,7 +234,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
     Material::Parameters m1(material1_fullname), m2(material2_fullname);
     if (m1.dopantName != m2.dopantName)
         throw MaterialParseException("Cannot mix materials with different doping: '%1%' and '%2%'", material1_fullname, material2_fullname);
-    if (m1.dopantAmountType != m2.dopantAmountType)
+    if (m1.dopingAmountType != m2.dopingAmountType)
         throw MaterialParseException("Cannot mix materials for which doping is given in different formats: '%1%' and '%2%'", material1_fullname, material2_fullname);
     if ((m1.label != m2.label) || (m1.isSimple() != m2.isSimple()))
         throw MaterialParseException("Cannot mix different materials: '%1%' and '%2%'", material1_fullname, material2_fullname);
@@ -240,20 +243,20 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
         if (m1.name != m2.name)
             throw MaterialParseException("Cannot mix different materials: '%1%' and '%2%'", material1_fullname, material2_fullname);
 
-        if (!m1.hasDopant()) //??
+        if (!m1.hasDoping()) //??
             throw MaterialParseException("%1%: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);
 
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
-                    new MixedDopantFactory(getConstructor(m1), m1.dopantAmountType, m1.dopantAmount, m2.dopantAmount)
+                    new MixedDopantFactory(getConstructor(m1), m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount)
                     );
     }
 
     //complex materials:
-    if (m1.hasDopant()) //both dopped
+    if (m1.hasDoping()) //both dopped
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
                     new MixedCompositionAndDopantFactory(getConstructor(m1),
                                                     m1.composition, m2.composition,
-                                                    m1.dopantAmountType, m1.dopantAmount, m2.dopantAmount)
+                                                    m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount)
                     );
 
     //both undopped

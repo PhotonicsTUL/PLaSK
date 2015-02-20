@@ -78,9 +78,11 @@ class NavigationToolbar(NavigationToolbar2QT):
       )
 
     def aspect(self):
-        self.parent.aspect_locked = not self.parent.aspect_locked
-        self.parent.axes.set_aspect('equal' if self.parent.aspect_locked else 'auto')
-        self.parent.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        try: parent = self.parent()
+        except TypeError: parent = self.parent
+        parent.aspect_locked = not parent.aspect_locked
+        parent.axes.set_aspect('equal' if parent.aspect_locked else 'auto')
+        parent.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.draw()
 
     def plot(self):

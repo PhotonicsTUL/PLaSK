@@ -8,7 +8,7 @@
 </defines>
 
 <materials>
-  <material name="InGaAsQW" base="In(0.22)GaAs">
+  <material name="InGaAsQW:Si" base="In(0.2)GaAs:Si">
     <nr>3.621</nr>
     <absp>0</absp>
     <A>110000000</A>

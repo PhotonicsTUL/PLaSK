@@ -388,12 +388,11 @@ public:
 
         virtual shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override {
             if (material) {
-                ensureCompositionIsEmpty(comp);
                 return material;
-            } else if (composition.empty()) {
+            }
+            if (composition.empty()) {
                 return (*constructor)(comp, dopt, dop);
             } else {
-                ensureCompositionIsEmpty(comp);
                 return (*constructor)(composition, dopt, dop);
             }
         }
