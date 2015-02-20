@@ -402,11 +402,10 @@ void registerComplexMaterial(const std::string& name, py::object material_class,
     material_class.attr("_factory") = py::object(constructor);
 }
 
-
+//parse material parameters from full_name and extra parameters in kwargs
 static Material::Parameters kwargs2MaterialComposition(const std::string& full_name, const py::dict& kwargs)
 {
-    Material::Parameters result;
-    result.parse(full_name, true);
+    Material::Parameters result(full_name, true);
 
     bool had_doping_key = false;
     py::object cobj;
@@ -477,15 +476,15 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
     py::object self(args[0]);
     py::object cls = self.attr("__class__");
 
-    PythonMaterial* ptr;
+    shared_ptr<PythonMaterial> ptr;
 
     if (PyObject_HasAttrString(cls.ptr(), "_factory")) {
         shared_ptr<PythonMaterialConstructor> factory
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
         Material::Parameters p = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
-        ptr = new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopantAmountType, p.dopantAmount));
+        ptr.reset(new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopantAmountType, p.dopantAmount)));
     } else {
-        ptr = new PythonMaterial();
+        ptr.reset(new PythonMaterial());
     }
 
     ptr->self = self.ptr();  // key line !!!
@@ -543,7 +542,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
         CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
     }
-    return shared_ptr<Material>(ptr);
+    return ptr;
 }
 
 /**
