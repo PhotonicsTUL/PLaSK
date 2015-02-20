@@ -51,41 +51,41 @@ class Vector(unittest.TestCase):
 
         plask.config.axes = ax
 
-    def testItemAccess(self):
-        '''Test if the items can be accessed corretly using all possible ways'''
-        self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
-        self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
+    #def testItemAccess(self):
+        #'''Test if the items can be accessed corretly using all possible ways'''
+        #self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
+        #self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
 
-        self.c3[0] = 1j
-        self.assertEqual( self.c3, plask.vec(1j,200,300) )
-        self.c3[0] = 100.
+        #self.c3[0] = 1j
+        #self.assertEqual( self.c3, plask.vec(1j,200,300) )
+        #self.c3[0] = 100.
 
-        a = plask.vec(1,2, dtype=complex)
-        a[1] = 2j
-        self.assertEqual( a, plask.vec(1,2j) )
-        a = plask.vec(1,2,3, dtype=complex)
-        a[1] = 2j
-        self.assertEqual( a, plask.vec(1,2j,3) )
+        #a = plask.vec(1,2, dtype=complex)
+        #a[1] = 2j
+        #self.assertEqual( a, plask.vec(1,2j) )
+        #a = plask.vec(1,2,3, dtype=complex)
+        #a[1] = 2j
+        #self.assertEqual( a, plask.vec(1,2j,3) )
 
-        ax = plask.config.axes
+        #ax = plask.config.axes
 
-        plask.config.axes = 'xyz'
-        self.assertEqual( [self.a2.y, self.a2.z], [1, 2] )
-        self.assertEqual( [self.a3.x, self.a3.y, self.a3.z], [1, 2, 3] )
+        #plask.config.axes = 'xyz'
+        #self.assertEqual( [self.a2.y, self.a2.z], [1, 2] )
+        #self.assertEqual( [self.a3.x, self.a3.y, self.a3.z], [1, 2, 3] )
 
-        plask.config.axes = "rz"
-        self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
-        self.assertEqual( [self.a3.r, self.a3.p, self.a3.z], [2, 1, 3] )
+        #plask.config.axes = "rz"
+        #self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
+        #self.assertEqual( [self.a3.r, self.a3.p, self.a3.z], [2, 1, 3] )
 
-        plask.config.axes = 'xy'
-        self.assertEqual( [self.a2.x, self.a2.y], [1, 2] )
-        self.assertEqual( [self.a3.z, self.a3.x, self.a3.y], [1, 2, 3] )
+        #plask.config.axes = 'xy'
+        #self.assertEqual( [self.a2.x, self.a2.y], [1, 2] )
+        #self.assertEqual( [self.a3.z, self.a3.x, self.a3.y], [1, 2, 3] )
 
-        self.c3.x = 2j
-        self.assertEqual( [self.c3.z, self.c3.x, self.c3.y], [100, 2j, 300] )
-        self.c3.x = 200
+        #self.c3.x = 2j
+        #self.assertEqual( [self.c3.z, self.c3.x, self.c3.y], [100, 2j, 300] )
+        #self.c3.x = 200
 
-        plask.config.axes = ax
+        #plask.config.axes = ax
 
     def testArray(self):
         a = numpy.array(self.c3)

@@ -160,14 +160,22 @@ void register_geometry_primitive()
         .def("__init__", py::make_constructor(&Box3D_constructor_default))
         .def("__init__", py::make_constructor(&Box3D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box3D_constructor_4numbers, py::default_call_policies(), (py::arg("back"), py::arg("left"), py::arg("bottom"), py::arg("front"), py::arg("right"), py::arg("top"))))
-        .def_readwrite("lower", &Box3D::lower, "Closer lower left corner of the box.")
-        .def_readwrite("upper", &Box3D::upper, "Farther upper right corner of the box.")
-        .add_property("front", &Box3D::getFront, &Box3D::setFront, "Front edge of the box.")
-        .add_property("back", &Box3D::getBack, &Box3D::setBack, "Back edge of the box.")
-        .add_property("left", &Box3D::getLeft, &Box3D::setLeft, "Left edge of the box.")
-        .add_property("right",  &Box3D::getRight, &Box3D::setRight, "Right edge of the box.")
-        .add_property("top",  &Box3D::getTop, &Box3D::setTop, "Top edge of the box.")
-        .add_property("bottom",  &Box3D::getBottom, &Box3D::setBottom, "Bottom edge of the box.")
+//         .def_readwrite("lower", &Box3D::lower, "Closer lower left corner of the box.")
+//         .def_readwrite("upper", &Box3D::upper, "Farther upper right corner of the box.")
+//         .add_property("front", &Box3D::getFront, &Box3D::setFront, "Front edge of the box.")
+//         .add_property("back", &Box3D::getBack, &Box3D::setBack, "Back edge of the box.")
+//         .add_property("left", &Box3D::getLeft, &Box3D::setLeft, "Left edge of the box.")
+//         .add_property("right",  &Box3D::getRight, &Box3D::setRight, "Right edge of the box.")
+//         .add_property("top",  &Box3D::getTop, &Box3D::setTop, "Top edge of the box.")
+//         .add_property("bottom",  &Box3D::getBottom, &Box3D::setBottom, "Bottom edge of the box.")
+        .def_readonly("lower", &Box3D::lower, "Closer lower left corner of the box.")
+        .def_readonly("upper", &Box3D::upper, "Farther upper right corner of the box.")
+        .add_property("front", &Box3D::getFront, "Front edge of the box.")
+        .add_property("back", &Box3D::getBack, "Back edge of the box.")
+        .add_property("left", &Box3D::getLeft, "Left edge of the box.")
+        .add_property("right",  &Box3D::getRight, "Right edge of the box.")
+        .add_property("top",  &Box3D::getTop, "Top edge of the box.")
+        .add_property("bottom",  &Box3D::getBottom, "Bottom edge of the box.")
         .add_property("depth", &Box3D::depth, "Depth of the box")
         .add_property("width", &Box3D::width, "Width of the box")
         .add_property("height", &Box3D::height, "Height of the box")
@@ -187,21 +195,21 @@ void register_geometry_primitive()
             "Check if this and the other box have common points."
             "Args:\n"
             "    other (plask.geometry.Box2D): Box to check common points with.\n")
-        .def("extend", includeR3p, (py::arg("point")), "")
-        .def("extend", includeR3R, (py::arg("box")),
-             "Extend the box to include the given point or box.\n\n"
-             "Args:\n"
-             "    point (plask.vector): The point to include.\n"
-             "    box (Box3D): The box to include.\n"
-            )
+//         .def("extend", includeR3p, (py::arg("point")), "")
+//         .def("extend", includeR3R, (py::arg("box")),
+//              "Extend the box to include the given point or box.\n\n"
+//              "Args:\n"
+//              "    point (plask.vector): The point to include.\n"
+//              "    box (Box3D): The box to include.\n"
+//             )
         .def("translated", &Box3D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
             "Args:\n"
             "   trans (plask.vec): Translation vector.")
-        .def("translate", &Box3D::translate, py::args("trans"),
-            "Translate this box.\n\n"
-            "Args:\n"
-            "   trans (plask.vec): Translation vector.")
+//         .def("translate", &Box3D::translate, py::args("trans"),
+//             "Translate this box.\n\n"
+//             "Args:\n"
+//             "   trans (plask.vec): Translation vector.")
         .def("__str__", &Box3D__str__)
         .def("__repr__", &Box3D__repr__)
     ;

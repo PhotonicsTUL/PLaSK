@@ -229,9 +229,9 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         , py::no_init);
     vec_class
         .def("__getattr__", &VecAttr<dim,T>::get)
-        .def("__setattr__", &VecAttr<dim,T>::set)
+//         .def("__setattr__", &VecAttr<dim,T>::set)
         .def("__getitem__", &vec__getitem__<dim,T>)
-        .def("__setitem__", &vec__setitem__<dim,T>)
+//         .def("__setitem__", &vec__setitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
         .def("__len__", &vec__len__<dim>)
         .def("__str__", &vec__str__<dim,T>)
