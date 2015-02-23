@@ -69,10 +69,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
 
     shared_ptr<GeometryObject> new_object;    // new object will be constructed
 
-    if (nodeName == "copy") {   //TODO(?) move code of copy to virtual method of manager to allow custom support for it in GUI
+    if (nodeName == "copy") {
         shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
         GeometryObject::CompositeChanger changers;
         while (source.requireTagOrEnd()) {
+            SetExpectedSuffix suffixSetter(*this, "");
             const std::string operation_name = source.getNodeName();
             if (operation_name == "replace") {
                 shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
