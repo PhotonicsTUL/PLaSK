@@ -28,7 +28,6 @@ from .types import geometry_types_geometries
 __author__ = 'qwak'
 
 
-
 class PyObjMime(QtCore.QMimeData):
     MIMETYPE = 'application/x-pyobj'
 

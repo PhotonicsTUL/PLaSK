@@ -491,6 +491,8 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
 
     ptr->self = self.ptr();  // key line !!!
 
+    self.attr("base") = ptr->base;
+    
     // Update cache
     auto found = cacheMap.find(cls.ptr());
     if (found != cacheMap.end())

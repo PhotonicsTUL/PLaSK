@@ -280,7 +280,7 @@ class GNShelf(GNContainerBase):
         self.flat = None
 
     def accept_as_child(self, node):
-        return super(GNStack, self).accept_as_child(node) or isinstance(node, GNZero) or isinstance(node, GNGap)
+        return super(GNShelf, self).accept_as_child(node) or isinstance(node, GNZero) or isinstance(node, GNGap)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNShelf, self)._attributes_from_xml(attribute_reader, conf)

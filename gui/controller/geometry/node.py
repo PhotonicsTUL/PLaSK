@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -88,19 +89,19 @@ class GNodeController(Controller):
             position = QtGui.QComboBox()
             position.addItems(GNAligner.display_names(dim, c))
             layout.addWidget(position, r, 1)
-            at = QtGui.QLabel('at')
-            layout.addWidget(at, r, 2)
+            layout.addWidget(QtGui.QLabel('at'), r, 2)
             position.currentIndexChanged.connect(self.after_field_change)
             pos_value = self.construct_line_edit()
             layout.addWidget(pos_value, r, 3)
             positions.append((position, pos_value))
+            layout.addWidget(QtGui.QLabel(u'µm'), r, 4)
         if add_to_current: self._get_current_form().addRow(layout)
         return positions
 
     def _construct_hbox(self, row_name=None):
         hbox = QtGui.QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
-        group = QtGui.QGroupBox(self.form)
+        group = QtGui.QWidget(self.form)
         group.setContentsMargins(0, 0, 0, 0)
         group.setLayout(hbox)
         if row_name:
@@ -113,6 +114,7 @@ class GNodeController(Controller):
         res = tuple(self.construct_line_edit() for _ in range(0, dim))
         for i in range(0, dim):
             hbox.addWidget(res[i])
+            hbox.addWidget(QtGui.QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
         if row_name:
             return res
         else:
@@ -130,10 +132,9 @@ class GNodeController(Controller):
 
         self.defines_completer = get_defines_completer(document.defines.model, None)
 
-        self.form = QtGui.QGroupBox()
+        self.form = QtGui.QWidget()
 
         self.vbox = QtGui.QVBoxLayout()
-        self.vbox.setContentsMargins(1, 0, 1, 0)
         self.vbox.setSpacing(0)
         self.form.setLayout(self.vbox)
         self.fill_form()
@@ -169,4 +170,5 @@ class GNChildController(GNodeController):
 
     def __init__(self, document, model, node, child_node):
         super(GNChildController, self).__init__(document, model, node)
+        self.vbox.setContentsMargins(0, 0, 0, 0)
         self.child_node = child_node

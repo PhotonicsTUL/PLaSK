@@ -16,6 +16,7 @@ from ...utils.str import empty_to_none, none_to_empty
 from ...qt import QtGui
 from ...utils.qsignals import BlockQtSignals
 
+
 class GNLeafController(GNObjectController):
 
     def fill_form(self):
@@ -98,7 +99,8 @@ class GNBlockController(GNLeafController):
 class GNTriangleController(GNLeafController):
 
     def fill_form(self):
-        self.construct_group('Vertexes coordinates (other than: {}):'.format(', '.join('0' for _ in range(0, self.node.dim))))
+        self.construct_group('Vertexes coordinates (other than: {}):'
+                             .format(', '.join('0' for _ in range(0, self.node.dim))))
         self.p0 = self.construct_point_controllers(row_name='first')
         self.p1 = self.construct_point_controllers(row_name='second')
         super(GNTriangleController, self).fill_form()

@@ -54,6 +54,8 @@ class PythonEvalMaterial : public Material
 
     py::object self;
 
+    friend struct PythonEvalMaterialConstructor;
+    
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
         return
 #if PY_VERSION_HEX >= 0x03000000
@@ -82,11 +84,7 @@ class PythonEvalMaterial : public Material
 
     PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base,
                        const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) :
-        cls(constructor), base(base), doping_amount_type(doping_amount_type), doping_amount(doping_amount) {
-        self = py::object(base);
-        if (doping_amount_type == Material::DOPANT_CONCENTRATION) self.attr("dc") = doping_amount;
-        else if (doping_amount_type == Material::CARRIER_CONCENTRATION) self.attr("cc") = doping_amount;
-    }
+        cls(constructor), base(base), doping_amount_type(doping_amount_type), doping_amount(doping_amount) {}
 
     // Here there are overridden methods from Material class
 
@@ -217,7 +215,12 @@ class PythonEvalMaterial : public Material
 };
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
+    auto material = make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
+    material->self = py::object(shared_ptr<Material>(material));
+    material->self.attr("base") = py::object(material->base);
+    if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("dc") = doping_amount;
+    else if (doping_amount_type == Material::CARRIER_CONCENTRATION) material->self.attr("cc") = doping_amount;
+    return material;
 }
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {

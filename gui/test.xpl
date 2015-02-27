@@ -21,11 +21,8 @@
 <geometry>
   <cylindrical2d name="GeoTE" axes="rz">
     <stack>
-      <item>
-        <shelf>
-          <gap total="{mesaRadius-1}"/>
-          <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
-        </shelf>
+      <item right="{mesaRadius-1}">
+        <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
       </item>
       <item>
         <stack name="VCSEL">
@@ -46,10 +43,10 @@
           <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
           <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
           <stack name="junction" role="active">
-            <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+            <rectangle role="QW" material="InGaAsQW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
             <stack repeat="4">
               <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
-              <rectangle role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
+              <rectangle role="QW" material="InGaAsQW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
             </stack>
           </stack>
           <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
@@ -66,7 +63,9 @@
       <item>
         <rectangle material="GaAs:C=2e+18" dr="200." dz="150."/>
       </item>
-      <rectangle name="p-contact" material="Cu" dr="2500." dz="5000."/>
+      <item>
+        <rectangle name="p-contact" material="Cu" dr="2500." dz="5000."/>
+      </item>
     </stack>
   </cylindrical2d>
   <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">

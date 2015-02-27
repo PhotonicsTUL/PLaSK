@@ -14,6 +14,7 @@ import operator
 import plask
 
 from ...qt import QtGui, QtCore
+from ...qt.QtCore import Qt
 from ...model.geometry import GeometryModel
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.geometry.again_copy import GNAgain
@@ -22,10 +23,9 @@ from ...model.geometry.constructor import construct_by_name, construct_using_con
 from ...model.geometry.types import geometry_types_geometries_core, gname
 
 from .. import Controller
-from ...utils.widgets import HTMLDelegate
+from ...utils.widgets import HTMLDelegate, VerticalScrollArea
 
 from .plot_widget import PlotWidget
-
 
 # TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
@@ -219,6 +219,8 @@ class GeometryController(Controller):
         self.tree.setItemDelegateForColumn(1, self.properties_delegate)
         self.tree.setColumnWidth(0, 200)
 
+        self.tree.setAutoScroll(True)
+
         self.tree.dragEnabled()
         self.tree.acceptDrops()
         self.tree.showDropIndicator()
@@ -262,7 +264,7 @@ class GeometryController(Controller):
 
         self.vertical_splitter.addWidget(tree_with_buttons)
 
-        self.parent_for_editor_widget = QtGui.QStackedWidget()
+        self.parent_for_editor_widget = VerticalScrollArea()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
         self.geometry_view = PlotWidget(self)
@@ -296,13 +298,18 @@ class GeometryController(Controller):
             if not self._current_controller.on_edit_exit():
                 return False
         self._current_index = new_index
-        for i in reversed(range(self.parent_for_editor_widget.count())):
-            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
         if self._current_index is None:
             self._current_controller = None
+            self.parent_for_editor_widget.setWidget(QtGui.QWidget())
+            self.vertical_splitter.moveSplitter(1, 0)
         else:
             self._current_controller = self._current_index.internalPointer().get_controller(self.document, self.model)
-            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+            widget = self._current_controller.get_widget()
+            self.parent_for_editor_widget.setWidget(widget)
+            widget.setFixedWidth(self.parent_for_editor_widget.size().width()-2)
+            widget.update()
+            h = widget.height()
+            self.vertical_splitter.moveSplitter(self.vertical_splitter.height()-h-8, 1)
             self._current_controller.on_edit_enter()
         self.update_actions()
 

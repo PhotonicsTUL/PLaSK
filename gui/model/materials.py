@@ -383,7 +383,10 @@ class MaterialsModel(TableModel):
                 res.append(Info(u'Material base is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
             elif plask and d.base not in (e.name for e in self.entries[:i]):
                 try:
-                    plask.material.db.get(str(d.base))
+                    mat = str(d.base)
+                    if ':'  in mat and '=' not in mat:
+                        mat += '=0'
+                    plask.material.db.get(mat)
                 except (ValueError, RuntimeError) as err:
                     res.append(
                         Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"

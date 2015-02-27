@@ -206,3 +206,20 @@ class ComboBoxDelegate(QtGui.QItemDelegate):
                              #option.rect.height() / 2 -
                              #check_box_rect.height() / 2)
         #return QtCore.QRect(check_box_point, check_box_rect.size())
+
+
+class VerticalScrollArea(QtGui.QScrollArea):
+
+    def __init__(self, parent=None):
+        super(VerticalScrollArea, self).__init__(parent)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+    def resizeEvent(self, event):
+        super(VerticalScrollArea, self).resizeEvent(event)
+        self.widget().setFixedWidth(event.size().width())
+
+    def eventFilter(self, obj, event):
+        if obj and obj == self.widget() and event.type() == QtCore.QEvent.Resize:
+            self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
+        return super(VerticalScrollArea, self).eventFilter(obj, event)

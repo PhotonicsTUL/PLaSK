@@ -16,7 +16,7 @@ from ..qt.QtCore import Qt
 
 from ..model.connects import PROPS
 
-from ..utils.widgets import table_last_col_fill, table_edit_shortcut
+from ..utils.widgets import table_last_col_fill, table_edit_shortcut, VerticalScrollArea
 from ..utils.textedit import TextEdit
 from ..utils.widgets import DEFAULT_FONT
 from ..external.highlighter import SyntaxHighlighter, load_syntax
@@ -26,12 +26,10 @@ from .source import scheme, syntax
 from .defines import get_defines_completer
 
 
-class SolverAutoWidget(QtGui.QScrollArea):
+class SolverAutoWidget(VerticalScrollArea):
 
     def __init__(self, controller, parent=None):
         super(SolverAutoWidget, self).__init__(parent)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         self.controller = controller
 
@@ -127,15 +125,6 @@ class SolverAutoWidget(QtGui.QScrollArea):
         main = QtGui.QWidget()
         main.setLayout(layout)
         self.setWidget(main)
-
-    def resizeEvent(self, event):
-        super(SolverAutoWidget, self).resizeEvent(event)
-        self.widget().setFixedWidth(event.size().width())
-
-    def eventFilter(self, obj, event):
-        if obj and obj == self.widget() and event.type() == QtCore.QEvent.Resize:
-            self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
-        return super(SolverAutoWidget, self).eventFilter(obj, event)
 
     def load_data(self):
         model = self.controller.model
