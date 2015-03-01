@@ -27,8 +27,9 @@ from ...utils.widgets import HTMLDelegate, VerticalScrollArea
 
 from .plot_widget import PlotWidget
 
-# TODO use ControllerWithSubController (?)
+
 class GeometryController(Controller):
+    # TODO use ControllerWithSubController (?)
 
     def _add_child(self, type_constructor, parent_index):
         parent = parent_index.internalPointer()
@@ -68,7 +69,7 @@ class GeometryController(Controller):
         if current_index.isValid():
             add_child_menu = self._get_add_child_menu(current_index)
             if add_child_menu:
-                self.add_menu.addAction('Item').setMenu(add_child_menu)
+                self.add_menu.addAction('&Item').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
             a = QtGui.QAction(gname(n), self.add_menu)
             a.triggered[()].connect(lambda n=n: self.append_geometry_node(n))
@@ -133,11 +134,6 @@ class GeometryController(Controller):
                 to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
                 self.geometry_view.update_plot(to_plot, set_limits=set_limits, plane=self.checked_plane)
             except Exception as e:
-                #if show_errors:
-                #    QtGui.QMessageBox.critical(self.document.window, 'Error while interpreting XPL content.',
-                #                               "Geometry can not be plotted due to the error in XPL content:\n{}"
-                #                               .format(str(e)))
-                #else:
                 if not element_has_name:
                     tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage(str(e))
@@ -147,6 +143,10 @@ class GeometryController(Controller):
                 self.status_bar.setAutoFillBackground(True)
                 return False
             else:
+                if tree_element.dim == 3:
+                    self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
+                else:
+                    self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
                 if not element_has_name:
                     tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage('')
@@ -158,8 +158,6 @@ class GeometryController(Controller):
             if not element_has_name:
                 tree_element.name = None
         return True
-
-        #plot_geometry(current_index.internalPointer())
 
     def plot(self, tree_element=None):
         if tree_element is None:
@@ -322,7 +320,7 @@ class GeometryController(Controller):
         else:
             if current_root != plotted_root:
                 self.plot(current_root)
-            # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
+                # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
 

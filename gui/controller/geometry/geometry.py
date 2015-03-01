@@ -23,7 +23,8 @@ class GNGeometryController(GNObjectController):
 
     def construct_border_controllers(self, row_name=None):
         hbox, group = self._construct_hbox(row_name)
-        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend']) for _ in range(0, 2))
+        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'])
+                    for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
         if row_name:
             return res
@@ -32,7 +33,8 @@ class GNGeometryController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Border settings')
-        self.borders = tuple(self.construct_border_controllers('{}/{}'.format(lo, hi)) for (lo, hi) in self.node.get_alternative_direction_names())
+        self.borders = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
+                             for (lo, hi) in self.node.get_alternative_direction_names())
         super(GNGeometryController, self).fill_form()
 
     def save_data_in_model(self):

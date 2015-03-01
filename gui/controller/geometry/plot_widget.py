@@ -1,3 +1,4 @@
+# coding=utf-8
 import plask
 
 from ...qt import QtGui, QtCore
@@ -59,6 +60,9 @@ class NavigationToolbar(NavigationToolbar2QT):
             label_action = self.addWidget(self.locLabel)
             label_action.setVisible(True)
 
+        self._axes = 'tran', 'vert'
+        self._axes_names = 'long', 'tran', 'vert'
+
     toolitems = (
         # ('Home', 'Reset original view', 'go-home', 'home'),
         ('Plot', 'Plot selected geometry object', 'applications-graphics', 'plot', None),
@@ -72,10 +76,25 @@ class NavigationToolbar(NavigationToolbar2QT):
         (None, None, None, None, None),
         ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
         (None, None, None, None, None),
-        ('01', 'Select 01 plane', None, 'plane01', False),
-        ('02', 'Select 02 plane', None, 'plane02', False),
-        ('12', 'Select 12 plane', None, 'plane12', True),
-      )
+        ('01', 'Select longitudinal-transverse plane', None, 'plane01', False),
+        ('02', 'Select longitudinal-vertical plane', None, 'plane02', False),
+        ('12', 'Select transverse-vertical plane', None, 'plane12', True),
+    )
+
+    def set_message(self, s):
+        self.message.emit(s)
+        if self.coordinates:
+            self.locLabel.setText(s)
+
+    def mouse_move(self, event):
+        self._set_cursor(event)
+
+        s = u'{1[0]} = {0.xdata:.4f} µm  {1[1]} = {0.ydata:.4f} µm'.format(event, self._axes)
+
+        if len(self.mode):
+            self.set_message('%s   %s' % (s, self.mode))
+        else:
+            self.set_message(s)
 
     def aspect(self):
         try: parent = self.parent()
@@ -93,15 +112,38 @@ class NavigationToolbar(NavigationToolbar2QT):
         if self.controller is not None:
             self.controller.plot_auto_refresh = not self.controller.plot_auto_refresh
 
-
     def _select_plane(self, plane):
-        self._actions['plane01'].setChecked(plane == '01')  #QActionGroup should be used
+        self._actions['plane01'].setChecked(plane == '01')
         self._actions['plane02'].setChecked(plane == '02')
         self._actions['plane12'].setChecked(plane == '12')
+        self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
         self.controller.checked_plane = plane
         if self.controller.plotted_tree_element is not None and \
            getattr(self.controller.plotted_tree_element, 'dim') == 3:
             self.controller.plot_element(self.controller.plotted_tree_element, set_limits=True)
+        self.set_message(self.mode)
+
+    def disable_planes(self, axes):
+        self._actions['plane01'].setVisible(False)
+        self._actions['plane02'].setVisible(False)
+        self._actions['plane12'].setVisible(False)
+        self._axes = axes[-2:]
+
+    def enable_planes(self, axes=None):
+        self._actions['plane01'].setVisible(True)
+        self._actions['plane02'].setVisible(True)
+        self._actions['plane12'].setVisible(True)
+        if axes is not None:
+            if ',' in axes:
+                axes = axes.split(',')
+                sep = '-'
+            else:
+                sep = ''
+            self._actions['plane01'].setText(axes[0]+sep+axes[1])
+            self._actions['plane02'].setText(axes[0]+sep+axes[2])
+            self._actions['plane12'].setText(axes[1]+sep+axes[2])
+            self._axes_names = axes
+            self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
 
     def plane01(self):
         self._select_plane('01')

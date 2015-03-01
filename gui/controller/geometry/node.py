@@ -25,10 +25,16 @@ class GNodeController(Controller):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True):
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None):
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
-        if row_name: self._get_current_form().addRow(row_name, res)
+        if row_name:
+            if unit is not None:
+                box, _ = self._construct_hbox(row_name)
+                box.addWidget(res)
+                box.addWidget(QtGui.QLabel(unit))
+            else:
+                self._get_current_form().addRow(row_name, res)
         res.editingFinished.connect(self.after_field_change)
         return res
 

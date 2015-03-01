@@ -70,10 +70,14 @@
   </cylindrical2d>
   <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">
     <align left="0" bottom="0">
-      <again ref="VCSEL"/>
+      <item>
+        <clip>
+          <again ref="VCSEL"/>
+        </clip>
+      </item>
     </align>
   </cylindrical2d>
-  <cartesian3d>
+  <cartesian3d axes="x,y,z">
     <align>
       <item>
         <revolution>

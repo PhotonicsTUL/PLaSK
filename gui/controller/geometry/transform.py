@@ -22,7 +22,7 @@ class GNClipController(GNObjectController):
         self.construct_group('Clipping box')
         sign = '-'
         for b in self.node.bound_names():
-            setattr(self, b, self.construct_line_edit(b))
+            setattr(self, b, self.construct_line_edit(b.title()+':', unit=u'µm'))
             getattr(self, b).setToolTip(u'&lt;clip <b>{0}</b>=""...&gt;<br/>'
                     u'{0} edge of the clipping rectangle. (float [µm], {1}INF by default)'.format(b, sign))
             sign = '+' if sign == '-' else '-'
