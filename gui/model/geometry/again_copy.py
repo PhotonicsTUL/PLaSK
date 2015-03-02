@@ -104,7 +104,11 @@ class GNCReplace(GNCopyChild):
 
     def _children_from_xml(self, ordered_reader, conf):
         if self.replacer is None:
-            construct_geometry_object(ordered_reader.require(), conf)
+            dim = None
+            if self.object is not None:
+                obj_node = conf.find_object_by_name(self.object)
+                if obj_node is not None: dim = obj_node.dim
+            construct_geometry_object(ordered_reader.require(), conf, dim)
 
     def accept_new_child(self):
         return not self.children

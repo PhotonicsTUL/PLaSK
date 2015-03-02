@@ -32,6 +32,14 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, con
     reader.expectedSuffix = new_expected_suffix;
 }
 
+GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, int dim)
+    : reader(reader), old(reader.expectedSuffix)
+{
+    if (dim == 2) reader.expectedSuffix = PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D; else
+    if (dim == 3) reader.expectedSuffix = PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D; else
+    reader.expectedSuffix = "";
+}
+
 GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
     : materialsAreRequired(true), expectedSuffix(0), manager(manager), source(source),
       materialSource(new MaterialsSourceDB(materialsDB))
@@ -73,7 +81,6 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
         GeometryObject::CompositeChanger changers;
         while (source.requireTagOrEnd()) {
-            SetExpectedSuffix suffixSetter(*this, "");
             const std::string operation_name = source.getNodeName();
             if (operation_name == "replace") {
                 shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
@@ -83,6 +90,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                     to = requireObjectWithName(*to_name);
                 } else {
                     source.requireTag();
+                    SetExpectedSuffix suffixSetter(*this, op_from->getDimensionsCount());
                     to = readObject();
                 }
                 //TODO read translation

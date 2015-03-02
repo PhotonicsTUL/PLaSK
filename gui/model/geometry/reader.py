@@ -108,8 +108,10 @@ class GNReadConf(object):
         if conf is not None:
             self.axes = conf.axes
             self.parent = conf.parent
+            self.object_names = conf.object_names
         else:
             self.parent = None
+            self.object_names = dict()
         if axes is not None: self.axes = axes
         if parent is not None: self.parent = parent
 
@@ -171,6 +173,13 @@ class GNReadConf(object):
             pos_str = aligner.position_str(dims, self.axes_names(dims), axis_nr)
             if pos_str is not None and aligner.value:
                 element.attrib[pos_str] = aligner.value
+
+    def find_object_by_name(self, name):
+        return self.object_names.get(name)
+
+    def after_read(self, node):
+        name = getattr(node, 'name', None)
+        if name is not None: self.object_names[name] = node
 
 
 def axes_to_str(axes, none_axes_result=''):

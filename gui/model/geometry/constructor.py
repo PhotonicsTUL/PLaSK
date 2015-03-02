@@ -23,14 +23,33 @@ def geometry_object_names(constructor, *allowed_types):
 
 
 def construct_geometry_object(element, conf, *allowed_types):
+    """
+    Construct geometry object node.
+    :param element: XML element
+    :param GNReadConf conf:
+    :param allowed_types: one or more arrays from types.py, can begin from one int (interpreted as dimension) or None (skipped)
+    :return: constructed object
+    """
     if element is None: return None
+
+    dim = None  # dimensions of constructed object
+    if len(allowed_types) > 0:
+        import numbers
+        if allowed_types[0] is None:
+            allowed_types = allowed_types[1:]
+        elif isinstance(allowed_types[0], numbers.Integral):
+            dim = int(allowed_types[0])
+            if dim != 2 and dim != 3: dim = None
+            allowed_types = allowed_types[1:]
+    if dim is None: dim = conf.dim
+
     if len(allowed_types) == 0:
         from .types import geometry_types_2d, geometry_types_3d, geometry_types_other
-        d = conf.dim
-        if d == 2: return construct_geometry_object(element, conf, geometry_types_2d, geometry_types_other)
-        elif d == 3: return construct_geometry_object(element, conf, geometry_types_3d, geometry_types_other)
-        else: return construct_geometry_object(element, conf, geometry_types_2d, geometry_types_3d, geometry_types_other)
-    s = conf.suffix
+        if dim == 2: return construct_geometry_object(element, conf, dim, geometry_types_2d, geometry_types_other)
+        elif dim == 3: return construct_geometry_object(element, conf, dim, geometry_types_3d, geometry_types_other)
+        else: return construct_geometry_object(element, conf, dim, geometry_types_2d, geometry_types_3d, geometry_types_other)
+
+    s = None if dim is None else '{}d'.format(dim)
     for m in allowed_types:
         c = m.get(element.tag)
         if c is None and s is not None: c = m.get(element.tag + s)

@@ -68,6 +68,7 @@ class GNode(object):
         self.preset_conf(subtree_conf)
         with AttributeReader(element) as a: self._attributes_from_xml(a, subtree_conf)
         with OrderedTagReader(element) as r: self._children_from_xml(r, subtree_conf)
+        subtree_conf.after_read(self)
 
     def _attributes_to_xml(self, element, conf):
         """
@@ -295,6 +296,24 @@ class GNode(object):
         :return set: calculated set of names
         """
         return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse()) if n is not None)
+
+    def find(self, predicate):
+        """
+        Find the node which fulfil given predicate in subtree with self in root.
+        :param predicate: callable, predicate(node), where node is GNode, should return bool, True to accept
+        :return GNode: node with name attribute equals to name argument or None if not found
+        """
+        for node in self.traverse():
+            if predicate(node): return node
+        return None
+
+    def find_by_name(self, name):
+        """
+        Find the node with given name in subtree with self in root.
+        :param str name: name to find
+        :return GNode: node with name attribute equals to name argument or None if not found
+        """
+        return self.find(lambda node: getattr(node, 'name', None) == name)
 
     def paths(self):
         """

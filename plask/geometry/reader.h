@@ -108,6 +108,7 @@ class PLASK_API GeometryReader {
         GeometryReader& reader;
         const char* old;
         SetExpectedSuffix(GeometryReader& reader, const char* new_expected_suffix);
+        SetExpectedSuffix(GeometryReader& reader, int dim);
         ~SetExpectedSuffix() { reader.expectedSuffix = old; }
     };
 
