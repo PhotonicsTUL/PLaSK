@@ -404,11 +404,19 @@ if(BUILD_PYTHON)
             add_custom_command(OUTPUT ${gui_files_pyo}  COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
             add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
             install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT GUI)
+            install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+                    PATTERN .* EXCLUDE
+                    PATTERN *.xpl EXCLUDE
+                    PATTERN *.py EXCLUDE
+                    PATTERN *.pyc EXCLUDE
+                    PATTERN *.pyo EXCLUDE
+            )
         else()
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
                     PATTERN .* EXCLUDE
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
+                    PATTERN *.pyo EXCLUDE
                     PATTERN gui/qt.py* EXCLUDE
             )
             install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
