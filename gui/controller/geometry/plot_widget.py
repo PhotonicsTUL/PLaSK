@@ -76,9 +76,9 @@ class NavigationToolbar(NavigationToolbar2QT):
         (None, None, None, None, None),
         ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
         (None, None, None, None, None),
-        ('01', 'Select longitudinal-transverse plane', None, 'plane01', False),
-        ('02', 'Select longitudinal-vertical plane', None, 'plane02', False),
-        ('12', 'Select transverse-vertical plane', None, 'plane12', True),
+        ('long-tran', 'Select longitudinal-transverse plane', None, 'plane01', False),
+        ('long-vert', 'Select longitudinal-vertical plane', None, 'plane02', False),
+        ('tran-vert', 'Select transverse-vertical plane', None, 'plane12', True),
     )
 
     def set_message(self, s):
@@ -87,7 +87,19 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.locLabel.setText(s)
 
     def mouse_move(self, event):
-        self._set_cursor(event)
+        if not event.inaxes or not self._active:
+            if self._lastCursor != cursors.POINTER:
+                self.set_cursor(cursors.POINTER)
+                self._lastCursor = cursors.POINTER
+        else:
+            if self._active == 'ZOOM':
+                if self._lastCursor != cursors.SELECT_REGION:
+                    self.set_cursor(cursors.SELECT_REGION)
+                    self._lastCursor = cursors.SELECT_REGION
+            elif (self._active == 'PAN' and
+                  self._lastCursor != cursors.MOVE):
+                self.set_cursor(cursors.MOVE)
+                self._lastCursor = cursors.MOVE
 
         s = u'{1[0]} = {0.xdata:.4f} µm  {1[1]} = {0.ydata:.4f} µm'.format(event, self._axes)
 
@@ -136,6 +148,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         if axes is not None:
             if ',' in axes:
                 axes = axes.split(',')
+            if len(axes[0]) > 1 or len(axes[1]) > 1 or len(axes[2]) > 1:
                 sep = '-'
             else:
                 sep = ''
