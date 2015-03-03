@@ -13,6 +13,9 @@
 from collections import OrderedDict
 
 _NAMES = {
+    'cartesian2d': "Cartesian&2D",
+    'cartesian3d': "Cartesian&3D",
+    'cylindrical': "Cylind&rical",
     'zero': "<set zero here>",
     'gap': "<insert gap>",
     'replace': "<replace object>",
@@ -23,9 +26,12 @@ _NAMES = {
 }
 
 
-def gname(key):
+def gname(key, menu=False):
     try:
-        return _NAMES[key]
+        if menu:
+            return _NAMES[key]
+        else:
+            return _NAMES[key].replace('&', '')
     except KeyError:
         if key.endswith('2d') or key.endswith('3d'):
             return key.title()[:-1] + 'D'

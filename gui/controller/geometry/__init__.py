@@ -57,7 +57,7 @@ class GeometryController(Controller):
             for type_name, type_constructor in sorted(section.items(), key=operator.itemgetter(0)):
                 if type_name.endswith('2d') or type_name.endswith('3d'):
                     type_name = type_name[:-2]
-                a = QtGui.QAction(gname(type_name), result)
+                a = QtGui.QAction(gname(type_name, True), result)
                 a.triggered[()].connect(lambda type_constructor=type_constructor, parent_index=geometry_node_index:
                                         self._add_child(type_constructor, parent_index))
                 result.addAction(a)
@@ -71,7 +71,7 @@ class GeometryController(Controller):
             if add_child_menu:
                 self.add_menu.addAction('&Item').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
-            a = QtGui.QAction(gname(n), self.add_menu)
+            a = QtGui.QAction(gname(n, True), self.add_menu)
             a.triggered[()].connect(lambda n=n: self.append_geometry_node(n))
             self.add_menu.addAction(a)
 
