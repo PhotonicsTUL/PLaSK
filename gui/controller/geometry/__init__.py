@@ -307,7 +307,7 @@ class GeometryController(Controller):
             widget.setFixedWidth(self.parent_for_editor_widget.size().width()-2)
             widget.update()
             h = widget.height()
-            self.vertical_splitter.moveSplitter(self.vertical_splitter.height()-h-8, 1)
+            self.vertical_splitter.moveSplitter(self.vertical_splitter.height()-h-12, 1)
             self._current_controller.on_edit_enter()
         self.update_actions()
 
