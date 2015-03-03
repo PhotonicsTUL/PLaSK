@@ -68,10 +68,10 @@ class GNodeController(Controller):
         form_layout = QtGui.QFormLayout(external)
         if title is not None:
             external.setTitle(title)
-            m = form_layout.getContentsMargins()
-            form_layout.setContentsMargins(0, m[1], 0, 0)
-        else:
-            form_layout.setContentsMargins(0, 0, 0, 0)
+        #     m = form_layout.getContentsMargins()
+        #     form_layout.setContentsMargins(0, m[1], 0, 0)
+        # else:
+        #     form_layout.setContentsMargins(0, 0, 0, 0)
         if position is None:
             self.vbox.addWidget(external)
         else:

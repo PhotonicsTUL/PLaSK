@@ -217,7 +217,9 @@ class VerticalScrollArea(QtGui.QScrollArea):
 
     def resizeEvent(self, event):
         super(VerticalScrollArea, self).resizeEvent(event)
-        self.widget().setFixedWidth(event.size().width())
+        widget = self.widget()
+        if widget is not None:
+            widget.setFixedWidth(event.size().width())
 
     def eventFilter(self, obj, event):
         if obj and obj == self.widget() and event.type() == QtCore.QEvent.Resize:

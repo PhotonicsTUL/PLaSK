@@ -81,11 +81,6 @@ class NavigationToolbar(NavigationToolbar2QT):
         ('tran-vert', 'Select transverse-vertical plane', None, 'plane12', True),
     )
 
-    def set_message(self, s):
-        self.message.emit(s)
-        if self.coordinates:
-            self.locLabel.setText(s)
-
     def mouse_move(self, event):
         if not event.inaxes or not self._active:
             if self._lastCursor != cursors.POINTER:
