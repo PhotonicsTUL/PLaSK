@@ -21,7 +21,7 @@
 <geometry>
   <cylindrical2d name="GeoTE" axes="rz">
     <stack>
-      <item right="{mesaRadius-1}">
+      <item path="abs123" right="{mesaRadius-1}">
         <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
       </item>
       <item>
