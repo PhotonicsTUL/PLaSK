@@ -382,14 +382,38 @@ if(BUILD_PYTHON)
             set_target_properties(plaskgui PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
         endif()
 
-        #TODO compile pyc files
-        install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
-                PATTERN .* EXCLUDE
-                PATTERN *.xpl EXCLUDE
-                PATTERN *.pyc EXCLUDE
-                PATTERN gui/qt.py* EXCLUDE
-        )
-        install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
+        if(WIN32)
+            file(GLOB_RECURSE gui_files RELATIVE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/gui/*.py)
+            foreach(gui_file ${gui_files})
+                if (NOT ${gui_file} MATCHES "gui/qt.*")
+                    add_custom_command(OUTPUT ${PLASK_PATH}/${gui_file}
+                                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
+                                       DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
+                    list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
+                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
+                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
+                endif()
+            endforeach()
+            add_custom_command(OUTPUT ${PLASK_PATH}/gui/qt.py
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/gui/qt.pyside.py ${PLASK_PATH}/gui/qt.py
+                               DEPENDS ${CMAKE_SOURCE_DIR}/gui/qt.pyside.py)
+            list(APPEND gui_files_copied ${PLASK_PATH}/gui/qt.py)
+            list(APPEND gui_files_pyc ${PLASK_PATH}/gui/qt.pyc)
+            list(APPEND gui_files_pyo ${PLASK_PATH}/gui/qt.pyo)
+            add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
+            add_custom_command(OUTPUT ${gui_files_pyo}  COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
+            add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
+            install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT GUI)
+        else()
+            install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+                    PATTERN .* EXCLUDE
+                    PATTERN *.xpl EXCLUDE
+                    PATTERN *.pyc EXCLUDE
+                    PATTERN gui/qt.py* EXCLUDE
+            )
+            install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
+        endif()
+
         install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
         if(UNIX)
