@@ -17,6 +17,7 @@ from .info import InfoSource, Info
 from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
 
+from ..qt import QtGui
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
         """
@@ -102,6 +103,7 @@ class SectionModel(TreeFragmentModel):
         self.name = name
         self.externalSource = None
         self.line_in_file = None
+        self.undo_stack = QtGui.QUndoStack()
 
     def set_text(self, text):
         self.set_xml_element(
