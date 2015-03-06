@@ -53,14 +53,21 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
-def material_to_color(material):
-    """
-        Generate color for given material.
-        :param plask.Material material: material
-        :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
-    """
-    i = adler32(str(material))      # maybe crc32?
-    return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
+class _MaterialToColor(object):
+
+    def __init__(self, axes):
+        self._air_color = axes.get_axis_bgcolor()
+
+    def __call__(self, material):
+        """
+            Generate color for given material.
+            :param plask.Material material: material
+            :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
+        """
+        if str(material) == 'air':
+            return self._air_color
+        i = adler32(str(material))      # maybe crc32?
+        return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
 
 
 class DrawEnviroment(object):
@@ -68,7 +75,7 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, axes, artist_dst, fill = False, color = 'k', lw = 1.0, zorder=3.0):
+    def __init__(self, axes, artist_dst, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0):
         """
         :param axes: plane to draw (important in 3D)
         :param artist_dst: mpl axis where artist should be appended
@@ -84,6 +91,10 @@ class DrawEnviroment(object):
         self.lw = lw
         self.axes = axes
         self.zorder = zorder
+        if get_color is None:
+            self.get_color = _MaterialToColor(axes)
+        else:
+            self.get_color = get_color
 
     def append(self, artist, clip_box, geometry_object):
         """
@@ -94,7 +105,7 @@ class DrawEnviroment(object):
         """
         if self.fill and geometry_object is not None:
             artist.set_fill(True)
-            artist.set_facecolor(material_to_color(geometry_object.representative_material))
+            artist.set_facecolor(self.get_color(geometry_object.representative_material))
         else:
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
@@ -106,6 +117,7 @@ class DrawEnviroment(object):
             #artist.set_clip_on(True)
             #artist.set_clip_path(clip_box)
         artist.set_zorder(self.zorder)
+
 
 def _draw_bbox(env, geometry_object, bbox, transform, clip_box):
     block = matplotlib.patches.Rectangle(
@@ -155,9 +167,9 @@ _geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
 def _draw_Extrusion(env, geometry_object, transform, clip_box):
     if env.axes == (1, 2) or env.axes == (2, 1):
         try:
-            env.axes = (x-1 for x in env.axes)  #change axes to 2D
+            env.axes = (x-1 for x in env.axes)  # change axes to 2D
             _draw_geometry_object(env, geometry_object.item, transform, clip_box)
-        finally:    #revert axes settings, change back to 3D:
+        finally:    # revert axes settings, change back to 3D:
             env.axes = (x+1 for x in env.axes)
     else:
         #_draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
@@ -170,7 +182,7 @@ _geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
 
 
 def _draw_Revolution(env, geometry_object, transform, clip_box):
-    if env.axes == (0, 1) or env.axes == (1, 0):    #view from top
+    if env.axes == (0, 1) or env.axes == (1, 0):    # view from the top
         obj2d = geometry_object.item
         bbox = obj2d.bbox
         env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.upper[0], transform=transform), clip_box, obj2d)
@@ -193,6 +205,7 @@ def _draw_Translation(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 
+
 def _draw_Flipped(env, geometry_object, transform, clip_box, axis_nr):
     if axis_nr == env.axes[0]:
         _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clip_box)
@@ -207,6 +220,7 @@ def _draw_Flip(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
 _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 
+
 def _draw_Mirror(env, geometry_object, transform, clip_box):
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
     if geometry_object.axis_nr in env.axes: # in 3D this must not be true
@@ -214,6 +228,7 @@ def _draw_Mirror(env, geometry_object, transform, clip_box):
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
+
 
 def _draw_clipped(env, geometry_object, transform, clip_box, new_clip_box):
     """Used by _draw_Clip and _draw_Intersection."""
@@ -247,6 +262,7 @@ def _draw_Clip(env, geometry_object, transform, clip_box):
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
+
 def _draw_Intersection(env, geometry_object, transform, clip_box):
     _draw_clipped(env, geometry_object.item, transform, clip_box, geometry_object.envelope.bbox)
 
@@ -271,27 +287,31 @@ def _draw_geometry_object(env, geometry_object, transform, clip_box):
             #for child in geometry_object:
             #    _draw_geometry_object(env, child, transform, clip_box)
         except TypeError:
-            pass    #ignore non-iterable object
+            pass    # ignore non-iterable object
     else:
         drawer(env, geometry_object, transform, clip_box)
 
 
 class ColorFromDict(object):
-    """Get color from dict: material name string -> color or using material_to_color (for names which are not present in dict)."""
+    """
+    Get color from dict:
+    material name string -> color or using material_to_color (for names which are not present in dict).
+    """
 
-    def __init__(self, material_dict):
+    def __init__(self, material_dict, axes):
         super(ColorFromDict, self).__init__()
-        self.material_dict = dict
+        self.material_dict = material_dict
+        self.material_to_color = _MaterialToColor(axes)
 
     def __call__(self, material):
         try:
             return self.material_dict[str(material)]
         except KeyError:
-            return material_to_color(material)
+            return self.material_to_color(material)
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, fill=False,
-                  axes=None, figure=None, margin=None, get_color=material_to_color, set_limits=None):
+                  axes=None, figure=None, margin=None, get_color=None, set_limits=None):
     """
     Plot specified geometry.
 
@@ -352,16 +372,16 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         if margin is None:
             margin = 0.
 
-    if not isinstance(get_color, collections.Callable):
-        get_color = ColorFromDict(get_color)
-
     if axes is None:
         if figure is None:
             axes = matplotlib.pylab.gca()
         else:
             axes = figure.add_subplot(111)
 
-    #if isinstance(geometry, plask.geometry.Cartesian3D):
+    if get_color is not None and not isinstance(get_color, collections.Callable):
+        get_color = ColorFromDict(get_color, axes)
+
+    # if isinstance(geometry, plask.geometry.Cartesian3D):
     if geometry.DIMS == 3:
         fill = False    # we ignore fill parameter in 3D
         dd = 0
@@ -377,13 +397,13 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     if zorder is None:
         zorder = 0.5 if fill else 2.0
 
-    env = DrawEnviroment(ax, axes, fill, color, lw, zorder=zorder)
+    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, zorder=zorder)
 
     try:
         hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or
                               type(geometry) == plask.geometry.Cylindrical2D)
         vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
-    except AttributeError:  #we draw non-Geometry object
+    except AttributeError:  # we draw non-Geometry object
         hmirror = False
         vmirror = False
 

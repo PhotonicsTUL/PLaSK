@@ -701,7 +701,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
             );
             auto result = interpolate(src_mesh, field,
                             make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry()),
-                            field_params.method, false).claim();
+                            field_params.method, InterpolationFlags(), false).claim();
             if (symmetric_long()) {
                 double Ll = 2. * front;
                 if (syml == E_TRAN)
@@ -750,7 +750,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
             const bool ignore_symmetry[3] = { true, true, false };
             auto result = interpolate(src_mesh, field,
                             make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                            field_params.method, false).claim();
+                            field_params.method, InterpolationFlags(), false).claim();
             dcomplex ikx = I * kx, iky = I * ky;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(- ikx * dest_mesh->at(i).c0 - iky * dest_mesh->at(i).c1);

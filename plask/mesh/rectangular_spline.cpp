@@ -75,8 +75,9 @@ namespace detail {
 template <typename DstT, typename SrcT>
 SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
                                                                const DataVector<const SrcT>& src_vec,
-                                                               const shared_ptr<const MeshD<2>>& dst_mesh):
-    InterpolatedLazyDataImpl<DstT, RectangularMesh<2>, const SrcT>(src_mesh, src_vec, dst_mesh),
+                                                               const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
+    InterpolatedLazyDataImpl<DstT, RectangularMesh<2>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size())
 {
     const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size();
@@ -99,7 +100,7 @@ template <typename DstT, typename SrcT>
 DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     const int n0 = this->src_mesh->axis0->size(), n1 = this->src_mesh->axis1->size();
-    Vec<2> p = this->dst_mesh->at(index);
+    Vec<2> p = this->flags.wrap(this->dst_mesh->at(index));
 
     int i0 = this->src_mesh->axis0->findIndex(p.c0),
         i1 = this->src_mesh->axis1->findIndex(p.c1);
@@ -127,9 +128,10 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
             ilt = this->src_mesh->index(i0-1, i1),
             irb = this->src_mesh->index(i0, i1-1),
             irt = this->src_mesh->index(i0, i1);
-        return hl * (hb * this->src_vec[ilb] + ht * this->src_vec[ilt]) + hr * (hb * this->src_vec[irb] + ht * this->src_vec[irt]) +
+        return this->flags.postprocess(this->dst_mesh->at(index),
+            hl * (hb * this->src_vec[ilb] + ht * this->src_vec[ilt]) + hr * (hb * this->src_vec[irb] + ht * this->src_vec[irt]) +
             hb * (gl * diff0[ilb] + gr * diff0[irb]) + ht * (gl * diff0[ilt] + gr * diff0[irt]) +
-            hl * (gb * diff1[ilb] + gt * diff1[ilt]) + hr * (gb * diff1[irb] + gt * diff1[irt]);
+            hl * (gb * diff1[ilb] + gt * diff1[ilt]) + hr * (gb * diff1[irb] + gt * diff1[irt]));
     } else if (n0 > 1) {
         double d = this->src_mesh->axis0->at(i0) - this->src_mesh->axis0->at(i0-1);
         double x = (p.c0 - this->src_mesh->axis0->at(i0-1)) / d;
@@ -138,7 +140,7 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
                hb = (-2.*x + 3.) * x*x,
                ga = ((x - 2.) * x + 1.) * x * d,
                gb = (x - 1.) * x * x * d;
-        return ha*this->src_vec[i0-1] + hb*this->src_vec[i0] + ga*diff0[i0-1] + gb*diff0[i0];
+        return this->flags.postprocess(this->dst_mesh->at(index), ha*this->src_vec[i0-1] + hb*this->src_vec[i0] + ga*diff0[i0-1] + gb*diff0[i0]);
     } else if (n1 > 1) {
         double d = this->src_mesh->axis1->at(i1) - this->src_mesh->axis1->at(i1-1);
         double x = (p.c1 - this->src_mesh->axis1->at(i1-1)) / d;
@@ -147,17 +149,18 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
                hb = (-2.*x + 3.) * x*x,
                ga = ((x - 2.) * x + 1.) * x * d,
                gb = (x - 1.) * x * x * d;
-        return ha*this->src_vec[i1-1] + hb*this->src_vec[i1] + ga*diff1[i1-1] + gb*diff1[i1];
+        return this->flags.postprocess(this->dst_mesh->at(index), ha*this->src_vec[i1-1] + hb*this->src_vec[i1] + ga*diff1[i1-1] + gb*diff1[i1]);
     }
-    return this->src_vec[0];
+    return this->flags.postprocess(this->dst_mesh->at(index), this->src_vec[0]);
 }
 
 
 template <typename DstT, typename SrcT>
 SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<const RectangularMesh<3>>& src_mesh,
                                                                const DataVector<const SrcT>& src_vec,
-                                                               const shared_ptr<const MeshD<3>>& dst_mesh):
-    InterpolatedLazyDataImpl<DstT, RectangularMesh<3>, const SrcT>(src_mesh, src_vec, dst_mesh),
+                                                               const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
+    InterpolatedLazyDataImpl<DstT, RectangularMesh<3>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size())
 {
     const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size(), n2 = src_mesh->axis2->size();
@@ -198,7 +201,7 @@ template <typename DstT, typename SrcT>
 DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     const int n0 = this->src_mesh->axis0->size(), n1 = this->src_mesh->axis1->size(), n2 = this->src_mesh->axis2->size();
-    Vec<3> p = this->dst_mesh->at(index);
+    Vec<3> p = this->flags.wrap(this->dst_mesh->at(index));
 
     int i0 = this->src_mesh->axis0->findIndex(p.c0),
         i1 = this->src_mesh->axis1->findIndex(p.c1),
@@ -238,7 +241,7 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         ihlh = this->src_mesh->index(i0, i1?i1-1:0, i2),
         ihhl = this->src_mesh->index(i0, i1, i2?i2-1:0),
         ihhh = this->src_mesh->index(i0, i1, i2);
-    return
+    return this->flags.postprocess(this->dst_mesh->at(index),
         h0l * h1l * h2l * this->src_vec[illl] +
         h0l * h1l * h2h * this->src_vec[illh] +
         h0l * h1h * h2l * this->src_vec[ilhl] +
@@ -254,7 +257,8 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         (g0h * diff0[ihll]) * h1l * h2l + h0h * (g1l * diff1[ihll]) * h2l + h0h * h1l * (g2l * diff2[ihll]) +
         (g0h * diff0[ihlh]) * h1l * h2h + h0h * (g1l * diff1[ihlh]) * h2h + h0h * h1l * (g2h * diff2[ihlh]) +
         (g0h * diff0[ihhl]) * h1h * h2l + h0h * (g1h * diff1[ihhl]) * h2l + h0h * h1h * (g2l * diff2[ihhl]) +
-        (g0h * diff0[ihhh]) * h1h * h2h + h0h * (g1h * diff1[ihhh]) * h2h + h0h * h1h * (g2h * diff2[ihhh]);
+        (g0h * diff0[ihhh]) * h1h * h2h + h0h * (g1h * diff1[ihhh]) * h2h + h0h * h1h * (g2h * diff2[ihhh])
+    );
 }
 
 

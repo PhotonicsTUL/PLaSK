@@ -17,7 +17,7 @@ namespace plask {
     template <typename SrcT, typename DstT>
     struct InterpolationAlgorithm<DummyMesh, SrcT, DstT, plask::INTERPOLATION_LINEAR> {
         static LazyData<DstT> interpolate(const shared_ptr<const DummyMesh>&, const DataVector<const SrcT>&,
-                                const shared_ptr<const plask::MeshD<DummyMesh::DIM>>& dst_mesh) {
+                                const shared_ptr<const plask::MeshD<DummyMesh::DIM>>& dst_mesh, const InterpolationFlags&) {
             return new ConstValueLazyDataImpl<DstT>(dst_mesh->size(), 11);
         }
     };
