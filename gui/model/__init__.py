@@ -105,6 +105,16 @@ class SectionModel(TreeFragmentModel):
         self.line_in_file = None
         self.undo_stack = QtGui.QUndoStack()
 
+    def create_undo_action(self, parent):
+        res = self.undo_stack.createUndoAction(parent)
+        res.setIcon(QtGui.QIcon.fromTheme('edit-undo'))
+        return res
+
+    def create_redo_action(self, parent):
+        res = self.undo_stack.createRedoAction(parent)
+        res.setIcon(QtGui.QIcon.fromTheme('edit-redo'))
+        return res
+
     def set_text(self, text):
         self.set_xml_element(
             etree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
