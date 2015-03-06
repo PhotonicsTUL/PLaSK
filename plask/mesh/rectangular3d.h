@@ -688,75 +688,105 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
-        long index0 = axis0->findIndex(point.c0);
-        long index1 = axis1->findIndex(point.c1);
-        long index2 = axis2->findIndex(point.c2);
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type
+    {
+        auto p = flags.wrap(point);
+        long index0 = axis0->findIndex(p.c0);
+        long index1 = axis1->findIndex(p.c1);
+        long index2 = axis2->findIndex(p.c2);
 
-        if (index2 == 0)
-            return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1, 0)]; },
-                point.c0, point.c1, *axis0, *axis1, index0, index1
-            );
-
-        if (index2 == axis2->size()) {
-            --index2;
-            return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1, index2)]; },
-                point.c0, point.c1, *axis0, *axis1, index0, index1
-            );
+        size_t index0_1;
+        double back, front;
+        if (index0 == 0) {
+            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+                index0_1 = axis0->size() - 1;
+                back = axis0->at(index0_1) - flags.high<0>() + flags.low<0>();
+            } else {
+                index0_1 = 0;
+                back = axis0->at(0) - 1.;
+            }
+        } else {
+            index0_1 = index0-1;
+            back = axis0->at(index0_1);
         }
-
-        if (index1 == 0)
-            return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i2) { return data[this->index(i0, 0, i2)]; },
-                point.c0, point.c2, *axis0, *axis2, index0, index2
-            );
-
-        if (index1 == axis1->size()) {
-            --index1;
-            return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i2) { return data[this->index(i0, index1, i2)]; },
-                point.c0, point.c2, *axis0, *axis2, index0, index2
-            );
-        }
-
-        // index1 and index2 are in bounds here:
-        if (index0 == 0)
-        return interpolation::bilinear(axis1->at(index1-1), axis1->at(index1),
-                                       axis2->at(index2-1), axis2->at(index2),
-                                       data[index(0, index1-1, index2-1)],
-                                       data[index(0, index1,   index2-1)],
-                                       data[index(0, index1,   index2)],
-                                       data[index(0, index1-1, index2)],
-                                       point.c1, point.c2);
         if (index0 == axis0->size()) {
-            --index0;
-        return interpolation::bilinear(axis1->at(index1-1), axis1->at(index1),
-                                       axis2->at(index2-1), axis2->at(index2),
-                                       data[index(index0, index1-1, index2-1)],
-                                       data[index(index0, index1, index2-1)],
-                                       data[index(index0, index1, index2)],
-                                       data[index(index0, index1-1, index2)],
-                                       point.c1, point.c2);
+            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+                index0 = 0;
+                front = axis0->at(0) + flags.high<0>() - flags.low<0>();
+            } else {
+                --index0;
+                front = axis0->at(index0) + 1.;
+            }
+        } else {
+            front = axis0->at(index0);
+        }
+
+        size_t index1_1;
+        double left, right;
+        if (index1 == 0) {
+            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+                index1_1 = axis1->size() - 1;
+                left = axis1->at(index1_1) - flags.high<1>() + flags.low<1>();
+            } else {
+                index1_1 = 0;
+                left = axis1->at(0) - 1.;
+            }
+        } else {
+            index1_1 = index1-1;
+            left = axis1->at(index1_1);
+        }
+        if (index1 == axis1->size()) {
+            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+                index1 = 0;
+                right = axis1->at(0) + flags.high<1>() - flags.low<1>();
+            } else {
+                --index1;
+                right = axis1->at(index1) + 1.;
+            }
+        } else {
+            right = axis1->at(index1);
+        }
+
+        size_t index2_1;
+        double bottom, top;
+        if (index2 == 0) {
+            if (flags.periodic<2>() && !flags.symmetric<2>()) {
+                index2_1 = axis2->size() - 1;
+                bottom = axis2->at(index2_1) - flags.high<2>() + flags.low<2>();
+            } else {
+                index2_1 = 0;
+                bottom = axis2->at(0) - 1.;
+            }
+        } else {
+            index2_1 = index2-1;
+            bottom = axis2->at(index2_1);
+        }
+        if (index2 == axis2->size()) {
+            if (flags.periodic<2>() && !flags.symmetric<2>()) {
+                index2 = 0;
+                top = axis2->at(0) + flags.high<2>() - flags.low<2>();
+            } else {
+                --index2;
+                top = axis2->at(index2) + 1.;
+            }
+        } else {
+            top = axis2->at(index2);
         }
 
         // all indexes are in bounds
-        return interpolation::trilinear(
-            axis0->at(index0-1), axis0->at(index0),
-            axis1->at(index1-1), axis1->at(index1),
-            axis2->at(index2-1), axis2->at(index2),
-            data[index(index0-1, index1-1, index2-1)],
-            data[index(index0,   index1-1, index2-1)],
-            data[index(index0,   index1  , index2-1)],
-            data[index(index0-1, index1  , index2-1)],
-            data[index(index0-1, index1-1, index2)],
-            data[index(index0,   index1-1, index2)],
-            data[index(index0,   index1  , index2)],
-            data[index(index0-1, index1  , index2)],
-            point.c0, point.c1, point.c2
+        return flags.postprocess(point,
+            interpolation::trilinear(back, front, left, right, bottom, top,
+                data[index(index0_1, index1_1, index2_1)],
+                data[index(index0,   index1_1, index2_1)],
+                data[index(index0,   index1  , index2_1)],
+                data[index(index0_1, index1  , index2_1)],
+                data[index(index0_1, index1_1, index2)],
+                data[index(index0,   index1_1, index2)],
+                data[index(index0,   index1  , index2)],
+                data[index(index0_1, index1  , index2)],
+                p.c0, p.c1, p.c2)
         );
-
     }
 
     /**
@@ -766,12 +796,35 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
-        return data[this->index(axis0->findNearestIndex(point.c0), axis1->findNearestIndex(point.c1), axis2->findNearestIndex(point.c2))];
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, Vec<3> point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type {
+        auto p = flags.wrap(point);
+        if (flags.periodic<0>()) {
+            if (p.c0 < axis0->at(0)) {
+                if (axis0->at(0) - p.c0 > p.c0 - flags.low<0>() + flags.high<0>() - axis0->at(axis0->size()-1)) p.c0 = axis0->at(axis0->size()-1);
+            } else if (p.c0 > axis0->at(axis0->size()-1)) {
+                if (p.c0 - axis0->at(axis0->size()-1) > flags.high<0>() - p.c0 + axis0->at(0) - flags.low<0>()) p.c0 = axis0->at(0);
+            }
+        }
+        if (flags.periodic<1>()) {
+            if (p.c1 < axis1->at(0)) {
+                if (axis1->at(0) - p.c1 > p.c1 - flags.low<1>() + flags.high<1>() - axis1->at(axis1->size()-1)) p.c1 = axis1->at(axis1->size()-1);
+            } else if (p.c1 > axis1->at(axis1->size()-1)) {
+                if (p.c1 - axis1->at(axis1->size()-1) > flags.high<1>() - p.c1 + axis1->at(0) - flags.low<1>()) p.c1 = axis1->at(0);
+            }
+        }
+        if (flags.periodic<2>()) {
+            if (p.c2 < axis2->at(0)) {
+                if (axis2->at(0) - p.c2 > p.c2 - flags.low<2>() + flags.high<2>() - axis2->at(axis2->size()-1)) p.c2 = axis2->at(axis2->size()-1);
+            } else if (p.c2 > axis2->at(axis2->size()-1)) {
+                if (p.c2 - axis2->at(axis2->size()-1) > flags.high<2>() - p.c2 + axis2->at(0) - flags.low<2>()) p.c2 = axis2->at(0);
+            }
+        }
+        return flags.postprocess(point, data[this->index(axis0->findNearestIndex(p.c0), axis1->findNearestIndex(p.c1), axis2->findNearestIndex(p.c2))]);
     }
 
 private:
-    // Common code for: left, right, bottom, top, front, back boundries:
+    // Common code for: left, right, bottom, top, front, back boundaries:
     struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
 
         const RectangularMesh &mesh;
@@ -1429,17 +1482,21 @@ private:
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<3>>& dst_mesh) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh);
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+            throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<3>>& dst_mesh) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh);
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+            throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 

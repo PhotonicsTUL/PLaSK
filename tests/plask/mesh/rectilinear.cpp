@@ -32,10 +32,10 @@ BOOST_AUTO_TEST_CASE(dim2) {
     axis1->addPointsLinear(0., 1., 2);
     BOOST_CHECK_EQUAL(mesh.size(), 4);
     double data[4] = {0.0, 2.0, 2.0, 0.0};
-    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(0.5, 0.5)), 1.0);
-    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-0.5, -0.5)), 0.0);
-    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(1.5, -1.5)), 2.0);
-    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-1.5, 0.2)), 2.0 / 5.0);
+    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(0.5, 0.5), plask::InterpolationFlags()), 1.0);
+    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-0.5, -0.5), plask::InterpolationFlags()), 0.0);
+    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(1.5, -1.5), plask::InterpolationFlags()), 2.0);
+    BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-1.5, 0.2), plask::InterpolationFlags()), 2.0 / 5.0);
     //mesh.clear();
     //BOOST_CHECK_EQUAL(mesh.empty(), true);
 }

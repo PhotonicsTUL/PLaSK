@@ -14,7 +14,7 @@ Let us denote:
 - @a dst_vec - vector of field values in points described by the @a dst_mesh, to calculate
 
 plask::interpolate method calculates and returns @a dst_vec for a given
-@a src_mesh, @a src_vec, @a dst_mesh and interpolation method.
+@a src_mesh, @a src_vec, @a dst_mesh, interpolation method, and interpolation flags that specify behavior outside of the source mesh.
 
 plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
 Furthermore, the lifespan of both source and destination data cannot be determined in advance.
@@ -76,6 +76,7 @@ Typically, the code of the function should iterate over all the points of the @a
 #include "../memory.h"
 #include "../lazydata.h"
 #include "../log/log.h"
+#include <plask/geometry/space.h>
 
 namespace plask {
 
@@ -118,6 +119,142 @@ inline InterpolationMethod getInterpolationMethod(InterpolationMethod method) {
 }
 
 /**
+ * Interpolation flags that give information how to interpolate fields on periodic and symmetric geometries.
+ */
+class InterpolationFlags {
+    unsigned char sym[3];   ///< Symmetry along axes (bit[0] for symmetry bits[1-3] are used for positive and negative reflection of vector components)
+    unsigned char per;      ///< Information about periodicity (in bits)
+    double lo[3], hi[3];    ///< Limits of the axes (required for periodic interpolation)
+
+public:
+
+    enum class Symmetry: unsigned char {
+        NO = 0,
+        POSITIVE = 1,
+        PP = 1,
+        NP = 3,
+        PN = 5,
+        NN = 7,
+        PPP = 1,
+        NPP = 3,
+        PNP = 5,
+        NNP = 7,
+        PPN = 9,
+        NPN = 11,
+        PNN = 13,
+        NNN = 15,
+        NEGATIVE = 15,
+    };
+
+    InterpolationFlags(): sym{0,0,0}, per(0), lo{0.,0.,0.} , hi{0., 0., 0.}  {}
+
+    InterpolationFlags(const shared_ptr<GeometryD<2>>& geometry, Symmetry sym0=Symmetry::POSITIVE, Symmetry sym1=Symmetry::POSITIVE):
+        sym{geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym1 : 0},
+        per((geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 2 : 0)),
+        lo{geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom(), 0.},
+        hi{geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top(), 0.}
+    {
+        if (sym[0] && lo[0] < 0. && hi[0] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
+        if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+    }
+
+    InterpolationFlags(const shared_ptr<GeometryD<3>>& geometry, Symmetry sym0=Symmetry::POSITIVE, Symmetry sym1=Symmetry::POSITIVE, Symmetry sym2=Symmetry::POSITIVE):
+        sym{geometry->isSymmetric(Geometry::DIRECTION_LONG)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym1 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym2 : 0},
+        per((geometry->isPeriodic(Geometry::DIRECTION_LONG)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 2 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 4 : 0)),
+        lo{geometry->getChildBoundingBox().back(), geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom()},
+        hi{geometry->getChildBoundingBox().front(), geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top()}
+    {
+        if (sym[0] && lo[0] < 0. && hi[0] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of longitudinal axis");
+        if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
+        if (sym[2] && lo[2] < 0. && hi[2] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+    }
+
+    bool symmetric(int axis) const { return sym[axis]; }
+
+    template <int axis>
+    bool symmetric() const { return sym[axis]; }
+
+    bool periodic(int axis) const { return per & (1 << axis); }
+
+    template <int axis>
+    bool periodic() const { return per & (1 << axis); }
+
+    double low(int axis) const {
+        if (sym[axis]) return min(lo[axis], -hi[axis]);
+        else return lo[axis];
+    }
+
+    template <int axis>
+    double low() const {
+        if (sym[axis]) return min(lo[axis], -hi[axis]);
+        else return lo[axis];
+    }
+
+    double high(int axis) const {
+        if (sym[axis]) return max(lo[axis], hi[axis]);
+        else return hi[axis];
+    }
+
+    template <int axis>
+    double high() const {
+        if (sym[axis]) return max(lo[axis], hi[axis]);
+        else return hi[axis];
+    }
+
+    template <int dim>
+    Vec<dim> wrap(Vec<dim> pos) const {
+        for (int i = 0; i != dim; ++i) {
+            double d = hi[i] - lo[i];
+            if (periodic(i)) {
+                if (sym[i]) {
+                    pos[i] = std::fmod(pos[i], 2.*d);
+                    if (pos[i] > d) pos[i] -= 2.*d;
+                    else if (pos[i] < -d) pos[i] += 2*d;
+                    if (lo[i] < 0) pos[i] = - pos[i];
+                } else {
+                    pos[i] = std::fmod(pos[i]-lo[i], d);
+                    pos[i] += (pos[i] >= 0)? lo[i] : hi[i];
+                }
+            } else if (sym[i]) {
+                if (lo[i] >= 0) pos[i] = abs(pos[i]);
+                else pos[i] = - abs(pos[i]);
+            }
+        }
+        return pos;
+    }
+
+    template <int dim, typename DataT>
+    Vec<dim,DataT> reflect(int ax, Vec<dim,DataT> vec) const {
+        for (int i = 0; i != dim; ++i) if (sym[ax] & (2 << i)) vec[i] = -vec[i];
+        return vec;
+    }
+
+    template <typename DataT>
+    DataT reflect(int ax, DataT val) const {
+        if (sym[ax] & 14) return -val;
+        else return val;
+    }
+
+    template <int dim, typename DataT>
+    DataT postprocess(Vec<dim> pos, DataT data) const {
+        for (int i = 0; i != dim; ++i) {
+            if (sym[i]) {
+                if (periodic(i)) {
+                    double d = hi[i] - lo[i];
+                    pos[i] = std::fmod(pos[i], 2.*d);
+                    if (pos[i] > d || (pos[i] < 0. && pos[i] > -d)) data = reflect(i, data);
+                } else {
+                    if (lo[i] >= 0) { if (pos[i] < 0.) data = reflect(i, data); }
+                    else { if (pos[i] > 0.) data = reflect(i, data); }
+                }
+            }
+        }
+        return data;
+    }
+};
+
+
+/**
  * Specialization of this class are used for interpolation and can depend on source mesh type,
  * data type and the interpolation method.
  * @see @ref interpolation_write
@@ -125,7 +262,8 @@ inline InterpolationMethod getInterpolationMethod(InterpolationMethod method) {
 template <typename SrcMeshT, typename SrcT, typename DstT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>& src_mesh, const DataVector<const SrcT>&, const shared_ptr<const MeshD<SrcMeshT::DIM>>&) {
+    static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>& src_mesh, const DataVector<const SrcT>&,
+                                      const shared_ptr<const MeshD<SrcMeshT::DIM>>&, const InterpolationFlags&) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(*src_mesh).name();
         msg += ", interpolation method: ";
@@ -141,7 +279,8 @@ struct InterpolationAlgorithm
 template <typename SrcMeshT, typename SrcT, typename DstT>
 struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, INTERPOLATION_DEFAULT>
 {
-    static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>&, const DataVector<const SrcT>&, const shared_ptr<const MeshD<SrcMeshT::DIM>>&) {
+    static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>&, const DataVector<const SrcT>&,
+                                      const shared_ptr<const MeshD<SrcMeshT::DIM>>&, const InterpolationFlags& flags) {
         throw CriticalException("interpolate(...) called for INTERPOLATION_DEFAULT method. Contact solver author to fix this issue."
 #ifndef NDEBUG
                                 "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'getInterpolationMethod<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"
@@ -155,19 +294,21 @@ struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, INTERPOLATION_DEFAULT>
 template <typename SrcMeshT, typename SrcT, typename DstT, int iter>
 struct __InterpolateMeta__
 {
-    inline static LazyData<typename std::remove_const<DstT>::type> interpolate(const shared_ptr<const SrcMeshT>& src_mesh, const DataVector<const SrcT>& src_vec,
-                                   const shared_ptr<const MeshD<SrcMeshT::DIM>>& dst_mesh, InterpolationMethod method) {
+    inline static LazyData<typename std::remove_const<DstT>::type> interpolate(
+            const shared_ptr<const SrcMeshT>& src_mesh, const DataVector<const SrcT>& src_vec,
+            const shared_ptr<const MeshD<SrcMeshT::DIM>>& dst_mesh, InterpolationMethod method, const InterpolationFlags& flags) {
         if (int(method) == iter)
-            return InterpolationAlgorithm<SrcMeshT, SrcT, typename std::remove_const<DstT>::type, (InterpolationMethod)iter>::interpolate(src_mesh, DataVector<const SrcT>(src_vec), dst_mesh);
+            return InterpolationAlgorithm<SrcMeshT, SrcT, typename std::remove_const<DstT>::type, (InterpolationMethod)iter>
+                    ::interpolate(src_mesh, DataVector<const SrcT>(src_vec), dst_mesh, flags);
         else
-            return __InterpolateMeta__<SrcMeshT, SrcT, DstT, iter+1>::interpolate(src_mesh, src_vec, dst_mesh, method);
+            return __InterpolateMeta__<SrcMeshT, SrcT, DstT, iter+1>::interpolate(src_mesh, src_vec, dst_mesh, method, flags);
     }
 };
 template <typename SrcMeshT, typename SrcT, typename DstT>
 struct __InterpolateMeta__<SrcMeshT, SrcT, DstT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
     inline static LazyData<typename std::remove_const<DstT>::type> interpolate(const shared_ptr<const SrcMeshT>&, const DataVector<const SrcT>&,
-                                   const shared_ptr<const MeshD<SrcMeshT::DIM>>&, InterpolationMethod) {
+                                   const shared_ptr<const MeshD<SrcMeshT::DIM>>&, InterpolationMethod, const InterpolationFlags&) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -194,13 +335,14 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(
                                         DataVector<const SrcT> src_vec,
                                         shared_ptr<const MeshD<SrcMeshT::DIM>> dst_mesh,
                                         InterpolationMethod method=INTERPOLATION_DEFAULT,
+                                        const InterpolationFlags& flags=InterpolationFlags(),
                                         bool verbose=true)
 {
     if (src_mesh->size() != src_vec.size())
         throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh->size());
     if (src_mesh == dst_mesh) return new LazyDataFromVectorImpl<typename std::remove_const<DstT>::type>(src_vec); // meshes are identical, so just return src_vec
     if (verbose) writelog(LOG_DEBUG, "interpolate: Running %1% interpolation", interpolationMethodNames[method]);
-    return __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, method);
+    return __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, method, flags);
 }
 
 template <typename SrcMeshT, typename SrcT, typename DstT=SrcT, typename DstMeshT>
@@ -209,9 +351,11 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(
                             DataVector<SrcT> src_vec,
                             shared_ptr<DstMeshT> dst_mesh,
                             InterpolationMethod method=INTERPOLATION_DEFAULT,
+                            const InterpolationFlags& flags=InterpolationFlags(),
                             bool verbose=true)
 {
-    return interpolate(shared_ptr<const SrcMeshT>(src_mesh), DataVector<const SrcT>(src_vec), shared_ptr<const MeshD<SrcMeshT::DIM>>(dst_mesh), method, verbose);
+    return interpolate(shared_ptr<const SrcMeshT>(src_mesh), DataVector<const SrcT>(src_vec),
+                       shared_ptr<const MeshD<SrcMeshT::DIM>>(dst_mesh), method, flags, verbose);
 }
 
 /*template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
@@ -241,9 +385,11 @@ struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
     shared_ptr<const SrcMeshType> src_mesh;
     shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh;
     DataVector<const SrcT> src_vec;
+    InterpolationFlags flags;
 
-    InterpolatedLazyDataImpl(const shared_ptr<const SrcMeshType>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<SrcMeshType::DIM>>& dst_mesh)
-        : src_mesh(src_mesh), dst_mesh(dst_mesh), src_vec(src_vec) {}
+    InterpolatedLazyDataImpl(const shared_ptr<const SrcMeshType>& src_mesh, const DataVector<const SrcT>& src_vec,
+                             const shared_ptr<const MeshD<SrcMeshType::DIM>>& dst_mesh, const InterpolationFlags& flags)
+        : src_mesh(src_mesh), dst_mesh(dst_mesh), src_vec(src_vec), flags(flags) {}
 
     virtual std::size_t size() const override { return dst_mesh->size(); }
 
@@ -257,11 +403,12 @@ struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
 template <typename DstT, typename SrcMeshType, typename SrcT = DstT>
 struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, SrcMeshType, SrcT> {
 
-    LinearInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
-        InterpolatedLazyDataImpl<DstT, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
+    LinearInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec,
+                                   shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh, const InterpolationFlags& flags):
+        InterpolatedLazyDataImpl<DstT, SrcMeshType>(src_mesh, src_vec, dst_mesh, flags) {}
 
     virtual DstT at(std::size_t index) const override {
-        return this->src_mesh->interpolateLinear(this->src_vec, this->dst_mesh->at(index));
+        return this->src_mesh->interpolateLinear(this->src_vec, this->dst_mesh->at(index), this->flags);
     }
 
 };
@@ -271,14 +418,15 @@ struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, Src
  *
  * So it can be used if SrcMeshType has such interpolateLinear method.
  */
-template <typename DstT, typename SrcMeshType, typename SrcT = DstT>
+template <typename DstT, typename SrcMeshType, typename SrcT=DstT>
 struct NearestNeighborInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, SrcMeshType, SrcT> {
 
-    NearestNeighborInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
-        InterpolatedLazyDataImpl<DstT, SrcMeshType, DstT>(src_mesh, src_vec, dst_mesh) {}
+    NearestNeighborInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec,
+                                            shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh, const InterpolationFlags& flags):
+        InterpolatedLazyDataImpl<DstT, SrcMeshType, DstT>(src_mesh, src_vec, dst_mesh, flags) {}
 
     virtual SrcT at(std::size_t index) const override {
-        return this->src_mesh->interpolateNearestNeighbor(this->src_vec, this->dst_mesh->at(index));
+        return this->src_mesh->interpolateNearestNeighbor(this->src_vec, this->dst_mesh->at(index), this->flags);
     }
 
 };

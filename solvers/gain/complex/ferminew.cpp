@@ -738,16 +738,14 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
     }
     const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
 
-    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
-
-    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> gainOnMesh(geo_mesh->size(), 0.);
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
+    DataVector<double> gainOnMesh(src_mesh->size(), 0.);
 
     std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh->size(); i++)
+    for (size_t i = 0; i != src_mesh->size(); i++)
         for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
+            if (regions[r].contains(src_mesh->at(i)) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
 
     //#pragma omp parallel for // do not use parallel computations now LUKASZ 2014.10.16

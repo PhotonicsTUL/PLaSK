@@ -627,7 +627,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             auto result = interpolate(src_mesh, field,
                             make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
-                            field_params.method, false).claim();
+                            field_params.method, InterpolationFlags(), false).claim();
             double L = 2. * right;
             if (sym == E_TRAN)
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
@@ -647,7 +647,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             const bool ignore_symmetry[2] = { true, false };
             auto result = interpolate(src_mesh, field,
                             make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                            field_params.method, false).claim();
+                            field_params.method, InterpolationFlags(), false).claim(); //TODO
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(- ikx * dest_mesh->at(i).c0);
