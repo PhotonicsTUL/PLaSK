@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 import operator
 
 import plask
@@ -141,6 +142,10 @@ class GeometryController(Controller):
                 palette.setColor(QtGui.QPalette.Background, '#ff8888')
                 self.status_bar.setPalette(palette)
                 self.status_bar.setAutoFillBackground(True)
+                from ... import _DEBUG
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()
                 return False
             else:
                 if tree_element.dim == 3:

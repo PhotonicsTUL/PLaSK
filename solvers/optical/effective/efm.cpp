@@ -928,10 +928,10 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(cons
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
     updateCache();
-    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    InterpolationFlags flags(geometry);
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, target_mesh, lam0](size_t j) -> Tensor3<dcomplex> {
-            auto point = target_mesh[j];
+        [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
+            auto point = flags.wrap(dst_mesh->at(j));
             size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
             size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
             return Tensor3<dcomplex>(this->nrCache[ir][iz]/* + this->ngCache[ir][iz] * (1. - lam/lam0)*/);
@@ -943,22 +943,23 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(cons
 struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
 {
     EffectiveFrequencyCyl* solver;
-    WrappedMesh<2> mat_mesh;
+    const shared_ptr<const MeshD<2>>& dest_mesh;
+    InterpolationFlags flags;
     std::vector<LazyData<double>> EE;
     dcomplex lam0;
 
     HeatDataImpl(EffectiveFrequencyCyl* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
-        solver(solver), mat_mesh(dst_mesh, solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
+        solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
     {
         for (size_t m = 0; m != solver->modes.size(); ++m)
             EE[m] = solver->getLightMagnitude(m, dst_mesh, method);
     }
 
-    size_t size() const override { return mat_mesh.size(); }
+    size_t size() const override { return dest_mesh->size(); }
 
     double at(size_t j) const override {
         double result = 0.;
-        auto point = mat_mesh[j];
+        auto point = flags.wrap(dest_mesh->at(j));
         size_t ir = solver->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= solver->rsize) ir = solver->rsize-1;
         size_t iz = solver->mesh->axis1->findIndex(point.c1); if (iz < solver->zbegin) iz = solver->zbegin; else if (iz >= solver->zsize) iz = solver->zsize-1;
         for (size_t m = 0; m != solver->modes.size(); ++m) { // we sum heats from all modes

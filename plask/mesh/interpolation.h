@@ -148,7 +148,7 @@ public:
 
     InterpolationFlags(): sym{0,0,0}, per(0), lo{0.,0.,0.} , hi{0., 0., 0.}  {}
 
-    InterpolationFlags(const shared_ptr<GeometryD<2>>& geometry, Symmetry sym0=Symmetry::POSITIVE, Symmetry sym1=Symmetry::POSITIVE):
+    InterpolationFlags(shared_ptr<const GeometryD<2>> geometry, Symmetry sym0, Symmetry sym1):
         sym{geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym1 : 0},
         per((geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 2 : 0)),
         lo{geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom(), 0.},
@@ -158,7 +158,12 @@ public:
         if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
     }
 
-    InterpolationFlags(const shared_ptr<GeometryD<3>>& geometry, Symmetry sym0=Symmetry::POSITIVE, Symmetry sym1=Symmetry::POSITIVE, Symmetry sym2=Symmetry::POSITIVE):
+    InterpolationFlags(shared_ptr<const Geometry2DCartesian> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
+    InterpolationFlags(shared_ptr<Geometry2DCartesian> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
+    InterpolationFlags(shared_ptr<const Geometry2DCylindrical> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
+    InterpolationFlags(shared_ptr<Geometry2DCylindrical> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
+
+    InterpolationFlags(shared_ptr<const GeometryD<3>> geometry, Symmetry sym0, Symmetry sym1, Symmetry sym2):
         sym{geometry->isSymmetric(Geometry::DIRECTION_LONG)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym1 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym2 : 0},
         per((geometry->isPeriodic(Geometry::DIRECTION_LONG)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 2 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 4 : 0)),
         lo{geometry->getChildBoundingBox().back(), geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom()},
@@ -168,6 +173,9 @@ public:
         if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
         if (sym[2] && lo[2] < 0. && hi[2] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
     }
+
+    InterpolationFlags(shared_ptr<const Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
+    InterpolationFlags(shared_ptr<Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
 
     bool symmetric(int axis) const { return sym[axis]; }
 
@@ -357,6 +365,7 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(
     return interpolate(shared_ptr<const SrcMeshT>(src_mesh), DataVector<const SrcT>(src_vec),
                        shared_ptr<const MeshD<SrcMeshT::DIM>>(dst_mesh), method, flags, verbose);
 }
+
 
 /*template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
 LazyData<typename std::remove_const<DstT>::type> interpolate(shared_ptr<SrcMeshT> src_mesh, DataVector<const SrcT> src_vec,

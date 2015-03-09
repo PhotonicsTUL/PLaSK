@@ -267,13 +267,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
   protected:
 
-    const LazyData<double> getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const;
+    const LazyData<double> getPotential(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<double> getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<double> getHeatDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method);
 };
 
 }}} //namespaces

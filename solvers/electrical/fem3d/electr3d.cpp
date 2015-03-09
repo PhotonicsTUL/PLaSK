@@ -636,51 +636,51 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 }
 
 
-const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const {
+const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
     if (!potential) throw NoValue("Potential");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(mesh, potential, make_shared<const WrappedMesh<3>>(dst_mesh, geometry), method);
+    return interpolate(mesh, potential, dest_mesh, method, geometry);
 }
 
 
-const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
-    auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method);
+    InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN);
+    auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method, flags);
     return LazyData<Vec<3>>(result.size(),
-        [this, dest_mesh, result](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : Vec<3>(0.,0.,0.);
+        [this, dest_mesh, result, flags](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
         }
     );
 }
 
 
-const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
-    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method).claim();
+    InterpolationFlags flags(geometry);
+    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method, flags).claim();
     return LazyData<double>(result.size(),
-        [this, dest_mesh, result](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : 0.;
+        [this, dest_mesh, result, flags](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
         }
     );
 }
 
 
-const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
     initCalculation();
     this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivity();
-    auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
-    return LazyData<Tensor2<double>>(target_mesh.size(),
-        [this, target_mesh](size_t i) -> Tensor2<double> {
-            auto point = target_mesh[i];
+    InterpolationFlags flags(geometry);
+    return LazyData<Tensor2<double>>(dest_mesh->size(),
+        [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
+            auto point = flags.wrap(dest_mesh->at(i));
             size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
             size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
             size_t z = std::upper_bound(this->mesh->axis2->begin(), this->mesh->axis2->end(), point[2]) - this->mesh->axis2->begin();

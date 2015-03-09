@@ -652,58 +652,58 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (!potentials) throw NoValue("Potential");
     this->writelog(LOG_DEBUG, "Getting potentials");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, potentials, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
 }
 
 
 template<typename Geometry2DType>
-const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method)
+const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
+    InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
     auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method);
     return LazyData<Vec<2>>(result.size(),
-        [this, dest_mesh, result](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : Vec<2>(0.,0.);
+        [this, dest_mesh, result, flags](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
         }
     );
 }
 
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method)
+const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
+    InterpolationFlags flags(this->geometry);
     auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method).claim();
     return LazyData<double>(result.size(),
-        [this, dest_mesh, result](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : 0.;
+        [this, dest_mesh, result, flags](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
         }
     );
 }
 
 
 template<typename Geometry2DType>
-const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod) {
+const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivities();
-    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-    return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(target_mesh.size(),
-        [this, target_mesh](size_t i) -> Tensor2<double> {
-        auto point = target_mesh[i];
-        size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
-        size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
-        if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
-            return Tensor2<double>(NAN);
-        else
-            return this->conds[this->mesh->elements(x-1, y-1).getIndex()];
+    InterpolationFlags flags(this->geometry);
+    return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(dest_mesh->size(),
+        [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
+            auto point = flags.wrap(dest_mesh->at(i));
+            size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
+            size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
+            if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
+                return Tensor2<double>(NAN);
+            else
+                return this->conds[this->mesh->elements(x-1, y-1).getIndex()];
         }
     ));
 }

@@ -263,7 +263,6 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             });
         }
     } else {
-
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
         FFT::Backward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
@@ -280,12 +279,13 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             eps.sqrt_inplace();
         }
         auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
-        const bool ignore_symmetry[2] = { !symmetric(), false };
-        return interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
-
+        return interpolate(src_mesh, params, dest_mesh, interp,
+                           InterpolationFlags(SOLVER->getGeometry(),
+                                              symmetric()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                              InterpolationFlags::Symmetry::POSITIVE)
+                          );
     }
 }
-
 
 
 void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
@@ -625,9 +625,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            auto result = interpolate(src_mesh, field,
-                            make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
-                            field_params.method, InterpolationFlags(), false).claim();
+            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method, SOLVER->getGeometry(), false).claim();
             double L = 2. * right;
             if (sym == E_TRAN)
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
@@ -645,9 +643,9 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             field[N] = field[0];
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             const bool ignore_symmetry[2] = { true, false };
-            auto result = interpolate(src_mesh, field,
-                            make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                            field_params.method, InterpolationFlags(), false).claim(); //TODO
+            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::POSITIVE),
+                                      false).claim();
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(- ikx * dest_mesh->at(i).c0);

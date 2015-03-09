@@ -598,7 +598,7 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
     DataBase(FermiGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-        solver(solver), dest_mesh(dst_mesh, solver->geometry)
+        solver(solver), dest_mesh(dst_mesh)
     {
         // Create horizontal points lists
         if (solver->mesh) {

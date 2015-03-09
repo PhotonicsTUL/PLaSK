@@ -622,27 +622,28 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const {
+const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DEBUG, "Getting temperatures");
-    if (!temperatures) return DataVector<const double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
+    if (!temperatures) return DataVector<const double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, temperatures, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry);
 }
 
 
 template<typename Geometry2DType>
-const LazyData<Vec<2>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
+const LazyData<Vec<2>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
-    if (!temperatures) return DataVector<const Vec<2>>(dst_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
+    if (!temperatures) return DataVector<const Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes,make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes, dest_mesh, method,
+                       InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
 }
 
 
 template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodThermal2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-    solver(solver), target_mesh(dst_mesh, solver->geometry)
+    solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
@@ -650,7 +651,7 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodTherma
 
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::at(std::size_t i) const {
-    auto point = target_mesh[i];
+    auto point = flags.wrap(dest_mesh->at(i));
     size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
     size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
     if (x == 0 || y == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size())
@@ -664,7 +665,7 @@ ThermalConductivityData::at(std::size_t i) const {
 }
 
 template<typename Geometry2DType> std::size_t FiniteElementMethodThermal2DSolver<Geometry2DType>::
-ThermalConductivityData::size() const { return target_mesh.size(); }
+ThermalConductivityData::size() const { return dest_mesh->size(); }
 
 template<typename Geometry2DType>
 const LazyData<Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) {

@@ -437,11 +437,14 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
         }
         auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
                             make_shared<RegularAxis>(level->vpos(), level->vpos(), 1), RectangularMesh<3>::ORDER_210);
-        const bool ignore_symmetry[3] = { !symmetric_long(), !symmetric_tran(), false };
-        return interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
+        return interpolate(src_mesh, params, dest_mesh, interp,
+                           InterpolationFlags(SOLVER->getGeometry(),
+                                              symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                              symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                              InterpolationFlags::Symmetry::POSITIVE)
+                          );
     }
 }
-
 
 
 void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
@@ -699,9 +702,12 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            auto result = interpolate(src_mesh, field,
-                            make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry()),
-                            field_params.method, InterpolationFlags(), false).claim();
+            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+                                      InterpolationFlags(SOLVER->getGeometry(),
+                                                         symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                                         symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                                         InterpolationFlags::Symmetry::POSITIVE),
+                                      false).claim();
             if (symmetric_long()) {
                 double Ll = 2. * front;
                 if (syml == E_TRAN)
@@ -747,10 +753,9 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            const bool ignore_symmetry[3] = { true, true, false };
-            auto result = interpolate(src_mesh, field,
-                            make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                            field_params.method, InterpolationFlags(), false).claim();
+            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::POSITIVE),
+                                      false).claim();
             dcomplex ikx = I * kx, iky = I * ky;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(- ikx * dest_mesh->at(i).c0 - iky * dest_mesh->at(i).c1);
