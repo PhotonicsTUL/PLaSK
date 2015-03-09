@@ -17,6 +17,7 @@ from .info import InfoSource, Info
 from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
 
+from ..qt import QtGui
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
         """
@@ -102,6 +103,17 @@ class SectionModel(TreeFragmentModel):
         self.name = name
         self.externalSource = None
         self.line_in_file = None
+        self.undo_stack = QtGui.QUndoStack()
+
+    def create_undo_action(self, parent):
+        res = self.undo_stack.createUndoAction(parent)
+        res.setIcon(QtGui.QIcon.fromTheme('edit-undo'))
+        return res
+
+    def create_redo_action(self, parent):
+        res = self.undo_stack.createRedoAction(parent)
+        res.setIcon(QtGui.QIcon.fromTheme('edit-redo'))
+        return res
 
     def set_text(self, text):
         self.set_xml_element(

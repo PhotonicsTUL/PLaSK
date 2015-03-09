@@ -92,7 +92,7 @@ class DrawEnviroment(object):
         self.axes = axes
         self.zorder = zorder
         if get_color is None:
-            self.get_color = _MaterialToColor(axes)
+            self.get_color = _MaterialToColor(artist_dst)
         else:
             self.get_color = get_color
 

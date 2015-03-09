@@ -25,6 +25,8 @@ from .controller import materials
 from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
 
+#from .qt import QtGui
+
 try:
     import plask
 except ImportError:
@@ -69,12 +71,20 @@ class XPLDocument(object):
             ModelTest(self.model_by_name('geometry'))
         #self.tree = etree()
 
+        #self.undo_group = QtGui.QUndoGroup()    #does we need this?
+        #for c in self.controllers:
+        #    self.undo_group.addStack(c.model.undo_stack)
+
+
     def on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""
         self.set_changed(True)
 
     def set_changed(self, changed=True):
         self.window.set_changed(changed)
+        if not changed:
+            for c in self.controllers:
+                c.model.undo_stack.setClean()
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)

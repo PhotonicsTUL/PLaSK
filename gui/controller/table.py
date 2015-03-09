@@ -51,39 +51,46 @@ class TableActions(object):
             self.model.swap_neighbour_entries(index, index+1)
             #self.table.selectRow(index+1)
 
+    @staticmethod
+    def _make_action(icon, text, tip, parent, to_call, short_cut = None):
+        action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), text, parent)
+        action.setStatusTip(tip)
+        if short_cut is not None:
+            action.setShortcut(short_cut)
+            action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        action.triggered.connect(to_call)
+        return action
+
     def get(self, parent):
-        self.add_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add', parent)
-        self.add_action.setStatusTip('Add new entry to the list')
-        self.add_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
-        self.add_action.triggered.connect(self.add_entry)
-        self.add_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
 
-        self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', parent)
-        self.remove_action.setStatusTip('Remove selected entry from the list')
-        # self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
-        self.remove_action.triggered.connect(self.remove_entry)
-        self.remove_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        self.add_action = TableActions._make_action('list-add', '&Add', 'Add new entry to the list', parent,
+                                       self.add_entry, QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
 
-        self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', parent)
-        self.move_up_action.setStatusTip('Change order of entries: move current entry up')
-        self.move_up_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
-        self.move_up_action.triggered.connect(self.move_up)
-        self.move_up_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        self.remove_action = TableActions._make_action('list-remove', '&Remove', 'Remove selected entry from the list',
+                                                       parent, self.remove_entry)   #QtCore.Qt.CTRL + QtCore.Qt.Key_Minus
 
-        self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', parent)
-        self.move_down_action.setStatusTip('Change order of entries: move current entry down')
-        self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
-        self.move_down_action.triggered.connect(self.move_down)
-        self.move_down_action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        self.move_up_action = TableActions._make_action('go-up', 'Move &up', 'Change order of entries: move current entry up',
+                                                       parent, self.move_up, QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
+
+        self.move_down_action = TableActions._make_action('go-down', 'Move &down', 'Change order of entries: move current entry down',
+                                                       parent, self.move_down, QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
 
 def table_and_manipulators(table, parent=None, model=None, title=None):
     toolbar = QtGui.QToolBar()
+    if model is None: model = table.model()
     toolbar.setStyleSheet("QToolBar { border: 0px }")
+
+    if hasattr(model, 'undo_stack'):
+        toolbar.addAction(model.create_undo_action(table))
+        toolbar.addAction(model.create_redo_action(table))
+        toolbar.addSeparator()
+
     table.table_manipulators_actions = TableActions(table, model)
     actions = table.table_manipulators_actions.get(table)
+
     toolbar.addActions(actions)
     table.addActions(actions)
 
@@ -140,6 +147,9 @@ class TableController(Controller):
         layout = QtGui.QVBoxLayout()
         toolbar = QtGui.QToolBar(widget)
         toolbar.setStyleSheet("QToolBar { border: 0px }")
+        toolbar.addAction(self.model.create_undo_action(widget))
+        toolbar.addAction(self.model.create_redo_action(widget))
+        toolbar.addSeparator()
         actions = self.get_table_edit_actions()
         for a in actions:
             if not a:
