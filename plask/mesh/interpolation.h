@@ -154,8 +154,20 @@ public:
         lo{geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom(), 0.},
         hi{geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top(), 0.}
     {
-        if (sym[0] && lo[0] < 0. && hi[0] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
-        if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+        if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+            if (lo[0] < 0. && hi[0] > 0.)
+                throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
+            if (!sym[0]) {
+                hi[0] = max(-lo[0], hi[0]); lo[0] = -hi[0];
+            }
+        }
+        if (geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
+            if (lo[1] < 0. && hi[1] > 0.)
+                throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+            if (!sym[1]) {
+                hi[1] = max(-lo[1], hi[1]); lo[1] = -hi[1];
+            }
+        }
     }
 
     InterpolationFlags(shared_ptr<const Geometry2DCartesian> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
@@ -169,9 +181,27 @@ public:
         lo{geometry->getChildBoundingBox().back(), geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom()},
         hi{geometry->getChildBoundingBox().front(), geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top()}
     {
-        if (sym[0] && lo[0] < 0. && hi[0] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of longitudinal axis");
-        if (sym[1] && lo[1] < 0. && hi[1] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
-        if (sym[2] && lo[2] < 0. && hi[2] > 0.) throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+        if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) {
+            if (lo[0] < 0. && hi[0] > 0.)
+                throw Exception("interpolation: Symmetric geometry spans at both sides of lngitudinal axis");
+            if (!sym[0]) {
+                hi[0] = max(-lo[0], hi[0]); lo[0] = -hi[0];
+            }
+        }
+        if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+            if (lo[1] < 0. && hi[1] > 0.)
+                throw Exception("interpolation: Symmetric geometry spans at both sides of transverse axis");
+            if (!sym[1]) {
+                hi[1] = max(-lo[1], hi[1]); lo[1] = -hi[1];
+            }
+        }
+        if (geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
+            if (lo[2] < 0. && hi[2] > 0.)
+                throw Exception("interpolation: Symmetric geometry spans at both sides of vertical axis");
+            if (!sym[2]) {
+                hi[2] = max(-lo[2], hi[2]); lo[2] = -hi[2];
+            }
+        }
     }
 
     InterpolationFlags(shared_ptr<const Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}

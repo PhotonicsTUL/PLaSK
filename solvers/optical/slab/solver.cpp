@@ -67,6 +67,11 @@ void SlabSolver<GeometryT>::setup_vbounds()
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
+    if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
+        std::deque<double> zz;
+        for (double z: vbounds) zz.push_front(-z);
+        vbounds.addOrderedPoints(zz.begin(), zz.end(), zz.size());
+    }
 }
 
 template <>
@@ -75,6 +80,11 @@ void SlabSolver<Geometry3D>::setup_vbounds()
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
+    if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
+        std::deque<double> zz;
+        for (double z: vbounds) zz.push_front(-z);
+        vbounds.addOrderedPoints(zz.begin(), zz.end(), zz.size());
+    }
 }
 
 template <typename GeometryT>

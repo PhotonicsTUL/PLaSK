@@ -706,7 +706,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                                       InterpolationFlags(SOLVER->getGeometry(),
                                                          symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
                                                          symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
-                                                         InterpolationFlags::Symmetry::POSITIVE),
+                                                         InterpolationFlags::Symmetry::NO),
                                       false).claim();
             if (symmetric_long()) {
                 double Ll = 2. * front;
@@ -754,7 +754,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 RectangularMesh<3>::ORDER_210
             );
             auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
-                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::POSITIVE),
+                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
                                       false).claim();
             dcomplex ikx = I * kx, iky = I * ky;
             for (size_t i = 0; i != dest_mesh->size(); ++i)

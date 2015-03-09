@@ -880,7 +880,7 @@ const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_pt
 struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
 {
     EffectiveIndex2D* solver;
-    const shared_ptr<const MeshD<2>>& dest_mesh;
+    shared_ptr<const MeshD<2>> dest_mesh;
     InterpolationFlags flags;
     std::vector<LazyData<double>> EE;
     dcomplex lam0;
