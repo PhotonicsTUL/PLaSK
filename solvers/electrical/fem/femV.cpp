@@ -663,7 +663,7 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method);
+    auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
     return LazyData<Vec<2>>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
@@ -680,7 +680,7 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method).claim();
+    auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
     return LazyData<double>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;

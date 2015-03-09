@@ -664,7 +664,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method, flags).claim();
+    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method, flags);
     return LazyData<double>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
