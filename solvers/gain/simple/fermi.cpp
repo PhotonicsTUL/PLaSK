@@ -598,21 +598,21 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
     DataBase(FermiGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-        solver(solver), dest_mesh(make_shared<WrappedMesh<2>>(dst_mesh, solver->geometry))
+        solver(solver), dest_mesh(dst_mesh)
     {
         // Create horizontal points lists
         if (solver->mesh) {
             regpoints.assign(solver->regions.size(), solver->mesh);
         } else if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh)) {
             regpoints.reserve(solver->regions.size());
-            WrappedMesh<2> wrapped(make_shared<RectangularMesh<2>>(rect_mesh->axis0, zero_axis), solver->geometry);
+            InterpolationFlags flags(solver->geometry);
             for (size_t r = 0; r != solver->regions.size(); ++r) {
                 std::set<double> pts;
                 auto box = solver->regions[r].getBoundingBox();
                 double y = 0.5 * (box.lower.c1 + box.upper.c1);
-                for (auto point: wrapped) {
-                    double x = point.c0;
-                    if (solver->regions[r].contains(vec(x,y))) pts.insert(x);
+                for (double x: *rect_mesh->axis0) {
+                    auto p = flags.wrap(vec(x,y));
+                    if (solver->regions[r].contains(p)) pts.insert(p.c0);
                 }
                 auto msh = make_shared<OrderedAxis>();
                 msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
@@ -620,10 +620,12 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             }
         } else {
             regpoints.reserve(solver->regions.size());
+            InterpolationFlags flags(solver->geometry);
             for (size_t r = 0; r != solver->regions.size(); ++r) {
                 std::set<double> pts;
                 for (auto point: *dest_mesh) {
-                    if (solver->regions[r].contains(point)) pts.insert(point.c0);
+                    auto p = flags.wrap(point);
+                    if (solver->regions[r].contains(p)) pts.insert(p.c0);
                 }
                 auto msh = make_shared<OrderedAxis>();
                 msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());

@@ -515,7 +515,7 @@ const LazyData<double> FiniteElementMethodThermal3DSolver::getTemperatures(const
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return DataVector<const double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, temperatures, make_shared<const WrappedMesh<3>>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh, temperatures, dst_mesh, method, geometry);
 }
 
 
@@ -524,19 +524,20 @@ const LazyData<Vec<3>> FiniteElementMethodThermal3DSolver::getHeatFluxes(const s
     if (!temperatures) return DataVector<const Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getMidpointsMesh(), fluxes, make_shared<const WrappedMesh<3>>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh->getMidpointsMesh(), fluxes, dst_mesh, method,
+                       InterpolationFlags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
 }
 
 
 FiniteElementMethodThermal3DSolver::
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh):
-    solver(solver), target_mesh(dst_mesh, solver->geometry)
+    solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
 }
 Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
-    auto point = target_mesh[i];
+    auto point = flags.wrap(dest_mesh->at(i));
     size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
     size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
     size_t z = std::upper_bound(solver->mesh->axis2->begin(), solver->mesh->axis2->end(), point[2]) - solver->mesh->axis2->begin();
@@ -549,7 +550,7 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
         return material->thermk(temps[idx], solver->thickness[idx]);
     }
 }
-std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return target_mesh.size(); }
+std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return dest_mesh->size(); }
 
 const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
     this->initCalculation();

@@ -142,7 +142,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         struct ConcentrationDataImpl: public LazyDataImpl<double>
         {
             const FiniteElementMethodDiffusion2DSolver* solver;
-            shared_ptr<WrappedMesh<2>> destination_mesh;
+            shared_ptr<const MeshD<2>> destination_mesh;
+            InterpolationFlags interpolationFlags;
             LazyData<double> concentration;
             ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
                                   shared_ptr<const plask::MeshD<2>> dest_mesh,

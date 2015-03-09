@@ -596,8 +596,11 @@ template<typename Geometry2DType> FiniteElementMethodDiffusion2DSolver<Geometry2
 ConcentrationDataImpl::ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
                                              shared_ptr<const plask::MeshD<2>> dest_mesh,
                                              InterpolationMethod interp):
-    solver(solver), destination_mesh(make_shared<WrappedMesh<2>>(dest_mesh, solver->geometry)),
-    concentration(interpolate(solver->mesh2, solver->n_present, destination_mesh, getInterpolationMethod<INTERPOLATION_LINEAR>(interp)))
+    solver(solver), destination_mesh(dest_mesh), interpolationFlags(InterpolationFlags(solver->geometry)),
+    concentration(interpolate(solver->mesh2, solver->n_present, dest_mesh,
+                              getInterpolationMethod<INTERPOLATION_LINEAR>(interp),
+                              interpolationFlags
+                             ))
 {
 }
 
@@ -606,7 +609,7 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
 {
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
-    auto point = destination_mesh->at(i);
+    auto point = interpolationFlags.wrap(destination_mesh->at(i));
     bool inqw = false;
     for (auto QW: solver->detected_QW)
         if (QW.contains(point))
@@ -621,7 +624,6 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
 template<typename Geometry2DType>
 const LazyData<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
 {
-    auto destination_mesh = make_shared<WrappedMesh<2>>(dest_mesh, this->geometry);
     if (!n_present.data()) throw NoValue("Carriers concentration");
     return LazyData<double>(new FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }

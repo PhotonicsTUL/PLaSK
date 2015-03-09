@@ -730,7 +730,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 
     this->initCalculation(); // This must be called before any calculation!
 
-    auto mesh2 = make_shared<RectangularMesh<2>>();    //RectilinearMesh2D
+    auto mesh2 = make_shared<RectangularMesh<2>>();
     if (this->mesh) {
         auto verts = make_shared<OrderedAxis>();
         for (auto p: *dst_mesh) verts->addPoint(p.vert());
@@ -738,16 +738,15 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
     }
     const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
 
-    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
+    DataVector<double> gainOnMesh(src_mesh->size(), 0.);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> gainOnMesh(geo_mesh->size(), 0.);
-
+    InterpolationFlags flags(this->geometry);
     std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh->size(); i++)
+    for (size_t i = 0; i != src_mesh->size(); i++)
         for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
+            if (regions[r].contains(flags.wrap(src_mesh->at(i))) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
 
     //#pragma omp parallel for // do not use parallel computations now LUKASZ 2014.10.16
@@ -772,19 +771,18 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 
             if (!lifetime) gainOnMesh[i] = gainModule.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength)) / L; //20.10.2014 adding lifetime
             else gainOnMesh[i] = gainModule.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),phys::hb_eV*1e12/lifetime) / L; //20.10.2014 adding lifetime
-            //this->writelog(LOG_DATA, "point=%1%: gain=%2%cm-1", points[j].first, gainOnMesh[i]);
 
-            this->writelog(LOG_DATA, "pos(%1%um,%2%um): gain=%3%cm-1", (geo_mesh->at(i)).c0, (geo_mesh->at(i)).c1, gainOnMesh[i]);
+            this->writelog(LOG_DATA, "pos(%1%um,%2%um): gain=%3%cm-1", (dst_mesh->at(i)).c0, (dst_mesh->at(i)).c1, gainOnMesh[i]);
         }
         else if (mEc)
             throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
-        else //if ((mEvhh)&&(mEvlh))
+        else // if ((mEvhh) && (mEvlh))
             throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
     }
 
     if (this->mesh)
     {
-        return interpolate(mesh2, gainOnMesh, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp);
+        return interpolate(mesh2, gainOnMesh, dst_mesh, interp, this->geometry);
     }
     else
     {
@@ -808,16 +806,14 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getLuminescence(const s
     }
     const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
 
-    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
-
-    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> luminescenceOnMesh(geo_mesh->size(), 0.);
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
+    DataVector<double> luminescenceOnMesh(src_mesh->size(), 0.);
 
     std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh->size(); i++)
+    for (size_t i = 0; i != src_mesh->size(); i++)
         for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
+            if (regions[r].contains(src_mesh->at(i)) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
 
     //#pragma omp parallel for // do not use parallel computations now LUKASZ 2014.10.16
@@ -836,18 +832,18 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getLuminescence(const s
         {
             double L = region.qwtotallen / region.totallen; // no unit
 
-            luminescenceOnMesh[i] = gainModule.luminescencja_calk(nm_to_eV(wavelength)) / L; //20.10.2014 adding luminescence
+            luminescenceOnMesh[i] = gainModule.luminescencja_calk(nm_to_eV(wavelength)) / L;
             this->writelog(LOG_RESULT, "calculated luminescence: %1% ?", luminescenceOnMesh[i]);
         }
         else if (mEc)
             throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
-        else //if ((mEvhh)&&(mEvlh))
+        else // if ((mEvhh) && (mEvlh))
             throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
     }
 
     if (this->mesh)
     {
-        return interpolate(mesh2, luminescenceOnMesh, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp);
+        return interpolate(mesh2, luminescenceOnMesh,dst_mesh, interp, this->geometry);
     }
     else
     {
