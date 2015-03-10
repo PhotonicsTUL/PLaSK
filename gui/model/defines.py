@@ -37,16 +37,13 @@ class DefinesModel(TableModel):
             if val.name == name: return idx
         return -1
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable = True):
         new_entries = []
         with OrderedTagReader(element) as r:
             for e in r.iter("define"):
                 with AttributeReader(e) as a:
                     new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", "")))
-        self.beginResetModel()
-        self.entries = new_entries
-        self.endResetModel()
-        self.fire_changed()
+        self.set_entries(new_entries, undoable)
 
     # XML element that represents whole section
     def get_xml_element(self):

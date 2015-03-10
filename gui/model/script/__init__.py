@@ -24,7 +24,8 @@ class ScriptModel(SectionModel):
         self._code = ''
         prepare_completions()
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable=True):
+        #TODO undo support (??)
         require_no_children(element)
         require_no_attributes(element)
         if element is not None:

@@ -48,16 +48,13 @@ class ConnectsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         TableModel.__init__(self, 'connects', parent, info_cb, *args)
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable=True):
         new_entries = []
         with OrderedTagReader(element) as r:
             for e in r.iter("connect"):
                 with AttributeReader(e) as a:
                     new_entries.append(ConnectsModel.Entry(a.get("out", ""), a.get("in", "")))
-        self.beginResetModel()
-        self.entries = new_entries
-        self.endResetModel()
-        self.fire_changed()
+        self.set_entries(new_entries, undoable)
 
     # XML element that represents whole section
     def get_xml_element(self):

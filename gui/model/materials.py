@@ -316,7 +316,8 @@ class MaterialsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable=True):
+        #TODO undo support
         self.beginResetModel()
         del self.entries[:]
         with OrderedTagReader(element) as material_reader:

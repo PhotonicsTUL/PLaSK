@@ -161,7 +161,7 @@ class SectionModel(TreeFragmentModel):
             if 'external' in a:
                 self.set_external_source(a['external'], filename)
                 return
-        self.set_xml_element(element)
+        self.set_xml_element(element, undoable=False)
         self.line_in_file = element.sourceline   # TODO can be wrong when the next sections will not be read correctly
 
     def create_info(self):
@@ -189,7 +189,8 @@ class SectionModelTreeBased(SectionModel):
         SectionModel.__init__(self, name)
         self.element = etree.Element(name)
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable=True):
+        #TODO undo support if this is used
         self.element = element
         self.fire_changed()
 

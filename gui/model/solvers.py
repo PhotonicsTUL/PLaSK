@@ -294,14 +294,8 @@ class SolversModel(TableModel):
             else:
                 return factory(element=element, parent=self)
 
-    def set_xml_element(self, element):
-        self.layoutAboutToBeChanged.emit()
-        if element is not None:
-            self.entries = [self.construct_solver(item) for item in element]
-        else:
-            self.entries = []
-        self.layoutChanged.emit()
-        self.fire_changed()
+    def set_xml_element(self, element, undoable=True):
+        self.set_entries([] if element is None else [self.construct_solver(item) for item in element], undoable)
 
     def get_xml_element(self):
         res = etree.Element(self.name)

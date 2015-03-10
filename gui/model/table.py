@@ -196,3 +196,32 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
         #self.dataChanged.emit(index, index)
         self.undo_stack.push(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
+
+
+    class SetEntriesCommand(QtGui.QUndoCommand):
+
+        def __init__(self, table, new_entries, QUndoCommand_parent = None):
+            super(TableModel.SetEntriesCommand, self).__init__('edit XML source', QUndoCommand_parent)
+            self.table = table
+            self.old_entries = table.entries
+            self.new_entries = new_entries
+
+        def _set_entries(self, entries):
+            self.table.beginResetModel()
+            self.table.entries = entries
+            self.table.endResetModel()
+            self.table.fire_changed()
+
+        def redo(self):
+            self._set_entries(self.new_entries)
+
+        def undo(self):
+            self._set_entries(self.old_entries)
+
+    def set_entries(self, new_entries, undoable = True):
+        command = TableModel.SetEntriesCommand(self, new_entries)
+        if undoable:
+            self.undo_stack.push(command)
+        else:
+            command.redo()
+            self.undo_stack.clear()

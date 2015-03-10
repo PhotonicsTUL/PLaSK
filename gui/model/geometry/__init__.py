@@ -17,7 +17,7 @@ import operator
 import cStringIO
 import pickle
 
-from ...qt import QtCore
+from ...qt import QtCore, QtGui
 
 from .. import SectionModel
 from .reader import GNReadConf
@@ -74,17 +74,42 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         for geom in self.roots: res.append(geom.get_xml_element(conf))
         return res
 
-    def set_xml_element(self, element):
+
+    class SetRootsCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, axes, roots, QUndoCommand_parent = None):
+            super(GeometryModel.SetRootsCommand, self).__init__('edit XML source', QUndoCommand_parent)
+            self.model = model
+            self.old_axes = model.axes
+            self.old_roots = model.roots
+            self.new_axes = axes
+            self.new_roots = roots
+
+        def _set(self, axes, roots):
+            self.model.beginResetModel()
+            self.model.axes = axes
+            self.model.roots = roots
+            self.model.endResetModel()
+            self.model.fire_changed()
+
+        def redo(self):
+            self._set(self.new_axes, self.new_roots)
+
+        def undo(self):
+            self._set(self.old_axes, self.old_roots)
+
+    def set_xml_element(self, element, undoable=True):
         with AttributeReader(element) as a: new_axes = a.get('axes')
         conf = GNReadConf(axes=new_axes)
         new_roots = []
         for child_element in element:
             new_roots.append(construct_geometry_object(child_element, conf, geometry_types_geometries))
-        self.beginResetModel()
-        self.axes = new_axes
-        self.roots = new_roots
-        self.endResetModel()
-        self.fire_changed()
+        command = GeometryModel.SetRootsCommand(self, new_axes, new_roots)
+        if undoable:
+            self.undo_stack.push(command)
+        else:
+            command.redo()
+            self.undo_stack.clear()
 
     def stubs(self):
         res = 'class GEO(object):\n    """PLaSK object containing the defined geometry objects."""\n'

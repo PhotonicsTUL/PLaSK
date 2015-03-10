@@ -161,7 +161,8 @@ class GridsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
 
-    def set_xml_element(self, element):
+    def set_xml_element(self, element, undoable=True):
+        #TODO undo support
         self.layoutAboutToBeChanged.emit()
         if element is not None:
             self.entries = [construct_grid(self, g) for g in element]
