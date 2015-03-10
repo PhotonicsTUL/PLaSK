@@ -698,8 +698,21 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
 
         size_t index0_1;
         double back, front;
+        bool invert_back = false, invert_front = false;
         if (index0 == 0) {
-            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+            if (flags.symmetric<0>()) {
+                index0_1 = 0;
+                back = axis0->at(0);
+                if (back > 0.) {
+                    back = - back;
+                    invert_back = true;
+                } else if (flags.periodic<0>()) {
+                    back = 2. * flags.low<0>() - back;
+                    invert_back = true;
+                } else {
+                    back -= 1.;
+                }
+            } else if (flags.periodic<0>()) {
                 index0_1 = axis0->size() - 1;
                 back = axis0->at(index0_1) - flags.high<0>() + flags.low<0>();
             } else {
@@ -711,7 +724,19 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
             back = axis0->at(index0_1);
         }
         if (index0 == axis0->size()) {
-            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+            if (flags.symmetric<0>()) {
+                --index0;
+                front = axis0->at(index0);
+                if (front < 0.) {
+                    front = - front;
+                    invert_front = true;
+                } else if (flags.periodic<0>()) {
+                    back = 2. * flags.high<0>() - front;
+                    invert_front = true;
+                } else {
+                    front += 1.;
+                }
+            } else if (flags.periodic<0>()) {
                 index0 = 0;
                 front = axis0->at(0) + flags.high<0>() - flags.low<0>();
             } else {
@@ -724,8 +749,21 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
 
         size_t index1_1;
         double left, right;
+        bool invert_left = false, invert_right = false;
         if (index1 == 0) {
-            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+            if (flags.symmetric<1>()) {
+                index1_1 = 0;
+                left = axis1->at(0);
+                if (left > 0.) {
+                    left = - left;
+                    invert_left = true;
+                } else if (flags.periodic<1>()) {
+                    left = 2. * flags.low<1>() - left;
+                    invert_left = true;
+                } else {
+                    left -= 1.;
+                }
+            } else if (flags.periodic<1>()) {
                 index1_1 = axis1->size() - 1;
                 left = axis1->at(index1_1) - flags.high<1>() + flags.low<1>();
             } else {
@@ -737,7 +775,19 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
             left = axis1->at(index1_1);
         }
         if (index1 == axis1->size()) {
-            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+            if (flags.symmetric<1>()) {
+                --index1;
+                right = axis1->at(index1);
+                if (right < 0.) {
+                    right = - right;
+                    invert_right = true;
+                } else if (flags.periodic<1>()) {
+                    left = 2. * flags.high<1>() - right;
+                    invert_right = true;
+                } else {
+                    right += 1.;
+                }
+            } else if (flags.periodic<1>()) {
                 index1 = 0;
                 right = axis1->at(0) + flags.high<1>() - flags.low<1>();
             } else {
@@ -750,8 +800,21 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
 
         size_t index2_1;
         double bottom, top;
+        bool invert_top = false, invert_bottom = false;
         if (index2 == 0) {
-            if (flags.periodic<2>() && !flags.symmetric<2>()) {
+            if (flags.symmetric<2>()) {
+                index2_1 = 0;
+                bottom = axis2->at(0);
+                if (bottom > 0.) {
+                    bottom = - bottom;
+                    invert_bottom = true;
+                } else if (flags.periodic<2>()) {
+                    bottom = 2. * flags.low<2>() - bottom;
+                    invert_bottom = true;
+                } else {
+                    bottom -= 1.;
+                }
+            } else if (flags.periodic<2>()) {
                 index2_1 = axis2->size() - 1;
                 bottom = axis2->at(index2_1) - flags.high<2>() + flags.low<2>();
             } else {
@@ -759,11 +822,23 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
                 bottom = axis2->at(0) - 1.;
             }
         } else {
-            index2_1 = index2-1;
+            index2_1 = index2-2;
             bottom = axis2->at(index2_1);
         }
         if (index2 == axis2->size()) {
-            if (flags.periodic<2>() && !flags.symmetric<2>()) {
+            if (flags.symmetric<2>()) {
+                --index2;
+                top = axis2->at(index2);
+                if (top < 0.) {
+                    top = - top;
+                    invert_top = true;
+                } else if (flags.periodic<2>()) {
+                    top = 2. * flags.high<2>() - top;
+                    invert_top = true;
+                } else {
+                    top += 1.;
+                }
+            } else if (flags.periodic<2>()) {
                 index2 = 0;
                 top = axis2->at(0) + flags.high<2>() - flags.low<2>();
             } else {
@@ -775,18 +850,27 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
         }
 
         // all indexes are in bounds
+        typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
+            data_lll = data[index(index0_1, index1_1, index2_1)],
+            data_hll = data[index(index0,   index1_1, index2_1)],
+            data_hhl = data[index(index0,   index1  , index2_1)],
+            data_lhl = data[index(index0_1, index1  , index2_1)],
+            data_llh = data[index(index0_1, index1_1, index2)],
+            data_hlh = data[index(index0,   index1_1, index2)],
+            data_hhh = data[index(index0,   index1  , index2)],
+            data_lhh = data[index(index0_1, index1  , index2)];
+
+        if (invert_back)   { data_lll = flags.reflect(0, data_lll); data_llh = flags.reflect(0, data_llh); data_lhl = flags.reflect(0, data_lhl); data_lhh = flags.reflect(0, data_lhh); }
+        if (invert_front)  { data_hll = flags.reflect(0, data_hll); data_llh = flags.reflect(0, data_hlh); data_lhl = flags.reflect(0, data_hhl); data_lhh = flags.reflect(0, data_hhh); }
+        if (invert_left)   { data_lll = flags.reflect(1, data_lll); data_llh = flags.reflect(1, data_llh); data_hll = flags.reflect(1, data_hll); data_hlh = flags.reflect(1, data_hlh); }
+        if (invert_right)  { data_lhl = flags.reflect(1, data_lhl); data_llh = flags.reflect(1, data_lhh); data_hll = flags.reflect(1, data_hhl); data_hlh = flags.reflect(1, data_hhh); }
+        if (invert_bottom) { data_lll = flags.reflect(2, data_lll); data_lhl = flags.reflect(2, data_lhl); data_hll = flags.reflect(2, data_hll); data_hhl = flags.reflect(2, data_hhl); }
+        if (invert_top)    { data_llh = flags.reflect(2, data_llh); data_lhl = flags.reflect(2, data_lhh); data_hll = flags.reflect(2, data_hlh); data_hhl = flags.reflect(2, data_hhh); }
+
         return flags.postprocess(point,
             interpolation::trilinear(back, front, left, right, bottom, top,
-                data[index(index0_1, index1_1, index2_1)],
-                data[index(index0,   index1_1, index2_1)],
-                data[index(index0,   index1  , index2_1)],
-                data[index(index0_1, index1  , index2_1)],
-                data[index(index0_1, index1_1, index2)],
-                data[index(index0,   index1_1, index2)],
-                data[index(index0,   index1  , index2)],
-                data[index(index0_1, index1  , index2)],
-                p.c0, p.c1, p.c2)
-        );
+                                     data_lll, data_hll, data_hhl, data_lhl, data_llh, data_hlh, data_hhh, data_lhh,
+                                     p.c0, p.c1, p.c2));
     }
 
     /**

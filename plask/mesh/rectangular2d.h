@@ -660,8 +660,21 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         size_t index0_1;
         double left, right;
+        bool invert_left = false, invert_right = false;
         if (index0 == 0) {
-            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+            if (flags.symmetric<0>()) {
+                index0_1 = 0;
+                left = axis0->at(0);
+                if (left > 0.) {
+                    left = - left;
+                    invert_left = true;
+                } else if (flags.periodic<0>()) {
+                    left = 2. * flags.low<0>() - left;
+                    invert_left = true;
+                } else {
+                    left -= 1.;
+                }
+            } else if (flags.periodic<0>()) {
                 index0_1 = axis0->size() - 1;
                 left = axis0->at(index0_1) - flags.high<0>() + flags.low<0>();
             } else {
@@ -673,7 +686,19 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
             left = axis0->at(index0_1);
         }
         if (index0 == axis0->size()) {
-            if (flags.periodic<0>() && !flags.symmetric<0>()) {
+            if (flags.symmetric<0>()) {
+                --index0;
+                right = axis0->at(index0);
+                if (right < 0.) {
+                    right = - right;
+                    invert_right = true;
+                } else if (flags.periodic<0>()) {
+                    left = 2. * flags.high<0>() - right;
+                    invert_right = true;
+                } else {
+                    right += 1.;
+                }
+            } else if (flags.periodic<0>()) {
                 index0 = 0;
                 right = axis0->at(0) + flags.high<0>() - flags.low<0>();
             } else {
@@ -686,8 +711,21 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         size_t index1_1;
         double bottom, top;
+        bool invert_top = false, invert_bottom = false;
         if (index1 == 0) {
-            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+            if (flags.symmetric<1>()) {
+                index1_1 = 0;
+                bottom = axis1->at(0);
+                if (bottom > 0.) {
+                    bottom = - bottom;
+                    invert_bottom = true;
+                } else if (flags.periodic<1>()) {
+                    bottom = 2. * flags.low<1>() - bottom;
+                    invert_bottom = true;
+                } else {
+                    bottom -= 1.;
+                }
+            } else if (flags.periodic<1>()) {
                 index1_1 = axis1->size() - 1;
                 bottom = axis1->at(index1_1) - flags.high<1>() + flags.low<1>();
             } else {
@@ -695,11 +733,23 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
                 bottom = axis1->at(0) - 1.;
             }
         } else {
-            index1_1 = index1 - 1;
+            index1_1 = index1-1;
             bottom = axis1->at(index1_1);
         }
         if (index1 == axis1->size()) {
-            if (flags.periodic<1>() && !flags.symmetric<1>()) {
+            if (flags.symmetric<1>()) {
+                --index1;
+                top = axis1->at(index1);
+                if (top < 0.) {
+                    top = - top;
+                    invert_top = true;
+                } else if (flags.periodic<1>()) {
+                    top = 2. * flags.high<1>() - top;
+                    invert_top = true;
+                } else {
+                    top += 1.;
+                }
+            } else if (flags.periodic<1>()) {
                 index1 = 0;
                 top = axis1->at(0) + flags.high<1>() - flags.low<1>();
             } else {
@@ -710,14 +760,17 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
             top = axis1->at(index1);
         }
 
-        return flags.postprocess(point,
-            interpolation::bilinear(left, right, bottom, top,
-                                    data[index(index0_1, index1_1)],
-                                    data[index(index0,   index1_1)],
-                                    data[index(index0,   index1  )],
-                                    data[index(index0_1, index1  )],
-                                    p.c0, p.c1)
-        );
+        typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
+            data_lb = data[index(index0_1, index1_1)],
+            data_rb = data[index(index0,   index1_1)],
+            data_rt = data[index(index0,   index1  )],
+            data_lt = data[index(index0_1, index1  )];
+        if (invert_left)   { data_lb = flags.reflect(0, data_lb); data_lt = flags.reflect(0, data_lt); }
+        if (invert_right)  { data_rb = flags.reflect(0, data_rb); data_rt = flags.reflect(0, data_rt); }
+        if (invert_top)    { data_lt = flags.reflect(1, data_lt); data_rt = flags.reflect(1, data_rt); }
+        if (invert_bottom) { data_lb = flags.reflect(1, data_lb); data_rb = flags.reflect(1, data_rb); }
+
+        return flags.postprocess(point, interpolation::bilinear(left, right, bottom, top, data_lb, data_rb, data_rt, data_lt, p.c0, p.c1));
     }
 
     /**
