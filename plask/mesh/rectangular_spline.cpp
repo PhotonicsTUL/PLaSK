@@ -52,9 +52,16 @@ namespace detail {
     };
 
     template <typename DataT>
-    void computeDiffs(DataT* diffs, const shared_ptr<RectangularAxis>& axis, const DataT* data, size_t stride)
+    void computeDiffs(DataT* diffs, int ax, const shared_ptr<RectangularAxis>& axis,
+                      const DataT* data, size_t stride, const InterpolationFlags& flags)
     {
         const size_t n0 = axis->size() - 1;
+        
+        if (!n0) {
+            diffs[0] = 0. * DataT();
+            return;
+        }
+        
         for (size_t i = 1; i != n0; ++i) {
             const int idx = stride * i;
             const double da = axis->at(i) - axis->at(i-1),
@@ -66,9 +73,63 @@ namespace detail {
             // Hyman filter
             Hyman<DataT>::filter(diffs[idx], sa, sb);
         }
-        diffs[0] = diffs[stride*n0] = 0. * DataT();
-    }
 
+        const size_t in0 = stride * n0;
+        double da0, db0, dan, dbn;
+        DataT sa0, sb0, san, sbn;
+        
+        if (flags.symmetric(ax)) {
+            da0 = axis->at(0);
+            db0 = axis->at(1) - axis->at(0);
+            sb0 = (data[1] - data[0]) / db0;
+            if (da0 < 0. && flags.periodic(ax)) {
+                da0 += flags.high(ax) - flags.low(ax);
+            }
+            if (da0 == 0.)
+                sa0 = (data[1] - flags.reflect(ax, data[1])) / (2.*db0);
+            else if (da0 > 0.)
+                sa0 = (data[0] - flags.reflect(ax, data[0])) / (2.*da0);
+            else {
+                da0 = db0 = 0.5;
+                sa0 = sb0 = 0. * DataT();
+            }
+            dan = axis->at(n0) - axis->at(n0-1);
+            san = (data[in0] - data[in0-stride]) / dan;
+            dbn = - axis->at(n0);
+            if (dbn < 0. && flags.periodic(ax)) {
+                dbn += flags.high(ax) - flags.low(ax);
+            }
+            if (dbn == 0.)
+                sbn = (data[in0-stride] - flags.reflect(ax, data[in0-stride])) / (2.*dan);
+            else if (dbn > 0.)
+                sbn = (data[in0] - flags.reflect(ax, data[in0])) / (2.*dbn);
+            else {
+                dan = dbn = 0.5;
+                san = sbn = 0. * DataT();
+            }
+        } else {
+            if (flags.periodic(ax)) {
+                da0 = axis->at(0) - axis->at(n0) + flags.high(ax) - flags.low(ax);
+                db0 = axis->at(1) - axis->at(0);
+                sa0 = (data[0] - data[stride*n0]) / da0,
+                sb0 = (data[1] - data[0]) / db0;
+                dan = axis->at(n0) - axis->at(n0-1);
+                dbn = da0;
+                san = (data[in0] - data[in0-stride]) / dan,
+                sbn = (data[0] - data[in0]) / dbn;
+            } else {
+                da0 = db0 = dan = dbn = 0.5;
+                sa0 = sb0 = san = sbn = 0. * DataT();
+            }
+        }
+        
+        // Use parabolic estimation of the derivative
+        diffs[0] = (da0 * sb0  + db0 * sa0) / (da0 + db0);
+        diffs[in0] = (dan * sbn  + dbn * san) / (dan + dbn);
+        // Hyman filter
+        Hyman<DataT>::filter(diffs[0], sa0, sb0);
+        Hyman<DataT>::filter(diffs[in0], san, sbn);
+    }
 }
 
 
@@ -90,10 +151,10 @@ SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<
 
     if (n0 > 1)
         for (size_t i1 = 0, i = 0; i1 < src_mesh->axis1->size(); ++i1, i += stride1)
-            detail::computeDiffs(diff0.data()+i, src_mesh->axis0, src_vec.data()+i, stride0);
+            detail::computeDiffs(diff0.data()+i, 0, src_mesh->axis0, src_vec.data()+i, stride0, flags);
     if (n1 > 1)
         for (size_t i0 = 0, i = 0; i0 < src_mesh->axis0->size(); ++i0, i += stride0)
-            detail::computeDiffs(diff1.data()+i, src_mesh->axis1, src_vec.data()+i, stride1);
+            detail::computeDiffs(diff1.data()+i, 1, src_mesh->axis1, src_vec.data()+i, stride1, flags);
 }
 
 template <typename DstT, typename SrcT>
@@ -173,7 +234,7 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
         for (size_t i2 = 0; i2 < src_mesh->axis2->size(); ++i2) {
             for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i1) {
                 size_t offset = src_mesh->index(0, i1, i2);
-                detail::computeDiffs(diff0.data()+offset, src_mesh->axis0, src_vec.data()+offset, stride0);
+                detail::computeDiffs(diff0.data()+offset, 0, src_mesh->axis0, src_vec.data()+offset, stride0, flags);
             }
         }
     }
@@ -182,7 +243,7 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
         for (size_t i2 = 0; i2 < src_mesh->axis2->size(); ++i2) {
             for (size_t i0 = 0; i0 < src_mesh->axis0->size(); ++i0) {
                 size_t offset = src_mesh->index(i0, 0, i2);
-                detail::computeDiffs(diff1.data()+offset, src_mesh->axis1, src_vec.data()+offset, stride1);
+                detail::computeDiffs(diff1.data()+offset, 1, src_mesh->axis1, src_vec.data()+offset, stride1, flags);
             }
         }
     }
@@ -191,7 +252,7 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
         for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i1) {
             for (size_t i0 = 0; i0 < src_mesh->axis0->size(); ++i0) {
                 size_t offset = src_mesh->index(i0, i1, 0);
-                detail::computeDiffs(diff2.data()+offset, src_mesh->axis2, src_vec.data()+offset, stride2);
+                detail::computeDiffs(diff2.data()+offset, 2, src_mesh->axis2, src_vec.data()+offset, stride2, flags);
             }
         }
     }

@@ -239,24 +239,29 @@ public:
         else return hi[axis];
     }
 
+    double wrap(int ax, double x) const {
+        double d = hi[ax] - lo[ax];
+        if (periodic(ax)) {
+            if (sym[ax]) {
+                x = std::fmod(x, 2.*d);
+                if (x > d) x -= 2.*d;
+                else if (x < -d) x += 2*d;
+                if (lo[ax] < 0) x = - x;
+            } else {
+                x = std::fmod(x-lo[ax], d);
+                x += (x >= 0)? lo[ax] : hi[ax];
+            }
+        } else if (sym[ax]) {
+            if (lo[ax] >= 0) x = abs(x);
+            else x = - abs(x);
+        }
+        return x;
+    }
+
     template <int dim>
     Vec<dim> wrap(Vec<dim> pos) const {
         for (int i = 0; i != dim; ++i) {
-            double d = hi[i] - lo[i];
-            if (periodic(i)) {
-                if (sym[i]) {
-                    pos[i] = std::fmod(pos[i], 2.*d);
-                    if (pos[i] > d) pos[i] -= 2.*d;
-                    else if (pos[i] < -d) pos[i] += 2*d;
-                    if (lo[i] < 0) pos[i] = - pos[i];
-                } else {
-                    pos[i] = std::fmod(pos[i]-lo[i], d);
-                    pos[i] += (pos[i] >= 0)? lo[i] : hi[i];
-                }
-            } else if (sym[i]) {
-                if (lo[i] >= 0) pos[i] = abs(pos[i]);
-                else pos[i] = - abs(pos[i]);
-            }
+            pos[i] = wrap(i, pos[i]);
         }
         return pos;
     }
