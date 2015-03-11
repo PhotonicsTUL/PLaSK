@@ -209,32 +209,14 @@ public:
 
     bool symmetric(int axis) const { return sym[axis]; }
 
-    template <int axis>
-    bool symmetric() const { return sym[axis]; }
-
     bool periodic(int axis) const { return per & (1 << axis); }
-
-    template <int axis>
-    bool periodic() const { return per & (1 << axis); }
 
     double low(int axis) const {
         if (sym[axis]) return min(lo[axis], -hi[axis]);
         else return lo[axis];
     }
 
-    template <int axis>
-    double low() const {
-        if (sym[axis]) return min(lo[axis], -hi[axis]);
-        else return lo[axis];
-    }
-
     double high(int axis) const {
-        if (sym[axis]) return max(lo[axis], hi[axis]);
-        else return hi[axis];
-    }
-
-    template <int axis>
-    double high() const {
         if (sym[axis]) return max(lo[axis], hi[axis]);
         else return hi[axis];
     }

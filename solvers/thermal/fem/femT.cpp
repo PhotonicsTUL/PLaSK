@@ -92,8 +92,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
             if (m == material) {                            //TODO ignore doping
                 bottom = e.getLower1();
                 ibottom = r-1;
-            }
-            else break;
+            } else break;
         }
         for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
             auto e = this->mesh->elements(c, r);
@@ -101,8 +100,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
             if (m == material) {                            //TODO ignore doping
                 top = e.getUpper1();
                 itop = r+1;
-            }
-            else break;
+            } else break;
         }
         double h = top - bottom;
         for (size_t r = ibottom; r != itop; ++r)

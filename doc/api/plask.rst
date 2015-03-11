@@ -47,6 +47,7 @@ Functions
    save_field
    load_field
 
+   plot_profile
    plot_field
    plot_vectors
    plot_stream

@@ -700,45 +700,45 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
         double back, front;
         bool invert_back = false, invert_front = false;
         if (index0 == 0) {
-            if (flags.symmetric<0>()) {
+            if (flags.symmetric(0)) {
                 index0_1 = 0;
                 back = axis0->at(0);
                 if (back > 0.) {
                     back = - back;
                     invert_back = true;
-                } else if (flags.periodic<0>()) {
-                    back = 2. * flags.low<0>() - back;
+                } else if (flags.periodic(0)) {
+                    back = 2. * flags.low(0) - back;
                     invert_back = true;
                 } else {
                     back -= 1.;
                 }
-            } else if (flags.periodic<0>()) {
+            } else if (flags.periodic(0)) {
                 index0_1 = axis0->size() - 1;
-                back = axis0->at(index0_1) - flags.high<0>() + flags.low<0>();
+                back = axis0->at(index0_1) - flags.high(0) + flags.low(0);
             } else {
                 index0_1 = 0;
                 back = axis0->at(0) - 1.;
             }
         } else {
-            index0_1 = index0-1;
+            index0_1 = index0 - 1;
             back = axis0->at(index0_1);
         }
         if (index0 == axis0->size()) {
-            if (flags.symmetric<0>()) {
+            if (flags.symmetric(0)) {
                 --index0;
                 front = axis0->at(index0);
                 if (front < 0.) {
                     front = - front;
                     invert_front = true;
-                } else if (flags.periodic<0>()) {
-                    back = 2. * flags.high<0>() - front;
+                } else if (flags.periodic(0)) {
+                    back = 2. * flags.high(0) - front;
                     invert_front = true;
                 } else {
                     front += 1.;
                 }
-            } else if (flags.periodic<0>()) {
+            } else if (flags.periodic(0)) {
                 index0 = 0;
-                front = axis0->at(0) + flags.high<0>() - flags.low<0>();
+                front = axis0->at(0) + flags.high(0) - flags.low(0);
             } else {
                 --index0;
                 front = axis0->at(index0) + 1.;
@@ -751,45 +751,45 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
         double left, right;
         bool invert_left = false, invert_right = false;
         if (index1 == 0) {
-            if (flags.symmetric<1>()) {
+            if (flags.symmetric(1)) {
                 index1_1 = 0;
                 left = axis1->at(0);
                 if (left > 0.) {
                     left = - left;
                     invert_left = true;
-                } else if (flags.periodic<1>()) {
-                    left = 2. * flags.low<1>() - left;
+                } else if (flags.periodic(1)) {
+                    left = 2. * flags.low(1) - left;
                     invert_left = true;
                 } else {
                     left -= 1.;
                 }
-            } else if (flags.periodic<1>()) {
+            } else if (flags.periodic(1)) {
                 index1_1 = axis1->size() - 1;
-                left = axis1->at(index1_1) - flags.high<1>() + flags.low<1>();
+                left = axis1->at(index1_1) - flags.high(1) + flags.low(1);
             } else {
                 index1_1 = 0;
                 left = axis1->at(0) - 1.;
             }
         } else {
-            index1_1 = index1-1;
+            index1_1 = index1 - 1;
             left = axis1->at(index1_1);
         }
         if (index1 == axis1->size()) {
-            if (flags.symmetric<1>()) {
+            if (flags.symmetric(1)) {
                 --index1;
                 right = axis1->at(index1);
                 if (right < 0.) {
                     right = - right;
                     invert_right = true;
-                } else if (flags.periodic<1>()) {
-                    left = 2. * flags.high<1>() - right;
+                } else if (flags.periodic(1)) {
+                    left = 2. * flags.high(1) - right;
                     invert_right = true;
                 } else {
                     right += 1.;
                 }
-            } else if (flags.periodic<1>()) {
+            } else if (flags.periodic(1)) {
                 index1 = 0;
-                right = axis1->at(0) + flags.high<1>() - flags.low<1>();
+                right = axis1->at(0) + flags.high(1) - flags.low(1);
             } else {
                 --index1;
                 right = axis1->at(index1) + 1.;
@@ -802,45 +802,45 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
         double bottom, top;
         bool invert_top = false, invert_bottom = false;
         if (index2 == 0) {
-            if (flags.symmetric<2>()) {
+            if (flags.symmetric(2)) {
                 index2_1 = 0;
                 bottom = axis2->at(0);
                 if (bottom > 0.) {
                     bottom = - bottom;
                     invert_bottom = true;
-                } else if (flags.periodic<2>()) {
-                    bottom = 2. * flags.low<2>() - bottom;
+                } else if (flags.periodic(2)) {
+                    bottom = 2. * flags.low(2) - bottom;
                     invert_bottom = true;
                 } else {
                     bottom -= 1.;
                 }
-            } else if (flags.periodic<2>()) {
+            } else if (flags.periodic(2)) {
                 index2_1 = axis2->size() - 1;
-                bottom = axis2->at(index2_1) - flags.high<2>() + flags.low<2>();
+                bottom = axis2->at(index2_1) - flags.high(2) + flags.low(2);
             } else {
                 index2_1 = 0;
                 bottom = axis2->at(0) - 1.;
             }
         } else {
-            index2_1 = index2-2;
+            index2_1 = index2 - 1;
             bottom = axis2->at(index2_1);
         }
         if (index2 == axis2->size()) {
-            if (flags.symmetric<2>()) {
+            if (flags.symmetric(2)) {
                 --index2;
                 top = axis2->at(index2);
                 if (top < 0.) {
                     top = - top;
                     invert_top = true;
-                } else if (flags.periodic<2>()) {
-                    top = 2. * flags.high<2>() - top;
+                } else if (flags.periodic(2)) {
+                    top = 2. * flags.high(2) - top;
                     invert_top = true;
                 } else {
                     top += 1.;
                 }
-            } else if (flags.periodic<2>()) {
+            } else if (flags.periodic(2)) {
                 index2 = 0;
-                top = axis2->at(0) + flags.high<2>() - flags.low<2>();
+                top = axis2->at(0) + flags.high(2) - flags.low(2);
             } else {
                 --index2;
                 top = axis2->at(index2) + 1.;
@@ -883,25 +883,25 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
     auto interpolateNearestNeighbor(const RandomAccessContainer& data, Vec<3> point, const InterpolationFlags& flags) const
         -> typename std::remove_reference<decltype(data[0])>::type {
         auto p = flags.wrap(point);
-        if (flags.periodic<0>()) {
+        if (flags.periodic(0)) {
             if (p.c0 < axis0->at(0)) {
-                if (axis0->at(0) - p.c0 > p.c0 - flags.low<0>() + flags.high<0>() - axis0->at(axis0->size()-1)) p.c0 = axis0->at(axis0->size()-1);
+                if (axis0->at(0) - p.c0 > p.c0 - flags.low(0) + flags.high(0) - axis0->at(axis0->size()-1)) p.c0 = axis0->at(axis0->size()-1);
             } else if (p.c0 > axis0->at(axis0->size()-1)) {
-                if (p.c0 - axis0->at(axis0->size()-1) > flags.high<0>() - p.c0 + axis0->at(0) - flags.low<0>()) p.c0 = axis0->at(0);
+                if (p.c0 - axis0->at(axis0->size()-1) > flags.high(0) - p.c0 + axis0->at(0) - flags.low(0)) p.c0 = axis0->at(0);
             }
         }
-        if (flags.periodic<1>()) {
+        if (flags.periodic(1)) {
             if (p.c1 < axis1->at(0)) {
-                if (axis1->at(0) - p.c1 > p.c1 - flags.low<1>() + flags.high<1>() - axis1->at(axis1->size()-1)) p.c1 = axis1->at(axis1->size()-1);
+                if (axis1->at(0) - p.c1 > p.c1 - flags.low(1) + flags.high(1) - axis1->at(axis1->size()-1)) p.c1 = axis1->at(axis1->size()-1);
             } else if (p.c1 > axis1->at(axis1->size()-1)) {
-                if (p.c1 - axis1->at(axis1->size()-1) > flags.high<1>() - p.c1 + axis1->at(0) - flags.low<1>()) p.c1 = axis1->at(0);
+                if (p.c1 - axis1->at(axis1->size()-1) > flags.high(1) - p.c1 + axis1->at(0) - flags.low(1)) p.c1 = axis1->at(0);
             }
         }
-        if (flags.periodic<2>()) {
+        if (flags.periodic(2)) {
             if (p.c2 < axis2->at(0)) {
-                if (axis2->at(0) - p.c2 > p.c2 - flags.low<2>() + flags.high<2>() - axis2->at(axis2->size()-1)) p.c2 = axis2->at(axis2->size()-1);
+                if (axis2->at(0) - p.c2 > p.c2 - flags.low(2) + flags.high(2) - axis2->at(axis2->size()-1)) p.c2 = axis2->at(axis2->size()-1);
             } else if (p.c2 > axis2->at(axis2->size()-1)) {
-                if (p.c2 - axis2->at(axis2->size()-1) > flags.high<2>() - p.c2 + axis2->at(0) - flags.low<2>()) p.c2 = axis2->at(0);
+                if (p.c2 - axis2->at(axis2->size()-1) > flags.high(2) - p.c2 + axis2->at(0) - flags.low(2)) p.c2 = axis2->at(0);
             }
         }
         return flags.postprocess(point, data[this->index(axis0->findNearestIndex(p.c0), axis1->findNearestIndex(p.c1), axis2->findNearestIndex(p.c2))]);
