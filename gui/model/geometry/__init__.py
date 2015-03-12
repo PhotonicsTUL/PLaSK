@@ -229,10 +229,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         end = row + count
         if row < 0 or end > len(l): return False
         self.undo_stack.push(GeometryModel.RemoveChildrenCommand(self, parent.internalPointer() if parent.isValid() else None, row, end))
-        #self.beginRemoveRows(parent, row, end)
-        #del l[row:end]
-        #self.endRemoveRows()
-        #self.fire_changed()
         return True
 
     def mimeTypes(self):
