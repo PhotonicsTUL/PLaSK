@@ -139,7 +139,7 @@ class MaterialPlot(QtGui.QWidget):
         self.property_changed()
 
         if init_material is not None: self.set_material(init_material)
-        
+
 
     def resizeEvent(self, event):
         if self.error.isVisible():

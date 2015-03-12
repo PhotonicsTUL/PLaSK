@@ -201,7 +201,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
     class SetEntriesCommand(QtGui.QUndoCommand):
 
         def __init__(self, table, new_entries, QUndoCommand_parent = None):
-            super(TableModel.SetEntriesCommand, self).__init__('edit XML source', QUndoCommand_parent)
+            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source', QUndoCommand_parent)
             self.table = table
             self.old_entries = table.entries
             self.new_entries = new_entries

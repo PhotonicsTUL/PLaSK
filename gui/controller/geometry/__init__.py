@@ -180,6 +180,10 @@ class GeometryController(Controller):
         toolbar = QtGui.QToolBar()
         toolbar.setStyleSheet("QToolBar { border: 0px }")
 
+        toolbar.addAction(self.model.create_undo_action(toolbar))
+        toolbar.addAction(self.model.create_redo_action(toolbar))
+        toolbar.addSeparator()
+
         self.add_menu = QtGui.QMenu()
 
         addButton = QtGui.QToolButton()

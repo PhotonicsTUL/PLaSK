@@ -78,7 +78,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     class SetRootsCommand(QtGui.QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
-            super(GeometryModel.SetRootsCommand, self).__init__('edit XML source', QUndoCommand_parent)
+            super(GeometryModel.SetRootsCommand, self).__init__('edit XPL source', QUndoCommand_parent)
             self.model = model
             self.old_axes = model.axes
             self.old_roots = model.roots
@@ -169,8 +169,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             return ('tag', 'properties')[section]
         return None
 
-    def children_list(self, parent_index):
-        return parent_index.internalPointer().children if parent_index.isValid() else self.roots
+    def children_list(self, parent):
+        '''Get list of children of node or index.'''
+        if parent is None: return self.roots
+        from .node import GNode
+        if isinstance(parent, GNode): return parent.children
+        return parent.internalPointer().children if parent.isValid() else self.roots
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
         if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
@@ -179,38 +183,56 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def parent(self, index):
         if not index.isValid(): return QtCore.QModelIndex()
-        childItem = index.internalPointer()
-        parentItem = childItem.parent
-        if parentItem is None: return QtCore.QModelIndex()
-        return self.createIndex(parentItem.children.index(childItem), 0, parentItem)
+        return self.index_for_node(index.internalPointer().parent)
+        #childItem = index.internalPointer()
+        #parentItem = childItem.parent
+        #if parentItem is None: return QtCore.QModelIndex()
+        #return self.createIndex(self.children_list(parentItem.parent).index(parentItem), 0, parentItem)
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         if parent.column() > 0: return 0
         return len(self.children_list(parent))
 
-    def set(self, col, element, value):
-        if col == 1:
-            element.name = value
-            return True
-        return False
 
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
-        if not index.isValid(): return False
-        if self.set(index.column(), index.internalPointer(), value):
-            self.fire_changed()
-            self.dataChanged.emit(index, index)
-            return True
-        else:
-            return False
+    class RemoveChildrenCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, parent_node, row, end, QUndoCommand_parent = None):
+            super(GeometryModel.RemoveChildrenCommand, self).__init__('remove row {}'.format(row), QUndoCommand_parent)
+            self.model = model
+            self.parent_node = parent_node
+            self.row = row
+            self.end = end
+            self.removed_elements = self.children_list[row:end]
+
+        @property
+        def parent_index(self):
+            return self.model.index_for_node(self.parent_node)
+
+        @property
+        def children_list(self):
+            return self.model.children_list(self.parent_node)
+
+        def redo(self):
+            self.model.beginRemoveRows(self.parent_index, self.row, self.end-1)
+            del self.children_list[self.row:self.end]
+            self.model.endRemoveRows()
+            self.model.fire_changed()
+
+        def undo(self):
+            self.model.beginInsertRows(self.parent_index, self.row, self.end-1)
+            self.children_list[self.row:self.row] = self.removed_elements
+            self.model.endInsertRows()
+            self.model.fire_changed()
 
     def removeRows(self, row, count, parent = QtCore.QModelIndex()):
         l = self.children_list(parent)
         end = row + count
         if row < 0 or end > len(l): return False
-        self.beginRemoveRows(parent, row, end)
-        del l[row:end]
-        self.endRemoveRows()
-        self.fire_changed()
+        self.undo_stack.push(GeometryModel.RemoveChildrenCommand(self, parent.internalPointer() if parent.isValid() else None, row, end))
+        #self.beginRemoveRows(parent, row, end)
+        #del l[row:end]
+        #self.endRemoveRows()
+        #self.fire_changed()
         return True
 
     def mimeTypes(self):
