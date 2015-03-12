@@ -123,9 +123,9 @@ class GNCircleController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('{} size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
-        self.radius = self.construct_line_edit('radius')
+        self.radius = self.construct_line_edit('Radius:', unit=u'µm')
         self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
-                             u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
+                               u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
         super(GNCircleController, self).fill_form()
 
     def save_data_in_model(self):
@@ -142,12 +142,12 @@ class GNCylinderController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('Cylinder size:')
-        self.radius = self.construct_line_edit('radius')
+        self.radius = self.construct_line_edit('Radius:', unit=u'µm')
         self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
-                    u'Radius of the cylinder base. (float [µm], required)')
-        self.height = self.construct_line_edit('height')
+                               u'Radius of the cylinder base. (float [µm], required)')
+        self.height = self.construct_line_edit('Height:', unit=u'µm')
         self.radius.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
-                    u'Height of the cylinder. (float [µm], required)')
+                               u'Height of the cylinder. (float [µm], required)')
         super(GNCylinderController, self).fill_form()
 
     def save_data_in_model(self):

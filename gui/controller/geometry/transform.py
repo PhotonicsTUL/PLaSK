@@ -65,9 +65,9 @@ class GNMirrorController(GNFlipMirrorController):
 
     def fill_form(self):
         self.construct_group('Mirror-specific settings')
-        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim())
         self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
-            'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
+                             'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super(GNMirrorController, self).fill_form()
 
 
@@ -75,9 +75,9 @@ class GNExtrusionController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Extrusion-specific settings')
-        self.length = self.construct_line_edit('length')
+        self.length = self.construct_line_edit('Length:', unit=u'µm')
         self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
-                            u'Length of the extrusion. (float [µm], required)')
+                               u'Length of the extrusion. (float [µm], required)')
         super(GNExtrusionController, self).fill_form()
 
     def save_data_in_model(self):

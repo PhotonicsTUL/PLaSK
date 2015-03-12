@@ -48,18 +48,18 @@ class GNShelfController(GNObjectController):
         self.construct_group('Shelf-specific settings')
         self.repeat = self.construct_line_edit('Repeat:')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
-                                'Number of repetitive occurrences of stack content.'
-                                ' This attribute allows to create periodic horizontal structures easily.'
-                                ' Defaults to 1. (integer)')
-        self.shift = self.construct_line_edit('Shift:')
+                               'Number of repetitive occurrences of stack content.'
+                               ' This attribute allows to create periodic horizontal structures easily.'
+                               ' Defaults to 1. (integer)')
+        self.shift = self.construct_line_edit('Shift:', unit=u'µm')
         self.shift.setToolTip(u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
-                                u'Horizontal position of the shelf left edge in its local coordinates.'
-                                u' Defaults to 0. (float [µm])')
+                              u'Horizontal position of the shelf left edge in its local coordinates.'
+                              u' Defaults to 0. (float [µm])')
         self.flat = self.construct_combo_box('Flat:', items=['', 'yes', 'no'])
         self.flat.setToolTip(u'&lt;shelf <b>flat</b>="" ...&gt;<br/>'
-                                u'The value of this attribute can be either true of false.'
-                                u' It specifies whether all the items in the shelf are required to have the same height'
-                                u' (therefore the top edge of the shelf is flat). Defaults to true.')
+                             u'The value of this attribute can be either true of false.'
+                             u' It specifies whether all the items in the shelf are required to have the same height'
+                             u' (therefore the top edge of the shelf is flat). Defaults to true.')
         super(GNShelfController, self).fill_form()
 
     def save_data_in_model(self):
