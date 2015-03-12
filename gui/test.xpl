@@ -20,7 +20,7 @@
 
 <geometry>
   <cylindrical2d name="GeoTE" axes="rz">
-    <stack>
+    <stack name="stack">
       <item path="abs123" right="{mesaRadius-1}">
         <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
       </item>
@@ -99,6 +99,16 @@
       </item>
     </stack>
   </cartesian2d>
+  <cartesian3d axes="z,x,y">
+    <align back="0" x="0" top="0">
+      <extrusion length="10">
+        <again ref="stack"/>
+      </extrusion>
+      <item>
+        <cuboid material="GaAs" dz="1" dx="100" dy="100"/>
+      </item>
+    </align>
+  </cartesian3d>
 </geometry>
 
 <grids>

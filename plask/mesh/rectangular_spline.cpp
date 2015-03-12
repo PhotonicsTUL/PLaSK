@@ -294,17 +294,20 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     SrcT data_lb = this->src_vec[ilb],
          data_lt = this->src_vec[ilt],
          data_rb = this->src_vec[irb],
-         data_rt = this->src_vec[irt];
+         data_rt = this->src_vec[irt],
+         diff_l = gb * diff1[ilb] + gt * diff1[ilt],
+         diff_r = gb * diff1[irb] + gt * diff1[irt],
+         diff_b = gl * diff0[ilb] + gr * diff0[irb],
+         diff_t = gl * diff0[ilt] + gr * diff0[irt];
 
-    if (invert_left)   { data_lb = this->flags.reflect(0, data_lb); data_lt = this->flags.reflect(0, data_lt); }
-    if (invert_right)  { data_rb = this->flags.reflect(0, data_rb); data_rt = this->flags.reflect(0, data_rt); }
-    if (invert_top)    { data_lt = this->flags.reflect(1, data_lt); data_rt = this->flags.reflect(1, data_rt); }
-    if (invert_bottom) { data_lb = this->flags.reflect(1, data_lb); data_rb = this->flags.reflect(1, data_rb); }
+    if (invert_left)   { data_lb = this->flags.reflect(0, data_lb); data_lt = this->flags.reflect(0, data_lt); diff_l = this->flags.reflect(0, diff_l); }
+    if (invert_right)  { data_rb = this->flags.reflect(0, data_rb); data_rt = this->flags.reflect(0, data_rt); diff_r = this->flags.reflect(0, diff_r); }
+    if (invert_top)    { data_lt = this->flags.reflect(1, data_lt); data_rt = this->flags.reflect(1, data_rt); diff_t = this->flags.reflect(1, diff_t); }
+    if (invert_bottom) { data_lb = this->flags.reflect(1, data_lb); data_rb = this->flags.reflect(1, data_rb); diff_b = this->flags.reflect(1, diff_b); }
 
     return this->flags.postprocess(this->dst_mesh->at(index),
         hl * (hb * data_lb + ht * data_lt) + hr * (hb * data_rb + ht * data_rt) +
-        hb * (gl * diff0[ilb] + gr * diff0[irb]) + ht * (gl * diff0[ilt] + gr * diff0[irt]) +
-        hl * (gb * diff1[ilb] + gt * diff1[ilt]) + hr * (gb * diff1[irb] + gt * diff1[irt])
+        hb * diff_b + ht * diff_t + hl * diff_l + hr * diff_r
     );
 }
 
@@ -528,22 +531,6 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         ihhl = this->src_mesh->index(i0, i1, i2_1),
         ihhh = this->src_mesh->index(i0, i1, i2);
 
-    SrcT data_lll = this->src_vec[illl],
-         data_llh = this->src_vec[illh],
-         data_lhl = this->src_vec[ilhl],
-         data_lhh = this->src_vec[ilhh],
-         data_hll = this->src_vec[ihll],
-         data_hlh = this->src_vec[ihlh],
-         data_hhl = this->src_vec[ihhl],
-         data_hhh = this->src_vec[ihhh];
-
-    if (invert_back)   { data_lll = this->flags.reflect(0, data_lll); data_llh = this->flags.reflect(0, data_llh); data_lhl = this->flags.reflect(0, data_lhl); data_lhh = this->flags.reflect(0, data_lhh); }
-    if (invert_front)  { data_hll = this->flags.reflect(0, data_hll); data_llh = this->flags.reflect(0, data_hlh); data_lhl = this->flags.reflect(0, data_hhl); data_lhh = this->flags.reflect(0, data_hhh); }
-    if (invert_left)   { data_lll = this->flags.reflect(1, data_lll); data_llh = this->flags.reflect(1, data_llh); data_hll = this->flags.reflect(1, data_hll); data_hlh = this->flags.reflect(1, data_hlh); }
-    if (invert_right)  { data_lhl = this->flags.reflect(1, data_lhl); data_llh = this->flags.reflect(1, data_lhh); data_hll = this->flags.reflect(1, data_hhl); data_hlh = this->flags.reflect(1, data_hhh); }
-    if (invert_bottom) { data_lll = this->flags.reflect(2, data_lll); data_lhl = this->flags.reflect(2, data_lhl); data_hll = this->flags.reflect(2, data_hll); data_hhl = this->flags.reflect(2, data_hhl); }
-    if (invert_top)    { data_llh = this->flags.reflect(2, data_llh); data_lhl = this->flags.reflect(2, data_lhh); data_hll = this->flags.reflect(2, data_hlh); data_hhl = this->flags.reflect(2, data_hhh); }
-
     double d0 = front - back,
            d1 = right - left,
            d2 = top - bottom;
@@ -565,6 +552,45 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
            g2l = ((x2 - 2.) * x2 + 1.) * x2 * d2,
            g2h = (x2 - 1.) * x2 * x2 * d2;
 
+    SrcT data_lll = this->src_vec[illl],
+         data_llh = this->src_vec[illh],
+         data_lhl = this->src_vec[ilhl],
+         data_lhh = this->src_vec[ilhh],
+         data_hll = this->src_vec[ihll],
+         data_hlh = this->src_vec[ihlh],
+         data_hhl = this->src_vec[ihhl],
+         data_hhh = this->src_vec[ihhh],
+         D_ll = g0l * diff0[illl] + g0h * diff0[ihll], Dl_l = g1l * diff1[illl] + g1h * diff1[ilhl], Dll_ = g2l * diff2[illl] + g2h * diff2[illh],
+         D_lh = g0l * diff0[illh] + g0h * diff0[ihlh], Dl_h = g1l * diff1[illh] + g1h * diff1[ilhh], Dlh_ = g2l * diff2[ilhl] + g2h * diff2[ilhh],
+         D_hl = g0l * diff0[ilhl] + g0h * diff0[ihhl], Dh_l = g1l * diff1[ihll] + g1h * diff1[ihhl], Dhl_ = g2l * diff2[ihll] + g2h * diff2[ihlh],
+         D_hh = g0l * diff0[ilhh] + g0h * diff0[ihhh], Dh_h = g1l * diff1[ihlh] + g1h * diff1[ihhh], Dhh_ = g2l * diff2[ihhl] + g2h * diff2[ihhh];
+
+
+    if (invert_back)   { data_lll = this->flags.reflect(0, data_lll); data_llh = this->flags.reflect(0, data_llh);
+                         data_lhl = this->flags.reflect(0, data_lhl); data_lhh = this->flags.reflect(0, data_lhh);
+                         Dl_l = this->flags.reflect(0, Dl_l); Dl_h = this->flags.reflect(0, Dl_h);
+                         Dll_ = this->flags.reflect(0, Dll_); Dlh_ = this->flags.reflect(0, Dlh_); }
+    if (invert_front)  { data_hll = this->flags.reflect(0, data_hll); data_llh = this->flags.reflect(0, data_hlh);
+                         data_lhl = this->flags.reflect(0, data_hhl); data_lhh = this->flags.reflect(0, data_hhh);
+                         Dh_l = this->flags.reflect(0, Dh_l); Dh_h = this->flags.reflect(0, Dh_h);
+                         Dhl_ = this->flags.reflect(0, Dhl_); Dhh_ = this->flags.reflect(0, Dhh_); }
+    if (invert_left)   { data_lll = this->flags.reflect(1, data_lll); data_llh = this->flags.reflect(1, data_llh);
+                         data_hll = this->flags.reflect(1, data_hll); data_hlh = this->flags.reflect(1, data_hlh);
+                         Dll_ = this->flags.reflect(1, Dll_); Dhl_ = this->flags.reflect(1, Dhl_);
+                         D_ll = this->flags.reflect(1, D_ll); D_lh = this->flags.reflect(1, D_lh); }
+    if (invert_right)  { data_lhl = this->flags.reflect(1, data_lhl); data_llh = this->flags.reflect(1, data_lhh);
+                         data_hll = this->flags.reflect(1, data_hhl); data_hlh = this->flags.reflect(1, data_hhh);
+                         Dlh_ = this->flags.reflect(1, Dlh_); Dhh_ = this->flags.reflect(1, Dhh_);
+                         D_hl = this->flags.reflect(1, D_hl); D_hh = this->flags.reflect(1, D_hh); }
+    if (invert_bottom) { data_lll = this->flags.reflect(2, data_lll); data_lhl = this->flags.reflect(2, data_lhl);
+                         data_hll = this->flags.reflect(2, data_hll); data_hhl = this->flags.reflect(2, data_hhl);
+                         D_ll = this->flags.reflect(2, D_ll); D_hl = this->flags.reflect(2, D_hl);
+                         Dl_l = this->flags.reflect(2, Dl_l); Dh_l = this->flags.reflect(2, Dh_l); }
+    if (invert_top)    { data_llh = this->flags.reflect(2, data_llh); data_lhl = this->flags.reflect(2, data_lhh);
+                         data_hll = this->flags.reflect(2, data_hlh); data_hhl = this->flags.reflect(2, data_hhh);
+                         D_lh = this->flags.reflect(2, D_lh); D_hh = this->flags.reflect(2, D_hh);
+                         Dl_h = this->flags.reflect(2, Dl_h); Dh_h = this->flags.reflect(2, Dh_h); }
+
     return this->flags.postprocess(this->dst_mesh->at(index),
         h0l * h1l * h2l * data_lll +
         h0l * h1l * h2h * data_llh +
@@ -574,14 +600,10 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         h0h * h1l * h2h * data_hlh +
         h0h * h1h * h2l * data_hhl +
         h0h * h1h * h2h * data_hhh +
-        (g0l * diff0[illl]) * h1l * h2l + h0l * (g1l * diff1[illl]) * h2l + h0l * h1l * (g2l * diff2[illl]) +
-        (g0l * diff0[illh]) * h1l * h2h + h0l * (g1l * diff1[illh]) * h2h + h0l * h1l * (g2h * diff2[illh]) +
-        (g0l * diff0[ilhl]) * h1h * h2l + h0l * (g1h * diff1[ilhl]) * h2l + h0l * h1h * (g2l * diff2[ilhl]) +
-        (g0l * diff0[ilhh]) * h1h * h2h + h0l * (g1h * diff1[ilhh]) * h2h + h0l * h1h * (g2h * diff2[ilhh]) +
-        (g0h * diff0[ihll]) * h1l * h2l + h0h * (g1l * diff1[ihll]) * h2l + h0h * h1l * (g2l * diff2[ihll]) +
-        (g0h * diff0[ihlh]) * h1l * h2h + h0h * (g1l * diff1[ihlh]) * h2h + h0h * h1l * (g2h * diff2[ihlh]) +
-        (g0h * diff0[ihhl]) * h1h * h2l + h0h * (g1h * diff1[ihhl]) * h2l + h0h * h1h * (g2l * diff2[ihhl]) +
-        (g0h * diff0[ihhh]) * h1h * h2h + h0h * (g1h * diff1[ihhh]) * h2h + h0h * h1h * (g2h * diff2[ihhh])
+        h1l * h2l * D_ll + h0l * h2l * Dl_l + h0l * h1l * Dll_ +
+        h1l * h2h * D_lh + h0l * h2h * Dl_h + h0l * h1h * Dlh_ +
+        h1h * h2l * D_hl + h0h * h2l * Dh_l + h0h * h1l * Dhl_ +
+        h1h * h2h * D_hh + h0h * h2h * Dh_h + h0h * h1h * Dhh_
     );
 }
 

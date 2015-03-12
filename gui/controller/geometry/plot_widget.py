@@ -76,7 +76,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         (None, None, None, None, None),
         ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
         (None, None, None, None, None),
-        ('long-tran', 'Select longitudinal-transverse plane', None, 'plane01', False),
+        ('long-tran', 'Select longitudinal-transverse plane', None, 'plane10', False),
         ('long-vert', 'Select longitudinal-vertical plane', None, 'plane02', False),
         ('tran-vert', 'Select transverse-vertical plane', None, 'plane12', True),
     )
@@ -120,7 +120,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.controller.plot_auto_refresh = not self.controller.plot_auto_refresh
 
     def _select_plane(self, plane):
-        self._actions['plane01'].setChecked(plane == '01')
+        self._actions['plane10'].setChecked(plane == '10')
         self._actions['plane02'].setChecked(plane == '02')
         self._actions['plane12'].setChecked(plane == '12')
         self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
@@ -131,13 +131,13 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def disable_planes(self, axes):
-        self._actions['plane01'].setVisible(False)
+        self._actions['plane10'].setVisible(False)
         self._actions['plane02'].setVisible(False)
         self._actions['plane12'].setVisible(False)
         self._axes = axes[-2:]
 
     def enable_planes(self, axes=None):
-        self._actions['plane01'].setVisible(True)
+        self._actions['plane10'].setVisible(True)
         self._actions['plane02'].setVisible(True)
         self._actions['plane12'].setVisible(True)
         if axes is not None:
@@ -147,14 +147,14 @@ class NavigationToolbar(NavigationToolbar2QT):
                 sep = '-'
             else:
                 sep = ''
-            self._actions['plane01'].setText(axes[0]+sep+axes[1])
+            self._actions['plane10'].setText(axes[1]+sep+axes[0])
             self._actions['plane02'].setText(axes[0]+sep+axes[2])
             self._actions['plane12'].setText(axes[1]+sep+axes[2])
             self._axes_names = axes
             self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
 
-    def plane01(self):
-        self._select_plane('01')
+    def plane10(self):
+        self._select_plane('10')
 
     def plane02(self):
         self._select_plane('02')
