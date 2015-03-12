@@ -68,6 +68,7 @@ Descriptions
 .. autofunction::   save_field
 .. autofunction::   load_field
 
+.. autofunction::   plot_profile
 .. autofunction::   plot_field
 .. autofunction::   plot_vectors
 .. autofunction::   plot_stream
