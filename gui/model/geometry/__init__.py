@@ -251,7 +251,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if moved_obj in parent.path_to_root or not parent.accept_as_child(moved_obj): return False
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
-            moved_obj = copy(moved_obj)
+            moved_obj = copy(moved_obj) #TODO !!!! what with moved_obj children parent attribute?!
             if type(parent) != type(moved_obj._parent): moved_obj.in_parent = None
             from .container import GNContainerBase
             if not isinstance(parent, GNContainerBase): moved_obj.path = None
