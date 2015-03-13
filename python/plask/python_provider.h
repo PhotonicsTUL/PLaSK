@@ -623,9 +623,9 @@ namespace detail {
             if (PyMethod_Check(func) && PyMethod_Self(func)) return self;
 #           if PY_VERSION_HEX >= 0x03000000
                 PyObject* bound_method = PyMethod_New(func, instance);
-#           endif
-                PyObject* bound_method = PyMethod_New(func, instance, owner);
 #           else
+                PyObject* bound_method = PyMethod_New(func, instance, owner);
+#           endif
             return PythonProviderFor__init__<ProviderT>(py::object(py::handle<>(bound_method)));
         }
     };
