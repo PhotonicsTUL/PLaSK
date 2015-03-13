@@ -252,6 +252,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
             #self.set_parent(parent, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
+            # TODO problem: without copy, the parent of source is incorrect after change and remove crash
             moved_obj = copy(moved_obj) #TODO !!!! what with moved_obj children parent attribute?!
             if type(parent) != type(moved_obj._parent): moved_obj.in_parent = None
             from .container import GNContainerBase
