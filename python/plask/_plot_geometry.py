@@ -189,8 +189,14 @@ def _draw_Revolution(env, geometry_object, transform, clip_box):
         if bbox.lower[0] > 0:
             env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.lower[0], transform=transform), clip_box, obj2d)
     else:
-        _draw_Block(env, geometry_object, transform, clip_box)
-        #TODO draw obj2d mirrored to axis 0
+        original_axes = env.axes
+        env.axes = tuple(0 if x == 0 else x-1 for x in original_axes)
+        try:    #TODO modify clip-box?
+            _draw_geometry_object(env, geometry_object.item, transform, clip_box)
+            _draw_Flipped(env, geometry_object.item, transform, clip_box, 0)
+            #_draw_Block(env, geometry_object, transform, clip_box)
+        finally:
+            env.axes = original_axes
 
 
 _geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
@@ -222,6 +228,7 @@ _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 
 
 def _draw_Mirror(env, geometry_object, transform, clip_box):
+    #TODO modify clip-box?
     _draw_geometry_object(env, geometry_object.item, transform, clip_box)
     if geometry_object.axis_nr in env.axes: # in 3D this must not be true
         _draw_Flip(env, geometry_object, transform, clip_box)
