@@ -152,23 +152,53 @@ class GNode(object):
         """
         return self._parent
 
-    def set_parent(self, parent, index=None):
+    def clear_in_parent_params(self, new_potential_parent = None):
+        if new_potential_parent is not None:
+            if type(new_potential_parent) != type(self._parent): self.in_parent = None
+            from .container import GNContainerBase
+            if not isinstance(new_potential_parent, GNContainerBase): self.path = None
+        else:
+            self.in_parent = None
+            self.path = None
+
+    #def insert_child(self, child, index=None, remove_from_old_parent_list=True):
+        #if remove_from_current_parent:
+        #    self.children.
+    #    self.children.insert(index, child)
+    #    if child._parent != self:
+    #        child.clear_in_parent_params()
+    #        child._parent = self
+
+    def set_parent(self, parent, index=None, remove_from_old_parent_children=True, try_prevent_in_parent_params = False):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
+        :param int index: required index on new parent list (None to default)
+        :param remove_from_old_parent_children: if True self will be removed from its current parent children list
+        :param try_prevent_in_parent_params: if True, in_parent and path attributes of self will be tried to prevent
         """
-        if self._parent == parent: return
-        if self._parent is not None:
-            self._parent.children.remove(self)
-            self.in_parent = None
-            self.path = None
-        self._parent = parent
-        if self._parent is not None:
-            if index is None:
-                index = self._parent.new_child_pos()
-            if index < 0:
-                index = len(self._parent.children) + 1 - index
-            self._parent.children.insert(index, self)
+        if self._parent == parent:
+            if index is None or parent is None: return
+            # parent is not None here
+            if index < 0: index = len(parent.children) + 1 - index
+            if remove_from_old_parent_children: # move inside the current parent:
+                old_index = self._parent.children.index(self)
+                parent.children.insert(index, self)
+                if old_index >= index: old_index += 1
+                del parent.children[old_index]
+            else:
+                parent.children.insert(index, self)
+        else:
+            if self._parent is not None:
+                if remove_from_old_parent_children: self._parent.children.remove(self)
+                self.clear_in_parent_params(parent if try_prevent_in_parent_params else None)
+            self._parent = parent
+            if self._parent is not None:
+                if index is None:
+                    index = self._parent.new_child_pos()
+                if index < 0:
+                    index = len(self._parent.children) + 1 - index
+                self._parent.children.insert(index, self)
 
     @property
     def root(self):
