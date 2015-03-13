@@ -621,7 +621,11 @@ namespace detail {
         static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject* owner) {
             PyObject* func = self->function.ptr();
             if (PyMethod_Check(func) && PyMethod_Self(func)) return self;
-            PyObject* bound_method = PyMethod_New(func, instance, owner);
+#           if PY_VERSION_HEX >= 0x03000000
+                PyObject* bound_method = PyMethod_New(func, instance);
+#           endif
+                PyObject* bound_method = PyMethod_New(func, instance, owner);
+#           else
             return PythonProviderFor__init__<ProviderT>(py::object(py::handle<>(bound_method)));
         }
     };
