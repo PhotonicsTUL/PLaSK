@@ -167,10 +167,10 @@ _geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
 def _draw_Extrusion(env, geometry_object, transform, clip_box):
     if env.axes == (1, 2) or env.axes == (2, 1):
         try:
-            env.axes = (x-1 for x in env.axes)  # change axes to 2D
+            env.axes = tuple(x-1 for x in env.axes)  # change axes to 2D
             _draw_geometry_object(env, geometry_object.item, transform, clip_box)
         finally:    # revert axes settings, change back to 3D:
-            env.axes = (x+1 for x in env.axes)
+            env.axes = tuple(x+1 for x in env.axes)
     else:
         #_draw_Block(env, geometry_object, transform, clip_box)  #draw block uses bbox, so it will work fine
         for leaf_bbox in geometry_object.get_leafs_bboxes():
