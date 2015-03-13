@@ -87,10 +87,14 @@ extern const char* docstring_receiver_assign;
 
 namespace detail {
 
+    template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
+
     template <typename ReceiverT>
     struct RegisterReceiverBase
     {
-        typedef ProviderFor<typename ReceiverT::PropertyTag,typename ReceiverT::SpaceType> ProviderT;
+        typedef typename ReceiverT::PropertyTag PropertyT;
+        typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
+        typedef RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
 
         const std::string property_name;
         py::class_<ReceiverT, boost::noncopyable> receiver_class;
@@ -113,8 +117,14 @@ namespace detail {
 
         static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
 
+        static py::object __get__(const py::object& self, const py::object&, const py::object&) { return self; }
+
+        static void __set__(ReceiverT& self, const py::object&, const py::object& value) {
+            RegisterT::assign(self, value);
+        }
+
         RegisterReceiverBase(const std::string& suffix="", const std::string& space="") :
-            property_name(type_name<typename ReceiverT::PropertyTag>()),
+            property_name(type_name<PropertyT>()),
             receiver_class((property_name + "Receiver" + suffix).c_str(),
                 format(docstring_receiver, property_name, suffix, ReceiverT::ProviderType::PropertyTag::NAME,
                 (space!="")? " in "+space+" geometry" : "", ReceiverT::ProviderType::PropertyTag::UNIT).c_str()
@@ -128,6 +138,8 @@ namespace detail {
                                py::arg("value"));
             receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed,
                                         "Indicates whether the receiver value has changed since the last retrieval.");
+            receiver_class.def("__get__", &__get__);
+            receiver_class.def("__set__", &__set__);
         }
     };
 
@@ -162,8 +174,6 @@ namespace detail {
         } catch (py::error_already_set) { PyErr_Clear(); }
         return false;
     }
-
-    template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
 
     template <typename ReceiverT, typename... ExtraParams>
     struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
@@ -338,7 +348,6 @@ namespace detail {
       private:
         ReceiverT ClassT::* field;
     };
-
 }
 
 // ---------- Provider ------------
@@ -352,12 +361,15 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag>::ProvidedType ProvidedType;
 
+    py::object function;
+    OmpLock provider_omp_lock;
+
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
-        [function](_ExtraParams... params) -> ProvidedType {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<ProvidedType>(function(params...));
+        [this](_ExtraParams... params) -> ProvidedType {
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+            return py::extract<ProvidedType>(this->function(params...));
         }
-    ) {}
+    ), function(function) {}
 
 };
 
@@ -367,16 +379,19 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag>::ProvidedType ProvidedType;
 
+    py::object function;
+    OmpLock provider_omp_lock;
+
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
-        [function](size_t n, _ExtraParams... params) -> ProvidedType {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<ProvidedType>(function(n, params...));
+        [this](size_t n, _ExtraParams... params) -> ProvidedType {
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+            return py::extract<ProvidedType>(this->function(n, params...));
         },
-        [function]() -> size_t {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<size_t>(function.attr("__len__")());
+        [this]() -> size_t {
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+            return py::extract<size_t>(this->function.attr("__len__")());
         }
-    ) {}
+    ), function(function) {}
 
 };
 
@@ -388,13 +403,16 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
 
+    py::object function;
+    OmpLock provider_omp_lock;
+
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
-        [function](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+        [this](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
             py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
-            py::object result = function(omesh, params..., method);
+            py::object result = this->function(omesh, params..., method);
             try {
                 return py::extract<ReturnedType>(result)();
             } catch (py::error_already_set) {
@@ -402,7 +420,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                 return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
             }
         }
-    ) {}
+    ), function(function) {}
 };
 
 template <typename ProviderT, typename... _ExtraParams>
@@ -411,13 +429,16 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
 
+    py::object function;
+    OmpLock provider_omp_lock;
+
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate (
-        [function](size_t n, const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+        [this](size_t n, const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
             py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
-            py::object result = function(n, omesh, params..., method);
+            py::object result = this->function(n, omesh, params..., method);
             try {
                 return py::extract<ReturnedType>(result)();
             } catch (py::error_already_set) {
@@ -425,11 +446,11 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                 return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
             }
         },
-        [function]() -> size_t {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<size_t>(function.attr("__len__")());
+        [this]() -> size_t {
+            OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+            return py::extract<size_t>(this->function.attr("__len__")());
         }
-    ) {}
+    ), function(function) {}
 };
 
 template <typename ProviderT>
@@ -573,28 +594,35 @@ namespace detail {
 
     template <typename ProviderT>
     struct RegisterProviderBase {
+        typedef PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams> PythonProviderType;
         const std::string property_name;
         py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="", const std::string& space="") :
             property_name(type_name<typename ProviderT::PropertyTag>()),
             provider_class((property_name + "Provider" + suffix).c_str(), py::no_init) {
-            py::class_<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>,
-                       py::bases<ProviderT>, boost::noncopyable>((property_name + "Provider" + suffix).c_str(),
-                       format(docstring_provider<ProviderT::PropertyTag::propertyType>(),
-                              property_name, suffix, ProviderT::PropertyTag::NAME,
-                              (space!="")? " in "+space+" geometry" : "",
-                              docstrig_property_optional_args<typename ProviderT::PropertyTag>(),
-                              docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),
-                              ProviderT::PropertyTag::UNIT
-                             ).c_str(),
-                       py::no_init)
-                       .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(),
-                                                             py::args("func")))
-                       .def("set_changed", &ProviderT::fireChanged,
-                            "Inform all connected receivers that the provided value has changed.\n\n"
-                            "The receivers will have its `changed` attribute set to True and solvers will\n"
-                            "call the provider again if they need its value (otherwise they might take it\n"
-                            "from the cache.\n");
+            py::class_<PythonProviderType, shared_ptr<PythonProviderType>, py::bases<ProviderT>, boost::noncopyable>((
+                property_name + "Provider" + suffix).c_str(),
+                format(docstring_provider<ProviderT::PropertyTag::propertyType>(),
+                        property_name, suffix, ProviderT::PropertyTag::NAME,
+                        (space!="")? " in "+space+" geometry" : "",
+                        docstrig_property_optional_args<typename ProviderT::PropertyTag>(),
+                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),
+                        ProviderT::PropertyTag::UNIT
+                        ).c_str(),
+                py::no_init)
+                .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(), py::args("func")))
+                .def("__get__", &RegisterProviderBase<ProviderT>::__get__)
+                .def("set_changed", &ProviderT::fireChanged,
+                    "Inform all connected receivers that the provided value has changed.\n\n"
+                    "The receivers will have its `changed` attribute set to True and solvers will\n"
+                    "call the provider again if they need its value (otherwise they might take it\n"
+                    "from the cache.\n");
+        }
+        static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject* owner) {
+            PyObject* func = self->function.ptr();
+            if (PyMethod_Check(func) && PyMethod_Self(func)) return self;
+            PyObject* bound_method = PyMethod_New(func, instance, owner);
+            return PythonProviderFor__init__<ProviderT>(py::object(py::handle<>(bound_method)));
         }
     };
 

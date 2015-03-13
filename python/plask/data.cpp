@@ -131,9 +131,12 @@ static py::object DataVectorWrap__array__(py::object oself, py::object dtype) {
 
     if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
 
-    npy_intp dims[] = { self->mesh->size() * detail::type_dim<T>() };
+    const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
 
-    PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)self->data());
+    npy_intp dims[] = { self->mesh->size(), detail::type_dim<T>() };
+    npy_intp strides[] = { sizeof(T), sizeof(T) / detail::type_dim<T>() };
+
+    PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
 
     confirm_array<T>(arr, oself, dtype);
