@@ -63,17 +63,25 @@ class TableActions(object):
 
     def get(self, parent):
 
-        self.add_action = TableActions._make_action('list-add', '&Add', 'Add new entry to the list', parent,
-                                       self.add_entry, QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
+        self.add_action = TableActions._make_action('list-add', '&Add',
+                                                    'Add new entry to the list', parent,
+                                                    self.add_entry,
+                                                    QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
 
-        self.remove_action = TableActions._make_action('list-remove', '&Remove', 'Remove selected entry from the list',
-                                                       parent, self.remove_entry)   #QtCore.Qt.CTRL + QtCore.Qt.Key_Minus
+        self.remove_action = TableActions._make_action('list-remove', '&Remove',
+                                                       'Remove selected entry from the list',
+                                                       parent, self.remove_entry,
+                                                       QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
 
-        self.move_up_action = TableActions._make_action('go-up', 'Move &up', 'Change order of entries: move current entry up',
-                                                       parent, self.move_up, QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
+        self.move_up_action = TableActions._make_action('go-up', 'Move &up',
+                                                        'Change order of entries: move current entry up',
+                                                        parent, self.move_up,
+                                                        QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
 
-        self.move_down_action = TableActions._make_action('go-down', 'Move &down', 'Change order of entries: move current entry down',
-                                                       parent, self.move_down, QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
+        self.move_down_action = TableActions._make_action('go-down', 'Move &down',
+                                                          'Change order of entries: move current entry down',
+                                                          parent, self.move_down,
+                                                          QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 

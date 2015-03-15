@@ -13,6 +13,18 @@ namespace plask {
 #define PLASK_LICENSE_SIGNATURE_TAG_NAME "signature"
 
 /**
+ * Read data from license without verifying it.
+ *
+ * @param src source license XML
+ * @param content_cb callback called for each content node (with @p src argument), do nothing by default
+ */
+inline static void readLicenseData(XMLReader& src, XMLWriter* dst, 
+                                   std::function<void (XMLReader& src)> content_cb = [](XMLReader&){}) {
+    while (src.next())
+        if (src.getNodeType() == XMLReader::NODE_TEXT) content_cb(src);
+}
+
+/**
  * Check if license has valid signature or append signature to license XML.
  *
  * Only inteprete @c signature tag (and only if it has level 1 - is child of root), content of other tags can be interpreted by @p content_cb.
@@ -23,7 +35,8 @@ namespace plask {
  * @param content_cb callback called for each content node (with @p src argument), do nothing by default
  * @return @c true only if @p src has proper signature
  */
-inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::function<void (XMLReader& src)> content_cb = [] (XMLReader&) {}) {
+inline static bool processLicense(XMLReader& src, XMLWriter* dst,
+                                  std::function<void (XMLReader& src)> content_cb = [](XMLReader&){}) {
     boost::optional<std::string> read_signature;
     std::string calculated_signature;
     std::string to_sign = "CxoAMhusG8KNnwuBELW432yR\n";

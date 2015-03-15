@@ -38,6 +38,9 @@ class PLASK_API LicenseVerifier {
 
     /// Verify license. Throw exception if verification fail.
     void verify();
+    
+    /// Get formatted name of the license user
+    std::string getUser();
 };
 
 #ifdef LICENSE_CHECKING

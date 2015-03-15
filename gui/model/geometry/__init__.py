@@ -15,7 +15,10 @@ from lxml import etree
 from copy import copy
 import operator
 import cStringIO
-import pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from ...qt import QtCore, QtGui
 
@@ -73,7 +76,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         conf = GNReadConf(axes=self.axes)
         for geom in self.roots: res.append(geom.get_xml_element(conf))
         return res
-
 
     class SetRootsCommand(QtGui.QUndoCommand):
 
@@ -193,16 +195,19 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if parent.column() > 0: return 0
         return len(self.children_list(parent))
 
-
     class RemoveChildrenCommand(QtGui.QUndoCommand):
 
-        def __init__(self, model, parent_node, row, end, QUndoCommand_parent = None):
-            super(GeometryModel.RemoveChildrenCommand, self).__init__('remove row {}'.format(row), QUndoCommand_parent)
+        def __init__(self, model, parent_node, row, end, QUndoCommand_parent=None):
             self.model = model
             self.parent_node = parent_node
             self.row = row
             self.end = end
             self.removed_elements = self.children_list[row:end]
+            if len(self.removed_elements) > 1:
+                name = 'items'
+            else:
+                name = self.removed_elements[0].tag_name(full_name=False)
+            super(GeometryModel.RemoveChildrenCommand, self).__init__('remove {}'.format(name), QUndoCommand_parent)
 
         @property
         def parent_index(self):
@@ -224,11 +229,14 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.model.endInsertRows()
             self.model.fire_changed()
 
-    def removeRows(self, row, count, parent = QtCore.QModelIndex()):
+    def removeRows(self, row, count, parent=QtCore.QModelIndex()):
         l = self.children_list(parent)
         end = row + count
-        if row < 0 or end > len(l): return False
-        self.undo_stack.push(GeometryModel.RemoveChildrenCommand(self, parent.internalPointer() if parent.isValid() else None, row, end))
+        if row < 0 or end > len(l):
+            return False
+        self.undo_stack.push(
+            GeometryModel.RemoveChildrenCommand(
+                self, parent.internalPointer() if parent.isValid() else None, row, end))
         return True
 
     def mimeTypes(self):
@@ -241,7 +249,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if action == QtCore.Qt.IgnoreAction: return True
         if action == QtCore.Qt.MoveAction:
             moved_obj = mime_data.itemInstance()
-            parent = parentIndex.internalPointer()  #this can be None for root
+            parent = parentIndex.internalPointer()  # this can be None for root
             destination_list = self.children_list(parentIndex)
             if parent is None:
                 from .geometry import GNGeometryBase
@@ -257,7 +265,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             if type(parent) != type(moved_obj._parent): moved_obj.in_parent = None
             from .container import GNContainerBase
             if not isinstance(parent, GNContainerBase): moved_obj.path = None
-            #if moved_obj._parent != parent: moved_obj.path = None  #mayby this is better strategy?
+            #if moved_obj._parent != parent: moved_obj.path = None  # maybe this is better strategy?
             moved_obj._parent = parent
             destination_list.insert(row, moved_obj)
             self.endInsertRows()

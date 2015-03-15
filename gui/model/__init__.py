@@ -18,6 +18,7 @@ from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
 
 from ..qt import QtGui
+from ..qt.QtCore import Qt
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
         """
@@ -108,11 +109,13 @@ class SectionModel(TreeFragmentModel):
     def create_undo_action(self, parent):
         res = self.undo_stack.createUndoAction(parent)
         res.setIcon(QtGui.QIcon.fromTheme('edit-undo'))
+        res.setShortcut(Qt.ALT + Qt.Key_Z)
         return res
 
     def create_redo_action(self, parent):
         res = self.undo_stack.createRedoAction(parent)
         res.setIcon(QtGui.QIcon.fromTheme('edit-redo'))
+        res.setShortcut(Qt.ALT + Qt.SHIFT + Qt.Key_Z)
         return res
 
     def set_text(self, text):

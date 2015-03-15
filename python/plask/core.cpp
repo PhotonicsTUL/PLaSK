@@ -433,7 +433,4 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Logging
     if (!plask::default_logger) plask::default_logger = plask::python::makePythonLogger();
-
-    plask::writelog(plask::LOG_INFO, PLASK_BANNER);
-    plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 }

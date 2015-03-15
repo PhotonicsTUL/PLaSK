@@ -18,6 +18,10 @@
 #define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
 #define PLASK_LICENSE_MAC_TAG_NAME "mac"
 
+#define PLASK_LICENSE_USER_TAG_NAME "name"
+#define PLASK_LICENSE_EMAIL_TAG_NAME "email"
+#define PLASK_LICENSE_ORGANISATION_TAG_NAME "organisation"
+
 namespace plask {
 
 #ifdef LICENSE_CHECKING
@@ -98,8 +102,7 @@ void LicenseVerifier::verify() {
                         if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
                             if (expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
                             expiry = src.getTextContent();
-                        } else
-                        if (src.getNodeName() == PLASK_LICENSE_MAC_TAG_NAME) {
+                        } else if (src.getNodeName() == PLASK_LICENSE_MAC_TAG_NAME) {
                             if (!macs) macs = getMacs();
                             if (std::find(macs->begin(), macs->end(), macFromString(src.getTextContent())) == macs->end())
                                 src.throwException("License error: Hardware verification error.");
@@ -119,6 +122,38 @@ void LicenseVerifier::verify() {
         throw Exception("License has expired");
 }
 
+std::string LicenseVerifier::getUser() {
+    
+    std::string user, organisation, email;
+    if (content == "") return "";
+
+    XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
+
+    readLicenseData(r, nullptr,
+              [&] (XMLReader& src) {
+                   if (src.getNodeName() == PLASK_LICENSE_USER_TAG_NAME)
+                       user = src.getTextContent();
+                   else if (src.getNodeName() == PLASK_LICENSE_EMAIL_TAG_NAME)
+                       email = src.getTextContent();
+                   else if (src.getNodeName() == PLASK_LICENSE_ORGANISATION_TAG_NAME)
+                       organisation = src.getTextContent();
+               }
+    );
+    
+    if (email != "") {
+        if (user != "") {
+            user += " <"; user += email; user += ">";
+        } else {
+            user = email;
+        }
+    }
+    if (organisation != "") {
+        if (user != "") user += " ";
+        user += organisation;
+    }
+    
+    return user;
+}
 
 
 }   // namespace plask

@@ -109,6 +109,13 @@ static py::object initPlask(int argc, const char* argv[])
 
     py::object _plask = py::import("_plask");
 
+    plask::writelog(plask::LOG_INFO, PLASK_BANNER);
+    plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
+#ifdef LICENSE_CHECKING
+    std::string user = plask::license_verifier.getUser();
+    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to: %s.", user);
+#endif
+    
     sys.attr("modules")["plask._plask"] = _plask;
 
     // Add program arguments to sys.argv

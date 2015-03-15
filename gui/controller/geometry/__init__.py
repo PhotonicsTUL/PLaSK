@@ -197,7 +197,7 @@ class GeometryController(Controller):
 
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', toolbar)
         self.remove_action.setStatusTip('Remove selected node from the tree')
-        # self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
+        self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
         self.remove_action.triggered.connect(self.remove_node)
         toolbar.addAction(self.remove_action)
 
