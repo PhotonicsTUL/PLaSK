@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+
 def geometry_object_names(constructor, *allowed_types):
     """:return: list of names"""
     if len(allowed_types) == 0:

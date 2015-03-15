@@ -338,3 +338,17 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         res = set()
         for r in self.roots: res |= r.paths()
         return res
+
+    @property
+    def roots_cartesian2d(self):
+        return (root for root in self.roots if isinstance(root, GNCartesian) and root.dim == 2)
+
+    @property
+    def roots_cylindrical(self):
+        return (root for root in self.roots if isinstance(root, GNCylindrical))
+
+    @property
+    def roots_cartesian3d(self):
+        return (root for root in self.roots if isinstance(root, GNCartesian) and root.dim == 3)
+
+from .geometry import GNCartesian, GNCylindrical

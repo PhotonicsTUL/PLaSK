@@ -201,17 +201,30 @@ class ConfSolverController(Controller):
         return self.widget
 
     def on_edit_enter(self):
-        #TODO update geometry list
         self.notify_changes = False
         try:
-            #TODO select only meshes/generators of proper dimensions
-            mesh_type = self.model.config.get('mesh')
-            if mesh_type is not None: mesh_type = mesh_type.lower()
-            grids = [m.name for m in self.document.grids.model.entries if m.type == mesh_type]
-            self.widget.mesh.clear()
-            self.widget.mesh.addItems([''] + grids)
+            if self.model.solver.endswith('2D'):
+                geometries = [g.name for g in self.document.geometry.model.roots_cartesian2d if g.name]
+            elif self.model.solver.endswith('Cyl'):
+                geometries = [g.name for g in self.document.geometry.model.roots_cylindrical if g.name]
+            elif self.model.solver.endswith('3D'):
+                geometries = [g.name for g in self.document.geometry.model.roots_cartesian3d if g.name]
+            else:
+                raise AttributeError
         except AttributeError:
             pass
+        else:
+            self.widget.geometry.clear()
+            self.widget.geometry.addItems([''] + geometries)
+        try:
+            mesh_type = self.model.config.get('mesh')
+            if mesh_type is not None: mesh_type = mesh_type.lower()
+            grids = [m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type]
+        except AttributeError:
+            pass
+        else:
+            self.widget.mesh.clear()
+            self.widget.mesh.addItems([''] + grids)
         self.widget.load_data()
         self.notify_changes = True
 
@@ -248,7 +261,13 @@ class FilterController(Controller):
         return self.widget
 
     def on_edit_enter(self):
-        #TODO update geometry list
+        try:
+            geometries = [g.name for g in self.document.geometry.model.roots if g.name]
+        except AttributeError:
+            pass
+        else:
+            self.geometry.clear()
+            self.geometry.addItems([''] + geometries)
         self.notify_changes = False
         self.geometry.setCurrentIndex(self.geometry.findText(self.model.geometry))
         self.geometry.setEditText(self.model.geometry)

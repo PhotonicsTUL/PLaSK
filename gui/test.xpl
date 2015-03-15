@@ -77,7 +77,7 @@
       </item>
     </align>
   </cylindrical2d>
-  <cartesian3d axes="x,y,z">
+  <cartesian3d name="geo3d1" axes="x,y,z">
     <align>
       <item>
         <revolution>
@@ -86,7 +86,7 @@
       </item>
     </align>
   </cartesian3d>
-  <cartesian2d>
+  <cartesian2d name="geo2d">
     <stack>
       <item>
         <rectangle material="GaN" dtran="1" dvert="0.2"/>
@@ -99,7 +99,7 @@
       </item>
     </stack>
   </cartesian2d>
-  <cartesian3d axes="z,x,y">
+  <cartesian3d name="geo3d2" axes="z,x,y">
     <align back="0" x="0" top="0">
       <extrusion length="10">
         <again ref="stack"/>
