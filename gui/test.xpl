@@ -77,7 +77,7 @@
       </item>
     </align>
   </cylindrical2d>
-  <cartesian3d name="geo3d1" axes="x,y,z">
+  <cartesian3d name="geo3d-1" axes="x,y,z">
     <align>
       <item>
         <revolution>
@@ -309,6 +309,8 @@ gcf().canvas.set_window_title("Default mesh")
 show()
 
 sys.exit()
+
+GEO.geo3d_1
 
 class A(object):
     def __init__(self):

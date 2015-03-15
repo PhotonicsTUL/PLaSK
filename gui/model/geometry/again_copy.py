@@ -180,7 +180,7 @@ class GNCopy(GNObject):
 
     def stub(self):
         if self.name is not None and '{' not in self.name and self.source is not None and '{' not in self.source:
-            return '    {} = {}'.format(self.name, self.source)
+            return '    {} = {}'.format(self.name.replace('-', '_'), self.source)
         return ''
 
     def accept_new_child(self):
