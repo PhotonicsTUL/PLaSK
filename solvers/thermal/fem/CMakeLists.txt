@@ -54,7 +54,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #add_solver_test(solvers/foo/bar mytest)
-add_python_test(python/solvers/thermal/static ${CMAKE_CURRENT_SOURCE_DIR}/tests/therm.py)
+add_python_test(solvers/thermal/static ${CMAKE_CURRENT_SOURCE_DIR}/tests/therm.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
 #add_executable(femtest ${femtest_src})

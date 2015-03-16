@@ -101,14 +101,14 @@ class NewGainValues(unittest.TestCase):
         self.solver.invalidate()
 
         wavelengths = linspace(1500, 2500, 101)
-        print wavelengths
+        print(wavelengths)
         peak = 0.
         actlevel = 0.025
         spectrum = self.solver.spectrum(5, actlevel)
         gains = spectrum(wavelengths)
         peak = max(zip(wavelengths,gains), key=lambda wg: wg[1])
-        print "Gain peak:", peak[0]
-        print gains
+        print("Gain peak: {}".format(peak[0]))
+        print(gains)
         self.assertAlmostEqual( peak[0], 2180, 1 )
 
     """def testComputationsGainVal(self):
@@ -121,16 +121,16 @@ class NewGainValues(unittest.TestCase):
         axis1 = plask.mesh.Regular(0.+e, 0.050-e, 3)
         msh = mesh.Rectangular2D(axis0, axis1)
 
-        print "Mesh:"
+        print("Mesh:")
         for i in range(9):
-            print msh[i]
+            print(msh[i])
 
         self.solver.inTemperature = 300.
 
         print "Outgain:"
         outgain = self.solver.outGain(msh,2000.)
         for i in range(9):
-            print "[",i,"]:",outgain[i],"cm-1"
+            print("[{}]: {}".format(i, outgain[i],"cm-1"))
 
         self.assertAlmostEqual( outgain[1], 2527.548, 2 )
         self.assertAlmostEqual( outgain[4], 2527.548, 2 )
