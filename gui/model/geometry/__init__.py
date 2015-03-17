@@ -12,9 +12,10 @@
 import cgi
 
 from lxml import etree
-from copy import copy
+from copy import deepcopy
 import operator
 import cStringIO
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -260,12 +261,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 if row == -1: row = parent.new_child_pos()
             self.beginInsertRows(parentIndex, row, row)
             #self.set_parent(parent, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
-            # TODO problem: without copy, the parent of source is incorrect after change and remove crash
-            moved_obj = copy(moved_obj) #TODO !!!! what with moved_obj children parent attribute?!
-            if type(parent) != type(moved_obj._parent): moved_obj.in_parent = None
-            from .container import GNContainerBase
-            if not isinstance(parent, GNContainerBase): moved_obj.path = None
-            #if moved_obj._parent != parent: moved_obj.path = None  # maybe this is better strategy?
+            if moved_obj.parent != parent:  # problem: without copy, the parent of source is incorrect after change and remove crash
+                moved_obj = deepcopy(moved_obj)
+            moved_obj.clear_in_parent_params(parent)
             moved_obj._parent = parent
             destination_list.insert(row, moved_obj)
             self.endInsertRows()

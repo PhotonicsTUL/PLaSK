@@ -159,7 +159,7 @@ class GNode(object):
             if not isinstance(new_potential_parent, GNContainerBase): self.path = None
         else:
             self.in_parent = None
-            self.path = None
+            #self.path = None
 
     #def insert_child(self, child, index=None, remove_from_old_parent_list=True):
         #if remove_from_current_parent:
@@ -362,3 +362,4 @@ class GNode(object):
         while p != None:
             yield p
             p = p.parent
+
