@@ -1,0 +1,103 @@
+<solvers>
+
+  <solver name="Fermi2D" category="gain" lib="simple">
+    Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
+    
+    <geometry type="Cartesian2D"/>
+    
+    <mesh type="Ordered" optional="yes"/>
+    
+    <tag name="config" label="Gain parameters">
+      Some important gain parameters.
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+        Average carriers lifetime. This parameter is used for gain spectrum broadening.
+      </attr>
+      <attr name="matrix-elem" label="Matrix element" unit="(eV/m&lt;sub&gt;0&lt;/sub&gt;)&lt;sup&gt;2&lt;/sup&gt;" type="float">
+        Value of the squared matrix element in gain computations.
+        If it is not set it is estimated automatically.
+      </attr>
+      <attr name="strained" label="Strained" type="bool">
+        Boolean attribute indicated if the solver should consider strain in the active region.
+        If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
+        in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
+        the quantum wells.
+      </attr>
+    </tag>
+    
+    <tag name="levels" label="Custom energy levels &lt;span style='font-weight: normal;'&gt;(either none or all attributes must be given)&lt;/span&gt;">
+      Custom energy levels in quantum wells. If this tag is used all levels must be set.
+      <attr name="el" label="Electron levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of electron levels.
+      </attr>
+      <attr name="hh" label="Heavy hole levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of heavy hole levels.
+      </attr>
+      <attr name="lh" label="Light hole levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of light hole levels.
+      </attr>
+    </tag>
+    
+    <flow>
+      <provider name="inTemperature"/>
+      <provider name="inCarriersConcentration"/>
+      <receiver name="outGain"/>
+      <receiver name="outGainOverCarriersConcentration"/>
+    </flow>
+    
+  </solver>
+
+  <solver name="FermiCyl" category="gain" lib="simple">
+    Simple gain solver based on Fermi Golden Rule for Cylindrical geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
+    
+    <geometry type="Cylindrical"/>
+    
+    <mesh type="Ordered" optional="yes"/>
+    
+    <tag name="config" label="Gain parameters">
+      Some important gain parameters.
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+        Average carriers lifetime. This parameter is used for gain spectrum broadening.
+      </attr>
+      <attr name="matrix-elem" label="Matrix element"
+            unit="(eV/m&lt;sub&gt;0&lt;/sub&gt;)&lt;sup&gt;2&lt;/sup&gt;" type="float">
+        Value of the squared matrix element in gain computations.
+        If it is not set it is estimated automatically.
+      </attr>
+      <attr name="strained" label="Strained" type="bool">
+        Boolean attribute indicated if the solver should consider strain in the active region.
+        If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
+        in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
+        the quantum wells.
+      </attr>
+    </tag>
+    
+    <tag name="levels"
+         label="Custom energy levels &lt;span style='font-weight: normal;'&gt;(either none or all attributes must be given)&lt;/span&gt;">
+      Custom energy levels in quantum wells. If this tag is used all levels must be set.
+      <attr name="el" label="Electron levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of electron levels.
+      </attr>
+      <attr name="hh" label="Heavy hole levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of heavy hole levels.
+      </attr>
+      <attr name="lh" label="Light hole levels" type="list of floats" required="yes" unit="eV">
+        Comma-separated list of light hole levels.
+      </attr>
+    </tag>
+    
+    <flow>
+      <provider name="inTemperature"/>
+      <provider name="inCarriersConcentration"/>
+      <receiver name="outGain"/>
+      <receiver name="outGainOverCarriersConcentration"/>
+    </flow>
+    
+  </solver>
+
+</solvers>

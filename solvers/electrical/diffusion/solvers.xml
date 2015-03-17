@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<solvers>
+
+  <solver category="electrical" lib="diffusion" name="Diffusion2D">
+    Two-dimensional diffusion solver in Cartesian geometry.
+
+    <geometry type="Cartesian2D"/>
+
+    <mesh type="Regular"/>
+
+    <tag label="Solver configuration" name="config">
+      Solver configuration.
+      <attr label="FEM order" name="fem-method" type="choice">
+        Order of the finite-element method.
+        <choice>linear</choice>
+        <choice>parabolic</choice>
+      </attr>
+      <attr label="Relative accuracy" name="accuracy" type="float" unit="%">Required relative accuracy.</attr>
+      <attr label="Absolute accuracy" type="float" unit="cm&lt;sup&gt;-3&lt;/sup&gt;)" name="abs-accuracy">Required absolute minimal concentration accuracy.</attr>
+      <attr label="Iterations to refine" name="maxiters" type="int">Maximum number of allowed iterations before attempting to refine mesh.</attr>
+      <attr label="Allowed refinements" name="maxrefines" type="int">Maximum number of allowed mesh refinements.</attr>
+      <attr label="Interpolation method" name="interpolation" type="choice">
+        Current density interpolation method name.
+        <choice>linear</choice>
+        <choice>spline</choice>
+      </attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inCurrentDensity"/>
+      <receiver name="inGain"/>
+      <receiver name="inGainOverCarriersConcentration"/>
+      <receiver name="inLightMagnitude"/>
+      <provider name="outCarriersConcentration"/>
+    </flow>
+  </solver>
+
+  <solver category="electrical" lib="diffusion" name="DiffusionCyl">
+    Two-dimensional diffusion solver in Cylindrical geometry.
+
+    <geometry type="Cylindrical"/>
+
+    <mesh type="Regular"/>
+
+    <tag label="Solver configuration" name="config">
+      Solver configuration.
+      <attr label="FEM order" name="fem-method" type="choice">
+        Order of the finite-element method.
+        <choice>linear</choice>
+        <choice>parabolic</choice>
+      </attr>
+      <attr label="Relative accuracy" name="accuracy" type="float" unit="%">Required relative accuracy.</attr>
+      <attr label="Absolute accuracy" type="float" unit="cm&lt;sup&gt;-3&lt;/sup&gt;)" name="abs-accuracy">Required absolute minimal concentration accuracy.</attr>
+      <attr label="Iterations to refine" name="maxiters" type="int">Maximum number of allowed iterations before attempting to refine mesh.</attr>
+      <attr label="Allowed refinements" name="maxrefines" type="int">Maximum number of allowed mesh refinements.</attr>
+      <attr label="Interpolation method" name="interpolation" type="choice">
+        Current density interpolation method name.
+        <choice>linear</choice>
+        <choice>spline</choice>
+      </attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inCurrentDensity"/>
+      <receiver name="inGain"/>
+      <receiver name="inGainOverCarriersConcentration"/>
+      <receiver name="inLightMagnitude"/>
+      <provider name="outCarriersConcentration"/>
+    </flow>
+  </solver>
+
+</solvers>

@@ -1,0 +1,134 @@
+<?xml version="1.0" ?>
+<solvers>
+
+  <solver name="EffectiveIndex2D" category="optical" lib="effective">
+    Scalar optical solver based on the effective index method.
+
+    <geometry type="Cartesian2D"/>
+
+    <mesh type="Rectangular2D" optional="yes"/>
+
+    <tag name="mode" label="Mode properties">
+      <attr name="polarization" label="Polarization" type="choice">
+        Longitudnally-propagating mode polarization (TE or TM).
+        <choice>TE</choice>
+        <choice>TM</choice>
+      </attr>
+      <attr name="wavelength" label="Wavelength" type="float" unit="nm">Mode wavelength.</attr>
+      <attr name="vat" label="Vertical solution coord" type="float" unit="nm">Horizontal position of at which the vertical part of the field is calculated.</attr>
+    </tag>
+
+    <tag name="root" label="Parameters of the global root-finding algorithm">
+      Parameters of the global root-finding algorithm.
+      <attr name="method" label="Root finding method" type="choice">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <tag name="stripe-root" label="Parameters of the vertical root-finding algorithm">
+      Parameters of root-finding algorithm for one stripe.
+      <attr name="method" label="Root finding method" type="choice">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective index which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <tag name="mirrors" label="Mirror losses">
+      <attr name="R1" label="Front reflectivity" type="float">Reflectivity of the front mirror.</attr>
+      <attr name="R2" label="Back reflectivity" type="float">Reflectivity of the back mirror.</attr>
+    </tag>A
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inGain"/>
+      <provider name="outLightMagnitude"/>
+      <provider name="outRefractiveIndex"/>
+      <provider name="outHeat"/>
+      <provider name="outLoss"/>
+      <provider name="outWavelenght"/>
+    </flow>
+  </solver>
+
+  <solver name="EffectiveFrequencyCyl" category="optical" lib="effective">
+    Scalar optical solver based on the effective frequency method.
+
+    <geometry type="Cylindrical"/>
+
+    <mesh type="Rectangular2D" optional="yes"/>
+
+    <tag name="mode" label="Mode properties">
+      Mode properties.
+      <attr name="lam0" label="Approximate wavelength" type="float" unit="nm">Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength</attr>
+      <attr name="emission" label="Direction of emission" type="choice">
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly computethe output power.
+        <choice>top</choice>
+        <choice>bottom</choice>
+      </attr>
+      <attr name="vlam" label="Vertical wavelength" type="float" unit="nm">&quot;Vertical wavelength&quot; i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators.</attr>
+      <attr name="vat" label="Vertical solution coord" type="float" unit="µm">Horizontal position of at which the vertical part of the field is calculated.</attr>
+    </tag>
+
+    <tag name="root" label="Parameters of the global root-finding algorithm">
+      Parameters of the global root-finding algorithm.
+      <attr name="method" label="Root finding method" type="choice">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <tag name="stripe-root" label="Parameters of the vertical root-finding algorithm">
+      Parameters of root-finding algorithm for one stripe.
+      <attr name="method" label="Root finding method" type="choice">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inGain"/>
+      <provider name="outLightMagnitude"/>
+      <provider name="outRefractiveIndex"/>
+      <provider name="outHeat"/>
+      <provider name="outLoss" for="ModalLoss"/>
+      <provider name="outWavelenght"/>
+    </flow>
+  </solver>
+</solvers>

@@ -36,3 +36,4 @@ Diffusion = {
 }
 
 solvers.register_config('electrical', 'diffusion', Diffusion2D=Diffusion, DiffusionCyl=Diffusion)
+solvers.save()
