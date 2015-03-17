@@ -69,8 +69,8 @@ def make_rst(dirname):
                 for line in text.split('\n'):
                     out('   '*level + line.strip())
 
-        out(name + ' Solver')
-        out('=' * (len(name) + 7))
+        out(name)
+        out('-' * (len(name)))
         out('\n.. xml:tag:: <{cat} solver="{name}"> [{name}]\n'.format(**locals()))
         out('   Corresponding Python class: :py:class:`{cat}.{lib}.{name}`.'.format(**locals()))
 
@@ -150,7 +150,7 @@ for cat in categories:
         print(*args, file=outfile, **kwargs)
 
     out('<{}> solvers'.format(cat))
-    out('=' * (len(cat)+10))
+    out('-' * (len(cat)+10))
     out('\n.. toctree::\n')
     for item in categories[cat]:
         out('   {}/{}'.format(cat, item))
