@@ -28,6 +28,7 @@ from .reader import GNReadConf
 from .constructor import construct_geometry_object, construct_by_name
 from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries
+from .node import GNFakeRoot
 
 __author__ = 'qwak'
 
@@ -63,20 +64,71 @@ class PyObjMime(QtCore.QMimeData):
 
 class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
-    def __init__(self, parent=None, info_cb=None):
-        QtCore.QAbstractItemModel.__init__(self, parent)
-        SectionModel.__init__(self, 'geometry', info_cb)
-        #TableModelEditMethods.__init__(self)
-        self.roots = []
-        self.axes = None
 
-    # XML element that represents whole section
-    def get_xml_element(self):
-        res = etree.Element(self.name)
-        if self.axes: res.attrib['axes'] = self.axes
-        conf = GNReadConf(axes=self.axes)
-        for geom in self.roots: res.append(geom.get_xml_element(conf))
-        return res
+    class RemoveChildrenCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, parent_node, row, end, QUndoCommand_parent=None):
+            self.model = model
+            self.parent_node = parent_node
+            self.row = row
+            self.end = end
+            self.removed_elements = self.children_list[row:end]
+            if len(self.removed_elements) > 1:
+                name = 'items'
+            else:
+                name = self.removed_elements[0].tag_name(full_name=False)
+            super(GeometryModel.RemoveChildrenCommand, self).__init__('remove {}'.format(name), QUndoCommand_parent)
+
+        @property
+        def parent_index(self):
+            return self.model.index_for_node(self.parent_node)
+
+        @property
+        def children_list(self):
+            return self.model.children_list(self.parent_node)
+
+        def redo(self):
+            self.model.beginRemoveRows(self.parent_index, self.row, self.end-1)
+            del self.children_list[self.row:self.end]
+            self.model.endRemoveRows()
+            self.model.fire_changed()
+
+        def undo(self):
+            self.model.beginInsertRows(self.parent_index, self.row, self.end-1)
+            self.children_list[self.row:self.row] = self.removed_elements
+            self.model.endInsertRows()
+            self.model.fire_changed()
+
+
+    class InsertChildCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, parent_node, row, child_node, QUndoCommand_parent=None):
+            self.model = model
+            self.parent_node = parent_node
+            self.row = row
+            self.child_node = child_node
+            super(GeometryModel.InsertChildCommand, self).__init__('append {}'.format(child_node.tag_name(full_name=False)), QUndoCommand_parent)
+
+        @property
+        def parent_index(self):
+            return self.model.index_for_node(self.parent_node)
+
+        @property
+        def children_list(self):
+            return self.model.children_list(self.parent_node)
+
+        def redo(self):
+            self.model.beginInsertRows(self.parent_index, self.row, self.row)
+            self.child_node.set_parent(self.parent_node, index=self.row, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
+            self.model.endInsertRows()
+            self.model.fire_changed()
+
+        def undo(self):
+            self.model.beginRemoveRows(self.parent_index, self.row, self.row)
+            del self.children_list[self.row]
+            self.model.endRemoveRows()
+            self.model.fire_changed()
+
 
     class SetRootsCommand(QtGui.QUndoCommand):
 
@@ -101,12 +153,39 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def undo(self):
             self._set(self.old_axes, self.old_roots)
 
+
+
+    def __init__(self, parent=None, info_cb=None):
+        QtCore.QAbstractItemModel.__init__(self, parent)
+        SectionModel.__init__(self, 'geometry', info_cb)
+        #TableModelEditMethods.__init__(self)
+        self.fake_root = GNFakeRoot(self)
+        self.axes = None    #TODO ? use axes of FakeRoot
+
+    @property
+    def roots(self):
+        return self.fake_root.children
+
+    @roots.setter
+    def roots(self, new_roots):
+        self.fake_root.children = new_roots
+
+    # XML element that represents whole section
+    def get_xml_element(self):
+        res = etree.Element(self.name)
+        if self.axes: res.attrib['axes'] = self.axes
+        conf = GNReadConf(axes=self.axes)
+        for geom in self.roots: res.append(geom.get_xml_element(conf))
+        return res
+
     def set_xml_element(self, element, undoable=True):
         with AttributeReader(element) as a: new_axes = a.get('axes')
         conf = GNReadConf(axes=new_axes)
         new_roots = []
         for child_element in element:
-            new_roots.append(construct_geometry_object(child_element, conf, geometry_types_geometries))
+            root = construct_geometry_object(child_element, conf, geometry_types_geometries)
+            root._parent = self.fake_root
+            new_roots.append(root)
         command = GeometryModel.SetRootsCommand(self, new_axes, new_roots)
         if undoable:
             self.undo_stack.push(command)
@@ -196,40 +275,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if parent.column() > 0: return 0
         return len(self.children_list(parent))
 
-    class RemoveChildrenCommand(QtGui.QUndoCommand):
-
-        def __init__(self, model, parent_node, row, end, QUndoCommand_parent=None):
-            self.model = model
-            self.parent_node = parent_node
-            self.row = row
-            self.end = end
-            self.removed_elements = self.children_list[row:end]
-            if len(self.removed_elements) > 1:
-                name = 'items'
-            else:
-                name = self.removed_elements[0].tag_name(full_name=False)
-            super(GeometryModel.RemoveChildrenCommand, self).__init__('remove {}'.format(name), QUndoCommand_parent)
-
-        @property
-        def parent_index(self):
-            return self.model.index_for_node(self.parent_node)
-
-        @property
-        def children_list(self):
-            return self.model.children_list(self.parent_node)
-
-        def redo(self):
-            self.model.beginRemoveRows(self.parent_index, self.row, self.end-1)
-            del self.children_list[self.row:self.end]
-            self.model.endRemoveRows()
-            self.model.fire_changed()
-
-        def undo(self):
-            self.model.beginInsertRows(self.parent_index, self.row, self.end-1)
-            self.children_list[self.row:self.row] = self.removed_elements
-            self.model.endInsertRows()
-            self.model.fire_changed()
-
     def removeRows(self, row, count, parent=QtCore.QModelIndex()):
         l = self.children_list(parent)
         end = row + count
@@ -245,6 +290,8 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def mimeData(self, indexes):
         return PyObjMime(indexes[0].internalPointer())
+
+
 
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if action == QtCore.Qt.IgnoreAction: return True
@@ -290,15 +337,19 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     # other actions:
     def index_for_node(self, node):
-        if node is None: return QtCore.QModelIndex()
+        if node is None or isinstance(node, GNFakeRoot): return QtCore.QModelIndex()
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), 0, node)
 
     def append_geometry(self, type_name):
-        self.beginInsertRows(QtCore.QModelIndex(), len(self.roots), len(self.roots))
-        self.roots.append(construct_by_name(type_name, geometry_types_geometries))
-        self.endInsertRows()
-        self.fire_changed()
+        self.undo_stack.push(
+            GeometryModel.InsertChildCommand(self, self.fake_root, len(self.roots),
+                                             construct_by_name(type_name, geometry_types_geometries))
+        )
+        #self.beginInsertRows(QtCore.QModelIndex(), len(self.roots), len(self.roots))
+        #self.roots.append(construct_by_name(type_name, geometry_types_geometries))
+        #self.endInsertRows()
+        #self.fire_changed()
 
     def _swap_neighbour_nodes(self, parent_index, row1, row2):
         if self.is_read_only(): return

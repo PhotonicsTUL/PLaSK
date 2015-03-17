@@ -202,7 +202,7 @@ class GNode(object):
 
     @property
     def root(self):
-        return self if self._parent is None else self._parent.root
+        return self if self._parent is None or isinstance(self._parent, GNFakeRoot) else self._parent.root
 
     def stub(self):
         """
@@ -363,3 +363,17 @@ class GNode(object):
             yield p
             p = p.parent
 
+
+
+class GNFakeRoot(GNode):
+
+    def __init__(self, geometry_model):
+        super(GNFakeRoot, self).__init__()
+        self.model = geometry_model
+
+    def accept_new_child(self):
+        return True
+
+    def accept_as_child(self, node):
+        from .geometry import GNGeometryBase
+        return isinstance(node, GNGeometryBase)
