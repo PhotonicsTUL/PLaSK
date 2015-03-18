@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema
+    targetNamespace="http://phys.p.lodz.pl/solvers.xsd"
+    xmlns="http://phys.p.lodz.pl/solvers.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    version="0.1.r3137">
+
+  <xs:element name="solvers">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="solver" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="solver">
+    <xs:complexType mixed="true">
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="geometry"/>
+        <xs:element ref="mesh" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="tag" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="bcond" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="flow"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="category" type="xs:string" use="optional"/>
+      <xs:attribute name="lib" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="bool">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="yes"/>
+      <xs:enumeration value="no"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:element name="geometry">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Cartesian2D"/>
+            <xs:enumeration value="Cartesian3D"/>
+            <xs:enumeration value="Cylindrical"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="mesh">
+    <xs:complexType>
+      <xs:attribute name="type" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Ordered"/>
+            <xs:enumeration value="Regular"/>
+            <xs:enumeration value="Rectangular2D"/>
+            <xs:enumeration value="Rectangular3D"/>
+            <!--xs:enumeration value="Triangular2D"/>
+            <xs:enumeration value="Triangular3D"/-->
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="optional" type="bool" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="tag">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="attr" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="tag" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="label" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="choice" type="xs:string">
+  </xs:element>
+
+  <xs:element name="attr">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="choice" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="label" type="xs:string" use="required"/>
+      <xs:attribute name="required" type="bool" use="optional"/>
+      <xs:attribute name="type" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="string"/>
+            <xs:enumeration value="float"/>
+            <xs:enumeration value="complex"/>
+            <xs:enumeration value="int"/>
+            <xs:enumeration value="bool"/>
+            <xs:enumeration value="choice"/>
+            <xs:enumeration value="list of floats"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="unit" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="bcond">
+    <xs:complexType mixed="true">
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="label" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="flow">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="receiver" maxOccurs="unbounded"/>
+        <xs:element ref="provider" maxOccurs="unbounded"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="flow">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="for" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:element name="receiver" type="flow"/>
+
+  <xs:element name="provider" type="flow"/>
+
+</xs:schema>
