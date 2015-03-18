@@ -1,5 +1,5 @@
-<?xml version="1.0" ?>
-<solvers>
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
   <solver name="Shockley3D" category="electrical" lib="fem3d">
     Three-dimensional phenomenological solver based Shockley equation and using finite-element method.

@@ -1,15 +1,16 @@
-<solvers>
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
   <solver name="Fermi2D" category="gain" lib="simple">
     Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
 
     This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
     However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
-    
+
     <geometry type="Cartesian2D"/>
-    
+
     <mesh type="Ordered" optional="yes"/>
-    
+
     <tag name="config" label="Gain parameters">
       Some important gain parameters.
       <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
@@ -26,7 +27,7 @@
         the quantum wells.
       </attr>
     </tag>
-    
+
     <tag name="levels" label="Custom energy levels &lt;span style='font-weight: normal;'&gt;(either none or all attributes must be given)&lt;/span&gt;">
       Custom energy levels in quantum wells. If this tag is used all levels must be set.
       <attr name="el" label="Electron levels" type="list of floats" required="yes" unit="eV">
@@ -39,14 +40,14 @@
         Comma-separated list of light hole levels.
       </attr>
     </tag>
-    
+
     <flow>
       <provider name="inTemperature"/>
       <provider name="inCarriersConcentration"/>
       <receiver name="outGain"/>
       <receiver name="outGainOverCarriersConcentration"/>
     </flow>
-    
+
   </solver>
 
   <solver name="FermiCyl" category="gain" lib="simple">
@@ -54,11 +55,11 @@
 
     This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
     However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
-    
+
     <geometry type="Cylindrical"/>
-    
+
     <mesh type="Ordered" optional="yes"/>
-    
+
     <tag name="config" label="Gain parameters">
       Some important gain parameters.
       <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
@@ -76,7 +77,7 @@
         the quantum wells.
       </attr>
     </tag>
-    
+
     <tag name="levels"
          label="Custom energy levels &lt;span style='font-weight: normal;'&gt;(either none or all attributes must be given)&lt;/span&gt;">
       Custom energy levels in quantum wells. If this tag is used all levels must be set.
@@ -90,14 +91,14 @@
         Comma-separated list of light hole levels.
       </attr>
     </tag>
-    
+
     <flow>
       <provider name="inTemperature"/>
       <provider name="inCarriersConcentration"/>
       <receiver name="outGain"/>
       <receiver name="outGainOverCarriersConcentration"/>
     </flow>
-    
+
   </solver>
 
 </solvers>

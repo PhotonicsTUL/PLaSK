@@ -1,5 +1,5 @@
-<?xml version="1.0" ?>
-<solvers>
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
   <solver name="EffectiveIndex2D" category="optical" lib="effective">
     Scalar optical solver based on the effective index method.

@@ -1,5 +1,5 @@
-<?xml version="1.0" ?>
-<solvers>
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
   <solver category="electrical" lib="diffusion" name="Diffusion2D">
     Two-dimensional diffusion solver in Cartesian geometry.

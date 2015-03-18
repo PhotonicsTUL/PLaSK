@@ -1,6 +1,6 @@
-<?xml version="1.0" ?>
-<solvers>
-  
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
+
   <solver name="Fourier2D" category="optical" lib="slab">
     Vectorial optical solver based on the plane-wave reflection transfer method.
 

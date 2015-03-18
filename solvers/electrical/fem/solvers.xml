@@ -1,5 +1,5 @@
-<?xml version="1.0" ?>
-<solvers>
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
   <solver name="Shockley2D" category="electrical" lib="fem">
     Two-dimensional phenomenological solver in Cartesian geometry based Shockley equation and using finite-element method.
@@ -56,7 +56,7 @@
   <solver name="ShockleyCyl" category="electrical" lib="fem">
     Two-dimensional phenomenological solver in cylindrical geometry based Shockley equation and using finite-element method.
 
-    <geometry type="CartesianCyl"/>
+    <geometry type="Cylindrical"/>
 
     <mesh type="Rectangular2D"/>
 
@@ -104,5 +104,5 @@
       <provider name="outCurrentDensity"/>
     </flow>
   </solver>
-  
+
 </solvers>
