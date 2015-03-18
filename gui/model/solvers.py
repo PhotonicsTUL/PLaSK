@@ -149,17 +149,18 @@ class ConfSolver(Solver):
     """Model for solver with its configuration specified in a simple Python dictionary
        and automatically generated controller widget"""
 
-    def __init__(self, config, category, lib=None, solver='', name='', parent=None, info_cb=None):
+    def __init__(self, category, config, lib=None, solver='', mesh_type=None, name='', parent=None, info_cb=None):
         super(ConfSolver, self).__init__(category, solver, name, parent, info_cb)
-        self.config = config
         self.lib = lib
+        self.config = config
+        self.mesh_type = mesh_type
         self.set_fresh_data()
 
     def set_fresh_data(self):
         self.data = dict((tag,
                           dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
                           ''  # TODO add proper support for boundary conditions
-                         ) for (tag, _, attrs) in self.config['conf'])
+                         ) for (tag, _, attrs) in self.config)
 
     def get_xml_element(self):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
@@ -169,7 +170,7 @@ class ConfSolver(Solver):
             etree.SubElement(element, 'geometry', {'ref': self.geometry})
         if self.mesh:
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
-        for tag,_,_ in self.config['conf']:
+        for tag,_,_ in self.config:
             data = self.data[tag]
             if type(data) is dict:
                 attrs = dict((item for item in data.items() if item[1] and item[0][-1] != '#'))
@@ -203,12 +204,12 @@ class ConfSolver(Solver):
         if el is not None:
             self.geometry = el.attrib.get('ref')
             #TODO report missing or mismatching geometry
-        if self.config['mesh']:
+        if self.mesh_type:
             el = element.find('mesh')
             if el is not None:
                 self.mesh = el.attrib.get('ref')
                 #TODO report missing or mismatching mesh
-        for tag,_,_ in self.config['conf']:
+        for tag,_,_ in self.config:
             el = element.find(tag)
             if el is not None:
                 try:
@@ -238,14 +239,15 @@ class ConfSolver(Solver):
 
 class ConfSolverFactory(object):
 
-    def __init__(self, category, lib, solver, config):
+    def __init__(self, category, lib, solver, config, mesh_type):
         self.category = category
         self.solver = solver
         self.config = config
+        self.mesh_type = mesh_type
         self.lib = lib
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
-        result = ConfSolver(self.config, self.category, self.lib, self.solver, name, parent, info_cb)
+        result = ConfSolver(self.category, self.config, self.lib, self.solver, self.mesh_type, name, parent, info_cb)
         if element is not None:
             result.set_xml_element(element)
         return result
@@ -365,3 +367,79 @@ class SolversModel(TableModel):
                                 Info.ERROR, cols=[2], rows=indexes))
         return res
 
+
+# Find XML files with solvers configuration
+from os.path import dirname as _d
+
+XNS = '{http://phys.p.lodz.pl/solvers.xsd}'
+
+
+def _iter_tags(parent):
+    for tag in parent.findall(XNS+'tag'):
+        yield tag
+        for t in _iter_tags(tag):
+            t.attrib['name'] = tag.attrib['name'] + '/' + t.attrib['name']
+            yield t
+
+
+def _load_xml(filename):
+
+    cat = os.path.basename(_d(filename))
+    if cat == 'skel': return
+
+    dom = etree.parse(filename)
+    root = dom.getroot()
+
+    if root.tag != XNS+'solvers': return
+
+    for solver in root:
+        if solver.tag != XNS+'solver': return
+
+        name = solver.attrib.get('name')
+        if name is None: return
+
+        cat = solver.attrib.get('category', cat)
+        lib = solver.attrib.get('lib', os.path.basename(filename)[:-4])
+
+        m = solver.find(XNS+'mesh')
+        if m is not None:
+            try:
+                mesh_type = m.attrib['type']
+            except KeyError:
+                mesh_type = None
+        else:
+            mesh_type = None
+
+        config = []
+
+        for tag in _iter_tags(solver):
+            tn, tl = unicode(tag.attrib['name']), unicode(tag.attrib['label'])
+            attrs = []
+            for attr in tag.findall(XNS+'attr'):
+                an = unicode(attr.attrib['name'])
+                al = unicode(attr.attrib['label'])
+                ah = unicode(attr.text)
+                at = unicode(attr.attrib.get('type', ''))
+                au = attr.attrib.get('unit', None)
+                if au is not None:
+                    al += ' [{}]'.format(unicode(au))
+                    at += ' [{}]'.format(unicode(au))
+                if at:
+                    ah += ' ({})'.format(at)
+                if at == 'choice':
+                    ac = tuple(ch.text.strip() for ch in attr.findall(XNS+'choice'))
+                    attrs.append((an, al, ah, ac))
+                else:
+                    attrs.append((an, al, ah))
+            config.append((tn, tl, attrs))
+
+        #TODO Handle boundary conditions properly
+        for bcond in solver.findall(XNS+'bcond'):
+            config.append((bcond.attrib['name'], bcond.attrib['label'] + ' boundary conditions', None))
+
+        SOLVERS[cat,name] = ConfSolverFactory(cat, lib, name, config, mesh_type)
+
+for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(__file__))), 'solvers')):
+    for _f in _files:
+        if _f.endswith('.xml'):
+            _load_xml(os.path.join(_dirname, _f))

@@ -33,8 +33,6 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controller = controller
 
-        config = controller.model.config
-
         layout = QtGui.QFormLayout()
         layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
 
@@ -56,14 +54,15 @@ class SolverAutoWidget(VerticalScrollArea):
         #TODO make sure the list is up-to date; add some graphical thumbnail
         layout.addRow("Geometry:", self.geometry)
 
-        if config['mesh']:
+        if controller.model.mesh_type is not None:
             self.mesh = QtGui.QComboBox()
             self.mesh.setEditable(True)
             self.mesh.textChanged.connect(self.controller.fire_changed)
             self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
             self.mesh.setCompleter(defines)
             self.mesh.setToolTip('&lt;<b>mesh ref</b>=""&gt;<br/>'
-                                 'Name of the existing {} mesh for use by this solver.'.format(config['mesh']))
+                                 'Name of the existing {} mesh for use by this solver.'
+                                 .format(controller.model.mesh_type))
             #TODO add some graphical thumbnail
             layout.addRow("Mesh:", self.mesh)
         else:
@@ -71,7 +70,7 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controls = {}
 
-        for group, desc, items in config['conf']:
+        for group, desc, items in controller.model.config:
             gname = group.split('/')[-1]
             label = QtGui.QLabel(desc)
             font = label.font()
@@ -128,13 +127,12 @@ class SolverAutoWidget(VerticalScrollArea):
 
     def load_data(self):
         model = self.controller.model
-        config = model.config
         self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
         self.geometry.setEditText(model.geometry)
         if self.mesh is not None:
             self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
             self.mesh.setEditText(model.mesh)
-        for group, _, items in config['conf']:
+        for group, _, items in model.config:
             if type(items) in (tuple, list):
                 for item in items:
                     attr = item[0]
@@ -162,11 +160,10 @@ class SolverAutoWidget(VerticalScrollArea):
 
     def save_data(self):
         model = self.controller.model
-        config = model.config
         model.geometry = self.geometry.currentText()
         if self.mesh is not None:
             model.mesh = self.mesh.currentText()
-        for group, _, items in config['conf']:
+        for group, _, items in model.config:
             if type(items) in (tuple, list):
                 for item in items:
                     attr = item[0]
@@ -192,8 +189,9 @@ class ConfSolverController(Controller):
     def __init__(self, document, model):
         super(ConfSolverController, self).__init__(document, model)
         try:
-            widget_class = self.model.config['widget']
-        except KeyError:
+            widget_class = self.model.widget
+            if widget_class is None: raise AttributeError
+        except AttributeError:
             widget_class = SolverAutoWidget
         self.widget = widget_class(self)
 
@@ -217,7 +215,7 @@ class ConfSolverController(Controller):
             self.widget.geometry.clear()
             self.widget.geometry.addItems([''] + geometries)
         try:
-            mesh_type = self.model.config.get('mesh')
+            mesh_type = self.model.mesh_type
             if mesh_type is not None: mesh_type = mesh_type.lower()
             grids = [m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type]
         except AttributeError:

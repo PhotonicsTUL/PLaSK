@@ -1,6 +1,8 @@
 #!/usr/bin/python
 from __future__ import print_function
 
+XNS = '{http://phys.p.lodz.pl/solvers.xsd}'
+
 import sys
 import os
 
@@ -44,7 +46,7 @@ def make_rst(dirname):
     dom = et.parse(os.path.join(dirname, 'solvers.xml'))
 
     for solver in dom.getroot():
-        if solver.tag != 'solver':
+        if solver.tag != XNS+'solver':
             raise ValueError('excpected <solver>, got <{}> instead'.format(solver.tag))
 
         name = solver.attrib['name']
@@ -80,13 +82,13 @@ def make_rst(dirname):
 
         out('\n   .. xml:contents::')
 
-        geom = solver.find('geometry').attrib['type']
+        geom = solver.find(XNS+'geometry').attrib['type']
         out('\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
         out('\n         Geometry for use by this solver.')
         out('\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
             .format(geom))
 
-        mesh = solver.find('mesh')
+        mesh = solver.find(XNS+'mesh')
         if mesh is not None:
             out('\n      .. xml:tag:: <mesh> [in {}.{}]'.format(cat, name))
             out('\n         {} mesh used by this solver.'.format(mesh.attrib['type']))
@@ -94,13 +96,13 @@ def make_rst(dirname):
                 .format(mesh.attrib['type']))
 
         def write_tags(outer, level=2):
-            tags = outer.findall('tag') or []
-            bconds = outer.findall('bcond') or []
+            tags = outer.findall(XNS+'tag') or []
+            bconds = outer.findall(XNS+'bcond') or []
 
             for tag in tags:
                 out('\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
                 out_text(tag, level+1)
-                attrs = tag.findall('attr')
+                attrs = tag.findall(XNS+'attr')
                 if attrs:
                     out()
                     for attr in attrs:
@@ -109,7 +111,7 @@ def make_rst(dirname):
                         typ = attr.attrib.get('type', None)
                         unit = attr.attrib.get('unit', None)
                         if typ == 'choice':
-                            choices = [ch.text.strip() for ch in attr.findall('choice')]
+                            choices = [ch.text.strip() for ch in attr.findall(XNS+'choice')]
                             if len(choices) == 0:
                                 typ = '(choice)'
                             if len(choices) == 1:
