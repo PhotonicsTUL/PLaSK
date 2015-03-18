@@ -3,7 +3,7 @@
     targetNamespace="http://phys.p.lodz.pl/solvers.xsd"
     xmlns="http://phys.p.lodz.pl/solvers.xsd"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    version="0.1.r3137">
+    version="PLASK_VERSION">
 
   <xs:element name="solvers">
     <xs:complexType>
