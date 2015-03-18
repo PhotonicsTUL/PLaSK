@@ -309,7 +309,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.beginInsertRows(parentIndex, row, row)
             #self.set_parent(parent, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
             if moved_obj.parent != parent:  # problem: without copy, the parent of source is incorrect after change and remove crash
-                moved_obj = deepcopy(moved_obj)
+                moved_obj = deepcopy(moved_obj, memo={moved_obj._parent: moved_obj._parent})
             moved_obj.clear_in_parent_params(parent)
             moved_obj._parent = parent
             destination_list.insert(row, moved_obj)
