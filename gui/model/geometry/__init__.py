@@ -44,6 +44,7 @@ class PyObjMime(QtCore.QMimeData):
             try:
                 pdata = pickle.dumps(data)
             except:
+                self.setData(self.MIMETYPE, "") # we still can use self.data locally
                 return
             self.setData(self.MIMETYPE, pickle.dumps(data.__class__) + pdata)
 
@@ -207,7 +208,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
-                return item.display_name(full_name=False)
+                return item.display_name(full_name=False) + ' {}{}'.format(int(self.flags(index) & QtCore.Qt.ItemIsDragEnabled), int(self.flags(index) & QtCore.Qt.ItemIsDropEnabled))
             else:
                 name = getattr(item, 'name', '')
                 if name:
@@ -240,7 +241,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if not self.is_read_only():
             res |= QtCore.Qt.ItemIsDragEnabled
             if index.internalPointer().accept_new_child():
-                   res |= QtCore.Qt.ItemIsDropEnabled
+                res |= QtCore.Qt.ItemIsDropEnabled
         return res
 
     def supportedDropActions(self):
