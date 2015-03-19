@@ -106,6 +106,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def __init__(self, model, parent_node, row, child_node, QUndoCommand_parent=None):
             self.model = model
             self.parent_node = parent_node
+            if row is None: row = parent_node.new_child_pos()
             self.row = row
             self.child_node = child_node
             super(GeometryModel.InsertChildCommand, self).__init__('append {}'.format(child_node.tag_name(full_name=False)), QUndoCommand_parent)
@@ -342,15 +343,23 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), 0, node)
 
-    def append_geometry(self, type_name):
+    def insert_node(self, parent_node, child_node, pos = None):
         self.undo_stack.push(
-            GeometryModel.InsertChildCommand(self, self.fake_root, len(self.roots),
-                                             construct_by_name(type_name, geometry_types_geometries))
+            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node)
         )
+
+    def append_geometry(self, type_name):
+        self.insert_node(self.fake_root, construct_by_name(type_name, geometry_types_geometries), len(self.roots))
+        #self.undo_stack.push(
+        #    GeometryModel.InsertChildCommand(self, self.fake_root, len(self.roots),
+        #                                     construct_by_name(type_name, geometry_types_geometries))
+        #)
         #self.beginInsertRows(QtCore.QModelIndex(), len(self.roots), len(self.roots))
         #self.roots.append(construct_by_name(type_name, geometry_types_geometries))
         #self.endInsertRows()
         #self.fire_changed()
+
+
 
     def _swap_neighbour_nodes(self, parent_index, row1, row2):
         if self.is_read_only(): return

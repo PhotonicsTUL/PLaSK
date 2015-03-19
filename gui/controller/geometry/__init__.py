@@ -35,9 +35,12 @@ class GeometryController(Controller):
     def _add_child(self, type_constructor, parent_index):
         parent = parent_index.internalPointer()
         pos = parent.new_child_pos()
-        self.model.beginInsertRows(parent_index, pos, pos)
-        construct_using_constructor(type_constructor, parent)
-        self.model.endInsertRows()
+        #self.model.beginInsertRows(parent_index, pos, pos)
+        #new_node = type_constructor(None, None)
+        #new_node.set_parent(parent)
+        #construct_using_constructor(type_constructor, parent)
+        #self.model.endInsertRows()
+        self.model.insert_node(parent, type_constructor(None, None))
         self.tree.setExpanded(parent_index, True)
         new_index = self.model.index(pos, 0, parent_index)
         self.tree.selectionModel().select(new_index,
