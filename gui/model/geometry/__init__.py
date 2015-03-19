@@ -44,7 +44,7 @@ class PyObjMime(QtCore.QMimeData):
             try:
                 pdata = pickle.dumps(data)
             except:
-                self.setData(self.MIMETYPE, "") # we still can use self.data locally
+                self.setData(self.MIMETYPE, "") # we still can use self.data locally, when fake_root is used, this does not work
                 return
             self.setData(self.MIMETYPE, pickle.dumps(data.__class__) + pdata)
 
@@ -208,7 +208,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
-                return item.display_name(full_name=False) + ' {}{}'.format(int(self.flags(index) & QtCore.Qt.ItemIsDragEnabled), int(self.flags(index) & QtCore.Qt.ItemIsDropEnabled))
+                return item.display_name(full_name=False)
             else:
                 name = getattr(item, 'name', '')
                 if name:
