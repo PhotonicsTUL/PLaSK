@@ -175,7 +175,7 @@ class GNCircle(GNLeaf):
         attr_to_xml(self, element, 'radius')
 
     def tag_name(self, full_name=True):
-        return "circle{}d".format(self.dim) if full_name else "circle"
+        return "sphere" if self.dim == 3 else "circle"
 
     def python_type(self):
         return 'geometry.Circle' if self.dim == 2 else 'geometry.Sphere'
