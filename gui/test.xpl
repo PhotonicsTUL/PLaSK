@@ -170,13 +170,17 @@
     <mode emission="bottom" lam0="980"/>
   </optical>
   <optical name="fourier" solver="Fourier3D" lib="slab">
+    <geometry ref="geo3d2"/>
     <pmls>
       <long factor="23"/>
       <tran factor="45"/>
     </pmls>
   </optical>
   <filter for="Temperature" geometry="GeoTE" name="filtr"/>
-  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective"/>
+  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
+    <geometry ref="GeoO"/>
+    <mesh ref="optical"/>
+  </optical>
 </solvers>
 
 <connects>

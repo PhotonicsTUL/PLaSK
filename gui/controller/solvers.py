@@ -221,8 +221,9 @@ class ConfSolverController(Controller):
         except AttributeError:
             pass
         else:
-            self.widget.mesh.clear()
-            self.widget.mesh.addItems([''] + grids)
+            if self.widget.mesh is not None:
+                self.widget.mesh.clear()
+                self.widget.mesh.addItems([''] + grids)
         self.widget.load_data()
         self.notify_changes = True
 

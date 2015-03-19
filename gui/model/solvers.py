@@ -1,3 +1,4 @@
+# coding: utf-8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -413,23 +414,23 @@ def _load_xml(filename):
         config = []
 
         for tag in _iter_tags(solver):
-            tn, tl = unicode(tag.attrib['name']), unicode(tag.attrib['label'])
+            tn, tl = tag.attrib['name'], tag.attrib['label']
             attrs = []
             for attr in tag.findall(XNS+'attr'):
-                an = unicode(attr.attrib['name'])
-                al = unicode(attr.attrib['label'])
-                ah = unicode(attr.text)
-                at = unicode(attr.attrib.get('type', ''))
+                an = attr.attrib['name']
+                al = attr.attrib['label']
+                ah = attr.text
+                at = attr.attrib.get('type', '')
                 au = attr.attrib.get('unit', None)
                 if au is not None:
-                    al += ' [{}]'.format(unicode(au))
-                    at += ' [{}]'.format(unicode(au))
-                if at:
-                    ah += ' ({})'.format(at)
-                if at == 'choice':
+                    al += u' [{}]'.format(au)
+                    at += u' [{}]'.format(au)
+                if at == u'choice':
                     ac = tuple(ch.text.strip() for ch in attr.findall(XNS+'choice'))
                     attrs.append((an, al, ah, ac))
                 else:
+                    if at:
+                        ah += u' ({})'.format(at)
                     attrs.append((an, al, ah))
             config.append((tn, tl, attrs))
 
