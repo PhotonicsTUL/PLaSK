@@ -520,7 +520,7 @@ private:
     /**
      * Try to find mistake in position of objects.
      *
-     * Raports (by calling @p callback) when some object has, probably by mistake, different position in two geometries.
+     * Reports (by calling @p callback) when some object has, probably by mistake, different position in two geometries.
      * @param callback call for each pair of geometries in which objects with different (by mistake) positions have been found. Details are passed in parameters:
      *  - 2 geometries of the same type,
      *  - non-empty vector of objects with different positions in the geometries,
@@ -531,10 +531,10 @@ private:
     /**
      * Try to find mistake in position of objects.
      *
-     * Raports in returned string when some object has, probably by mistake, different position in two geometries.
+     * Reports in returned string when some object has, probably by mistake, different position in two geometries.
      * @return raport, can be multiple-line, empty only if no problems have been found
      */
-    std::string validatePositions() const;
+    void validatePositions() const;
 
     /**
      * Get index of geometry in root.

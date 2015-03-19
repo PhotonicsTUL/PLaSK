@@ -196,10 +196,7 @@ class OutputWindow(QtGui.QDockWidget):
                     if cat == 'DATA' and not self.action_data.isChecked(): continue
                     if cat == 'DETAIL' and not self.action_detail.isChecked(): continue
                     if cat == 'DEBUG' and not self.action_debug.isChecked(): continue
-                    try:
-                        lines.append(line.decode('utf-8'))
-                    except UnicodeDecodeError:
-                        lines.append(line.decode(self.parent().document.coding))
+                    lines.append(line)
                 if lines:
                     self.messages.append(u"<br/>\n".join(lines))
                 self.printed_lines = total_lines
@@ -279,9 +276,7 @@ class PlaskThread(QtCore.QThread):
         self.main_window.closed.disconnect(self.kill_process)
 
     def parse_line(self, line):
-        if not line:
-            return
-        line = line
+        if not line: return
         cat = line[:15]
         line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
         if   cat == "CRITICAL ERROR:": color = "red    "
@@ -296,9 +291,13 @@ class PlaskThread(QtCore.QThread):
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
         try:
+            line = line.decode(self.main_window.document.coding)
+        except UnicodeDecodeError:
+            line = line.decode('utf-8')
+        try:
             self.mutex.lock()
             self.lines.append((cat[:-1].strip(),
-                               '<span style="color:{};">{}</span>'.format(color, line)))
+                               u'<span style="color:{};">{}</span>'.format(color, line)))
         finally:
             self.mutex.unlock()
 

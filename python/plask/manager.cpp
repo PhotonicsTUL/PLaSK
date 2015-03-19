@@ -171,9 +171,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
         manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename), filterfun);
     }
 
-    std::string positions_warnings = manager->validatePositions();
-    if (!positions_warnings.empty())
-        writelog(plask::LOG_WARNING, positions_warnings);
+    manager->validatePositions();
 }
 
 

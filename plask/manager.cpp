@@ -529,39 +529,31 @@ void Manager::validatePositions(
 }
 
 static std::string geomName(const Manager& m, const Geometry* g, const std::map<const GeometryObject*, const char*>& names) {
-    std::string r = "[";
-    r += boost::lexical_cast<std::string>(m.getRootIndex(g));
-    r += ']';
     auto it = names.find(g);
     if (it != names.end()) {
-        r += ' ';
+        std::string r = "'";
         r += it->second;
+        r += '\'';
+        return r;
+    } else {
+        std::string r = "[";
+        r += boost::lexical_cast<std::string>(m.getRootIndex(g));
+        r += ']';
+        return r;
     }
-    return r;
 }
 
-std::string Manager::validatePositions() const {
-    bool first = true;
-    std::string result;
+void Manager::validatePositions() const {
     validatePositions(
-    [&] (const Geometry* g1, const Geometry* g2, std::vector<const GeometryObject*>&& objs, const std::map<const GeometryObject*, const char*>& names) {
-        if (first) {
-            first = false;
-            result += "Some objects, possibly by mistake, have different positions in geometries (geometry 1 - geometry 2: names of objects...):";
-        }
-        result += "\n ";
-        result += geomName(*this, g1, names);
-        result += " - ";
-        result += geomName(*this, g2, names);
-        result += ':';
+    [this] (const Geometry* g1, const Geometry* g2, std::vector<const GeometryObject*>&& objs, const std::map<const GeometryObject*, const char*>& names) {
+        bool single = objs.size() < 2;
+        std::string ons;
         for (auto o: objs) {
-            result += ' ';
-            result += names.find(o)->second;
+            ons += " '"; ons += names.find(o)->second; ons += '\'';
         }
-        result += ';';
-    }
-    );
-    return result;
+        writelog(plask::LOG_WARNING, "Object%s%s ha%s different position in geometry %s and %s",
+                 single?"":"s", ons, single?"s":"ve", geomName(*this, g1, names), geomName(*this, g2, names));
+    });
 }
 
 std::size_t Manager::getRootIndex(const Geometry *geom) const {
