@@ -44,6 +44,8 @@
     <flow>
       <receiver name="inHeat"/>
       <provider name="outTemperature"/>
+      <provider name="outHeatFlux"/>
+      <provider name="outThermalConductivity"/>
     </flow>
 
   </solver>

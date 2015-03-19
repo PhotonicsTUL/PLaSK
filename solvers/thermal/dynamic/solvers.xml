@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
+
+  <solver name="Dynamic2D" category="thermal" lib="dynamic">
+    Two-dimensional dynamic thermal solver in Cartesian geometry, based on finite-element method.
+
+    <geometry type="Cartesian2D"/>
+
+    <mesh type="Rectangular2D"/>
+
+    <tag name="loop" label="Time-evolution loop">
+      Configuration of the time-evolution loop.
+      <attr name="inittemp" label="Initial temperature" type="float" unit="K">Initial temperature used for the first computation.</attr>
+      <attr name="timestep" label="Time step" type="float" unit="ns">Single-iteration time step.</attr>
+      <attr name="rebuildfreq" label="Matrix rebuild frequency" type="int">
+        Number of iterations until the whole matrix is rebuilt. The larger this number is, the more efficient computations are,
+        however it may be less accurate is material parameters strongly depend on temperature.
+      </attr>
+      <attr name="logfreq" label="Logging frequency" type="int">Number of iterations until the computations progress is reported.</attr>
+    </tag>
+
+    <tag name="matrix" label="Matrix solver">
+      Configuration of the matrix solver.
+      <attr name="methodparam" label="Method parameter" type="float">
+        Mid-step parameter for implicit finite-difference time discretization. Defaults to ½, which results in the Crank-Nicholson method.
+        0 makes the method explicit, while 1 results in backward Euler method.
+      </attr>
+      <attr name="lumping" label="Lumping" type="bool">This attribute determines whether the mass matrix is lumped or non-lumped (consistent).</attr>
+      <attr name="algorithm" label="Solution algorithm" type="choice">
+        Algorithm used for solving set of linear positive-definite equations. Defaults to "&lt;i&gt;cholesky&lt;/i&gt;"
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+      </attr>
+    </tag>
+
+    <bcond name="temperature" label="Temperature"/>
+
+    <flow>
+      <receiver name="inHeat"/>
+      <provider name="outTemperature"/>
+      <provider name="outHeatFlux"/>
+      <provider name="outThermalConductivity"/>
+    </flow>
+
+  </solver>
+
+  <solver name="Dynamic3D" category="thermal" lib="dynamic">
+    Three-dimensional dynamic thermal solver based on finite-element method.
+
+    <geometry type="Cartesian3D"/>
+
+    <mesh type="Rectangular3D"/>
+
+    <tag name="loop" label="Time-evolution loop">
+      Configuration of the time-evolution loop.
+      <attr name="inittemp" label="Initial temperature" type="float" unit="K">Initial temperature used for the first computation.</attr>
+      <attr name="timestep" label="Time step" type="float" unit="ns">Single-iteration time step.</attr>
+      <attr name="rebuildfreq" label="Matrix rebuild frequency" type="int">
+        Number of iterations until the whole matrix is rebuilt. The larger this number is, the more efficient computations are,
+        however it may be less accurate is material parameters strongly depend on temperature.
+      </attr>
+      <attr name="logfreq" label="Logging frequency" type="int">Number of iterations until the computations progress is reported.</attr>
+    </tag>
+
+    <tag name="matrix" label="Matrix solver">
+      Configuration of the matrix solver.
+      <attr name="methodparam" label="Method parameter" type="float">
+        Mid-step parameter for implicit finite-difference time discretization. Defaults to ½, which results in the Crank-Nicholson method.
+        0 makes the method explicit, while 1 results in backward Euler method.
+      </attr>
+      <attr name="lumping" label="Lumping" type="bool">This attribute determines whether the mass matrix is lumped or non-lumped (consistent).</attr>
+      <attr name="algorithm" label="Solution algorithm" type="choice">
+        Algorithm used for solving set of linear positive-definite equations. Defaults to "&lt;i&gt;cholesky&lt;/i&gt;"
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+      </attr>
+    </tag>
+
+    <bcond name="temperature" label="Temperature"/>
+
+    <flow>
+      <receiver name="inHeat"/>
+      <provider name="outTemperature"/>
+      <provider name="outHeatFlux"/>
+      <provider name="outThermalConductivity"/>
+    </flow>
+
+  </solver>
+
+</solvers>

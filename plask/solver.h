@@ -58,9 +58,10 @@ Once you have your source tree set up, do the following:
    as the first operation.
 -# Optionally implement plask::Solver::getClassDescription method. This method should just return description of your solver.
 -# Write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
-   \b solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
+   \c solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
    of Python interface).
--# (TODO: in future do something to make the solver available in GUI)
+-# Write \c solvers.xml file that documents \c xpl configuration of your solver for generating the \c xpl reference in the user manual and
+   for automatic configuration panel creation in GUI.
 -# Finally write a good user manual for your solver ;)
 
 
@@ -97,7 +98,7 @@ If you are working within the PLaSK source, remember to add all the directories 
 \subsubsection solvers_writing_tutorial Solver C++ class
 
 Now we assume that our solver uses rectilinear mesh provided by the user, so we inherit our class from
-\link plask::SolverWithMesh plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D>\endlink. So our header
+\link plask::SolverWithMesh plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectangularMesh<2>>\endlink. So our header
 \a finite_differences.h should begin as follows:
 
 \code
@@ -108,7 +109,7 @@ Now we assume that our solver uses rectilinear mesh provided by the user, so we 
 
 namespace plask { namespace solvers { namespace optical_finite_differences { // put everything in private namespace
 
-class PLASK_SOLVER_API FiniteDifferencesSolver: public plask::SolverWithMesh < plask::Geometry2DCartesian, plask::RectilinearMesh2D >
+class PLASK_SOLVER_API FiniteDifferencesSolver: public plask::SolverWithMesh < plask::Geometry2DCartesian, plask::RectangularMesh<2> >
 {
 \endcode
 
@@ -174,7 +175,7 @@ In addition, you should write getClassName method, which returns the category an
         inTemperature = 300.;                                      // set default value for input temperature
     }
 
-    virtual std::string getClassName() const { return "optical.FiniteDifferencesCartesian2D"; }
+    virtual std::string getClassName() const { return "optical.FiniteDifferences2D"; }
 
 \endcode
 
@@ -296,8 +297,8 @@ the consecutive tags. It is important to call \c parseStandardConfiguration if y
                     .get(newton.method);
                 reader.requireTagEnd();
             } else if (reader.getNodeName() == "wavelength") {
-                std::string = reader.requireTextUntilEnd();
-                inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+                auto wavelength = reader.getAttributere<double>("value");
+                if (wavelength) inWavelength.setValue(*wavelenght);
             } else if (reader.getNodeName() == "boundary") {
                 manager.readBoundaryConditions(source, boundaryConditionsOnField);
                 reader.requireTagEnd();
@@ -317,7 +318,7 @@ The XML file to read by the above method can look as follows (although you shoul
 in order to make the XML file consistent for all the solvers).:
 
 \verbatim
-<optical lib="finite_diff" solver="FiniteDifferencesCartesian2D">
+<optical lib="finite_diff" solver="FiniteDifferences2D">
     <newton tolx="0.0001" tolf="1e-9" maxstep="500" />
     <wavelenght>1000</wavelength>
 </optical>
@@ -353,7 +354,7 @@ using namespace plask::solvers::optical_finite_differences; // use your solver p
 
 BOOST_PYTHON_MODULE(fd)
 {
-    {CLASS(FiniteDifferencesSolver, "FiniteDifferencesCartesian2D",
+    {CLASS(FiniteDifferencesSolver, "FiniteDifferences2D",
         "Calculate optical modes and optical field distribution using the finite\n"
         "differences method in Cartesian two-dimensional space.")
 
@@ -415,7 +416,7 @@ import numpy
 import plask
 import plask.optical.fd
 
-solver = plask.optical.fd.FiniteDifferencesCartesian2D()
+solver = plask.optical.fd.FiniteDifferences2D()
 solver.geometry = plask.geometry.Geometry2DCartesian(plask.geometry.Rectangle(2, 1, "GaN"))
 solver.mesh = plask.mesh.Rectangular2D(Regular(0,2,100), Regular(0,1,100))
 solver.inTemperature = 280
@@ -427,6 +428,43 @@ print(solver.outNeff())
 
 TODO
 
+\subsection solvers_xpl_details Writing configuration description
+
+Once your solver is working, you should create the \b solvers.xml file in the main directory of your solver. In this file you should
+specify all the XML configuration tags and attributes that are read from an \c xpl file. An example of such file can be found in
+\c solvers/skel/solvers.xml. For the above example the file should look like:
+
+\code{.xml}
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
+  <solver name="FiniteDifferences2D" category="optical" lib="fd">
+    Example finite difference solver.
+    <geometry type="Cartesian2D"/>
+    <mesh type="Rectangular2D"/>
+    <tag name="newton" label="Newton method settings">
+      Settings of the Newton root finding method.
+      <attr name="tolx" label="Argument tolerance" type="float">Tolerance of the argument.</attr>
+      <attr name="tolf" label="Function value tolerance" type="float">Tolerance of the function value.</attr>
+      <attr name="maxstep" label="Maximum step" type="float">Maximum step allowed in a single iteration.</attr>
+      <attr name="method" label="Root-finding method" type="choice">
+        Specific algorithm used for root finding.
+        <choice>raphson</choice>
+        <choice>secant</choice>
+      </attr>
+    </tag>
+    <tag name="wavelength" label="Wavelength">
+      Wavelength for which the calculations are performed.
+      <attr name="value" label="Value" type="float" unit="nm">Wavelength value.</attr>
+    </tag>
+    <bcond name="boundary" label="Boundary condition"/>
+    <flow>
+      <receiver name="inWavelength"/>
+      <receiver name="inReceiver"/>
+      <provider name="outProvider"/>
+    </flow>
+  </solver>
+</solvers>
+\endcode
 
 This concludes our short tutorial. Now you can go on and write your own calculation solver. Good luck!
 
