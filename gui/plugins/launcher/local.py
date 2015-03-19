@@ -196,7 +196,10 @@ class OutputWindow(QtGui.QDockWidget):
                     if cat == 'DATA' and not self.action_data.isChecked(): continue
                     if cat == 'DETAIL' and not self.action_detail.isChecked(): continue
                     if cat == 'DEBUG' and not self.action_debug.isChecked(): continue
-                    lines.append(line)
+                    try:
+                        lines.append(line.decode('utf-8'))
+                    except UnicodeDecodeError:
+                        lines.append(line.decode(self.parent().document.coding))
                 if lines:
                     self.messages.append(u"<br/>\n".join(lines))
                 self.printed_lines = total_lines

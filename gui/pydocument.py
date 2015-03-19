@@ -37,6 +37,7 @@ class PyDocument(object):
         self.materials.model = None
         self.solvers = None
         self.filename = None
+        self.coding = 'utf-8'
         self.set_changed(False)
         if filename: self.load_from_file(filename)
 
@@ -70,8 +71,10 @@ class PyDocument(object):
                                            "The file could not be saved with the specified encoding '{}'.\n\n"
                                            "Please set the proper encoding and try again.".format(coding))
                 return
+            self.coding = coding
         else:
-            text = text.encode('utf8')
+            text = text.encode('utf-8')
+            self.coding = 'utf-8'
         try:
             shutil.copyfile(filename, filename+'.bak')
         except (IOError, OSError):

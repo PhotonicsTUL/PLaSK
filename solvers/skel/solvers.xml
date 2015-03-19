@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
+
+  <!-- If your library has more than one solver, make separate <solver> tag for each one of them -->
+  <solver name="YourSolver" category="skel" lib="your_solver">
+
+    <!-- This is a desctription of your solver that will appear in the user manual -->
+    Example skeleton file for &lt;b&gt;solvers.xml&lt;/b&gt;.
+
+    <!-- Specify geometry type of your solver here -->
+    <geometry type="YourGeometry"/>
+
+    <!-- Specify mesh type of your solver. If the mesh is optional, add ‘optional="yes"’ attribute.
+    If the solves has no mesh, remove this tag. -->
+    <mesh type="YourMesh" optional="yes|no"/>
+
+    <!-- Specify each configuration tag here -->
+    <tag name="configuration-tag" label="Configuration tag">
+      <!-- Description of your tag that will show up in the user manual -->
+      Configuration tag of your solver.
+      <!-- Configuration attribute. Label will be displayed in GUI (make it short)
+           and the text content in the user manual (make it comprehensive). -->
+      <attr name="tag-attr" label="Tag attribute" type="attribute type" unit="unit">Pull all the configuration attributes like this.</attr>
+      <!-- This is a choice attribute. GUI will create an drop-down list with all the options.
+           Make sure you set ‘type="choice"’ here. -->
+      <attr name="other-attr" label="Other attribute" type="choice">
+        Another configuration attribute.
+        <choice>First choice</choice>
+        <choice>Second choice</choice>
+        <choice>Third choice</choice>
+      </attr>
+    </tag>
+
+    <tag name="another-configuration-tag" label="Different Configuration tag">
+      <attr name="attribute" label="Some attribute" type="attribute type" unit="unit">Pull all the configuration attributes like this.</attr>
+    </tag>
+
+    <!-- Specify boundary conditions read by your solver here. -->
+    <bcond name="boundary_condtion" label="Boundary condition"/>
+
+    <!-- Some documentation of boundary conditions is generated automatically.
+         If it is not sufficient add additional description inside this tag. -->
+    <bcond name="other_boundary_condtion" label="Another boundary condition">
+      Additional description of boundary condition in help.
+    </bcond>
+
+    <!-- Here you specify all the receivers and providers. -->
+    <flow>
+      <receiver name="inReceiver"/>
+      <!-- Standard name of receiver/provider is inQuantity/outQuantity. Sometimes it can be different.
+           In such case add ‘for’ attribute with the quantity name, so GUI can offer proper connection options. -->
+      <provider name="outProvider" for="QuantityIfNameDifferent"/>
+    </flow>
+
+  </solver>
+
+</solvers>

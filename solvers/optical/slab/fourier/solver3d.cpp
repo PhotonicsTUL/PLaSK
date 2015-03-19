@@ -110,8 +110,10 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 std::string node = reader.getNodeName();
                 if (node == "long") {
                     updatePML(pml_long, reader);
+                    reader.requireTagEnd();
                 } else if (node == "tran") {
                     updatePML(pml_tran, reader);
+                    reader.requireTagEnd();
                 } else throw XMLUnexpectedElementException(reader, "<tran>, <long>, or </pmls>", node);
             }
         } else if (param == "mode") {

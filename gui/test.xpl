@@ -197,6 +197,12 @@
 <script><![CDATA[
 from scipy import optimize
 
+print_log('data', "łóżko")
+print_log('info', "informacja")
+
+import sys
+sys.exit(0)
+
 # OPTICAL.find_mode
 
 class A(object):

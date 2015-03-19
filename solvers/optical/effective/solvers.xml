@@ -94,7 +94,7 @@
         <choice>muller</choice>
         <choice>broyden</choice>
       </attr>
-      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolx" label="Tolerance on effective frequency" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
       <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
       <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
@@ -111,7 +111,7 @@
         <choice>muller</choice>
         <choice>broyden</choice>
       </attr>
-      <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolx" label="Tolerance on effective frequency" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
       <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
       <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>

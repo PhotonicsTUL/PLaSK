@@ -32,6 +32,7 @@ try:
 except ImportError:
     plask = None
 
+
 class XPLDocument(object):
 
     SECTION_NAMES = ['defines', 'materials', 'geometry', 'grids', 'solvers', 'connects', 'script']
@@ -75,6 +76,7 @@ class XPLDocument(object):
         #for c in self.controllers:
         #    self.undo_group.addStack(c.model.undo_stack)
 
+    coding = 'utf-8'
 
     def on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""

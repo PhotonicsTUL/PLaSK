@@ -466,7 +466,7 @@ class MainWindow(QtGui.QMainWindow):
         """Set changed flags in the document window"""
         try:
             if self.document.filename:
-                self.setWindowTitle("{}[*] - PLaSK".format(self.document.filename))
+                self.setWindowTitle(u"{}[*] - PLaSK".format(self.document.filename))
             else:
                 self.setWindowTitle("[*] PLaSK")
         except AttributeError:
