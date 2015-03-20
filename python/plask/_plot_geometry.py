@@ -108,6 +108,39 @@ class _ColorFromDict(object):
             return self.material_to_color(material)
 
 
+class TertiaryColors(object):
+    """
+    Interpolate colors of tertiary compounds.
+    """
+
+    def __init__(self, color1, color2):
+        self.color2 = array(color2)
+        self.color12 = array(color1) - self.color2
+
+    def __call__(self, x):
+        return self.color2 + float(x) * self.color12
+
+
+class DopedColors(object):
+    """
+    Modify  color by doping
+    """
+
+    def __init__(self, color, doping_color):
+        self.color = color
+        self.doping_color = array(doping_color)
+
+    def __call__(self, *args):
+        if isinstance(self.color, collections.Callable):
+            result = self.color(*args[:-1])
+        else:
+            result = array(self.color)
+        result += self.doping_color * math.log10(float(args[-1]))/20.
+        result[result > 1.] = 1.
+        result[result < 0.] = 0.
+        return result
+
+
 # Default colors
 DEFAULT_COLORS = {
     'Cu':                               '#9E807E',
@@ -117,20 +150,46 @@ DEFAULT_COLORS = {
 
     'AlOx':                             '#98F2FF',
 
-    'GaAs':                             '#00A000',
-    _r('GaAs:(.*)'):                    lambda s: '#00A0{:02X}'.format(adler32(s) % 133),
-    'AlAs':                             '#D0F000',
-    _r('AlAs:(.*)'):                    lambda s: '#D0F0{:02X}'.format(adler32(s) % 133),
-    'InAs':                             '#D00080',
-    _r('InAs:(.*)'):                    lambda s: '#D0{:02X}80'.format(adler32(s) % 133),
-    _r(r'Al\(([\d.]+)\)GaAs'):          lambda x: array((0.82, 0.325, 0.)) * float(x) +
-                                                  array((0., 0.62, 0.)),
-    _r(r'Al\(([\d.]+)\)GaAs:(.*)'):     lambda x, s: array((0.82, 0.325, 0.)) * float(x) +
-                                                     array((0., 0.62, (adler32(s) % 133)/255.)),
-    _r(r'In\(([\d.]+)\)GaAs'):          lambda x: array((0.82, -0.62, 0.50)) * float(x) +
-                                                  array((0., 0.62, 0.)),
-    _r(r'In\(([\d.]+)\)GaAs:(.*)'):     lambda x, s: array((0.82, -0.62, 0.50)) * float(x) +
-                                                     array((0, 0.62, (adler32(s) % 89)/255.)),
+    'GaAs':                                 (0.00, 0.62, 0.00),
+    _r(r'GaAs:Si.*=(.*)'):                  DopedColors((0.00, 0.62, 0.00), (0.0, 0.0, 0.3)),
+    _r(r'GaAs:(?:Be|Zn|C).*=(.*)'):         DopedColors((0.00, 0.62, 0.00), (0.1, 0.0, 0.0)),
+    'AlAs':                                 (0.82, 0.94, 0.00),
+    _r(r'AlAs:Si.*=(.*)'):                  DopedColors((0.82, 0.94, 0.00), (0.0, 0.0, 0.3)),
+    _r(r'AlAs:C.*=(.*)'):                   DopedColors((0.82, 0.94, 0.00), (0.1, 0.0, 0.0)),
+    'InAs':                                 (0.82, 0.50, 0.00),
+    _r(r'InAs:Si.*=(.*)'):                  DopedColors((0.82, 0.50, 0.00), (0.0, 0.0, 0.2)),
+    _r(r'InAs:C.*=(.*)'):                   DopedColors((0.82, 0.50, 0.00), (0.1, 0.0, 0.0)),
+    _r(r'Al\(([\d.]+)\)GaAs$'):             TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
+    _r(r'Al\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
+                                                        (0.0, 0.0, 0.3)),
+    _r(r'Al\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
+                                                        (0.1, 0.0, 0.0)),
+    _r(r'In\(([\d.]+)\)GaAs$'):             TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
+    _r(r'In\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
+                                                        (0.0, 0.0, 0.3)),
+    _r(r'In\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
+                                                        (0.1, 0.0, 0.0)),
+
+    'GaN':                                 (0.00, 0.00, 0.62),
+    'GaN_bulk':                            (0.00, 0.00, 0.50),
+    _r(r'GaN:Si.*=(.*)'):                  DopedColors((0.00, 0.00, 0.62), (0.0, 0.2, 0.0)),
+    _r(r'GaN:Mg.*=(.*)'):                  DopedColors((0.00, 0.00, 0.62), (0.2, 0.0, 0.0)),
+    'AlN':                                 (0.00, 0.82, 0.94),
+    _r(r'AlN:Si.*=(.*)'):                  DopedColors((0.00, 0.82, 0.94), (0.0, 0.2, 0.0)),
+    _r(r'AlN:Mg.*=(.*)'):                  DopedColors((0.00, 0.82, 0.94), (0.2, 0.0, 0.0)),
+    'InN':                                 (0.82, 0.00, 0.50),
+    _r(r'InN:Si.*=(.*)'):                  DopedColors((0.82, 0.00, 0.50), (0.0, 0.0, 0.2)),
+    _r(r'InN:C.*=(.*)'):                   DopedColors((0.82, 0.00, 0.50), (0.2, 0.0, 0.0)),
+    _r(r'Al\(([\d.]+)\)GaN$'):             TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
+    _r(r'Al\(([\d.]+)\)GaN:Si.*=(.*)'):    DopedColors(TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
+                                                        (0.0, 0.2, 0.0)),
+    _r(r'Al\(([\d.]+)\)GaN:Mg.*=(.*)'):    DopedColors(TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
+                                                        (0.2, 0.0, 0.0)),
+    _r(r'In\(([\d.]+)\)GaN$'):             TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
+    _r(r'In\(([\d.]+)\)GaN:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
+                                                        (0.0, 0.2, 0.0)),
+    _r(r'In\(([\d.]+)\)GaN:Mg.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
+                                                        (0.2, 0.0, 0.0)),
 }
 
 

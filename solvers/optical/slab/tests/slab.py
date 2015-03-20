@@ -41,7 +41,7 @@ class LayerSet_Test(unittest.TestCase):
                 </stack>
                 <block name="x1" dr="10" dz="0.06371" material="AlGaAs"/>
                 <shelf name="oxide-layer">
-                  <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlxOy"/>
+                  <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlOx"/>
                 </shelf>
                 <block dr="10" dz="0.13649" material="GaAs" role="opt-cavity"/>
                 <shelf name="QW">
@@ -82,6 +82,6 @@ class LayerSet_Test(unittest.TestCase):
         for i in enumerate(layers):
             print("%d: %s" % i)
         print(stack)
-        self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlxOy', 'air/air'] )
+        self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'] )
         self.assertEqual( stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0] )
 

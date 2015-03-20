@@ -123,7 +123,7 @@ class EffectiveFrequency(unittest.TestCase):
                 <nr>2.95</nr>
                 <absp>0.</absp>
               </material>
-              <material name="AlxOy" base="semiconductor">
+              <material name="AlOx" base="semiconductor">
                 <nr>1.53</nr>
                 <absp>0.</absp>
               </material>
@@ -142,7 +142,7 @@ class EffectiveFrequency(unittest.TestCase):
                 </stack>
                 <block name="x1" dr="10" dz="0.06371" material="AlGaAs"/>
                 <shelf name="oxide-layer">
-                  <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlxOy"/>
+                  <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlOx"/>
                 </shelf>
                 <block name="x" dr="10" dz="0.00000" material="AlGaAs"/>
                 <block dr="10" dz="0.13649" material="GaAs"/>

@@ -166,7 +166,7 @@ class GNReadConf(object):
     def write_aligners(self, element, dims=None, aligners={}):
         if isinstance(aligners, (list, tuple)):
             if dims is None: dims = len(aligners)
-            aligners = { axis_nr : aligners[axis_nr] for axis_nr in range(0, dims) }
+            aligners = {axis_nr: aligners[axis_nr] for axis_nr in range(0, dims)}
         else:
             if dims is None: dims = self.parent.dim
         for axis_nr, aligner in aligners.items():

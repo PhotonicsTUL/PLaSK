@@ -29,9 +29,9 @@ class GNode(object):
         self.dim = dim
         self.children_dim = children_dim
         self.children = []
-        self.in_parent = None   #configuration inside parent (container)
-        self.path = None    #path inside parent (container)
-        self._parent = None  #used by parent property
+        self.in_parent = None   # configuration inside parent (container)
+        self.path = None        # path inside parent (container)
+        self._parent = None     # used by parent property
         self.set_parent(parent)
 
     def _attributes_from_xml(self, attribute_reader, conf):

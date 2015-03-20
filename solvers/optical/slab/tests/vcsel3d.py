@@ -29,7 +29,7 @@ class VCSEL(unittest.TestCase):
                 <nr>2.95</nr>
                 <absp>0.</absp>
               </material>
-              <material name="AlxOy" base="semiconductor">
+              <material name="AlOx" base="semiconductor">
                 <nr>1.53</nr>
                 <absp>0.</absp>
               </material>
@@ -49,7 +49,7 @@ class VCSEL(unittest.TestCase):
                   </stack>
                   <block name="x1" dx="10" dy="10" dz="0.06371" material="AlGaAs"/>
                   <align bottom="0" name="oxide-layer">
-                    <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.01593" material="AlxOy"/></item>
+                    <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.01593" material="AlOx"/></item>
                     <item xcenter="0" ycenter="0"><cylinder radius="4" height="0.01593" material="AlAs"/></item>
                   </align>
                   <block name="x" dx="10" dy="10" dz="0.00000" material="AlGaAs"/>
