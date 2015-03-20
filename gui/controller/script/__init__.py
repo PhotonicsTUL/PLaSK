@@ -252,7 +252,7 @@ class ScriptController(SourceEditController):
         self.help_dock = HelpDock(window)
         state = CONFIG['session/scriptwindow']
         if state is None or not window.restoreState(state):
-            window.addDockWidget(Qt.BottomDockWidgetArea, self.help_dock)
+            window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
         doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-browser'), 'Show &docstring', source)

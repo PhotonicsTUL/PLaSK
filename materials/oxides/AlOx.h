@@ -1,8 +1,8 @@
-#ifndef PLASK__AlxOy_H
-#define PLASK__AlxOy_H
+#ifndef PLASK__AlOx_H
+#define PLASK__AlOx_H
 
 /** @file
-This file contains AlxOy
+This file contains AlOx
 */
 
 #include <plask/material/material.h>
@@ -10,11 +10,11 @@ This file contains AlxOy
 namespace plask { namespace materials {
 
 /**
- * Represent AlxOy, its physical properties.
+ * Represent AlOx, its physical properties.
  */
-struct AlxOy: public Dielectric {
+struct AlOx: public Dielectric {
 
-    static constexpr const char* NAME = "AlxOy";
+    static constexpr const char* NAME = "AlOx";
 
     virtual std::string name() const override;
     virtual Tensor2<double> cond(double T) const override;
@@ -30,4 +30,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__AlxOy_H
+#endif	//PLASK__AlOx_H

@@ -9,10 +9,14 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
+from numpy import array
+
 import collections
 from zlib import adler32
 
 from pylab import _get_2d_axes
+
+from re import compile as _r
 
 __all__ = ('plot_geometry')
 
@@ -55,8 +59,11 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
 
 class _MaterialToColor(object):
 
-    def __init__(self, axes):
-        self._air_color = axes.get_axis_bgcolor()
+    def __init__(self, axes=None):
+        if axes is None:
+            self._air_color = '#ffffff'
+        else:
+            self._air_color = axes.get_axis_bgcolor()
 
     def __call__(self, material):
         """
@@ -64,10 +71,67 @@ class _MaterialToColor(object):
             :param plask.Material material: material
             :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
         """
-        if str(material) == 'air':
+        s = str(material)
+        if s == 'air':
             return self._air_color
-        i = adler32(str(material))      # maybe crc32?
+        i = adler32(s)      # maybe crc32?
         return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
+
+
+class _ColorFromDict(object):
+    """
+    Get color from dict:
+    material name string/re -> color or using material_to_color (for names which are not present in dict).
+    """
+
+    def __init__(self, material_dict, axes=None):
+        super(_ColorFromDict, self).__init__()
+        self.material_dict = material_dict
+        self.material_to_color = _MaterialToColor(axes)
+
+    def __call__(self, material):
+        s = str(material)
+        try:
+            return self.material_dict[s]
+        except KeyError:
+            for r in self.material_dict:
+                try:
+                    m = r.match(s)
+                    if m is not None:
+                        c = self.material_dict[r]
+                        if isinstance(c, collections.Callable):
+                            return c(*m.groups())
+                        else:
+                            return m.expand(c)
+                except AttributeError:
+                    pass
+            return self.material_to_color(material)
+
+
+# Default colors
+DEFAULT_COLORS = {
+    'Cu':                               '#9E807E',
+    'Au':                               '#A6A674',
+    'Pt':                               '#A6A674',
+    'In':                               '#585266',
+
+    'AlOx':                             '#98F2FF',
+
+    'GaAs':                             '#00A000',
+    _r('GaAs:(.*)'):                    lambda s: '#00A0{:02X}'.format(adler32(s) % 133),
+    'AlAs':                             '#D0F000',
+    _r('AlAs:(.*)'):                    lambda s: '#D0F0{:02X}'.format(adler32(s) % 133),
+    'InAs':                             '#D00080',
+    _r('InAs:(.*)'):                    lambda s: '#D0{:02X}80'.format(adler32(s) % 133),
+    _r(r'Al\(([\d.]+)\)GaAs'):          lambda x: array((0.82, 0.325, 0.)) * float(x) +
+                                                  array((0., 0.62, 0.)),
+    _r(r'Al\(([\d.]+)\)GaAs:(.*)'):     lambda x, s: array((0.82, 0.325, 0.)) * float(x) +
+                                                     array((0., 0.62, (adler32(s) % 133)/255.)),
+    _r(r'In\(([\d.]+)\)GaAs'):          lambda x: array((0.82, -0.62, 0.50)) * float(x) +
+                                                  array((0., 0.62, 0.)),
+    _r(r'In\(([\d.]+)\)GaAs:(.*)'):     lambda x, s: array((0.82, -0.62, 0.50)) * float(x) +
+                                                     array((0, 0.62, (adler32(s) % 89)/255.)),
+}
 
 
 class DrawEnviroment(object):
@@ -75,24 +139,27 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, axes, artist_dst, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0):
+    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0):
         """
-        :param axes: plane to draw (important in 3D)
-        :param artist_dst: mpl axis where artist should be appended
+        :param plane: plane to draw (important in 3D)
+        :param dest: mpl axis where artist should be appended
         :param bool fill: True if artists should be filled
         :param color: edge color (mpl format)
         :param lw: line width
         :param zorder: artists z order
         """
         super(DrawEnviroment, self).__init__()
-        self.artist_dst = artist_dst
+        self.dest = dest
         self.fill = fill
         self.color = color
         self.lw = lw
-        self.axes = axes
+        self.axes = plane
         self.zorder = zorder
+
         if get_color is None:
-            self.get_color = _MaterialToColor(artist_dst)
+            self.get_color = _ColorFromDict(DEFAULT_COLORS, dest)
+        elif get_color is not None and not isinstance(get_color, collections.Callable):
+            self.get_color = _ColorFromDict(get_color, dest)
         else:
             self.get_color = get_color
 
@@ -110,7 +177,7 @@ class DrawEnviroment(object):
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
-        self.artist_dst.add_patch(artist)
+        self.dest.add_patch(artist)
         if clip_box is not None:
             artist.set_clip_box(BBoxIntersection(clip_box, artist.get_clip_box()))
             #artist.set_clip_box(clip_box)
@@ -299,24 +366,6 @@ def _draw_geometry_object(env, geometry_object, transform, clip_box):
         drawer(env, geometry_object, transform, clip_box)
 
 
-class ColorFromDict(object):
-    """
-    Get color from dict:
-    material name string -> color or using material_to_color (for names which are not present in dict).
-    """
-
-    def __init__(self, material_dict, axes):
-        super(ColorFromDict, self).__init__()
-        self.material_dict = material_dict
-        self.material_to_color = _MaterialToColor(axes)
-
-    def __call__(self, material):
-        try:
-            return self.material_dict[str(material)]
-        except KeyError:
-            return self.material_to_color(material)
-
-
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, fill=False,
                   axes=None, figure=None, margin=None, get_color=None, set_limits=None):
     """
@@ -384,9 +433,6 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
             axes = matplotlib.pylab.gca()
         else:
             axes = figure.add_subplot(111)
-
-    if get_color is not None and not isinstance(get_color, collections.Callable):
-        get_color = ColorFromDict(get_color, axes)
 
     # if isinstance(geometry, plask.geometry.Cartesian3D):
     if geometry.DIMS == 3:

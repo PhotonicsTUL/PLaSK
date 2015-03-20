@@ -38,7 +38,7 @@
           <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
           <shelf>
             <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
-            <rectangle name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
+            <rectangle name="oxide" material="AlOx" dr="{mesaRadius-aperture}" dz="0.01603"/>
           </shelf>
           <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
           <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
@@ -109,6 +109,9 @@
       </item>
     </align>
   </cartesian3d>
+  <cartesian2d>
+    <rectangle material="In(0.5)GaAs" dtran="1" dvert="1"/>
+  </cartesian2d>
 </geometry>
 
 <grids>

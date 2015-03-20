@@ -19,6 +19,8 @@ set(I18NSPHINXOPTS ${PAPEROPT_${SPHINX_PAPER}} ${SPHINX_OPTIONS} ${CMAKE_CURRENT
 
 find_program(MAKE make)
 
+file(GLOB svg_files *.svg)
+
 # Make PDFs out from SVG
 find_program(INKSCAPE inkscape)
 if (INKSCAPE)
@@ -38,7 +40,6 @@ set(sphinx plask ${SPHINX_EXECUTABLE})
 if(SPHINX_FOUND)
 
     file(GLOB rst_files *.rst api/*.rst xpl/*.rst xpl/geometry/*.rst xpl/geometry/2d/*.rst xpl/geometry/3d/*.rst xpl/solvers/filters.rst xpl/solvers/boundary_conditions.rst)
-    file(GLOB svg_files *.svg)
 
     file(GLOB_RECURSE solvers_xml ${CMAKE_SOURCE_DIR}/solvers/*/solvers.xml)
 

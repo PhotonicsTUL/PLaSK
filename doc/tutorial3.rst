@@ -52,7 +52,7 @@ Next we can define a VCSEL structure:
      <shelf>
        <block dr="{aperture}" dz="0.01603" material="AlAs:Si=2e+18"
                   name="aperture"/>
-       <block dr="{mesa-aperture}" dz="0.01603" material="AlxOy"
+       <block dr="{mesa-aperture}" dz="0.01603" material="AlOx"
                  name="oxide"/>
      </shelf>
      <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>

@@ -1,4 +1,4 @@
-#include "AlxOy.h"
+#include "AlOx.h"
 
 #include <cmath>
 #include <plask/material/db.h>  //MaterialsDB::Register
@@ -6,46 +6,46 @@
 
 namespace plask { namespace materials {
 
-std::string AlxOy::name() const { return NAME; }
+std::string AlOx::name() const { return NAME; }
 
-MI_PROPERTY(AlxOy, cond,
+MI_PROPERTY(AlOx, cond,
             MISource("A. Inoue et al., Journal of Materials Science 22 (1987) 2063-2068"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlxOy::cond(double T) const {
+Tensor2<double> AlOx::cond(double T) const {
     return ( Tensor2<double>(1e-7, 1e-7) );
 }
 
-MI_PROPERTY(AlxOy, thermk,
+MI_PROPERTY(AlOx, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlxOy::thermk(double T, double h) const {
+Tensor2<double> AlOx::thermk(double T, double h) const {
     return ( Tensor2<double>(0.7, 0.7) );
 }
 
-MI_PROPERTY(AlxOy, absp,
+MI_PROPERTY(AlOx, absp,
             MISource(""),
             MIComment("TODO")
             )
-double AlxOy::absp(double wl, double T) const {
+double AlOx::absp(double wl, double T) const {
     return ( 0. );
 }
 
-bool AlxOy::isEqual(const Material &other) const {
+bool AlOx::isEqual(const Material &other) const {
     return true;
 }
 
-MI_PROPERTY(AlxOy, nr,
+MI_PROPERTY(AlOx, nr,
             MISource("T.Kitatani et al., Japanese Journal of Applied Physics (part1) 41 (2002) 2954-2957"),
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIComment("no temperature dependence"),
             MIArgumentRange(MaterialInfo::wl, 400, 1600)
 			)
-double AlxOy::nr(double wl, double T, double n) const {
+double AlOx::nr(double wl, double T, double n) const {
     return ( 0.30985*exp(-wl/236.7)+1.52829 );
 }
 
-static MaterialsDB::Register<AlxOy> materialDB_register_AlxOy;
+static MaterialsDB::Register<AlOx> materialDB_register_AlOx;
 
 }}       // namespace plask::materials

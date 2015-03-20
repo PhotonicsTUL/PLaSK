@@ -46,7 +46,7 @@ Next, according to Figure :ref:`fig-tutorial2-geometry` we finish the top DBR wi
    <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
    <shelf>
      <block dr="4" dz="0.01603" material="AlAs"/>
-     <block dr="6" dz="0.01603" material="AlxOy"/>
+     <block dr="6" dz="0.01603" material="AlOx"/>
    </shelf>
    <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
    <block dr="10" dz="0.13756" material="GaAs"/>
@@ -122,7 +122,7 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
             <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
             <shelf>
             <block dr="4" dz="0.01603" material="AlAs"/>
-            <block dr="6" dz="0.01603" material="AlxOy"/>
+            <block dr="6" dz="0.01603" material="AlOx"/>
             </shelf>
             <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
             <block dr="10" dz="0.13756" material="GaAs"/>
