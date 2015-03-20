@@ -142,54 +142,63 @@ class DopedColors(object):
 
 
 # Default colors
+
+_GaAs = (0.00, 0.62, 0.00)
+_AlAs = (0.82, 0.94, 0.00)
+_InAs = (0.82, 0.50, 0.00)
+_AlGaAs = TertiaryColors(_AlAs, _GaAs)
+_InGaAs = TertiaryColors(_InAs, _GaAs)
+_As_n = (0.0, 0.0, 0.3)
+_As_p = (0.1, 0.0, 0.0)
+
+_GaN = (0.00, 0.00, 0.62)
+_AlN = (0.00, 0.82, 0.94)
+_InN = (0.82, 0.00, 0.50)
+_AlGaN = TertiaryColors(_AlN, _GaN)
+_InGaN = TertiaryColors(_InN, _GaN)
+_N_n = (0.0, 0.2, 0.0)
+_N_p = (0.2, 0.0, 0.0)
+
 DEFAULT_COLORS = {
-    'Cu':                               '#9E807E',
-    'Au':                               '#A6A674',
-    'Pt':                               '#A6A674',
-    'In':                               '#585266',
+    'Cu':                                   '#9E807E',
+    'Au':                                   '#A6A674',
+    'Pt':                                   '#A6A674',
+    'In':                                   '#585266',
 
-    'AlOx':                             '#98F2FF',
+    'AlOx':                                 '#98F2FF',
 
-    'GaAs':                                 (0.00, 0.62, 0.00),
-    _r(r'GaAs:Si.*=(.*)'):                  DopedColors((0.00, 0.62, 0.00), (0.0, 0.0, 0.3)),
-    _r(r'GaAs:(?:Be|Zn|C).*=(.*)'):         DopedColors((0.00, 0.62, 0.00), (0.1, 0.0, 0.0)),
-    'AlAs':                                 (0.82, 0.94, 0.00),
-    _r(r'AlAs:Si.*=(.*)'):                  DopedColors((0.82, 0.94, 0.00), (0.0, 0.0, 0.3)),
-    _r(r'AlAs:C.*=(.*)'):                   DopedColors((0.82, 0.94, 0.00), (0.1, 0.0, 0.0)),
-    'InAs':                                 (0.82, 0.50, 0.00),
-    _r(r'InAs:Si.*=(.*)'):                  DopedColors((0.82, 0.50, 0.00), (0.0, 0.0, 0.2)),
-    _r(r'InAs:C.*=(.*)'):                   DopedColors((0.82, 0.50, 0.00), (0.1, 0.0, 0.0)),
-    _r(r'Al\(([\d.]+)\)GaAs$'):             TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
-    _r(r'Al\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
-                                                        (0.0, 0.0, 0.3)),
-    _r(r'Al\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(TertiaryColors((0.82, 0.94, 0.00), (0.00, 0.62, 0.00)),
-                                                        (0.1, 0.0, 0.0)),
-    _r(r'In\(([\d.]+)\)GaAs$'):             TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
-    _r(r'In\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
-                                                        (0.0, 0.0, 0.3)),
-    _r(r'In\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(TertiaryColors((0.82, 0.50, 0.00), (0.00, 0.62, 0.00)),
-                                                        (0.1, 0.0, 0.0)),
+    'GaAs':                                 _GaAs,
+    _r(r'GaAs:Si.*=(.*)'):                  DopedColors(_GaAs, _As_n),
+    _r(r'GaAs:(?:Be|Zn|C).*=(.*)'):         DopedColors(_GaAs, _As_p),
+    'AlAs':                                 _AlAs,
+    _r(r'AlAs:Si.*=(.*)'):                  DopedColors(_AlAs, _As_n),
+    _r(r'AlAs:C.*=(.*)'):                   DopedColors(_AlAs, _As_p),
+    'InAs':                                 _InAs,
+    _r(r'InAs:Si.*=(.*)'):                  DopedColors(_InAs, _As_n),
+    _r(r'InAs:C.*=(.*)'):                   DopedColors(_InAs, _As_p),
+    _r(r'Al\(([\d.]+)\)GaAs$'): _AlGaAs,
+    _r(r'Al\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_AlGaAs, _As_n),
+    _r(r'Al\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_AlGaAs, _As_p),
+    _r(r'In\(([\d.]+)\)GaAs$'): _InGaAs,
+    _r(r'In\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_InGaAs, _As_n),
+    _r(r'In\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_InGaAs, _As_p),
 
-    'GaN':                                 (0.00, 0.00, 0.62),
-    'GaN_bulk':                            (0.00, 0.00, 0.50),
-    _r(r'GaN:Si.*=(.*)'):                  DopedColors((0.00, 0.00, 0.62), (0.0, 0.2, 0.0)),
-    _r(r'GaN:Mg.*=(.*)'):                  DopedColors((0.00, 0.00, 0.62), (0.2, 0.0, 0.0)),
-    'AlN':                                 (0.00, 0.82, 0.94),
-    _r(r'AlN:Si.*=(.*)'):                  DopedColors((0.00, 0.82, 0.94), (0.0, 0.2, 0.0)),
-    _r(r'AlN:Mg.*=(.*)'):                  DopedColors((0.00, 0.82, 0.94), (0.2, 0.0, 0.0)),
-    'InN':                                 (0.82, 0.00, 0.50),
-    _r(r'InN:Si.*=(.*)'):                  DopedColors((0.82, 0.00, 0.50), (0.0, 0.0, 0.2)),
-    _r(r'InN:C.*=(.*)'):                   DopedColors((0.82, 0.00, 0.50), (0.2, 0.0, 0.0)),
-    _r(r'Al\(([\d.]+)\)GaN$'):             TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
-    _r(r'Al\(([\d.]+)\)GaN:Si.*=(.*)'):    DopedColors(TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
-                                                        (0.0, 0.2, 0.0)),
-    _r(r'Al\(([\d.]+)\)GaN:Mg.*=(.*)'):    DopedColors(TertiaryColors((0.00, 0.82, 0.94), (0.00, 0.00, 0.62)),
-                                                        (0.2, 0.0, 0.0)),
-    _r(r'In\(([\d.]+)\)GaN$'):             TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
-    _r(r'In\(([\d.]+)\)GaN:Si.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
-                                                        (0.0, 0.2, 0.0)),
-    _r(r'In\(([\d.]+)\)GaN:Mg.*=(.*)'):    DopedColors(TertiaryColors((0.82, 0.00, 0.50), (0.00, 0.00, 0.62)),
-                                                        (0.2, 0.0, 0.0)),
+    'GaN':                                  _GaN,
+    'GaN_bulk':                             (0.00, 0.00, 0.50),
+    _r(r'GaN:Si.*=(.*)'):                   DopedColors(_GaN, _N_n),
+    _r(r'GaN:Mg.*=(.*)'):                   DopedColors(_GaN, _N_p),
+    'AlN':                                  _AlN,
+    _r(r'AlN:Si.*=(.*)'):                   DopedColors(_AlN, _N_n),
+    _r(r'AlN:Mg.*=(.*)'):                   DopedColors(_AlN, _N_p),
+    'InN':                                  _InN,
+    _r(r'InN:Si.*=(.*)'):                   DopedColors(_InN, _N_n),
+    _r(r'InN:C.*=(.*)'):                    DopedColors(_InN, _N_p),
+    _r(r'Al\(([\d.]+)\)GaN$'):              _AlGaN,
+    _r(r'Al\(([\d.]+)\)GaN:Si.*=(.*)'):     DopedColors(_AlGaN, _N_n),
+    _r(r'Al\(([\d.]+)\)GaN:Mg.*=(.*)'):     DopedColors(_AlGaN, _N_p),
+    _r(r'In\(([\d.]+)\)GaN$'):              _InGaN,
+    _r(r'In\(([\d.]+)\)GaN:Si.*=(.*)'):     DopedColors(_InGaN, _N_n),
+    _r(r'In\(([\d.]+)\)GaN:Mg.*=(.*)'):     DopedColors(_InGaN, _N_p),
 }
 
 
