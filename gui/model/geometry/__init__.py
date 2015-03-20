@@ -65,6 +65,7 @@ class PyObjMime(QtCore.QMimeData):
 
 class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
+    REMOVE_COMMAND_ID = 0
 
     class RemoveChildrenCommand(QtGui.QUndoCommand):
 
@@ -100,15 +101,20 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.model.endInsertRows()
             self.model.fire_changed()
 
+        def id(self):
+            return GeometryModel.REMOVE_COMMAND_ID
+
 
     class InsertChildCommand(QtGui.QUndoCommand):
 
-        def __init__(self, model, parent_node, row, child_node, QUndoCommand_parent=None):
+        def __init__(self, model, parent_node, row, child_node, marge_with_next_remove=False, QUndoCommand_parent=None):
             self.model = model
             self.parent_node = parent_node
             if row is None: row = parent_node.new_child_pos()
             self.row = row
             self.child_node = child_node
+            self.marge_with_next_remove = marge_with_next_remove
+            self.next_remove = None
             super(GeometryModel.InsertChildCommand, self).__init__('append {}'.format(child_node.tag_name(full_name=False)), QUndoCommand_parent)
 
         @property
@@ -123,13 +129,30 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.model.beginInsertRows(self.parent_index, self.row, self.row)
             self.child_node.set_parent(self.parent_node, index=self.row, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
             self.model.endInsertRows()
-            self.model.fire_changed()
+            if self.next_remove is not None:
+                self.next_remove.redo() #this also will call fire_changed()
+            else:
+                self.model.fire_changed()
 
         def undo(self):
+            if self.next_remove is not None:
+                self.next_remove.undo()
             self.model.beginRemoveRows(self.parent_index, self.row, self.row)
             del self.children_list[self.row]
             self.model.endRemoveRows()
             self.model.fire_changed()
+
+        def mergeWith(self, command):
+            if self.marge_with_next_remove:
+                self.next_remove = command
+                return True
+            else:
+                return False
+
+        def id(self):
+            if self.marge_with_next_remove and self.next_remove is None:
+                return GeometryModel.REMOVE_COMMAND_ID
+            return super(GeometryModel.InsertChildCommand, self).id()
 
 
     class SwapChildrenCommand(QtGui.QUndoCommand):
@@ -322,13 +345,15 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
 
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
+        if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
+            return False    # qt should call this but some version of qt have a bug
         if action == QtCore.Qt.IgnoreAction: return True
         if action == QtCore.Qt.MoveAction:
             moved_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             if moved_obj.parent != parent:  # without copy, the parent of source is incorrect after change and then remove crash
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
-            self.insert_node(parent, moved_obj, None if row == -1 else row)
+            self.insert_node(parent, moved_obj, None if row == -1 else row, marge_with_next_remove = True)
             return True #removeRows will be called and remove current moved_obj
         return False
 
@@ -356,9 +381,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), 0, node)
 
-    def insert_node(self, parent_node, child_node, pos = None):
+    def insert_node(self, parent_node, child_node, pos = None, marge_with_next_remove = False):
         self.undo_stack.push(
-            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node)
+            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node, marge_with_next_remove=marge_with_next_remove)
         )
 
     def append_geometry(self, type_name):
