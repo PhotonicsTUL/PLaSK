@@ -32,7 +32,7 @@ class GNode(object):
         self.in_parent = None   #configuration inside parent (container)
         self.path = None    #path inside parent (container)
         self._parent = None  #used by parent property
-        self.set_parent(parent, -1)
+        self.set_parent(parent)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         """
@@ -169,7 +169,7 @@ class GNode(object):
     #        child.clear_in_parent_params()
     #        child._parent = self
 
-    def set_parent(self, parent, index=None, remove_from_old_parent_children=True, try_prevent_in_parent_params = False):
+    def set_parent(self, parent, index=None, remove_from_old_parent_children=True, try_prevent_in_parent_params=True):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
@@ -191,7 +191,11 @@ class GNode(object):
         else:
             if self._parent is not None:
                 if remove_from_old_parent_children: self._parent.children.remove(self)
-                self.clear_in_parent_params(parent if try_prevent_in_parent_params else None)
+            if try_prevent_in_parent_params:
+                self.clear_in_parent_params(parent)
+            else:
+                self.in_parent = None
+                self.path = None
             self._parent = parent
             if self._parent is not None:
                 if index is None:
@@ -377,3 +381,6 @@ class GNFakeRoot(GNode):
     def accept_as_child(self, node):
         from .geometry import GNGeometryBase
         return isinstance(node, GNGeometryBase)
+
+    def tag_name(self, full_name=True):
+        return "geometry"

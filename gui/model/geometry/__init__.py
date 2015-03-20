@@ -132,6 +132,30 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.model.fire_changed()
 
 
+    class SwapChildrenCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, parent_node, index1, index2, QUndoCommand_parent = None):
+            if index2 < index1:
+                self.index1, self.index2 = index2, index1
+            else:
+                self.index1, self.index2 = index1, index2
+            if parent_node is None: parent_node = model.fake_root
+            self.parent_node = parent_node
+            self.model = model
+            super(GeometryModel.SwapChildrenCommand, self).__init__('swap children of {} at rows {} and {}'.format(parent_node.tag_name(full_name=False), self.index1+1, self.index2+1), QUndoCommand_parent)
+
+        def redo(self):
+            parent_index = self.model.index_for_node(self.parent_node)
+            self.model.beginMoveRows(parent_index, self.index2, self.index2, parent_index, self.index1)
+            self.parent_node.children[self.index1], self.parent_node.children[self.index2] =\
+                        self.parent_node.children[self.index2], self.parent_node.children[self.index1]
+            self.model.endMoveRows()
+            self.model.fire_changed()
+
+        def undo(self):
+            self.redo()
+
+
     class SetRootsCommand(QtGui.QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
@@ -253,6 +277,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             return ('tag', 'properties')[section]
         return None
 
+    def node_for_index(self, index):
+        return index.internalPointer() if index.isValid() else self.fake_root
+
     def children_list(self, parent):
         '''Get list of children of node or index.'''
         if parent is None: return self.roots
@@ -283,8 +310,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if row < 0 or end > len(l):
             return False
         self.undo_stack.push(
-            GeometryModel.RemoveChildrenCommand(
-                self, parent.internalPointer() if parent.isValid() else None, row, end))
+            GeometryModel.RemoveChildrenCommand(self, self.node_for_index(parent), row, end))
         return True
 
     def mimeTypes(self):
@@ -299,23 +325,10 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if action == QtCore.Qt.IgnoreAction: return True
         if action == QtCore.Qt.MoveAction:
             moved_obj = mime_data.itemInstance()
-            parent = parentIndex.internalPointer()  # this can be None for root
-            destination_list = self.children_list(parentIndex)
-            if parent is None:
-                from .geometry import GNGeometryBase
-                if not isinstance(moved_obj, GNGeometryBase): return False
-                if row == -1: row = len(destination_list)
-            else:
-                if moved_obj in parent.path_to_root or not parent.accept_as_child(moved_obj): return False
-                if row == -1: row = parent.new_child_pos()
-            self.beginInsertRows(parentIndex, row, row)
-            #self.set_parent(parent, remove_from_old_parent_children=False, try_prevent_in_parent_params=True)
-            if moved_obj.parent != parent:  # problem: without copy, the parent of source is incorrect after change and remove crash
+            parent = self.node_for_index(parentIndex)
+            if moved_obj.parent != parent:  # without copy, the parent of source is incorrect after change and then remove crash
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
-            moved_obj.clear_in_parent_params(parent)
-            moved_obj._parent = parent
-            destination_list.insert(row, moved_obj)
-            self.endInsertRows()
+            self.insert_node(parent, moved_obj, None if row == -1 else row)
             return True #removeRows will be called and remove current moved_obj
         return False
 
@@ -359,17 +372,14 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         #self.endInsertRows()
         #self.fire_changed()
 
-
-
     def _swap_neighbour_nodes(self, parent_index, row1, row2):
         if self.is_read_only(): return
         if row2 < row1: row1, row2 = row2, row1
         children = self.children_list(parent_index)
         if row1 < 0 or row2 >= len(children): return
-        self.beginMoveRows(parent_index, row2, row2, parent_index, row1)
-        children[row1], children[row2] = children[row2], children[row1]
-        self.endMoveRows()
-        self.fire_changed()
+        self.undo_stack.push(
+            GeometryModel.SwapChildrenCommand(self, self.node_for_index(parent_index), row1, row2)
+        )
 
     def move_node_up(self, index):
         if not index.isValid(): return
