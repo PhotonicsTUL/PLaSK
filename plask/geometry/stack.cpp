@@ -393,6 +393,7 @@ void MultiStackContainer<UpperClass>::getBoundingBoxesToVec(const GeometryObject
         dest.push_back(getBoundingBox());
         return;
     }
+    if (repeat_count == 0) return;
     std::size_t old_size = dest.size();
     UpperClass::getBoundingBoxesToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -411,6 +412,7 @@ void MultiStackContainer<UpperClass>::getObjectsToVec(const GeometryObject::Pred
         dest.push_back(this->shared_from_this());
         return;
     }
+    if (repeat_count == 0) return;
     std::size_t old_size = dest.size();
     UpperClass::getObjectsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -425,6 +427,7 @@ void MultiStackContainer<UpperClass>::getPositionsToVec(const GeometryObject::Pr
         dest.push_back(Primitive<MultiStackContainer<UpperClass>::DIM>::ZERO_VEC);
         return;
     }
+    if (repeat_count == 0) return;
     std::size_t old_size = dest.size();
     UpperClass::getPositionsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -457,6 +460,7 @@ void MultiStackContainer<UpperClass>::getPositionsToVec(const GeometryObject::Pr
 
 template <typename UpperClass>
 GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
+    if (repeat_count == 0) return GeometryObject::Subtree();
     GeometryObject::Subtree result = UpperClass::getPathsTo(el, path);
     if (!result.empty()) {
         const std::size_t size = result.children.size();   // original size
@@ -474,6 +478,7 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsTo(const Geomet
 
 template <typename UpperClass>
 GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
+    if (repeat_count == 0) return GeometryObject::Subtree();
     MultiStackContainer::DVec new_point = point;
     reduceHeight(new_point[UpperClass::GROWING_DIR]);
     return GeometryObjectContainer<UpperClass::DIM>::getPathsAt(new_point, all);
@@ -481,6 +486,7 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const MultiS
 
 template <typename UpperClass>
 bool MultiStackContainer<UpperClass>::contains(const MultiStackContainer::DVec &p) const {
+    if (repeat_count == 0) return false;
     DVec p_reduced = p;
     if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return false;
     return UpperClass::contains(p_reduced);
@@ -488,6 +494,7 @@ bool MultiStackContainer<UpperClass>::contains(const MultiStackContainer::DVec &
 
 template <typename UpperClass>
 shared_ptr<Material> MultiStackContainer<UpperClass>::getMaterial(const MultiStackContainer::DVec &p) const {
+    if (repeat_count == 0) return shared_ptr<Material>();
     DVec p_reduced = p;
     if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return shared_ptr<Material>();
     return UpperClass::getMaterial(p_reduced);
