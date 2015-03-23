@@ -60,7 +60,7 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
             else:
                 self._points = matplotlib.transforms.Bbox.from_bounds(0, 0, -1, -1).get_points()
             self._invalid = 0
-        return self._points
+        return array(self._points)
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
