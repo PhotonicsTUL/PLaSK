@@ -243,6 +243,7 @@ class MaterialsController(Controller):
 
         self.materials_table = QtGui.QTableView()
         self.materials_table.setModel(self.model)
+        #self.model.modelReset.connect(lambda : self.materials_table.clearSelection())  #TODO why does not work?
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
                                                                               self.materials_table))
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)

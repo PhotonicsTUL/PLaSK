@@ -43,7 +43,7 @@ class DefinesModel(TableModel):
             for e in r.iter("define"):
                 with AttributeReader(e) as a:
                     new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", "")))
-        self.set_entries(new_entries, undoable)
+        self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
     def get_xml_element(self):

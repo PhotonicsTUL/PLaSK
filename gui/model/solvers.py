@@ -298,7 +298,7 @@ class SolversModel(TableModel):
                 return factory(element=element, parent=self)
 
     def set_xml_element(self, element, undoable=True):
-        self.set_entries([] if element is None else [self.construct_solver(item) for item in element], undoable)
+        self._set_entries([] if element is None else [self.construct_solver(item) for item in element], undoable)
 
     def get_xml_element(self):
         res = etree.Element(self.name)

@@ -199,15 +199,11 @@ class MaterialsModel(TableModel):
             QtCore.QAbstractTableModel.__init__(self, parent, *args)
             TableModelEditMethods.__init__(self)
             self.materials_model = materials_model
-            #self.materials_model.modelReset.connect(self._invalidate)
             if properties is None: properties = []
             self.name = name
             self.base = base
-            self.properties = properties    # TODO what with duplicated properties, should be supported?
+            self.properties = properties
             self.comment = comment
-
-        #def _invalidate(self):
-        #    self.material = None
 
         def add_to_xml(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
@@ -302,9 +298,7 @@ class MaterialsModel(TableModel):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_xml_element(self, element, undoable=True):
-        #TODO undo support
-        self.beginResetModel()
-        del self.entries[:]
+        new_entries = []
         with OrderedTagReader(element) as material_reader:
             for mat in material_reader.iter('material'):
                 with AttributeReader(mat) as mat_attrib:
@@ -315,11 +309,10 @@ class MaterialsModel(TableModel):
                         properties.append((prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
-                    self.entries.append(
+                    new_entries.append(
                         MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties)
                     )
-        self.endResetModel()
-        self.fire_changed()
+        self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
     def get_xml_element(self):

@@ -54,7 +54,7 @@ class ConnectsModel(TableModel):
             for e in r.iter("connect"):
                 with AttributeReader(e) as a:
                     new_entries.append(ConnectsModel.Entry(a.get("out", ""), a.get("in", "")))
-        self.set_entries(new_entries, undoable)
+        self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
     def get_xml_element(self):

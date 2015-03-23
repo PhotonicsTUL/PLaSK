@@ -133,8 +133,37 @@ class TableModelEditMethods(object):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
-        self.undo_stack.push(TableModel.SetDataCommand(self, index.column(), index.row(), value))
+        self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
+
+
+    class SetEntriesCommand(QtGui.QUndoCommand):
+
+        def __init__(self, table, new_entries, QUndoCommand_parent = None):
+            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source', QUndoCommand_parent)
+            self.table = table
+            self.old_entries = table.entries
+            self.new_entries = new_entries
+
+        def _set_entries(self, entries):
+            self.table.beginResetModel()
+            self.table.entries = entries
+            self.table.endResetModel()
+            self.table.fire_changed()
+
+        def redo(self):
+            self._set_entries(self.new_entries)
+
+        def undo(self):
+            self._set_entries(self.old_entries)
+
+    def _set_entries(self, new_entries, undoable = True):
+        command = TableModel.SetEntriesCommand(self, new_entries)
+        if undoable:
+            self._exec_command(command)
+        else:
+            command.redo()
+            if hasattr(self, 'undo_stack'): self.undo_stack.clear()
 
 
 class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel):
@@ -197,32 +226,3 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
         #flags |= QtCore.Qt.ItemIsDropEnabled
 
         return flags
-
-
-    class SetEntriesCommand(QtGui.QUndoCommand):
-
-        def __init__(self, table, new_entries, QUndoCommand_parent = None):
-            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source', QUndoCommand_parent)
-            self.table = table
-            self.old_entries = table.entries
-            self.new_entries = new_entries
-
-        def _set_entries(self, entries):
-            self.table.beginResetModel()
-            self.table.entries = entries
-            self.table.endResetModel()
-            self.table.fire_changed()
-
-        def redo(self):
-            self._set_entries(self.new_entries)
-
-        def undo(self):
-            self._set_entries(self.old_entries)
-
-    def set_entries(self, new_entries, undoable = True):
-        command = TableModel.SetEntriesCommand(self, new_entries)
-        if undoable:
-            self.undo_stack.push(command)
-        else:
-            command.redo()
-            self.undo_stack.clear()
