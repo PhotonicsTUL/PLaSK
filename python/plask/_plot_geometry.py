@@ -47,9 +47,16 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
 
     def get_points(self):
         if self._invalid:
-            box = matplotlib.transforms.Bbox.intersection(self._bbox1, self._bbox2)
-            if box is not None:
-                self._points = box.get_points()
+            intersects = not (self._bbox2.xmin > self._bbox1.xmax or
+                              self._bbox2.xmax < self._bbox1.xmin or
+                              self._bbox2.ymin > self._bbox1.ymax or
+                              self._bbox2.ymax < self._bbox1.ymin)
+            if intersects:
+                x0 = max([self._bbox1.xmin, self._bbox2.xmin])
+                x1 = min([self._bbox1.xmax, self._bbox2.xmax])
+                y0 = max([self._bbox1.ymin, self._bbox2.ymin])
+                y1 = min([self._bbox1.ymax, self._bbox2.ymax])
+                self._points = [[x0, y0], [x1, y1]]
             else:
                 self._points = matplotlib.transforms.Bbox.from_bounds(0, 0, -1, -1).get_points()
             self._invalid = 0
@@ -530,9 +537,11 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
 
     _draw_geometry_object(env, geometry, axes.transData, None)
     if hmirror:
-        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
+        _draw_geometry_object(env, geometry,
+                              matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
     if vmirror:
-        _draw_geometry_object(env, geometry, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
+        _draw_geometry_object(env, geometry,
+                              matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
 
     if margin is not None:
         box = geometry.bbox
