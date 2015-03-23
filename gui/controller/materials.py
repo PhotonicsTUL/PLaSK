@@ -18,7 +18,7 @@ from ..external.highlighter import SyntaxHighlighter, load_syntax
 from ..external.highlighter.python27 import syntax
 from .script import scheme
 
-from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
+from ..model.materials import MaterialsModel, material_html_help, \
     parse_material_components, elements_re
 from ..utils.textedit import TextEdit
 from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut
@@ -237,6 +237,8 @@ class MaterialsController(Controller):
         if material_selection_model is None: material_selection_model = MaterialsModel()
         Controller.__init__(self, document, material_selection_model)
 
+        self.selected_material = None
+
         self.splitter = QtGui.QSplitter()
 
         self.materials_table = QtGui.QTableView()
@@ -253,9 +255,9 @@ class MaterialsController(Controller):
         prop_splitter = QtGui.QSplitter()
         prop_splitter.setOrientation(QtCore.Qt.Vertical)
 
-        self.property_model = MaterialPropertyModel(material_selection_model)
+        #self.property_model = MaterialPropertyModel(material_selection_model)
         self.properties_table = QtGui.QTableView()
-        self.properties_table.setModel(self.property_model)
+        #self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
         self.unit_delegate = HTMLDelegate(self.properties_table)
         self.help_delegate = HTMLDelegate(self.properties_table)
@@ -277,15 +279,13 @@ class MaterialsController(Controller):
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [80, 180, 50])
+        table_last_col_fill(self.properties_table, 4, [80, 180, 50])
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         #self.properties_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
         self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
         self.properties_table.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Stretch)
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
-        property_selection_model = self.properties_table.selectionModel()
-        property_selection_model.selectionChanged.connect(self.property_selected)
 
         font = QtGui.QFont(DEFAULT_FONT)
         # font.setPointSize(font.pointSize()-1)
@@ -293,8 +293,6 @@ class MaterialsController(Controller):
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
                                                       default_font=font)
         self.propedit.hide()
-
-        self.property_model.dataChanged.connect(self.property_data_changed)
 
         focus_action = QtGui.QAction(self.materials_table)
         focus_action.triggered.connect(lambda: self.properties_table.setFocus())
@@ -310,10 +308,20 @@ class MaterialsController(Controller):
     def material_selected(self, new_selection, old_selection):
         self.propedit.hide()
         indexes = new_selection.indexes()
+        if self.selected_material is not None:
+            self.selected_material.dataChanged.disconnect(self.property_data_changed)
         if indexes:
-            self.property_model.material = self.model.entries[indexes[0].row()]
+            #self.property_model.material = self.model.entries[indexes[0].row()]
+            self.selected_material = self.model.entries[indexes[0].row()]
+            self.properties_table.setModel(self.selected_material)
+            property_selection_model = self.properties_table.selectionModel()
+            property_selection_model.selectionChanged.connect(self.property_selected)
         else:
-            self.property_model.material = None
+            #self.property_model.material = None
+            self.selected_material = None
+            self.properties_table.setModel(self.selected_material)
+        if self.selected_material is not None:
+            self.selected_material.dataChanged.connect(self.property_data_changed)
         #self.properties_table.resizeColumnsToContents()
         self.properties_table.resizeRowsToContents()
 
@@ -323,7 +331,7 @@ class MaterialsController(Controller):
             try: self.propedit.textChanged.disconnect()
             except RuntimeError: pass
             row = indexes[0].row()
-            self.propedit.setPlainText(self.property_model.material.properties[row][1])
+            self.propedit.setPlainText(self.selected_material.properties[row][1])
             self.propedit.show()
             self.propedit.textChanged.connect(lambda: self.propedit_changed(row))
         else:
@@ -332,15 +340,15 @@ class MaterialsController(Controller):
             self.propedit.hide()
 
     def propedit_changed(self, row):
-        self.property_model.dataChanged.disconnect(self.property_data_changed)
+        self.selected_material.dataChanged.disconnect(self.property_data_changed)
         try:
-            self.property_model.setData(self.property_model.createIndex(row, 1), self.propedit.toPlainText())
+            self.selected_material.setData(self.selected_material.createIndex(row, 1), self.propedit.toPlainText())
         finally:
-            self.property_model.dataChanged.connect(self.property_data_changed)
+            self.selected_material.dataChanged.connect(self.property_data_changed)
 
     def property_data_changed(self, tl, br):
         with BlockQtSignals(self.propedit):
-            self.propedit.setPlainText(self.property_model.get(1, tl.row()))
+            self.propedit.setPlainText(self.selected_material.get(1, tl.row()))
 
     def get_widget(self):
         return self.splitter

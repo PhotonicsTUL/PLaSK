@@ -20,7 +20,11 @@ class TableActions(object):
 
     def __init__(self, table, model=None):
         self.table = table
-        self.model = model if model is not None else table.model()
+        self._model = model
+
+    @property
+    def model(self):
+        return self._model if self._model is not None else self.table.model()
 
     def add_entry(self):
         index = self.table.selectionModel().currentIndex()
@@ -86,12 +90,13 @@ class TableActions(object):
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
 
-def table_and_manipulators(table, parent=None, model=None, title=None):
+def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_action=None):
     toolbar = QtGui.QToolBar()
     if model is None: model = table.model()
     toolbar.setStyleSheet("QToolBar { border: 0px }")
 
-    if hasattr(model, 'undo_stack'):
+    if add_undo_action is None: add_undo_action = hasattr(model, 'undo_stack')
+    if add_undo_action:
         toolbar.addAction(model.create_undo_action(table))
         toolbar.addAction(model.create_redo_action(table))
         toolbar.addSeparator()
@@ -121,8 +126,8 @@ def table_and_manipulators(table, parent=None, model=None, title=None):
     return external, toolbar
 
 
-def table_with_manipulators(table, parent=None, model=None, title=None):
-    return table_and_manipulators(table, parent, model, title)[0]
+def table_with_manipulators(table, parent=None, model=None, title=None, add_undo_action=None):
+    return table_and_manipulators(table, parent, model, title, add_undo_action)[0]
 
 
 class TableController(Controller):

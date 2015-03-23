@@ -191,127 +191,112 @@ def material_unit(property_name):
     return MATERIALS_PROPERTES.get(property_name, (None, '', None))[1]
 
 
-class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
-
-    def _invalidate(self):
-        self.material = None
-
-    def __init__(self, materials_model, material=None, parent=None, *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
-        TableModelEditMethods.__init__(self)
-        self.materialsModel = materials_model
-        self._material = material
-        self.materialsModel.modelReset.connect(self._invalidate)
-
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        if not self._material or parent.isValid(): return 0
-        return len(self._material.properties)
-
-    def columnCount(self, parent=QtCore.QModelIndex()):
-        return 4    # 5 if comment supported
-
-    def get(self, col, row):
-        n, v = self._material.properties[row]
-        if col == 2:
-            return material_unit(n)
-        elif col == 3:
-            return material_html_help(n, with_unit=False, with_attr=True)
-        return n if col == 0 else v
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            return self.get(index.column(), index.row())
-#         if role == QtCore.Qt.ToolTipRole:
-#             return '\n'.join(str(err) for err in self.info_by_row.get(index.row(), [])
-#                              if err.has_connection(u'cols', index.column())s)
-#         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
-#             max_level = -1
-#             c = index.column()
-#             for err in self.info_by_row.get(index.row(), []):
-#                 if err.has_connection(u'cols', c, c == 0):
-#                     if err.level > max_level: max_level = err.level
-#             return info.infoLevelIcon(max_level)
-        if role == QtCore.Qt.BackgroundRole and index.column() >= 2:
-            return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
-
-    def set(self, col, row, value):
-        n, v = self._material.properties[row]
-        if col == 0:
-            self._material.properties[row] = (value, v)
-        elif col == 1:
-            self._material.properties[row] = (n, value)
-
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
-        self.set(index.column(), index.row(), value)
-        self.fire_changed()
-        self.dataChanged.emit(index, index)
-        return True
-
-    def flags(self, index):
-        flags = super(MaterialPropertyModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
-
-        if index.column() in [0, 1] and not self.materialsModel.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
-        #flags |= QtCore.Qt.ItemIsDragEnabled
-        #flags |= QtCore.Qt.ItemIsDropEnabled
-
-        return flags
-
-    def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            try:
-                return ('Name', 'Value', 'Unit', 'Help')[col]
-            except IndexError:
-                return None
-
-    @property
-    def material(self):
-        return self._material
-
-    @material.setter
-    def material(self, material):
-        self.beginResetModel()
-        self._material = material
-        self.endResetModel()
-
-    def options_to_choose(self, index):
-        """:return: list of available options to choose at given index or None"""
-        if index.column() == 0: return MATERIALS_PROPERTES.keys()
-        if index.column() == 1:
-            if self._material.properties[index.row()][0] == 'condtype':
-                return ['n', 'i', 'p', 'other']
-        return None
-
-    @property
-    def entries(self):
-        return self._material.properties
-
-    def is_read_only(self):
-        return self.material is None or self.materialsModel.is_read_only()
-
-    def fire_changed(self):
-        self.materialsModel.fire_changed()
-
-    def create_default_entry(self):
-        return "", ""
-
-
 class MaterialsModel(TableModel):
 
-    class Material(object): #(InfoSource)
+    class Material(TableModelEditMethods, QtCore.QAbstractTableModel): #(InfoSource)
 
-        def __init__(self, name, base=None, properties=None, comment=None):
+        def __init__(self, materials_model, name, base=None, properties=None, comment=None, parent=None, *args):
+            QtCore.QAbstractTableModel.__init__(self, parent, *args)
+            TableModelEditMethods.__init__(self)
+            self.materials_model = materials_model
+            #self.materials_model.modelReset.connect(self._invalidate)
             if properties is None: properties = []
             self.name = name
             self.base = base
             self.properties = properties    # TODO what with duplicated properties, should be supported?
             self.comment = comment
 
+        #def _invalidate(self):
+        #    self.material = None
+
         def add_to_xml(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
             if self.base: mat.attrib['base'] = self.base
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
+
+        def rowCount(self, parent=QtCore.QModelIndex()):
+            if parent.isValid(): return 0
+            return len(self.properties)
+
+        def columnCount(self, parent=QtCore.QModelIndex()):
+            return 4    # 5 if comment supported
+
+        def get(self, col, row):
+            n, v = self.properties[row]
+            if col == 2:
+                return material_unit(n)
+            elif col == 3:
+                return material_html_help(n, with_unit=False, with_attr=True)
+            return n if col == 0 else v
+
+        get_raw = get
+
+        def data(self, index, role=QtCore.Qt.DisplayRole):
+            if not index.isValid(): return None
+            if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+                return self.get(index.column(), index.row())
+    #         if role == QtCore.Qt.ToolTipRole:
+    #             return '\n'.join(str(err) for err in self.info_by_row.get(index.row(), [])
+    #                              if err.has_connection(u'cols', index.column())s)
+    #         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
+    #             max_level = -1
+    #             c = index.column()
+    #             for err in self.info_by_row.get(index.row(), []):
+    #                 if err.has_connection(u'cols', c, c == 0):
+    #                     if err.level > max_level: max_level = err.level
+    #             return info.infoLevelIcon(max_level)
+            if role == QtCore.Qt.BackgroundRole and index.column() >= 2:
+                return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+
+        def set(self, col, row, value):
+            n, v = self.properties[row]
+            if col == 0:
+                self.properties[row] = (value, v)
+            elif col == 1:
+                self.properties[row] = (n, value)
+
+        def flags(self, index):
+            flags = super(MaterialsModel.Material, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+
+            if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
+            #flags |= QtCore.Qt.ItemIsDragEnabled
+            #flags |= QtCore.Qt.ItemIsDropEnabled
+
+            return flags
+
+        def headerData(self, col, orientation, role):
+            if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+                try:
+                    return ('Name', 'Value', 'Unit', 'Help')[col]
+                except IndexError:
+                    return None
+
+        def options_to_choose(self, index):
+            """:return: list of available options to choose at given index or None"""
+            if index.column() == 0: return MATERIALS_PROPERTES.keys()
+            if index.column() == 1:
+                if self.properties[index.row()][0] == 'condtype':
+                    return ['n', 'i', 'p', 'other']
+            return None
+
+        @property
+        def entries(self):
+            return self.properties
+
+        def is_read_only(self):
+            return self.materials_model.is_read_only()
+
+        def fire_changed(self):
+            self.materials_model.fire_changed()
+
+        def create_default_entry(self):
+            return "", ""
+
+        @property
+        def undo_stack(self):
+            return self.materials_model.undo_stack
+
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
@@ -331,7 +316,7 @@ class MaterialsModel(TableModel):
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
                     self.entries.append(
-                        MaterialsModel.Material(mat_attrib.get('name', ''), base, properties)
+                        MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties)
                     )
         self.endResetModel()
         self.fire_changed()
@@ -357,7 +342,7 @@ class MaterialsModel(TableModel):
         else: raise IndexError(u'column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
     def create_default_entry(self):
-        return MaterialsModel.Material("name", "semiconductor")
+        return MaterialsModel.Material(self, "name", "semiconductor")
 
     # QAbstractListModel implementation
 

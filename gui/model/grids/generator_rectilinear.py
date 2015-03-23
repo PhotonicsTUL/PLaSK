@@ -65,7 +65,7 @@ class RefinementConf(object):
         setattr(self, RefinementConf.all_attributes_names[index], value)
 
 
-class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
+class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
 
     def __init__(self, generator, entries=None, parent=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)

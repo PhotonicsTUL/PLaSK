@@ -106,7 +106,38 @@ class TableModelEditMethods(object):
         self._exec_command(TableModelEditMethods.SwapNeighbourEntriesCommand(self, index1, index2))
 
 
-class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods):
+    def set_and_fire(self, col, row, value):
+        self.set(col, row, value)
+        self.fire_changed()
+        index = self.createIndex(row, col)
+        self.dataChanged.emit(index, index)
+
+    class SetDataCommand(QtGui.QUndoCommand):
+
+        def __init__(self, table, col, row, new_value, QUndoCommand_parent = None):
+            super(TableModel.SetDataCommand, self).__init__('change cell value at row {} to "{}"'.format(row+1, new_value), QUndoCommand_parent)
+            self.table = table
+            self.col = col
+            self.row = row
+            self.old_value = table.get_raw(col, row)
+            self.new_value = new_value
+
+        def redo(self):
+            self.table.set_and_fire(self.col, self.row, self.new_value)
+
+        def undo(self):
+            self.table.set_and_fire(self.col, self.row, self.old_value)
+
+
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
+        #self.set(index.column(), index.row(), value)
+        #self.fire_changed()
+        #self.dataChanged.emit(index, index)
+        self.undo_stack.push(TableModel.SetDataCommand(self, index.column(), index.row(), value))
+        return True
+
+
+class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel):
 
     def __init__(self, name, parent=None, info_cb=None, *args):
         SectionModel.__init__(self, name, info_cb)
@@ -166,36 +197,6 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
         #flags |= QtCore.Qt.ItemIsDropEnabled
 
         return flags
-
-    def set_and_fire(self, col, row, value):
-        self.set(col, row, value)
-        self.fire_changed()
-        index = self.createIndex(row, col)
-        self.dataChanged.emit(index, index)
-
-    class SetDataCommand(QtGui.QUndoCommand):
-
-        def __init__(self, table, col, row, new_value, QUndoCommand_parent = None):
-            super(TableModel.SetDataCommand, self).__init__('change cell value at row {} to "{}"'.format(row+1, new_value), QUndoCommand_parent)
-            self.table = table
-            self.col = col
-            self.row = row
-            self.old_value = table.get_raw(col, row)
-            self.new_value = new_value
-
-        def redo(self):
-            self.table.set_and_fire(self.col, self.row, self.new_value)
-
-        def undo(self):
-            self.table.set_and_fire(self.col, self.row, self.old_value)
-
-
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
-        #self.set(index.column(), index.row(), value)
-        #self.fire_changed()
-        #self.dataChanged.emit(index, index)
-        self.undo_stack.push(TableModel.SetDataCommand(self, index.column(), index.row(), value))
-        return True
 
 
     class SetEntriesCommand(QtGui.QUndoCommand):
