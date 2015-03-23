@@ -96,7 +96,7 @@ class NavigationToolbar(NavigationToolbar2QT):
                 self.set_cursor(cursors.MOVE)
                 self._lastCursor = cursors.MOVE
 
-        s = u'{1[0]} = {0.xdata:.4f} µm  {1[1]} = {0.ydata:.4f} µm'.format(event, self._axes)
+        s = u'{2[0]} = {0:.4f} µm  {2[1]} = {1:.4f} µm'.format(float(event.xdata), float(event.ydata), self._axes)
 
         if len(self.mode):
             self.set_message('%s   %s' % (s, self.mode))
