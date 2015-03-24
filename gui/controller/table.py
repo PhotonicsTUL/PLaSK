@@ -75,7 +75,7 @@ class TableActions(object):
         self.remove_action = TableActions._make_action('list-remove', '&Remove',
                                                        'Remove selected entry from the list',
                                                        parent, self.remove_entry,
-                                                       QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
+                                                       QtCore.Qt.SHIFT + QtCore.Qt.Key_Delete)
 
         self.move_up_action = TableActions._make_action('go-up', 'Move &up',
                                                         'Change order of entries: move current entry up',

@@ -20,8 +20,8 @@ from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to
 
 class GNZero(GNode):
 
-    def __init__(self, parent=None, dim=None):
-        super(GNZero, self).__init__(parent=parent, dim=dim)
+    def __init__(self, parent=None, dim=None, parent_index=None):
+        super(GNZero, self).__init__(parent=parent, dim=dim, parent_index=parent_index)
 
     def tag_name(self, full_name=True):
         return 'zero'
@@ -189,7 +189,7 @@ class GNStack(GNContainerBase):
 
     def child_from_xml(self, child_element, conf):
         if child_element.tag == 'zero':
-            GNZero(self, self.children_dim)
+            GNZero(self, self.children_dim, parent_index=-1)
         else:
             super(GNStack, self).child_from_xml(child_element, conf)
 

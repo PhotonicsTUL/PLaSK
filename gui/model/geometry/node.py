@@ -19,7 +19,7 @@ from .types import gname
 class GNode(object):
     """Base class for all geometry nodes (objects and other XML nodes like again, copy, etc.)."""
 
-    def __init__(self, parent=None, dim=None, children_dim=None):
+    def __init__(self, parent=None, dim=None, children_dim=None, parent_index=None):
         """
             :param GNode parent: parent node of self (self will be added to parent's children)
             :param int dim: number of dimension of self or None if it is unknown or not defined (like in case of again or copy)
@@ -32,7 +32,7 @@ class GNode(object):
         self.in_parent = None   # configuration inside parent (container)
         self.path = None        # path inside parent (container)
         self._parent = None     # used by parent property
-        self.set_parent(parent)
+        self.set_parent(parent, parent_index)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         """
@@ -62,7 +62,8 @@ class GNode(object):
         :param etree.Element element: source XML node
         :param GNReadConf conf: reader configuration
         """
-        if conf is not None and conf.parent is not None: self.set_parent(conf.parent, -1)
+        if conf is not None and conf.parent is not None:
+            self.set_parent(conf.parent, -1)
         if element is None: return
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
