@@ -213,6 +213,8 @@ a = A()
 a.prop
 a.fun()
 
+mesaRadius
+
 config.axes = 'rz'
 
 cyl = geometry.Cylinder(2, 1, None)

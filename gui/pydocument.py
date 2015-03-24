@@ -35,6 +35,7 @@ class PyDocument(object):
         self.controllers = (self.script,)
         self.materials = _Dummy()
         self.materials.model = None
+        self.defines = None
         self.solvers = None
         self.filename = None
         self.coding = 'utf-8'

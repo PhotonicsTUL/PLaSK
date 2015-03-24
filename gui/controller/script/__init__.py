@@ -53,6 +53,7 @@ scheme = {
     'syntax_receiver': parse_highlight(CONFIG('syntax/python_receiver', 'color=#888800')),
     'syntax_log': parse_highlight(CONFIG('syntax/python_log', 'color=blue')),
     'syntax_solver': parse_highlight(CONFIG('syntax/python_solver', 'color=red')),
+    'syntax_define': parse_highlight(CONFIG('syntax/python_define', 'italic=true')),
     'syntax_loaded': parse_highlight(CONFIG('syntax/python_loaded', 'color=#ff8800')),
     'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#440088')),
 }
@@ -280,11 +281,15 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
-        if self.document.solvers and self.document.solvers.model.entries:
+        if (self.document.solvers and self.document.solvers.model.entries) or \
+           (self.document.defines and self.document.defines.model.entries):
             current_syntax = {'formats': syntax['formats'],
                               'partitions': syntax['partitions'],
                               'scanner': copy(syntax['scanner'])}
             current_syntax['scanner'][None] = copy(syntax['scanner'][None])
+            defines = [e.name for e in self.document.defines.model.entries]
+            if defines:
+                current_syntax['scanner'][None].insert(-1, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
                 current_syntax['scanner'][None].insert(-1, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))

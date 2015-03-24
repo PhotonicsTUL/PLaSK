@@ -8,6 +8,7 @@ syntax = {
         'receiver': '%(syntax_receiver)s',
         'log': '%(syntax_log)s',
         'solver': '%(syntax_solver)s',
+        'define': '%(syntax_define)s',
         'loaded': '%(syntax_loaded)s',
         'pylab': '%(syntax_pylab)s',
     },

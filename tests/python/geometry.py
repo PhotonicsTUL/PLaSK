@@ -25,7 +25,6 @@ class SimpleGeometry(unittest.TestCase):
         self.assertEqual( r3a, r3b )
 
 
-
 class GeometryObjects(unittest.TestCase):
 
     def setUp(self):
