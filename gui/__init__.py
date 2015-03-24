@@ -75,6 +75,7 @@ if RECENT is None:
 elif type(RECENT) is not list:
     RECENT = [RECENT]
 
+
 def update_recent_files(filename):
     global RECENT, CURRENT_DIR
     CURRENT_DIR = os.path.dirname(filename)
@@ -127,6 +128,10 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
+
+        use_menu = CONFIG('main_window/use_menu', False) != 'false'
+        if use_menu:
+            menu_bar = QtGui.QMenuBar(self)
 
         splitter = QtGui.QSplitter()
         splitter.setOrientation(QtCore.Qt.Vertical)
@@ -240,10 +245,24 @@ class MainWindow(QtGui.QMainWindow):
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
-        menu_button.setToolTip("Show operations menu  (F2)")
+        menu_button.setToolTip("Show operations menu (F2)")
 
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
+
+        if use_menu:
+            tabs_menu = QtGui.QMenu("Sec&tions")
+            def add_tab_menu(indx):
+                def show_tab():
+                    self.tabs.setCurrentIndex(indx)
+                    self.tab_change(indx)
+                tabs_action.triggered.connect(show_tab)
+            for i in range(self.tabs.count()):
+                tabs_action = QtGui.QAction(self.tabs.tabText(i), self)
+                add_tab_menu(i)
+                tabs_menu.addAction(tabs_action)
+            menu_bar.addMenu(self.menu)
+            menu_bar.addMenu(tabs_menu)
 
         source_button = QtGui.QToolButton(self)
         source_button.setDefaultAction(self.showsource_action)

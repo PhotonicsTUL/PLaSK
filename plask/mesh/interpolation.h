@@ -225,10 +225,9 @@ public:
         double d = hi[ax] - lo[ax];
         if (periodic(ax)) {
             if (sym[ax]) {
-                x = std::fmod(x, 2.*d);
-                if (x > d) x -= 2.*d;
-                else if (x < -d) x += 2*d;
-                if (lo[ax] < 0) x = - x;
+                x = std::fmod(abs(x), 2.*d);
+                if (x > d) x = - (x - 2.*d);
+                if (hi[ax] < 0) x = - x;
             } else {
                 x = std::fmod(x-lo[ax], d);
                 x += (x >= 0)? lo[ax] : hi[ax];

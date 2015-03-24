@@ -111,12 +111,14 @@ namespace detail {
             if (flags.periodic(ax)) {
                 da0 = axis->at(0) - axis->at(n0) + flags.high(ax) - flags.low(ax);
                 db0 = axis->at(1) - axis->at(0);
-                sa0 = (data[0] - data[stride*n0]) / da0,
-                sb0 = (data[1] - data[0]) / db0;
                 dan = axis->at(n0) - axis->at(n0-1);
                 dbn = da0;
-                san = (data[in0] - data[in0-stride]) / dan,
-                sbn = (data[0] - data[in0]) / dbn;
+                sb0 = (data[1] - data[0]) / db0;
+                san = (data[in0] - data[in0-stride]) / dan;
+                if (da0 == 0.) { da0 = dan; sa0 = san; }
+                else sa0 = (data[0] - data[in0]) / da0;
+                if (dbn == 0.) {  dbn = db0; sbn = sb0; }
+                else sbn = (data[0] - data[in0]) / dbn;
             } else {
                 da0 = db0 = dan = dbn = 0.5;
                 sa0 = sb0 = san = sbn = 0. * DataT();
