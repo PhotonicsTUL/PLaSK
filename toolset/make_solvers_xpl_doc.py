@@ -41,7 +41,6 @@ def html2rst(text):
 def make_rst(dirname):
     """Create documentation from solvers.rst"""
     cat = os.path.basename(os.path.dirname(os.path.dirname(dirname)))
-    if cat == 'skel': return
     lib = os.path.basename(os.path.dirname(dirname))
     dom = et.parse(os.path.join(dirname, 'solvers.xml'))
 
@@ -142,7 +141,7 @@ def make_rst(dirname):
         categories.setdefault(cat, []).append('{}.{}'.format(lib, name))
 
 for dirname, subdirs, files in os.walk(basedir):
-    if 'solvers.xml' in files:
+    if 'solvers.xml' in files and not os.path.basename(dirname) == 'skel':
         make_rst(dirname)
 
 for cat in categories:

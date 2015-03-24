@@ -83,12 +83,12 @@
       </revolution>
     </align>
   </cartesian3d>
-  <cartesian3d name="geo3d2" axes="z,x,y">
-    <align back="0" x="0" top="0">
+  <cartesian3d name="geo3d2" axes="long,tran,vert">
+    <align back="0" tran="0" top="0">
       <extrusion length="10">
         <again ref="stack"/>
       </extrusion>
-      <cuboid material="GaAs" dz="1" dx="100" dy="100"/>
+      <cuboid material="GaAs" dlong="1" dtran="100" dvert="100"/>
     </align>
   </cartesian3d>
 </geometry>

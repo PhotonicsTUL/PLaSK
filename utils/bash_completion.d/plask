@@ -1,0 +1,38 @@
+#!/bin/bash
+
+_plask()
+{
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    local IFS=$'\n'
+
+    local i=1
+    for w in ${COMP_WORDS[@]}; do
+        if [ $i == ${#COMP_WORDS[@]} ]; then break; fi
+        if [ "${w}" == "-c" -o "${w}" == "-i" ]; then
+            COMPREPLY=($(compgen -f -- "${cur}"))
+            return 0
+        fi
+        i=$(($i+1))
+    done
+
+    case "$prev" in
+        -l)
+            COMPREPLY=($(compgen -W $'critical_error\ncritical\nerror\nerror_detail\nwarning\ninfo\nresult\ndata\ndetail\ndebug' -- "$cur"))
+            return 0
+        ;;
+        *)
+            if [[ "$cur" == -l* ]]; then
+                COMPREPLY=($(compgen -W $'-lcritical_error\n-lcritical\n-lerror\n-lerror_detail\n-lwarning\n-linfo\n-lresult\n-ldata\n-ldetail\n-ldebug' -- "$cur"))
+            elif [[ "$cur" == -* ]]; then
+                COMPREPLY=($(compgen -W $'-c\n-i\n-l' -- "$cur"))
+            else
+                #COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -o plusdirs -- "$cur"))
+                COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -- "$cur"))
+            fi
+            return 0
+        ;;
+    esac
+}
+complete -o filenames -F _plask plask

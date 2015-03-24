@@ -1,12 +1,15 @@
 # coding=utf-8
 import plask
 
-from ...qt import QtGui, QtCore
+from ...qt import QtGui
+from ...qt.QtCore import Qt
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.ticker import MultipleLocator, MaxNLocator
+
+from ...utils.qsignals import BlockQtSignals
 
 
 class Cursors(object):
@@ -15,53 +18,23 @@ class Cursors(object):
 cursors = Cursors()
 
 cursord = {
-    cursors.MOVE: QtCore.Qt.SizeAllCursor,
-    cursors.HAND: QtCore.Qt.PointingHandCursor,
-    cursors.POINTER: QtCore.Qt.ArrowCursor,
-    cursors.SELECT_REGION: QtCore.Qt.CrossCursor,
+    cursors.MOVE: Qt.SizeAllCursor,
+    cursors.HAND: Qt.PointingHandCursor,
+    cursors.POINTER: Qt.ArrowCursor,
+    cursors.SELECT_REGION: Qt.CrossCursor,
 }
 
 
 class NavigationToolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas, parent, controller=None, coordinates=True):
+        self._widgets = {}
         super(NavigationToolbar, self).__init__(canvas, parent, coordinates)
         self.controller = controller
 
     def _icon(self, name):
         if name is not None:
             return QtGui.QIcon.fromTheme(name)
-
-    def _init_toolbar(self):
-        self.layout().setContentsMargins(0,0,0,0)
-        for text, tooltip_text, icon, callback, checked in self.toolitems:
-            if text is None:
-                self.addSeparator()
-            else:
-                ic = self._icon(icon)
-                if ic is not None:
-                    a = self.addAction(ic, text, getattr(self, callback))
-                else:
-                    a = self.addAction(text, getattr(self, callback))
-                if checked is not None:
-                    a.setCheckable(True)
-                    if checked: a.setChecked(True)
-                self._actions[callback] = a
-                if tooltip_text is not None:
-                    a.setToolTip(tooltip_text)
-        self.buttons = {}
-        # Add the x,y location widget at the right side of the toolbar
-        # The stretch factor is 1 which means any resizing of the toolbar
-        # will resize this label instead of the buttons.
-        if self.coordinates:
-            self.locLabel = QtGui.QLabel("", self)
-            self.locLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
-            self.locLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
-            label_action = self.addWidget(self.locLabel)
-            label_action.setVisible(True)
-
-        self._axes = 'tran', 'vert'
-        self._axes_names = 'long', 'tran', 'vert'
 
     toolitems = (
         # ('Home', 'Reset original view', 'go-home', 'home'),
@@ -76,10 +49,62 @@ class NavigationToolbar(NavigationToolbar2QT):
         (None, None, None, None, None),
         ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
         (None, None, None, None, None),
-        ('long-tran', 'Select longitudinal-transverse plane', None, 'plane10', False),
-        ('long-vert', 'Select longitudinal-vertical plane', None, 'plane02', False),
-        ('tran-vert', 'Select transverse-vertical plane', None, 'plane12', True),
+        ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
+         (('tran-long', 'long-vert', 'tran-vert'), 2)),
     )
+
+    def _init_toolbar(self):
+        self.layout().setContentsMargins(0,0,0,0)
+        for text, tooltip_text, icon, callback, checked in self.toolitems:
+            if text is None:
+                self.addSeparator()
+            elif callback is None:
+                self.addWidget(QtGui.QLabel(text))
+            else:
+                if type(checked) in (tuple, list):
+                    combo = QtGui.QComboBox()
+                    combo.addItems(checked[0])
+                    combo.setCurrentIndex(checked[1])
+                    combo.currentIndexChanged.connect(getattr(self, callback))
+                    if tooltip_text is not None:
+                        combo.setToolTip(tooltip_text)
+                    self._widgets[callback] = combo
+                    if text is None:
+                        widget = combo
+                    else:
+                        widget = QtGui.QWidget()
+                        layout = QtGui.QHBoxLayout()
+                        layout.setContentsMargins(0, 2, 0, 0)
+                        layout.setAlignment(Qt.AlignVCenter)
+                        layout.addWidget(QtGui.QLabel(text))
+                        layout.addWidget(combo)
+                        widget.setLayout(layout)
+                    action = self.addWidget(widget)
+                else:
+                    ic = self._icon(icon)
+                    if ic is not None:
+                        action = self.addAction(ic, text, getattr(self, callback))
+                    else:
+                        action = self.addAction(text, getattr(self, callback))
+                    if checked is not None:
+                        action.setCheckable(True)
+                        if checked: action.setChecked(True)
+                    if tooltip_text is not None:
+                        action.setToolTip(tooltip_text)
+                self._actions[callback] = action
+        self.buttons = {}
+        # Add the x,y location widget at the right side of the toolbar
+        # The stretch factor is 1 which means any resizing of the toolbar
+        # will resize this label instead of the buttons.
+        if self.coordinates:
+            self.locLabel = QtGui.QLabel("", self)
+            self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
+            self.locLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
+            label_action = self.addWidget(self.locLabel)
+            label_action.setVisible(True)
+
+        self._axes = 'tran', 'vert'
+        self._axes_names = 'long', 'tran', 'vert'
 
     def mouse_move(self, event):
         if not event.inaxes or not self._active:
@@ -119,10 +144,8 @@ class NavigationToolbar(NavigationToolbar2QT):
         if self.controller is not None:
             self.controller.plot_auto_refresh = not self.controller.plot_auto_refresh
 
-    def _select_plane(self, plane):
-        self._actions['plane10'].setChecked(plane == '10')
-        self._actions['plane02'].setChecked(plane == '02')
-        self._actions['plane12'].setChecked(plane == '12')
+    def select_plane(self, index):
+        plane = ('10', '02', '12')[index]
         self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
         self.controller.checked_plane = plane
         if self.controller.plotted_tree_element is not None and \
@@ -131,36 +154,21 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def disable_planes(self, axes):
-        self._actions['plane10'].setVisible(False)
-        self._actions['plane02'].setVisible(False)
-        self._actions['plane12'].setVisible(False)
+        self._actions['select_plane'].setVisible(False)
         self._axes = axes[-2:]
 
     def enable_planes(self, axes=None):
-        self._actions['plane10'].setVisible(True)
-        self._actions['plane02'].setVisible(True)
-        self._actions['plane12'].setVisible(True)
-        if axes is not None:
+        self._actions['select_plane'].setVisible(True)
+        if axes is not None and axes != self._axes_names:
             if ',' in axes:
                 axes = axes.split(',')
-            if len(axes[0]) > 1 or len(axes[1]) > 1 or len(axes[2]) > 1:
-                sep = '-'
-            else:
-                sep = ''
-            self._actions['plane10'].setText(axes[1]+sep+axes[0])
-            self._actions['plane02'].setText(axes[0]+sep+axes[2])
-            self._actions['plane12'].setText(axes[1]+sep+axes[2])
+            indx = self._widgets['select_plane'].currentIndex()
+            with BlockQtSignals(self._widgets['select_plane']):
+                self._widgets['select_plane'].clear()
+                self._widgets['select_plane'].addItems((axes[1]+'-'+axes[0], axes[0]+'-'+axes[2], axes[1]+'-'+axes[2]))
             self._axes_names = axes
             self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
-
-    def plane10(self):
-        self._select_plane('10')
-
-    def plane02(self):
-        self._select_plane('02')
-
-    def plane12(self):
-        self._select_plane('12')
+            self._widgets['select_plane'].setCurrentIndex(indx)
 
 
 class PlotWidget(QtGui.QGroupBox):

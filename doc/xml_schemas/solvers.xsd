@@ -16,7 +16,7 @@
   <xs:element name="solver">
     <xs:complexType mixed="true">
       <xs:choice maxOccurs="unbounded">
-        <xs:element ref="geometry"/>
+        <xs:element ref="geometry" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="mesh" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="tag" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="bcond" minOccurs="0" maxOccurs="unbounded"/>
