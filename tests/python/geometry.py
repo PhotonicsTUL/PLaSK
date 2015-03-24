@@ -14,14 +14,10 @@ class SimpleGeometry(unittest.TestCase):
 
     def testPrimitives(self):
         '''Test the properties of primitives'''
-        r2a = plask.geometry.Box2D()
-        r2a.lower = plask.vec(3., 2.)
-        r2a.upper = plask.vec(1., 5.)
-        r2a.fix()
+        r2a = plask.geometry.Box2D(3.,2., 1.,5.)
         self.assertEqual( r2a.lower, plask.vec(1,2) )
         self.assertEqual( r2a.upper, plask.vec(3,5) )
-        r2b = plask.geometry.Box2D(plask.vec(3., 2.), plask.vec(1., 5.))
-        r2b.fix()
+        r2b = plask.geometry.Box2D(plask.vec(1., 2.), plask.vec(3., 5.))
         self.assertEqual( r2b.lower, plask.vec(1,2) )
         self.assertEqual( r2b.upper, plask.vec(3,5) )
         r3a = plask.geometry.Box3D(3.,2.,1., 1.,5.,0.)

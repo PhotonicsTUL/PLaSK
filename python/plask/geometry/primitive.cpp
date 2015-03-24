@@ -68,9 +68,6 @@ static std::string Box3D__repr__(const Box3D& self) {
 /// Register primitives to Python
 void register_geometry_primitive()
 {
-    void (Box2D::*includeR2p)(const Vec<2,double>&) = &Box2D::makeInclude;
-    void (Box2D::*includeR2R)(const Box2D&)       = &Box2D::makeInclude;
-
     py::class_<Box2D, shared_ptr<Box2D>>("Box2D",
         "Box2D()\n"
         "Box2D(lower, upper)\n"
@@ -90,19 +87,15 @@ void register_geometry_primitive()
         .def("__init__", py::make_constructor(&Box2D_constructor_default))
         .def("__init__", py::make_constructor(&Box2D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box2D_constructor_4numbers, py::default_call_policies(), (py::arg("left"), py::arg("bottom"), py::arg("right"), py::arg("top"))))
-        .def_readwrite("lower", &Box2D::lower, "Lower left corner of the box.")
-        .def_readwrite("upper", &Box2D::upper, "Upper right corner of the box.")
-        .add_property("left", &Box2D::getLeft, &Box2D::setLeft, "Left edge of the box.")
-        .add_property("right",  &Box2D::getRight, &Box2D::setRight, "Right edge of the box.")
-        .add_property("top",  &Box2D::getTop, &Box2D::setTop, "Top edge of the box.")
-        .add_property("bottom",  &Box2D::getBottom, &Box2D::setBottom, "Bottom edge of the box.")
+        .def_readonly("lower", &Box2D::lower, "Lower left corner of the box.")
+        .def_readonly("upper", &Box2D::upper, "Upper right corner of the box.")
+        .add_property("left", &Box2D::getLeft, "Left edge of the box.")
+        .add_property("right",  &Box2D::getRight, "Right edge of the box.")
+        .add_property("top",  &Box2D::getTop, "Top edge of the box.")
+        .add_property("bottom",  &Box2D::getBottom, "Bottom edge of the box.")
         .add_property("width", &Box2D::width, "Width of the box.")
         .add_property("height", &Box2D::height, "Height of the box.")
         .def("__nonzero__", &Box2D::isValid, "Return True if the box is valid.")
-        .def("fix", &Box2D::fix,
-            "Fix the box.\n\n"
-            "Ensure that lower[0] <= upper[0] and lower[1] <= upper[1]. Exchange components\n"
-            "of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("contains", &Box2D::contains, py::args("point"),
@@ -114,19 +107,12 @@ void register_geometry_primitive()
             "Check if this and the other box have common points.\n\n"
             "Args:\n"
             "    other (plask.geometry.Box2D): Box to check common points with.\n")
-        .def("extend", includeR2p, py::args("point"))
-        .def("extend", includeR2R, py::args("box"),
-             "Extend the box to include the given point or box.\n\n"
-             "Args:\n"
-             "    point (plask.vector): The point to include.\n"
-             "    box (Box2D): The box to include.\n"
-            )
+        .def("intersection", &Box2D::intersection, py::args("other"),
+            "Get the biggest box which is included in both this and the other box.\n\n"
+            "Args:\n"
+            "    other (plask.geometry.Box2D): Box to make intersection with.\n")
         .def("translated", &Box2D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
-            "Args:\n"
-            "   trans (plask.vec): Translation vector.")
-        .def("translate", &Box2D::translate, py::args("trans"),
-            "Translate this box.\n\n"
             "Args:\n"
             "   trans (plask.vec): Translation vector.")
         .def("__str__", &Box2D__str__)
@@ -135,9 +121,6 @@ void register_geometry_primitive()
 
     register_vector_of<Box2D>("Box2D");
 
-
-    void (Box3D::*includeR3p)(const Vec<3,double>&) = &Box3D::makeInclude;
-    void (Box3D::*includeR3R)(const Box3D&)       = &Box3D::makeInclude;
 
     py::class_<Box3D, shared_ptr<Box3D>>("Box3D",
         "Box3D()\n"
@@ -160,14 +143,6 @@ void register_geometry_primitive()
         .def("__init__", py::make_constructor(&Box3D_constructor_default))
         .def("__init__", py::make_constructor(&Box3D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box3D_constructor_4numbers, py::default_call_policies(), (py::arg("back"), py::arg("left"), py::arg("bottom"), py::arg("front"), py::arg("right"), py::arg("top"))))
-//         .def_readwrite("lower", &Box3D::lower, "Closer lower left corner of the box.")
-//         .def_readwrite("upper", &Box3D::upper, "Farther upper right corner of the box.")
-//         .add_property("front", &Box3D::getFront, &Box3D::setFront, "Front edge of the box.")
-//         .add_property("back", &Box3D::getBack, &Box3D::setBack, "Back edge of the box.")
-//         .add_property("left", &Box3D::getLeft, &Box3D::setLeft, "Left edge of the box.")
-//         .add_property("right",  &Box3D::getRight, &Box3D::setRight, "Right edge of the box.")
-//         .add_property("top",  &Box3D::getTop, &Box3D::setTop, "Top edge of the box.")
-//         .add_property("bottom",  &Box3D::getBottom, &Box3D::setBottom, "Bottom edge of the box.")
         .def_readonly("lower", &Box3D::lower, "Closer lower left corner of the box.")
         .def_readonly("upper", &Box3D::upper, "Farther upper right corner of the box.")
         .add_property("front", &Box3D::getFront, "Front edge of the box.")
@@ -180,10 +155,6 @@ void register_geometry_primitive()
         .add_property("width", &Box3D::width, "Width of the box")
         .add_property("height", &Box3D::height, "Height of the box")
         .def("__nonzero__", &Box3D::isValid, "Return True if the box is valid.")
-        .def("fix", &Box3D::fix,
-            "Fix the box.\n\n"
-            "Ensure lower[0] <= upper[0], lower[1] <= upper[1], and lower[2] <= upper[3].\n"
-            "Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("contains", &Box3D::contains, py::args("point"),
@@ -194,22 +165,15 @@ void register_geometry_primitive()
         .def("intersects", &Box3D::intersects,
             "Check if this and the other box have common points."
             "Args:\n"
-            "    other (plask.geometry.Box2D): Box to check common points with.\n")
-//         .def("extend", includeR3p, (py::arg("point")), "")
-//         .def("extend", includeR3R, (py::arg("box")),
-//              "Extend the box to include the given point or box.\n\n"
-//              "Args:\n"
-//              "    point (plask.vector): The point to include.\n"
-//              "    box (Box3D): The box to include.\n"
-//             )
+            "    other (plask.geometry.Box3D): Box to check common points with.\n")
+        .def("intersection", &Box3D::intersection, py::args("other"),
+            "Get the biggest box which is included in both this and the other box.\n\n"
+            "Args:\n"
+            "    other (plask.geometry.Box3D): Box to make intersection with.\n")
         .def("translated", &Box3D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
             "Args:\n"
             "   trans (plask.vec): Translation vector.")
-//         .def("translate", &Box3D::translate, py::args("trans"),
-//             "Translate this box.\n\n"
-//             "Args:\n"
-//             "   trans (plask.vec): Translation vector.")
         .def("__str__", &Box3D__str__)
         .def("__repr__", &Box3D__repr__)
     ;

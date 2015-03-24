@@ -258,7 +258,7 @@ inline static void init_Clip()
     ClipName<dim>(), ClipDoc<dim>(), py::no_init)
         .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("box"))))
         .def("__init__", py::make_constructor(&Clip_constructor2<dim>::call, py::default_call_policies(), Clip_constructor2<dim>::args))
-        .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box.")
+        .def_readwrite("clipbox", &Clip<dim>::clipBox, "Clipping box.")
         ;
 }
 
