@@ -82,6 +82,10 @@ class Grid(TreeFragmentModel):
     def get_controller(self, document):
         return SourceEditController(document=document, model=self, line_numbers=False)
 
+    @property
+    def undo_stack(self):
+        return self.tree_parent.undo_stack
+
 #class Generator(Grid):
 #    """Base class for models of generators"""
 

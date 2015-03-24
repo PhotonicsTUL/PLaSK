@@ -86,6 +86,8 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
             value = AXIS_NAMES[self.generator.dim-1][value]
         return value
 
+    get_raw = get
+
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
@@ -102,12 +104,6 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
         if col == 0:
             value = AXIS_NAMES[self.generator.dim-1].index(value)
         self.entries[row].set_attr_by_index(col, value)
-
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
-        self.set(index.column(), index.row(), value)
-        self.dataChanged.emit(index, index)
-        self.generator.fire_changed()
-        return True
 
     def flags(self, index):
         flags = super(Refinements, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -130,6 +126,10 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
     def create_default_entry(self):
         return RefinementConf(axis=0)
 
+    @property
+    def undo_stack(self):
+        return self.generator.undo_stack
+
 
 class RectilinearDivideGenerator(Grid):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
@@ -144,6 +144,19 @@ class RectilinearDivideGenerator(Grid):
 
     def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
                  warning_missing=None, warning_multiple=None, warning_outside=None):
+        '''
+        :param GridsModel grids_model: grids model
+        :param str name:
+        :param type:
+        :param gradual:
+        :param aspect:
+        :param prediv:
+        :param postdiv:
+        :param refinements:
+        :param warning_missing:
+        :param warning_multiple:
+        :param warning_outside:
+        '''
         super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide')
         self.gradual = gradual
         self.aspect = aspect

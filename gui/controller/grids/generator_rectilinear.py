@@ -112,7 +112,7 @@ class RectilinearDivideGeneratorConroller(Controller):
         self.refinements.setItemDelegateForColumn(3, defines_delegate)
         self.refinements.setItemDelegateForColumn(4, defines_delegate)
         self.refinements.setItemDelegateForColumn(5, defines_delegate)
-        vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements:'))
+        vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements:', add_undo_action=False))
 
         #vbox.addStretch()
         self.form.setLayout(vbox)

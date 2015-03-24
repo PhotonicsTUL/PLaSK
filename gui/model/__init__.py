@@ -62,6 +62,7 @@ class TreeFragmentModel(InfoSource):
 
     def __init__(self, parent=None, info_cb=None):
         """
+            :param TreeFragmentModel parent: parent in models tree
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
         InfoSource.__init__(self, info_cb)
@@ -94,6 +95,7 @@ class TreeFragmentModel(InfoSource):
 
 
 class SectionModel(TreeFragmentModel):
+    '''Base class for model of section (defines, geometry, ...).'''
 
     def __init__(self, name, info_cb=None):
         """
@@ -107,12 +109,20 @@ class SectionModel(TreeFragmentModel):
         self.undo_stack = QtGui.QUndoStack()
 
     def create_undo_action(self, parent):
+        '''
+            :param QtCore.QObject parent: qt parent
+            :return QtGui.QAction: undo action connected with self.undo_stack
+        '''
         res = self.undo_stack.createUndoAction(parent)
         res.setIcon(QtGui.QIcon.fromTheme('edit-undo'))
         res.setShortcut(Qt.ALT + Qt.Key_Z)
         return res
 
     def create_redo_action(self, parent):
+        '''
+            :param QtCore.QObject parent: qt parent
+            :return QtGui.QAction: redo action connected with self.undo_stack
+        '''
         res = self.undo_stack.createRedoAction(parent)
         res.setIcon(QtGui.QIcon.fromTheme('edit-redo'))
         res.setShortcut(Qt.ALT + Qt.SHIFT + Qt.Key_Z)
