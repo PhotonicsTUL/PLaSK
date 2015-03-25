@@ -527,9 +527,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
 
         .add_property("bbox", &GeometryObjectD<dim>::getBoundingBox, USE_23D_DOC(GeometryObjectD, bbox))
 
-        .add_property("bbox_size", &GeometryObjectD<dim>::getBoundingBoxSize,
-                      "Dimensions of the bounding box.\n\n"
-                     )
+        // // replaced by bbox.size
+        // .add_property("bbox_size", &GeometryObjectD<dim>::getBoundingBoxSize,
+        //                 "Dimensions of the bounding box.\n\n"
+        //                 )
 
         .def("get_leafs_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsPositions,
              (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs_positions))

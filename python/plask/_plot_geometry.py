@@ -447,7 +447,7 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox):
         drawer(env, geometry_object, transform, clipbox)
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, fill=False,
+def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
                   axes=None, figure=None, margin=None, get_color=None, set_limits=None):
     """
     Plot specified geometry.
@@ -471,6 +471,8 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         mirror (bool): If *True* then the geometry is mirrored if its
                 specification says so (i.e. some borders are set to
                 *mirror* of the geometry is a cylindrical one).
+
+        periods (int): Number of periods to plot periodic geometries.
 
         fill (bool): If True, drawn geometry objects will be filled with colors
                 that depends on their material. For Cartesian3D geometry this
@@ -533,21 +535,48 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
 
     env = DrawEnviroment(ax, axes, fill, color, get_color, lw, zorder=zorder)
 
+    hshift, vshift = (geometry.bbox.size[a] for a in ax)
+    try:
+        periods = array((periods[0], periods[1]), int)
+    except TypeError:
+        periods = array((periods, periods), int)
     try:
         hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or
                               type(geometry) == plask.geometry.Cylindrical2D)
         vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+        if geometry.borders[dirs[0][0]] == 'periodic' or geometry.borders[dirs[0][1]] == 'periodic':
+            hstart = int((periods[0]-1) / 2)
+            hrange = range(-hstart, hstart + min(periods[0], 1))
+        else:
+            hrange = (0,)
+        if geometry.borders[dirs[1][0]] == 'periodic' or geometry.borders[dirs[1][1]] == 'periodic':
+            vstart = int((periods[1]-1) / 2)
+            vrange = range(-vstart, vstart + min(periods[1], 1))
+        else:
+            vrange = (0,)
     except AttributeError:  # we draw non-Geometry object
         hmirror = False
         vmirror = False
-
-    _draw_geometry_object(env, geometry, axes.transData, None)
+        hrange = (0,)
+        vrange = (0,)
     if hmirror:
-        _draw_geometry_object(env, geometry,
-                              matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + axes.transData, None)
+        hshift *= 2
+        hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0)
     if vmirror:
-        _draw_geometry_object(env, geometry,
-                              matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + axes.transData, None)
+        vshift *= 2
+        vmirrortransform = matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0)
+
+    for iv in vrange:
+        for ih in hrange:
+            shift = matplotlib.transforms.Affine2D()
+            shift.translate(ih*hshift, iv*vshift)
+            _draw_geometry_object(env, geometry, shift + axes.transData, None)
+            if hmirror:
+                _draw_geometry_object(env, geometry,
+                                      shift + hmirrortransform + axes.transData, None)
+            if vmirror:
+                _draw_geometry_object(env, geometry,
+                                      shift + vmirrortransform + axes.transData, None)
 
     if margin is not None:
         box = geometry.bbox
