@@ -541,9 +541,19 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     except TypeError:
         periods = array((periods, periods), int)
     try:
-        hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or
-                              type(geometry) == plask.geometry.Cylindrical2D)
-        vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+        if geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or \
+           type(geometry) == plask.geometry.Cylindrical2D:
+            hshift *= 2
+            hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0)
+            hmirror = mirror
+        else:
+            hmirror = False
+        if geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror':
+            vshift *= 2
+            vmirrortransform = matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0)
+            vmirror = mirror
+        else:
+            vmirror = False
         if geometry.borders[dirs[0][0]] == 'periodic' or geometry.borders[dirs[0][1]] == 'periodic':
             hstart = int((periods[0]-1) / 2)
             hrange = range(-hstart, hstart + min(periods[0], 1))
@@ -559,12 +569,6 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         vmirror = False
         hrange = (0,)
         vrange = (0,)
-    if hmirror:
-        hshift *= 2
-        hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0)
-    if vmirror:
-        vshift *= 2
-        vmirrortransform = matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0)
 
     for iv in vrange:
         for ih in hrange:
