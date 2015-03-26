@@ -258,6 +258,9 @@ class GNStack(GNContainerBase):
     def new_child_pos(self):
         return 0
 
+    def real_to_model_index(self, index):
+        return len(self.children) - (index % len(self.children))
+
 
 class GNShelf(GNContainerBase):
     """(multi-)shelf"""

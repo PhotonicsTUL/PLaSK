@@ -368,7 +368,47 @@ class GNode(object):
             yield p
             p = p.parent
 
+    # def get_child_by_real_index(self, index):
+    #     '''
+    #     Get child of self indexed by GeometryObject's index.
+    #     :param int index: index of child of the GeometryObject represented by self
+    #     :return GNode: child of self which represents corresponding child of the GeometryObject
+    #     '''
+    #     return self.children[index]
 
+    def real_to_model_index(self, index):
+        return index
+
+    def model_to_real_index(self, index):
+        return self.real_to_model_index(index)
+
+    def get_node_by_real_path(self, real_path):
+        '''
+        Get node which represents GeometryObject and is pointed by given path.
+        Path starts at self, ends at resulted node and use GeometryObjects' child indexes.
+        :param collection.Iterable real_path: collection of indexes in GeometryObjects' tree
+        :return GNode: node which represents GeometryObject with given path
+        '''
+        node = self
+        for index in real_path:
+            node = node.children[node.real_to_model_index(index)]
+        return node
+
+    def get_object_by_model_path(self, object, model_path):
+        '''
+        :param plask.GeometryObject object: object which is represented by self or plask.Manager if model_path is absolute
+        :param collection.Iterable model_path: collection of indexes in GNode's tree
+        :return plask.GeometryObject, GNode: object and node which represents this object
+        '''
+        node = self
+        for index in model_path:
+            real_index = node.model_to_real_index(index)
+            try:
+                object = object._child(real_index)
+            except AttributeError:  #geometry manager has no child:
+                object = object._root(real_index)
+            node = node.children[index]
+        return object, node
 
 class GNFakeRoot(GNode):
 
