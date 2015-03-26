@@ -159,7 +159,7 @@ void register_geometry_primitive()
         .add_property("depth", &Box3D::depth, "Depth of the box")
         .add_property("width", &Box3D::width, "Width of the box")
         .add_property("height", &Box3D::height, "Height of the box")
-        .add_property("size", &Box2D::size, "Size of the box.")
+        .add_property("size", &Box3D::size, "Size of the box.")
         .def("__nonzero__", &Box3D::isValid, "Return True if the box is valid.")
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -179,7 +179,7 @@ void register_geometry_primitive()
         .def("extension", &Box3D::extension, py::args("other"),
             "Get the minimal box which include both this and other box.\n\n"
             "Args:\n"
-            "    other (plask.geometry.Box2D): Box.\n")
+            "    other (plask.geometry.Box3D): Box.\n")
         .def("translated", &Box3D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
             "Args:\n"

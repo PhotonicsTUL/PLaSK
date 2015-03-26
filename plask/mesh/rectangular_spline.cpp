@@ -168,8 +168,8 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    size_t i0 = this->src_mesh->axis0->findIndex(p.c0);
-    size_t i1 = this->src_mesh->axis1->findIndex(p.c1);
+    size_t i0 = std::upper_bound(this->src_mesh->axis0->begin(), this->src_mesh->axis0->end(), p.c0).index,
+           i1 = std::upper_bound(this->src_mesh->axis1->begin(), this->src_mesh->axis1->end(), p.c1).index;
 
     size_t i0_1;
     double left, right;
@@ -214,6 +214,7 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         } else if (this->flags.periodic(0)) {
             i0 = 0;
             right = this->src_mesh->axis0->at(0) + this->flags.high(0) - this->flags.low(0);
+            if (right == left) right += 1e-6;
         } else {
             --i0;
             right = this->src_mesh->axis0->at(i0) + 1.;
@@ -265,6 +266,7 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         } else if (this->flags.periodic(1)) {
             i1 = 0;
             top = this->src_mesh->axis1->at(0) + this->flags.high(1) - this->flags.low(1);
+            if (top == bottom) top += 1e-6;
         } else {
             --i1;
             top = this->src_mesh->axis1->at(i1) + 1.;
@@ -367,9 +369,9 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<3> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    int i0 = this->src_mesh->axis0->findIndex(p.c0),
-        i1 = this->src_mesh->axis1->findIndex(p.c1),
-        i2 = this->src_mesh->axis2->findIndex(p.c2);
+    size_t i0 = std::upper_bound(this->src_mesh->axis0->begin(), this->src_mesh->axis0->end(), p.c0).index,
+           i1 = std::upper_bound(this->src_mesh->axis1->begin(), this->src_mesh->axis1->end(), p.c1).index,
+           i2 = std::upper_bound(this->src_mesh->axis2->begin(), this->src_mesh->axis2->end(), p.c2).index;
 
     size_t i0_1;
     double back, front;
@@ -414,6 +416,7 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         } else if (this->flags.periodic(0)) {
             i0 = 0;
             front = this->src_mesh->axis0->at(0) + this->flags.high(0) - this->flags.low(0);
+            if (front == back) front += 1e-6;
         } else {
             --i0;
             front = this->src_mesh->axis0->at(i0) + 1.;
@@ -465,6 +468,7 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         } else if (this->flags.periodic(1)) {
             i1 = 0;
             right = this->src_mesh->axis1->at(0) + this->flags.high(1) - this->flags.low(1);
+            if (right == left) right += 1e-6;
         } else {
             --i1;
             right = this->src_mesh->axis1->at(i1) + 1.;
@@ -516,6 +520,7 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         } else if (this->flags.periodic(2)) {
             i2 = 0;
             top = this->src_mesh->axis2->at(0) + this->flags.high(2) - this->flags.low(2);
+            if (top == bottom) top += 1e-6;
         } else {
             --i2;
             top = this->src_mesh->axis2->at(i2) + 1.;

@@ -40,12 +40,12 @@ class SourceWidget(QtGui.QWidget):
         self.toolbar = QtGui.QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
 
-        self.add_action('&Undo', 'edit-undo', QtGui.QKeySequence.Undo, self.editor.undo)
-        self.add_action('R&edo', 'edit-redo', QtGui.QKeySequence.Redo, self.editor.redo)
+        self.add_action('&Undo', 'edit-undo', None, self.editor.undo)
+        self.add_action('R&edo', 'edit-redo', None, self.editor.redo)
         self.toolbar.addSeparator()
-        self.add_action('&Copy', 'edit-copy', QtGui.QKeySequence.Copy, self.editor.copy)
-        self.add_action('C&ut', 'edit-cut', QtGui.QKeySequence.Copy, self.editor.cut)
-        self.add_action('&Paste', 'edit-paste', QtGui.QKeySequence.Copy, self.editor.paste)
+        self.add_action('&Copy', 'edit-copy', None, self.editor.copy)
+        self.add_action('C&ut', 'edit-cut', None, self.editor.cut)
+        self.add_action('&Paste', 'edit-paste', None, self.editor.paste)
         self.toolbar.addSeparator()
         self.add_action('&Find...', 'edit-find', QtGui.QKeySequence.Find, self.show_find)
         self.add_action('&Replace...', 'edit-find-replace', QtGui.QKeySequence.Replace, self.show_replace)
@@ -114,7 +114,8 @@ class SourceWidget(QtGui.QWidget):
 
     def add_action(self, name, icon, shortcut, slot):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), name, self)
-        action.setShortcut(shortcut)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
         action.triggered.connect(slot)
         self.toolbar.addAction(action)
         return action

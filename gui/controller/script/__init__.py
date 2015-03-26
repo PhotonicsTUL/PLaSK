@@ -194,14 +194,15 @@ class ScriptEditor(TextEdit):
                         if not (cursor.atBlockStart()):
                             unindent(self, col)
                             return
-        elif key == Qt.Key_Home:
+        elif key == Qt.Key_Home and not modifiers & ~Qt.ShiftModifier:
             cursor = self.textCursor()
             txt = cursor.block().text()
             col = cursor.positionInBlock()
+            mode = QtGui.QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QtGui.QTextCursor.MoveAnchor
             if txt[:col].strip():
-                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QtGui.QTextCursor.Right)
+                    cursor.movePosition(QtGui.QTextCursor.Right, mode)
                 self.setTextCursor(cursor)
                 return
 

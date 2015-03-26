@@ -655,8 +655,8 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         auto p = flags.wrap(point);
-        size_t index0 = axis0->findIndex(p.c0);
-        size_t index1 = axis1->findIndex(p.c1);
+        size_t index0 = std::upper_bound(axis0->begin(), axis0->end(), p.c0).index;
+        size_t index1 = std::upper_bound(axis1->begin(), axis1->end(), p.c1).index;
 
         size_t index0_1;
         double left, right;
@@ -701,6 +701,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
             } else if (flags.periodic(0)) {
                 index0 = 0;
                 right = axis0->at(0) + flags.high(0) - flags.low(0);
+                if (right == left) right += 1e-6;
             } else {
                 --index0;
                 right = axis0->at(index0) + 1.;
@@ -752,6 +753,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
             } else if (flags.periodic(1)) {
                 index1 = 0;
                 top = axis1->at(0) + flags.high(1) - flags.low(1);
+                if (top == bottom) top += 1e-6;
             } else {
                 --index1;
                 top = axis1->at(index1) + 1.;
