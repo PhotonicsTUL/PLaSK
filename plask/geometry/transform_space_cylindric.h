@@ -35,7 +35,7 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     virtual shared_ptr<GeometryObjectTransform<3, GeometryObjectD<2> > > shallowCopy() const override;
 

@@ -112,6 +112,10 @@ void register_geometry_primitive()
             "Get the biggest box which is included in both this and the other box.\n\n"
             "Args:\n"
             "    other (plask.geometry.Box2D): Box to make intersection with.\n")
+        .def("extension", &Box2D::extension, py::args("other"),
+             "Get the minimal box which include both this and other box.\n\n"
+             "Args:\n"
+             "    other (plask.geometry.Box2D): Box.\n")
         .def("translated", &Box2D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
             "Args:\n"
@@ -172,6 +176,10 @@ void register_geometry_primitive()
             "Get the biggest box which is included in both this and the other box.\n\n"
             "Args:\n"
             "    other (plask.geometry.Box3D): Box to make intersection with.\n")
+        .def("extension", &Box3D::extension, py::args("other"),
+            "Get the minimal box which include both this and other box.\n\n"
+            "Args:\n"
+            "    other (plask.geometry.Box2D): Box.\n")
         .def("translated", &Box3D::translated, py::args("trans"),
             "Get translated copy of this box.\n\n"
             "Args:\n"

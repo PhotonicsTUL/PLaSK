@@ -22,14 +22,8 @@ shared_ptr<Material> Revolution::getMaterial(const DVec& p) const {
     return getChild()->getMaterial(childVec(p));
 }
 
-void Revolution::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
-        return;
-    }
-    std::vector<ChildBox> c = getChild()->getBoundingBoxes(predicate, path);
-    std::transform(c.begin(), c.end(), std::back_inserter(dest),
-                   [&](const ChildBox& r) { return parentBox(r); });
+Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &child_bbox) const {
+    return parentBox(child_bbox);
 }
 
 shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallowCopy() const {

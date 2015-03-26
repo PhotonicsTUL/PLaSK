@@ -66,6 +66,11 @@ Box2D Box2D::intersection(Box2D other) const {
     return other;
 }
 
+Box2D Box2D::extension(Box2D other) const {
+    other.makeInclude(*this);
+    return other;
+}
+
 Vec<2,double> Box2D::moveInside(Vec<2,double> p) const {
     if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
     if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
@@ -129,6 +134,11 @@ void Box3D::makeIntersection(const Box3D &other) {
     ensureLo(upper.c0, other.upper.c0);
     ensureLo(upper.c1, other.upper.c1);
     ensureLo(upper.c2, other.upper.c2);
+}
+
+Box3D Box3D::extension(Box3D other) const {
+    other.makeInclude(*this);
+    return other;
 }
 
 Box3D Box3D::intersection(Box3D other) const {

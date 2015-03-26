@@ -29,14 +29,8 @@ shared_ptr<Material> Extrusion::getMaterial(const DVec& p) const {
     return canBeInside(p) ? getChild()->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
-void Extrusion::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
-        return;
-    }
-    std::vector<ChildBox> c = getChild()->getBoundingBoxes(predicate, path);
-    std::transform(c.begin(), c.end(), std::back_inserter(dest),
-                   [&](const ChildBox& r) { return parentBox(r); });
+Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box &child_bbox) const {
+    return parentBox(child_bbox);
 }
 
 /*std::vector< plask::shared_ptr< const plask::GeometryObject > > Extrusion::getLeafs() const {

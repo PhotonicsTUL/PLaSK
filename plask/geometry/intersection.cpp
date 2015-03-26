@@ -25,7 +25,13 @@ GeometryObject::Subtree Intersection<dim>::getPathsAt(const Intersection<dim>::D
     if (envelope->contains(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
         else
-            return GeometryObject::Subtree();
+        return GeometryObject::Subtree();
+}
+
+template <int dim>
+typename Intersection<dim>::Box Intersection<dim>::fromChildCoords(const typename Intersection<dim>::ChildType::Box &child_bbox) const
+{
+    return envelope->getBoundingBox().intersection(child_bbox);
 }
 
 template <int dim>

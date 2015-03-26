@@ -47,7 +47,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     //virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const override;
 

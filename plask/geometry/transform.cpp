@@ -38,14 +38,9 @@ GeometryObject::Subtree Translation<dim>::getPathsAt(const Translation::DVec &po
 }
 
 template <int dim>
-void Translation<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
-        return;
-    }
-    std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
-    dest.reserve(dest.size() + result.size());
-    for (Box& r: result) dest.push_back(r.translated(translation));
+typename Translation<dim>::Box Translation<dim>::fromChildCoords(const typename Translation<dim>::ChildType::Box &child_bbox) const
+{
+    return child_bbox.translated(this->translation);
 }
 
 template <int dim>

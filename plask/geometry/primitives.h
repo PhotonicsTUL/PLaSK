@@ -105,7 +105,7 @@ struct PLASK_API Box2D {
 
     /**
      * Make this box, the minimal one which include @c this and @p other box.
-     * @param other point which should be inside box
+     * @param other box to include in this
      */
     void makeInclude(const Box2D& other);
 
@@ -121,6 +121,13 @@ struct PLASK_API Box2D {
      * @return the biggest box which is included in this and @p other box
      */
     Box2D intersection(Box2D other) const;
+
+    /**
+     * Get the minimal box which include @c this and @p other box.
+     * @param other box
+     * @return the minimal box which include @c this and @p other box
+     */
+    Box2D extension(Box2D other) const;
 
     /**
      * Get translated copy of this.
@@ -240,7 +247,7 @@ struct PLASK_API Box2D {
      * @param i number of coordinate
      * @return box similar to this but with mirrored i-th coordinate
      */
-    inline Box2D fliped(size_t i) {
+    inline Box2D fliped(size_t i) const {
         Box2D res = *this;
         res.flip(i);
         return res;
@@ -417,6 +424,13 @@ struct PLASK_API Box3D {
     void makeIntersection(const Box3D& other);
 
     /**
+     * Get the minimal box which include @c this and @p other box.
+     * @param other box
+     * @return the minimal box which include @c this and @p other box
+     */
+    Box3D extension(Box3D other) const;
+
+    /**
      * Calculate the biggest box which is included in this and @p other box.
      * @param other box to clip
      * @return the biggest box which is included in this and @p other box
@@ -548,7 +562,7 @@ struct PLASK_API Box3D {
      * @param i number of coordinate
      * @return box similar to this but with mirrored i-th coordinate
      */
-    inline Box3D fliped(size_t i) {
+    inline Box3D fliped(size_t i) const {
         Box3D res = *this;
         res.flip(i);
         return res;

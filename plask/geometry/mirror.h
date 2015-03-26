@@ -62,7 +62,7 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
@@ -140,6 +140,8 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
     virtual bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
+
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 

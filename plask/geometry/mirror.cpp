@@ -27,14 +27,8 @@ GeometryObject::Subtree Flip<dim>::getPathsAt(const Flip::DVec &point, bool all)
 }
 
 template <int dim>
-void Flip<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
-        return;
-    }
-    std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
-    dest.reserve(dest.size() + result.size());
-    for (Box& r: result) dest.push_back(fliped(r));
+typename Flip<dim>::Box Flip<dim>::fromChildCoords(const typename Flip<dim>::ChildType::Box &child_bbox) const {
+    return fliped(child_bbox);
 }
 
 template <int dim>
@@ -78,6 +72,11 @@ shared_ptr<Material> Mirror<dim>::getMaterial(const Mirror<dim>::DVec &p) const 
 template <int dim>
 bool Mirror<dim>::contains(const Mirror<dim>::DVec &p) const {
     return getChild()->contains(flipedIfNeg(p));
+}
+
+template <int dim>
+typename Mirror<dim>::Box Mirror<dim>::fromChildCoords(const typename Mirror<dim>::ChildType::Box &child_bbox) const {
+    return child_bbox.extension(child_bbox.fliped(flipDir));
 }
 
 template <int dim>

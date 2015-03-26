@@ -17,6 +17,8 @@ namespace plask {
 template < int dim, typename Child_Type = GeometryObjectD<dim> >
 struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
+    typedef typename GeometryObjectD<dim>::DVec DVec;
+    typedef typename GeometryObjectD<dim>::Box Box;
     typedef Child_Type ChildType;
 
     explicit GeometryObjectTransform(shared_ptr<ChildType> child = nullptr): _child(child) { connectOnChildChanged(); }
@@ -155,6 +157,23 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         _child.reset();
     }
 
+    /**
+     * Conver bouding box from child's to this's coordinates.
+     * @param child_bbox bouding box of child
+     * @return @p child_bbox converted to this's coordinates
+     */
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const = 0;
+
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+        if (predicate(*this)) {
+            dest.push_back(this->getBoundingBox());
+            return;
+        }
+        auto child_boxes = getChild()->getBoundingBoxes(predicate, path);
+        dest.reserve(dest.size() + child_boxes.size());
+        for (auto& r: child_boxes) dest.push_back(this->fromChildCoords(r));
+    }
+
   protected:
     shared_ptr<ChildType> _child;
 
@@ -273,7 +292,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
         }
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result = getChild()->getLeafsWithTranslations();

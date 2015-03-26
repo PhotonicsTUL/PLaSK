@@ -27,21 +27,13 @@ GeometryObject::Subtree Clip<dim>::getPathsAt(const Clip<dim>::DVec &point, bool
     if (clipBox.contains(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
         else
-            return GeometryObject::Subtree();
+        return GeometryObject::Subtree();
 }
 
 template <int dim>
-void Clip<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
-        return;
-    }
-    std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
-    dest.reserve(dest.size() + result.size());
-    for (Box& r: result) {
-        r.makeIntersection(clipBox);
-        dest.push_back(r);
-    }
+typename Clip<dim>::Box Clip<dim>::fromChildCoords(const typename  Clip<dim>::ChildType::Box &child_bbox) const
+{
+    return child_bbox.intersection(clipBox);
 }
 
 template <int dim>

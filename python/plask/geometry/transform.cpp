@@ -23,6 +23,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform",
                       (shared_ptr<typename GeometryObjectTransform<dim>::ChildType> (GeometryObjectTransform<dim>::*)()) &GeometryObjectTransform<dim>::getChild,
                       &GeometryObjectTransform<dim>::setChild, "Transformed item.")
         .def("__contains__", &Transfrom__contains__<dim>)
+
     ;
 }
 
