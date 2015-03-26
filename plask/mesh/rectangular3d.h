@@ -843,7 +843,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
             } else if (flags.periodic(2)) {
                 index2 = 0;
                 top = axis2->at(0) + flags.high(2) - flags.low(2);
-                if (top == bottom) top + 1e-6;
+                if (top == bottom) top += 1e-6;
             } else {
                 --index2;
                 top = axis2->at(index2) + 1.;
