@@ -423,14 +423,6 @@ class GNode(object):
         result.append(self.index_in_parent)
         return result
 
-    def get_corresponding_object(self, manager):
-        '''
-        Get object that corresponds to self in real objects tree.
-        :param plask.Manager manager: manager which describes real geometry objects tree
-        :return plask.GeometryObject: object that corresponds to self in real objects tree
-        '''
-        return self.get_object_by_model_path(manager, self.get_model_path())[0]
-
 
 class GNFakeRoot(GNode):
 
@@ -447,3 +439,12 @@ class GNFakeRoot(GNode):
 
     def tag_name(self, full_name=True):
         return "geometry"
+
+    def get_corresponding_object(self, node, manager):
+        '''
+        Get object that corresponds to node in real objects tree.
+        :param GNode node:
+        :param plask.Manager manager: manager which describes real geometry objects tree
+        :return plask.GeometryObject: object that corresponds to self in real objects tree
+        '''
+        return self.get_object_by_model_path(manager, node.get_model_path())[0]

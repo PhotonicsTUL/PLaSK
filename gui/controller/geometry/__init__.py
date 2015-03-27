@@ -136,6 +136,7 @@ class GeometryController(Controller):
             try:
                 manager.load(self.document.get_content(sections='geometry'))
                 to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
+                #to_plot = self.model.fake_root.get_corresponding_object(tree_element, manager)
                 self.geometry_view.update_plot(to_plot, set_limits=set_limits, plane=self.checked_plane)
             except Exception as e:
                 if not element_has_name:

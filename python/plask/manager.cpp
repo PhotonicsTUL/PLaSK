@@ -491,8 +491,6 @@ static void register_manager_dict(const std::string name) {
         .def("values", &dict_values<T>)
         .def("items", &dict_items<T>)
         .def("__getattr__", &dict__getattr__<T>)
-        .def("_roots_len", &Manager::getRootsCount, "number of roots geometries")
-        .def("_root", &Manager::getRootAt, py::arg("index"), "root geometry with given index")
         // .def("__setattr__", &dict__setattr__<T>)
         // .def("__delattr__", &dict__delattr__<T>)
     ;
@@ -567,6 +565,8 @@ void register_manager() {
              "* mesh generators (:attr:`~plask.Manager.meshgen`): ``MSG``,\n\n"
              "* custom defines (:attr:`~plask.Manager.define`): ``DEF``.\n",
              py::arg("target"))
+        .def("_roots_len", &Manager::getRootsCount, "number of roots geometries")
+        .def("_root", &Manager::getRootAt, py::arg("index"), "root geometry with given index")
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");

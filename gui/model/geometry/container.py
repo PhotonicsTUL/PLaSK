@@ -259,7 +259,7 @@ class GNStack(GNContainerBase):
         return 0
 
     def real_to_model_index(self, index):
-        return len(self.children) - (index % len(self.children))
+        return len(self.children) - 1 - (index % len(self.children))
 
 
 class GNShelf(GNContainerBase):
