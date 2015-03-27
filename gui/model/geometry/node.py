@@ -153,6 +153,10 @@ class GNode(object):
         """
         return self._parent
 
+    @property
+    def index_in_parent(self):
+        return self._parent.children.index(self)
+
     def clear_in_parent_params(self, new_potential_parent = None):
         if new_potential_parent is not None:
             if type(new_potential_parent) != type(self._parent): self.in_parent = None
@@ -409,6 +413,24 @@ class GNode(object):
                 object = object._root(real_index)
             node = node.children[index]
         return object, node
+
+    def get_model_path(self):
+        '''
+        :return: path in model from fake_root to self
+        '''
+        if self.parent is None: return []
+        result = self.parent.get_model_path()
+        result.append(self.index_in_parent)
+        return result
+
+    def get_corresponding_object(self, manager):
+        '''
+        Get object that corresponds to self in real objects tree.
+        :param plask.Manager manager: manager which describes real geometry objects tree
+        :return plask.GeometryObject: object that corresponds to self in real objects tree
+        '''
+        return self.get_object_by_model_path(manager, self.get_model_path())[0]
+
 
 class GNFakeRoot(GNode):
 
