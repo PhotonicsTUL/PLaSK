@@ -30,12 +30,16 @@ Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int strid):
     lot(lot), n(n), strid(strid?strid:lot), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
-        if (symmetry == SYMMETRY_NONE)
-            cfftmi_(n, wsave, lensav(n), ier);
-        else if (symmetry == SYMMETRY_EVEN)
-            cosqmi_(n, wsave, lensav(n), ier);
-        else
-            throw NotImplemented("forward FFT for odd symmetry");
+        switch (symmetry) {
+            case (SYMMETRY_NONE):
+                cfftmi_(n, wsave, lensav(n), ier); return;
+            case (SYMMETRY_EVEN_2):
+                cosqmi_(n, wsave, lensav(n), ier); return;
+            case (SYMMETRY_EVEN_1):
+                costmi_(n, wsave, lensav(n), ier); return;
+            default:
+                throw NotImplemented("forward FFT for odd symmetry");
+        }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward1D::Forward1D: %1%", msg);
     }
@@ -46,14 +50,19 @@ void Forward1D::execute(dcomplex* data) {
     try {
         int ier;
         double work[2*lot*n];
-        if (symmetry == SYMMETRY_NONE) {
-            cfftmf_(lot, 1, n, strid, data, strid*n, wsave, lensav(n), work, 2*lot*n, ier);
-        } else {
-            cosqmb_(2*lot, 1, n, 2*strid, (double*)data, 2*strid*n, wsave, lensav(n), work, 2*lot*n, ier);
-            double factor = 1./n;
-            for (int i = 0, N = strid*n; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+        switch (symmetry) {
+            case (SYMMETRY_NONE):
+                cfftmf_(lot, 1, n, strid, data, strid*n, wsave, lensav(n), work, 2*lot*n, ier);
+                return;
+            case (SYMMETRY_EVEN_2):
+                cosqmb_(2*lot, 1, n, 2*strid, (double*)data, 2*strid*n, wsave, lensav(n), work, 2*lot*n, ier);
+                double factor = 1./n;
+                for (int i = 0, N = strid*n; i < N; i += strid)
+                    for (int j = 0; j < lot; ++j)
+                        data[i+j] *= factor;
+                return;
+            case (SYMMETRY_EVEN_1):
+            default: {} // silence a warning
         }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward1D::execute: %1%", msg);

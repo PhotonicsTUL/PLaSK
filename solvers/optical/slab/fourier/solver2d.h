@@ -157,6 +157,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     Expansion& getExpansion() override { return expansion; }
 
+#   ifndef NDEBUG
+        RegularAxis material_mesh() const { return expansion.xmesh; }
+#   endif
+
   private:
 
     /**

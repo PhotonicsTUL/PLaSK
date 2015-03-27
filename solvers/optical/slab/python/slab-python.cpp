@@ -871,6 +871,9 @@ BOOST_PYTHON_MODULE(slab)
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
+#       ifndef NDEBUG
+            solver.add_property("material_mesh", &__Class__::material_mesh);
+#       endif
         PROVIDER(outNeff, "Effective index of the last computed mode.");
         solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
                    "Compute the mode near the specified effective index.\n\n"
