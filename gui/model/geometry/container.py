@@ -261,11 +261,23 @@ class GNStack(GNContainerBase):
     def new_child_pos(self):
         return 0
 
+    @property
+    def real_children_count(self):
+        return sum(1 for c in self.children if not isinstance(c, GNZero))
+
     def real_to_model_index(self, index):
-        return len(self.children) - 1 - (index % len(self.children))
-    
+        real_count = self.real_children_count
+        index = real_count - self.real_children_count % real_count  # reduce to the first period and change to model order
+        i = 0   # considering GNZero nodes:
+        while i <= index:
+            if isinstance(self.children[i], GNZero): index += 1
+            i += 1
+        return index
+
     def model_to_real_index(self, index):
-        return super(GNStack, self).model_to_real_index(len(self.children) - 1 - index)
+        #if isinstance(self.children[index], GNZero)    #TODO throw exception
+        index -= sum(1 for i in range(0, index) if isinstance(self.children[i], GNZero))
+        return super(GNStack, self).model_to_real_index(self.real_children_count - 1 - index)
 
 
 class GNShelf(GNContainerBase):
