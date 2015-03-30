@@ -220,6 +220,7 @@ class PlotWidget(QtGui.QGroupBox):
     def update_plot(self, to_plot, set_limits=True, plane='12'):
         # self.figure.clear()
         self.axes.cla()
+        self.selectors = []
         self.axes.minorticks_on()
         if to_plot is not None:
             self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
