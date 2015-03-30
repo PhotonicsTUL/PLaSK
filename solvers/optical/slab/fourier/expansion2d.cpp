@@ -64,7 +64,7 @@ void ExpansionPW2D::init()
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
-    matFFT = FFT::Forward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -93,7 +93,7 @@ void ExpansionPW2D::init()
             mag[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
+        FFT::Forward1D(2, nN, symmetric()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
@@ -265,7 +265,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
         if (symmetric()) {
             double dx = 0.5 * (right-left) / nN;
@@ -625,10 +625,10 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            return interpolate(src_mesh, field, dest_mesh, field_params.method, 
+            return interpolate(src_mesh, field, dest_mesh, field_params.method,
                                InterpolationFlags(SOLVER->getGeometry(),
                                     (sym == E_TRAN)? InterpolationFlags::Symmetry::NPN : InterpolationFlags::Symmetry::PNP,
-                                    InterpolationFlags::Symmetry::NO), 
+                                    InterpolationFlags::Symmetry::NO),
                                     false);
         } else {
             fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));
