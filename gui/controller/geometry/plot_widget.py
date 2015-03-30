@@ -177,6 +177,7 @@ class PlotWidget(QtGui.QGroupBox):
         super(PlotWidget, self).__init__(parent)
         self.setContentsMargins(0, 0, 0, 0)
 
+        self.selectors = []
         self.controller = controller
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -202,6 +203,15 @@ class PlotWidget(QtGui.QGroupBox):
         self.aspect_locked = False
 
         self.setLayout(vbox)
+
+    def delete_selectors(self):
+        for artist in self.selectors:
+            artist.remove()
+        self.selectors = []
+
+    def select(self, selector_patch):
+        self.axes.add_patch(selector_patch)
+        self.selectors.append(selector_patch)
 
     def resizeEvent(self, event):
         super(PlotWidget, self).resizeEvent(event)
