@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from lxml import etree
+from numbers import Number
 
 from ...utils.xml import AttributeReader, OrderedTagReader
 from .reader import GNReadConf, axes_dim
@@ -384,6 +385,11 @@ class GNode(object):
         return index
 
     def model_to_real_index(self, index):
+        '''
+        Calculate real index (or path fragment) of child with given model index
+        :param int index: model index
+        :return: real index or path fragment, int or tuple
+        '''
         return self.real_to_model_index(index)
 
     def get_node_by_real_path(self, real_path):
@@ -406,11 +412,13 @@ class GNode(object):
         '''
         node = self
         for index in model_path:
-            real_index = node.model_to_real_index(index)
-            try:
-                object = object._child(real_index)
-            except AttributeError:  #geometry manager has no child:
-                object = object._root(real_index)
+            real_indexes = node.model_to_real_index(index)
+            if isinstance(real_indexes, Number): real_indexes = (real_indexes,)
+            for real_index in real_indexes:
+                try:
+                    object = object._child(real_index)
+                except AttributeError:  #geometry manager has no child:
+                    object = object._root(real_index)
             node = node.children[index]
         return object, node
 

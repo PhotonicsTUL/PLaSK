@@ -30,6 +30,9 @@ class GNTransform(GNObject):
     def accept_new_child(self):
         return not self.children
 
+    def real_to_model_index(self, index):
+        return 0    #some transform, like mirror, can produce some fake, extra children
+
 
 class GNTranslation(GNTransform):
 

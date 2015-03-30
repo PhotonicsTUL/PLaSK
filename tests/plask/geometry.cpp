@@ -2,6 +2,7 @@
 
 #include <plask/geometry/geometry.h>
 #include <plask/geometry/stack.h>
+#include <plask/geometry/transform_space_cartesian.h>
 
 #include "common/dumb_material.h"
 
@@ -111,6 +112,13 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(0.0, 0.0, 25.0, 4.0));
         shelf->setZeroHeightBefore(2);
         BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(-15.0, 0.0, 10.0, 4.0));
+    }
+
+    BOOST_FIXTURE_TEST_CASE(extrusion, Leafs2D) {
+        auto extrusion = std::make_shared<plask::Extrusion>(block_5_3, 5);
+        BOOST_CHECK_EQUAL(extrusion->getLength(), 5.0);
+        BOOST_CHECK_EQUAL(extrusion->getChildNo(0), block_5_3);
+        BOOST_CHECK_EQUAL(extrusion->getRealChildNo(0), block_5_3);
     }
 
     BOOST_AUTO_TEST_CASE(manager_loading) {

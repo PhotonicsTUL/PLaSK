@@ -152,6 +152,9 @@ class GNContainerBase(GNObject):
         else:
             return child_element
 
+    def model_to_real_index(self, index):
+        return index, 0
+
 
 class GNStack(GNContainerBase):
     """2D/3D (multi-)stack"""
@@ -260,6 +263,9 @@ class GNStack(GNContainerBase):
 
     def real_to_model_index(self, index):
         return len(self.children) - 1 - (index % len(self.children))
+    
+    def model_to_real_index(self, index):
+        return super(GNStack, self).model_to_real_index(len(self.children) - 1 - index)
 
 
 class GNShelf(GNContainerBase):

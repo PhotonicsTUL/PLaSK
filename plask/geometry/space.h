@@ -301,7 +301,7 @@ public:
      * @return 1 if this has a child or 0 if it hasn't
      */
     std::size_t getChildrenCount() const override {
-        return getChildUnsafe() ? 1 : 0;
+        return getObject3D() ? 1 : 0;
     }
 
     /**
@@ -312,7 +312,7 @@ public:
     shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override {
         //if (!hasChild() || child_no > 0) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         if (child_no >= getChildrenCount()) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
-        return getChild();
+        return getObject3D();
     }
 
     /**
