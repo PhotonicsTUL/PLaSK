@@ -54,18 +54,18 @@ void Forward1D::execute(dcomplex* data) {
         switch (symmetry) {
             case (SYMMETRY_NONE):
                 cfftmf_(lot, 1, n, strid, data, strid*n, wsave, lensav(n), work, 2*lot*n, ier);
-                return;
+                break;
             case (SYMMETRY_EVEN_2):
                 cosqmb_(2*lot, 1, n, 2*strid, (double*)data, 2*strid*n, wsave, lensav(n), work, 2*lot*n, ier);
                 factor = 1./n;
                 for (int i = 0, N = strid*n; i < N; i += strid)
                     for (int j = 0; j < lot; ++j)
                         data[i+j] *= factor;
-                return;
+                break;
             case (SYMMETRY_EVEN_1):
                 costmf_(2*lot, 1, n, 2*strid, (double*)data, 2*strid*n, wsave, lensav(n), work, 2*lot*(n+1), ier);
                 for (int i = lot, end = n*lot; i < end; ++i) *(data+i) *= 0.5;
-                return;
+                break;
             default: {} // silence the warning
         }
                     } catch (const std::string& msg) {
@@ -217,9 +217,8 @@ void Forward2D::execute(dcomplex* data) {
         double factor1 = 1./n1;
         switch (symmetry1) {
             case (SYMMETRY_NONE):
-                for (int i = 0; i != n2; ++i) {
+                for (int i = 0; i != n2; ++i)
                     cfftmf_(lot, 1, n1, strid1, data+strid2*i, strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
-                }
                 break;
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n2; ++i) {
@@ -242,9 +241,8 @@ void Forward2D::execute(dcomplex* data) {
         double factor2 = 1./n2;
         switch (symmetry2) {
             case (SYMMETRY_NONE):
-                for (int i = 0; i != n1; ++i) {
+                for (int i = 0; i != n1; ++i)
                     cfftmf_(lot, 1, n2, strid2, data+strid1*i, strid1+strid2*(n2-1), wsave2, lensav(n2), work, 2*lot*n2, ier);
-                }
                 break;
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n1; ++i) {
@@ -399,7 +397,7 @@ void Backward2D::execute(dcomplex* data) {
                     for (int j = strid2, shift = strid1*i, end = n2*strid2; j < end; j += strid2)
                         for (int l = 0; l < lot; ++l)
                             data[shift+j+l] *= 2.;
-                    costmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*(n2+1), ier);
+                    costmb_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*(n2+1), ier);
                 }
                 break;
             default: {}
@@ -413,14 +411,6 @@ Backward2D::~Backward2D() {
     if (wsave2 != wsave1) aligned_free(wsave2);
     aligned_free(wsave1);
 }
-
-
-
-
-
-
-
-
 
 }}}} // namespace plask::solvers::slab
 

@@ -75,7 +75,7 @@ void ExpansionPW3D::init()
         Nl = SOLVER->getLongSize() + 1;
         nNl = 2 * SOLVER->getLongSize() + 1;
         Ml = refl * nNl;
-        if (SOLVER->getDCT() == 2) {
+        if (SOLVER->dct2()) {
             double dx = 0.25 * Ll / Ml;
             long_mesh = RegularAxis(dx, front-dx, Ml);
         } else {
@@ -96,7 +96,7 @@ void ExpansionPW3D::init()
         Nt = SOLVER->getTranSize() + 1;
         nNt = 2 * SOLVER->getTranSize() + 1;                    // N = 3  nN = 5  refine = 4  M = 20
         Mt = reft * nNt;                                        // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-        if (SOLVER->getDCT() == 2) {                            //  ^ ^ ^ ^
+        if (SOLVER->dct2()) {                                   //  ^ ^ ^ ^
             double dx = 0.25 * Lt / Mt;                         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
             tran_mesh = RegularAxis(dx, right-dx, Mt);
         } else {
@@ -112,7 +112,7 @@ void ExpansionPW3D::init()
                      (!symmetric_long() && symmetric_tran())? " symmetric in transverse direction" : " symmetric in longitudinal direction"
                     );
 
-    auto dct_symmetry = (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
+    auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
     
     matFFT = FFT::Forward2D(4, nNl, nNt,
                             symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
@@ -401,13 +401,14 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
             Tensor3<dcomplex> eps(0.);
-            const int endt = int(nNt+1)/2, endl = int(nNl+1)/2;
-            for (int kt = -int(nNt)/2; kt != endt; ++kt) {
-                double Lt = right-left; if (symmetric_tran()) Lt *= 2;
+            const int nt = symmetric_tran()? nNt-1 : nNt/2, 
+                      nl = symmetric_long()? nNl-1 : nNl/2;
+            double Lt = right-left; if (symmetric_tran()) Lt *= 2;
+            double Ll = front-back; if (symmetric_long()) Ll *= 2;
+            for (int kt = -nt; kt <= nt; ++kt) {
                 size_t t = (kt >= 0)? kt : (symmetric_tran())? -kt : kt + nNt;
                 const double phast = kt * (dest_mesh->at(i).c1-left) / Lt;
-                for (int kl = -int(nNl)/2; kl != endl; ++kl) {
-                    double Ll = front-back; if (symmetric_long()) Ll *= 2;
+                for (int kl = -nl; kl <= nl; ++kl) {
                     size_t l = (kl >= 0)? kl : (symmetric_long())? -kl : kl + nNl;
                     eps += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
                 }
@@ -426,23 +427,32 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
                 params[op+l] = coeffs[lay][oc+l];
             }
         }
+        auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
         FFT::Backward2D(4, nNl, nNt,
-                        symmetric_long()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE,
-                        symmetric_tran()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE,
+                        symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
+                        symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE,
                         0, nl
                        )
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> lcmesh = make_shared<RegularAxis>(), tcmesh = make_shared<RegularAxis>();
         if (symmetric_long()) {
-            double dx = 0.5 * (front-back) / nl;
-            lcmesh->reset(back+dx, front-dx, nl);
+            if (SOLVER->dct2()) {
+                double dx = 0.5 * (front-back) / nl;
+                lcmesh->reset(back+dx, front-dx, nl);
+            } else {
+                lcmesh->reset(0., front, nl);
+            }
         } else {
             lcmesh->reset(back, front, nl);
             for (size_t t = 0, end = nl*nt, shift = nl-1; t != end; t += nl) params[shift+t] = params[t];
         }
         if (symmetric_tran()) {
-            double dy = 0.5 * (right-left) / nt;
-            tcmesh->reset(left+dy, right-dy, nt);
+            if (SOLVER->dct2()) {
+                double dy = 0.5 * right / nt;
+                tcmesh->reset(dy, right-dy, nt);
+            } else {
+                tcmesh->reset(0., right, nt);
+            }
         } else {
             tcmesh->reset(left, right, nt);
             for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];

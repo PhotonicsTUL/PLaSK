@@ -57,7 +57,7 @@ void ExpansionPW2D::init()
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
         M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
-        if (SOLVER->getDCT() == 2) {                        // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+        if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
             double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
             xmesh = RegularAxis(dx, right - dx, M);         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         } else {
@@ -70,7 +70,7 @@ void ExpansionPW2D::init()
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
-    matFFT = FFT::Forward1D(4, nN, symmetric()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -99,7 +99,7 @@ void ExpansionPW2D::init()
             mag[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+        FFT::Forward1D(2, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
             .execute(reinterpret_cast<dcomplex*>(mag.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
@@ -272,13 +272,13 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, nN, symmetric()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+        FFT::Backward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
         if (symmetric()) {
-            if (SOLVER->getDCT() == 2) {
+            if (SOLVER->dct2()) {
                 double dx = 0.5 * right / nN;
-                cmesh->reset(dx, right - dx, nN);
+                cmesh->reset(dx, right-dx, nN);
             } else {
                 cmesh->reset(0., right, nN);
             }

@@ -182,6 +182,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
         dct = n;
     }
+    /// True if DCT == 2
+    bool dct2() const { return dct == 2; }
 
     /// Get mesh at which material parameters are sampled along longitudinal axis
     RegularAxis getLongMesh() const { return expansion.long_mesh; }

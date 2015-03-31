@@ -108,7 +108,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
         dct = n;
     }
-
+    /// True if DCT == 2
+    bool dct2() const { return dct == 2; }
+    
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0. && expansion.symmetric()) {
