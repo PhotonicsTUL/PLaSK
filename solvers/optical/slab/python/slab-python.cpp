@@ -871,9 +871,7 @@ BOOST_PYTHON_MODULE(slab)
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
-#       ifndef NDEBUG
-            solver.add_property("material_mesh", &__Class__::material_mesh);
-#       endif
+        solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
         PROVIDER(outNeff, "Effective index of the last computed mode.");
         solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
                    "Compute the mode near the specified effective index.\n\n"
@@ -888,6 +886,7 @@ BOOST_PYTHON_MODULE(slab)
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
+        solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
         solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
@@ -1028,6 +1027,7 @@ BOOST_PYTHON_MODULE(slab)
                             py::make_function(&FourierSolver3D_SymmetryLongTranWrapper::getter, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierSolver3D_SymmetryLongTranWrapper::setter,
                             "Longitudinal and transverse mode symmetries.\n");
+        solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
         solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
@@ -1082,6 +1082,10 @@ BOOST_PYTHON_MODULE(slab)
                     "        present.\n\n"
                     ":rtype: Fourier3D.Reflected\n"
                     , (py::arg("lam"), "polarization", "side"));
+        solver.add_property("material_mesh_long", &__Class__::getLongMesh,
+                            "Regular mesh with points in which material is sampled along longitudinal direction.");
+        solver.add_property("material_mesh_tran", &__Class__::getTranMesh,
+                            "Regular mesh with points in which material is sampled along transverse direction.");
         RO_FIELD(modes, "Computed modes.");
         py::scope scope = solver;
 

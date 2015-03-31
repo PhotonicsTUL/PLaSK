@@ -80,7 +80,7 @@ struct PLASK_SOLVER_API Forward2D {
   private:
     int lot;
     int n1, n2;
-    int strid, strid2;
+    int strid1, strid2;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -147,7 +147,7 @@ struct PLASK_SOLVER_API Backward2D {
   private:
     int lot;
     int n1, n2;
-    int strid, strid2;
+    int strid1, strid2;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;

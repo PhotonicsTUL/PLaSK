@@ -75,10 +75,16 @@ void ExpansionPW3D::init()
         Nl = SOLVER->getLongSize() + 1;
         nNl = 2 * SOLVER->getLongSize() + 1;
         Ml = refl * nNl;
-        double dx = 0.25 * Ll / Ml;
-        long_mesh = RegularAxis(back + dx, front - dx, Ml);
+        if (SOLVER->getDCT() == 2) {
+            double dx = 0.25 * Ll / Ml;
+            long_mesh = RegularAxis(dx, front-dx, Ml);
+        } else {
+            size_t nNa = 4 * SOLVER->getLongSize() + 1;
+            double dx = 0.5 * Ll * (refl-1) / (refl*nNa);
+            long_mesh = RegularAxis(-dx, front+dx, Ml);
+        }
     }                                                           // N = 3  nN = 5  refine = 5  M = 25
-    if (!symmetric_tran()) {                                      //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+    if (!symmetric_tran()) {                                    //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         Lt = right - left;                                      //  ^ ^ ^ ^ ^
         Nt = 2 * SOLVER->getTranSize() + 1;                     // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nNt = 4 * SOLVER->getTranSize() + 1;
@@ -90,8 +96,14 @@ void ExpansionPW3D::init()
         Nt = SOLVER->getTranSize() + 1;
         nNt = 2 * SOLVER->getTranSize() + 1;                    // N = 3  nN = 5  refine = 4  M = 20
         Mt = reft * nNt;                                        // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-        double dx = 0.25 * Lt / Mt;                             //  ^ ^ ^ ^
-        tran_mesh = RegularAxis(left + dx, right - dx, Mt);     // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        if (SOLVER->getDCT() == 2) {                            //  ^ ^ ^ ^
+            double dx = 0.25 * Lt / Mt;                         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+            tran_mesh = RegularAxis(dx, right-dx, Mt);
+        } else {
+            size_t nNa = 4 * SOLVER->getTranSize() + 1;
+            double dx = 0.5 * Lt * (reft-1) / (reft*nNa);
+            tran_mesh = RegularAxis(-dx, right+dx, Mt);
+        }
     }
 
     solver->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
@@ -100,7 +112,9 @@ void ExpansionPW3D::init()
                      (!symmetric_long() && symmetric_tran())? " symmetric in transverse direction" : " symmetric in longitudinal direction"
                     );
 
-    matFFT = FFT::Forward2D(4, nNl, nNt, symmetric_long()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE, symmetric_tran()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward2D(4, nNl, nNt,
+                            symmetric_long()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE,
+                            symmetric_tran()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag_long.reset(nNl, Tensor2<dcomplex>(0.));
@@ -516,14 +530,14 @@ void ExpansionPW3D::prepareField()
 {
     if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
     if (symmetric_long() || symmetric_tran()) {
-        Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long),
-                  symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
+        Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(3-symmetry_long),
+                  symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(3-symmetry_tran);
         size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl;
         size_t nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
         if (field_params.method != INTERPOLATION_FOURIER) {
-            fft_x = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(2-syml), FFT::Symmetry(2-symt), 3, nl);
+            fft_x = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(3-syml), FFT::Symmetry(3-symt), 3, nl);
             fft_y = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(symt), 3, nl);
-            fft_z = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(2-symt), 3, nl);
+            fft_z = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(3-symt), 3, nl);
         }
         field.reset(nl*nt);
     } else {
@@ -545,8 +559,8 @@ void ExpansionPW3D::cleanupField()
 
 DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
-    Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long);
-    Component symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
+    Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(3-symmetry_long);
+    Component symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(3-symmetry_tran);
 
     size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
            nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;

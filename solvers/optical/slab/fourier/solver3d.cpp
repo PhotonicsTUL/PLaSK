@@ -6,7 +6,8 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D>(name),
     size_long(12), size_tran(12),
     expansion(this),
-    refine_long(16), refine_tran(16)//,
+    dct(1),
+    refine_long(16), refine_tran(16)
 {
     detlog.global_prefix = this->getId();
     smooth = 0.00025;
@@ -71,6 +72,10 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             readComaAttr(reader, "size", size_long, size_tran);
             readComaAttr(reader, "refine", refine_long, refine_tran);
             smooth = reader.getAttribute<double>("smooth", smooth);
+            int dc = reader.getAttribute<int>("dct", dct);
+            if (dc != 1 && dc != 2)
+                throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
+            dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             reader.requireTagEnd();
         } else if (param == "interface") {
