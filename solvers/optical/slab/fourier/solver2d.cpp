@@ -6,6 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
     size(12),
     expansion(this),
+    dct(1),
     refine(32),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
 {
@@ -22,6 +23,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
+            int dc = reader.getAttribute<int>("dct", dct);
+            if (dc != 1 && dc != 2)
+                throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
+            dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             reader.requireTagEnd();
         } else if (param == "interface") {

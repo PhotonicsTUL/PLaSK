@@ -45,7 +45,7 @@ void ExpansionPW2D::init()
 
     double L;
                                                             // N = 3  nN = 5  refine = 5  M = 25
-    if (!symmetric()) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+    if (!symmetric()) {                                     //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         L = right - left;                                   //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
@@ -55,16 +55,22 @@ void ExpansionPW2D::init()
     } else {                                                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         L = 2 * right;
         N = SOLVER->getSize() + 1;
-        nN = 2 * SOLVER->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
-        M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-        double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
-        xmesh = RegularAxis(left + dx, right - dx, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        nN = 2 * SOLVER->getSize() + 1;
+        M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
+        if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+            double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
+            xmesh = RegularAxis(dx, right - dx, M);         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        } else {
+            size_t nNa = 4 * SOLVER->getSize() + 1;
+            double dx = 0.5 * L * (refine-1) / (refine*nNa);
+            xmesh = RegularAxis(-dx, right+dx, M);
+        }
     }
 
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
-    matFFT = FFT::Forward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -93,7 +99,8 @@ void ExpansionPW2D::init()
             mag[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
+        FFT::Forward1D(2, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+            .execute(reinterpret_cast<dcomplex*>(mag.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
@@ -238,7 +245,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_ptr<const LevelsAdapter::Level> &level, InterpolationMethod interp)
 {
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
-    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level-> mesh());
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         if (!symmetric()) {
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
@@ -265,11 +272,16 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+            .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
         if (symmetric()) {
-            double dx = 0.5 * (right-left) / nN;
-            cmesh->reset(left + dx, right - dx, nN);
+            if (SOLVER->dct2()) {
+                double dx = 0.5 * right / nN;
+                cmesh->reset(dx, right-dx, nN);
+            } else {
+                cmesh->reset(0., right, nN);
+            }
         } else {
             cmesh->reset(left, right, nN+1);
             params[nN] = params[0];
@@ -430,10 +442,10 @@ void ExpansionPW2D::prepareField()
     if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
     if (symmetric()) {
         field.reset(N);
-        Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
         if (field_params.method != INTERPOLATION_FOURIER) {
+            Component sym = (field_params.which == FieldParams::E)? symmetry : Component(3-symmetry);
             fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym), 3);    // tran
-            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(2-sym), 3); // long
+            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym), 3); // long
         }
     } else {
         field.reset(N + 1);
@@ -625,10 +637,10 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            return interpolate(src_mesh, field, dest_mesh, field_params.method, 
+            return interpolate(src_mesh, field, dest_mesh, field_params.method,
                                InterpolationFlags(SOLVER->getGeometry(),
                                     (sym == E_TRAN)? InterpolationFlags::Symmetry::NPN : InterpolationFlags::Symmetry::PNP,
-                                    InterpolationFlags::Symmetry::NO), 
+                                    InterpolationFlags::Symmetry::NO),
                                     false);
         } else {
             fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));

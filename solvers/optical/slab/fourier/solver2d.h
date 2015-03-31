@@ -59,6 +59,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         expansion.computeMaterialCoefficients();
     }
 
+    /// Type of discrete cosine transform. Can be only 1 or two
+    int dct;
+
   public:
 
     /// Computed modes
@@ -97,6 +100,17 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         invalidate();
     }
 
+    /// Get type of the DCT
+    int getDCT() const { return dct; }
+    /// Set type of the DCT
+    void setDCT(int n) {
+        if (n != 1 && n != 2)
+            throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
+        dct = n;
+    }
+    /// True if DCT == 2
+    bool dct2() const { return dct == 2; }
+    
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0. && expansion.symmetric()) {
@@ -157,6 +171,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     Expansion& getExpansion() override { return expansion; }
 
+    RegularAxis getMesh() const { return expansion.xmesh; }
+
   private:
 
     /**
@@ -169,12 +185,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         size_t idx;
         if (polarization == Expansion::E_UNSPECIFIED)
             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
-        if (expansion.symmetric()) {
-            if (expansion.symmetry == Expansion::E_UNSPECIFIED)
-                expansion.symmetry = polarization;
-            else if (expansion.symmetry != polarization)
-                throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-        }
+        if (expansion.symmetric() && expansion.symmetry != polarization)
+            throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
         if (expansion.separated()) {
             expansion.polarization = polarization;
             idx = expansion.iE(0);

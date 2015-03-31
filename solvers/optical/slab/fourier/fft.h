@@ -17,9 +17,11 @@ namespace plask { namespace solvers { namespace slab { namespace FFT {
  * 0 for arbitrary structure and ½ for even and odd symmetry
  */
 enum Symmetry {
-    SYMMETRY_EVEN = 0,
-    SYMMETRY_NONE = 1,
-    SYMMETRY_ODD = 2
+    SYMMETRY_NONE = 0,
+    SYMMETRY_EVEN_2 = 1,
+    SYMMETRY_ODD_2 = 2,
+    SYMMETRY_EVEN_1 = 5,
+    SYMMETRY_ODD_1 = 6
 };
 
 /// Fourier transform of multiple 1D arrays
@@ -78,7 +80,7 @@ struct PLASK_SOLVER_API Forward2D {
   private:
     int lot;
     int n1, n2;
-    int strid, strid2;
+    int strid1, strid2;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -145,7 +147,7 @@ struct PLASK_SOLVER_API Backward2D {
   private:
     int lot;
     int n1, n2;
-    int strid, strid2;
+    int strid1, strid2;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;

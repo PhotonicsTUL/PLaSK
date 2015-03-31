@@ -10,6 +10,10 @@
       Details on Fourier expansion used in computations
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
+      <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
+        <choice>1</choice>
+        <choice>2</choice>
+      </attr>
       <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
       <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
     </tag>
@@ -125,6 +129,10 @@
       <attr name="refine-tran" label="Transverse averaging points" type="int">
         Number of refinement points for refractive index averaging along transverse axis.
         You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+      </attr>
+      <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
+        <choice>1</choice>
+        <choice>2</choice>
       </attr>
       <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
       <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>

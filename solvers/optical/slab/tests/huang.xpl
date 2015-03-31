@@ -25,10 +25,12 @@
 
 <geometry>
   <cartesian2d axes="xy" name="grating" bottom="Subs" left="periodic" right="periodic">
-    <stack trancenter="0">
-      <block dx="{fill*L}" dy="{tg}" material="Hi" name="bar"/>
-      <block dx="{L}" dy="{tl}" material="Lo"/>
-    </stack>
+    <clip left="{-L/2}" right="{L/2}">
+      <stack trancenter="0">
+        <block dx="{fill*L}" dy="{tg}" material="Hi" name="bar"/>
+        <block dx="{2*L}" dy="{tl}" material="Lo"/>
+      </stack>
+    </clip>
   </cartesian2d>
 </geometry>
 
@@ -76,7 +78,7 @@ tight_layout(0)
 figure()
 field = solver.reflected(1060., 'El', 'top').outLightMagnitude(MSH.plot)
 plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w')
+plot_geometry(GEO.grating, color='w', periods=3)
 gca().set_aspect('equal')
 tight_layout(0)
 gcf().canvas.set_window_title("TE @ 1060 nm")
@@ -84,7 +86,7 @@ gcf().canvas.set_window_title("TE @ 1060 nm")
 figure()
 field = solver.reflected(1510., 'El', 'top').outLightMagnitude(MSH.plot)
 plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w')
+plot_geometry(GEO.grating, color='w', periods=3)
 gca().set_aspect('equal')
 tight_layout(0)
 gcf().canvas.set_window_title("TE @ 1510 nm")
@@ -92,7 +94,7 @@ gcf().canvas.set_window_title("TE @ 1510 nm")
 figure()
 field = solver.reflected(1298., 'Et', 'top').outLightMagnitude(MSH.plot)
 plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w')
+plot_geometry(GEO.grating, color='w', periods=3)
 gca().set_aspect('equal')
 tight_layout(0)
 gcf().canvas.set_window_title("TM @ 1298 nm")
@@ -100,7 +102,7 @@ gcf().canvas.set_window_title("TM @ 1298 nm")
 figure()
 field = solver.reflected(1330., 'Et', 'top').outLightMagnitude(MSH.plot)
 plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w')
+plot_geometry(GEO.grating, color='w', periods=3)
 gca().set_aspect('equal')
 tight_layout(0)
 gcf().canvas.set_window_title("TM @ 1330 nm")
@@ -108,7 +110,7 @@ gcf().canvas.set_window_title("TM @ 1330 nm")
 figure()
 field = solver.reflected(1600., 'Et', 'top').outLightMagnitude(MSH.plot)
 plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w')
+plot_geometry(GEO.grating, color='w', periods=3)
 gca().set_aspect('equal')
 tight_layout(0)
 gcf().canvas.set_window_title("TM @ 1600 nm")

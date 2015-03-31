@@ -61,6 +61,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         expansion.computeMaterialCoefficients();
     }
 
+    /// Type of discrete cosine transform. Can be only 1 or two
+    int dct;
+
   public:
 
     /// Computed modes
@@ -171,6 +174,17 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         ktran = k;
     }
 
+    /// Get type of the DCT
+    int getDCT() const { return dct; }
+    /// Set type of the DCT
+    void setDCT(int n) {
+        if (n != 1 && n != 2)
+            throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
+        dct = n;
+    }
+    /// True if DCT == 2
+    bool dct2() const { return dct == 2; }
+
     /// Get mesh at which material parameters are sampled along longitudinal axis
     RegularAxis getLongMesh() const { return expansion.long_mesh; }
 
@@ -190,9 +204,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
         if (polarization == ExpansionPW3D::E_UNSPECIFIED)
             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
-        if (expansion.symmetry_long == Expansion::Component(2-polarization))
+        if (expansion.symmetry_long == Expansion::Component(3-polarization))
             throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
-        if (expansion.symmetry_tran == Expansion::Component(2-polarization))
+        if (expansion.symmetry_tran == Expansion::Component(3-polarization))
             throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
         size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
         if (savidx) *savidx = idx;
