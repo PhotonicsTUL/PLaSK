@@ -4,7 +4,7 @@
 
 #include <fftpacx/fftpacx.h>
 
-#define lensav(n) 2*n + int(log2(n)) + 6
+#define lensav(n) (2*n + int(log2(n)) + 6)
 
 namespace plask { namespace solvers { namespace slab { namespace FFT {
 
@@ -183,22 +183,22 @@ Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symme
         int ier;
         switch (symmetry1) {
             case SYMMETRY_NONE:
-                cfftmi_(n1, wsave1, lensav(n1), ier); return;
+                cfftmi_(n1, wsave1, lensav(n1), ier); break;
             case SYMMETRY_EVEN_2:
-                cosqmi_(n1, wsave1, lensav(n1), ier); return;
+                cosqmi_(n1, wsave1, lensav(n1), ier); break;
             case (SYMMETRY_EVEN_1):
-                costmi_(n1, wsave1, lensav(n1), ier); return;
+                costmi_(n1, wsave1, lensav(n1), ier); break;
             default:
                 throw NotImplemented("forward FFT for odd symmetry");
         }
         if (wsave1 != wsave2) {
             switch (symmetry2) {
                 case SYMMETRY_NONE:
-                    cfftmi_(n2, wsave2, lensav(n2), ier); return;
+                    cfftmi_(n2, wsave2, lensav(n2), ier); break;
                 case SYMMETRY_EVEN_2:
-                    cosqmi_(n2, wsave2, lensav(n2), ier); return;
+                    cosqmi_(n2, wsave2, lensav(n2), ier); break;
                 case (SYMMETRY_EVEN_1):
-                    costmi_(n2, wsave2, lensav(n2), ier); return;
+                    costmi_(n2, wsave2, lensav(n2), ier); break;
                 default:
                     throw NotImplemented("forward FFT for odd symmetry");
             }
@@ -209,25 +209,17 @@ Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symme
 }
 
 void Forward2D::execute(dcomplex* data) {
-
-std::cerr << "\n";
-for (size_t i2 = 0; i2 != n2; ++i2) {
-    for (size_t i1 = 0; i1 != n1; ++i1) std::cerr << str(data[i2*strid2+i1*strid1]) << " ";
-    std::cerr << "\n";
-}
-std::cerr << "\n";
-
     if (!wsave1 || !wsave2) throw CriticalException("FFTPACX not initialized");
     try {
         int ier;
         double work[2*lot*(max(n1,n2)+1)];
         // n1 is changing faster than n2
         double factor1 = 1./n1;
-if (n1 > 1)
         switch (symmetry1) {
             case (SYMMETRY_NONE):
-                for (int i = 0; i != n2; ++i)
+                for (int i = 0; i != n2; ++i) {
                     cfftmf_(lot, 1, n1, strid1, data+strid2*i, strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                }
                 break;
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n2; ++i) {
@@ -248,11 +240,11 @@ if (n1 > 1)
             default: {} // silence the warning
         }
         double factor2 = 1./n2;
-if (n2 > 1)
         switch (symmetry2) {
             case (SYMMETRY_NONE):
-                for (int i = 0; i != n1; ++i)
+                for (int i = 0; i != n1; ++i) {
                     cfftmf_(lot, 1, n2, strid2, data+strid1*i, strid1+strid2*(n2-1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                }
                 break;
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n1; ++i) {
@@ -313,26 +305,26 @@ Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry sym
         int ier;
         switch (symmetry1) {
             case SYMMETRY_NONE:
-                cfftmi_(n1, wsave1, lensav(n1), ier); return;
+                cfftmi_(n1, wsave1, lensav(n1), ier); break;
             case SYMMETRY_EVEN_2:
-                cosqmi_(n1, wsave1, lensav(n1), ier); return;
+                cosqmi_(n1, wsave1, lensav(n1), ier); break;
             case SYMMETRY_ODD_2:
-                sinqmi_(n1, wsave1, lensav(n1), ier); return;
+                sinqmi_(n1, wsave1, lensav(n1), ier); break;
             case (SYMMETRY_EVEN_1):
-                costmi_(n1, wsave1, lensav(n1), ier); return;
+                costmi_(n1, wsave1, lensav(n1), ier); break;
             case (SYMMETRY_ODD_1):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
         }
         if (wsave1 != wsave2) {
             switch (symmetry2) {
                 case SYMMETRY_NONE:
-                    cfftmi_(n2, wsave2, lensav(n2), ier); return;
+                    cfftmi_(n2, wsave2, lensav(n2), ier); break;
                 case SYMMETRY_EVEN_2:
-                    cosqmi_(n2, wsave2, lensav(n2), ier); return;
+                    cosqmi_(n2, wsave2, lensav(n2), ier); break;
                 case SYMMETRY_ODD_2:
-                    sinqmi_(n2, wsave2, lensav(n2), ier); return;
+                    sinqmi_(n2, wsave2, lensav(n2), ier); break;
                 case (SYMMETRY_EVEN_1):
-                    costmi_(n2, wsave2, lensav(n2), ier); return;
+                    costmi_(n2, wsave2, lensav(n2), ier); break;
                 case (SYMMETRY_ODD_1):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
             }
@@ -346,7 +338,7 @@ void Backward2D::execute(dcomplex* data) {
     if (!wsave1 || !wsave2) throw CriticalException("FFTPACX not initialized");
     try {
         int ier;
-        double work[2*lot*(max(n1,n2)+2)];
+        double work[2*lot*(max(n1,n2)+1)];
         // n1 is changing faster than n2
         double factor1 = n1;
         switch (symmetry1) {

@@ -112,9 +112,11 @@ void ExpansionPW3D::init()
                      (!symmetric_long() && symmetric_tran())? " symmetric in transverse direction" : " symmetric in longitudinal direction"
                     );
 
+    auto dct_symmetry = (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
+    
     matFFT = FFT::Forward2D(4, nNl, nNt,
-                            symmetric_long()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE,
-                            symmetric_tran()? (SOLVER->getDCT()==2)? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+                            symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
+                            symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag_long.reset(nNl, Tensor2<dcomplex>(0.));
@@ -144,7 +146,7 @@ void ExpansionPW3D::init()
             mag_long[i] /= refl;
         }
         // Compute FFT
-        FFT::Forward1D(2, nNl, symmetric_long()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_long.data()));
+        FFT::Forward1D(2, nNl, symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_long.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
@@ -176,7 +178,7 @@ void ExpansionPW3D::init()
             mag_tran[i] /= reft;
         }
         // Compute FFT
-        FFT::Forward1D(2, nNt, symmetric_tran()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_tran.data()));
+        FFT::Forward1D(2, nNt, symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_tran.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
