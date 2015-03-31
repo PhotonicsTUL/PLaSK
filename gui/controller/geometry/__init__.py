@@ -132,13 +132,15 @@ class GeometryController(Controller):
         element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
         try:
             if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
-            manager = plask.Manager()
+            self.manager = plask.Manager()
             try:
-                manager.load(self.document.get_content(sections='geometry'))
-                #to_plot = manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-                to_plot = self.model.fake_root.get_corresponding_object(tree_element, manager)
-                self.geometry_view.update_plot(to_plot, set_limits=set_limits, plane=self.checked_plane)
+                self.manager.load(self.document.get_content(sections='geometry'))
+                #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
+                self.plotted_object = self.model.fake_root.get_corresponding_object(tree_element, self.manager)
+                self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
             except Exception as e:
+                self.manager = None
+                self.plotted_object = None
                 if not element_has_name:
                     tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
                 self.status_bar.showMessage(str(e))
@@ -247,6 +249,9 @@ class GeometryController(Controller):
         if model is None: model = GeometryModel()
         Controller.__init__(self, document, model)
 
+        self.manager = None
+        self.plotted_object = None
+
         self.plotted_tree_element = None
         self.model.changed.connect(self.on_model_change)
 
@@ -333,6 +338,12 @@ class GeometryController(Controller):
         else:
             if current_root != plotted_root:
                 self.plot(current_root)
+            if self.plotted_object is not None:
+                to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(), self.manager)
+                bboxes = self.plotted_object.get_object_bboxes(to_select)
+                self.geometry_view.clean_selectors()
+                for b in bboxes: self.geometry_view.select_bbox(b)
+                self.geometry_view.canvas.draw()
                 # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True

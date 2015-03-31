@@ -1,9 +1,11 @@
 # coding=utf-8
 import plask
+from plask._plot_geometry import plane_to_axes
 
 from ...qt import QtGui
 from ...qt.QtCore import Qt
 
+import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
@@ -204,7 +206,7 @@ class PlotWidget(QtGui.QGroupBox):
 
         self.setLayout(vbox)
 
-    def delete_selectors(self):
+    def clean_selectors(self):
         for artist in self.selectors:
             artist.remove()
         self.selectors = []
@@ -212,6 +214,15 @@ class PlotWidget(QtGui.QGroupBox):
     def select(self, selector_patch):
         self.axes.add_patch(selector_patch)
         self.selectors.append(selector_patch)
+
+    def select_bbox(self, bbox):
+        axes = plane_to_axes(self.plane, 2 if isinstance(bbox, plask.geometry.Box2D) else 3)
+        rect =  matplotlib.patches.Rectangle(
+            (bbox.lower[axes[0]], bbox.lower[axes[1]]),
+             bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
+            fc=(0.4, 0.1, 0.8, 0.15), ec=(0.7, 0.1, 0.1), zorder=100.0, lw=2.0
+        )
+        self.select(rect)
 
     def resizeEvent(self, event):
         super(PlotWidget, self).resizeEvent(event)
@@ -235,6 +246,7 @@ class PlotWidget(QtGui.QGroupBox):
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))
             self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
             self.canvas.draw()
+            self.plane = plane
 
     def dock_window(self, window):
         res = QtGui.QDockWidget('Geometry', window)
