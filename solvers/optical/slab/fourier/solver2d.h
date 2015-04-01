@@ -70,6 +70,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 
+    /// Factor by which the number of coefficients is multiplied for FFT.
+    /// Afterwards the coefficients are truncated to the required number.
+    double oversampling;
+
     /// Lateral PMLs
     PML pml;
 
@@ -110,7 +114,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     }
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
-    
+
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0. && expansion.symmetric()) {

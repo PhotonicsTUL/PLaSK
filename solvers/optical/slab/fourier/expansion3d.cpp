@@ -67,14 +67,16 @@ void ExpansionPW3D::init()
         Ll = front - back;
         Nl = 2 * SOLVER->getLongSize() + 1;
         nNl = 4 * SOLVER->getLongSize() + 1;
-        Ml = refl * nNl;
+        nMl = size_t(round(SOLVER->oversampling_long * nNl));
+        Ml = refl * nMl;
         double dx = 0.5 * Ll * (refl-1) / Ml;
         long_mesh = RegularAxis(back-dx, front-dx-Ll/Ml, Ml);
     } else {
         Ll = 2 * front;
         Nl = SOLVER->getLongSize() + 1;
         nNl = 2 * SOLVER->getLongSize() + 1;
-        Ml = refl * nNl;
+        nMl = size_t(round(SOLVER->oversampling_long * nNl));
+        Ml = refl * nMl;
         if (SOLVER->dct2()) {
             double dx = 0.25 * Ll / Ml;
             long_mesh = RegularAxis(dx, front-dx, Ml);
@@ -88,16 +90,18 @@ void ExpansionPW3D::init()
         Lt = right - left;                                      //  ^ ^ ^ ^ ^
         Nt = 2 * SOLVER->getTranSize() + 1;                     // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nNt = 4 * SOLVER->getTranSize() + 1;
-        Mt = reft * nNt;                                        // N = 3  nN = 5  refine = 4  M = 20
-        double dx = 0.5 * Lt * (reft-1) / Mt;                   // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        tran_mesh = RegularAxis(left-dx, right-dx-Lt/Mt, Mt);   //  ^ ^ ^ ^
-    } else {                                                    // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-        Lt = 2 * right;
-        Nt = SOLVER->getTranSize() + 1;
-        nNt = 2 * SOLVER->getTranSize() + 1;                    // N = 3  nN = 5  refine = 4  M = 20
-        Mt = reft * nNt;                                        // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-        if (SOLVER->dct2()) {                                   //  ^ ^ ^ ^
-            double dx = 0.25 * Lt / Mt;                         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        nMt = size_t(round(SOLVER->oversampling_tran * nNt));   // N = 3  nN = 5  refine = 4  M = 20
+        Mt = reft * nMt;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * Lt * (reft-1) / Mt;                   //  ^ ^ ^ ^
+        tran_mesh = RegularAxis(left-dx, right-dx-Lt/Mt, Mt);   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+    } else {
+        Lt = 2 * right;                                         // N = 3  nN = 5  refine = 4  M = 20
+        Nt = SOLVER->getTranSize() + 1;                         // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+        nNt = 2 * SOLVER->getTranSize() + 1;                    //  ^ ^ ^ ^
+        nMt = size_t(round(SOLVER->oversampling_tran * nNt));   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        Mt = reft * nMt;
+        if (SOLVER->dct2()) {
+            double dx = 0.25 * Lt / Mt;
             tran_mesh = RegularAxis(dx, right-dx, Mt);
         } else {
             size_t nNa = 4 * SOLVER->getTranSize() + 1;
@@ -106,6 +110,8 @@ void ExpansionPW3D::init()
         }
     }
 
+    if (nMl < nNl || nMt < nNt) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
+
     solver->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
                      (!symmetric_long() && !symmetric_tran())? "" :
                      (symmetric_long() && symmetric_tran())? " symmetric in longitudinal and transverse directions" :
@@ -113,25 +119,37 @@ void ExpansionPW3D::init()
                     );
 
     auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
-    
-    matFFT = FFT::Forward2D(4, nNl, nNt,
+
+    matFFT = FFT::Forward2D(4, nMl, nMt,
                             symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                             symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
-    mag_long.reset(nNl, Tensor2<dcomplex>(0.));
-    mag_tran.reset(nNt, Tensor2<dcomplex>(0.));
+    DataVector<Tensor2<dcomplex>> work;
     if (!periodic_long || !periodic_tran) {
         solver->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
+        size_t ml = (!periodic_long && nNl != nMl)? nMl : 0,
+               mt = (!periodic_tran && nNt != nMt)? nMt : 0;
+        size_t lenwork = max(ml, mt);
+        if (lenwork != 0) work.reset(lenwork, Tensor2<dcomplex>(0.));
     }
     if (periodic_long) {
+        mag_long.reset(nNl, Tensor2<dcomplex>(0.));
         mag_long[0].c00 = 1.; mag_long[0].c11 = 1.; // constant 1
     } else {
+        DataVector<Tensor2<dcomplex>> lwork;
+        if (nNl != nMl) {
+            mag_long.reset(nNl);
+            lwork = work;
+        } else {
+            mag_long.reset(nNl, Tensor2<dcomplex>(0.));
+            lwork = mag_long;
+        }
         double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
         if (symmetric_long()) pib = 0;
         else pib = std::lower_bound(long_mesh.begin(), long_mesh.end(), pb) - long_mesh.begin();
         pif = std::lower_bound(long_mesh.begin(), long_mesh.end(), pf) - long_mesh.begin();
-        for (size_t i = 0; i != nNl; ++i) {
+        for (size_t i = 0; i != nMl; ++i) {
             for (size_t j = refl*i, end = refl*(i+1); j != end; ++j) {
                 dcomplex s = 1.;
                 if (j < pib) {
@@ -141,29 +159,48 @@ void ExpansionPW3D::init()
                     double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                 }
-                mag_long[i] += Tensor2<dcomplex>(s, 1./s);
+                lwork[i] += Tensor2<dcomplex>(s, 1./s);
             }
-            mag_long[i] /= refl;
+            lwork[i] /= refl;
         }
         // Compute FFT
-        FFT::Forward1D(2, nNl, symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_long.data()));
+        FFT::Forward1D(2, nMl, symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(lwork.data()));
+        // Copy data to its final destination
+        if (nNl != nMl) {
+            if (symmetric_long()) {
+                std::copy_n(work.begin(), nNl, mag_long.begin());
+            } else {
+                size_t nn = nNl/2;
+                std::copy_n(work.begin(), nn+1, mag_long.begin());
+                std::copy_n(work.begin()+nMl-nn, nn, mag_long.begin()+nn+1);
+            }
+        }
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
             for (size_t i = 0; i != nNl; ++i) {
-                int k = i; if (k > nNl/2) k -= nNl;
+                int k = i; if (!symmetric_long() && k > nNl/2) k -= nNl;
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
     }
     if (periodic_tran) {
+        mag_tran.reset(nNt, Tensor2<dcomplex>(0.));
         mag_tran[0].c00 = 1.; mag_tran[0].c11 = 1.; // constant 1
     } else {
+        DataVector<Tensor2<dcomplex>> twork;
+        if (nNt != nMt) {
+            mag_tran.reset(nNt);
+            twork = work;
+        } else {
+            mag_tran.reset(nNt, Tensor2<dcomplex>(0.));
+            twork = mag_tran;
+        }
         double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
         if (symmetric_tran()) pil = 0;
         else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pl) - tran_mesh.begin();
         pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pr) - tran_mesh.begin();
-        for (size_t i = 0; i != nNt; ++i) {
+        for (size_t i = 0; i != nMt; ++i) {
             for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
                 dcomplex s = 1.;
                 if (j < pil) {
@@ -173,17 +210,27 @@ void ExpansionPW3D::init()
                     double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                 }
-                mag_tran[i] += Tensor2<dcomplex>(s, 1./s);
+                twork[i] += Tensor2<dcomplex>(s, 1./s);
             }
-            mag_tran[i] /= reft;
+            twork[i] /= reft;
         }
         // Compute FFT
-        FFT::Forward1D(2, nNt, symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_tran.data()));
+        FFT::Forward1D(2, nNt, symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(twork.data()));
+        // Copy data to its final destination
+        if (nNt != nMt) {
+            if (symmetric_tran()) {
+                std::copy_n(work.begin(), nNt, mag_tran.begin());
+            } else {
+                size_t nn = nNt/2;
+                std::copy_n(work.begin(), nn+1, mag_tran.begin());
+                std::copy_n(work.begin()+nMt-nn, nn, mag_tran.begin()+nn+1);
+            }
+        }
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
             for (size_t i = 0; i != nNt; ++i) {
-                int k = i; if (k > nNt/2) k -= nNt;
+                int k = i; if (!symmetric_tran() && k > nNt/2) k -= nNt;
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -223,12 +270,13 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
                  reft = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
-    const size_t Ml = refl * nNl,  Mt = reft * nNt;
-    size_t nN = nNl * nNt;
-    const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
+    const size_t Ml = refl * nMl,  Mt = reft * nMt;
+    size_t nN = nNl * nNt, nM = nMl * nMt;
+    const double normlim = min(Ll/nMl, Lt/nMt) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%", l, Ml, Mt, omp_get_thread_num());
+        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
+                         l, Ml, Mt, omp_get_thread_num());
     #else
         solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
     #endif
@@ -247,8 +295,18 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     LazyData<double> gain;
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
+    // Make space for the result
+    bool oversampled = nNl != nMl || nNt != nMt;
+    DataVector<Tensor3<dcomplex>> work;
+    if (oversampled) {
+        coeffs[l].reset(nN);
+        work.reset(nM, Tensor3<dcomplex>(0.));
+    } else {
+        coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
+        work = coeffs[l];
+    }
+
     // Average material parameters
-    coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 
     DataVector<Tensor3<dcomplex>> cell(refl*reft);
     double nfact = 1. / cell.size();
@@ -256,11 +314,11 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
     double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
 
-    for (size_t it = 0; it != nNt; ++it) {
+    for (size_t it = 0; it != nMt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
         double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
 
-        for (size_t il = 0; il != nNl; ++il) {
+        for (size_t il = 0; il != nMl; ++il) {
             size_t lbegin = refl * il; size_t lend = lbegin + refl;
             double long0 = 0.5 * (long_mesh[lbegin] + long_mesh[lend-1]);
 
@@ -328,13 +386,11 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
 
             double a = abs(norm);
-            auto& eps = coeffs[l][nNl * it + il];
+            auto& eps = work[nNl * it + il];
             if (a < normlim) {
-                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); // just for testing
                 // Nothing to average
                 eps = cell[cell.size() / 2];
             } else {
-                // eps = Tensor3<dcomplex>(norm.c0/a, norm.c1/a, 0.); // just for testing
 
                 // Compute avg(eps) and avg(eps**(-1))
                 Tensor3<dcomplex> ieps(0.);
@@ -361,8 +417,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     // Check if the layer is uniform
     if (periodic_tran && periodic_long) {
         diagonals[l] = true;
-        for (size_t i = 1; i != nN; ++i) {
-            Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
+        for (size_t i = 1; i != nM; ++i) {
+            Tensor3<dcomplex> diff = work[i] - work[0];
             if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
                 diagonals[l] = false;
                 break;
@@ -373,10 +429,21 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     if (diagonals[l]) {
         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+        if (oversampled) coeffs[l][0] = work[0];
+        std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
     } else {
         // Perform FFT
-        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
+        // Copy result
+        if (oversampled) {
+            if (symmetric_tran()) {
+                for (size_t t = 0; t != nNt; ++t) copy_coeffs_long(l, work, t, t);
+            } else {
+                size_t nn = nNt/2;
+                for (size_t t = 0; t != nn; ++t) copy_coeffs_long(l, work, t, t);
+                for (size_t tw = nMt-nn, tc = nn+1; tw != nMt; ++tw, ++tc) copy_coeffs_long(l, work, tw, tc);
+            }
+        }
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4l = M_PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
@@ -390,6 +457,22 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
         }
     }
+#pragma omp critical
+{
+std::cerr << "\nlayer: " << l << "\n";
+std::cerr << "work:   ";
+for (size_t t = 0; t != nMt; ++t) {
+for (size_t l = 0; l != nMl; ++l) { auto x = work[nMl*t+l]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
+std::cerr << "| ";
+}
+std::cerr << "\ncoeffs: ";
+for (size_t t = 0; t != nNt; ++t) {
+for (size_t l = 0; l != nNl; ++l) { auto x = coeffs[l][nNl*t+l]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
+for (size_t l = nNl; l < nMl; ++l) std::cerr << "              ";
+std::cerr << "| ";
+}
+std::cerr << "\n";
+}
 }
 
 
@@ -401,7 +484,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
             Tensor3<dcomplex> eps(0.);
-            const int nt = symmetric_tran()? nNt-1 : nNt/2, 
+            const int nt = symmetric_tran()? nNt-1 : nNt/2,
                       nl = symmetric_long()? nNl-1 : nNl/2;
             double Lt = right-left; if (symmetric_tran()) Lt *= 2;
             double Ll = front-back; if (symmetric_long()) Ll *= 2;

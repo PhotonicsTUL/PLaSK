@@ -49,14 +49,16 @@ void ExpansionPW2D::init()
         L = right - left;                                   //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
-        M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
-        double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        xmesh = RegularAxis(left-dx, right-dx-L/M, M);      //  ^ ^ ^ ^
-    } else {                                                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        nM = size_t(round(SOLVER->oversampling * nN));      // N = 3  nN = 5  refine = 4  M = 20
+        M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
+        xmesh = RegularAxis(left-dx, right-dx-L/M, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+    } else {
         L = 2 * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
-        M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
+        nM = size_t(round(SOLVER->oversampling * nN));
+        M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
             double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
             xmesh = RegularAxis(dx, right - dx, M);         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
@@ -67,24 +69,33 @@ void ExpansionPW2D::init()
         }
     }
 
+    if (nM < nN) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
+
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
-    matFFT = FFT::Forward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
-    mag.reset(nN, Tensor2<dcomplex>(0.));
     if (periodic) {
+        mag.reset(nN, Tensor2<dcomplex>(0.));
         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
     } else {
+        DataVector<Tensor2<dcomplex>> work;
+        if (nN != nM) {
+            mag.reset(nN);
+            work.reset(nM, Tensor2<dcomplex>(0.));
+        } else {
+            mag.reset(nN, Tensor2<dcomplex>(0.));
+            work = mag;
+        }
         // Add PMLs
         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         if (symmetric()) pil = 0;
         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-        std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
-        for (size_t i = 0; i != nN; ++i) {
+        for (size_t i = 0; i != nM; ++i) {
             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
                 dcomplex sy = 1.;
                 if (j < pil) {
@@ -94,18 +105,28 @@ void ExpansionPW2D::init()
                     double h = (xmesh[j] - pr) / SOLVER->pml.size;
                     sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
                 }
-                mag[i] += Tensor2<dcomplex>(sy, 1./sy);
+                work[i] += Tensor2<dcomplex>(sy, 1./sy);
             }
-            mag[i] /= refine;
+            work[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
-            .execute(reinterpret_cast<dcomplex*>(mag.data()));
+        FFT::Forward1D(2, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+            .execute(reinterpret_cast<dcomplex*>(work.data()));
+        // Copy data to its final destination
+        if (nN != nM) {
+            if (symmetric()) {
+                std::copy_n(work.begin(), nN, mag.begin());
+            } else {
+                size_t nn = nN/2;
+                std::copy_n(work.begin(), nn+1, mag.begin());
+                std::copy_n(work.end()-nn, nn, mag.begin()+nn+1);
+            }
+        }
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
-                int k = i; if (k > nN/2) k -= nN;
+                int k = i; if (!symmetric() && k > nN/2) k -= nN;
                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -134,12 +155,12 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     size_t refine = SOLVER->refine;
     if (refine == 0) refine = 1;
-    size_t M = refine * nN;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, M, omp_get_thread_num());
+        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, refine * nM,
+                         omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
+        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points)", l, refine * nM);
     #endif
 
     auto mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(xmesh), make_shared<OrderedAxis>(axis1), RectangularMesh<2>::ORDER_01);
@@ -162,10 +183,18 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         refr = geometry->getMaterial(vec(pr,maty))->NR(lambda, Tr).sqr();
     }
 
-    // Average material parameters
-    coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
+    // Make space for the result
+    DataVector<Tensor3<dcomplex>> work;
+    if (nN != nM) {
+        coeffs[l].reset(nN);
+        work.reset(nM, Tensor3<dcomplex>(0.));
+    } else {
+        coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
+        work = coeffs[l];
+    }
 
-    for (size_t i = 0; i != nN; ++i) {
+    // Average material parameters
+    for (size_t i = 0; i != nM; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
             auto material = geometry->getMaterial(vec(xmesh[j],maty));
             double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
@@ -201,21 +230,21 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 }
             }
 
-            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
+            work[i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
         }
-        coeffs[l][i] *= factor;
-        if (coeffs[l][i].c11 != 0. && !isnan(coeffs[l][i].c11.real()) && !isnan(coeffs[l][i].c11.imag()))
-            coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
-        else coeffs[l][i].c11 = 0.;
-        if (coeffs[l][i].c22 != 0.)
-            coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
+        work[i] *= factor;
+        if (work[i].c11 != 0. && !isnan(work[i].c11.real()) && !isnan(work[i].c11.imag()))
+            work[i].c11 = 1. / work[i].c11; // We were averaging inverses of c11 (xx)
+        else work[i].c11 = 0.;
+        if (work[i].c22 != 0.)
+            work[i].c22 = 1. / work[i].c22; // We need inverse of c22 (yy)
     }
 
     // Check if the layer is uniform
     if (periodic) {
         diagonals[l] = true;
-        for (size_t i = 1; i != nN; ++i) {
-            Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
+        for (size_t i = 1; i != nM; ++i) {
+            Tensor3<dcomplex> diff = work[i] - work[0];
             if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
                 diagonals[l] = false;
                 break;
@@ -226,10 +255,21 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     if (diagonals[l]) {
         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+        if (nN != nM) coeffs[l][0] = work[0];
+        std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
     } else {
         // Perform FFT
-        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
+        // Copy result
+        if (nN != nM) {
+            if (symmetric()) {
+                std::copy_n(work.begin(), nN, coeffs[l].begin());
+            } else {
+                size_t nn = nN/2;
+                std::copy_n(work.begin(), nn+1, coeffs[l].begin());
+                std::copy_n(work.end()-nn, nn, coeffs[l].begin()+nn+1);
+            }
+        }
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / ((right-left) * (symmetric()? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4

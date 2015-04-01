@@ -587,6 +587,10 @@ FourierSolver3D_LongTranWrapper<size_t> FourierSolver3D_getRefine(FourierSolver3
     return FourierSolver3D_LongTranWrapper<size_t>(self, &self->refine_long, &self->refine_tran);
 }
 
+FourierSolver3D_LongTranWrapper<double> FourierSolver3D_getOversampling(FourierSolver3D* self) {
+    return FourierSolver3D_LongTranWrapper<double>(self, &self->oversampling_long, &self->oversampling_tran);
+}
+
 FourierSolver3D_LongTranWrapper<PML> FourierSolver3D_getPml(FourierSolver3D* self) {
     return FourierSolver3D_LongTranWrapper<PML>(self, &self->pml_long, &self->pml_tran);
 }
@@ -886,6 +890,7 @@ BOOST_PYTHON_MODULE(slab)
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
+        RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
         solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
         solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
@@ -1016,6 +1021,12 @@ BOOST_PYTHON_MODULE(slab)
                                               py::default_call_policies(),
                                               boost::mpl::vector3<void, FourierSolver3D&, py::object>()),
                             "Number of refinement points for refractive index averaging in longitudinal and transverse directions.");
+        solver.add_property("oversampling",
+                            py::make_function(FourierSolver3D_getOversampling, py::with_custodian_and_ward_postcall<0,1>()),
+                            py::make_function(FourierSolver3D_LongTranSetter<double>(&FourierSolver3D::oversampling_long, &FourierSolver3D::oversampling_tran),
+                                              py::default_call_policies(),
+                                              boost::mpl::vector3<void, FourierSolver3D&, py::object>()),
+                            "Factor by which the number of coefficients is increased for FFT.");
         solver.add_property("pmls",
                             py::make_function(FourierSolver3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
                             py::make_function(FourierSolver3D_LongTranSetter<PML>(&FourierSolver3D::pml_long, &FourierSolver3D::pml_tran),

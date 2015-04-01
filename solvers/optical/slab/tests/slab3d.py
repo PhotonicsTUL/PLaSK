@@ -1,4 +1,4 @@
-#!/home/maciek/Dokumenty/PLaSK/tests/plask
+#!/home/maciek/Dokumenty/PLaSK/plask/build/bin/plask
 # -*- coding: utf-8 -*-
 
 config.axes = 'xyz'
@@ -13,11 +13,18 @@ h = 0.10
 
 d = 0.
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 axis = 0
 
-symmetric = False
+symmetric = True
 periodic = False
 
+size = 12
+refine = 8
+dct = 1
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 @plask.material.simple()
@@ -81,9 +88,11 @@ opt.geometry = main
 opt.wavelength = 980.
 opt.smooth = 0.00025
 opt.size = 0
-opt.size[axis] = 24
+opt.size[axis] = size
 opt.smooth = 0.
-#opt.refine = 8
+opt.refine = refine
+
+opt.dct = dct
 
 opt.set_interface(shelf, p)
 
@@ -94,6 +103,11 @@ opt.pmls.tran.factor = 1-2j
 
 opt.pmls.long = opt.pmls.tran
 
+if symmetric:
+    sym = [None, None]
+    sym[axis] = 'Ex'
+    opt.symmetry = sym
+
 right = 2.0
 left = -2.0
 
@@ -101,9 +115,9 @@ left = -2.0
 AX = linspace(left, right, 4000)
 
 if axis == 0:
-    msh = mesh.Rectilinear3D(AX, [0], [0.5*h])
+    msh = mesh.Rectangular3D(AX, [0], [0.5*h])
 elif axis == 1:
-    msh = mesh.Rectilinear3D([0], AX, [0.5*h])
+    msh = mesh.Rectangular3D([0], AX, [0.5*h])
 else:
     raise ValueError("wrong axis")
 
@@ -112,6 +126,13 @@ plot(AX, NR, '--k')
 
 NR = opt.outRefractiveIndex(msh, 'fourier')
 plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Fourier')
+
+if axis == 0:
+    msh = mesh.Rectangular3D(AX, [0], [0.5*h])
+    print "long_mesh:", ", ".join("{:.4f}".format(x) for x in opt.material_mesh_long)
+elif axis == 1:
+    msh = mesh.Rectangular3D([0], AX, [0.5*h])
+    print "tran_mesh:", ", ".join("{:.4f}".format(x) for x in opt.material_mesh_tran)
 
 #NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
 #plot(opt.tran_mesh, NR, 'b.')

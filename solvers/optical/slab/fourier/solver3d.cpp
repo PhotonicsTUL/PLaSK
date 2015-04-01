@@ -7,7 +7,8 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D
     size_long(12), size_tran(12),
     expansion(this),
     dct(1),
-    refine_long(16), refine_tran(16)
+    refine_long(16), refine_tran(16),
+    oversampling_long(1.), oversampling_tran(1.)
 {
     detlog.global_prefix = this->getId();
     smooth = 0.00025;
@@ -71,6 +72,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
         if (param == "expansion") {
             readComaAttr(reader, "size", size_long, size_tran);
             readComaAttr(reader, "refine", refine_long, refine_tran);
+            readComaAttr(reader, "oversampling", oversampling_long, oversampling_tran);
             smooth = reader.getAttribute<double>("smooth", smooth);
             int dc = reader.getAttribute<int>("dct", dct);
             if (dc != 1 && dc != 2)
