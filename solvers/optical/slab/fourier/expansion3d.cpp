@@ -457,25 +457,6 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
         }
     }
-
-#pragma omp critical
-{
-std::cerr << "\nlayer: " << l << "\n";
-std::cerr << "work:   ";
-for (size_t it = 0; it < nMt; ++it) {
-for (size_t il = 0; il < nMl; ++il) { auto x = work[nMl* it + il]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
-std::cerr << "| ";
-}
-std::cerr << "\ncoeffs: ";
-for (size_t it = 0; it < nNt; ++it) {
-for (size_t il = 0; il < nNl; ++il) { auto x = coeffs[l][nNl* it + il]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
-for (size_t il = nNl; il < nMl; ++il) std::cerr << "              ";
-std::cerr << "| ";
-}
-std::cerr << "\n";
-}
-
-
 }
 
 
