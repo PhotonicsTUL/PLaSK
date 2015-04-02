@@ -339,7 +339,8 @@ class GeometryController(Controller):
             if current_root != plotted_root:
                 self.plot(current_root)
             if self.plotted_object is not None:
-                to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(), self.manager)
+                to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
+                                                                          self.manager)
                 bboxes = self.plotted_object.get_object_bboxes(to_select)
                 self.geometry_view.clean_selectors()
                 for b in bboxes: self.geometry_view.select_bbox(b)
@@ -347,6 +348,17 @@ class GeometryController(Controller):
                 # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
+
+    def zoom_to_current(self):
+        if self.plotted_object is not None:
+            to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
+                                                                      self.manager)
+            bboxes = self.plotted_object.get_object_bboxes(to_select)
+            if not bboxes: return
+            box = bboxes[0]
+            for b in bboxes[1:]:
+                box += b
+            self.geometry_view.zoom_bbox(box)
 
     def object_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return

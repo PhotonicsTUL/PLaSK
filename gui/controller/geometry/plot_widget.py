@@ -42,6 +42,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         # ('Home', 'Reset original view', 'go-home', 'home'),
         ('Plot', 'Plot selected geometry object', 'applications-graphics', 'plot', None),
         ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
+        ('Zoom selected', 'Zoom to selected object', 'zoom-fit-best', 'zoom_current', None),
         (None, None, None, None, None),
         ('Back', 'Back to  previous view', 'go-previous', 'back', None),
         ('Forward', 'Forward to next view', 'go-next', 'forward', None),
@@ -142,6 +143,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         if self.controller is not None:
             self.controller.plot()
 
+    def zoom_current(self):
+        if self.controller is not None:
+            self.controller.zoom_to_current()
+
     def auto_refresh(self):
         if self.controller is not None:
             self.controller.plot_auto_refresh = not self.controller.plot_auto_refresh
@@ -220,9 +225,17 @@ class PlotWidget(QtGui.QGroupBox):
         rect =  matplotlib.patches.Rectangle(
             (bbox.lower[axes[0]], bbox.lower[axes[1]]),
              bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
-            fc=(0.4, 0.1, 0.8, 0.15), ec=(0.7, 0.1, 0.1), zorder=100.0, lw=2.0
+            fc=(0.4, 0.1, 0.8, 0.0), ec=(1.0, 0.2, 0.2), zorder=100.0, lw=2.0
         )
         self.select(rect)
+
+    def zoom_bbox(self, box, margin=0.1):
+        axes = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
+        m = (box.upper[axes[0]] - box.lower[axes[0]]) * margin
+        self.axes.set_xlim(box.lower[axes[0]] - m, box.upper[axes[0]] + m)
+        m = (box.upper[axes[1]] - box.lower[axes[1]]) * margin
+        self.axes.set_ylim(box.lower[axes[1]] - m, box.upper[axes[1]] + m)
+        self.canvas.draw()
 
     def resizeEvent(self, event):
         super(PlotWidget, self).resizeEvent(event)
