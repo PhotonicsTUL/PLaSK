@@ -333,10 +333,13 @@ _geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
 def _draw_Revolution(env, geometry_object, transform, clipbox):
     if env.axes == (0, 1) or env.axes == (1, 0):    # view from the top
         obj2d = geometry_object.item
-        bbox = obj2d.bbox
-        env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.upper[0], transform=transform), clipbox, obj2d)
-        if bbox.lower[0] > 0:
-            env.append(matplotlib.patches.Circle((0.0, 0.0), bbox.lower[0], transform=transform), clipbox, obj2d)
+        rads = set()
+        for bb in geometry_object.item.get_leafs_bboxes():
+            rads.add(bb.left)
+            rads.add(bb.right)
+        for r in rads:
+            if r > 0:
+                env.append(matplotlib.patches.Circle((0.0, 0.0), r, transform=transform), clipbox, obj2d)
     else:
         original_axes = env.axes
         env.axes = tuple(0 if x == 0 else x-1 for x in original_axes)
