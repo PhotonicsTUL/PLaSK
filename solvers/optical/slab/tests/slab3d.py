@@ -18,10 +18,12 @@ d = 0.
 axis = 0
 
 symmetric = True
-periodic = False
+periodic = True
 
-size = 12
-refine = 8
+size = 2
+refine = 1
+oversampling = 2., 1.
+
 dct = 1
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -91,6 +93,7 @@ opt.size = 0
 opt.size[axis] = size
 opt.smooth = 0.
 opt.refine = refine
+opt.oversampling = oversampling
 
 opt.dct = dct
 
@@ -127,6 +130,7 @@ plot(AX, NR, '--k')
 NR = opt.outRefractiveIndex(msh, 'fourier')
 plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Fourier')
 
+print
 if axis == 0:
     msh = mesh.Rectangular3D(AX, [0], [0.5*h])
     print "long_mesh:", ", ".join("{:.4f}".format(x) for x in opt.material_mesh_long)

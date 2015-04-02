@@ -11,11 +11,13 @@ h = 0.10
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-symmetric = True
+symmetric = False
 periodic = False
 
-size = 12
+size = 1
 refine = 1
+oversampling = 2.
+
 dct = 1
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -70,6 +72,8 @@ opt.smooth = 0.0
 opt.size = size
 opt.refine = refine
 
+opt.oversampling = oversampling
+
 opt.dct = dct
 
 opt.set_interface(shelf, p)
@@ -98,8 +102,8 @@ plot(XX, NR, '--k')
 NR = opt.outRefractiveIndex(msh)
 plot(XX, NR.array[:,0,2].real, 'r', label='Fourier')
 
-NR = opt.outRefractiveIndex(msh, 'spline')
-plot(XX, NR.array[:,0,2].real, 'b', label='spline')
+NR = opt.outRefractiveIndex(msh, 'linear')
+plot(XX, NR.array[:,0,2].real, 'b', label='linear')
 
 print " ".join("{:.4f}".format(x) for x in opt.material_mesh)
 
@@ -108,12 +112,12 @@ mm = opt.material_mesh
     #(8, True): [0.0000, 0.0531, 0.1062, 0.1594, 0.2125, 0.2656, 0.3187, 0.3719, 0.4250, 0.4781, 0.5312, 0.5844, 0.6375, 0.6906, 0.7438, 0.7969, 0.8500],
     #(8, False): [0.0000, 0.1469, 0.2938, 0.4406, 0.5875, 0.7344, 0.8813, 1.0281, 1.1750, 1.3219, 1.4688, 1.6156, 1.7625, 1.9094, 2.0562, 2.2031, 2.3500],
 #}[opt.size, periodic]
-NR = opt.outRefractiveIndex(mesh.Rectangular2D(mm, [0.5*h]), 'nearest')
-plot(mm, NR.array[:,0,2].real, 'ob', ms=4, alpha=0.5)
+#NR = opt.outRefractiveIndex(mesh.Rectangular2D(mm, [0.5*h]), 'nearest')
+#plot(mm, NR.array[:,0,2].real, 'ob', ms=4, alpha=0.5)
 
 
 xlim(XX[0], XX[-1])
-#ylim(0.95, 1.35)
+ylim(0.95, 1.35)
 
 legend(loc='best')
 

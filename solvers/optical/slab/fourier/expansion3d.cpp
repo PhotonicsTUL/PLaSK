@@ -386,7 +386,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
 
             double a = abs(norm);
-            auto& eps = work[nNl * it + il];
+            auto& eps = work[nMl * it + il];
             if (a < normlim) {
                 // Nothing to average
                 eps = cell[cell.size() / 2];
@@ -440,7 +440,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 for (size_t t = 0; t != nNt; ++t) copy_coeffs_long(l, work, t, t);
             } else {
                 size_t nn = nNt/2;
-                for (size_t t = 0; t != nn; ++t) copy_coeffs_long(l, work, t, t);
+                for (size_t t = 0; t != nn+1; ++t) copy_coeffs_long(l, work, t, t);
                 for (size_t tw = nMt-nn, tc = nn+1; tw != nMt; ++tw, ++tc) copy_coeffs_long(l, work, tw, tc);
             }
         }
@@ -457,22 +457,25 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
         }
     }
+
 #pragma omp critical
 {
 std::cerr << "\nlayer: " << l << "\n";
 std::cerr << "work:   ";
-for (size_t t = 0; t != nMt; ++t) {
-for (size_t l = 0; l != nMl; ++l) { auto x = work[nMl*t+l]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
+for (size_t it = 0; it < nMt; ++it) {
+for (size_t il = 0; il < nMl; ++il) { auto x = work[nMl* it + il]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
 std::cerr << "| ";
 }
 std::cerr << "\ncoeffs: ";
-for (size_t t = 0; t != nNt; ++t) {
-for (size_t l = 0; l != nNl; ++l) { auto x = coeffs[l][nNl*t+l]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
-for (size_t l = nNl; l < nMl; ++l) std::cerr << "              ";
+for (size_t it = 0; it < nNt; ++it) {
+for (size_t il = 0; il < nNl; ++il) { auto x = coeffs[l][nNl* it + il]; std::cerr << format("%6.3f%+.3fj", x.c00.real(), x.c00.imag()) << " "; }
+for (size_t il = nNl; il < nMl; ++il) std::cerr << "              ";
 std::cerr << "| ";
 }
 std::cerr << "\n";
 }
+
+
 }
 
 
