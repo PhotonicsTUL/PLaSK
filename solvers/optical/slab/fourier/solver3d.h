@@ -74,6 +74,13 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
     size_t refine_tran;
 
+    /// Factor by which the number of coefficients is multiplied for FFT along longitudinal direction.
+    /// Afterwards the coefficients are truncated to the required number.
+    double oversampling_long;
+    /// Factor by which the number of coefficients is multiplied for FFT along transverse direction.
+    /// Afterwards the coefficients are truncated to the required number.
+    double oversampling_tran;
+
     /// Longitudinal PMLs
     PML pml_long;
     /// Transverse PMLs

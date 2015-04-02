@@ -10,6 +10,7 @@
       Details on Fourier expansion used in computations
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
+      <attr name="oversampling" label="Oversampling" type="float">Factor by which the number of coefficients is increased for FFT.</attr>
       <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
         <choice>1</choice>
         <choice>2</choice>
@@ -120,7 +121,7 @@
       </attr>
       <attr name="refine" label="Averaging points" type="int">
         Number of refinement points for refractive index averaging along longitudinal and transverse directions.
-        You cannot set this attribute together with ‘Longitudinal averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) and‘Transverse averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) .
+        You cannot set this attribute together with ‘Longitudinal averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) and ‘Transverse averaging points’ (&lt;tt&gt;refine-tran&lt;/tt&gt;) .
       </attr>
       <attr name="refine-long" label="Longitudinal averaging points" type="int">
         Number of refinement points for refractive index averaging along longitudinal axis.
@@ -129,6 +130,18 @@
       <attr name="refine-tran" label="Transverse averaging points" type="int">
         Number of refinement points for refractive index averaging along transverse axis.
         You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+      </attr>
+      <attr name="oversampling" label="Oversampling" type="float">
+        Factor by which the number of coefficients is increased for FFT along longitudinal and transverse directions.
+        You cannot set this attribute together with ‘Longitudinal oversampling’ (&lt;tt&gt;oversampling-long&lt;/tt&gt;) and ‘Transverse oversampling’ (&lt;tt&gt;oversampling-tran&lt;/tt&gt;) .
+      </attr>
+      <attr name="oversampling-long" label="Longitudinal oversampling" type="float">
+        Factor by which the number of coefficients is increased for FFT along longitudinal direction.
+        You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
+      </attr>
+      <attr name="oversampling-tran" label="Transverse oversampling" type="float">
+        Factor by which the number of coefficients is increased for FFT along transverse direction.
+        You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
       </attr>
       <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
         <choice>1</choice>

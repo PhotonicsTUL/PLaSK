@@ -19,6 +19,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
            Nt;                          ///< Number of expansion coefficients in transverse direction
     size_t nNl,                         ///< Number of of required coefficients for material parameters in longitudinal direction
            nNt;                         ///< Number of of required coefficients for material parameters in transverse direction
+    size_t nMl,                         ///< Number of FFT coefficients in longitudinal direction
+           nMt;                         ///< Number of FFT coefficients in transverse direction
 
     double left;                        ///< Left side of the sampled area
     double right;                       ///< Right side of the sampled area
@@ -107,6 +109,16 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     DataVector<Vec<3,dcomplex>> field;
     FFT::Backward2D fft_x, fft_y, fft_z;
+
+    void copy_coeffs_long(size_t l, const DataVector<Tensor3<dcomplex>>& work, size_t tw, size_t tc) {
+        if (symmetric_long()) {
+            std::copy_n(work.begin()+tw*nMl, nNl, coeffs[l].begin()+tc*nNl);
+        } else {
+            size_t nn = nNl/2;
+            std::copy_n(work.begin()+tw*nMl, nn+1, coeffs[l].begin()+tc*nNl);
+            std::copy_n(work.begin()+(tw+1)*nMl-nn, nn, coeffs[l].begin()+tc*nNl+nn+1);
+        }
+    }
 
   protected:
 

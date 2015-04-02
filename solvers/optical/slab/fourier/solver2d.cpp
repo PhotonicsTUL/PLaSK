@@ -8,6 +8,7 @@ FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2D
     expansion(this),
     dct(1),
     refine(32),
+    oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
 {
     detlog.global_prefix = this->getId();
@@ -23,6 +24,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
+            oversampling = reader.getAttribute<double>("oversampling", oversampling);
             int dc = reader.getAttribute<int>("dct", dct);
             if (dc != 1 && dc != 2)
                 throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");

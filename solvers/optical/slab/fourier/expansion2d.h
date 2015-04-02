@@ -17,6 +17,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
+    size_t nM;                          ///< Number of FFT coefficients
     double left;                        ///< Left side of the sampled area
     double right;                       ///< Right side of the sampled area
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
