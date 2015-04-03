@@ -419,7 +419,7 @@ def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_r
 
 
 def _draw_Clip(env, geometry_object, transform, clipbox, plask_real_path):
-    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox. plask_real_path + [0])
+    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
