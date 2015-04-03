@@ -129,6 +129,12 @@ class GNCartesian(GNGeometryBase):
             res.insert(0, geometry_types_3d_core_extrusion)
         return res
 
+    def real_to_model_index(self, path_iterator):
+        path_iterator.next()
+        if self.dim == 3 and not isinstance(self.children[0], GNExtrusion):
+            path_iterator.next()    #skip 0
+        return 0
+
     def model_to_real_index(self, index):
         if self.dim == 3 or not self.children: return index
         return (index,) if isinstance(self.children[0], GNExtrusion) else (index, 0)
@@ -182,6 +188,12 @@ class GNCylindrical(GNGeometryBase):
         from .types import geometry_types_3d_core_revolution
         res.insert(0, geometry_types_3d_core_revolution)
         return res
+
+    def real_to_model_index(self, path_iterator):
+        path_iterator.next()
+        if not isinstance(self.children[0], GNRevolution):
+            path_iterator.next()    #skip 0
+        return 0
 
     def model_to_real_index(self, index):
         if not self.children: return index
