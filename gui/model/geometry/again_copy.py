@@ -46,6 +46,11 @@ class GNAgain(GNode):
         from ...controller.geometry.again_copy import GNAgainController
         return GNAgainController(document, model, self)
 
+    def real_to_model_index(self, path_iterator):
+        raise IndexError()
+
+    #def model_to_real_index(self, index):  #TODO ??
+
     @staticmethod
     def from_xml(element, conf):
         result = GNAgain()
@@ -199,6 +204,11 @@ class GNCopy(GNObject):
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCopyController
         return GNCopyController(document, model, self)
+
+    def real_to_model_index(self, path_iterator):
+        raise IndexError()
+
+    #def model_to_real_index(self, index):  #TODO ??
 
     @staticmethod
     def from_xml(element, conf):
