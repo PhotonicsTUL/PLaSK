@@ -381,27 +381,35 @@ class GNode(object):
     #     '''
     #     return self.children[index]
 
-    def real_to_model_index(self, index):
-        return index
+    def real_to_model_index(self, path_iterator):
+        '''
+        Calculate model index which corresponds to begins of the real path.
+        :param path_iterator: iterator over path
+        :return int: index
+        '''
+        return path_iterator.next()
 
     def model_to_real_index(self, index):
         '''
-        Calculate real index (or path fragment) of child with given model index
+        Calculate real index (path fragment) of child with given model index
         :param int index: model index
-        :return: real index or path fragment, int or tuple
+        :return: path fragment, sequence of indexes
         '''
-        return self.real_to_model_index(index)
+        return index,
 
     def get_node_by_real_path(self, real_path):
         '''
-        Get node which represents GeometryObject and is pointed by given path.
-        Path starts at self, ends at resulted node and use GeometryObjects' child indexes.
-        :param collection.Iterable real_path: collection of indexes in GeometryObjects' tree
-        :return GNode: node which represents GeometryObject with given path
+        Go downside in the model tree following real plask path as long as it is possible.
+        :param real_path: collection of indexes in GeometryObjects' tree
+        :return GNode: achieved node
         '''
         node = self
-        for index in real_path:
-            node = node.children[node.real_to_model_index(index)]
+        real_path_iterator = iter(real_path)
+        while True:
+            try:
+                node = node.children[node.real_to_model_index(real_path_iterator)]
+            except (StopIteration, IndexError):
+                break
         return node
 
     def get_object_by_model_path(self, object, model_path):

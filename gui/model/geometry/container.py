@@ -155,6 +155,11 @@ class GNContainerBase(GNObject):
     def model_to_real_index(self, index):
         return index, 0
 
+    def real_to_model_index(self, path_iterator):
+        index = path_iterator.next()
+        path_iterator.next()    #skip 0
+        return index
+
 
 class GNStack(GNContainerBase):
     """2D/3D (multi-)stack"""
@@ -265,9 +270,10 @@ class GNStack(GNContainerBase):
     def real_children_count(self):
         return sum(1 for c in self.children if not isinstance(c, GNZero))
 
-    def real_to_model_index(self, index):
+    def real_to_model_index(self, path_iterator):
+        index = super(GNStack, self).real_to_model_index(path_iterator)
         real_count = self.real_children_count
-        index = real_count - self.real_children_count % real_count  # reduce to the first period and change to model order
+        index = real_count - 1 - index % real_count  # reduce to the first period and change to model order
         i = 0   # considering GNZero nodes:
         while i <= index:
             if isinstance(self.children[i], GNZero): index += 1

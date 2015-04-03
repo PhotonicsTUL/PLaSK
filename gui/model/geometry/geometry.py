@@ -131,7 +131,7 @@ class GNCartesian(GNGeometryBase):
 
     def model_to_real_index(self, index):
         if self.dim == 3 or not self.children: return index
-        return index if isinstance(self.children, GNExtrusion) else (index, 0)
+        return (index,) if isinstance(self.children, GNExtrusion) else (index, 0)
 
     def get_controller(self, document, model):
         from ...controller.geometry.geometry import GNGeometryController, GNCartesian2DGeometryController
@@ -185,7 +185,7 @@ class GNCylindrical(GNGeometryBase):
 
     def model_to_real_index(self, index):
         if not self.children: return index
-        return index if isinstance(self.children, GNRevolution) else (index, 0)
+        return (index,) if isinstance(self.children, GNRevolution) else (index, 0)
 
     def get_controller(self, document, model):
         from ...controller.geometry.geometry import GNGeometryController
