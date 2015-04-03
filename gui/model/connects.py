@@ -37,6 +37,7 @@ PROPS = [
     'RefractiveIndex',
 ]
 
+
 class ConnectsModel(TableModel):
 
     class Entry:
@@ -86,8 +87,8 @@ class ConnectsModel(TableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'Output Provider'
-            if col == 1: return 'Input Receiver'
+            if col == 0: return 'Provider'
+            if col == 1: return 'Receiver'
             if col == 2: return 'Comment'
         return None
 

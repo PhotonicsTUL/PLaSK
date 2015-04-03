@@ -174,6 +174,8 @@
   <connect in="GAIN.inCarriersConcentration" out="DIFFUSION.outCarriersConcentration"/>
   <connect in="OPTICAL.inTemperature" out="THERMAL.outTemperature"/>
   <connect in="OPTICAL.inGain" out="GAIN.outGain"/>
+  <connect in="DIFFUSION.inGain" out="GAIN.outGain"/>
+  <connect in="DIFFUSION.inGainOverCarriersConcentration" out="GAIN.outGainOverCarriersConcentration"/>
 </connects>
 
 <script><![CDATA[

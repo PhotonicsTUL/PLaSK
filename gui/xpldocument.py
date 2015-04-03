@@ -19,8 +19,8 @@ from .controller.defines import DefinesController
 from .controller.geometry import GeometryController
 from .controller.script import ScriptController
 from .controller.multi import GUIAndSourceController
-from .controller.connects import ConnectsController
 from .controller.solvers import SolversController
+from .controller.connects import ConnectsController
 from .controller import materials
 from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader

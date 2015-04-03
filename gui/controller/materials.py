@@ -171,7 +171,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
         if not material_list: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
 
-        combo = MaterialsComboBox(parent, material_list, self.model, popup_select_cb = lambda mat: index.model().setData(index, mat))
+        combo = MaterialsComboBox(parent, material_list, self.model, popup_select_cb=lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
         try: combo.setCurrentIndex(material_list.index(index.data()))
         except ValueError: pass

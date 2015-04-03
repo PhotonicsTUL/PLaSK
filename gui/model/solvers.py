@@ -36,6 +36,7 @@ CATEGORIES = (
     'optical'
 )
 
+
 class Solver(TreeFragmentModel):
     """Base class for all solver models"""
 
@@ -240,12 +241,14 @@ class ConfSolver(Solver):
 
 class ConfSolverFactory(object):
 
-    def __init__(self, category, lib, solver, config, mesh_type):
+    def __init__(self, category, lib, solver, config, mesh_type, providers, receivers):
         self.category = category
         self.solver = solver
         self.config = config
         self.mesh_type = mesh_type
         self.lib = lib
+        self.providers = providers
+        self.receivers = receivers
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
         result = ConfSolver(self.category, self.config, self.lib, self.solver, self.mesh_type, name, parent, info_cb)
@@ -438,7 +441,17 @@ def _load_xml(filename):
         for bcond in solver.findall(XNS+'bcond'):
             config.append((bcond.attrib['name'], bcond.attrib['label'] + ' boundary conditions', None))
 
-        SOLVERS[cat,name] = ConfSolverFactory(cat, lib, name, config, mesh_type)
+        flow = solver.find(XNS+'flow')
+        if flow is not None:
+            providers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][3:]))
+                         for e in flow.findall(XNS+'provider')]
+            receivers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][2:]))
+                         for e in flow.findall(XNS+'receiver')]
+        else:
+            providers = []
+            receivers = []
+
+        SOLVERS[cat,name] = ConfSolverFactory(cat, lib, name, config, mesh_type, providers, receivers)
 
 for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(__file__))), 'solvers')):
     for _f in _files:

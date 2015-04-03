@@ -10,15 +10,19 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore, QtGui
+from ...qt import QtCore, QtGui
+from ...qt.QtCore import Qt
 
-from . import Controller
-from ..utils.config import CONFIG, parse_highlight
-from ..utils.textedit import TextEdit
-from ..utils.widgets import DEFAULT_FONT
+from .. import Controller
+from ...utils.config import CONFIG, parse_highlight
+from ...utils.textedit import TextEdit
+from ...utils.widgets import DEFAULT_FONT
 
-from ..external.highlighter import SyntaxHighlighter, load_syntax
-from ..external.highlighter.xml import syntax
+from ...external.highlighter import SyntaxHighlighter, load_syntax
+from ...external.highlighter.xml import syntax
+
+from .indenter import indent, unindent, autoindent
+
 
 scheme = {
     'syntax_comment': parse_highlight(CONFIG('syntax/xml_comment', 'color=green, italic=true')),
@@ -27,6 +31,53 @@ scheme = {
     'syntax_value': parse_highlight(CONFIG('syntax/xml_value', 'color=darkblue')),
     'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
 }
+
+
+class XMLEditor(TextEdit):
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        modifiers = event.modifiers()
+
+        if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
+            cursor = self.textCursor()
+            if cursor.hasSelection():
+                if key == Qt.Key_Tab:
+                    indent(self)
+                    return
+                elif key == Qt.Key_Backtab:
+                    unindent(self)
+                    return
+            elif key == Qt.Key_Backtab:
+                unindent(self)
+                return
+            else:
+                col = cursor.positionInBlock()
+                inindent = not cursor.block().text()[:col].strip()
+                if inindent:
+                    if key == Qt.Key_Tab:
+                        indent(self, col)
+                        return
+                    else:
+                        if not (cursor.atBlockStart()):
+                            unindent(self, col)
+                            return
+        elif key == Qt.Key_Home and not modifiers & ~Qt.ShiftModifier:
+            cursor = self.textCursor()
+            txt = cursor.block().text()
+            col = cursor.positionInBlock()
+            mode = QtGui.QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QtGui.QTextCursor.MoveAnchor
+            if txt[:col].strip():
+                cursor.movePosition(QtGui.QTextCursor.StartOfBlock, mode)
+                while self.document().characterAt(cursor.position()) in [' ', '\t']:
+                    cursor.movePosition(QtGui.QTextCursor.Right, mode)
+                self.setTextCursor(cursor)
+                return
+
+        super(XMLEditor, self).keyPressEvent(event)
+
+        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
+            autoindent(self)
 
 
 class SourceWidget(QtGui.QWidget):
@@ -70,10 +121,10 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
         find_label = QtGui.QLabel()
         find_label.setText("Search: ")
-        find_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        find_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         replace_label = QtGui.QLabel()
         replace_label.setText("Replace: ")
-        replace_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        replace_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         label_width = replace_label.fontMetrics().width(replace_label.text())
         find_label.setFixedWidth(label_width)
         replace_label.setFixedWidth(label_width)
@@ -83,6 +134,25 @@ class SourceWidget(QtGui.QWidget):
         self.replace_edit = QtGui.QLineEdit()
         self.replace_toolbar.addWidget(replace_label)
         self.replace_toolbar.addWidget(self.replace_edit)
+
+        self.find_matchcase = QtGui.QAction('&Match Case', self.find_edit)
+        self.find_matchcase.setCheckable(True)
+        self.find_matchcase.setChecked(True)
+        self.find_wholewords = QtGui.QAction('&Whole Words', self.find_edit)
+        self.find_wholewords.setCheckable(True)
+        self.find_regex = QtGui.QAction('&Regular Expression', self.find_edit)
+        self.find_regex.setCheckable(True)
+        self.find_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.find_edit.customContextMenuRequested.connect(self._find_context_menu)
+        self.find_options = QtGui.QMenu()
+        self.find_options.addAction(self.find_matchcase)
+        self.find_options.addAction(self.find_wholewords)
+        self.find_options.addAction(self.find_regex)
+        options_button = QtGui.QPushButton(self)
+        options_button.setText("Opt&ions")
+        options_button.setMenu(self.find_options)
+        self.find_toolbar.addWidget(options_button)
+
         next_button = QtGui.QPushButton(self)
         next_button.setText("&Next")
         next_button.setFixedWidth(150)  # TODO from maximum text+icon width
@@ -105,12 +175,25 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.addWidget(replace_all_button)
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
-        self._add_shortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape), self.hide_toolbars)
+        self._add_shortcut(QtGui.QKeySequence(Qt.Key_Escape), self.hide_toolbars)
         self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next)
         self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
         self.find_edit.textEdited.connect(self.find_type)
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
+
+    def _find_context_menu(self, pos):
+        menu = self.find_edit.createStandardContextMenu()
+        menu.addSeparator()
+        menu.addAction(self.find_matchcase)
+        menu.addAction(self.find_wholewords)
+        menu.addAction(self.find_regex)
+        menu.exec_(self.find_toolbar.mapToGlobal(pos))
+
+    def _find_flags(self):
+        return \
+            (QtGui.QTextDocument.FindCaseSensitively if self.find_matchcase.isChecked() else 0) | \
+            (QtGui.QTextDocument.FindWholeWords if self.find_wholewords.isChecked() else 0)
 
     def add_action(self, name, icon, shortcut, slot):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), name, self)
@@ -156,15 +239,17 @@ class SourceWidget(QtGui.QWidget):
         if cont:
             cursor.setPosition(cursor.selectionStart())
         pal = self.editor.palette()
-        findtext = self.find_edit.text()
-        if findtext:
+        if self.find_regex.isChecked():
+            self._findtext = QtCore.QRegExp(self.find_edit.text())
+        else:
+            self._findtext = self.find_edit.text()
+        if self._findtext:
             document = self.editor.document()
-            found = document.find(findtext, cursor, QtGui.QTextDocument.FindCaseSensitively |
-                                  (QtGui.QTextDocument.FindBackward if backward else 0))
+            findflags = self._find_flags() | (QtGui.QTextDocument.FindBackward if backward else 0)
+            found = document.find(self._findtext, cursor, findflags)
             if found.isNull() and rewind:
                 cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
-                found = document.find(findtext, cursor, QtGui.QTextDocument.FindCaseSensitively |
-                                      (QtGui.QTextDocument.FindBackward if backward else 0))
+                found = document.find(self._findtext, cursor, findflags)
             if found.isNull():
                 pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
                 self.find_edit.setPalette(pal)
@@ -197,7 +282,10 @@ class SourceWidget(QtGui.QWidget):
         self.find_edit.setPalette(pal)
         cursor = self.editor.textCursor()
         start = cursor.selectionStart()
-        cursor.insertText(self.replace_edit.text())
+        if isinstance(self._findtext, QtCore.QRegExp):
+            cursor.insertText(self._findtext.replace(cursor.selectedText(), self.replace_edit.text()))
+        else:
+            cursor.insertText(self.replace_edit.text())
         end = cursor.position()
         if not self._find(cont=False, rewind=rewind):
             cursor.setPosition(start)
@@ -233,7 +321,7 @@ class SourceEditController(Controller):
         self.document.set_changed()
 
     def create_source_widget(self, parent):
-        source = SourceWidget(parent, line_numbers=self.line_numbers)
+        source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
         self.highlighter = SyntaxHighlighter(source.editor.document(),
                                              *load_syntax(syntax, scheme),
                                              default_font=DEFAULT_FONT)
