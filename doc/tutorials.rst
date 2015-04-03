@@ -10,7 +10,7 @@ Tutorials and Examples
    tutorial1
    tutorial2
    tutorial3
-
+   castle
 
 .. comment::
 
@@ -54,3 +54,4 @@ Tutorials and Examples
 
    Using high-level algorithms
    ---------------------------
+
