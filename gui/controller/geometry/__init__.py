@@ -128,7 +128,7 @@ class GeometryController(Controller):
 
     def on_pick_object(self, event):
         self.tree.setCurrentIndex(
-            self.model.index_for_node(self.plotted_node.get_node_by_real_path(event.artist.plask_real_path))
+            self.model.index_for_node(self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
         )
         #print str(event.artist.plask_real_path)
 
@@ -137,12 +137,10 @@ class GeometryController(Controller):
         try:
             self.manager.load(self.document.get_content(sections='geometry'))
             #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-            self.plotted_node = tree_element
             self.plotted_object = self.model.fake_root.get_corresponding_object(tree_element, self.manager)
             self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.manager = None
-            self.plotted_node = None
             self.plotted_object = None
             self.status_bar.showMessage(str(e))
             palette = self.status_bar.palette()
@@ -246,7 +244,6 @@ class GeometryController(Controller):
         Controller.__init__(self, document, model)
 
         self.manager = None
-        self.plotted_node = None
         self.plotted_object = None
 
         self.plotted_tree_element = None
