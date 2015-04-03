@@ -130,9 +130,9 @@ class GNCartesian(GNGeometryBase):
         return res
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()
-        if self.dim == 3 and not isinstance(self.children[0], GNExtrusion):
-            path_iterator.next()    #skip 0
+        # path_iterator.next()
+        if self.dim == 2 and not isinstance(self.children[0], GNExtrusion):
+            path_iterator.next()    # skip 0
         return 0
 
     def model_to_real_index(self, index):
@@ -190,9 +190,9 @@ class GNCylindrical(GNGeometryBase):
         return res
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()
+        # path_iterator.next()
         if not isinstance(self.children[0], GNRevolution):
-            path_iterator.next()    #skip 0
+            path_iterator.next()    # skip 0
         return 0
 
     def model_to_real_index(self, index):

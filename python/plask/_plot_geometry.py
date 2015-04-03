@@ -440,7 +440,7 @@ _geometry_drawers[plask.geometry.Cylindrical2D] = _draw_geometry2d
 
 
 
-def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path = None):
+def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path=None):
     """
     Draw geometry object.
     :param DrawEnviroment env: drawing configuration

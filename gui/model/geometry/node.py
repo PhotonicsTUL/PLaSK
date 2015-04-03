@@ -374,35 +374,35 @@ class GNode(object):
             p = p.parent
 
     # def get_child_by_real_index(self, index):
-    #     '''
+    #     """
     #     Get child of self indexed by GeometryObject's index.
     #     :param int index: index of child of the GeometryObject represented by self
     #     :return GNode: child of self which represents corresponding child of the GeometryObject
-    #     '''
+    #     """
     #     return self.children[index]
 
     def real_to_model_index(self, path_iterator):
-        '''
+        """
         Calculate model index which corresponds to begins of the real path.
         :param path_iterator: iterator over path
         :return int: index
-        '''
+        """
         return path_iterator.next()
 
     def model_to_real_index(self, index):
-        '''
+        """
         Calculate real index (path fragment) of child with given model index
         :param int index: model index
         :return: path fragment, sequence of indexes
-        '''
+        """
         return index,
 
     def get_node_by_real_path(self, real_path):
-        '''
+        """
         Go downside in the model tree following real plask path as long as it is possible.
         :param real_path: collection of indexes in GeometryObjects' tree
         :return GNode: achieved node
-        '''
+        """
         node = self
         real_path_iterator = iter(real_path)
         while True:
@@ -410,14 +410,15 @@ class GNode(object):
                 node = node.children[node.real_to_model_index(real_path_iterator)]
             except (StopIteration, IndexError):
                 break
+        print
         return node
 
     def get_object_by_model_path(self, object, model_path):
-        '''
+        """
         :param plask.GeometryObject object: object which is represented by self or plask.Manager if model_path is absolute
         :param collection.Iterable model_path: collection of indexes in GNode's tree
         :return plask.GeometryObject, GNode: object and node which represents this object
-        '''
+        """
         node = self
         for index in model_path:
             real_indexes = node.model_to_real_index(index)
@@ -431,9 +432,9 @@ class GNode(object):
         return object, node
 
     def get_model_path(self):
-        '''
+        """
         :return: path in model from fake_root to self
-        '''
+        """
         if self.parent is None: return []
         result = self.parent.get_model_path()
         result.append(self.index_in_parent)
@@ -457,10 +458,10 @@ class GNFakeRoot(GNode):
         return "geometry"
 
     def get_corresponding_object(self, node, manager):
-        '''
+        """
         Get object that corresponds to node in real objects tree.
         :param GNode node:
         :param plask.Manager manager: manager which describes real geometry objects tree
         :return plask.GeometryObject: object that corresponds to self in real objects tree
-        '''
+        """
         return self.get_object_by_model_path(manager, node.get_model_path())[0]

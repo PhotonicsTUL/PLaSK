@@ -32,7 +32,7 @@ class GNTransform(GNObject):
 
     def real_to_model_index(self, path_iterator):
         path_iterator.next()
-        return 0    #some transform, like mirror, can produce some fake, extra children
+        return 0    # some transform, like mirror, can produce some fake, extra children
 
 
 class GNTranslation(GNTransform):
