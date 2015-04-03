@@ -369,7 +369,7 @@ class GNode(object):
     @property
     def path_to_root(self):
         p = self
-        while p != None:
+        while p is not None:
             yield p
             p = p.parent
 
