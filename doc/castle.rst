@@ -2,11 +2,10 @@ Castle example
 --------------
 
 This beautiful castle example demonstrates some possibilities of structuring your device.
+Take a look at :download:`castle.xpl <castle.xpl>` to see how it is made.
 
 .. figure:: castle.*
    :align: center
-
-Take a look at :download:`castle.xpl <castle.xpl>` to see how it is made:
 
 .. code-block:: xml
 
