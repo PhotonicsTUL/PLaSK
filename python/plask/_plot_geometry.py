@@ -433,7 +433,7 @@ _geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection
 
 
 def _draw_geometry2d(env, geometry_object, transform, clipbox, plask_real_path):
-    _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
+    _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0, 0])
 
 _geometry_drawers[plask.geometry.Cartesian2D] = _draw_geometry2d
 _geometry_drawers[plask.geometry.Cylindrical2D] = _draw_geometry2d

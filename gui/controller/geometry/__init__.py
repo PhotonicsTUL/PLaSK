@@ -130,7 +130,7 @@ class GeometryController(Controller):
         self.tree.setCurrentIndex(
             self.model.index_for_node(self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
         )
-        #print str(event.artist.plask_real_path)
+        #print ', '.join(str(p) for p in event.artist.plask_real_path)
 
     def plot_element(self, tree_element, set_limits=True):
         self.manager = plask.Manager()
