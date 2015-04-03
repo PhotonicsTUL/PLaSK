@@ -221,7 +221,7 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0):
+    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0, picker=None):
         """
         :param plane: plane to draw (important in 3D)
         :param dest: mpl axis where artist should be appended
@@ -237,6 +237,7 @@ class DrawEnviroment(object):
         self.lw = lw
         self.axes = plane
         self.zorder = zorder
+        self.picker = picker
 
         if get_color is None:
             self.get_color = _ColorFromDict(DEFAULT_COLORS, dest)
@@ -259,6 +260,7 @@ class DrawEnviroment(object):
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
+        artist.set_picker(self.picker)
         self.dest.add_patch(artist)
         if clipbox is not None:
             artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
@@ -459,7 +461,7 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox):
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, set_limits=None):
+                  axes=None, figure=None, margin=None, get_color=None, set_limits=None, picker=None):
     """
     Plot specified geometry.
 
@@ -507,6 +509,9 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 range [0, 1]. Any other format accepted by set_facecolor()
                 method of matplotlib Artist should work as well.
 
+        picker (None|float|boolean|callable) matplotlib picker attribute
+                for all artists appended to plot (see matplotlib doc.).
+
     Returns:
         matplotlib.axes.Axes: appended or given axes object
 
@@ -544,7 +549,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     if zorder is None:
         zorder = 0.5 if fill else 2.0
 
-    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, zorder=zorder)
+    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, zorder=zorder, picker=picker)
 
     hshift, vshift = (geometry.bbox.size[a] for a in ax)
     try:

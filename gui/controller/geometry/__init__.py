@@ -126,48 +126,39 @@ class GeometryController(Controller):
         self.model.move_node_down(self.tree.selectionModel().currentIndex())
         self.update_actions()
 
+    def on_pick_object(self, event):
+        print str(event.artist)
+
     def plot_element(self, tree_element, set_limits=True):
-        #TODO support for ref element, and exclude rest non-objects
-        is_ref = isinstance(tree_element, GNAgain)
-        element_has_name = is_ref or getattr(tree_element, 'name', None) is not None
+        self.manager = plask.Manager()
         try:
-            if not element_has_name: tree_element.name = 'plask-GUI--object-to-plot'
-            self.manager = plask.Manager()
-            try:
-                self.manager.load(self.document.get_content(sections='geometry'))
-                #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-                self.plotted_object = self.model.fake_root.get_corresponding_object(tree_element, self.manager)
-                self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
-            except Exception as e:
-                self.manager = None
-                self.plotted_object = None
-                if not element_has_name:
-                    tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
-                self.status_bar.showMessage(str(e))
-                palette = self.status_bar.palette()
-                palette.setColor(QtGui.QPalette.Background, '#ff8888')
-                self.status_bar.setPalette(palette)
-                self.status_bar.setAutoFillBackground(True)
-                from ... import _DEBUG
-                if _DEBUG:
-                    import traceback
-                    traceback.print_exc()
-                return False
+            self.manager.load(self.document.get_content(sections='geometry'))
+            #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
+            self.plotted_object = self.model.fake_root.get_corresponding_object(tree_element, self.manager)
+            self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
+        except Exception as e:
+            self.manager = None
+            self.plotted_object = None
+            self.status_bar.showMessage(str(e))
+            palette = self.status_bar.palette()
+            palette.setColor(QtGui.QPalette.Background, '#ff8888')
+            self.status_bar.setPalette(palette)
+            self.status_bar.setAutoFillBackground(True)
+            from ... import _DEBUG
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
+            return False
+        else:
+            if tree_element.dim == 3:
+                self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
             else:
-                if tree_element.dim == 3:
-                    self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
-                else:
-                    self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
-                if not element_has_name:
-                    tree_element.name = None  # this is in finally but next lines can cause displaying fake name in tree
-                self.status_bar.showMessage('')
-                palette = self.status_bar.palette()
-                palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
-                self.status_bar.setPalette(palette)
-                self.status_bar.setAutoFillBackground(False)
-        finally:
-            if not element_has_name:
-                tree_element.name = None
+                self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
+            self.status_bar.showMessage('')
+            palette = self.status_bar.palette()
+            palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
+            self.status_bar.setPalette(palette)
+            self.status_bar.setAutoFillBackground(False)
         return True
 
     def plot(self, tree_element=None):
@@ -283,7 +274,8 @@ class GeometryController(Controller):
         self.parent_for_editor_widget = VerticalScrollArea()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
-        self.geometry_view = PlotWidget(self)
+        self.geometry_view = PlotWidget(self, picker=True)
+        self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
 
         self.status_bar = QtGui.QStatusBar()
         self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)

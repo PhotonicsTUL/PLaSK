@@ -183,10 +183,11 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 class PlotWidget(QtGui.QGroupBox):
 
-    def __init__(self, controller=None, parent=None):
+    def __init__(self, controller=None, parent=None, picker=None):
         super(PlotWidget, self).__init__(parent)
         self.setContentsMargins(0, 0, 0, 0)
 
+        self.picker = picker
         self.selectors = []
         self.controller = controller
         self.figure = Figure()
@@ -228,7 +229,9 @@ class PlotWidget(QtGui.QGroupBox):
         rect =  matplotlib.patches.Rectangle(
             (bbox.lower[axes[0]], bbox.lower[axes[1]]),
              bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
-            fc=(0.4, 0.1, 0.8, 0.0), ec=(1.0, 0.2, 0.2), zorder=100.0, lw=2.0
+            ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, #linestyle='dashed',
+            fill=False
+            #fc=(0.4, 0.1, 0.8, 0.0),
         )
         self.select(rect)
 
@@ -256,7 +259,7 @@ class PlotWidget(QtGui.QGroupBox):
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
             margin = 0.1 if set_limits else None
             plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, margin=margin, zorder=1,
-                                plane=plane, lw=1.5)
+                                plane=plane, lw=1.5, picker=self.picker)
             for ax in self.axes.xaxis, self.axes.yaxis:
                 ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))
