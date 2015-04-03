@@ -246,7 +246,7 @@ class DrawEnviroment(object):
         else:
             self.get_color = get_color
 
-    def append(self, artist, clipbox, geometry_object):
+    def append(self, artist, clipbox, geometry_object, plask_real_path = None):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
@@ -261,6 +261,7 @@ class DrawEnviroment(object):
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
         artist.set_picker(self.picker)
+        artist.plask_real_path = plask_real_path
         self.dest.add_patch(artist)
         if clipbox is not None:
             artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
@@ -270,69 +271,69 @@ class DrawEnviroment(object):
         artist.set_zorder(self.zorder)
 
 
-def _draw_bbox(env, geometry_object, bbox, transform, clipbox):
+def _draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
         transform=transform
     )
-    env.append(block, clipbox, geometry_object)
+    env.append(block, clipbox, geometry_object, plask_real_path)
 
 
-def _draw_Block(env, geometry_object, transform, clipbox):
-    _draw_bbox(env, geometry_object, geometry_object.bbox, transform, clipbox)
+def _draw_Block(env, geometry_object, transform, clipbox, plask_real_path):
+    _draw_bbox(env, geometry_object, geometry_object.bbox, transform, clipbox, plask_real_path)
 
 _geometry_drawers[plask.geometry.Block2D] = _draw_Block
 _geometry_drawers[plask.geometry.Block3D] = _draw_Block
 
 
-def _draw_Triangle(env, geometry_object, transform, clipbox):
+def _draw_Triangle(env, geometry_object, transform, clipbox, plask_real_path):
     p1 = geometry_object.a
     p2 = geometry_object.b
     env.append(matplotlib.patches.Polygon(((0.0, 0.0), (p1[0], p1[1]), (p2[0], p2[1])), closed=True, transform=transform),
-               clipbox, geometry_object
+               clipbox, geometry_object, plask_real_path
     )
 
 
 _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
 
 
-def _draw_Circle(env, geometry_object, transform, clipbox):
+def _draw_Circle(env, geometry_object, transform, clipbox, plask_real_path):
     env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.radius, transform=transform),
-               clipbox, geometry_object
+               clipbox, geometry_object, plask_real_path
     )
 
 _geometry_drawers[plask.geometry.Circle] = _draw_Circle
 _geometry_drawers[plask.geometry.Sphere] = _draw_Circle
 
 
-def _draw_Cylinder(env, geometry_object, transform, clipbox):
+def _draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (0, 1) or env.axes == (1, 0):
-        _draw_Circle(env, geometry_object, transform, clipbox)
+        _draw_Circle(env, geometry_object, transform, clipbox, plask_real_path)
     else:
-        _draw_Block(env, geometry_object, transform, clipbox)
+        _draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
 _geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
 
 
-def _draw_Extrusion(env, geometry_object, transform, clipbox):
+def _draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (1, 2) or env.axes == (2, 1):
         try:
             env.axes = tuple(x-1 for x in env.axes)  # change axes to 2D
-            _draw_geometry_object(env, geometry_object.item, transform, clipbox)
+            _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
         finally:    # revert axes settings, change back to 3D:
             env.axes = tuple(x+1 for x in env.axes)
     else:
         #_draw_Block(env, geometry_object, transform, clipbox)  # draw block uses bbox, so it will work fine
         for leaf_bbox in geometry_object.get_leafs_bboxes():
-            _draw_bbox(env, None, leaf_bbox, transform, clipbox)
+            _draw_bbox(env, None, leaf_bbox, transform, clipbox, plask_real_path)
 
 
 
 _geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
 
 
-def _draw_Revolution(env, geometry_object, transform, clipbox):
+def _draw_Revolution(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (0, 1) or env.axes == (1, 0):    # view from the top
         obj2d = geometry_object.item
         rads = set()
@@ -341,13 +342,14 @@ def _draw_Revolution(env, geometry_object, transform, clipbox):
             rads.add(bb.right)
         for r in rads:
             if r > 0:
-                env.append(matplotlib.patches.Circle((0.0, 0.0), r, transform=transform), clipbox, obj2d)
+                env.append(matplotlib.patches.Circle((0.0, 0.0), r, transform=transform), clipbox, obj2d, plask_real_path)
     else:
         original_axes = env.axes
         env.axes = tuple(0 if x == 0 else x-1 for x in original_axes)
         try:    #TODO modify clip-box?
-            _draw_geometry_object(env, geometry_object.item, transform, clipbox)
-            _draw_Flipped(env, geometry_object.item, transform, clipbox, 0)
+            new_plask_real_path = plask_real_path + [0]
+            _draw_geometry_object(env, geometry_object.item, transform, clipbox, new_plask_real_path)
+            _draw_Flipped(env, geometry_object.item, transform, clipbox, 0, new_plask_real_path)
             #_draw_Block(env, geometry_object, transform, clipbox)
         finally:
             env.axes = original_axes
@@ -356,42 +358,42 @@ def _draw_Revolution(env, geometry_object, transform, clipbox):
 _geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
 
 
-def _draw_Translation(env, geometry_object, transform, clipbox):
+def _draw_Translation(env, geometry_object, transform, clipbox, plask_real_path):
     new_transform = matplotlib.transforms.Affine2D()
     t = geometry_object.translation
     new_transform.translate(t[env.axes[0]], t[env.axes[1]])
-    _draw_geometry_object(env, geometry_object.item, new_transform + transform, clipbox)
+    _draw_geometry_object(env, geometry_object.item, new_transform + transform, clipbox, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 
 
-def _draw_Flipped(env, geometry_object, transform, clipbox, axis_nr):
+def _draw_Flipped(env, geometry_object, transform, clipbox, axis_nr, plask_real_path):
     if axis_nr == env.axes[0]:
-        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clipbox)
+        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clipbox, plask_real_path)
     elif axis_nr == env.axes[1]:
-        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clipbox)
+        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clipbox, plask_real_path)
     else:
-        _draw_geometry_object(env, geometry_object, transform, clipbox)
+        _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
 
-def _draw_Flip(env, geometry_object, transform, clipbox):
-    _draw_Flipped(env, geometry_object.item, transform, clipbox, geometry_object.axis_nr)
+def _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path):
+    _draw_Flipped(env, geometry_object.item, transform, clipbox, geometry_object.axis_nr, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
 _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 
 
-def _draw_Mirror(env, geometry_object, transform, clipbox):
+def _draw_Mirror(env, geometry_object, transform, clipbox, plask_real_path):
     #TODO modify clip-box?
-    _draw_geometry_object(env, geometry_object.item, transform, clipbox)
+    _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
     if geometry_object.axis_nr in env.axes: # in 3D this must not be true
-        _draw_Flip(env, geometry_object, transform, clipbox)
+        _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path + [1])
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
 
 
-def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox):
+def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_real_path):
     """Used by _draw_Clip and _draw_Intersection."""
     def _b(bound):
         return math.copysign(1e100, bound) if math.isinf(bound) else bound
@@ -412,33 +414,33 @@ def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox):
         clipbox = BBoxIntersection(clipbox, new_clipbox)
 
     if clipbox:
-        _draw_geometry_object(env, geometry_object, transform, clipbox)
+        _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
     # else, if clipbox is empty now, it will be never non-empty, so all will be clipped-out
 
 
-def _draw_Clip(env, geometry_object, transform, clipbox):
-    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox)
+def _draw_Clip(env, geometry_object, transform, clipbox, plask_real_path):
+    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox. plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
 _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
 
-def _draw_Intersection(env, geometry_object, transform, clipbox):
-    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox)
+def _draw_Intersection(env, geometry_object, transform, clipbox, plask_real_path):
+    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Intersection2D] = _draw_Intersection
 _geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection
 
 
-def _draw_geometry2d(env, geometry_object, transform, clipbox):
-    _draw_geometry_object(env, geometry_object.item, transform, clipbox)
+def _draw_geometry2d(env, geometry_object, transform, clipbox, plask_real_path):
+    _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Cartesian2D] = _draw_geometry2d
 _geometry_drawers[plask.geometry.Cylindrical2D] = _draw_geometry2d
 
 
 
-def _draw_geometry_object(env, geometry_object, transform, clipbox):
+def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path = None):
     """
     Draw geometry object.
     :param DrawEnviroment env: drawing configuration
@@ -447,17 +449,18 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox):
     :param matplotlib.transforms.BboxBase clipbox: clipping box in plot coordinates
     """
     if geometry_object is None: return
+    if plask_real_path is None: plask_real_path = []
     drawer = _geometry_drawers.get(type(geometry_object))
     if drawer is None:
         try:
             for child_index in range(0, geometry_object._children_len()):
-                _draw_geometry_object(env, geometry_object._child(child_index), transform, clipbox)
+                _draw_geometry_object(env, geometry_object._child(child_index), transform, clipbox, plask_real_path + [child_index])
             #for child in geometry_object:
             #    _draw_geometry_object(env, child, transform, clipbox)
         except TypeError:
             pass    # ignore non-iterable object
     else:
-        drawer(env, geometry_object, transform, clipbox)
+        drawer(env, geometry_object, transform, clipbox, plask_real_path)
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,

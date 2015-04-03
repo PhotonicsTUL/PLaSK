@@ -127,7 +127,7 @@ class GeometryController(Controller):
         self.update_actions()
 
     def on_pick_object(self, event):
-        print str(event.artist)
+        print str(event.artist.plask_real_path)
 
     def plot_element(self, tree_element, set_limits=True):
         self.manager = plask.Manager()
