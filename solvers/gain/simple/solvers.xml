@@ -42,10 +42,10 @@
     </tag>
 
     <flow>
-      <provider name="inTemperature"/>
-      <provider name="inCarriersConcentration"/>
-      <receiver name="outGain"/>
-      <receiver name="outGainOverCarriersConcentration"/>
+      <receiver name="inTemperature"/>
+      <receiver name="inCarriersConcentration"/>
+      <provider name="outGain"/>
+      <provider name="outGainOverCarriersConcentration"/>
     </flow>
 
   </solver>
@@ -93,10 +93,10 @@
     </tag>
 
     <flow>
-      <provider name="inTemperature"/>
-      <provider name="inCarriersConcentration"/>
-      <receiver name="outGain"/>
-      <receiver name="outGainOverCarriersConcentration"/>
+      <receiver name="inTemperature"/>
+      <receiver name="inCarriersConcentration"/>
+      <provider name="outGain"/>
+      <provider name="outGainOverCarriersConcentration"/>
     </flow>
 
   </solver>

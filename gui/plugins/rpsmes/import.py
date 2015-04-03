@@ -529,7 +529,7 @@ def load_dan(parent):
             msgbox.setText("There was an error while saving the converted XPL file.")
             msgbox.setDetailedText(str(err))
             msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Error)
+            msgbox.setIcon(QtGui.QMessageBox.Critical)
             msgbox.exec_()
         else:
             new_window = gui.MainWindow(oname)

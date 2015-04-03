@@ -344,6 +344,14 @@ class GeometryController(Controller):
 
         return True
 
+    def current_root(self):
+        try:
+            current_root = self._current_index.internalPointer().root
+        except AttributeError:
+            return None
+        else:
+            return current_root
+
     def zoom_to_current(self):
         if self.plotted_object is not None:
             to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),

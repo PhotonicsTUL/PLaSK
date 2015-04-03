@@ -10,6 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import gui
+from gui.qt import QtGui, QtCore
+from gui.xpldocument import XPLDocument
+import os
+
 try:
     import plask
 except ImportError:
@@ -20,16 +25,18 @@ else:
         s = str(val)
         return s + ''.join([' ']*max(l-len(s), 0))
 
-
     def _parse_material(mat):
         mat = str(mat).split(':')
         if len(mat) == 1:
             return mat[0], 'ST', 0.
-        dp, dc = mat[1].split('=')
+        dpc = mat[1].split('=')
+        if len(dpc) == 2:
+            dp, dc = dpc
+        else:
+            return mat[0]+"_"+mat[1], 'ST', 0.
         if len(dp) > 1 and dp[-2] == ' ':
             dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
         return mat[0], dp, float(dc) * 1e6
-
 
     def write_dan(name, solvers, geo, allm=True):
         """Write dan files for given prefix
@@ -153,37 +160,50 @@ else:
 
         outl("THE_END")
 
+    def save_dan(parent):
+        if not isinstance(parent.document, XPLDocument):
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("Export Error")
+            msgbox.setText("You can only export from xpl file.")
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Error)
+            msgbox.exec_()
+            return
 
-    # if __name__ == "__main__":
-    #
-    #     try:
-    #         iname = sys.argv[1]
-    #     except IndexError:
-    #         print_log(LOG_CRITICAL_ERROR, "Usage: %s input_file.xpl [geometry_name]\n" % sys.argv[0])
-    #         sys.exit(2)
-    #     else:
-    #
-    #         try:
-    #             geom = sys.argv[2]
-    #         except IndexError:
-    #             geom = None
-    #
-    #         dest_dir = os.path.dirname(iname)
-    #         name = os.path.join(dest_dir, iname[:-4])
-    #
-    #         manager = plask.Manager()
-    #         manager.load(iname)
-    #         geos = [g for g in manager.geometry.values() if isinstance(g, geometry.Geometry)]
-    #         if geom is None:
-    #             if len(geos) != 1:
-    #                 raise ValueError("More than one geometry defined in %s" % iname)
-    #             else:
-    #                 geom = geos[0]
-    #         else:
-    #             geom = manager.geometry[geom]
-    #
-    #         write_dan(name, manager.solver.values(), geom)
-    #
-    #         print_log(LOG_INFO, "Done!")
-    #
-    #
+        # geometries = parent.document.geometry.model.roots
+
+        manager = plask.Manager()
+        try:
+            manager.load(parent.document.get_content(sections=('geometry')))
+            controller = parent.document.geometry.controllers[0]
+            current_model = controller.current_root()
+            name = controller.current_root().name
+            geom = manager.geometry[str(name)]
+            filename = '{}_{}'.format(os.path.splitext(parent.document.filename)[0], name)
+            write_dan(filename, manager.solver.values(), geom)
+        except Exception as err:
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("RPSMES Export Error")
+            msgbox.setText("There was an error while writing the RPSMES file.")
+            msgbox.setDetailedText(str(err))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            if gui._DEBUG:
+                import traceback
+                traceback.print_exc()
+        else:
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("RPSMES Export")
+            msgbox.setText("Geometry '{}' exported to '{}_temp.dan'. "
+                           "You should examine the file and correct it!".format(name, filename))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Information)
+        msgbox.exec_()
+
+    def save_dan_operation(parent):
+        action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'),
+                               '&Export RPSMES .dan file...', parent)
+        action.triggered.connect(lambda: save_dan(parent))
+        return action
+
+    gui.OPERATIONS.append(save_dan_operation)
