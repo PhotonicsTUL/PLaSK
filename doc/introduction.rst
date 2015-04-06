@@ -23,7 +23,6 @@ In order to install PLaSK on MS Windows, perform two steps:
 
    PLaSK for Windows is 64-bit now. You must use 64 Windows (most probably you are) and install 64-bit Python to be able to use it!
 
-
 .. _sec-Instalation-Linux:
 
 Linux systems
@@ -50,8 +49,9 @@ If there is no error, you can run PLaSK.
 
 .. _sec-Running-PLaSK:
 
-Running PLaSK
--------------
+Running PLaSK from command line
+-------------------------------
+
 In general PLaSK is standalone command line program. It can be run from the command line by typing ``plask`` in the shell [#shell-windows]_. If run without any parameter, it will open a simple interactive :term:`shell` where you can type Python commands for immediate execution. In order to run prepared script (saved either in *.xpl* or *.py* file) simply add its name as the first parameter. Further parameters are optional and will be available to the :term:`Python` script as ``sys.argv``. In the following example :file:`vcsel.xpl` is the input file the number ``10`` a some parameter:
 
 In Linux :term:`shell` or MACOS terminal:
@@ -70,7 +70,7 @@ Such command-line invocation can be used to run PLaSK locally, but is also usefu
 
 .. code-block:: bash
 
-	joe@cray:~$ echo $HOME/plask/bin/plask laser/vcsel.xpl 10 | qsub -N vcsel
+   joe@cray:~$ echo $HOME/plask/bin/plask laser/vcsel.xpl 10 | qsub -N vcsel
 
 If you run PLaSK without any parameters, you enter interactive mode. Do so and once you see the prompt type (type only commands, not the prompt [#IPython-prompt]_):
 
@@ -82,13 +82,13 @@ You will see a Python documentation for PLaSK. Press ``'q'`` to return back to t
 
 .. code-block:: python
 
-	In[2]: runxpl('your_file.xpl')
+   In[2]: runxpl('your_file.xpl')
 
 To exit the shell type:
 
 .. code-block:: python
 
-	In[3]: exit()
+   In[3]: exit()
 
 On Windows you can find the "PLaSK Console" in the Start Menu which will start the interactive mode. Furthermore there is a simple graphical launcher provided, simply named "PLaSK". Just run it and press F5 to run your XPL or Python file in PLaSK. In the future this launcher will become a part of a more complex GUI.
 
@@ -96,23 +96,28 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
 .. option:: -l loglevel
 
-	specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
+      specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
 
 .. option:: -c command
 
-	run a single command instead of a script.
+      run a single command instead of a script.
 
 .. option:: -i
 
-	always enter the interactive console, even if there is a script name specified. All the parameters are redirected to the console.
+      always enter the interactive console, even if there is a script name specified. All the parameters are redirected to the console.
 
-.. option:: -version
+.. option:: -V
 
-	print PLaSK version and exit.
+      print PLaSK version and exit.
 
 .. option:: variable=value
 
-	set the value of a variable defined in XPL section <defines>. This overrides the value from the file.
+      set the value of a variable defined in XPL section <defines>. This overrides the value from the file.
+
+Running PLaSK GUI
+-----------------
+
+*PLaSK GUI* is a separate program that helps to edit PLaSK input files. It can be started from the command line by typing ``plaskgui`` or it is available in the applications menu as other programs are. Hence, you can launch it as any other application.
 
 .. rubric:: Footnotes
 .. [#shell-windows] To be able to do so on Windows, you must add the folder bin from the PLaSK install folder (e.g. :file:`c:\\Program Files\\PLaSK\\bin`) to the environment variable Path.

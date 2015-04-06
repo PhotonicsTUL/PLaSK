@@ -107,7 +107,7 @@ SECTION_ICONS = {
 
 class MainWindow(QtGui.QMainWindow):
 
-    SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshes ",
+    SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
                           solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
 
     SECTION_TIPS = {
@@ -129,7 +129,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
 
-        use_menu = CONFIG('main_window/use_menu', False) != 'false'
+        use_menu = CONFIG('main_window/use_menu', False)
         if use_menu:
             menu_bar = QtGui.QMenuBar(self)
 
@@ -580,11 +580,15 @@ def main():
     APPLICATION.setApplicationName("PLaSK")
     sys.argv = APPLICATION.arguments()
 
-    icons_path = QtGui.QIcon.themeSearchPaths()
-    icons_path.insert(0, os.path.join(__path__[0], 'icons'))
-    QtGui.QIcon.setThemeSearchPaths(icons_path[:-1])
-    if not QtGui.QIcon.themeName():
+    if CONFIG('main_window/theme_icons', True):
+        icons_path = QtGui.QIcon.themeSearchPaths()[:-1]
+        if not QtGui.QIcon.themeName():
+            QtGui.QIcon.setThemeName('hicolor')
+    else:
+        icons_path = []
         QtGui.QIcon.setThemeName('hicolor')
+    icons_path.insert(0, os.path.join(__path__[0], 'icons'))
+    QtGui.QIcon.setThemeSearchPaths(icons_path)
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):

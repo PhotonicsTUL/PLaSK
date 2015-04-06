@@ -114,10 +114,6 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
     external = QtGui.QGroupBox()
     if title is not None:
         external.setTitle(title)
-        m = external.getContentsMargins()
-        external.setContentsMargins(0, m[1], 0, m[3])
-    else:
-        external.setContentsMargins(0, 0, 0, 0)
     vbox.setContentsMargins(0, 0, 0, 0)
     vbox.setSpacing(0)
 
@@ -184,3 +180,7 @@ class TableController(Controller):
 
     def get_table_edit_actions(self):
         return self.table_actions.get(self.document.window)
+
+    def on_edit_enter(self):
+        self.table.setFocus()
+

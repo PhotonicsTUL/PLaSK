@@ -12,6 +12,7 @@
 
 from ..qt import QtCore
 
+_parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 
 def parse_highlight(string):
     """Parse syntax highlighting from config"""
@@ -19,9 +20,7 @@ def parse_highlight(string):
     for item in string.split(','):
         item = item.strip()
         key, val = item.split('=')
-        if val.lower() in ('true', 'yes'): val = True
-        elif val.lower() in ('false', 'no'): val = False
-        result[key] = val
+        result[key] = _parsed.get(val, val)
     return result
 
 
@@ -37,10 +36,17 @@ class Config(object):
             self.qsettings.setValue(key, default)
             return default
         else:
-            return current
+            try:
+                return _parsed.get(current, current)
+            except TypeError:
+                return current
 
     def __getitem__(self, key):
-        return self.qsettings.value(key)
+        value = self.qsettings.value(key)
+        try:
+            return _parsed.get(value, value)
+        except TypeError:
+            return value
 
     def __setitem__(self, key, value):
         self.qsettings.setValue(key, value)

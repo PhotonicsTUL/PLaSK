@@ -39,4 +39,34 @@
   </cylindrical2d>
 </geometry>
 
+<solvers>
+  <optical solver="EffectiveFrequencyCyl" name="efm">
+    <geometry ref="main"/>
+    <mode lam0="980."/>
+  </optical>
+</solvers>
+
+<script>
+import scipy.optimize
+
+profile = plask.StepProfile(GEO.main, default=0.)
+profile[GEO.gain_region] = 500.
+
+efm.inGain = profile.outGain
+
+def loss_on_gain(gain):
+    profile[GEO.gain_region] = gain
+    mode_number = efm.find_mode(980.5)
+    return efm.outLoss(mode_number)
+
+threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
+
+profile[GEO.gain_region] = threshold_gain
+mode_number = efm.find_mode(980.5)
+mode_wavelength = efm.outWavelength(mode_number)
+print_log(LOG_INFO,
+          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+          .format(threshold_gain, mode_wavelength))
+</script>
+
 </plask>

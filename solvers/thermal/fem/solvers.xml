@@ -27,7 +27,7 @@
       <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
     </tag>
 
-    <bcond name="temperature" label="Thermal"/>
+    <bcond name="temperature" label="Temperature"/>
 
     <bcond name="heatflux" label="Heat flux"/>
 

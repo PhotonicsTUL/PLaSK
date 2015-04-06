@@ -40,7 +40,7 @@ class GridsController(Controller):
         self.grids_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.grids_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         table_edit_shortcut(self.grids_table, 0, 'n')
-        self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and generators"))
+        self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and Generators"))
         self.grids_table.setVisible(False)
         self.grids_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.grids_table.setVisible(True)
@@ -97,6 +97,7 @@ class GridsController(Controller):
         self.grids_table.selectionModel().clear()   # model could completly changed
         if self._last_index is not None:
             self.grids_table.selectRow(self._last_index)
+        self.grids_table.setFocus()
 
     def on_edit_exit(self):
         if self._current_controller is not None:

@@ -257,6 +257,7 @@ class GeometryController(Controller):
         vbox = QtGui.QVBoxLayout()
         tree_with_buttons.setLayout(vbox)
 
+        tree_with_buttons.setTitle("Geometry Tree")
         vbox.setContentsMargins(0, 0, 0, 0)
         vbox.setSpacing(0)
 
@@ -376,7 +377,9 @@ class GeometryController(Controller):
                                           QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
                                           QtGui.QItemSelectionModel.Rows)
         self.tree.setCurrentIndex(new_index)
+        self.update_actions()
         self.plot()
+        self.tree.setFocus()
 
     def on_edit_exit(self):
         if self._current_controller is not None:

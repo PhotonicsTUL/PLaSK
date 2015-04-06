@@ -354,4 +354,5 @@ class MaterialsController(Controller):
     def get_widget(self):
         return self.splitter
 
-
+    def on_edit_enter(self):
+        self.materials_table.setFocus()

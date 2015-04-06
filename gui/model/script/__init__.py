@@ -36,7 +36,8 @@ class ScriptModel(SectionModel):
     # XML element that represents whole section
     def get_xml_element(self):
         res = etree.Element(self.name)
-        res.text = etree.CDATA('\n' + self._code)
+        if self._code and self._code != '\n':
+            res.text = etree.CDATA('\n' + self._code)
         return res
 
     def get_text(self):

@@ -17,6 +17,11 @@ from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 
 
+AXES = {
+    2: ('', 'y,z', 'x,y', 'r,z', 't,v', 'tran,vert'),
+    3: ('', 'x,y,z', 'z,x,y', 'p,r,z', 'l,t,v', 'long,tran,vert')
+}
+
 class GNObjectController(GNodeController):
 
     #def __init__(self, document, model, node):
@@ -33,8 +38,7 @@ class GNObjectController(GNodeController):
         self.role = self.construct_line_edit('Roles:')
         self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
                                 'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
-        self.axes = self.construct_combo_box('Axes:',
-                                             ['', 'x,y,z', 'z,x,y', 'p,r,z', 'l,t,v', 'long,tran,vert'])
+        self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)))
         self.axes.setToolTip('&lt;{} <b>axes</b>="" ...&gt;<br/>'
                             'Specification of the axes.'
                             ' Most popular values are <it>xy</it>, <it>yz</it>, <it>rz</it>'

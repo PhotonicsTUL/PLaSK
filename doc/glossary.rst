@@ -5,8 +5,11 @@ Glossary
 ********
 .. glossary::
 
+    GUI
+        Graphical User Interface. This is a separate program that helps editing your input files and running the simulations. Every feature of PLaSK can be fully accessed without the GUI by manually editing its input files. However, the graphical interface offers a visual feedback while editing the structure geometry and provides hints for setting up your simulation.
+
     Python
-        	Python is a remarkably powerful dynamic programming language that is used in a wide variety of application domains. See: http://python.org/
+        Python is a remarkably powerful dynamic programming language that is used in a wide variety of application domains. See: http://python.org/
 
     shell
         See: http://en.wikipedia.org/wiki/Command-line_interface

@@ -20,7 +20,7 @@ class NewGridDialog(QtGui.QDialog):
 
     def __init__(self, parent=None):
         super(NewGridDialog, self).__init__(parent)
-        self.setWindowTitle("New grid")
+        self.setWindowTitle("Create New Mesh")
 
         kind = QtGui.QGroupBox("Kind")
         self.kind_mesh = QtGui.QRadioButton("&Mesh")
@@ -76,8 +76,8 @@ class NewGridDialog(QtGui.QDialog):
         else:
             self.type_edit.setModel(QStringListModel(sorted(meshes_types())))
         self.type_edit.setEditText(text)
-        self._type_changed(text)
         self.method_edit.setVisible(is_generator)
+        self._type_changed(text)
 
     def _type_changed(self, new_type):
         if not self.method_edit.isVisible(): return

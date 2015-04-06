@@ -3,23 +3,13 @@
 Thermo-electrical modeling of simple edge-emitting diode
 --------------------------------------------------------
 
-This tutorial presents basic usage of PLaSK. It shows how to define the basic geometry and how to perform computations using solvers. During the tutorial creation of all parts of the input file is described step-by-step, together with the discussion of it meaning. Before starting following the instructions described here, please make sure that PLaSK is installed correctly and create a separate working directory. We assume that you are able to launch the main binary as described in section :ref:`sec-Running-PLaSK`. In order to begin, you need to open your favorite text editor and create a file named :file:`tutorial1.xpl`. Save it (an empty file at the moment) in the directory you have just created.
+This tutorial presents basic usage of PLaSK. It shows how to define the basic geometry and how to perform computations using solvers. During the tutorial creation of all parts of the input file is described step-by-step, together with the discussion of it meaning. Before starting following the instructions described here, please make sure that PLaSK is installed correctly and create a separate working directory. We assume that you are able to launch the main binary as described in section :ref:`sec-Running-PLaSK`.
 
-In general, PLaSK uses :term:`XML` as a format of its input files. By default they have standard extension ``.xpl`` (which you may consider as a shortcut from "**X**\ ML in **PL**\ aSK"). They contain definition of custom materials, analyzed structure geometry, configuration of the computational solvers and a Python script defining the step-by-step operations to perform during computations. However, it is a common situation that these operations remain the same for a large number of different analyzed devices. Hence, it is possible to save them in a separate file with an extension ``.py`` that is just a Python script and use the :term:`XPL` only for definition of the structure [#run-py-file]_. We will demonstrate such option in the next tutorial in section :ref:`sec-Optical-analysis-of-VCSEL`.
+In general, PLaSK uses :term:`XML` as a format of its input files. By default they have standard extension ``.xpl`` (which you may consider as a shortcut from "**X**\ ML in **PL**\ aSK"). They contain definition of custom materials, analyzed structure geometry, configuration of the computational solvers and a Python script defining the step-by-step operations to perform during computations [#run-py-file]_.
 
-After :term:`reading a very brief introduction to XML syntax <XML>`, you start writing your first PLaSK input file. First you have to define the main tag :xml:tag:`<plask>`. Everything you write will be the content of this tag:
+In  this tutorial you will create your first PLaSK input file :file:`tutorial1.xpl`. This is a text file with the description of your structure and your whole simulation. You may edit it with your favorite text editor, however, it is much more convenient to use the provided :term:`graphical user interface <GUI>` program ``plaskgui``. It allows to graphically construct your structure, but it also allows to write XML code directly. In this tutorial we will cover both options.
 
-.. code-block:: xml
-
-    <plask>
-
-        <!-- Here you will put all the content of your file. -->
-
-    </plask>
-
-The strange characters ``<!--`` and ``-->`` in the above example mark the beginning and the end of the comment, respectively. So you can use them in your file to write your notes, or to temporarily disable any part of the file.
-
-Inside the main tag you may define the following sections: :xml:tag:`materials`, :xml:tag:`geometry`, :xml:tag:`grids`, :xml:tag:`solvers`, :xml:tag:`connects`, and :xml:tag:`script`. All these sections are optional, however, if present, they must follow in the order specified above. You will learn the roles of these sections in this and the following tutorials. In details, they are described further in this manual.
+Let us start. Open *PLaSK GUI* program. You see the program window with empty file. In the top you have several tabs that allow to edit various sections of the file. By default the program opens on the *Geometry* tab, where you describe your structure. This is the section we want to edit now. In the left-hand-side you see a tree view (empty now) of your geometry definition and below it the configuration panel for selected elements. In the right there is a larger space reserved for the preview of your geometry. In the beginning all panels are empty as no geometry objects are created yet.
 
 
 Geometry
@@ -31,50 +21,53 @@ Geometry
 
    Simple edge-emitting gallium-arsenide diode modeled in :file:`tutorial1.xpl` file.
 
+We want to define a simple gallium arsenide edge-emitting diode, presented in Figure :ref:`Simple edge-emitting gallium-arsenide diode <fig-tutorial1-geometry>`. It can be modeled as a two-dimensional Cartesian structure, which is uniform in the longitudinal direction. Hence, you should start by creating 2D Cartesian geometry. Press ``Ctrl``\ +\ ``Shift``\ +\ ``=`` on the keyboard or click the |list-add| icon in the top left toolbar. Next, select ‘\ ``Cartesian2D``\’  from the drop-down menu. This way you have created a new geometry that have appeared in the left panel. Beneath you cat set the geometry properties. Set its length to 1000 µm (below *Implicit extrusion settings*) and under *Border settings* set the left border to *mirror*: as the structure has mirror symmetry in the transverse direction, it is sufficient to model only half of it and the left edge of the computational domain is the mirror. You should also name your geometry. In the *Basic settings* specify name as *main*.
 
-In this tutorial we start with the geometry section. It describes the geometry of the structure. We want to define a simple gallium arsenide edge-emitting diode, presented in Figure :ref:`Simple edge-emitting gallium-arsenide diode <fig-tutorial1-geometry>`. It can be modeled as a two-dimensional Cartesian structure, hence, we begin by specifying the geometry section and Cartesian two-dimensional geometry type:
+At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-units`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices.
 
-.. code-block:: xml
-
-    <plask>
-
-    <geometry>
-      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-        <!-- Here we put the geometry definition. -->
-      </cartesian2d>
-    </geometry>
-
-    </plask>
-
-The ``axes`` attribute of means that we will use the *xy* axes in our geometry definition i.e. *x* is the name of the horizontal axis and *y* of the vertical one. As the structure has mirror symmetry in the *x*-direction, it is sufficient to model only half of it and the left edge of the computational domain is the mirror, which is indicated by the ``left="mirror"`` attribute. The length of the chip in the third *z* direction is set to 1 mm (``length="1000"``, where the value is specified in microns as all geometrical dimensions in PLaSK). The last attribute ``name`` simply gives the geometry name (``"main"``) for later reference.
-
-Due to the nature of the structure, it is the most natural to describe it as a stack of layers. Each layer is shifted to the left side of the stack (i.e. to the symmetry plane), which is a default. Hence, the structure definition will be (from now on we will skip ``<plask>...</plask>`` main tag from listings, although you must remember to keep them in your file):
+By pressing ``F4`` you can switch between the graphical workspace and textual XML editor. After creating the geometry and setting it up as above, should see the following content of the ‘Geometry’ section:
 
 .. code-block:: xml
 
-    <geometry>
-      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-        <stack>
-          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20"
-                 name="top-layer"/>
-          <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
-          <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="0.007" material="In(0.2)GaAs"
-                 role="active" name="junction"/>
-          <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-          <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
-          <zero/>
-          <block dx="1000" dy="1000" material="Cu"/>
-        </stack>
-      </cartesian2d>
-    </geometry>
+   <cartesian2d left="mirror" length="1000" name="main"/>
 
-In the above listing, two new tags appeared. One is :xml:tag:`<stack> <stack2D>` and means that its whole content should be organized in the vertical stack, starting from top to bottom. By default, the stack coordinate system is set in a such way that *y=0* is at the bottom of the stack. However, we want to have *y=0*, at the top of the heatsink, so indicate this by the tag :xml:tag:`<zero/> [in <stack2D>]` between substrate and heatsink blocks.
+You may edit the XML tags here as if you were using normal text editor. For example, you may add ``axes="xy"`` attribute, which means that we will use the *xy* axes in our geometry definition i.e. *x* is the name of the horizontal axis and *y* of the vertical one. So your geometry declaration should look like this:
 
-Another new tag is :xml:tag:`<block> <block2D>`, which means a *rectangular block*. As this tag has no further content, is is finished with ``/>``. ``dx`` and ``dy`` attributes give dimensions of the blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-units`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices. Look back at the any :xml:tag:`<block> <block2D>` tag. Its attribute ``material`` gives information about the material of each block. As there is no materials section in our input file, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
+.. code-block:: xml
 
-Three of the blocks are given names ``"top-layer"``, ``"substrate"``, and ``"junction"`` for the future reference. `Top-layer` and `substrate` will be used to specify boundary conditions for the electrical solver at the edges of these blocks, while we will need junction to make plots of the computed current a little easier.
+   <cartesian2d left="mirror" length="1000" name="main" axes="xy"/>
+
+Once you have switched back to the graphical view (by pressing ``F4`` again), you should notice that the *Axes* field has been filled-in.
+
+Due to the nature of the structure, it is the most natural to describe it as a stack of layers. To create such stack ensure that the **main** geometry is selected in the top-left panel and press ``Ctrl``\ +\ ``Shift``\ +\ ``=`` again. In the drop-down menu you will notice a new sub-menu *Item*. Select it and choose ``Stack`` from the list. Then open new items menu again and add a ``Rectangle``. In block specific settings set its size to 1000 µm × 1000 µm and below set the material type to ``Solid`` in and next to it type the material name ``Cu``. In this moment you should see your first object in the geometry preview at the right hand side of the window. If you do not see anything, select the **main** geometry in the tree view and press |applications-graphics| icon above the preview area. Other icons on this toolbar allow to pan/zoom and update the view. Take some time to investigate their meaning.
+
+Now, we may want to add more geometry objects. You can do this the way described above. Just make sure that before pressing ``Ctrl``\ +\ ``Shift``\ +\ ``=`` (or clicking |list-add| icon), you have selected the container you want to add to. Note that some containers can have only one object (e.g. every main geometry). Now, however, press ``F4`` to switch to text-edit mode and make the XML look as follows:
+
+.. code-block:: xml
+
+   <cartesian2d axes="xy" left="mirror" length="1000" name="main">
+     <stack>
+       <rectangle dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20"
+                  name="top-layer"/>
+       <rectangle dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
+       <rectangle dx="150" dy="0.150" material="GaAs"/>
+       <rectangle dx="150" dy="0.007" material="In(0.2)GaAs"
+                  role="active" name="junction"/>
+       <rectangle dx="150" dy="0.150" material="GaAs"/>
+       <rectangle dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+       <rectangle dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
+       <zero/>
+       <rectangle dx="1000" dy="1000" material="Cu"/>
+     </stack>
+   </cartesian2d>
+
+Now switch back to graphical view (``F4`` again) and see how the geometry tree have changed: you have just created a stack of rectangular blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. 
+
+Now click any block in the preview window. By doing so, you select a rectangle object. Examine its attributes in the bottom-left panel. For example in the section *Material* you have a combo-box, where you can select either a solid material or one gradually changing from bottom to top. In the text field next to it (or in the attribute ``material`` in XML) you specify information about the material of each block. As you have defined no custom material, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
+
+In the above listing, there is also a new tag :xml:tag:`<zero/> [in <stack2d>]`, visible as ``<set zero here>`` in the tree. It sets the stack coordinate system such way that that *y* = 0 at the top of the heat sink (by default, the stack coordinate system is set in a such way that *y* = 0 is at the bottom of the stack).
+
+Three of the blocks have names *top-layer*, *substrate*, and *junction* defined for future reference. *Top-layer* and *substrate* will be used to specify boundary conditions for the electrical solver at the edges of these blocks, while we will need junction to make plots of the computed current a little easier.
 
 You might have also noticed another attribute ``role="active"`` in one of the blocks. This is an information for the phenomenological electrical solver, which we are going to use for this structure, that the marked object is the active layer and the voltage drop on this layer should be computed using the diode equation instead on the Ohm's law. In general ``role`` attributes can be used to provide additional information about the roles of some objects (or groups -- the role could be given to the whole stack if desired) and are interpreted by solvers. You should refer to the particular solver documentation for the details of what roles should be given to what objects.
 
@@ -83,155 +76,91 @@ You might have also noticed another attribute ``role="active"`` in one of the bl
 Mesh definition
 ^^^^^^^^^^^^^^^
 
-Having the analyzed structure geometry defined, we must put the :xml:tag:`<grids>` section. Its content strongly depends on the solvers we are going to use. As we plan to perform thermo-electrical calculations, we choose basic thermal solver ``thermal.Static2D`` and phenomenological electrical solver ``electrical.Shockley2D``. Details of this solvers are presented in chapter :ref:`sec-Solvers`. For now it is important that both of them require user-provided rectilinear mesh, so we define a generator for such mesh in the grids section.
+Having the analyzed structure geometry defined, switch to the *Meshing* tab. Here you define computational meshes. Their types strongly depend on the solvers you are going to use. As we plan to perform thermo-electrical calculations, we will choose basic thermal solver ``thermal.Static2D`` and phenomenological electrical solver ``electrical.Shockley2D``. Details of this solvers are presented in chapter :ref:`sec-Solvers`. For now it is important that both of them require user-provided rectilinear mesh, so we must define a generator for such a mesh.
 
 In PLaSK user-defined meshes can be specified in two ways. First of all, you can simple give the points of the mesh yourself, although such approach is cumbersome and usually does not result in optimal computational mesh. However, specifying own grid can be useful for creating plots of the computed fields, as it will be shown later in this tutorial. On the other hand, PLaSK offers *mesh generators*, which can create a mesh matching certain criteria and based on the structure geometry. They are the most convenient way to make a computational mesh.
 
 For our purpose we will use simple, but surprisingly powerful generator of two-dimensional rectilinear mesh called *DivideGenerator*. It divides the structure along the edges of all geometrical objects and then subdivides such crude cells into smaller ones according to the user wish and additionally taking care that two adjacent mesh elements do not differ more than twice in a size along each dimension.
 
-The generator definition in XPL file is done using the :xml:tag:`<generator> [rectilinear1d, divide]` tag and looks as follows (put the :xml:tag:`<grids>` section between ``</geometry>`` and ``</plask>``):
+To create the generator, click |list-add| icon in the left panel. Then, in the dialog fill-in the following values: *Kind*: ``Generator``, *Name*: ``default``, *Type*: ``Rectangular2D``, and *Method*: ``Divide``. This way, we have created a new generator. In the right panel its configuration appeared. Its details is described in chapter :ref:`sec-Meshes`. Now, we want it to divide each mesh  element by 2 along each axis (i. e. into four quarters) after ensuring that two adjacent cells do not differ more than twice in size. To to this, we must type ``2`` in both cells in the ‘*Post-refining divisions*’ row.
+
+Again, by pressing ``F4`` we can see the resulting XML:
 
 .. code-block:: xml
 
-    <grids>
-      <generator type="rectangular2d" method="divide" name="default">
-        <postdiv by="2"/>
-      </generator>
-    </grids>
+   <generator type="rectangular2d" method="divide" name="default">
+     <postdiv by="2"/>
+   </generator>
 
-Here we have defined the generator for a mesh of type ``"rectangular2d"``, using ``"divide"`` method (i.e. *DivideGenerator*). We will refer to this generator later on using the specified name "default". As in solver configuration the meshes and generators are indistinguishable by the type, each of them must have unique name.
-
-The :xml:tag:`<postdiv> [in rectangular2d, divide generator]` tag is the generator configuration (for more details see chapter :ref:`sec-Meshes`) and says that, after ensuring that two adjacent cells do not differ more than twice in size, each mesh element should be divided by 2 along each axis (i. e. into four quarters). The fact that our structure has both very thick and very thin layers and that we have used ``DivideGenerator``, makes the manual final mesh division by two sufficient. Later on we may plot the resulted mesh and fine-tune the ``postdiv by`` value in the XPL file, add more configuration parameters (we will do this in the next tutorial), or even automatically tune the generator from the Python script.
+Here we have defined the generator for a mesh of type ``"rectangular2d"``, using ``"divide"`` method (i.e. *DivideGenerator*). We will refer to this generator later on using the specified name “*default*”. As in solver configuration the meshes and generators are indistinguishable by the type, each of them must have unique name.
 
 
 Computational solvers
 ^^^^^^^^^^^^^^^^^^^^^
 
-As the structure geometry and the mesh generator is defined, it is time to create computational solvers. As mentioned earlier, we use ``thermal.Static2D`` for thermal modeling (i.e. computing the temperature distribution) and ``electrical.Shockley2D`` to determine the current flow. As, on the one hand, the temperature affects the material parameters (electrical conductivity in particular) and, on the other hand, the current flow is the source of the Joules heat, we will need to run both solvers in self-consistent loop, ensuring the mutual exchange of data. By now however, let us create the solvers. It is done in ``<solvers>`` section, which should immediately follow ``</grids>`` [#blank-lines-in-XML]_. Let us start with thermal solver:
+As the structure geometry and the mesh generator is defined, it is time to create computational solvers. As mentioned earlier, we use ``thermal.Static2D`` for thermal modeling (i.e. computing the temperature distribution) and ``electrical.Shockley2D`` to determine the current flow. As, on the one hand, the temperature affects the material parameters (electrical conductivity in particular) and, on the other hand, the current flow is the source of the Joules heat, we will need to run both solvers in self-consistent loop, ensuring the mutual exchange of data. By now however, let us create the solvers. It is done in the *Solvers* tab, so switch to it now. The view is very similar to the meshing tab. In the left there is a list of created solvers (empty now) and in the right you will see its configuration panel.
+
+Let's add a thermal solver first. Again click |list-add| icon in the left panel and fill-in the dialog: *Category*: ``Thermal``, *Solver*: ``Static2D``, *Name*: ``therm``. Category and solver define the exact type of the solver and its name is the name of the variable under which it will be visible in the Python script. Hence, the solver name must be a proper identifier i.e. must begin with a letter and contain only letters (lower or capital), digits and ‘_’ character.
+
+Once the solver is created, you can see its configuration to the right. In *General* section choose the geometry ``main`` and the mesh ``default`` in the appropriate drop-down lists. This way, you attach previously defined geometry and mesh or mesh generator to the solver. You can leave other parameters blank. However, we also want to specify some boundary conditions: constant temperature 300 K at the bottom of the heat sink.
+To do so, type the following XML code in the *Temperature boundary conditions*:
 
 .. code-block:: xml
 
-    <solvers>
+   <condition value="300.0" place="bottom"/>
 
-      <thermal solver="Static2D" name="therm">
-        <geometry ref="main"/>
-        <mesh ref="default"/>
-        <temperature>
-          <condition value="300.0" place="bottom"/>
-        </temperature>
-      </thermal>
+.. TODO: proper editor
 
-The tag name in the solvers section specified the type of the solver and the ``solver`` attribute its particular type. So in the example above we have created the ``thermal.Static2D`` solver and named it *therm*. This solver will be visible as a variable in the Python script and its name will be exactly the name specified here in the attribute ``name``. Hence, the value of this attribute must be a proper identifier i.e. must begin with a letter and contain only letters (lower or capital), digits and '_' character.
+With this we have set 300K at the bottom of the whole analyzed structure (i.e. at the bottom of the copper heat sink). This location is indicated by the attribute ``place``, which is assigned the value ``bottom``, meaning the bottom of the whole structure.a
 
-The content of the :xml:tag:`<thermal> [Static2D]` tag specifies the configuration of the ``thermal.Static2D`` solver. Tags :xml:tag:`<geometry>  [in Static2D thermal solver]` and :xml:tag:`<mesh> [in Static2D thermal solver]` specify the geometry and mesh or mesh generator used for computations. The values ``ref`` attributes must match the names given particular geometry and mesh in the earlier sections. The role of the :xml:tag:`<temperature> [in Static2D thermal solver]` tag is to provide constant-temperature boundary conditions. In this case, we have set 300K at the bottom of the whole analyzed structure (i.e. at the bottom of the copper heatsink). This location is indicated by the attribute ``place``, which is assigned a default value ``bottom``, meaning the bottom of the whole structure.
-
-The other solver we use is ``electrical.Shockley2D``. Its configuration is very similar to the above one, with some additional configuration:
+The other solver we use is ``electrical.Shockley2D``. You can add it similarly to the thermal solver (this time choose *Category*: ``Electrical``, *Solver*: ``Shockley2D``, and *Name*: ``electr``). However, you can also edit plain XML of this section to look like this:
 
 .. code-block:: xml
 
-      <electrical solver="Shockley2D" name="electr">
-        <geometry ref="main"/>
-        <mesh ref="default"/>
-        <junction beta="19" js="1"/>
-        <voltage>
-          <condition value="1.0">
-            <place object="top-layer" side="top"/>
-          </condition>
-          <condition value="0.0">
-            <place object="substrate" side="bottom"/>
-          </condition>
-        </voltage>
-      </electrical>
+   <thermal name="therm" solver="Static2D" lib="fem">
+     <geometry ref="main"/>
+     <mesh ref="default"/>
+     <temperature>
+       <condition value="300.0" place="bottom"/>
+     </temperature>
+   </thermal>
 
-    </solvers>
+   <electrical name="electr" solver="Shockley2D">
+     <geometry ref="main"/>
+     <mesh ref="default"/>
+     <junction beta="19" js="1"/>
+     <voltage>
+       <condition value="1.0">
+         <place object="top-layer" side="top"/>
+       </condition>
+       <condition value="0.0">
+         <place object="substrate" side="bottom"/>
+       </condition>
+     </voltage>
+   </electrical>
 
-You notice the additional tag :xml:tag:`<junction> [in Shockley2D electrical solver]` with attributes ``Shockley`` and ``js``. These are custom parameters of ``Shockley2D`` electrical solver and they set values for phenomenological junction coefficient :math:`\beta` (which is the inverse of the non-ideal thermal voltage :math:`V_t = e/(nk_BT)`) and reverse current density :math:`j_s`. Their meaning is described in section :ref:`sec-solver-electrical-shockley`. At this moment just leave their values as in the example.
+Here, you can see two solvers defined: the first one is our existing thermal solver, while the second one is the new :ref:`electrical solver based on Shockley equation <sec-solver-electrical-shockley>`. Looking at the configuration XML, notice the additional tag :xml:tag:`<junction> [in Shockley2D electrical solver]` with attributes ``beta`` and ``js``. These are custom parameters of ``Shockley2D`` electrical solver and they set values for phenomenological junction coefficient :math:`\beta` (which is the inverse of the non-ideal thermal voltage :math:`V_t = e/(nk_BT)`) and reverse current density :math:`j_s`. Their meaning is described in section :ref:`sec-solver-electrical-shockley`. At this moment just leave their values as in the example, but switch back again to the graphical editor and notice in which fields these values appeared.
 
-Next, we have two boundary conditions, specifying electric potential (voltage) at the top side of the object named ``"top-layer"`` (1V) and at the bottom side of the ``"substrate"`` (0V). Take a look at the geometry section to see which objects are these. As the definition of the location of boundary conditions is not a single word, we had to use the separate tag :xml:tag:`<place>` as a content of the ``<condition>`` tag instead of its place attribute. If you wonder why we could not simple specify 1V potential at the top of the whole structure similarly as it was done for thermal solver, notice that the top layer has width of only 1.5µm and there is 4998.5µm of air adjacent to it. You would not want to put voltage to the air.
+We have two boundary conditions, specifying electric potential (voltage) at the top side of the object named ``"top-layer"`` (1V) and at the bottom side of the ``"substrate"`` (0V). Take a look at the geometry section to see which objects are these. As the definition of the location of boundary conditions is not a single word, we had to use the separate tag :xml:tag:`<place>` as a content of the ``<condition>`` tag instead of its place attribute. If you wonder why we could not simple specify 1 V potential at the top of the whole structure similarly as it was done for thermal solver, notice that the top layer has width of only 1.5 µm and there is 4998.5 µm of air adjacent to it. You would not want to put the voltage to the air.
 
-Once the solvers are created, you have to connect them. In PLaSK data between solvers is exchanged using a system of providers and receivers. For example thermal solver have temperature provider called ``outTemperature`` and any other solver has receiver ``inTemperature``. By connecting them in the :xml:tag:`<connects>` section of the XPL file, we can ensure that each time the other solver (in our case this will be ``electrical.Shockley2D`` that we named ``electr``) requires temperature distribution, e.g. in order to consider the temperature dependence of the material electrical conductivity, its recently computed value will be provided automatically. On the other hand, in order to perform the computations, the thermal solver needs distribution of Joule's heat density, which can be similarly provided by the electrical solver. Hence, we need to define the :xml:tag:`<connects>` section that follow solvers definition:
+Once the solvers are created, you have to connect them. In PLaSK data between solvers is exchanged using a system of providers and receivers. For example thermal solver have temperature provider called ``outTemperature`` and any other solver has receiver ``inTemperature``. By connecting them in the *Connects* tab, we can ensure that each time the other solver (in our case this will be ``electrical.Shockley2D`` that we named ``electr``) requires temperature distribution, e.g. in order to consider the temperature dependence of the material electrical conductivity, its recently computed value will be provided automatically. On the other hand, in order to perform the computations, the thermal solver needs distribution of Joule's heat density, which can be similarly provided by the electrical solver.
+
+To define the connections, switch to the *Connects* tab. There is a simple table there, which contains a connected provider/receiver pair in each row. Instead filling the table, switch to the XML editing (``F4``) and type:
 
 .. code-block:: xml
 
-    <connects>
-      <connect in="electr.inTemperature" out="therm.outTemperature"/>
-      <connect in="therm.inHeat" out="electr.outHeat"/>
-    </connects>
+   <connect in="electr.inTemperature" out="therm.outTemperature"/>
+   <connect in="therm.inHeat" out="electr.outHeat"/>
 
-Receiver specification is always *solver_name.inReceivedQuantity*, where *solver_name* is the name we have given the solver in the :xml:tag:`<solvers>` section. Similarly providers are named `solver_name.outProvidedQuantity`. Receivers and providers always have names prefixed in and out in order to easily distinguish them. The complete list of the providers and receives available in each solver is presented in chapter :ref:`sec-Solvers`.
+After switching back to the graphical editor, you can see both connections in the table form. Receiver specification is always *solver_name.inReceivedQuantity*, where *solver_name* is the name we have given the solver in the :xml:tag:`<solvers>` section. Similarly providers are named `solver_name.outProvidedQuantity`. Receivers and providers always have names prefixed in and out in order to easily distinguish them. The complete list of the providers and receives available in each solver is presented in chapter :ref:`sec-Solvers`.
 
 After you have specified the above connections, bi-directional data exchange between the solvers will be done automatically and you need not worry about it during your calculations. If you want, you may connect a single provider with multiple receivers, however, not the opposite. Also, PLaSK will report an error if you try to connect providers and receivers of the incompatible type (e.g. ``inTemperature`` and ``outHeatDensity``).
 
 
-.. topic:: Listing of :file:`tutorial1.xpl` with empty script section.
-
-    .. _lis-Listing-of-tutorial1.xpl:
-    .. code-block:: xml
-
-        <plask>
-
-        <geometry>
-          <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-        <stack>
-          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20"
-                 name="top-layer"/>
-          <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
-          <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="0.007" material="In(0.2)GaAs"
-                 role="active" name="junction"/>
-          <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-          <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
-          <zero/>
-          <block dx="1000" dy="1000" material="Cu"/>
-        </stack>
-          </cartesian2d>
-        </geometry>
-
-        <grids>
-          <generator type="rectilinear2d" method="divide" name="default">
-        <postdiv by="2"/>
-          </generator>
-        </grids>
-
-        <solvers>
-          <thermal solver="Static2D" name="therm">
-        <geometry ref="main"/>
-        <mesh ref="default"/>
-        <temperature>
-          <condition value="300.0" place="bottom"/>
-        </temperature>
-          </thermal>
-          <electrical solver="Shockley2D" name="electr">
-        <geometry ref="main"/>
-        <mesh ref="default"/>
-        <junction beta="19" js="1"/>
-        <voltage>
-          <condition value="1.0">
-            <place object="top-layer" side="top"/>
-          </condition>
-          <condition value="0.0">
-            <place object="substrate" side="bottom"/>
-          </condition>
-        </voltage>
-          </electrical>
-        </solvers>
-
-        <connects>
-          <connect in="electr.inTemperature" out="therm.outTemperature"/>
-          <connect in="therm.inHeat" out="electr.outHeat"/>
-        </connects>
-
-        <script><![CDATA[
-        <!-- Here will go the script presented in the rest of this tutorial -->
-        ]]></script>
-
-        </plask>
-
 Running computations
 ^^^^^^^^^^^^^^^^^^^^
 
-At this point, you have prepared all the data needed to perform thermo-electrical analysis of the sample device. :ref:`Listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>` shows the review of what we have created so far. The only missing part is the :xml:tag:`<script>` section, which should be the last section of the file. In this section you define operations you want to perform: computations and presentation of the results. It is a script written in very easy-to-learn programming language Python. If you want to be able to write advanced programs for analysis of your structures (e. g. automatic optimization) you can find useful tutorials in the internet. A good starting point would be: http://docs.python.org/2/tutorial/, which covers Python basics.
+At this point, you have prepared all the data needed to perform thermo-electrical analysis of the sample device. The only missing part is the script section, where you define all the operations you want to perform: computations and presentation of the results. It is a script written in very easy-to-learn programming language Python. If you want to be able to write advanced programs for analysis of your structures (e. g. automatic optimization) you can find useful tutorials in the Internet. A good starting point would be: http://docs.python.org/2/tutorial/, which covers Python basics.
 
 Other useful resources are:
  - http://www.scipy.org/Tentative_NumPy_Tutorial
@@ -242,11 +171,7 @@ They give simple introduction to performing advanced scientific computations in 
 
 However, in order to just use PLaSK and perform basic computations, you do not need any knowledge of Python other than presented in this manual. Even so, the Python syntax is so simple and readable that you should have no problems reading and understanding moderately advanced scripts and writing simple ones on your own.
 
-As you have noticed, there is already a :xml:tag:`<script>` section in :ref:`listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>`. In order to allow using ``<`` symbol in the script (which would normally be interpreted as a start of the XML tag by the parser), we additionally enclose the script between the ``<![CDATA[`` ``]]>`` markings. Everything inside it is not interpreted as XML.
-
-As all the Python code presented from now on in this tutorial must be put inside this section, we will skip the XML elements from the examples below.
-
-In our tutorial we want to self-consistently compute temperature and electric current distribution. Having all the solvers set in the XPL file, we just need to launch calculations::
+In our tutorial we want to self-consistently compute temperature and electric current distribution. Having all the solvers set in the XPL file, we just need to launch calculations. To do so, switch to the *Script* tab and type::
 
     verr = electr.compute(1)
     terr = therm.compute(1)
@@ -271,21 +196,9 @@ This time we allow to run maximum 6 loop iterations of the electrical solver int
 
 ``therm.maxerr`` and ``electr.maxerr`` are default values of the convergence limits for the solvers (they can be adjuster either in the :xml:tag:`<solvers>` section or in the Python script). Hence, we repeat the loop until any of the returned errors is larger than the appropriate limit.
 
-Having whole written the input file (including script) so far I suggest you to save it and run the computations with PLaSK in a way described in section :ref:`sec-Running-plask` i.e.
+Having whole written the input file (including script) so far I suggest you to save it and run the computations with PLaSK. It can be done either in a way described in section :ref:`sec-Running-plask` or directly from GUI. Just press ``F5`` and choose *Local Process* from the list in the top of the Launch dialog window. In the bottom of the dialog you will see what type of log messages should be printed. Make sure all options but ‘Debug’ are selected. Then click Ok button.
 
-- In Linux shell or MACOS terminal:
-
-  .. code-block:: bash
-
-     joe@cray:~/tutorials$ plask tutorial1.xpl
-
-- In Windows from the Command Prompt (assuming you have installed PLaSK in ``C:\Program Files\PLaSK\``):
-
-  .. code-block:: bat
-
-     C:\Users\joe\tutorials> "C:\Program Files\PLaSK\bin\plask.exe" tutorial1.xpl
-
-You should see a lot of logs, but no results. This is not strange as we did not give any instructions to output the results. However, take a look at the end of the logs:
+You should see a new panel in the bottom with a lot of logs, but no results. This is not strange as we did not give any instructions to output the results. However, take a look at the end of the logs:
 
 .. code-block:: none
 
@@ -366,7 +279,7 @@ We can plot it to the new figure using :func:`plot_profile <plask.pylab.plot_pro
 
 Note that we had to specify the vector component to plot, using the ``comp`` argument. Also we negate the current, as normally it flows downwards, which would result in the upside-down plot. It is important to note that :func:`plot_profile <plask.pylab.plot_profile>` function works only if the field has been obtained on a rectangular mesh with exactly one axis having different size than 1 (otherwise it would be unable to detect along which axis to plot the profile). It automatically puts this axis name as the horizontal label. So we need only to specify the ``ylabel``. (you can use basic LaTeX for advanced text formatting).
 
-Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listing <lis-Listing-of-tutorial1-script>`) and run it wih PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
+Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listing <lis-Listing-of-tutorial1-script>`) and run it with PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
 
 .. topic:: Content of the script section from the file :file:`tutorial1.xpl`.
 
@@ -408,9 +321,16 @@ You can download the complete file from this tutorial: :download:`tutorial1.xpl 
 .. rubric:: Footnotes
 .. [#run-py-file] Actually it is possible to run the computations without creating :term:`XPL` file at all, as everything can be defined using Python, however, this option will be presented later.
 .. [#rect-mesh-skip-empty] Actually this is true only for rectangular meshes. There are special mesh types in PLaSK, which can skip empty areas from computations.
-.. [#blank-lines-in-XML] You can naturally put some blank lines and comments between each section, to make your file easier to read.
 .. [#GEO.name] For your convenience it can be also accessed as ``GEO.main``.
 .. [#plot_field-limit] Actually ``plot_field`` sets the axes limit to the area covered by the mesh on which the field was computed. However, in this case it just covers the whole structure.
 .. [#show] ``show()`` will probably not work if you run PLaSK remotely or using any batch system. In such case, you should replace it with ``savefig("filename")`` in order to save the figure directly to disk. However, you should also adjust the plot ranges in advance: ``xlim(0, 150); ylim(0, 305)``
 .. [#mesh-is-module] Specifically, :mod:`mesh` is a Python module and :class:`~plask.mesh.Rectangular2D` a class defined inside of this module.
 
+
+.. |list-add| image:: list-add.png
+   :align: middle
+   :alt: +
+
+.. |applications-graphics| image:: applications-graphics.png
+   :align: middle
+   :alt: plot

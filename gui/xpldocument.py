@@ -115,9 +115,11 @@ class XPLDocument(object):
         for c in self.controllers:
             if sections is not None and c.model.name not in sections: continue
             if update_lines: c.update_line_numbers(current_line_in_file)
-            section_string = etree.tostring(c.model.get_file_xml_element(), encoding="UTF-8", pretty_print=True)
-            data += section_string + '\n'
-            current_line_in_file += section_string.count('\n') + 1
+            element = c.model.get_file_xml_element()
+            if len(element) or element.text:
+                section_string = etree.tostring(element, encoding="UTF-8", pretty_print=True)
+                data += section_string + '\n'
+                current_line_in_file += section_string.count('\n') + 1
         data += '</plask>'
         return data
 
