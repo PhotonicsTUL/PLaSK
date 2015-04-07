@@ -166,9 +166,8 @@ Now we can perform the computations. We have already set the reference wavelengt
    mode_wavelength = efm.outWavelength(mode_number)
    mode_loss = efm.outLoss(mode_number)
    print_log(LOG_INFO,
-             "Found resonant wavelength @ %s nm, with modal loss %s /cm" %
-             (mode_wavelength, mode_loss)
-            )
+       "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+       .format(threshold_gain, mode_wavelength))
 
 Having written the script, we may run it by pressing ``F5`` in the GUI. The program will compute the resonant wavelength of the fundamental mode of the VCSEL, together with the losses for that mode, and print them to the screen. The modal losses will have a positive value, which means that the mode is still below threshold. We will see below, how to find the proper threshold gain value. By now, you may try to extend this script with the plot of the light intensity, which can be obtained using the ``efm.outLightMagnitude`` provider. Consider this as a homework exercise, keeping in mind, that the first argument for this provider has to be the solution number (``mode_number`` in our case) and the second one, the target mesh (see :ref:`the first tutorial <sec-Thermo-electrical-modeling-of-simple-ee-laser>` for details).
 
@@ -192,7 +191,7 @@ Now we can provide ``loss_on_gain`` to the ``fsolve`` function, together with th
 
    efm.lam0 = 980.
 
-   threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
+   threshold_gain = scipy.optimize.fs   olve(loss_on_gain, 2000., xtol=0.1)[0]
 
 The ``xtol`` argument allows us to set the desired solution's tolerance.
 
@@ -202,9 +201,8 @@ When the ``fsolve`` function completes it returns a Python list with the found s
    mode_number = efm.find_mode(980.5)
    mode_wavelength = efm.outWavelength(mode_number)
    print_log(LOG_INFO,
-             "Threshold material gain is %s /cm with resonant wavelength %s nm" %
-             (threshold_gain, mode_wavelength)
-            )
+       "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+       .format(threshold_gain, mode_wavelength))
 
 The complete Python script (with some clean-ups) for this tutorial is presented in the :ref:`listin <lis-listing-of-tutorial2>`. Feel free to expand it with the presentation of the light intensity for the found mode at the threshold.
 
@@ -229,8 +227,8 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
       mode_number = efm.find_mode(980.)
       mode_wavelength = efm.outWavelength(mode_number)
       print_log(LOG_INFO,
-                "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
-                .format(threshold_gain, mode_wavelength))
+          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+          .format(threshold_gain, mode_wavelength))
 
 .. rubric:: Example files
 
