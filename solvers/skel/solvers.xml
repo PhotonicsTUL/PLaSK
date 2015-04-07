@@ -15,7 +15,7 @@
     <mesh type="YourMesh" optional="yes|no"/>
 
     <!-- Specify each configuration tag here -->
-    <tag name="configuration-tag" label="Configuration tag">
+    <tag name="configuration-tag" label="Configuration Tag">
       <!-- Description of your tag that will show up in the user manual -->
       Configuration tag of your solver.
       <!-- Configuration attribute. Label will be displayed in GUI (make it short)
@@ -31,16 +31,16 @@
       </attr>
     </tag>
 
-    <tag name="another-configuration-tag" label="Different Configuration tag">
+    <tag name="another-configuration-tag" label="Different Configuration Tag">
       <attr name="attribute" label="Some attribute" type="attribute type" unit="unit">Pull all the configuration attributes like this.</attr>
     </tag>
 
     <!-- Specify boundary conditions read by your solver here. -->
-    <bcond name="boundary_condtion" label="Boundary condition"/>
+    <bcond name="boundary_condtion" label="Boundary Condition"/>
 
     <!-- Some documentation of boundary conditions is generated automatically.
          If it is not sufficient add additional description inside this tag. -->
-    <bcond name="other_boundary_condtion" label="Another boundary condition">
+    <bcond name="other_boundary_condtion" label="Another Boundary Condition">
       Additional description of boundary condition in help.
     </bcond>
 

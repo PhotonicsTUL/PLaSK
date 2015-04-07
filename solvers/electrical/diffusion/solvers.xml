@@ -8,7 +8,7 @@
 
     <mesh type="Regular"/>
 
-    <tag label="Solver configuration" name="config">
+    <tag label="Solver Configuration" name="config">
       Solver configuration.
       <attr label="FEM order" name="fem-method" type="choice">
         Order of the finite-element method.
@@ -43,7 +43,7 @@
 
     <mesh type="Regular"/>
 
-    <tag label="Solver configuration" name="config">
+    <tag label="Solver Configuration" name="config">
       Solver configuration.
       <attr label="FEM order" name="fem-method" type="choice">
         Order of the finite-element method.

@@ -11,7 +11,7 @@
 
     <mesh type="Ordered" optional="yes"/>
 
-    <tag name="config" label="Gain parameters">
+    <tag name="config" label="Gain Parameters">
       Some important gain parameters.
       <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
         Average carriers lifetime. This parameter is used for gain spectrum broadening.
@@ -60,7 +60,7 @@
 
     <mesh type="Ordered" optional="yes"/>
 
-    <tag name="config" label="Gain parameters">
+    <tag name="config" label="Gain Parameters">
       Some important gain parameters.
       <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
         Average carriers lifetime. This parameter is used for gain spectrum broadening.

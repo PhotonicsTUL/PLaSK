@@ -19,6 +19,7 @@ from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...model.geometry.reader import GNAligner
 
+
 class GNGeometryController(GNObjectController):
 
     def construct_border_controllers(self, row_name=None):
@@ -32,7 +33,7 @@ class GNGeometryController(GNObjectController):
             return res, group
 
     def fill_form(self):
-        self.construct_group('Border settings')
+        self.construct_group('Border Settings')
         self.borders = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
                              for (lo, hi) in self.node.get_alternative_direction_names())
         super(GNGeometryController, self).fill_form()
@@ -54,7 +55,7 @@ class GNGeometryController(GNObjectController):
 class GNCartesian2DGeometryController(GNGeometryController):
 
     def fill_form(self):
-        self.construct_group('Implicit extrusion settings')
+        self.construct_group('Implicit Extrusion Settings')
         self.length = self.construct_line_edit('Length:')
         self.length.setToolTip(u'&lt;cartesian2d <b>length</b>="" ...&gt;<br/>'
             u'Longitudinal dimension of the geometry (float [µm]). Default value is: +infty.')

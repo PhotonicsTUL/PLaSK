@@ -19,7 +19,7 @@ from ...utils.str import empty_to_none, none_to_empty
 class GNClipController(GNObjectController):
 
     def fill_form(self):
-        self.construct_group('Clipping box')
+        self.construct_group('Clipping Box')
         sign = '-'
         for b in self.node.bound_names():
             setattr(self, b, self.construct_line_edit(b.title()+':', unit=u'µm'))
@@ -54,7 +54,7 @@ class GNFlipMirrorController(GNObjectController):
 class GNFlipController(GNFlipMirrorController):
 
     def fill_form(self):
-        self.construct_group('Flip-specific settings')
+        self.construct_group('Flip Settings')
         self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
         self.axis.setToolTip('&lt;flip <b>axis</b>="" ...&gt;<br/>'
                     'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
@@ -64,7 +64,7 @@ class GNFlipController(GNFlipMirrorController):
 class GNMirrorController(GNFlipMirrorController):
 
     def fill_form(self):
-        self.construct_group('Mirror-specific settings')
+        self.construct_group('Mirror Settings')
         self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim())
         self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
                              'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
@@ -74,7 +74,7 @@ class GNMirrorController(GNFlipMirrorController):
 class GNExtrusionController(GNObjectController):
 
     def fill_form(self):
-        self.construct_group('Extrusion-specific settings')
+        self.construct_group('Extrusion Settings')
         self.length = self.construct_line_edit('Length:', unit=u'µm')
         self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
                                u'Length of the extrusion. (float [µm], required)')
@@ -92,7 +92,7 @@ class GNExtrusionController(GNObjectController):
 class GNRevolutionController(GNObjectController):
 
     def fill_form(self):
-        self.construct_group('Revolution-specific settings')
+        self.construct_group('Revolution Settings')
         self.auto_clip = self.construct_combo_box('Auto clip:', items=['', 'yes', 'no'])
         self.auto_clip.setToolTip(u'&lt;revolution <b>auto-clip</b>="" ...&gt;<br/>'
                                 u'The value of this attribute can be either true of false.'

@@ -8,7 +8,7 @@
 
     <mesh type="Rectangular2D"/>
 
-    <tag name="loop" label="Time-evolution loop">
+    <tag name="loop" label="Time-Evolution Loop">
       Configuration of the time-evolution loop.
       <attr name="inittemp" label="Initial temperature" type="float" unit="K">Initial temperature used for the first computation.</attr>
       <attr name="timestep" label="Time step" type="float" unit="ns">Single-iteration time step.</attr>
@@ -19,7 +19,7 @@
       <attr name="logfreq" label="Logging frequency" type="int">Number of iterations until the computations progress is reported.</attr>
     </tag>
 
-    <tag name="matrix" label="Matrix solver">
+    <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
       <attr name="methodparam" label="Method parameter" type="float">
         Mid-step parameter for implicit finite-difference time discretization. Defaults to ½, which results in the Crank-Nicholson method.
@@ -51,7 +51,7 @@
 
     <mesh type="Rectangular3D"/>
 
-    <tag name="loop" label="Time-evolution loop">
+    <tag name="loop" label="Time-Evolution Loop">
       Configuration of the time-evolution loop.
       <attr name="inittemp" label="Initial temperature" type="float" unit="K">Initial temperature used for the first computation.</attr>
       <attr name="timestep" label="Time step" type="float" unit="ns">Single-iteration time step.</attr>
@@ -62,7 +62,7 @@
       <attr name="logfreq" label="Logging frequency" type="int">Number of iterations until the computations progress is reported.</attr>
     </tag>
 
-    <tag name="matrix" label="Matrix solver">
+    <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
       <attr name="methodparam" label="Method parameter" type="float">
         Mid-step parameter for implicit finite-difference time discretization. Defaults to ½, which results in the Crank-Nicholson method.

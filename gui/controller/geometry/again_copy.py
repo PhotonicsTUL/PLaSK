@@ -20,7 +20,7 @@ class GNAgainController(GNodeController):
 
     def fill_form(self):
         super(GNAgainController, self).fill_form()
-        self.construct_group('Again settings')
+        self.construct_group('Again Settings')
         self.ref = self.construct_names_before_self_combo_box('Referenced object:')
         self.ref.setToolTip('&lt;again <b>ref</b>=""/&gt;<br/>'
                             'Name of the referenced object.')
@@ -42,7 +42,7 @@ class GNCopyChildController(GNodeController):
 
     def fill_form(self):
         super(GNCopyChildController, self).fill_form()
-        self.construct_group('Operation settings')
+        self.construct_group('Operation Settings')
         self.object = self.construct_names_before_self_combo_box('Object:')
 
     def save_data_in_model(self):
@@ -106,7 +106,7 @@ class GNCToBlockController(GNCopyChildController):
 class GNCopyController(GNObjectController):
 
     def fill_form(self):
-        self.construct_group('Copy-specific settings')
+        self.construct_group('Copy Settings')
         self.source = self.construct_names_before_self_combo_box('From:')
         self.source.setToolTip('&lt;copy <b>from</b>="" ...&gt;<br/>'
                                 'Name of the source two or three dimensional object to make modified copy of.'

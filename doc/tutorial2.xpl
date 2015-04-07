@@ -11,42 +11,41 @@
 </materials>
 
 <geometry>
-  <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
+  <cylindrical2d name="main" axes="r,z" outer="extend" bottom="GaAs">
     <stack>
       <stack name="top-DBR" repeat="24">
-        <block dr="10" dz="0.07" material="GaAs"/>
-        <block dr="10" dz="0.07945" material="Al(0.73)GaAs"/>
+        <rectangle material="GaAs" dr="10" dz="0.0700"/>
+        <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0795"/>
       </stack>
-      <block dr="10" dz="0.07003" material="GaAs"/>
-      <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
+      <rectangle material="GaAs" dr="10" dz="0.0700"/>
+      <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0318"/>
       <shelf>
-        <block dr="4" dz="0.01603" material="AlAs"/>
-        <block dr="6" dz="0.01603" material="AlOx"/>
+        <rectangle material="AlAs" dr="4" dz="0.0160"/>
+        <rectangle material="AlOx" dr="6" dz="0.0160"/>
       </shelf>
-      <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
-      <block dr="10" dz="0.13756" material="GaAs"/>
+      <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0318"/>
+      <rectangle material="GaAs" dr="10" dz="0.1376"/>
       <shelf>
-        <block dr="4" dz="0.005" role="gain" material="active" name="gain-region"/>
-        <block dr="6" dz="0.005" material="inactive"/>
+        <rectangle name="gain-region" role="gain" material="active" dr="4" dz="0.0050"/>
+        <rectangle material="inactive" dr="6" dz="0.0050"/>
       </shelf>
-      <block dr="10" dz="0.13756" material="GaAs"/>
-      <stack name="bottom-DBR" repeat="29">
-        <block dr="10" dz="0.07945" material="Al(0.73)GaAs"/>
-        <block dr="10" dz="0.07003" material="GaAs"/>
+      <rectangle material="GaAs" dr="10" dz="0.1376"/>
+      <stack name="bottom-DBR" repeat="30">
+        <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0795"/>
+        <rectangle material="GaAs" dr="10" dz="0.0700"/>
       </stack>
-      <block dr="10" dz="0.07945" material="Al(0.73)GaAs"/>
     </stack>
   </cylindrical2d>
 </geometry>
 
 <solvers>
-  <optical solver="EffectiveFrequencyCyl" name="efm">
+  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="main"/>
     <mode lam0="980."/>
   </optical>
 </solvers>
 
-<script>
+<script><![CDATA[
 import scipy.optimize
 
 profile = plask.StepProfile(GEO.main, default=0.)
@@ -67,6 +66,6 @@ mode_wavelength = efm.outWavelength(mode_number)
 print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
           .format(threshold_gain, mode_wavelength))
-</script>
+]]></script>
 
 </plask>

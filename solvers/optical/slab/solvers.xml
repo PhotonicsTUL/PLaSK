@@ -6,7 +6,7 @@
 
     <geometry type="Cartesian2D"/>
 
-    <tag name="expansion" label="Details on Fourier expansion">
+    <tag name="expansion" label="Details on Fourier Expansion">
       Details on Fourier expansion used in computations
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
@@ -27,14 +27,14 @@
       <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical PMLs">
+    <tag name="vpml" label="Vertical Pmls">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
-    <tag name="transfer" label="Transfer algorithm settings">
+    <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
@@ -44,7 +44,7 @@
       </attr>
     </tag>
 
-    <tag name="pml" label="Horizontal PMLs">
+    <tag name="pml" label="Horizontal Pmls">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
@@ -52,7 +52,7 @@
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
-    <tag name="mode" label="Mode properties">
+    <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
       <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
@@ -69,7 +69,7 @@
       </attr>
     </tag>
 
-    <tag name="root" label="Parameters of the root-finding algorithm">
+    <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm (Muller's method or Broyden's method).
@@ -87,7 +87,7 @@
       <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
     </tag>
 
-    <tag name="mirrors" label="Mirror losses">
+    <tag name="mirrors" label="Mirror Losses">
       <attr name="R1" label="Front reflectivity" type="float">Reflectivity of the front mirror.</attr>
       <attr name="R2" label="Back reflectivity" type="float">Reflectivity of the back mirror.</attr>
     </tag>
@@ -106,7 +106,7 @@
 
     <geometry type="Cartesian3D"/>
 
-    <tag name="expansion" label="Details on Fourier expansion">
+    <tag name="expansion" label="Details on Fourier Expansion">
       <attr name="size" label="Expansion sizes" type="int">
         Expansion sizes along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal expansion size’ (&lt;tt&gt;size-long&lt;/tt&gt;) and ‘Transverse expansion size’ (&lt;tt&gt;size-tran&lt;/tt&gt;)
@@ -159,14 +159,14 @@
       <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical PMLs">
+    <tag name="vpml" label="Vertical Pmls">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
-    <tag name="transfer" label="Transfer algorithm settings">
+    <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
@@ -176,7 +176,7 @@
       </attr>
     </tag>
 
-    <tag name="pmls" label="Longitudinal and transverse PMLs">
+    <tag name="pmls" label="Longitudinal and Transverse Pmls">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
@@ -198,7 +198,7 @@
       </tag>
     </tag>
 
-    <tag name="mode" label="Mode properties">
+    <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
       <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
@@ -223,7 +223,7 @@
       </attr>
     </tag>
 
-    <tag name="root" label="Parameters of the root-finding algorithm">
+    <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm (Muller's method or Broyden's method).

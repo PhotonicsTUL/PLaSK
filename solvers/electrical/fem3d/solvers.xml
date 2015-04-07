@@ -8,12 +8,12 @@
 
     <mesh type="Rectangular3D"/>
 
-    <tag name="loop" label="Configuration of the self-consistent loop">
+    <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>
     </tag>
 
-    <tag name="matrix" label="Matrix solver">
+    <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
       <attr name="algorithm" label="Solution algorithm" type="choice">
         Algorithm used for solving set of linear positive-definite equations.
@@ -26,7 +26,7 @@
       <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
     </tag>
 
-    <tag name="junction" label="Configuration of the effective model of p-n junction">
+    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta" label="Junction coefficient" type="float" unit="1/V">Junction coefficient. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js" label="Reverse bias current density" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;]&lt;br/&gt;">Reverse bias current density.</attr>
@@ -39,13 +39,13 @@
       <attr name="wavelength" label="Emitted wavelength" type="float" unit="nm">Emitted wavelength if heat generation method is set to ‘&lt;i&gt;wavelength&lt;/i&gt;’.</attr>
     </tag>
 
-    <tag name="contacts" label="Properties of the contacts">
+    <tag name="contacts" label="Properties of the Contacts">
       Properties of the contact layers.
       <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>
     </tag>
 
-    <bcond name="voltage" label="Electric potential"/>
+    <bcond name="voltage" label="Electric Potential"/>
 
     <flow>
       <receiver name="inTemperature"/>

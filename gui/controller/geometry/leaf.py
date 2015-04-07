@@ -43,7 +43,7 @@ class GNLeafController(GNObjectController):
 
         super(GNLeafController, self).fill_form()
 
-        self.construct_group('Meshing settings')
+        self.construct_group('Meshing Settings')
         self.step_num = self.construct_line_edit('Maximum steps number:')
         self.step_num.setToolTip(u'&lt;{} <b>steps-num</b>="" steps-dist="" ...&gt;<br/>'
                                 u'Maximum number of the mesh steps in each direction the object is divided into '
@@ -82,7 +82,7 @@ class GNLeafController(GNObjectController):
 class GNBlockController(GNLeafController):
 
     def fill_form(self):
-        self.construct_group('Block-specific settings')
+        self.construct_group('{} Settings'.format('Rectangle' if self.node.dim == 2 else 'Cuboid'))
         self.size = self.construct_point_controllers(row_name='Size:')
         super(GNBlockController, self).fill_form()
 
@@ -122,7 +122,7 @@ class GNTriangleController(GNLeafController):
 class GNCircleController(GNLeafController):
 
     def fill_form(self):
-        self.construct_group('{} size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
+        self.construct_group('{} Size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
         self.radius = self.construct_line_edit('Radius:', unit=u'µm')
         self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
                                u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
@@ -137,11 +137,10 @@ class GNCircleController(GNLeafController):
         self.radius.setText(none_to_empty(self.node.radius))
 
 
-
 class GNCylinderController(GNLeafController):
 
     def fill_form(self):
-        self.construct_group('Cylinder size:')
+        self.construct_group('Cylinder Size')
         self.radius = self.construct_line_edit('Radius:', unit=u'µm')
         self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
                                u'Radius of the cylinder base. (float [µm], required)')

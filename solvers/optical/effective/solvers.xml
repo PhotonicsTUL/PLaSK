@@ -8,7 +8,7 @@
 
     <mesh type="Rectangular2D" optional="yes"/>
 
-    <tag name="mode" label="Mode properties">
+    <tag name="mode" label="Mode Properties">
       <attr name="polarization" label="Polarization" type="choice">
         Longitudnally-propagating mode polarization (TE or TM).
         <choice>TE</choice>
@@ -18,7 +18,7 @@
       <attr name="vat" label="Vertical solution coord" type="float" unit="nm">Horizontal position of at which the vertical part of the field is calculated.</attr>
     </tag>
 
-    <tag name="root" label="Parameters of the global root-finding algorithm">
+    <tag name="root" label="Parameters of the Global Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.
@@ -35,7 +35,7 @@
       <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
     </tag>
 
-    <tag name="stripe-root" label="Parameters of the vertical root-finding algorithm">
+    <tag name="stripe-root" label="Parameters of the Vertical Root-Finding Algorithm">
       Parameters of root-finding algorithm for one stripe.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.
@@ -52,7 +52,7 @@
       <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
     </tag>
 
-    <tag name="mirrors" label="Mirror losses">
+    <tag name="mirrors" label="Mirror Losses">
       <attr name="R1" label="Front reflectivity" type="float">Reflectivity of the front mirror.</attr>
       <attr name="R2" label="Back reflectivity" type="float">Reflectivity of the back mirror.</attr>
     </tag>A
@@ -75,7 +75,7 @@
 
     <mesh type="Rectangular2D" optional="yes"/>
 
-    <tag name="mode" label="Mode properties">
+    <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="lam0" label="Approximate wavelength" type="float" unit="nm">Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength</attr>
       <attr name="emission" label="Direction of emission" type="choice">
@@ -87,7 +87,7 @@
       <attr name="vat" label="Vertical solution coord" type="float" unit="µm">Horizontal position of at which the vertical part of the field is calculated.</attr>
     </tag>
 
-    <tag name="root" label="Parameters of the global root-finding algorithm">
+    <tag name="root" label="Parameters of the Global Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.
@@ -104,7 +104,7 @@
       <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
     </tag>
 
-    <tag name="stripe-root" label="Parameters of the vertical root-finding algorithm">
+    <tag name="stripe-root" label="Parameters of the Vertical Root-Finding Algorithm">
       Parameters of root-finding algorithm for one stripe.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.

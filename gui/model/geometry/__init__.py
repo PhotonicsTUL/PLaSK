@@ -107,13 +107,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     class InsertChildCommand(QtGui.QUndoCommand):
 
-        def __init__(self, model, parent_node, row, child_node, marge_with_next_remove=False, QUndoCommand_parent=None):
+        def __init__(self, model, parent_node, row, child_node, merge_with_next_remove=False, QUndoCommand_parent=None):
             self.model = model
             self.parent_node = parent_node
             if row is None: row = parent_node.new_child_pos()
             self.row = row
             self.child_node = child_node
-            self.marge_with_next_remove = marge_with_next_remove
+            self.merge_with_next_remove = merge_with_next_remove
             self.next_remove = None
             super(GeometryModel.InsertChildCommand, self).__init__('append {}'.format(child_node.tag_name(full_name=False)), QUndoCommand_parent)
 
@@ -143,14 +143,14 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.model.fire_changed()
 
         def mergeWith(self, command):
-            if self.marge_with_next_remove:
+            if self.merge_with_next_remove:
                 self.next_remove = command
                 return True
             else:
                 return False
 
         def id(self):
-            if self.marge_with_next_remove and self.next_remove is None:
+            if self.merge_with_next_remove and self.next_remove is None:
                 return GeometryModel.REMOVE_COMMAND_ID
             return super(GeometryModel.InsertChildCommand, self).id()
 
@@ -342,8 +342,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def mimeData(self, indexes):
         return PyObjMime(indexes[0].internalPointer())
 
-
-
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
             return False    # qt should call this but some version of qt have a bug
@@ -353,12 +351,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             parent = self.node_for_index(parentIndex)
             if moved_obj.parent != parent:  # without copy, the parent of source is incorrect after change and then remove crash
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
-            self.insert_node(parent, moved_obj, None if row == -1 else row, marge_with_next_remove = True)
-            return True #removeRows will be called and remove current moved_obj
+            self.insert_node(parent, moved_obj, None if row == -1 else row, merge_with_next_remove=True)
+            return True # removeRows will be called and remove current moved_obj
         return False
 
     def canDropMimeData(self, mime_data, action, row, column, parentIndex): #TODO this is optional but why qt doesn't call this??
-    #     #return super(GeometryModel, self).canDropMimeData(mime_data, action, row, column, parentIndex)
+        #return super(GeometryModel, self).canDropMimeData(mime_data, action, row, column, parentIndex)
         if action == QtCore.Qt.MoveAction:
             moved_obj = mime_data.itemInstance()
             parent = parentIndex.internalPointer()
@@ -381,9 +379,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), 0, node)
 
-    def insert_node(self, parent_node, child_node, pos = None, marge_with_next_remove = False):
+    def insert_node(self, parent_node, child_node, pos=None, merge_with_next_remove=False):
         self.undo_stack.push(
-            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node, marge_with_next_remove=marge_with_next_remove)
+            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node, merge_with_next_remove=merge_with_next_remove)
         )
 
     def append_geometry(self, type_name):

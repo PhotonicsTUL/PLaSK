@@ -29,7 +29,7 @@ class GNObjectController(GNodeController):
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def fill_form(self):
-        self.construct_group('Basic settings')
+        self.construct_group('Basic Settings')
         self.name = self.construct_line_edit('Name:')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'

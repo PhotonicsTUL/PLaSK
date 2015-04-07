@@ -44,7 +44,7 @@ class GNGapController(GNodeController):
 class GNShelfController(GNObjectController):
     
     def fill_form(self):
-        self.construct_group('Shelf-specific settings')
+        self.construct_group('Shelf Settings')
         self.repeat = self.construct_line_edit('Repeat:')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
                                'Number of repetitive occurrences of stack content.'
@@ -95,7 +95,7 @@ def aligners_to_controllers(aligners_list, position_controllers):
 class GNContainerBaseController(GNObjectController):
 
     def fill_form(self):
-        self.pos_layout = self.construct_group('Default children positions')
+        self.pos_layout = self.construct_group('Default Items Positions')
         self.positions = self.construct_align_controllers()
         super(GNContainerBaseController, self).fill_form()
 
@@ -111,7 +111,7 @@ class GNContainerBaseController(GNObjectController):
 class GNStackController(GNObjectController):
 
     def fill_form(self):
-        self.construct_group('Stack-specific settings')
+        self.construct_group('Stack Settings')
         self.repeat = self.construct_line_edit('Repeat:')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
                                 'Number of repetitive occurrences of stack content.'
@@ -121,7 +121,7 @@ class GNStackController(GNObjectController):
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
-        self.pos_layout = self.construct_group('Default children positions')
+        self.pos_layout = self.construct_group('Default Items Positions')
         self.positions = self.construct_align_controllers()
 
         super(GNStackController, self).fill_form()
@@ -142,7 +142,7 @@ class GNStackController(GNObjectController):
 class GNContainerChildBaseController(GNChildController):
 
     def fill_form(self):
-        self.construct_group('Position in parent container')
+        self.construct_group('Position in Parent Container')
         self.positions = self.construct_align_controllers()
         self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()))
         self.path.setToolTip('Name of a path that can be later on used to distinguish '

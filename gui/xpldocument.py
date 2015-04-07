@@ -120,7 +120,7 @@ class XPLDocument(object):
                 section_string = etree.tostring(element, encoding="UTF-8", pretty_print=True)
                 data += section_string + '\n'
                 current_line_in_file += section_string.count('\n') + 1
-        data += '</plask>'
+        data += '</plask>\n'
         return data
 
     def save_to_file(self, filename):
