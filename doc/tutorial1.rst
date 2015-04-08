@@ -17,6 +17,7 @@ Geometry
 
 .. _fig-tutorial1-geometry:
 .. figure:: tutorial1-geometry.*
+   :scale: 120%
    :align: center
 
    Simple edge-emitting gallium-arsenide diode modeled in :file:`tutorial1.xpl` file.

@@ -118,9 +118,6 @@
 </grids>
 
 <solvers>
-  <thermal name="x" solver="StaticCyl" lib="fem">
-    <matrix itererr="s"/>
-  </thermal>
   <thermal name="THERMAL" solver="StaticCyl" lib="fem">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
@@ -183,15 +180,10 @@
 </connects>
 
 <script><![CDATA[
-print dupa
-
 from scipy import optimize
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
-
-import sys
-sys.exit(0)
 
 # OPTICAL.find_mode
 
@@ -215,6 +207,7 @@ class A(object):
         Fun fun fun
         :rtype: RootParams
         """
+        print dupa
         pass
 
 a = A()

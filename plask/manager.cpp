@@ -212,12 +212,10 @@ void Manager::loadSolvers(XMLReader& reader) {
         throw XMLUnexpectedElementException(reader, "<solvers>");
     while (reader.requireTagOrEnd()) {
         const std::string name = reader.requireAttribute("name");
-        if (!isCid(name.c_str()))
-            throw XMLException(reader, format("\"%s\" is bad name for solver, this name shouldn't be empty and should consists of English letters,"
-                                              " '_' character and (except the first character) digits", name));
+        BadId::throwIfBad("solver", name);
         if (shared_ptr<Solver> filter = FiltersFactory::getDefault().get(reader, *this)) {
             if (!this->solvers.insert(std::make_pair(name, filter)).second)
-                throw XMLException(reader, format("Solver with name \"%s\" already exists", name));
+                throw NamesConflictException("Solver", name);
             continue;
         }
         boost::optional<std::string> lib = reader.getAttribute("lib");
@@ -247,7 +245,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
-            throw XMLException(reader, format("Solver with name \"%s\" already exists", name));
+            throw NamesConflictException("Solver", name);
     }
 }
 
@@ -388,7 +386,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
     } catch (const XMLException&) {
         throw;
     } catch (const std::exception& err) {
-        throw Exception(XMLException(reader, err.what()).what());
+        throw XMLException(reader, err.what());
     // } catch (...) {
     //     throw XMLException(reader, "Unrecognized exception");
     }

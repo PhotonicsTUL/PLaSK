@@ -451,12 +451,12 @@ int main(int argc, const char *argv[])
             }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: XMLError: %2%", argv[1], err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, %2%", argv[1], err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", argv[1], err.what());
                 endPlask();
                 return 3;
             }

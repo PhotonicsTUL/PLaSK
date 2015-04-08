@@ -276,7 +276,7 @@ class PlaskThread(QtCore.QThread):
         else:
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        self.link = re.compile(r'({}(?:,|:&nbsp;XMLError:&nbsp;XML))&nbsp;line&nbsp;(\d+)'.format(fname))
+        self.link = re.compile(r'({}(?:,|:)(?:&nbspXML)?)&nbsp;line&nbsp;(\d+)(\D.*)'.format(fname))
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
@@ -300,7 +300,7 @@ class PlaskThread(QtCore.QThread):
         elif cat == "DEBUG         :": color = "gray   "
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
-        line = self.link.sub(r'\1&nbsp;<a href="line:\2">line&nbsp;\2</a>', line)
+        line = self.link.sub(r'<a style="color: {}" href="line:\2">\1&nbsp;line&nbsp;\2\3</a>'.format(color), line)
         try:
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
