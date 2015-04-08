@@ -14,6 +14,7 @@
 
 import sys
 import os
+import re
 import subprocess
 from time import strftime
 
@@ -39,7 +40,7 @@ def which(program):
 
 class OutputWindow(QtGui.QDockWidget):
 
-    def __init__(self, filename, launcher, parent=None):
+    def __init__(self, launcher, parent=None):
         super(OutputWindow, self).__init__("Launch local [{}]".format(strftime('%X')), parent)
         self.setAttribute(Qt.WA_DeleteOnClose)
 
@@ -58,11 +59,14 @@ class OutputWindow(QtGui.QDockWidget):
             font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setFamily(font_family)
         font.setPointSize(int(CONFIG('launcher_local/font_size', 10)))
-        self.messages = QtGui.QTextEdit()
+        self.messages = QtGui.QTextBrowser()
         self.messages.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.messages.setReadOnly(True)
         self.messages.setAcceptRichText(True)
         self.messages.setFont(font)
+
+        self.messages.anchorClicked.connect(self.url_clicked)
+        self.messages.setOpenLinks(False)
 
         toolbar = QtGui.QToolBar()
 
@@ -176,6 +180,11 @@ class OutputWindow(QtGui.QDockWidget):
         self.visibilityChanged.connect(self.on_visibility_changed)
         self.messages.setFocus()
 
+    def url_clicked(self, url):
+        parent = self.parent()
+        if parent:
+            parent.goto_line(int(url.path()))
+
     def update_view(self):
         self.messages.clear()
         self.printed_lines = 0
@@ -267,6 +276,7 @@ class PlaskThread(QtCore.QThread):
         else:
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.link = re.compile(r'({}(?:,|:&nbsp;XMLError:&nbsp;XML))&nbsp;line&nbsp;(\d+)'.format(fname))
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
@@ -290,6 +300,7 @@ class PlaskThread(QtCore.QThread):
         elif cat == "DEBUG         :": color = "gray   "
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
+        line = self.link.sub(r'\1&nbsp;<a href="line:\2">line&nbsp;\2</a>', line)
         try:
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
@@ -394,7 +405,7 @@ class Launcher(object):
         else:
             dirname = os.path.dirname(filename)
             
-        dock = OutputWindow(main_window.document.filename, self, main_window)
+        dock = OutputWindow(self, main_window)
         try:
             bottom_docked = [w for w in main_window.findChildren(QtGui.QDockWidget)
                              if main_window.dockWidgetArea(w) == (Qt.BottomDockWidgetArea)][-1]

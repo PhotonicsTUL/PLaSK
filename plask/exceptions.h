@@ -130,7 +130,7 @@ struct PLASK_API ComputationError: public Exception {
 struct PLASK_API BadId: public Exception {
 
     BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
-        : Exception("\"%1%\" is bad name for %2%, this name shouldn't be empty and should consists of english letters, '%3%' character and digits (but not at beginning).", str_to_check, where, underline_ch) {};
+        : Exception("\"%1%\" is bad name for %2%, this name shouldn't be empty and should consists of English letters, '%3%' character and (except the first character) digits.", str_to_check, where, underline_ch) {};
 
     static void throwIfBad(const std::string& where, const char* str_to_check, char underline_ch = '_') {
         if (!isCid(str_to_check, underline_ch))
@@ -315,7 +315,7 @@ struct PLASK_API NamesConflictException: public Exception {
      * @param object_name name of object which is already exists
      */
     NamesConflictException(const std::string& what, const std::string& object_name):
-        Exception(what + " with name \"" + object_name + "\" already exists.") {}
+        Exception(what + " with name \"" + object_name + "\" already exists") {}
 };
 
 /**

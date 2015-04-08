@@ -16,7 +16,7 @@ Tutorials and Examples
 
    .. _sec-tutorial-LI-of-VCSEL:
 
-   Computing the L-I curve of a gallium-arsenide VCSEL
+   Computing the L-I Curve of a Gallium-Arsenide VCSEL
    ---------------------------------------------------
 
    overthreshold
@@ -24,7 +24,7 @@ Tutorials and Examples
 
    .. _sec-tutorial-threshold-of-array:
 
-   Searching the threshold of a gallium-nitride array
+   Searching the Threshold of a Gallium-Nitride Array
    --------------------------------------------------
 
    multiple geometries
@@ -36,7 +36,7 @@ Tutorials and Examples
    filters
 
 
-   Optical analysis of photonic crystal slab waveguide
+   Optical Analysis of Photonic Crystal Slab Waveguide
    ---------------------------------------------------
 
    3D
@@ -46,12 +46,12 @@ Tutorials and Examples
    lattice
 
 
-   Finding threshold current of photonic crystal VCSEL
+   Finding Threshold Current of Photonic Crystal VCSEL
    ---------------------------------------------------
 
    combining 2D and 3D geometries with filters
 
 
-   Using high-level algorithms
+   Using High-Level Algorithms
    ---------------------------
 

@@ -212,10 +212,12 @@ void Manager::loadSolvers(XMLReader& reader) {
         throw XMLUnexpectedElementException(reader, "<solvers>");
     while (reader.requireTagOrEnd()) {
         const std::string name = reader.requireAttribute("name");
-        BadId::throwIfBad("solver", name);
+        if (!isCid(name.c_str()))
+            throw XMLException(reader, format("\"%s\" is bad name for solver, this name shouldn't be empty and should consists of English letters,"
+                                              " '_' character and (except the first character) digits", name));
         if (shared_ptr<Solver> filter = FiltersFactory::getDefault().get(reader, *this)) {
             if (!this->solvers.insert(std::make_pair(name, filter)).second)
-                throw NamesConflictException("Solver", name);
+                throw XMLException(reader, format("Solver with name \"%s\" already exists", name));
             continue;
         }
         boost::optional<std::string> lib = reader.getAttribute("lib");
@@ -245,7 +247,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
-            throw NamesConflictException("Solver", name);
+            throw XMLException(reader, format("Solver with name \"%s\" already exists", name));
     }
 }
 

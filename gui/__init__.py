@@ -492,27 +492,30 @@ class MainWindow(QtGui.QMainWindow):
             self.setWindowTitle("[*] PLaSK")
         self.setWindowModified(changed)
 
-    def goto_line(self):
-        dialog = GotoDialog(self)
-        if dialog.exec_():
-            line_number = int(dialog.input.text())
-            indx = None
-            for i, c in enumerate(self.document.controllers):
-                if c.model.line_in_file is None: continue
-                if line_number < c.model.line_in_file: break
-                indx = i
-                cntrl = c
-                lineno = line_number - c.model.line_in_file - 1
-            if indx is not None:
-                self.tabs.setCurrentIndex(indx)
-                self.tab_change(indx)
-                if self.showsource_action.isEnabled() and not self.showsource_action.isChecked():
-                    self.showsource_action.trigger()
-                editor = cntrl.get_source_widget().editor
-                cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
-                    min(lineno, editor.document().blockCount()-1)))
-                editor.setTextCursor(cursor)
-                editor.setFocus()
+    def goto_line(self, line_number=None):
+        if line_number is None:
+            dialog = GotoDialog(self)
+            if dialog.exec_():
+                line_number = int(dialog.input.text())
+            else:
+                return
+        indx = None
+        for i, c in enumerate(self.document.controllers):
+            if c.model.line_in_file is None: continue
+            if line_number < c.model.line_in_file: break
+            indx = i
+            cntrl = c
+            lineno = line_number - c.model.line_in_file - 1
+        if indx is not None:
+            self.tabs.setCurrentIndex(indx)
+            self.tab_change(indx)
+            if self.showsource_action.isEnabled() and not self.showsource_action.isChecked():
+                self.showsource_action.trigger()
+            editor = cntrl.get_source_widget().editor
+            cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
+                min(lineno, editor.document().blockCount()-1)))
+            editor.setTextCursor(cursor)
+            editor.setFocus()
 
     def set_show_source_state(self, show_source_enabled):
         if show_source_enabled is None:

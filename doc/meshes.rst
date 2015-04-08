@@ -4,16 +4,16 @@
 Specifying Meshes
 *****************
 
-Concept of meshes and generators
+Concept of Meshes and Generators
 ================================
 
-Rectangular meshes
+Rectangular Meshes
 ==================
 
-Triangular meshes
+Triangular Meshes
 =================
 
-Other meshes
+Other Meshes
 ============
 
 

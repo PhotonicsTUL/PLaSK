@@ -4,25 +4,25 @@
 Computational Solvers
 *********************
 
-Solvers overview
+Solvers Overview
 ================
 
-Specifying solvers in XPL file
-==============================
+Specifying Solvers in the XPL File
+==================================
 
 See section :ref:`sec-xpl-solvers`.
 
 
-Creating and managing solvers from Python
+Creating and Managing Solvers from Python
 =========================================
 
 
 
-Running computations
+Running Computations
 ====================
 
 
 .. _sec-solvers-filters:
 
-Data filters
+Data Filters
 ============

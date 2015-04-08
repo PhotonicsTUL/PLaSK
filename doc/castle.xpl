@@ -1,9 +1,5 @@
 <plask>
 
-<defines/>
-
-<materials/>
-
 <geometry>
   <cartesian2d name="castle" axes="x,y">
     <stack trancenter="0">
@@ -14,7 +10,8 @@
             <gap size="6"/>
           </shelf>
           <stack trancenter="0">
-            <triangle material="AlAs" ax="-15.5" ay="-20" bx="15.5" by="-20"/>
+            <triangle material="AlAs" ax="-15.5" ay="-20"
+                                      bx=" 15.5" by="-20"/>
             <align trancenter="0" vertcenter="0">
               <rectangle material="AlN" dx="25" dy="25"/>
               <item vertcenter="4">
@@ -44,12 +41,6 @@
     </stack>
   </cartesian2d>
 </geometry>
-
-<grids/>
-
-<solvers/>
-
-<connects/>
 
 <script><![CDATA[
 plot_geometry(GEO.castle, fill=True, margin=0.02)

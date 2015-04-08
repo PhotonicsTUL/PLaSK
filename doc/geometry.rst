@@ -12,13 +12,13 @@ See section :ref:`sec-xpl-geometry`.
 
 .. _sec-geometry-python:
 
-Creating geometry from Python
+Creating Geometry from Python
 =============================
 
 See section :mod:`plask.geometry`.
 
 
-Reference of geometry objects
+Reference of Geometry Objects
 =============================
 
 See sections :ref:`sec-xpl-geometry` and :mod:`plask.geometry`.

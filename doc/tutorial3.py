@@ -1,11 +1,3 @@
-import sys
-import scipy.optimize
-
-filename = sys.argv[1]
-loadxpl(filename)
-
-config.axes = 'rz'
-
 def loss_on_voltage(voltage):
         ELECTRICAL.invalidate()
         ELECTRICAL.voltage_boundary[0].value = voltage
@@ -28,8 +20,8 @@ def loss_on_voltage(voltage):
             'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
             .format(voltage, ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
         return mode_loss
-        
-        
+
+
 OPTICAL.lam0 = 981.5
 OPTICAL.vat = 0
 

@@ -13,11 +13,11 @@
 <geometry>
   <cylindrical2d name="main" axes="r,z" outer="extend" bottom="GaAs">
     <stack>
-      <stack name="top-DBR" repeat="24">
-        <rectangle material="GaAs" dr="10" dz="0.0700"/>
-        <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0795"/>
-      </stack>
       <rectangle material="GaAs" dr="10" dz="0.0700"/>
+      <stack name="top-DBR" repeat="24">
+        <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0795"/>
+        <rectangle material="GaAs" dr="10" dz="0.0700"/>
+      </stack>
       <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0318"/>
       <shelf>
         <rectangle material="AlAs" dr="4" dz="0.0160"/>

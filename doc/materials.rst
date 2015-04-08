@@ -7,14 +7,14 @@ Managing Materials
 Materials in PLaSK
 ==================
 
-Compiled material libraries
+Compiled Material Libraries
 ===========================
 
-Custom material class in Python
+Custom Material Class in Python
 ===============================
 
 If custom __init__ ALWAYS call superclass __init__.
 
 
-Custom materials in XPL
+Custom Materials in XPL
 =======================

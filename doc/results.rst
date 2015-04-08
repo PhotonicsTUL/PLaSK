@@ -4,10 +4,10 @@
 Working with Results
 ********************
 
-Creating plots of the results
+Creating Plots of the Results
 =============================
 
-Storing and retrieving results
+Storing and Retrieving Results
 ==============================
 
 

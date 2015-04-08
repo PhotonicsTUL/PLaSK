@@ -25,10 +25,10 @@ In order to install PLaSK on MS Windows, perform two steps:
 
 .. _sec-Instalation-Linux:
 
-Linux systems
+Linux Systems
 ^^^^^^^^^^^^^
 
-DEB based distros (Debian, Ubuntu, Mint, etc.)
+DEB-based Distros (Debian, Ubuntu, Mint, etc.)
 """"""""""""""""""""""""""""""""""""""""""""""
 First download the package You should choose the correct one for your architecture (amd64 or i386) and Linux version.
 
@@ -49,8 +49,8 @@ If there is no error, you can run PLaSK.
 
 .. _sec-Running-PLaSK:
 
-Running PLaSK from command line
--------------------------------
+Running PLaSK from the Command Line
+-----------------------------------
 
 In general PLaSK is standalone command line program. It can be run from the command line by typing ``plask`` in the shell [#shell-windows]_. If run without any parameter, it will open a simple interactive :term:`shell` where you can type Python commands for immediate execution. In order to run prepared script (saved either in *.xpl* or *.py* file) simply add its name as the first parameter. Further parameters are optional and will be available to the :term:`Python` script as ``sys.argv``. In the following example :file:`vcsel.xpl` is the input file the number ``10`` a some parameter:
 

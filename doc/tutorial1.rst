@@ -1,6 +1,6 @@
 .. _sec-Thermo-electrical-modeling-of-simple-ee-laser:
 
-Thermo-electrical modeling of simple edge-emitting diode
+Thermo-Electrical Modeling of Simple Edge-Emitting Diode
 --------------------------------------------------------
 
 This tutorial presents basic usage of PLaSK. It shows how to define the basic geometry and how to perform computations using solvers. During the tutorial creation of all parts of the input file is described step-by-step, together with the discussion of it meaning. Before starting following the instructions described here, please make sure that PLaSK is installed correctly and create a separate working directory. We assume that you are able to launch the main binary as described in section :ref:`sec-Running-PLaSK`.
@@ -61,7 +61,7 @@ Now, we may want to add more geometry objects. You can do this the way described
      </stack>
    </cartesian2d>
 
-Now switch back to graphical view (``F4`` again) and see how the geometry tree have changed: you have just created a stack of rectangular blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. 
+Now switch back to graphical view (``F4`` again) and see how the geometry tree have changed: you have just created a stack of rectangular blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_.
 
 Now click any block in the preview window. By doing so, you select a rectangle object. Examine its attributes in the bottom-left panel. For example in the section *Material* you have a combo-box, where you can select either a solid material or one gradually changing from bottom to top. In the text field next to it (or in the attribute ``material`` in XML) you specify information about the material of each block. As you have defined no custom material, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
 
