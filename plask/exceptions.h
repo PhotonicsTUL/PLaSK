@@ -130,7 +130,7 @@ struct PLASK_API ComputationError: public Exception {
 struct PLASK_API BadId: public Exception {
 
     BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
-        : Exception("\"%1%\" is bad name for %2%, this name shouldn't be empty and should consists of English letters, '%3%' character and (except the first character) digits.", str_to_check, where, underline_ch) {};
+        : Exception("\"%1%\" is a bad name for a %2% (must be letters, digits, or '%3%' and cannot start with a digit) ", str_to_check, where, underline_ch) {};
 
     static void throwIfBad(const std::string& where, const char* str_to_check, char underline_ch = '_') {
         if (!isCid(str_to_check, underline_ch))
