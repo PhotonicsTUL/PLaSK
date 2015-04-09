@@ -9,6 +9,8 @@ import os as _os
 import plask
 import numpy as _np
 
+#TODO 3D support for plot_ methods
+
 try:
     import scipy
 except ImportError:
@@ -163,7 +165,7 @@ class ThermoElectric(object):
         plask.save_field(curr, h5file, group + '/CurrentDensity')
         h5file.close()
 
-    def plot_temperature(self, geometry_color='w', mesh_color=None, **kwargs):
+    def plot_temperature(self, geometry_color='0.75', mesh_color=None, **kwargs):
         """
         Plot computed temperature to the current axes.
 
@@ -189,7 +191,7 @@ class ThermoElectric(object):
             plask.plot_mesh(self.thermal.mesh, color=mesh_color)
         plask.gcf().canvas.set_window_title("Temperature")
 
-    def plot_voltage(self, geometry_color='w', mesh_color=None, **kwargs):
+    def plot_voltage(self, geometry_color='0.75', mesh_color=None, **kwargs):
         """
         Plot computed voltage to the current axes.
 
@@ -225,7 +227,15 @@ class ThermoElectric(object):
 
             kwargs: Keyword arguments passed to the plot function.
         """
-        mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
+        if self.electrical.geometry.dim == 2:
+            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
+        else:
+            try:
+                at0, at1 = at
+            except TypeError:
+                at0 = at1 = at
+            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at0]), plask.mesh.Ordered([at1]),
+                                            self.electrical.mesh.axis2)
         field = self.electrical.outVoltage(mesh)
         plask.plot(mesh.axis1, field, **kwargs)
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))
@@ -530,4 +540,22 @@ class ThresholdSearch(ThermoElectric):
         h5file, group = _h5_open(filename, group)
         ThermoElectric.save(self, h5file, group)
 
+    def plot_optical_field(self, hpoints=800, vpoints=600, geometry_color=(0.75, 0.75, 0.75, 0.35), **kwargs):
+        """
+        Plot computed optical mode field at threshold.
 
+        Args:
+            hpoints (int): Number of points to plot in vertical plot direction.
+
+            vpoints (int): Number of points to plot in horizontal plot direction.
+
+            kwargs: Keyword arguments passed to the plot function.
+        """
+
+        box = self.optical.geometry.bbox
+        intensity_mesh = plask.mesh.Rectangular2D(plask.mesh.Regular(box.left, box.right, hpoints),
+                                                  plask.mesh.Regular(box.bottom, box.top, vpoints))
+        field = self.optical.outLightMagnitude(self.modeno, intensity_mesh)
+        plask.plot_field(field)
+        plask.plot_geometry(self.optical.geometry, color=geometry_color)
+        plask.gcf().canvas.set_window_title("Light Intensity")

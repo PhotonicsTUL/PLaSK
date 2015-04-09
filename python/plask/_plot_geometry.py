@@ -221,13 +221,14 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, zorder=3.0, picker=None):
+    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None):
         """
         :param plane: plane to draw (important in 3D)
         :param dest: mpl axis where artist should be appended
         :param bool fill: True if artists should be filled
         :param color: edge color (mpl format)
         :param lw: line width
+        :param alpha: opacity of the drawn environment
         :param zorder: artists z order
         """
         super(DrawEnviroment, self).__init__()
@@ -235,6 +236,7 @@ class DrawEnviroment(object):
         self.fill = fill
         self.color = color
         self.lw = lw
+        self.alpha = alpha
         self.axes = plane
         self.zorder = zorder
         self.picker = picker
@@ -260,6 +262,7 @@ class DrawEnviroment(object):
             artist.set_fill(False)
         artist.set_linewidth(self.lw)
         artist.set_ec(self.color)
+        artist.set_alpha(self.alpha)
         artist.set_picker(self.picker)
         artist.plask_real_path = plask_real_path
         self.dest.add_patch(artist)
@@ -464,7 +467,7 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_p
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, set_limits=None, picker=None):
+                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, set_limits=None, picker=None):
     """
     Plot specified geometry.
 
@@ -512,6 +515,9 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 range [0, 1]. Any other format accepted by set_facecolor()
                 method of matplotlib Artist should work as well.
 
+        alpha (float): Opacity of the drawn geomtry (1: fully opaque,
+                0: fully transparent)
+
         picker (None|float|boolean|callable) matplotlib picker attribute
                 for all artists appended to plot (see matplotlib doc.).
 
@@ -552,7 +558,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     if zorder is None:
         zorder = 0.5 if fill else 2.0
 
-    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, zorder=zorder, picker=picker)
+    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, alpha, zorder=zorder, picker=picker)
 
     hshift, vshift = (geometry.bbox.size[a] for a in ax)
     try:

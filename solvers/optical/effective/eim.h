@@ -93,6 +93,11 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         bool operator==(const Mode& other) const {
             return symmetry == other.symmetry && is_zero( neff - other.neff );
         }
+
+        /// Return mode loss
+        double loss() const {
+            return 2e7 * imag(neff * solver->k0);
+        }
     };
 
   protected:

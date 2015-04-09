@@ -129,6 +129,11 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
             }
             return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
+
+        /// Return mode loss
+        double loss() const {
+            return imag(4e7*M_PI / lam);
+        }
     };
 
     /// Convert wavelength to the frequency parameter

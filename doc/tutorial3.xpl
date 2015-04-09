@@ -37,16 +37,16 @@
         <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0318"/>
         <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1176"/>
         <stack name="junction" role="active">
-          <rectangle role="QW" material="InGaAsQW" dr="{mesa}" dz="0.0050"/>
           <stack repeat="4">
-            <rectangle material="GaAs" dr="{mesa}" dz="0.005"/>
-            <rectangle role="QW" material="InGaAsQW" dr="{mesa}" dz="0.0050"/>
+            <rectangle name="QW" role="QW" material="InGaAsQW" dr="{mesa}" dz="0.0050"/>
+            <rectangle material="GaAs" dr="{mesa}" dz="0.0050"/>
           </stack>
+          <again ref="QW"/>
         </stack>
         <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1176"/>
         <stack name="bottom-DBR" repeat="30">
-          <rectangle material="GaAs:C=2e+18" dr="{mesa}" dz="0.0700"/>
           <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesa}" dz="0.0795"/>
+          <rectangle material="GaAs:C=2e+18" dr="{mesa}" dz="0.0700"/>
         </stack>
       </stack>
       <zero/>
@@ -94,7 +94,7 @@
     <mesh ref="default"/>
     <junction beta0="11" js0="1"/>
     <voltage>
-    <condition value="2.0">
+    <condition value="1.4">
       <place object="p-contact" side="bottom"/>
     </condition>
     <condition value="0.0">
@@ -114,7 +114,7 @@
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
-    <mode lam0="980." vat="0."/>
+    <mode lam0="981." vat="0."/>
   </optical>
 </solvers>
 
@@ -130,41 +130,46 @@
 </connects>
 
 <script><![CDATA[
-from scipy.optimize import fsolve
-
-figure()
 plot_geometry(GEO.GeoTE, margin=0.01)
 defmesh = MSG.default(GEO.GeoTE.item)
 plot_mesh(defmesh, color="0.75")
-plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")
-plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")
+plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
+              ELECTRICAL.geometry, color="b", marker="D")
+plot_boundary(THERMAL.temperature_boundary, defmesh,
+              THERMAL.geometry, color="r")
 gcf().canvas.set_window_title("Default mesh")
 
-def loss_on_voltage(params):
-    ELECTRICAL.invalidate()
-    ELECTRICAL.voltage_boundary[0].value = params[0]
-    verr = ELECTRICAL.compute(1)
-    terr = THERMAL.compute(1)
-    iters=0
-    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters < 15:
-        verr = ELECTRICAL.compute(8)
-        terr = THERMAL.compute(1)
-        iters+=1
-    DIFFUSION.compute_threshold()
-    mode_number = OPTICAL.find_mode(981.5)
-    mode_loss = OPTICAL.outLoss(mode_number)
-    print_log(LOG_RESULT,
-        'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
-        .format(voltage, ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
-    return mode_loss,
+task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
+                                 GAIN, OPTICAL, 0, 1.4, 981.5)
+threshold_voltage = task.run()
+threshold_current = task.threshold_current
+print("Vth = {:.3f}V, Ith = {:.3f}mA"
+    .format(threshold_voltage, threshold_current))
 
-threshold_voltage = fsolve(loss_on_voltage, 1.5, xtol=0.01)[0]
-loss_on_voltage(threshold_voltage)
-threshold_current = abs(ELECTRICAL.get_total_current())
-print_log(LOG_WARNING, "Vth = {:.3f}V, Ith = {:.3f}mA"
-                       .format(threshold_voltage, threshold_current))
+figure()
+task.plot_optical_field()
+axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
+
+
+# Find threshold for a new aperture
+
+new_aperture = 3.
+GEO.aperture.dr = new_aperture
+GEO.oxide.dr = mesa - new_aperture
+
+threshold_voltage = task.run()
+threshold_current = task.threshold_current
+print("New aperture: Vth = {:.3f}V, Ith = {:.3f}mA"
+    .format(threshold_voltage, threshold_current))
+
+figure()
+task.plot_optical_field()
+axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
+gcf().canvas.set_window_title("Light Intensity (new aperture)")
+
 
 show()
+
 ]]></script>
 
 </plask>
