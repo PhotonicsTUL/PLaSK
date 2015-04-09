@@ -133,15 +133,13 @@ class GeometryController(Controller):
         #print ', '.join(str(p) for p in event.artist.plask_real_path)
 
     def plot_element(self, tree_element, set_limits=True):
-        self.manager = plask.Manager()
+        manager = plask.Manager()
         try:
-            self.manager.load(self.document.get_content(sections='geometry'))
+            manager.load(self.document.get_content(sections='geometry'))
             #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
-            self.plotted_object = self.model.fake_root.get_corresponding_object(tree_element, self.manager)
-            self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
+            plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
+            self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.manager = None
-            self.plotted_object = None
             self.status_bar.showMessage(str(e))
             palette = self.status_bar.palette()
             palette.setColor(QtGui.QPalette.Background, '#ff8888')
@@ -153,6 +151,9 @@ class GeometryController(Controller):
                 traceback.print_exc()
             return False
         else:
+            self.manager = manager
+            self.plotted_tree_element = tree_element
+            self.plotted_object = plotted_object
             if tree_element.dim == 3:
                 self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
             else:
@@ -169,8 +170,7 @@ class GeometryController(Controller):
             current_index = self.tree.selectionModel().currentIndex()
             if not current_index.isValid(): return
             tree_element = current_index.internalPointer()
-        if self.plot_element(tree_element):
-            self.plotted_tree_element = tree_element
+        self.plot_element(tree_element)
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:
