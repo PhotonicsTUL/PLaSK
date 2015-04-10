@@ -363,7 +363,7 @@ _geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
 
 def _draw_Translation(env, geometry_object, transform, clipbox, plask_real_path):
     new_transform = matplotlib.transforms.Affine2D()
-    t = geometry_object.translation
+    t = geometry_object.vec
     new_transform.translate(t[env.axes[0]], t[env.axes[1]])
     _draw_geometry_object(env, geometry_object.item, new_transform + transform, clipbox, plask_real_path + [0])
 

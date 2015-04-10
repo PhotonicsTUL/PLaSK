@@ -25,8 +25,6 @@ Tutorials and Examples
 .. Searching the Threshold of a Gallium-Nitride Array
 .. --------------------------------------------------
 .. 
-.. multiple geometries
-.. 
 .. repeating objects
 .. 
 .. paths
@@ -39,8 +37,6 @@ Tutorials and Examples
 .. 
 .. 3D
 .. 
-.. variables in XPL file
-.. 
 .. lattice
 .. 
 .. 
@@ -48,8 +44,3 @@ Tutorials and Examples
 .. ---------------------------------------------------
 .. 
 .. combining 2D and 3D geometries with filters
-.. 
-.. 
-.. Using High-Level Algorithms
-.. ---------------------------
-.. 
