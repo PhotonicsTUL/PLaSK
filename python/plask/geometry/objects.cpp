@@ -5,6 +5,12 @@
 #include <plask/geometry/path.h>
 #include "../../util/py_set.h"
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 // Some helpful wrappers
@@ -76,6 +82,34 @@ template <> struct MethodsD<3> {
         return self.hasRoleAt(role, Vec<3,double>(c0,c1,c2)) != nullptr;
     }
 
+};
+
+shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
+    GeometryObject* self = py::extract<GeometryObject*>(oself);
+    int n = self->getChildrenCount();
+    if (n == 0)
+        throw TypeError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+    if (i < 0) i = n + i;
+    if (i < 0 || i >= n) {
+        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
+            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
+    }
+    return self->getChildNo(i);
+}
+
+struct GeometryObjectIter {
+    shared_ptr<GeometryObject> parent;
+    int i;
+
+    GeometryObjectIter(const shared_ptr<GeometryObject>& parent): parent(parent), i(-1) {}
+    shared_ptr<GeometryObject> next() {
+        ++i; if (i == parent->getChildrenCount()) throw StopIteration("");
+        return parent->getChildNo(i);
+    }
+
+    static GeometryObjectIter __iter__(const shared_ptr<GeometryObject>& self) {
+        return GeometryObjectIter(self);
+    }
 };
 
 static py::list GeometryObject_getMatching(const shared_ptr<GeometryObject>& self, const py::object& callable) {
@@ -649,10 +683,8 @@ void register_geometry_object()
              "Returns:\n"
              "    sequence: List of objects matching your condition.\n\n"
             )
-        .def("_children_len", &GeometryObject::getChildrenCount, "Number of all children of self in geometry graph.")
-        .def("_child", &GeometryObject::getChildNo, py::arg("index"), "Child with given index.")
-        .def("_real_children_len", &GeometryObject::getRealChildrenCount, "Number of real (physically stored) children of self in geometry graph.")
-        .def("_real_child", &GeometryObject::getRealChildNo, py::arg("index"), "Real (physically stored) child with given index.")
+        .def("__getitem__", &GeometryObject__getitem__)
+        .def("__iter__", GeometryObjectIter::__iter__)
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
     ;
@@ -665,6 +697,10 @@ void register_geometry_object()
                       "Maximum number of the mesh steps in each direction the object is divided into.")
         .def("__str__", &GeometryObjectSteps::str)
         .def("__repr__", &GeometryObjectSteps::str)
+    ;
+    py::class_<GeometryObjectIter>("_Iterator", "Items iterator.", py::no_init)
+        .def(NEXT, &GeometryObjectIter::next)
+        .def("__iter__", pass_through)
     ;}
 
     py::implicitly_convertible<shared_ptr<GeometryObject>, shared_ptr<const GeometryObject>>();

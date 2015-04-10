@@ -147,22 +147,22 @@ void register_geometry_path()
         .def("__init__", py::make_constructor(Path__init__<const std::vector<shared_ptr<const GeometryObject>>&>))
         .def("__getitem__", &Path__getitem__)
         .def("__len__", &Path__len__)
-        .def("append", (Path& (Path::*)(const GeometryObject&, const PathHints*))&Path::append,
+        .def("append", (Path& (Path::*)(shared_ptr<const GeometryObject>, const PathHints*))&Path::append,
              (py::arg("object"), py::arg("hints")=py::object()), py::return_self<>())
-        .def("append", (Path& (Path::*)(const std::vector<shared_ptr<const GeometryObject>>&, const PathHints*))&Path::append,
-             (py::arg("objects"), py::arg("hints")=py::object()), py::return_self<>())
+//         .def("append", (Path& (Path::*)(const std::vector<shared_ptr<const GeometryObject>>&, const PathHints*))&Path::append,
+//              (py::arg("objects"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const PathHints::Hint&, const PathHints*))&Path::append,
              (py::arg("hint"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const GeometryObject::Subtree&, const PathHints*))&Path::append,
              (py::arg("subtree"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const Path&, const PathHints*))&Path::append,
              (py::arg("path"), py::arg("hints")=py::object()), py::return_self<>(),
-             "Append an object/list/hint/subtree/path list to this path.\n\n"
+             "Append an object/hint/subtree/path list to this path.\n\n"
              "Args:\n"
              "object (GeometryObject): Geometry object to append to the path. It must be\n"
              "                         an item of a container already present in it.\n"
-             "objects (sequence): Sequence of geometry objects to append to the path. All of\n"
-             "                    them must be items of containers already present in the path.\n"
+//              "objects (sequence): Sequence of geometry objects to append to the path. All of\n"
+//              "                    them must be items of containers already present in the path.\n"
              "hint (PathHint): Hint returned by a addition of an object to the container\n"
              "                 already present in the path.\n"
              "subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
@@ -173,9 +173,9 @@ void register_geometry_path()
             )
         .def(py::self += py::other<Path>())
         .def(py::self += py::other<PathHints::Hint>())
-        .def(py::self += py::other<GeometryObject>())
+        .def(py::self += py::other<shared_ptr<const GeometryObject>>())
         .def(py::self += py::other<GeometryObject::Subtree>())
-        .def(py::self += py::other<std::vector<shared_ptr<const GeometryObject>>>())
+//         .def(py::self += py::other<std::vector<shared_ptr<const GeometryObject>>>())
         .def("__eq__", __is__<Path>)
     ;
     py::implicitly_convertible<Path,PathHints>();

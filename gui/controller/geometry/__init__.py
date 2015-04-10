@@ -132,12 +132,14 @@ class GeometryController(Controller):
         )
         #print ', '.join(str(p) for p in event.artist.plask_real_path)
 
-    def plot_element(self, tree_element, set_limits=True):
+    def plot_element(self, tree_element, set_limits):
         manager = plask.Manager()
         try:
             manager.load(self.document.get_content(sections='geometry'))
             #to_plot = self.manager.geometry[str(tree_element.ref if is_ref else tree_element.name)]
             plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
+            if tree_element != self.plotted_tree_element:
+                self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.status_bar.showMessage(str(e))
@@ -170,7 +172,7 @@ class GeometryController(Controller):
             current_index = self.tree.selectionModel().currentIndex()
             if not current_index.isValid(): return
             tree_element = current_index.internalPointer()
-        self.plot_element(tree_element)
+        self.plot_element(tree_element, set_limits=True)
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:

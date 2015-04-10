@@ -6,7 +6,6 @@
 #include <plask/geometry/container.h>
 #include <plask/geometry/translation_container.h>
 
-
 namespace plask { namespace python {
 
 template <int dim>
@@ -17,27 +16,7 @@ static bool Container__contains__(const GeometryObjectContainer<dim>& self, shar
     return false;
 }
 
-template <int dim>
-static auto Container__begin(const GeometryObjectContainer<dim>& self) -> decltype(self.getChildrenVector().begin()) {
-    return self.getChildrenVector().begin();
-}
-
-template <int dim>
-static auto Container__end(const GeometryObjectContainer<dim>& self) -> decltype(self.getChildrenVector().end()) {
-    return self.getChildrenVector().end();
-}
-
-template <int dim>
-static shared_ptr<GeometryObject> Container__getitem__int(py::object oself, int i) {
-    GeometryObjectContainer<dim>* self = py::extract<GeometryObjectContainer<dim>*>(oself);
-    int n = self->getChildrenCount();
-    if (i < 0) i = n + i;
-    if (i < 0 || i >= n) {
-        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
-            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
-    }
-    return self->getChildNo(i);
-}
+shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i);
 
 template <int dim>
 static std::set<shared_ptr<GeometryObject>> Container__getitem__hints(const GeometryObjectContainer<dim>& self, const PathHints& hints) {
@@ -80,10 +59,9 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "GeometryObjectContainer", "Base class for all "," containers.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, GeometryObjectD<dim>)
         .def("__contains__", &Container__contains__<dim>)
-        .def("__getitem__", &Container__getitem__int<dim>)
+        .def("__getitem__", &GeometryObject__getitem__)
         .def("__getitem__", &Container__getitem__hints<dim>)
         .def("__len__", &GeometryObjectD<dim>::getChildrenCount)
-        .def("__iter__", py::range(Container__begin<dim>, Container__end<dim>))
         .def("__delitem__", &Container__delitem__<dim>)
     ;
 }

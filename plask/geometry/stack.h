@@ -27,10 +27,10 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     /// Type of this child.
     typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
 
-    /// Type of translation geometry elment in space of this.
+    /// Type of translation geometry element in space of this.
     typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
 
-    /// Type of the vector holiding container children
+    /// Type of the vector holding container children
     typedef typename GeometryObjectContainer<dim>::TranslationVector TranslationVector;
 
     using GeometryObjectContainer<dim>::children;

@@ -239,18 +239,21 @@ class PlotWidget(QtGui.QGroupBox):
         self.select(rect)
 
     def zoom_bbox(self, box, margin=0.1):
+        if self.toolbar._views.empty():
+            self.toolbar.push_current()
         axes = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
         m = (box.upper[axes[0]] - box.lower[axes[0]]) * margin
         self.axes.set_xlim(box.lower[axes[0]] - m, box.upper[axes[0]] + m)
         m = (box.upper[axes[1]] - box.lower[axes[1]]) * margin
         self.axes.set_ylim(box.lower[axes[1]] - m, box.upper[axes[1]] + m)
+        self.toolbar.push_current()
         self.canvas.draw()
 
     def resizeEvent(self, event):
         super(PlotWidget, self).resizeEvent(event)
         self.figure.set_tight_layout(0)
 
-    def update_plot(self, to_plot, set_limits=True, plane='12'):
+    def update_plot(self, to_plot, set_limits, plane='12'):
         # self.figure.clear()
         self.axes.cla()
         self.selectors = []
