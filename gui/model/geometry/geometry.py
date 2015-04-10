@@ -143,6 +143,11 @@ class GNCartesian(GNGeometryBase):
         from ...controller.geometry.geometry import GNGeometryController, GNCartesian2DGeometryController
         return GNCartesian2DGeometryController(document, model, self) if self.dim == 2 else GNGeometryController(document, model, self)
 
+    def major_properties(self):
+        res = super(GNCartesian, self).major_properties()
+        if self.dim == 2: res.append(('length', self.length))
+        return res
+
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNCartesian(dim=2)

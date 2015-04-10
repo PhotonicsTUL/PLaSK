@@ -45,12 +45,12 @@ class GNShelfController(GNObjectController):
     
     def fill_form(self):
         self.construct_group('Shelf Settings')
-        self.repeat = self.construct_line_edit('Repeat:')
+        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
                                'Number of repetitive occurrences of stack content.'
                                ' This attribute allows to create periodic horizontal structures easily.'
                                ' Defaults to 1. (integer)')
-        self.shift = self.construct_line_edit('Shift:', unit=u'µm')
+        self.shift = self.construct_line_edit('Shift:', unit=u'µm', node_property_name='shift')
         self.shift.setToolTip(u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
                               u'Horizontal position of the shelf left edge in its local coordinates.'
                               u' Defaults to 0. (float [µm])')
@@ -63,8 +63,8 @@ class GNShelfController(GNObjectController):
 
     def save_data_in_model(self):
         super(GNShelfController, self).save_data_in_model()
-        self.node.repeat = empty_to_none(self.repeat.text())
-        self.node.shift = empty_to_none(self.shift.text())
+        #self.node.repeat = empty_to_none(self.repeat.text())
+        #self.node.shift = empty_to_none(self.shift.text())
         self.node.flat = empty_to_none(self.flat.currentText())
 
     def on_edit_enter(self):
@@ -112,12 +112,12 @@ class GNStackController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Stack Settings')
-        self.repeat = self.construct_line_edit('Repeat:')
+        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
                                 'Number of repetitive occurrences of stack content.'
                                 ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
                                 ' Defaults to 1. (integer))')
-        self.shift = self.construct_line_edit('Shift:')
+        self.shift = self.construct_line_edit('Shift:', display_property_name='shift')
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
@@ -128,8 +128,8 @@ class GNStackController(GNObjectController):
 
     def save_data_in_model(self):
         super(GNStackController, self).save_data_in_model()
-        self.node.repeat = empty_to_none(self.repeat.text())
-        self.node.shift = empty_to_none(self.shift.text())
+        #self.node.repeat = empty_to_none(self.repeat.text())
+        #self.node.shift = empty_to_none(self.shift.text())
         self.node.aligners = controller_to_aligners(self.positions)
 
     def on_edit_enter(self):

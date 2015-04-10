@@ -22,7 +22,7 @@ class GNClipController(GNObjectController):
         self.construct_group('Clipping Box')
         sign = '-'
         for b in self.node.bound_names():
-            setattr(self, b, self.construct_line_edit(b.title()+':', unit=u'µm'))
+            setattr(self, b, self.construct_line_edit(b.title()+':', unit=u'µm', node_property_name=b))
             getattr(self, b).setToolTip(u'&lt;clip <b>{0}</b>=""...&gt;<br/>'
                     u'{0} edge of the clipping rectangle. (float [µm], {1}INF by default)'.format(b, sign))
             sign = '+' if sign == '-' else '-'
@@ -30,8 +30,8 @@ class GNClipController(GNObjectController):
 
     def save_data_in_model(self):
         super(GNClipController, self).save_data_in_model()
-        for b in self.node.bound_names():
-            setattr(self.node, b, empty_to_none(getattr(self, b).text()))
+        #for b in self.node.bound_names():
+        #    setattr(self.node, b, empty_to_none(getattr(self, b).text()))
 
     def on_edit_enter(self):
         super(GNClipController, self).on_edit_enter()
@@ -75,14 +75,14 @@ class GNExtrusionController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Extrusion Settings')
-        self.length = self.construct_line_edit('Length:', unit=u'µm')
+        self.length = self.construct_line_edit('Length:', unit=u'µm', node_property_name='length', display_property_name='extrusion length')
         self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
                                u'Length of the extrusion. (float [µm], required)')
         super(GNExtrusionController, self).fill_form()
 
     def save_data_in_model(self):
         super(GNExtrusionController, self).save_data_in_model()
-        self.node.length = empty_to_none(self.length.text())
+        #self.node.length = empty_to_none(self.length.text())
 
     def on_edit_enter(self):
         super(GNExtrusionController, self).on_edit_enter()

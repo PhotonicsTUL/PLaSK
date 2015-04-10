@@ -30,12 +30,12 @@ class GNObjectController(GNodeController):
 
     def fill_form(self):
         self.construct_group('Basic Settings')
-        self.name = self.construct_line_edit('Name:')
+        self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'
                                 ' In the script section, the object is available by GEO table,'
                                 ' which is indexed by names of geometry objects.'.format(self.node.tag_name(False)))
-        self.role = self.construct_line_edit('Roles:')
+        self.role = self.construct_line_edit('Roles:', node_property_name='role', display_property_name='roles')
         self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
                                 'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
         self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)))
@@ -49,8 +49,8 @@ class GNObjectController(GNodeController):
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
     def save_data_in_model(self):
-        self.node.name = empty_to_none(self.name.text())
-        self.node.role = empty_to_none(self.role.text())
+        #self.node.name = empty_to_none(self.name.text())
+        #self.node.role = empty_to_none(self.role.text())
         self.node.axes = empty_to_none(self.axes.currentText())
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 

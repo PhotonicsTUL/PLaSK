@@ -18,14 +18,44 @@ from ..materials import MaterialsComboBox
 from ..defines import get_defines_completer
 from ...model.geometry.reader import GNAligner
 
+from ...utils.str import empty_to_none, none_to_empty
+
 
 class GNodeController(Controller):
+
+    class SetTextPropertyCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, node, property_name, new_value, display_property_name = None, unit = '', QUndoCommand_parent = None):
+            if display_property_name is None: display_property_name = property_name
+            super(GNodeController.SetTextPropertyCommand, self).__init__(u'change {} to "{}"{}'.format(display_property_name, new_value, none_to_empty(unit)), QUndoCommand_parent)
+            self.model = model
+            self.node = node
+            self.property_name = property_name
+            self.new_value = empty_to_none(new_value)
+            self.old_value = getattr(node, property_name)
+
+        def set_property_value(self, value):
+            setattr(self.node, self.property_name, value)
+            index = self.model.index_for_node(self.node, column=1)
+            self.model.dataChanged.emit(index, index)
+            self.model.fire_changed()
+
+        def redo(self):
+            self.set_property_value(self.new_value)
+
+        def undo(self):
+            self.set_property_value(self.old_value)
+
+    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = ''):
+        cmd = GNodeController.SetTextPropertyCommand(self.model, self.node, property_name, new_value, display_property_name, unit)
+        if cmd.new_value != cmd.old_value: self.model.undo_stack.push(cmd)
+
 
     def _get_current_form(self):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None):
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None):
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:
@@ -35,7 +65,12 @@ class GNodeController(Controller):
                 box.addWidget(QtGui.QLabel(unit))
             else:
                 self._get_current_form().addRow(row_name, res)
-        res.editingFinished.connect(self.after_field_change)
+        if node_property_name is None:
+            res.editingFinished.connect(self.after_field_change)
+        else:
+            res.editingFinished.connect(lambda :
+                self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit)
+            )
         return res
 
     def construct_combo_box(self, row_name=None, items=[], editable=True):

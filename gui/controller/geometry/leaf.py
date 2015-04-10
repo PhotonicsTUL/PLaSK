@@ -44,12 +44,12 @@ class GNLeafController(GNObjectController):
         super(GNLeafController, self).fill_form()
 
         self.construct_group('Meshing Settings')
-        self.step_num = self.construct_line_edit('Maximum steps number:')
+        self.step_num = self.construct_line_edit('Maximum steps number:', node_property_name='step_num', display_property_name='maximum steps number')
         self.step_num.setToolTip(u'&lt;{} <b>steps-num</b>="" steps-dist="" ...&gt;<br/>'
                                 u'Maximum number of the mesh steps in each direction the object is divided into '
                                 u'if it is non-uniform. (integer)'
                                 .format(self.node.tag_name(False)))
-        self.step_dist = self.construct_line_edit('Minimum step size:')
+        self.step_dist = self.construct_line_edit('Minimum step size:', node_property_name='step_dist', display_property_name='minimum step size')
         self.step_dist.setToolTip(u'&lt;{} steps-num="" <b>steps-dist</b>="" ...&gt;<br/>'
                                 u'Minimum step size if the object is non-uniform.'
                                 .format(self.node.tag_name(False)))
@@ -61,8 +61,8 @@ class GNLeafController(GNObjectController):
         else:
             self.node.material_bottom = empty_to_none(self.material_bottom.currentText())
             self.node.material_top = empty_to_none(self.material_top.currentText())
-        self.node.step_num = empty_to_none(self.step_num.text())
-        self.node.step_dist = empty_to_none(self.step_dist.text())
+        #self.node.step_num = empty_to_none(self.step_num.text())
+        #self.node.step_dist = empty_to_none(self.step_dist.text())
 
     def on_edit_enter(self):
         super(GNLeafController, self).on_edit_enter()
@@ -123,14 +123,14 @@ class GNCircleController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('{} Size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
-        self.radius = self.construct_line_edit('Radius:', unit=u'µm')
+        self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius')
         self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
                                u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
         super(GNCircleController, self).fill_form()
 
     def save_data_in_model(self):
         super(GNCircleController, self).save_data_in_model()
-        self.node.radius = empty_to_none(self.radius.text())
+        #self.node.radius = empty_to_none(self.radius.text())
 
     def on_edit_enter(self):
         super(GNCircleController, self).on_edit_enter()
@@ -141,18 +141,18 @@ class GNCylinderController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('Cylinder Size')
-        self.radius = self.construct_line_edit('Radius:', unit=u'µm')
+        self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius', display_property_name='radius of the cylinder base')
         self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
                                u'Radius of the cylinder base. (float [µm], required)')
-        self.height = self.construct_line_edit('Height:', unit=u'µm')
+        self.height = self.construct_line_edit('Height:', unit=u'µm', node_property_name='height', display_property_name='height of the cylinder')
         self.radius.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
                                u'Height of the cylinder. (float [µm], required)')
         super(GNCylinderController, self).fill_form()
 
     def save_data_in_model(self):
         super(GNCylinderController, self).save_data_in_model()
-        self.node.radius = empty_to_none(self.radius.text())
-        self.node.height = empty_to_none(self.height.text())
+        #self.node.radius = empty_to_none(self.radius.text())
+        #self.node.height = empty_to_none(self.height.text())
 
     def on_edit_enter(self):
         super(GNCylinderController, self).on_edit_enter()
