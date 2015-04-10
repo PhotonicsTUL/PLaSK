@@ -79,13 +79,13 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",
     "vector ("," version).\n\n"
     "Args:\n"
     "item (GeomeryObject): Item to translate.\n"
-    "translation (plask.vec): Translation vector.\n"
+    "vec (plask.vec): Translation vector.\n"
     "cx (float): Component of the translation vector along the *x* axis.\n")
 {
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
-    .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("translation"))))
+    .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("vec"))))
     .def("__init__", py::make_constructor(&Translation_constructor2<dim>::call, py::default_call_policies(), Translation_constructor2<dim>::args))
-    .def_readwrite("translation", &Translation<dim>::translation, "Translation vector.")
+    .def_readwrite("vec", &Translation<dim>::translation, "Translation vector.")
     .def("__str__", &Translation__str__<dim>)
     .def("__repr__", &Translation__repr__<dim>)
     ;

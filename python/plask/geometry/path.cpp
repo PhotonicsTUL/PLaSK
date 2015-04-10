@@ -1,6 +1,5 @@
 #include "geometry.h"
 #include "../../util/py_set.h"
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/path.h>
 #include <plask/geometry/object.h>
@@ -11,44 +10,6 @@ namespace plask { namespace python {
 template <typename... Args>
 static shared_ptr<Path> Path__init__(Args... args) {
     return make_shared<Path>(std::forward<Args>(args)...);
-}
-
-namespace detail {
-
-    struct Object_List_from_Python {
-
-        Object_List_from_Python();
-
-        static void* convertible(PyObject* obj) {
-            if (!PySequence_Check(obj)) return nullptr;
-            int n = PySequence_Size(obj);
-            try {
-                for(int i = 0; i < n; i++) py::extract<shared_ptr<GeometryObject>>(PySequence_GetItem(obj, i));
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                return nullptr;
-            }
-            return obj;
-        }
-
-        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            int n = PySequence_Size(obj);
-
-            // Grab pointer to memory into which to construct the new QString
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<std::vector<shared_ptr<const GeometryObject>>>*)data)->storage.bytes;
-
-            std::vector<shared_ptr<const GeometryObject>>* vec = new(storage) std::vector<shared_ptr<const GeometryObject>>;
-            vec->reserve(n);
-
-            for(int i = 0; i < n; i++) {
-                shared_ptr<GeometryObject> p = py::extract<shared_ptr<GeometryObject>>(PySequence_GetItem(obj, i));
-                vec->push_back(const_pointer_cast<const GeometryObject>(p));
-            }
-
-            // Stash the memory chunk pointer for later use by boost.python
-            data->convertible = vec;
-        }
-    };
 }
 
 static bool Hint__eq__(const PathHints::Hint& first, const PathHints::Hint& second) {
@@ -112,7 +73,6 @@ void register_geometry_path()
     ;
 
     set_to_python_list_conventer<shared_ptr<GeometryObject>>();
-    // export_frozenset<shared_ptr<GeometryObject>>("GeometryObject_set");
 
     py::class_<PathHints, shared_ptr<PathHints>>("PathHints",
                           "Hint used for resolving ambiguities in a geometry tree.\n\n"
@@ -144,13 +104,10 @@ void register_geometry_path()
         .def("__init__", py::make_constructor(Path__init__<const PathHints::Hint&>))
         .def("__init__", py::make_constructor(Path__init__<const GeometryObject&>))
         .def("__init__", py::make_constructor(Path__init__<const GeometryObject::Subtree&>))
-        .def("__init__", py::make_constructor(Path__init__<const std::vector<shared_ptr<const GeometryObject>>&>))
         .def("__getitem__", &Path__getitem__)
         .def("__len__", &Path__len__)
         .def("append", (Path& (Path::*)(shared_ptr<const GeometryObject>, const PathHints*))&Path::append,
              (py::arg("object"), py::arg("hints")=py::object()), py::return_self<>())
-//         .def("append", (Path& (Path::*)(const std::vector<shared_ptr<const GeometryObject>>&, const PathHints*))&Path::append,
-//              (py::arg("objects"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const PathHints::Hint&, const PathHints*))&Path::append,
              (py::arg("hint"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const GeometryObject::Subtree&, const PathHints*))&Path::append,
@@ -161,8 +118,6 @@ void register_geometry_path()
              "Args:\n"
              "object (GeometryObject): Geometry object to append to the path. It must be\n"
              "                         an item of a container already present in it.\n"
-//              "objects (sequence): Sequence of geometry objects to append to the path. All of\n"
-//              "                    them must be items of containers already present in the path.\n"
              "hint (PathHint): Hint returned by a addition of an object to the container\n"
              "                 already present in the path.\n"
              "subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
@@ -175,13 +130,9 @@ void register_geometry_path()
         .def(py::self += py::other<PathHints::Hint>())
         .def(py::self += py::other<shared_ptr<const GeometryObject>>())
         .def(py::self += py::other<GeometryObject::Subtree>())
-//         .def(py::self += py::other<std::vector<shared_ptr<const GeometryObject>>>())
         .def("__eq__", __is__<Path>)
     ;
     py::implicitly_convertible<Path,PathHints>();
-
-    boost::python::converter::registry::push_back(&detail::Object_List_from_Python::convertible, &detail::Object_List_from_Python::construct,
-                                                  boost::python::type_id<std::vector<shared_ptr<const GeometryObject>>>());
 
     py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", "A selected part of a geometry tree.", py::no_init)
         .def("__nonzero__", &Subtree__nonzero__)
