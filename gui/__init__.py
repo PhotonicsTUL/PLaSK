@@ -119,6 +119,8 @@ class MainWindow(QtGui.QMainWindow):
         'connects': "Define connections between computational solvers (Alt+C)",
         'script': "Edit control script for your computations (Alt+R)"}
 
+    closing = QtCore.pyqtSignal(QtGui.QCloseEvent) if qt4 == 'PyQt4' else QtCore.Signal(QtGui.QCloseEvent)
+
     closed = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
 
     def __init__(self, filename=None):
@@ -467,6 +469,11 @@ class MainWindow(QtGui.QMainWindow):
             self.tools_menu.removeAction(action)
 
     def closeEvent(self, event):
+
+        self.closing.emit(event)
+        if not event.isAccepted():
+            return
+
         if self.isWindowModified():
             confirm = QtGui.QMessageBox.question(self, "Unsaved File",
                                                  "File is not saved. Do you want to save it before closing the window?",

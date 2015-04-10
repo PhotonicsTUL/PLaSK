@@ -207,7 +207,6 @@ class A(object):
         Fun fun fun
         :rtype: RootParams
         """
-        print dupa
         pass
 
 a = A()

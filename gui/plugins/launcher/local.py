@@ -46,6 +46,9 @@ class OutputWindow(QtGui.QDockWidget):
 
         self.launcher = launcher
 
+        if parent is not None:
+            parent.closing.connect(self.check_close_event)
+
         font = QtGui.QFont()
         font_family = CONFIG['launcher_local/font_family']
         if font_family is None:
@@ -151,6 +154,7 @@ class OutputWindow(QtGui.QDockWidget):
                                          "Halt (Alt+X)", self)
         self.halt_action.setShortcut('Alt+x')
         self.halt_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.halt_action.triggered.connect(self.halt_thread)
         self.messages.addAction(self.halt_action)
         toolbar.addAction(self.halt_action)
 
@@ -232,9 +236,10 @@ class OutputWindow(QtGui.QDockWidget):
         if visible:
             self.messages.setFocus()
 
-    def closeEvent(self, event):
-        focus = self.messages.hasFocus()
-        if self.thread.isRunning():
+    def check_close_event(self, event):
+        checked = getattr(event, 'checked_by_laucher_local', False)
+        if not checked and event.isAccepted() and self.thread.isRunning():
+            event.checked_by_laucher_local = True
             confirm = QtGui.QMessageBox.question(self, "Close Window",
                                                  "PLaSK process is currently running. Closing the window "
                                                  "will terminate it. Do you really want to proceed? "
@@ -248,10 +253,14 @@ class OutputWindow(QtGui.QDockWidget):
                                                "Please try once again or contact the program authors.",
                                                QtGui.QMessageBox.Ok)
                     event.ignore()
-                    return
             else:
                 event.ignore()
-                return
+
+    def closeEvent(self, event):
+        focus = self.messages.hasFocus()
+        self.check_close_event(event)
+        if not event.isAccepted():
+            return
         super(OutputWindow, self).closeEvent(event)
         if focus:
             main_window = self.parent()
@@ -405,7 +414,7 @@ class Launcher(object):
             dirname = self.dirname
         else:
             dirname = os.path.dirname(filename)
-            
+
         dock = OutputWindow(self, main_window)
         try:
             bottom_docked = [w for w in main_window.findChildren(QtGui.QDockWidget)
@@ -421,7 +430,6 @@ class Launcher(object):
         self.mutex = QtCore.QMutex()
         dock.thread = PlaskThread(self.program, filename, dirname, dock.lines, self.mutex, main_window, *args)
         dock.thread.finished.connect(dock.thread_finished)
-        dock.halt_action.triggered.connect(dock.halt_thread)
         dock.thread.start()
 
     def select_workdir(self, filename):
