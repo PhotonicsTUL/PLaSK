@@ -425,8 +425,8 @@ class GNode(object):
             if isinstance(real_indexes, Number): real_indexes = (real_indexes,)
             for real_index in real_indexes:
                 try:
-                    object = object._child(real_index)
-                except AttributeError:  #geometry manager has no child:
+                    object = object[real_index]
+                except TypeError:  # geometry manager has no child:
                     object = object._root(real_index)
             node = node.children[index]
         return object, node
