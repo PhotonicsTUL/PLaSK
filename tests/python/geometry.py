@@ -82,7 +82,8 @@ class GeometryPath(unittest.TestCase):
         self.stack2.append(self.object2)
 
     def testPath(self):
-        p = plask.geometry.Path([self.stack1, self.stack2])
+        p = plask.geometry.Path(self.stack1)
+        p += self.stack2
         p += self.object1
 
     def testIncludes(self):
@@ -132,9 +133,9 @@ class Containers(unittest.TestCase):
         self.assertEqual( multistack.get_material(1.0, 39.0), self.aln )
         self.assertIsNone( multistack.get_material(4.0, 41.0) )
         self.assertEqual( multistack[0].item, self.block1 )
-        self.assertEqual( multistack[0].translation, plask.vec(0., 10.) )
+        self.assertEqual( multistack[0].vec, plask.vec(0., 10.) )
         self.assertEqual( multistack[9].item, self.block2 )
-        self.assertEqual( multistack[9].translation, plask.vec(0., 37.) )
+        self.assertEqual( multistack[9].vec, plask.vec(0., 37.) )
         hints1 = plask.geometry.PathHints()
         hints1 += hint1
         self.assertEqual( len(multistack[hints1]), 1 )
