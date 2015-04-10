@@ -179,7 +179,8 @@ class NavigationToolbar(NavigationToolbar2QT):
                 self._widgets['select_plane'].addItems((axes[1]+'-'+axes[0], axes[0]+'-'+axes[2], axes[1]+'-'+axes[2]))
             self._axes_names = axes
             self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
-            self._widgets['select_plane'].setCurrentIndex(indx)
+            with BlockQtSignals(self._widgets['select_plane']):
+                self._widgets['select_plane'].setCurrentIndex(indx)
 
 
 class PlotWidget(QtGui.QGroupBox):
