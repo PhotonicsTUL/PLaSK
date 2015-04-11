@@ -58,7 +58,7 @@ class GeometryController(Controller):
             if not first:
                 result.addSeparator()
             first = False
-            for type_name, type_constructor in sorted(section.items(), key=operator.itemgetter(0)):
+            for type_name, type_constructor in section.items():
                 if type_name.endswith('2d') or type_name.endswith('3d'):
                     type_name = type_name[:-2]
                 a = QtGui.QAction(gname(type_name, True), result)

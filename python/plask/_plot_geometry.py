@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # ### plot_geometry ###
 import math
+import colorsys
 
 import plask
 import matplotlib
@@ -84,7 +85,9 @@ class _MaterialToColor(object):
         if s == 'air':
             return self._air_color
         i = adler32(s)      # maybe crc32?
-        return (i & 0xff) / 255.0, ((i >> 8) & 0xff) / 255.0, ((i >> 16) & 0xff) / 255.0
+        h, s, v = (i & 0xff), (i >> 8) & 0xff, (i >> 16) & 0xff
+        h, s, v = (h + 12.) / 279., (s + 153.) / 408., (v + 153.) / 408.
+        return colorsys.hsv_to_rgb(h, s, v)
 
 
 class _ColorFromDict(object):
