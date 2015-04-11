@@ -48,7 +48,7 @@ class GNAligner(object):
         :return: tuple with aligner names: lo, center, hi, origin, center (alternative name)
         """
         return (('back', 'center', 'front', 'origin'),
-                ('left', 'center', 'right', 'orign'),
+                ('left', 'center', 'right', 'origin'),
                 ('bottom', 'center', 'top', 'origin'))[(axis_nr + 1) if dims == 2 else axis_nr]
 
     @property

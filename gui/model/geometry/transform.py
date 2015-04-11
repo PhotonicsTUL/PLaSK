@@ -44,19 +44,16 @@ class GNTranslation(GNTransform):
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNTranslation, self)._attributes_from_xml(attribute_reader, conf)
         axes_names = conf.axes_names(self.dim)
-        alternative_names = ('depth', 'width', 'height')[(3-self.dim):]
         self.size = [None for _ in range(0, self.dim)]
         for i in range(0, self.dim):
-            self.size[i] = attribute_reader.get('d' + axes_names[i])
-            if self.size[i] is None:
-                self.size[i] = attribute_reader.get(alternative_names[i])
-                
+            self.size[i] = attribute_reader.get(axes_names[i])
+
     def _attributes_to_xml(self, element, conf):
         super(GNTranslation, self)._attributes_to_xml(element, conf)
         axes_names = conf.axes_names(self.dim)
         for i in range(0, self.dim):
             v = self.size[i]
-            if v is not None: element.attrib['d' + axes_names[i]] = v
+            if v is not None: element.attrib[axes_names[i]] = v
 
     def tag_name(self, full_name=True):
         return "translation{}d".format(self.dim) if full_name else "translation"
@@ -67,7 +64,7 @@ class GNTranslation(GNTransform):
     def major_properties(self):
         res = super(GNTranslation, self).major_properties()
         if any(self.size):
-            res.append('delta', ', '.join(x if x else '?' for x in self.size))
+            res.append(('delta', ', '.join(x if x else '?' for x in self.size)))
         return res
 
     @staticmethod
@@ -324,3 +321,68 @@ class GNRevolution(GNTransform):
         result = GNRevolution()
         result.set_xml_element(element, conf)
         return result
+
+
+class GNArrange(GNTransform):
+
+    def __init__(self, parent=None, dim=None):
+        super(GNArrange, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.step = [None for _ in range(0, dim)]
+        self.count = None
+        self.warning = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNArrange, self)._attributes_from_xml(attribute_reader, conf)
+        axes_names = conf.axes_names(self.dim)
+        self.step = [None for _ in range(0, self.dim)]
+        for i in range(0, self.dim):
+            self.step[i] = attribute_reader.get('d' + axes_names[i])
+        self.count = attribute_reader.get('count')
+        self.warning = attribute_reader.get('warning')
+
+    def _attributes_to_xml(self, element, conf):
+        super(GNArrange, self)._attributes_to_xml(element, conf)
+        axes_names = conf.axes_names(self.dim)
+        for i in range(0, self.dim):
+            v = self.step[i]
+            if v is not None: element.attrib['d' + axes_names[i]] = v
+        if self.count is not None: element.attrib['count'] = self.count
+        if self.warning is not None: element.attrib['warning'] = self.warning
+
+    def tag_name(self, full_name=True):
+        return "arrange{}d".format(self.dim) if full_name else "arrange"
+
+    def python_type(self):
+        return 'geometry.Arrange{}D'.format(self.dim)
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNArrangeController
+        return GNArrangeController(document, model, self)
+
+    def major_properties(self):
+        res = super(GNArrange, self).major_properties()
+        if any(self.step):
+            res.append(('step', ', '.join(x if x else '0' for x in self.step)))
+        if self.count:
+            res.append(('count', self.count))
+        return res
+
+    @staticmethod
+    def from_xml_2d(element, conf):
+        result = GNArrange(dim=2)
+        result.set_xml_element(element, conf)
+        return result
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNArrange(dim=3)
+        result.set_xml_element(element, conf)
+        return result
+
+    def model_to_real_index(self, index):
+        return index, 0
+
+    def real_to_model_index(self, path_iterator):
+        path_iterator.next()
+        path_iterator.next()
+        return 0

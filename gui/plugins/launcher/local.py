@@ -286,7 +286,6 @@ class PlaskThread(QtCore.QThread):
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.link = re.compile(r'({}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fname))
-        print
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)

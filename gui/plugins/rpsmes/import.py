@@ -48,20 +48,18 @@ class Region(object):
         w = '%.4f' % (self.x1 - self.x0)
         h = '%.4f' % (self.y1 - self.y0)
         more = ""
-        if self.repeat and not self.name: self.name = unique_object_name()
         if self.role: more += ' role="%s"' % self.role
         if self.name: more += ' name="%s"' % self.name
         locals().update(self.__dict__)
-        output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
-                     '<block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
         if self.repeat:
-            x = self.x0
-            y = self.y0
-            for i in range(self.repeat):
-                x += self.shift[0]
-                y += self.shift[1]
-                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f">'
-                             '<again ref="%(name)s"/></item>\n' % locals())
+            sx, sy = self.shift
+            output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
+                         '<arrange d%(a0)s="%(sx)s" d%(a1)s="%(sy)s" count="%(repeat)s">\n'
+                         '        <block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/>\n'
+                         '      </arrange></item>' % locals())
+        else:
+            output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
+                         '<block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
 
 
 class Material(object):
@@ -178,7 +176,7 @@ def read_dan(fname):
         line = input.next()
         n = int(line[0])
         if n == 0:
-            r.repeat = int(line[1]) - 1
+            r.repeat = int(line[1])
             r.shift = [0., 0.]
             r.shift[{'pionowo': 1, 'poziomo': 0}[line[3].lower()]] = scale * float(line[2])
             line = input.next()

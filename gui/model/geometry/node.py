@@ -383,7 +383,7 @@ class GNode(object):
 
     def real_to_model_index(self, path_iterator):
         """
-        Calculate model index which corresponds to begins of the real path.
+        Calculate model index which corresponds to beginning of the real path.
         :param path_iterator: iterator over path
         :return int: index
         """
@@ -410,7 +410,6 @@ class GNode(object):
                 node = node.children[node.real_to_model_index(real_path_iterator)]
             except (StopIteration, IndexError):
                 break
-        print
         return node
 
     def get_object_by_model_path(self, object, model_path):

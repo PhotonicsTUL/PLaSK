@@ -1,102 +1,165 @@
-// #ifndef PLASK__GEOMETRY_LATTICE_H
-// #define PLASK__GEOMETRY_LATTICE_H
-//
-// #include "container.h"
-// #include "container.h"
-//
-// namespace plask {
-//
-// /// Sequence container that repeats its children over a line shifted by a vector
-// template <int dim>
-// struct PLASK_API Repeat: public GeometryObjectTransform<3> {
-//
-//     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-//     typedef typename GeometryObjectTransform<3>::DVec DVec;
-//
-//     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-//     typedef typename GeometryObjectTransform<3>::Box Box;
-//
-//     /// Type of this child.
-//     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
-//
-//     /// Type of translation geometry element in space of this.
-//     typedef typename GeometryObjectTransform<3>::TranslationT TranslationT;
-//
-//     /// Type of the vector holding container children
-//     typedef typename GeometryObjectTransform<3>::TranslationVector TranslationVector;
-//
-//     using GeometryObjectTransform<dim>::getChild;
-//
-//     /// Translation vector for each repetition
-//     DVec shift;
-//
-//     /// Number of repetitions
-//     unsigned repeat_count;
-//
-//     virtual Box getBoundingBox() const override;
-//
-//     virtual Box getRealBoundingBox() const override;
-//
-//     virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
-//
-//     virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
-//
-//     virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
-//
-//     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path = 0) const;
-//
-//     virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
-//
-//     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
-//
-//     virtual bool contains(const DVec& p) const override;
-//
-//     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
-//
-//     virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
-//
-//     virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
-//
-//     virtual std::size_t getRealChildrenCount() const override;
-//
-//     virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
-//
-//     unsigned getRepeatCount() const { return repeat_count; }
-//
-//     void setRepeatCount(unsigned new_repeat_count) {
-//         if (repeat_count == new_repeat_count) return;
-//         repeat_count = new_repeat_count;
-//         this->fireChildrenChanged();    //TODO should this be called? or simple change?
-//
-// };
-//
+#ifndef PLASK__GEOMETRY_LATTICE_H
+#define PLASK__GEOMETRY_LATTICE_H
+
+#include <cmath>
+
+#include "transform.h"
+#include "../log/log.h"
+
+namespace plask {
+
+/// Sequence container that repeats its child over a line shifted by a vector.
+/// You can consider this as a one-dimentional lattice
+template <int dim>
+struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
+{
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    typedef typename GeometryObjectTransform<dim>::DVec DVec;
+
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename GeometryObjectTransform<dim>::Box Box;
+
+    /// Type of this child.
+    typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
+
+    using GeometryObjectTransform<dim>::getChild;
+
+  protected:
+      
+    using GeometryObjectTransform<dim>::_child;
+
+    /// Translation vector for each repetition
+    DVec translation;
+
+    /// Number of repetitions
+    unsigned repeat_count;
+
+    /// Reduce vector to the first repetition
+    std::pair<int, int> bounds(const DVec& vec) const {
+        if (!_child || repeat_count == 0) return std::make_pair(1, 0);
+        auto box = _child->getBoundingBox();
+        int hi = repeat_count - 1, lo = 0;
+        for (int i = 0; i != dim; ++i) {
+            if (translation[i] >= 0.) {
+                hi = min(int(std::floor((vec[i] - box.lower[i]) / translation[i])), hi);
+                lo = max(1 + int(std::floor((vec[i] - box.upper[i]) / translation[i])), lo);
+            } else {
+                lo = max(1 + int(std::floor((vec[i] - box.lower[i]) / translation[i])), lo);
+                hi = min(int(std::floor((vec[i] - box.upper[i]) / translation[i])), hi);
+            }
+        }
+        return std::make_pair(lo, hi);
+    }
+    
+  public:
+
+    /// Should the user be warned about overlapping bounding boxes?
+    bool warn_overlapping;
+
+    ArrangeContainer(): translation(Primitive<dim>::ZERO_VEC), repeat_count(0), warn_overlapping(true) {}
+
+    /// Create a repeat object.
+    /// \param item Object to repeat.
+    /// \param step Vector, by which each repetition is shifted from the previous one.
+    /// \param count Number of repetitions.
+    ArrangeContainer(const shared_ptr<ChildType>& child, const DVec& step, unsigned repeat, bool warn=true):
+         GeometryObjectTransform<dim>(child), translation(step), repeat_count(repeat), warn_overlapping(warn) {
+        if (warn) {
+            Box box = getChild()->getBoundingBox();
+            box -= box.lower;
+            if (box.intersects(box + translation))
+                writelog(LOG_WARNING, "Arrange: item bboxes overlap");
+        }
+    }
+    
+    static constexpr const char* NAME = dim == 2 ?
+                ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+    std::string getTypeName() const override { return NAME; }
+    
+    Box getBoundingBox() const override;
+
+    Box getRealBoundingBox() const override;
+
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+
+    bool contains(const DVec& p) const override;
+
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
+
+    std::size_t getChildrenCount() const override;
+
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
+
+    std::size_t getRealChildrenCount() const override;
+
+    shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
+    
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+
+    shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    
+    unsigned getRepeatCount() const { return repeat_count; }
+
+    void setRepeatCount(unsigned new_repeat_count) {
+        if (repeat_count == new_repeat_count) return;
+        repeat_count = new_repeat_count;
+        this->fireChildrenChanged();
+    }
+
+    DVec getTranslation() const { return translation; }
+
+    void setTranslation(DVec new_translation) {
+        if (translation == new_translation) return;
+        translation = new_translation;
+        if (warn_overlapping) {
+            Box box = getChild()->getBoundingBox();
+            box -= box.lower;
+            if (box.intersects(box + translation))
+                writelog(LOG_WARNING, "Arrange: item bboxes overlap");
+        }
+        this->fireChildrenChanged();
+    }
+  
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+};
+
+template <> void ArrangeContainer<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+template <> void ArrangeContainer<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+
+PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
+
+
+
 // /// Lattice container that arranges its children in two-dimensional lattice
 // struct PLASK_API Lattice: public GeometryObjectTransform<3> {
-//
+// 
 //     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
 //     typedef typename GeometryObjectTransform<3>::DVec DVec;
-//
+// 
 //     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
 //     typedef typename GeometryObjectTransform<3>::Box Box;
-//
+// 
 //     /// Type of this child.
 //     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
-//
-//     /// Type of translation geometry element in space of this.
-//     typedef typename GeometryObjectTransform<3>::TranslationT TranslationT;
-//
-//     /// Type of the vector holding container children
-//     typedef typename GeometryObjectTransform<3>::TranslationVector TranslationVector;
-//
+// 
 //     using GeometryObjectTransform<dim>::getChild;
-//
+// 
 //     /// Lattice vectors
 //     DVec vec0, vec1;
-//
+// 
 //     /// Create a lattice
-//
+// 
 // };
-//
-// } // namespace plask
-//
-// #endif // PLASK__GEOMETRY_LATTICE_H
+
+} // namespace plask
+
+#endif // PLASK__GEOMETRY_LATTICE_H

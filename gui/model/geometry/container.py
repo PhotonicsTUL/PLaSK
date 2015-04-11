@@ -157,7 +157,7 @@ class GNContainerBase(GNObject):
 
     def real_to_model_index(self, path_iterator):
         index = path_iterator.next()
-        path_iterator.next()    #skip 0
+        path_iterator.next()    # skip 0
         return index
 
 
@@ -379,7 +379,7 @@ class GNAlignContainer(GNContainerBase):
         return "align{}d".format(self.dim) if full_name else "align"
 
     def python_type(self):
-        return 'geometry.AlignContainer{}D'.format(self.dim)
+        return 'geometry.Align{}D'.format(self.dim)
 
     def _aligners_to_properties(self, aligners):
         res = []

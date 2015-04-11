@@ -225,7 +225,7 @@ class Aspect(unittest.TestCase):
     def testAspect(self):
         r1 = plask.geometry.Rectangle(1, 1, None)
         r2 = plask.geometry.Rectangle(10, 20, None)
-        align = plask.geometry.AlignContainer2D()
+        align = plask.geometry.Align2D()
         align.append(r1, right=0, bottom=0)
         align.append(r2, left=0, top=0)
         geo = plask.geometry.Cartesian2D(align)

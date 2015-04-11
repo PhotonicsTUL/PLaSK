@@ -56,7 +56,7 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
 }
 
 
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "GeometryObjectContainer", "Base class for all "," containers.") {
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "Container", "Base class for all "," containers.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, GeometryObjectD<dim>)
         .def("__contains__", &Container__contains__<dim>)
         .def("__getitem__", &GeometryObject__getitem__)
@@ -91,14 +91,16 @@ PathHints::Hint TranslationContainer_add(py::tuple args, py::dict kwargs) {
 
 void register_geometry_container_stack();
 
+void register_geometry_container_lattice();
+
 void register_geometry_container()
 {
     init_GeometryObjectContainer<2>();
     init_GeometryObjectContainer<3>();
 
     py::class_<TranslationContainer<2>, shared_ptr<TranslationContainer<2>>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>
-    ("AlignContainer2D",
-     "AlignContainer2D()\n\n"
+    ("Align2D",
+     "Align2D()\n\n"
      "Container with its items located according to specified alignment.\n\n"
      "Container in which every item is located according to its alignment\n"
      "specification. Items in this container can overlap with each other so, although\n"
@@ -106,7 +108,7 @@ void register_geometry_container()
      "Example:\n"
      "    To create a trapezoid of the height 2µm and lower and upper bases of 4µm and\n"
      "    3µm, respectively, you can issue the following commands:\n\n"
-     "    >>> trapezoid = plask.geometry.AlignContainer2D()\n"
+     "    >>> trapezoid = plask.geometry.Align2D()\n"
      "    >>> trapezoid.append(plask.geometry.Rectangle(4, 2, 'GaAs'), 0, 0)\n"
      "    >>> trapezoid.append(plask.geometry.Triangle((0, 2), (-1, 2), 'air'),\n"
      "                         bottom=0, right=4)\n\n"
@@ -138,7 +140,7 @@ void register_geometry_container()
         .def("add", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
             (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)))
         .def("add", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"),
-            "Alias for :meth:`~plask.geometry.AlignContainer2D.append`.\n"
+            "Alias for :meth:`~plask.geometry.Align2D.append`.\n"
         )
 
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<2>>),
@@ -146,7 +148,7 @@ void register_geometry_container()
             "Move item existing in the container, setting its position according to the new\n"
             "aligners.\n\n"
             "Args:\n"
-            "    path (Path): Path returned by :meth:`~plask.geometry.AlignContainer2D.append`\n"
+            "    path (Path): Path returned by :meth:`~plask.geometry.Align2D.append`\n"
             "                 specifying the object to move.\n"
             "    alignments (dict): Alignment specifications. The keys in this dictionary\n"
             "                       are can be ``left``, ``right``, ``top``, ``bottom``,\n"
@@ -158,15 +160,15 @@ void register_geometry_container()
        ;
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
-    ("AlignContainer3D",
-     "AlignContainer3D()\n\n"
+    ("Align3D",
+     "Align3D()\n\n"
      "Container with its items located according to specified alignment.\n\n"
      "Container in which every item is located according to its alignment\n"
      "specification. Items in this container can overlap with each other so, although\n"
      "their order matches, you can cretate any arrangement you wish.\n\n"
      "Example:\n"
      "    To create a hollow cylinder, you can issue the following commands:\n\n"
-     "    >>> hollow = plask.geometry.AlignContainer3D()\n"
+     "    >>> hollow = plask.geometry.Align3D()\n"
      "    >>> hollow.append(plask.geometry.Cylinder(10, 2, 'GaAs'), 0, 0, 0)\n"
      "    >>> hollow.append(plask.geometry.Cylinder(8, 2, 'air'), 0, 0, 0)\n\n"
      "    The small cylinder (hole) now overlaps a part of the large one.\n"
@@ -199,13 +201,15 @@ void register_geometry_container()
         .def("add", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
              (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)))
         .def("add", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"),
-            "Alias for :meth:`~plask.geometry.AlignContainer3D.append`.\n"
+            "Alias for :meth:`~plask.geometry.Align3D.append`.\n"
         )
 
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<3>>), "Move item in container")
     ;
 
     register_geometry_container_stack();
+    
+    register_geometry_container_lattice();
 }
 
 

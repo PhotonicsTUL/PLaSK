@@ -6,7 +6,7 @@
 namespace plask { namespace python {
 
 template <int dim, int cdim>
-static bool STransfrom__contains__(const GeometryObjectTransformSpace<dim,cdim>& self, shared_ptr<typename GeometryObjectTransform<cdim>::ChildType> child) {
+static bool STransform__contains__(const GeometryObjectTransformSpace<dim,cdim>& self, shared_ptr<typename GeometryObjectTransform<cdim>::ChildType> child) {
     if (self.getChild() == child) return true;
     return false;
 }
@@ -19,7 +19,7 @@ void register_geometry_changespace()
         .add_property("item",
                       (shared_ptr<typename GeometryObjectTransformSpace<3,2>::ChildType> (GeometryObjectTransformSpace<3,2>::*)()) &GeometryObjectTransformSpace<3,2>::getChild,
                       &GeometryObjectTransformSpace<3,2>::setChild, "Transformed 2D object.")
-        .def("__contains__", &STransfrom__contains__<3,2>)
+        .def("__contains__", &STransform__contains__<3,2>)
     ;
 
     // py::class_<GeometryObjectTransformSpace<2,3>, shared_ptr<GeometryObjectTransformSpace<2,3>>, py::bases<GeometryObjectD<2>>, boost::noncopyable>
@@ -27,7 +27,7 @@ void register_geometry_changespace()
     //     .add_property("item",
     //                   (shared_ptr<typename GeometryObjectTransformSpace<2,3>::ChildType> (GeometryObjectTransformSpace<2,3>::*)()) &GeometryObjectTransformSpace<2,3>::getChild,
     //                   &GeometryObjectTransformSpace<2,3>::setChild, "Child of the transform object")
-    //     .def("__contains__", &STransfrom__contains__<2,3>)
+    //     .def("__contains__", &STransform__contains__<2,3>)
     // ;
 
     py::class_<Extrusion, shared_ptr<Extrusion>, py::bases<GeometryObjectTransformSpace<3,2>>, boost::noncopyable>("Extrusion",

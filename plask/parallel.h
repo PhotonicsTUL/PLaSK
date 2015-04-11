@@ -145,6 +145,7 @@ namespace plask {
     struct OmpLockGuard {
         OmpLockGuard() {}
         OmpLockGuard(const LockType&) {}
+        ~OmpLockGuard() {}
         OmpLockGuard(OmpLockGuard<LockType>&&) = default;
         OmpLockGuard& operator=(OmpLockGuard<LockType>&&) = default;
         OmpLockGuard(const OmpLockGuard<LockType>&) = delete;

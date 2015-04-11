@@ -198,8 +198,8 @@ def Shelf(repeat=None, shift=0.):
 geometry.Shelf = Shelf
 del Shelf
 
-geometry.Container2D = geometry.AlignContainer2D
-geometry.Container3D = geometry.AlignContainer3D
+geometry.AlignContainer2D = geometry.Align2D
+geometry.AlignContainer3D = geometry.Align3D
 
 ## ## plask.manager ## ##
 

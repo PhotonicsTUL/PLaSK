@@ -108,3 +108,26 @@ class GNRevolutionController(GNObjectController):
         super(GNRevolutionController, self).on_edit_enter()
         with BlockQtSignals(self.auto_clip):
             self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))
+
+
+class GNArrangeController(GNObjectController):
+
+    def fill_form(self):
+        self.construct_group('Arrange Settings')
+        self.step = self.construct_point_controllers(row_name='Step:')
+        self.count = self.construct_line_edit('Count:', node_property_name='count', display_property_name='count')
+        self.count.setToolTip(u'&lt;arrange <b>count</b>="" ...&gt;<br/>'
+                               u'Number of item repetitions.')
+        super(GNArrangeController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNArrangeController, self).save_data_in_model()
+        self.node.step = [empty_to_none(p.text()) for p in self.step]
+        self.node.count = empty_to_none(self.count.text())
+
+    def on_edit_enter(self):
+        super(GNArrangeController, self).on_edit_enter()
+        for i in range(0, self.node.dim):
+            self.step[i].setText(none_to_empty(self.node.step[i]))
+        self.count.setText(none_to_empty(self.node.count))
+

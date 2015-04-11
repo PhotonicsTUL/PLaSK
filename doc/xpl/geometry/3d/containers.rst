@@ -3,7 +3,7 @@ Containers
 
 .. xml:tag:: <align3d> (or <align>)
 
-   Corresponding Python class: :py:class:`plask.geometry.AlignContainer3D`.
+   Corresponding Python class: :py:class:`plask.geometry.Align3D`.
 
    Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 

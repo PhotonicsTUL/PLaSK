@@ -10,19 +10,19 @@ namespace plask { namespace python {
 extern AxisNames current_axes;
 
 template <int dim>
-static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shared_ptr<typename GeometryObjectTransform<dim>::ChildType> child) {
+static bool Transform__contains__(const GeometryObjectTransform<dim>& self, shared_ptr<typename GeometryObjectTransform<dim>::ChildType> child) {
     if (self.getChild() == child) return true;
     return false;
 }
 
 
 /// Initialize class GeometryObjectTransform for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform", "Base class for all "," geometry transforms.") {
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "Transform", "Base class for all "," geometry transforms.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, GeometryObjectD<dim>)
         .add_property("item",
                       (shared_ptr<typename GeometryObjectTransform<dim>::ChildType> (GeometryObjectTransform<dim>::*)()) &GeometryObjectTransform<dim>::getChild,
                       &GeometryObjectTransform<dim>::setChild, "Transformed item.")
-        .def("__contains__", &Transfrom__contains__<dim>)
+        .def("__contains__", &Transform__contains__<dim>)
 
     ;
 }

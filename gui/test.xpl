@@ -21,6 +21,12 @@
 <geometry>
   <cartesian2d name="geo2d">
     <stack>
+      <arrange dtran="0.4" dvert="0" count="3">
+        <stack>
+          <rectangle material="InN" dtran="0.2" dvert="0.1"/>
+          <rectangle material="In(0.5)GaN" dtran="0.2" dvert="0.1"/>
+        </stack>
+      </arrange>
       <rectangle material="AlN" dtran="1" dvert="0.2"/>
       <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>

@@ -466,6 +466,16 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_p
         drawer(env, geometry_object, transform, clipbox, plask_real_path)
 
 
+def plane_to_axes(plane, dim):
+    """
+    Get number of axes used by plot_geometry.
+    :param str plane: plane parameter given to plot_geometry, a string with two letters specifying axis names of the drawn plane.
+    :param int dim: number of dimension of geometry object passed to plot_geometry, 2 or 3
+    :return (int, int): numbers of the first and the second axis
+    """
+    return _get_2d_axes(plane) if dim == 3 else (0, 1)
+
+
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
                   axes=None, figure=None, margin=None, get_color=None, alpha=1.0, set_limits=None, picker=None):
     """
@@ -631,13 +641,3 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
     return axes
-
-
-def plane_to_axes(plane, dim):
-    '''
-    Get number of axes used by plot_geometry.
-    :param str plane: plane parameter given to plot_geometry, a string with two letters specifying axis names of the drawn plane.
-    :param int dim: number of dimension of geometry object passed to plot_geometry, 2 or 3
-    :return (int, int): numbers of the first and the second axis
-    '''
-    return _get_2d_axes(plane) if dim == 3 else (0, 1)

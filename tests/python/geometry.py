@@ -144,22 +144,22 @@ class Containers(unittest.TestCase):
 
     def testRemoval(self):
         '''Test if removing objects from container works. In addition test prepending objects'''
-        container = plask.geometry.Container2D()
-        h = container.append(self.block1, 0,0) # be removed by hint
-        container.append(self.block2, 10,0)
-        container.append(self.block1, 10,0) # to be removed by index
-        container.append(self.block2, 5,0) # to be removed by object
-        self.assertEqual( container[0].item, self.block1 )
-        self.assertEqual( container.get_material(12,1), self.gan)
-        del container[2]
-        self.assertEqual( len(container), 3 )
-        self.assertEqual( container.get_material(12,1), self.aln)
-        del container[h]
-        self.assertEqual( len(container), 2 )
-        self.assertEqual( container.get_material(1,1), None )
-        del container[container[-1]]
-        self.assertEqual( len(container), 1 )
-        self.assertEqual( container.get_material(6,1), None )
+        align = plask.geometry.Align2D()
+        h = align.append(self.block1, 0,0) # be removed by hint
+        align.append(self.block2, 10,0)
+        align.append(self.block1, 10,0) # to be removed by index
+        align.append(self.block2, 5,0) # to be removed by object
+        self.assertEqual( align[0].item, self.block1 )
+        self.assertEqual( align.get_material(12,1), self.gan)
+        del align[2]
+        self.assertEqual( len(align), 3 )
+        self.assertEqual( align.get_material(12,1), self.aln)
+        del align[h]
+        self.assertEqual( len(align), 2 )
+        self.assertEqual( align.get_material(1,1), None )
+        del align[align[-1]]
+        self.assertEqual( len(align), 1 )
+        self.assertEqual( align.get_material(6,1), None )
 
         stack = plask.geometry.Stack3D()
         stack.append(self.cube1, xcenter=0, ycenter=0) # to be removed by object

@@ -65,13 +65,16 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * Get child.
      * @return child
      */
-    inline shared_ptr<ChildType> getChild() const { return _child; }
+    inline shared_ptr<ChildType> getChild() const { 
+        if (_child) return _child;
+        throw NoChildException();
+    }
 
     /**
      * Get type of child.
      * @return type of child
      */
-    inline GeometryObject::Type getChildType() const { return _child->getType(); }
+    inline GeometryObject::Type getChildType() const { return getChild()->getType(); }
 
     /**
      * Set new child.
@@ -158,7 +161,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     }
 
     /**
-     * Conver bouding box from child's to this's coordinates.
+     * Conver bounding box from child's to this's coordinates.
      * @param child_bbox bouding box of child
      * @return @p child_bbox converted to this's coordinates
      */

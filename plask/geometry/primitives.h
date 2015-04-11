@@ -42,7 +42,7 @@ struct PLASK_API Box2D {
      */
     constexpr double width() const { return upper.tran() - lower.tran(); }
 
-    ///Construct uninitialized .
+    /// Construct uninitialized .
     constexpr Box2D() {}
 
     /**
