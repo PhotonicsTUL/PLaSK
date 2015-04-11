@@ -392,7 +392,25 @@ class StepProfile(object):
 
 ## ##  ## ##
 
-#from .pylab import *
+def LAM(mat, lam, T=300.):
+    """
+    Compute optical wavelength in specified material.
+    
+    This is utility function that computes the physical lenght of a single
+    wavelength in specified material. Its main purpose is easier design of
+    DBR stack.
+    
+    If you are using it with custom materials, make sure that it does provide
+    :meth:`~plask.material.Material.nr` method.
+    
+    Args:
+        mat (material.Material or str): Material to compute physical wavelength in.
+        lam (float): Free-space wavelength to scale for material `mat`.
+        T (float): Temperature at which material refractive index is retrieved.
+    """
+    return 1e-3 * lam / material.get(mat).nr(lam, T)
+## ##  ## ##
+
 try:
     from .pylab import *
 except ImportError:
@@ -404,7 +422,6 @@ except ImportError:
 else:
     has_pylab = True
 
-#from .hdf5 import *
 try:
     from .hdf5 import *
 except ImportError:
@@ -422,3 +439,5 @@ import plask.phys
 import plask.algorithm
 
 ## ##  ## ##
+
+_plask.__xml__globals.update(globals())

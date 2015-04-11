@@ -55,6 +55,7 @@ Functions
    plot_mesh
    plot_boundary
 
+   LAM
 
 Descriptions
 ============
@@ -75,3 +76,5 @@ Descriptions
 .. autofunction::   plot_geometry
 .. autofunction::   plot_mesh
 .. autofunction::   plot_boundary
+
+.. autofunction::   LAM
