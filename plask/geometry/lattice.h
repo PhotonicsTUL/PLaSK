@@ -56,7 +56,8 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     /// Should the user be warned about overlapping bounding boxes?
     bool warn_overlapping;
 
-    ArrangeContainer(): translation(Primitive<dim>::ZERO_VEC), repeat_count(0), warn_overlapping(true) {}
+    ArrangeContainer(): GeometryObjectTransform<dim>(shared_ptr<ChildType>()), 
+        translation(Primitive<dim>::ZERO_VEC), repeat_count(0), warn_overlapping(true) {}
 
     /// Create a repeat object.
     /// \param item Object to repeat.
