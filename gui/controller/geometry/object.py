@@ -38,7 +38,7 @@ class GNObjectController(GNodeController):
         self.role = self.construct_line_edit('Roles:', node_property_name='role', display_property_name='roles')
         self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
                                 'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
-        self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)))
+        self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)), node_property_name='axes')
         self.axes.setToolTip('&lt;{} <b>axes</b>="" ...&gt;<br/>'
                             'Specification of the axes.'
                             ' Most popular values are <it>xy</it>, <it>yz</it>, <it>rz</it>'
@@ -51,7 +51,7 @@ class GNObjectController(GNodeController):
     def save_data_in_model(self):
         #self.node.name = empty_to_none(self.name.text())
         #self.node.role = empty_to_none(self.role.text())
-        self.node.axes = empty_to_none(self.axes.currentText())
+        #self.node.axes = empty_to_none(self.axes.currentText())
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
     def on_edit_enter(self):

@@ -46,8 +46,9 @@ class GNodeController(Controller):
         def undo(self):
             self.set_property_value(self.old_value)
 
-    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = ''):
-        cmd = GNodeController.SetTextPropertyCommand(self.model, self.node, property_name, new_value, display_property_name, unit)
+    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = '', node=None):
+        cmd = GNodeController.SetTextPropertyCommand(self.model, self.node if node is None else node,
+                                                     property_name, new_value, display_property_name, unit)
         if cmd.new_value != cmd.old_value: self.model.undo_stack.push(cmd)
 
 
@@ -73,13 +74,18 @@ class GNodeController(Controller):
             )
         return res
 
-    def construct_combo_box(self, row_name=None, items=[], editable=True):
+    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name = None, display_property_name = None, node = None):
         res = QtGui.QComboBox()
         res.setEditable(editable)
         res.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
-        res.editTextChanged.connect(self.after_field_change)
+        if node_property_name is None:
+            res.editTextChanged.connect(self.after_field_change)
+        else:
+            res.editTextChanged.connect(lambda :
+                self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
+            )
         return res
 
     def construct_material_combo_box(self, row_name = None, items = None):
@@ -93,10 +99,12 @@ class GNodeController(Controller):
         res.editTextChanged.connect(self.after_field_change)
         return res
 
-    def construct_names_before_self_combo_box(self, row_name = None):
+    def construct_names_before_self_combo_box(self, row_name = None, node_property_name = None, display_property_name = None):
         return self.construct_combo_box(row_name,
                                         items=[''] +
-                                        sorted(self.model.names_before(self.node), key=lambda s: s.lower()))
+                                        sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
+                                        node_property_name=node_property_name,
+                                        display_property_name=display_property_name)
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)
@@ -210,6 +218,6 @@ class GNodeController(Controller):
 class GNChildController(GNodeController):
 
     def __init__(self, document, model, node, child_node):
+        self.child_node = child_node
         super(GNChildController, self).__init__(document, model, node)
         self.vbox.setContentsMargins(0, 0, 0, 0)
-        self.child_node = child_node

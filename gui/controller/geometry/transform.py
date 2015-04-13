@@ -93,16 +93,17 @@ class GNRevolutionController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Revolution Settings')
-        self.auto_clip = self.construct_combo_box('Auto clip:', items=['', 'yes', 'no'])
+        self.auto_clip = self.construct_combo_box('Auto clip:', items=['', 'yes', 'no'],
+                                                  node_property_name='auto_clip', display_property_name='auto clip')
         self.auto_clip.setToolTip(u'&lt;revolution <b>auto-clip</b>="" ...&gt;<br/>'
                                 u'The value of this attribute can be either true of false.'
                                 u' It specifies whether item will be implicitly clipped to non-negative tran. coordinates'
                                 u' Defaults to false.')
         super(GNRevolutionController, self).fill_form()
 
-    def save_data_in_model(self):
-        super(GNRevolutionController, self).save_data_in_model()
-        self.node.auto_clip = empty_to_none(self.auto_clip.currentText())
+    #def save_data_in_model(self):
+        #super(GNRevolutionController, self).save_data_in_model()
+        #self.node.auto_clip = empty_to_none(self.auto_clip.currentText())
 
     def on_edit_enter(self):
         super(GNRevolutionController, self).on_edit_enter()

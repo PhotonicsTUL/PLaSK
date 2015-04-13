@@ -54,18 +54,18 @@ class GNShelfController(GNObjectController):
         self.shift.setToolTip(u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
                               u'Horizontal position of the shelf left edge in its local coordinates.'
                               u' Defaults to 0. (float [µm])')
-        self.flat = self.construct_combo_box('Flat:', items=['', 'yes', 'no'])
+        self.flat = self.construct_combo_box('Flat:', items=['', 'yes', 'no'], node_property_name='flat')
         self.flat.setToolTip(u'&lt;shelf <b>flat</b>="" ...&gt;<br/>'
                              u'The value of this attribute can be either true of false.'
                              u' It specifies whether all the items in the shelf are required to have the same height'
                              u' (therefore the top edge of the shelf is flat). Defaults to true.')
         super(GNShelfController, self).fill_form()
 
-    def save_data_in_model(self):
-        super(GNShelfController, self).save_data_in_model()
+    #def save_data_in_model(self):
+        #super(GNShelfController, self).save_data_in_model()
         #self.node.repeat = empty_to_none(self.repeat.text())
         #self.node.shift = empty_to_none(self.shift.text())
-        self.node.flat = empty_to_none(self.flat.currentText())
+        #self.node.flat = empty_to_none(self.flat.currentText())
 
     def on_edit_enter(self):
         super(GNShelfController, self).on_edit_enter()
@@ -144,13 +144,14 @@ class GNContainerChildBaseController(GNChildController):
     def fill_form(self):
         self.construct_group('Position in Parent Container')
         self.positions = self.construct_align_controllers()
-        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()))
+        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()),
+                                             node_property_name='path', node=self.child_node)
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')
 
     def save_data_in_model(self):
         self.child_node.in_parent = controller_to_aligners(self.positions)
-        self.child_node.path = empty_to_none(self.path.currentText())
+        #self.child_node.path = empty_to_none(self.path.currentText())
 
     def on_edit_enter(self):
         aligners_to_controllers(self.child_node.in_parent, self.positions)

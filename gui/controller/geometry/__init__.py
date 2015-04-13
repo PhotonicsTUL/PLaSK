@@ -15,12 +15,7 @@ import operator
 import plask
 
 from ...qt import QtGui, QtCore
-from ...qt.QtCore import Qt
 from ...model.geometry import GeometryModel
-from ...model.geometry.geometry import GNGeometryBase
-from ...model.geometry.again_copy import GNAgain
-from ...model.geometry.object import GNObject
-from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core, gname
 
 from .. import Controller
