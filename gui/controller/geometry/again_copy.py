@@ -21,16 +21,16 @@ class GNAgainController(GNodeController):
     def fill_form(self):
         super(GNAgainController, self).fill_form()
         self.construct_group('Again Settings')
-        self.ref = self.construct_names_before_self_combo_box('Referenced object:')
+        self.ref = self.construct_names_before_self_combo_box('Referenced object:', node_property_name='ref')
         self.ref.setToolTip('&lt;again <b>ref</b>=""/&gt;<br/>'
                             'Name of the referenced object.')
         self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
-    def save_data_in_model(self):
-        super(GNAgainController, self).save_data_in_model()
-        self.node.ref = empty_to_none(self.ref.currentText())
+    #def save_data_in_model(self):
+        #super(GNAgainController, self).save_data_in_model()
+        #self.node.ref = empty_to_none(self.ref.currentText())
 
     def on_edit_enter(self):
         super(GNAgainController, self).on_edit_enter()
@@ -43,11 +43,11 @@ class GNCopyChildController(GNodeController):
     def fill_form(self):
         super(GNCopyChildController, self).fill_form()
         self.construct_group('Operation Settings')
-        self.object = self.construct_names_before_self_combo_box('Object:')
+        self.object = self.construct_names_before_self_combo_box('Object:', node_property_name='object')
 
-    def save_data_in_model(self):
-        super(GNCopyChildController, self).save_data_in_model()
-        self.node.object = empty_to_none(self.object.currentText())
+    #def save_data_in_model(self):
+        #super(GNCopyChildController, self).save_data_in_model()
+        #self.node.object = empty_to_none(self.object.currentText())
 
     def on_edit_enter(self):
         super(GNCopyChildController, self).on_edit_enter()
@@ -69,13 +69,14 @@ class GNCReplaceController(GNCopyChildController):
         super(GNCReplaceController, self).fill_form()
         self.object.setToolTip('&lt;replace <b>object</b>="" with=""/&gt;<br/>'
                                 'Name of the object to delete (replace). Required.')
-        self.replacer = self.construct_names_before_self_combo_box('With:')
+        self.replacer = self.construct_names_before_self_combo_box('With:',
+                          node_property_name='replacer', display_property_name='name of the object to replace with')
         self.replacer.setToolTip('&lt;replace object="" <b>with</b>=""/&gt;<br/>'
             'Name of the object to replace with. This object does not need to be located in the subtree of the copied object.')
 
-    def save_data_in_model(self):
-        super(GNCReplaceController, self).save_data_in_model()
-        self.node.replacer = empty_to_none(self.replacer.currentText())
+    #def save_data_in_model(self):
+        #super(GNCReplaceController, self).save_data_in_model()
+        #self.node.replacer = empty_to_none(self.replacer.currentText())
 
     def on_edit_enter(self):
         super(GNCReplaceController, self).on_edit_enter()
@@ -107,16 +108,16 @@ class GNCopyController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Copy Settings')
-        self.source = self.construct_names_before_self_combo_box('From:')
+        self.source = self.construct_names_before_self_combo_box('From:', node_property_name='source')
         self.source.setToolTip('&lt;copy <b>from</b>="" ...&gt;<br/>'
                                 'Name of the source two or three dimensional object to make modified copy of.'
                                 ' Usually it is some container that has some other named its items or sub-items.'
                                 ' Required.')
         super(GNCopyController, self).fill_form()
 
-    def save_data_in_model(self):
-        super(GNCopyController, self).save_data_in_model()
-        self.node.source = empty_to_none(self.source.currentText())
+    #def save_data_in_model(self):
+        #super(GNCopyController, self).save_data_in_model()
+        #self.node.source = empty_to_none(self.source.currentText())
 
     def on_edit_enter(self):
         super(GNCopyController, self).on_edit_enter()
