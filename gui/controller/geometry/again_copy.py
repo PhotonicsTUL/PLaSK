@@ -90,13 +90,13 @@ class GNCToBlockController(GNCopyChildController):
         super(GNCToBlockController, self).fill_form()
         self.object.setToolTip('&lt;toblock <b>object</b>="" material=""/&gt;<br/>'
                                 'Name of the object to replace with the the solid block. Required.')
-        self.material = self.construct_material_combo_box('block material', items=[''])
+        self.material = self.construct_material_combo_box('Block material:', items=[''], node_property_name='material')
         self.material.setToolTip('&lt;toblock object="" <b>material</b>=""/&gt;<br/>'
                                 'Material of the solid block. Required.')
 
-    def save_data_in_model(self):
-        super(GNCToBlockController, self).save_data_in_model()
-        self.node.material = empty_to_none(self.material.currentText())
+    #def save_data_in_model(self):
+        #super(GNCToBlockController, self).save_data_in_model()
+        #self.node.material = empty_to_none(self.material.currentText())
 
     def on_edit_enter(self):
         super(GNCToBlockController, self).on_edit_enter()

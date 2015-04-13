@@ -88,7 +88,7 @@ class GNodeController(Controller):
             )
         return res
 
-    def construct_material_combo_box(self, row_name = None, items = None):
+    def construct_material_combo_box(self, row_name = None, items = None, node_property_name = None, display_property_name = None, node = None):
         res = MaterialsComboBox()
         res.setEditable(True)
         res.append_list(items)
@@ -96,7 +96,12 @@ class GNodeController(Controller):
         res.append_materials_from_db()
         res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
-        res.editTextChanged.connect(self.after_field_change)
+        if node_property_name is None:
+            res.editTextChanged.connect(self.after_field_change)
+        else:
+            res.editTextChanged.connect(lambda :
+                self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
+            )
         return res
 
     def construct_names_before_self_combo_box(self, row_name = None, node_property_name = None, display_property_name = None):
