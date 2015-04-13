@@ -55,6 +55,7 @@ class GNObjectController(GNodeController):
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
     def on_edit_enter(self):
+        super(GNObjectController, self).on_edit_enter()
         self.name.setText(none_to_empty(self.node.name))
         self.role.setText(none_to_empty(self.node.role))
         with BlockQtSignals(self.axes) as ignored:

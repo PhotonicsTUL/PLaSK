@@ -208,8 +208,16 @@ class GNodeController(Controller):
     def save_data_in_model(self):
         pass
 
+    def _fill_form_using_data_from_model(self, *args, **kwargs):
+        self.on_edit_enter()
+
     def on_edit_enter(self):
+        self.model.changed.connect(self._fill_form_using_data_from_model)
         pass
+
+    def on_edit_exit(self):
+        self.model.changed.disconnect(self._fill_form_using_data_from_model)
+        return super(GNodeController, self).on_edit_exit()
 
     def get_widget(self):
         return self.form

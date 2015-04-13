@@ -48,7 +48,7 @@ class GNGeometryController(GNObjectController):
         super(GNGeometryController, self).on_edit_enter()
         for dir in range(0, self.node.dim):
             for lh in range(0, 2):
-                with BlockQtSignals(self.borders[dir][lh]) as ignored:
+                with BlockQtSignals(self.borders[dir][lh]):
                     self.borders[dir][lh].setEditText(none_to_empty(self.node.borders[dir][lh]))
 
 

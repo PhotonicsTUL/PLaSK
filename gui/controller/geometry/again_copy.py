@@ -34,7 +34,7 @@ class GNAgainController(GNodeController):
 
     def on_edit_enter(self):
         super(GNAgainController, self).on_edit_enter()
-        with BlockQtSignals(self.ref) as _:
+        with BlockQtSignals(self.ref):
             self.ref.setEditText(none_to_empty(self.node.ref))
 
 
@@ -51,7 +51,7 @@ class GNCopyChildController(GNodeController):
 
     def on_edit_enter(self):
         super(GNCopyChildController, self).on_edit_enter()
-        with BlockQtSignals(self.object) as _:
+        with BlockQtSignals(self.object):
             self.object.setEditText(none_to_empty(self.node.object))
 
 
@@ -80,7 +80,7 @@ class GNCReplaceController(GNCopyChildController):
 
     def on_edit_enter(self):
         super(GNCReplaceController, self).on_edit_enter()
-        with BlockQtSignals(self.replacer) as _:
+        with BlockQtSignals(self.replacer):
             self.replacer.setEditText(none_to_empty(self.node.replacer))
 
 
@@ -100,7 +100,7 @@ class GNCToBlockController(GNCopyChildController):
 
     def on_edit_enter(self):
         super(GNCToBlockController, self).on_edit_enter()
-        with BlockQtSignals(self.material) as _:
+        with BlockQtSignals(self.material):
             self.material.setEditText(none_to_empty(self.node.material))
 
 
@@ -121,5 +121,5 @@ class GNCopyController(GNObjectController):
 
     def on_edit_enter(self):
         super(GNCopyController, self).on_edit_enter()
-        with BlockQtSignals(self.source) as _:
+        with BlockQtSignals(self.source):
             self.source.setEditText(none_to_empty(self.node.source))
