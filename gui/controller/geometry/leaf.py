@@ -98,19 +98,18 @@ class GNBlockController(GNLeafController):
 
 class GNTriangleController(GNLeafController):
 
+    def _on_point_set(self, index, value):
+        def setter(n, v): n.points = n.points[0:index] + (v,) + n.points[index+1:]
+        self._set_node_by_setter_undoable(setter, value, self.node.points[index],
+            'change {} triangle point'.format('first' if index == 0 else 'second')
+        )
+
     def fill_form(self):
         self.construct_group('Vertexes coordinates (other than: {}):'
                              .format(', '.join('0' for _ in range(0, self.node.dim))))
-        self.p0 = self.construct_point_controllers(row_name='first')
-        self.p1 = self.construct_point_controllers(row_name='second')
+        self.p0 = self.construct_point_controllers(row_name='first', change_cb=lambda point: self._on_point_set(0, point))
+        self.p1 = self.construct_point_controllers(row_name='second', change_cb=lambda point: self._on_point_set(1, point))
         super(GNTriangleController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNTriangleController, self).save_data_in_model()
-        self.node.points = (
-            tuple(empty_to_none(p.text()) for p in self.p0),
-            tuple(empty_to_none(p.text()) for p in self.p1)
-        )
 
     def on_edit_enter(self):
         super(GNTriangleController, self).on_edit_enter()

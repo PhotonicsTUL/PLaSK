@@ -72,7 +72,8 @@ class GNodeController(Controller):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None):
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None, without_cb = False):
+        #TODO remove without_cb and do not connecting cb. default behaviour
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:
@@ -85,7 +86,7 @@ class GNodeController(Controller):
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is None:
-            res.editingFinished.connect(self.after_field_change)
+            if not without_cb: res.editingFinished.connect(self.after_field_change)
         else:
             res.editingFinished.connect(lambda :
                 self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit)
@@ -146,11 +147,11 @@ class GNodeController(Controller):
         self._current_form = form_layout
         return form_layout
 
-    def construct_align_controllers(self, dim=None, add_to_current=True, *aligners_dir):
+    def construct_align_controllers(self, dim=None, add_to_current=True, aligners_dir=None, node_property_name = None, display_property_name = None):
         """:return: list of controllers pairs, first is combo box to select aligner type,
                     second is line edit for its value"""
-        if len(aligners_dir) == 0:
-            return self.construct_align_controllers(dim, add_to_current, *self.node.aligners_dir())
+        if aligners_dir is None:
+            aligners_dir = self.node.aligners_dir()
         if dim is None: dim = self.node.children_dim
         positions = []
         layout = QtGui.QGridLayout(None)
@@ -180,17 +181,23 @@ class GNodeController(Controller):
             self._get_current_form().addRow(row_name, group)
         return hbox, group
 
-    def construct_point_controllers(self, row_name=None, dim=None):
+    def construct_point_controllers(self, row_name=None, dim=None, change_cb=None):
+        '''
+
+        :param row_name:
+        :param dim:
+        :param change_cb: callable with tuple as argument
+        :return:
+        '''
         if dim is None: dim = self.node.dim
         hbox, group = self._construct_hbox(row_name)
-        res = tuple(self.construct_line_edit() for _ in range(0, dim))
+        res = tuple(self.construct_line_edit(without_cb = change_cb is not None) for _ in range(0, dim))
         for i in range(0, dim):
             hbox.addWidget(res[i])
             hbox.addWidget(QtGui.QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
-        if row_name:
-            return res
-        else:
-            return res, group
+            if change_cb is not None:
+                res[i].editingFinished.connect(lambda : change_cb(tuple(empty_to_none(p.text()) for p in res)))
+        return res if row_name else (res, group)
 
     def __init__(self, document, model, node):
         """

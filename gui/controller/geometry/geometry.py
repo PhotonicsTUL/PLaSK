@@ -27,10 +27,7 @@ class GNGeometryController(GNObjectController):
         res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'])
                     for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
-        if row_name:
-            return res
-        else:
-            return res, group
+        return res if row_name else (res, group)
 
     def fill_form(self):
         self.construct_group('Border Settings')
