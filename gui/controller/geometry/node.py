@@ -23,19 +23,18 @@ from ...utils.str import empty_to_none, none_to_empty
 
 class GNodeController(Controller):
 
-    class SetTextPropertyCommand(QtGui.QUndoCommand):
-
-        def __init__(self, model, node, property_name, new_value, display_property_name = None, unit = '', QUndoCommand_parent = None):
-            if display_property_name is None: display_property_name = property_name
-            super(GNodeController.SetTextPropertyCommand, self).__init__(u'change {} to "{}"{}'.format(display_property_name, new_value, none_to_empty(unit)), QUndoCommand_parent)
+    class ChangeNodeCommand(QtGui.QUndoCommand):
+        
+        def __init__(self, model, node, setter, new_value, old_value, action_name, QUndoCommand_parent = None):
+            super(GNodeController.ChangeNodeCommand, self).__init__(action_name, QUndoCommand_parent)
             self.model = model
             self.node = node
-            self.property_name = property_name
-            self.new_value = empty_to_none(new_value)
-            self.old_value = getattr(node, property_name)
+            self.setter = setter
+            self.new_value = new_value
+            self.old_value = old_value
 
         def set_property_value(self, value):
-            setattr(self.node, self.property_name, value)
+            self.setter(self.node, value)
             index = self.model.index_for_node(self.node, column=1)
             self.model.dataChanged.emit(index, index)
             self.model.fire_changed()
@@ -46,17 +45,34 @@ class GNodeController(Controller):
         def undo(self):
             self.set_property_value(self.old_value)
 
+
+    class SetTextPropertyCommand(ChangeNodeCommand):
+
+        def __init__(self, model, node, property_name, new_value, display_property_name = None, unit = '', QUndoCommand_parent = None):
+            if display_property_name is None: display_property_name = property_name
+            super(GNodeController.SetTextPropertyCommand, self).__init__(model, node,
+                lambda n, v: setattr(n, property_name, v), empty_to_none(new_value), getattr(node, property_name),
+                u'change {} to "{}"{}'.format(display_property_name, new_value, none_to_empty(unit)),
+                QUndoCommand_parent)
+
+
     def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = '', node=None):
         cmd = GNodeController.SetTextPropertyCommand(self.model, self.node if node is None else node,
                                                      property_name, new_value, display_property_name, unit)
         if cmd.new_value != cmd.old_value: self.model.undo_stack.push(cmd)
 
+    def _set_node_by_setter_undoable(self, setter, new_value, old_value, action_name, node = None):
+        if new_value != old_value:
+            self.model.undo_stack.push(GNodeController.ChangeNodeCommand(
+                self.model, self.node if node is None else node,
+                setter, new_value, old_value, action_name
+            ))
 
     def _get_current_form(self):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None):
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None):
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:
@@ -66,7 +82,9 @@ class GNodeController(Controller):
                 box.addWidget(QtGui.QLabel(unit))
             else:
                 self._get_current_form().addRow(row_name, res)
-        if node_property_name is None:
+        if change_cb is not None:
+            res.editingFinished.connect(change_cb)
+        elif node_property_name is None:
             res.editingFinished.connect(self.after_field_change)
         else:
             res.editingFinished.connect(lambda :

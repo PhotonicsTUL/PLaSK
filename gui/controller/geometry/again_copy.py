@@ -28,10 +28,6 @@ class GNAgainController(GNodeController):
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
-    #def save_data_in_model(self):
-        #super(GNAgainController, self).save_data_in_model()
-        #self.node.ref = empty_to_none(self.ref.currentText())
-
     def on_edit_enter(self):
         super(GNAgainController, self).on_edit_enter()
         with BlockQtSignals(self.ref):
@@ -44,10 +40,6 @@ class GNCopyChildController(GNodeController):
         super(GNCopyChildController, self).fill_form()
         self.construct_group('Operation Settings')
         self.object = self.construct_names_before_self_combo_box('Object:', node_property_name='object')
-
-    #def save_data_in_model(self):
-        #super(GNCopyChildController, self).save_data_in_model()
-        #self.node.object = empty_to_none(self.object.currentText())
 
     def on_edit_enter(self):
         super(GNCopyChildController, self).on_edit_enter()
@@ -74,10 +66,6 @@ class GNCReplaceController(GNCopyChildController):
         self.replacer.setToolTip('&lt;replace object="" <b>with</b>=""/&gt;<br/>'
             'Name of the object to replace with. This object does not need to be located in the subtree of the copied object.')
 
-    #def save_data_in_model(self):
-        #super(GNCReplaceController, self).save_data_in_model()
-        #self.node.replacer = empty_to_none(self.replacer.currentText())
-
     def on_edit_enter(self):
         super(GNCReplaceController, self).on_edit_enter()
         with BlockQtSignals(self.replacer):
@@ -93,10 +81,6 @@ class GNCToBlockController(GNCopyChildController):
         self.material = self.construct_material_combo_box('Block material:', items=[''], node_property_name='material')
         self.material.setToolTip('&lt;toblock object="" <b>material</b>=""/&gt;<br/>'
                                 'Material of the solid block. Required.')
-
-    #def save_data_in_model(self):
-        #super(GNCToBlockController, self).save_data_in_model()
-        #self.node.material = empty_to_none(self.material.currentText())
 
     def on_edit_enter(self):
         super(GNCToBlockController, self).on_edit_enter()
@@ -114,10 +98,6 @@ class GNCopyController(GNObjectController):
                                 ' Usually it is some container that has some other named its items or sub-items.'
                                 ' Required.')
         super(GNCopyController, self).fill_form()
-
-    #def save_data_in_model(self):
-        #super(GNCopyController, self).save_data_in_model()
-        #self.node.source = empty_to_none(self.source.currentText())
 
     def on_edit_enter(self):
         super(GNCopyController, self).on_edit_enter()

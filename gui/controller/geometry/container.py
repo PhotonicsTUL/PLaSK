@@ -22,21 +22,27 @@ from ...model.geometry.reader import GNAligner
 
 class GNGapController(GNodeController):
 
+    @staticmethod
+    def _set_gap_params(node, params):
+        node.size_is_total = params[0]
+        node.size = params[1]
+
+    def _on_change_gap_params(self):
+        new_value = (self.gap_type.currentIndex() == 1, empty_to_none(self.gap_value.text()))
+        old_value = (self.node.size_is_total, self.node.size)
+        self._set_node_by_setter_undoable(GNGapController._set_gap_params, new_value, old_value,
+            u'change gap size to: {}="{}"µm'.format('total' if new_value[0] else 'gap', none_to_empty(new_value[1])))
+
     def fill_form(self):
         super(GNGapController, self).fill_form()
         self.gap_type = QtGui.QComboBox()
         self.gap_type.addItems(['Gap size', 'Total container size'])
-        self.gap_type.currentIndexChanged.connect(self.after_field_change)
-        self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm')
-
-    def save_data_in_model(self):
-        super(GNGapController, self).save_data_in_model()
-        self.node.size_is_total = self.gap_type.currentIndex() == 1
-        self.node.size = empty_to_none(self.gap_value.text())
+        self.gap_type.currentIndexChanged.connect(self._on_change_gap_params)
+        self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm', change_cb=self._on_change_gap_params)
 
     def on_edit_enter(self):
         super(GNGapController, self).on_edit_enter()
-        with BlockQtSignals(self.gap_type) as ignored:
+        with BlockQtSignals(self.gap_type):
             self.gap_type.setCurrentIndex(1 if self.node.size_is_total else 0)
             self.gap_value.setText(none_to_empty(self.node.size))
             
@@ -60,12 +66,6 @@ class GNShelfController(GNObjectController):
                              u' It specifies whether all the items in the shelf are required to have the same height'
                              u' (therefore the top edge of the shelf is flat). Defaults to true.')
         super(GNShelfController, self).fill_form()
-
-    #def save_data_in_model(self):
-        #super(GNShelfController, self).save_data_in_model()
-        #self.node.repeat = empty_to_none(self.repeat.text())
-        #self.node.shift = empty_to_none(self.shift.text())
-        #self.node.flat = empty_to_none(self.flat.currentText())
 
     def on_edit_enter(self):
         super(GNShelfController, self).on_edit_enter()
