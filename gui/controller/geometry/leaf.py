@@ -83,12 +83,11 @@ class GNBlockController(GNLeafController):
 
     def fill_form(self):
         self.construct_group('{} Settings'.format('Rectangle' if self.node.dim == 2 else 'Cuboid'))
-        self.size = self.construct_point_controllers(row_name='Size:')
+        def setter(n, v): n.size = v
+        self.size = self.construct_point_controllers(row_name='Size:', change_cb=lambda point:
+            self._set_node_by_setter_undoable(setter, list(point), self.node.size, 'change block size')
+        )
         super(GNBlockController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNBlockController, self).save_data_in_model()
-        self.node.size = [empty_to_none(p.text()) for p in self.size]
 
     def on_edit_enter(self):
         super(GNBlockController, self).on_edit_enter()
