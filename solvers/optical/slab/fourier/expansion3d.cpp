@@ -546,8 +546,8 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
-    char symx = symmetric_long()? int(symmetry_long)-1 : 0,
-         symy = symmetric_tran()? int(symmetry_tran)-1 : 0;
+    char symx = symmetric_long()? 2 * int(symmetry_long) - 3 : 0,
+         symy = symmetric_tran()? 2 * int(symmetry_tran) - 3 : 0;
          // +1: Ex+, Ey-, Hx-, Hy+
          //  0: no symmetry
          // -1: Ex-, Ey+, Hx+, Hy-
@@ -561,6 +561,7 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
     dcomplex ik0 = 1./k0;
 
     size_t N = (symx ? ordl+1 : 2*ordl+1) * (symy ? ordt+1 : 2*ordt+1);
+
     std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
     std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
 
