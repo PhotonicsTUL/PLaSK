@@ -367,7 +367,7 @@ class Launcher(object):
         dirlayout.addWidget(self.diredit)
         dirlayout.addWidget(dirbutton)
         layout.addLayout(dirlayout)
-        layout.addWidget(QtGui.QLabel("Default log levels:"))
+        layout.addWidget(QtGui.QLabel("Visible Log levels:"))
         self.error = QtGui.QCheckBox("&Error")
         self.error.setChecked(int(CONFIG('launcher_local/show_error', 2)) == 2)
         self.error.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_error', state))

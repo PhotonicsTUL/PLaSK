@@ -270,6 +270,25 @@ class ScriptController(SourceEditController):
 
         self.document.window.closed.connect(self.save_state)
 
+        try:
+            loglevel = self.document.loglevel
+        except AttributeError:
+            pass
+        else:
+            spacer = QtGui.QWidget()
+            spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+            source.toolbar.addWidget(spacer)
+            source.toolbar.addWidget(QtGui.QLabel("Log Level: "))
+            self.loglevel = QtGui.QComboBox()
+            levels = ["Error", "Earning", "Info", "Result", "Data", "Detail", "Debug"]
+            self.loglevel.addItems(levels)
+            try:
+                self.loglevel.setCurrentIndex(levels.index(loglevel.title()))
+            except ValueError:
+                self.loglevel.setCurrentIndex(5)
+            self.loglevel.currentIndexChanged[str].connect(self.document.set_loglevel)
+            source.toolbar.addWidget(self.loglevel)
+
         window.setCentralWidget(source)
         return window
 

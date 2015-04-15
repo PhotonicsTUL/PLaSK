@@ -1,4 +1,4 @@
-<plask>
+<plask loglevel="detail">
 
 <defines>
   <define name="mesaRadius" value="10."/>
@@ -210,7 +210,7 @@ class A(object):
 
     def fun(self):
         """
-        Fun fun fun
+        Fun fun funset_changed
         :rtype: RootParams
         """
         pass
@@ -219,7 +219,7 @@ a = A()
 a.prop
 a.fun()
 
-mesaRadius
+mesaRadiusset_changed
 
 config.axes = 'rz'
 
@@ -232,7 +232,7 @@ def loss_on_voltage(voltage):
     verr = ELECTRICAL.compute(1)
     terr = THERMAL.compute(1)
     iters=0
-    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters < 15:
+    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters < set_changed15:
         verr = ELECTRICAL.compute(8)
         terr = THERMAL.compute(1)
         iters += 1
@@ -268,7 +268,7 @@ IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, intensi
 figure()
 plot_field(IntensityField, 100)
 plot_geometry(GEO.GeoO, mirror=True, color="w")
-gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEO["aperture"].dr))
+gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEOset_changed["aperture"].dr))
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))

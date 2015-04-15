@@ -51,6 +51,7 @@ class XPLDocument(object):
         #self.solvers = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4]))
         self.solvers = GUIAndSourceController(SolversController(self))
         self.connects = GUIAndSourceController(ConnectsController(self))
+        self.loglevel = 'detail'
 
         self.controllers = (
             self.defines,
@@ -90,9 +91,10 @@ class XPLDocument(object):
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)
+        self.loglevel = tree.getroot().attrib.get('loglevel', 'detail')
         with OrderedTagReader(tree.getroot()) as r:
-            for i in range(len(XPLDocument.SECTION_NAMES)):
-                element = r.get(XPLDocument.SECTION_NAMES[i])
+            for i, name in enumerate(XPLDocument.SECTION_NAMES):
+                element = r.get(name)
                 if element is not None:
                     self.model_by_index(i).set_file_xml_element(element, filename)
                 else:
@@ -110,7 +112,7 @@ class XPLDocument(object):
         if isinstance(sections, basestring):
             sections = XPLDocument.SECTION_NAMES[:XPLDocument.SECTION_NAMES.index(sections)+1]
         if update_lines is None: update_lines = sections is None or sections == self.SECTION_NAMES
-        data = '<plask>\n\n'
+        data = '<plask loglevel="{}">\n\n'.format(self.loglevel)
         current_line_in_file = 3
         for c in self.controllers:
             if sections is not None and c.model.name not in sections: continue
@@ -154,3 +156,9 @@ class XPLDocument(object):
 
     def stubs(self):
         return '\n'.join(s for s in (c.model.stubs() for c in self.controllers) if s)
+
+    def set_loglevel(self, loglevel):
+        loglevel = loglevel.lower()
+        if self.loglevel != loglevel:
+            self.loglevel = loglevel
+            self.set_changed()
