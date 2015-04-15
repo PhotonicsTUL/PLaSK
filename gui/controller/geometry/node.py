@@ -18,7 +18,35 @@ from ..materials import MaterialsComboBox
 from ..defines import get_defines_completer
 from ...model.geometry.reader import GNAligner
 
+from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
+
+
+def controller_to_aligners(position_controllers):
+    '''
+    Convert data from widgets which allow to set aligner parameters to list of GNAligner.
+    :param position_controllers: widgets with aligner parameters
+    :return list[GNAligner]: resulted list of GNAligner
+    '''
+    aligners_list = []
+    for i, pos in enumerate(position_controllers):
+        aligners_list.append(GNAligner(pos[0].currentIndex(), empty_to_none(pos[1].text())))
+    return aligners_list
+
+
+def aligners_to_controllers(aligners_list, position_controllers):
+    '''
+    Get data from list of GNAligners and fill with them widgets which allow to set aligner parameters.
+    :param list[GNAligner] aligners_list: source data
+    :param position_controllers: widgets to fill
+    '''
+    if aligners_list is None: return
+    for i, pos in enumerate(position_controllers):
+        aligner = aligners_list[i]
+        with BlockQtSignals(pos[0], pos[1]) as ignored:
+            if aligner.position is not None:
+                pos[0].setCurrentIndex(aligner.position)
+            pos[1].setText(none_to_empty(aligner.value))
 
 
 class GNodeController(Controller):

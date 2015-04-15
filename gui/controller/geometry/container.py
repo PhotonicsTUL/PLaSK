@@ -14,7 +14,7 @@
 from ...qt import QtGui
 
 from .object import GNObjectController
-from .node import GNodeController, GNChildController
+from .node import GNodeController, GNChildController, controller_to_aligners, aligners_to_controllers
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...model.geometry.reader import GNAligner
@@ -73,24 +73,6 @@ class GNShelfController(GNObjectController):
         self.shift.setText(none_to_empty(self.node.shift))
         with BlockQtSignals(self.flat):
             self.flat.setEditText(none_to_empty(self.node.flat))
-
-
-def controller_to_aligners(position_controllers):
-    aligners_list = []
-    for i, pos in enumerate(position_controllers):
-        aligners_list.append(GNAligner(pos[0].currentIndex(), empty_to_none(pos[1].text())))
-    return aligners_list
-
-
-def aligners_to_controllers(aligners_list, position_controllers):
-    if aligners_list is None: return
-    for i, pos in enumerate(position_controllers):
-        aligner = aligners_list[i]
-        with BlockQtSignals(pos[0], pos[1]) as ignored:
-            if aligner.position is not None:
-                pos[0].setCurrentIndex(aligner.position)
-            pos[1].setText(none_to_empty(aligner.value))
-
 
 class GNContainerBaseController(GNObjectController):
 
