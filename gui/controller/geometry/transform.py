@@ -103,13 +103,29 @@ class GNRevolutionController(GNObjectController):
             self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))
 
 
+class GNTranslationController(GNObjectController):
+
+    def fill_form(self):
+        self.construct_group('Translation Settings')
+        def setter(n, v): n.vector = v
+        self.vector = self.construct_point_controllers(row_name='Vector:', change_cb=lambda point:
+            self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change translation vector')
+        )
+        super(GNTranslationController, self).fill_form()
+
+    def on_edit_enter(self):
+        super(GNTranslationController, self).on_edit_enter()
+        for i in range(0, self.node.dim):
+            self.vector[i].setText(none_to_empty(self.node.vector[i]))
+
+
 class GNArrangeController(GNObjectController):
 
     def fill_form(self):
         self.construct_group('Arrange Settings')
         def setter(n, v): n.step = v
         self.step = self.construct_point_controllers(row_name='Step:', change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change number of item repetitions in arrange')
+            self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change step in arrange')
         )
         self.count = self.construct_line_edit('Count:', node_property_name='count')
         self.count.setToolTip(u'&lt;arrange <b>count</b>="" ...&gt;<br/>'

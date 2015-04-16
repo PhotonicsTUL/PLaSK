@@ -39,20 +39,20 @@ class GNTranslation(GNTransform):
 
     def __init__(self, parent=None, dim=None):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
-        self.size = [None for _ in range(0, dim)]
+        self.vector = [None for _ in range(0, dim)]
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNTranslation, self)._attributes_from_xml(attribute_reader, conf)
         axes_names = conf.axes_names(self.dim)
-        self.size = [None for _ in range(0, self.dim)]
+        self.vector = [None for _ in range(0, self.dim)]
         for i in range(0, self.dim):
-            self.size[i] = attribute_reader.get(axes_names[i])
+            self.vector[i] = attribute_reader.get(axes_names[i])
 
     def _attributes_to_xml(self, element, conf):
         super(GNTranslation, self)._attributes_to_xml(element, conf)
         axes_names = conf.axes_names(self.dim)
         for i in range(0, self.dim):
-            v = self.size[i]
+            v = self.vector[i]
             if v is not None: element.attrib[axes_names[i]] = v
 
     def tag_name(self, full_name=True):
@@ -63,8 +63,8 @@ class GNTranslation(GNTransform):
 
     def major_properties(self):
         res = super(GNTranslation, self).major_properties()
-        if any(self.size):
-            res.append(('delta', ', '.join(x if x else '?' for x in self.size)))
+        if any(self.vector):
+            res.append(('delta', ', '.join(x if x else '?' for x in self.vector)))
         return res
 
     @staticmethod
@@ -78,6 +78,10 @@ class GNTranslation(GNTransform):
         result = GNTranslation(dim=3)
         result.set_xml_element(element, conf)
         return result
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNTranslationController
+        return GNTranslationController(document, model, self)
 
 
 class GNClip(GNTransform):

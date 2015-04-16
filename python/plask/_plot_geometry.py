@@ -582,14 +582,16 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         if geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or \
            type(geometry) == plask.geometry.Cylindrical2D:
             hshift *= 2
-            hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0)
+            hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
             hmirror = mirror
         else:
             hmirror = False
         if geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror':
             vshift *= 2
-            vmirrortransform = matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0)
+            vmirrortransform = matplotlib.transforms.Affine2D.from_values(1., 0, 0, -1., 0, 0)
             vmirror = mirror
+            if hmirror:
+                vhmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, -1., 0, 0)
         else:
             vmirror = False
         if geometry.borders[dirs[0][0]] == 'periodic' or geometry.borders[dirs[0][1]] == 'periodic':
@@ -619,6 +621,9 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
             if vmirror:
                 _draw_geometry_object(env, geometry,
                                       shift + vmirrortransform + axes.transData, None)
+                if hmirror:
+                    _draw_geometry_object(env, geometry,
+                                          shift + vhmirrortransform + axes.transData, None)
 
     if margin is not None:
         box = geometry.bbox
