@@ -280,7 +280,7 @@ class ScriptController(SourceEditController):
             source.toolbar.addWidget(spacer)
             source.toolbar.addWidget(QtGui.QLabel("Log Level: "))
             self.loglevel = QtGui.QComboBox()
-            levels = ["Error", "Earning", "Info", "Result", "Data", "Detail", "Debug"]
+            levels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(levels)
             try:
                 self.loglevel.setCurrentIndex(levels.index(loglevel.title()))

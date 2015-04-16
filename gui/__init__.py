@@ -242,9 +242,10 @@ class MainWindow(QtGui.QMainWindow):
 
         menu_button = QtGui.QPushButton(self)
         menu_button.setText("&Operations")
-        menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
+        if sys.platform != 'win32':
+            menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
