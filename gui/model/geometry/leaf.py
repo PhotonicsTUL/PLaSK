@@ -79,6 +79,8 @@ class GNLeaf(GNObject):
 
 class GNBlock(GNLeaf):
 
+    alt_names = ['length', 'width', 'height']
+
     def __init__(self, parent=None, dim=None):
         super(GNBlock, self).__init__(parent=parent, dim=dim)
         self.size = [None for _ in range(0, dim)]
@@ -86,6 +88,9 @@ class GNBlock(GNLeaf):
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNBlock, self)._attributes_from_xml(attribute_reader, conf)
         self.size = [attribute_reader.get('d'+a) for a in conf.axes_names(self.dim)]
+        for i, alt in enumerate(GNBlock.alt_names[3-self.dim:]):
+            if self.size[i] is None:
+                self.size[i] = attribute_reader.get(alt)
 
     def _attributes_to_xml(self, element, conf):
         super(GNBlock, self)._attributes_to_xml(element, conf)

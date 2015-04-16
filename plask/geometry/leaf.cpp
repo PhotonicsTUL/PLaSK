@@ -126,7 +126,7 @@ shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
 
 shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
     shared_ptr< Block<3> > block(new Block<3>());
-    block->size.lon() = readAlternativeAttrs(reader, "d"+reader.getAxisLongName(), "depth");
+    block->size.lon() = readAlternativeAttrs(reader, "d"+reader.getAxisLongName(), "length");
     setupBlock2D3D(reader, *block);
     return block;
 }
