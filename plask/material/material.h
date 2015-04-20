@@ -755,6 +755,23 @@ protected:
 
 
 /**
+ * Dummy named material.
+ */
+struct PLASK_API DummyMaterial: public Material {
+
+  protected:
+    std::string _name;
+
+  public:
+
+    DummyMaterial(const std::string name): _name(name) {}
+
+    std::string name() const override { return _name; }
+
+    Kind kind() const override { return NONE; }
+};
+
+/**
  * Base material class for all semiconductors and similar materials
  */
 struct PLASK_API Semiconductor: public Material {

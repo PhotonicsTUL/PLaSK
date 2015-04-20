@@ -18,6 +18,7 @@ from .widgets import DEFAULT_FONT
 from .config import CONFIG
 
 CURRENT_LINE_COLOR = QtGui.QColor(CONFIG('editor/current_line_color', '#ffffee'))
+SELECTION_COLOR = QtGui.QColor(CONFIG('editor/selection_color', '#ffff88'))
 
 
 class TextEdit(QtGui.QPlainTextEdit):
@@ -34,7 +35,9 @@ class TextEdit(QtGui.QPlainTextEdit):
             self.updateRequest.connect(self.line_numbers.on_update_request)
         else:
             self.line_numbers = None
-        self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.cursorPositionChanged.connect(self.update_selections)
+        self.selectionChanged.connect(self.update_selections)
+        self.selections = []
 
     def resizeEvent(self, e):
         super(TextEdit, self).resizeEvent(e)
@@ -45,11 +48,17 @@ class TextEdit(QtGui.QPlainTextEdit):
 
     def focusInEvent(self, event):
         super(TextEdit, self).focusInEvent(event)
-        self.highlight_current_line()
+        self.update_selections()
 
     def focusOutEvent(self, event):
         super(TextEdit, self).focusOutEvent(event)
-        self.highlight_current_line()
+        self.update_selections()
+
+    def update_selections(self, selections=None):
+        """Add our own custom selections"""
+        if selections is not None:
+            self.selections = selections
+        self.setExtraSelections(self.highlight_current_line() + self.get_same_as_selected() + self.selections)
 
     def highlight_current_line(self):
         selection = QtGui.QTextEdit.ExtraSelection()
@@ -58,7 +67,26 @@ class TextEdit(QtGui.QPlainTextEdit):
         selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
-        self.setExtraSelections([selection])
+        return [selection]
+
+    def get_same_as_selected(self):
+        cursor = self.textCursor()
+        if not cursor.hasSelection(): return []
+        document = self.document()
+        text = cursor.selectedText()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        selections = []
+        while True:
+            cursor = document.find(text, cursor,
+                                   QtGui.QTextDocument.FindCaseSensitively | QtGui.QTextDocument.FindWholeWords)
+            if not cursor.isNull():
+                selection = QtGui.QTextEdit.ExtraSelection()
+                selection.cursor = cursor
+                selection.format.setBackground(SELECTION_COLOR)
+                selections.append(selection)
+            else:
+                break
+        return selections
 
 
 class LineNumberArea(QtGui.QWidget):

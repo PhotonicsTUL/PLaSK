@@ -521,13 +521,14 @@ void register_manager() {
         "create a default manager and use it to load the data from XPL into ther global\n"
         "namespace.\n\n"
 
-        "Manager(materials=None)\n\n"
+        "Manager(materials=None, allow_unknown=False)\n\n"
 
         "Args:\n"
         "    materials: Material database to use.\n"
-        "               If *None*, the default material database is used.\n",
+        "               If *None*, the default material database is used.\n"
+        "    allow_unknown (bool): Flag indicating if unknown materials are allowed.\n",
 
-        py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
+        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("allow_unknown")=false))); manager
         .def("load", &PythonManager_load,
              "Load data from source.\n\n"
              "Args:\n"
@@ -565,6 +566,10 @@ void register_manager() {
              "* mesh generators (:attr:`~plask.Manager.meshgen`): ``MSG``,\n\n"
              "* custom defines (:attr:`~plask.Manager.define`): ``DEF``.\n",
              py::arg("target"))
+        .def_readwrite("allow_unknown_material", &Manager::allowUnknownMaterial,
+                       "Flag indicating if unknown materials are allowed. If True then dummy material\n"
+                       "is created if the proper one cannot be found in the database.\n"
+                       "Otherwise an exception is raised.")
         .def("_roots_len", &Manager::getRootsCount, "number of roots geometries")
         .def("_root", &Manager::getRootAt, py::arg("index"), "root geometry with given index")
     ;

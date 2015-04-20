@@ -9,6 +9,16 @@ constexpr const char* const GeometryReader::XML_MATERIAL_ATTR;
 constexpr const char* const GeometryReader::XML_MATERIAL_TOP_ATTR;
 constexpr const char* const GeometryReader::XML_MATERIAL_BOTTOM_ATTR;
 
+
+shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_full_name) const {
+    try {
+        return materialSource->get(material_full_name);
+    } catch (NoSuchMaterial) {
+        if (manager.allowUnknownMaterial) return make_shared<DummyMaterial>(material_full_name);
+        else throw;
+    }
+}
+
 std::map<std::string, GeometryReader::object_read_f*>& GeometryReader::objectReaders() {
     static std::map<std::string, GeometryReader::object_read_f*> result;
     return result;
@@ -41,13 +51,13 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, int
 }
 
 GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
-    : materialsAreRequired(true), expectedSuffix(0), manager(manager), source(source),
+    : materialsAreRequired(!manager.allowUnknownMaterial), expectedSuffix(0), manager(manager), source(source),
       materialSource(new MaterialsSourceDB(materialsDB))
 {
 }
 
 GeometryReader::GeometryReader(Manager &manager, XMLReader &source, shared_ptr<const MaterialsSource> materialsSource)
-    : materialsAreRequired(true), expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
+    : materialsAreRequired(!manager.allowUnknownMaterial), expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
 }
 

@@ -32,6 +32,8 @@ scheme = {
     'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
 }
 
+MATCH_COLOR = QtGui.QColor(CONFIG('editor/match_color', '#88ff88'))
+
 
 class XMLEditor(TextEdit):
 
@@ -232,6 +234,7 @@ class SourceWidget(QtGui.QWidget):
     def hide_toolbars(self):
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
+        self.clear_matches()
         self.editor.setFocus()
 
     def _find(self, cont=False, backward=False, rewind=True):
@@ -258,11 +261,32 @@ class SourceWidget(QtGui.QWidget):
                 self.editor.setTextCursor(found)
                 pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#dfd"))
                 self.find_edit.setPalette(pal)
+                self._highlight_matches()
                 return True
         else:
             self.find_edit.setPalette(pal)
             cursor.setPosition(cursor.position())
             self.editor.setTextCursor(cursor)
+
+    def _highlight_matches(self):
+        cursor = self.editor.textCursor()
+        if not cursor.hasSelection(): return []
+        document = self.editor.document()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        selections = []
+        while True:
+            cursor = document.find(self.find_edit.text(), cursor, self._find_flags())
+            if not cursor.isNull():
+                selection = QtGui.QTextEdit.ExtraSelection()
+                selection.cursor = cursor
+                selection.format.setBackground(MATCH_COLOR)
+                selections.append(selection)
+            else:
+                break
+        self.editor.update_selections(selections)
+
+    def clear_matches(self):
+        self.editor.update_selections([])
 
     def find_next(self):
         self._find()

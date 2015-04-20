@@ -30,7 +30,7 @@ class PLASK_API GeometryReader {
     static constexpr const char* const XML_MATERIAL_TOP_ATTR = "material-top";          ///< name of top material attribute in XML
     static constexpr const char* const XML_MATERIAL_BOTTOM_ATTR = "material-bottom";    ///< name of bottom material attribute in XML
 
-    /// @c true if materials in leafs are requiread, @c false if we read only shape
+    /// @c true if materials in leafs are required, @c false if we read only shape
     bool materialsAreRequired;
 
     /**
@@ -139,9 +139,7 @@ class PLASK_API GeometryReader {
      * @param material_full_name full material name to get
      * @return material with name @p material_full_name
      */
-    shared_ptr<Material> getMaterial(const std::string& material_full_name) const {
-        return materialSource->get(material_full_name);
-    }
+    shared_ptr<Material> getMaterial(const std::string& material_full_name) const;
 
     shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
         return materialSource->getFactory(material1_full_name, material2_full_name);

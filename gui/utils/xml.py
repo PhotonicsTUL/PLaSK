@@ -25,7 +25,7 @@ def print_interior(element):
         text += etree.tostring(c, pretty_print=True)
     return text
 
-def attr_to_xml(src_obj, dst_element, *attr_names):
+def attr_to_xml(src_obj, dst_element, *attr_names, **defaults):
     """
         Set XML attributes in dst_element.attrib using attributes from src_obj.
         Only existing, not-None attributes are set.
@@ -36,6 +36,7 @@ def attr_to_xml(src_obj, dst_element, *attr_names):
     for attr in attr_names:
         a = getattr(src_obj, attr, None)
         if a is not None: dst_element.attrib[attr] = a
+        elif attr in defaults: dst_element.attrib[attr] = str(defaults[attr])
 
 
 def xml_to_attr(src, dst_obj, *attr_names):

@@ -16,7 +16,9 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 
     MaterialsDB* materialsDB;
 
-    PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
+    PythonManager(MaterialsDB* db=nullptr, bool allow_unknown=false): materialsDB(db? db : &MaterialsDB::getDefault()) {
+        allowUnknownMaterial = allow_unknown;
+    }
 
     virtual ~PythonManager() {}
 

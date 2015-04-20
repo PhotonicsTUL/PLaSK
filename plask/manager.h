@@ -158,6 +158,9 @@ private:
     /// Current or default names of axis.
     const AxisNames* axisNames;
 
+    /// Flag indicating if unknown materials are allowed
+    bool allowUnknownMaterial;
+
     /**
      * Get current axis name.
      * @param axis_index axis index
@@ -191,7 +194,7 @@ private:
         Manager& manager;
         const AxisNames* old;
 
-    public:
+      public:
 
         /**
          * Set axes names to @p names.
@@ -219,8 +222,7 @@ private:
         ~SetAxisNames() { manager.axisNames = old; }
     };
 
-    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")) {
-    }
+    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")), allowUnknownMaterial(false) {}
 
     /**
      * Get path hints with given name.

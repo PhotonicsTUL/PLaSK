@@ -719,10 +719,10 @@ if(WIN32)
     set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/ABOUT")
     set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${VERSION}")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/utils/plask.ico")
     set(CPACK_NSIS_MODIFY_PATH ON)
     # File types association:
     string(REPLACE "/" "\\\\" CMAKE_SOURCE_DIR_WINDOWS "${CMAKE_SOURCE_DIR}")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\plaskgui.exe")
     # Very ugly hack!
     set(CPACK_NSIS_COMPRESSOR "lzma
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"

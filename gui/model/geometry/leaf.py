@@ -56,7 +56,6 @@ class GNLeaf(GNObject):
             res.append(None)
         return res
 
-
     def minor_properties(self):
         res = super(GNLeaf, self).minor_properties()
         res.append(('step dist', self.step_dist))
@@ -95,8 +94,7 @@ class GNBlock(GNLeaf):
     def _attributes_to_xml(self, element, conf):
         super(GNBlock, self)._attributes_to_xml(element, conf)
         for a in range(0, self.dim):
-            if self.size[a] is not None:
-                element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
+            element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a] if self.size[a] is not None else '00'
 
     def tag_name(self, full_name=True):
         return ('rectangle', 'cuboid')[self.dim-2]
@@ -140,7 +138,7 @@ class GNCylinder(GNLeaf):
 
     def _attributes_to_xml(self, element, conf):
         super(GNCylinder, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'radius', 'height')
+        attr_to_xml(self, element, 'radius', 'height', radius='00', height='00')
 
     def tag_name(self, full_name=True):
         return "cylinder"
@@ -177,7 +175,7 @@ class GNCircle(GNLeaf):
 
     def _attributes_to_xml(self, element, conf):
         super(GNCircle, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'radius')
+        attr_to_xml(self, element, 'radius', radius='00')
 
     def tag_name(self, full_name=True):
         return "sphere" if self.dim == 3 else "circle"
@@ -225,7 +223,7 @@ class GNTriangle(GNLeaf):
         for point_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
                 v = self.points[point_nr][axis_nr]
-                if v is not None: element.attrib[('a', 'b')[point_nr] + axis_names[axis_nr]] = v
+                element.attrib[('a', 'b')[point_nr] + axis_names[axis_nr]] = v if v is not None else '00'
 
     def tag_name(self, full_name=True):
         return "triangle"
@@ -235,7 +233,8 @@ class GNTriangle(GNLeaf):
 
     def major_properties(self):
         res = super(GNTriangle, self).major_properties()
-        points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?') for x in self.points if x != (None, None))
+        points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
+                               for x in self.points if x != (None, None))
         if points_str: res.append(('points', points_str))
         return res
 
