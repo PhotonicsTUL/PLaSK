@@ -24,9 +24,10 @@ class UniqueId(object):
         self.fmt = fmt
         self.counter = initial - 1
 
-    def __call__(self):
+    def __call__(self, prefix=None):
         self.counter += 1
-        return self.prefix + self.fmt % self.counter
+        if prefix is None: prefix = self.prefix
+        return prefix + self.fmt % self.counter
 
 
 unique_object_name = UniqueId("object")
@@ -65,12 +66,13 @@ class Region(object):
 class Material(object):
     """Materials read from *.dan file"""
 
-    def __init__(self, kind="metal"):
+    def __init__(self, label, kind="metal"):
         self.base = None
         self.kind = kind
         self.condtype = None
         self.sigma = None
         self.kappa = None
+        self.label = label
 
     def __eq__(self, other):
         return \
@@ -78,7 +80,8 @@ class Material(object):
             self.kind == other.kind and \
             self.condtype == other.condtype and \
             self.sigma == other.sigma and \
-            self.kappa == other.kappa
+            self.kappa == other.kappa and \
+            self.label == other.label
 
     def write(self, output, name):
         if self.base:
@@ -90,9 +93,15 @@ class Material(object):
             else:
                 output.write('  <material name="%s" base="%s">\n' % (name, self.kind))
         if self.kappa is not None:
-            output.write('    <thermk>%s, %s</thermk>\n' % tuple(self.kappa))
+            if self.kappa[0] == self.kappa[1]:
+                output.write('    <thermk>%s</thermk>\n' % self.kappa[0])
+            else:
+                output.write('    <thermk>%s, %s</thermk>\n' % tuple(self.kappa))
         if self.sigma is not None:
-            output.write('    <cond>%s, %s</cond>\n' % tuple(self.sigma))
+            if self.sigma[0] == self.sigma[1]:
+                output.write('    <cond>%s</cond>\n' % self.sigma[0])
+            else:
+                output.write('    <cond>%s, %s</cond>\n' % tuple(self.sigma))
         output.write('  </material>\n')
 
 
@@ -208,7 +217,7 @@ def read_dan(fname):
 
         # create custom material if necessary
         if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
-            material = Material()
+            material = Material(mat)
             if sigma_t not in ('n', 'p'):
                 material.sigma = sigma
             else:
@@ -225,9 +234,9 @@ def read_dan(fname):
                     break
             if not found:
                 if sigma_t in ('n', 'p') or kappa_t in ('n', 'p'):
-                    mat = unique_material_name()  # the given name is the one from database
+                    mat = unique_material_name(mat+'_')  # the given name is the one from database
                 while mat in materials and materials[mat] != material:
-                    mat = unique_material_name()
+                    mat = unique_material_name(mat+'_')
                 materials[mat] = material
         else:
             mat = parse_material_name(mat, kappa[0], dopant)
