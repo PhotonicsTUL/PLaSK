@@ -13,7 +13,7 @@ constexpr const char* const GeometryReader::XML_MATERIAL_BOTTOM_ATTR;
 shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_full_name) const {
     try {
         return materialSource->get(material_full_name);
-    } catch (NoSuchMaterial) {
+    } catch (NoSuchMaterial&) {
         if (manager.allowUnknownMaterial) return make_shared<DummyMaterial>(material_full_name);
         else throw;
     }
