@@ -771,6 +771,8 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
 {
+    if (!this->geometry) throw NoGeometryException(this->getId());
+    
     shared_ptr<RectangularMesh<2>> grid = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
 
