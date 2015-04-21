@@ -20,6 +20,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
+from ...utils.widgets import ComboBox
 
 
 def controller_to_aligners(position_controllers):
@@ -73,7 +74,6 @@ class GNodeController(Controller):
         def undo(self):
             self.set_property_value(self.old_value)
 
-
     class SetTextPropertyCommand(ChangeNodeCommand):
 
         def __init__(self, model, node, property_name, new_value, display_property_name = None, unit = '', QUndoCommand_parent = None):
@@ -117,27 +117,28 @@ class GNodeController(Controller):
             if not without_cb: res.editingFinished.connect(self.after_field_change)
         else:
             res.editingFinished.connect(lambda :
-                self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit)
-            )
+                self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit))
         return res
 
-    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name = None, display_property_name = None, node = None, change_cb = None):
-        res = QtGui.QComboBox()
+    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name=None,
+                            display_property_name=None, node=None, change_cb=None):
+        res = ComboBox()
         res.setEditable(editable)
         res.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
-            res.editTextChanged.connect(change_cb)
+            res.editingFinished.connect(change_cb)
         elif node_property_name is None:
-            res.editTextChanged.connect(self.after_field_change)
+            res.editingFinished.connect(self.after_field_change)
         else:
-            res.editTextChanged.connect(lambda :
+            res.editingFinished.connect(lambda :
                 self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
             )
         return res
 
-    def construct_material_combo_box(self, row_name = None, items = None, node_property_name = None, display_property_name = None, node = None):
+    def construct_material_combo_box(self, row_name=None, items=None, node_property_name=None,
+                                     display_property_name=None, node=None):
         res = MaterialsComboBox()
         res.setEditable(True)
         res.append_list(items)
@@ -146,14 +147,14 @@ class GNodeController(Controller):
         res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
         if node_property_name is None:
-            res.editTextChanged.connect(self.after_field_change)
+            res.editingFinished.connect(self.after_field_change)
         else:
-            res.editTextChanged.connect(lambda :
-                self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
-            )
+            res.editingFinished.connect(
+                lambda: self._set_node_property_undoable(
+                    node_property_name, res.currentText(), display_property_name, node=node))
         return res
 
-    def construct_names_before_self_combo_box(self, row_name = None, node_property_name = None, display_property_name = None):
+    def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None, display_property_name=None):
         return self.construct_combo_box(row_name,
                                         items=[''] +
                                         sorted(self.model.names_before(self.node), key=lambda s: s.lower()),

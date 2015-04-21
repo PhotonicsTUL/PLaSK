@@ -254,7 +254,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
 
         if use_menu:
-            tabs_menu = QtGui.QMenu("Sec&tions")
+            tabs_menu = QtGui.QMenu("Sect&ions")
             def add_tab_menu(indx):
                 def show_tab():
                     self.tabs.setCurrentIndex(indx)

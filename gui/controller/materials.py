@@ -21,7 +21,7 @@ from .script import scheme
 from ..model.materials import MaterialsModel, material_html_help, \
     parse_material_components, elements_re
 from ..utils.textedit import TextEdit
-from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut
+from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut, ComboBox
 from ..utils.qsignals import BlockQtSignals
 from . import Controller
 from .defines import DefinesCompletionDelegate
@@ -95,7 +95,7 @@ class ComponentsPopup(QtGui.QFrame):
         self.close_cb(mat)
 
 
-class MaterialsComboBox(QtGui.QComboBox):
+class MaterialsComboBox(ComboBox):
 
     def __init__(self, parent=None, material_list=None, defines_model=None, popup_select_cb=None):
         """

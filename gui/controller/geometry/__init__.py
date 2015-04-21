@@ -226,7 +226,7 @@ class GeometryController(Controller):
         self.tree.dragEnabled()
         self.tree.acceptDrops()
         self.tree.showDropIndicator()
-        self.tree.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.tree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
 
         return self.tree
 

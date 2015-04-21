@@ -23,7 +23,7 @@
     <stack>
       <arrange dtran="0.4" dvert="0" count="3">
         <stack>
-          <rectangle material="InN" dtran="0.2" dvert="0.1"/>
+          <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
           <rectangle material="In(0.5)GaN" dtran="0.2" dvert="0.1"/>
         </stack>
       </arrange>
@@ -34,8 +34,9 @@
   </cartesian2d>
   <cartesian2d>
     <stack>
-      <rectangle material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
+      <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
       <rectangle material="Al(0.73)GaAs:Si=1e18" dtran="1" dvert="1"/>
+      <shelf/>
     </stack>
   </cartesian2d>
   <cylindrical2d name="GeoTE" axes="rz">

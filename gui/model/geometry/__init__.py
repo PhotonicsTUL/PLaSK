@@ -22,6 +22,7 @@ except ImportError:
     import pickle
 
 from ...qt import QtCore, QtGui
+from ...qt.QtCore import Qt
 
 from .. import SectionModel
 from .reader import GNReadConf
@@ -44,7 +45,8 @@ class PyObjMime(QtCore.QMimeData):
             try:
                 pdata = pickle.dumps(data)
             except:
-                self.setData(self.MIMETYPE, "") # we still can use self.data locally, when fake_root is used, this does not work
+                # We still can use self.data locally, but when fake_root is used this does not work
+                self.setData(self.MIMETYPE, "")
                 return
             self.setData(self.MIMETYPE, pickle.dumps(data.__class__) + pdata)
 
@@ -104,7 +106,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def id(self):
             return GeometryModel.REMOVE_COMMAND_ID
 
-
     class InsertChildCommand(QtGui.QUndoCommand):
 
         def __init__(self, model, parent_node, row, child_node, merge_with_next_remove=False, QUndoCommand_parent=None):
@@ -154,7 +155,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return GeometryModel.REMOVE_COMMAND_ID
             return super(GeometryModel.InsertChildCommand, self).id()
 
-
     class SwapChildrenCommand(QtGui.QUndoCommand):
 
         def __init__(self, model, parent_node, index1, index2, QUndoCommand_parent = None):
@@ -178,7 +178,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def undo(self):
             self.redo()
 
-
     class SetRootsCommand(QtGui.QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
@@ -201,8 +200,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
         def undo(self):
             self._set(self.old_axes, self.old_roots)
-
-
 
     def __init__(self, parent=None, info_cb=None):
         QtCore.QAbstractItemModel.__init__(self, parent)
@@ -251,9 +248,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def columnCount(self, parent = QtCore.QModelIndex()):
         return 2
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
+        if role == Qt.DisplayRole:  # or role == Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
                 return item.display_name(full_name=False)
@@ -284,19 +281,19 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def flags(self, index):
         if not index.isValid():
-            return QtCore.Qt.NoItemFlags if self.is_read_only() else QtCore.Qt.ItemIsDropEnabled
-        res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return Qt.NoItemFlags if self.is_read_only() else Qt.ItemIsDropEnabled
+        res = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         if not self.is_read_only():
-            res |= QtCore.Qt.ItemIsDragEnabled
+            res |= Qt.ItemIsDragEnabled
             if index.internalPointer().accept_new_child():
-                res |= QtCore.Qt.ItemIsDropEnabled
+                res |= Qt.ItemIsDropEnabled
         return res
 
     def supportedDropActions(self):
-        return QtCore.Qt.MoveAction
+        return Qt.MoveAction | Qt.CopyAction | Qt.LinkAction
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return ('tag', 'properties')[section]
         return None
 
@@ -304,13 +301,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         return index.internalPointer() if index.isValid() else self.fake_root
 
     def children_list(self, parent):
-        '''Get list of children of node or index.'''
+        """Get list of children of node or index."""
         if parent is None: return self.roots
         from .node import GNode
         if isinstance(parent, GNode): return parent.children
         return parent.internalPointer().children if parent.isValid() else self.roots
 
-    def index(self, row, column, parent = QtCore.QModelIndex()):
+    def index(self, row, column, parent=QtCore.QModelIndex()):
         if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
         l = self.children_list(parent)
         return self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QtCore.QModelIndex()
@@ -323,7 +320,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         #if parentItem is None: return QtCore.QModelIndex()
         #return self.createIndex(self.children_list(parentItem.parent).index(parentItem), 0, parentItem)
 
-    def rowCount(self, parent = QtCore.QModelIndex()):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.column() > 0: return 0
         return len(self.children_list(parent))
 
@@ -345,19 +342,34 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
             return False    # qt should call this but some version of qt have a bug
-        if action == QtCore.Qt.IgnoreAction: return True
-        if action == QtCore.Qt.MoveAction:
+        if action == Qt.IgnoreAction: return True
+        if action == Qt.MoveAction:
             moved_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
-            if moved_obj.parent != parent:  # without copy, the parent of source is incorrect after change and then remove crash
+            if moved_obj.parent != parent:
+                # without copy, the parent of source is incorrect after changing and then remove will crash
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
             self.insert_node(parent, moved_obj, None if row == -1 else row, merge_with_next_remove=True)
-            return True # removeRows will be called and remove current moved_obj
+            return True # removeRows will be called and will remove current moved_obj
+        if action == Qt.CopyAction:
+            copied_obj = mime_data.itemInstance()
+            parent = self.node_for_index(parentIndex)
+            copied_obj = deepcopy(copied_obj, memo={id(copied_obj._parent): copied_obj._parent})
+            self.insert_node(parent, copied_obj, None if row == -1 else row)
+            return True
+        if action == Qt.LinkAction:
+            linked_obj = mime_data.itemInstance()
+            parent = self.node_for_index(parentIndex)
+            from again_copy import GNAgain
+            again = GNAgain(ref=linked_obj.name)
+            self.insert_node(parent, again, None if row == -1 else row)
+            return True
         return False
 
-    def canDropMimeData(self, mime_data, action, row, column, parentIndex): #TODO this is optional but why qt doesn't call this??
+    def canDropMimeData(self, mime_data, action, row, column, parentIndex):
+        """TODO this is optional but why qt doesn't call this??"""
         #return super(GeometryModel, self).canDropMimeData(mime_data, action, row, column, parentIndex)
-        if action == QtCore.Qt.MoveAction:
+        if action in (Qt.MoveAction, Qt.CopyAction):
             moved_obj = mime_data.itemInstance()
             parent = parentIndex.internalPointer()
             if parent is None:
@@ -365,6 +377,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return isinstance(moved_obj, GNGeometryBase)
             else:
                 return moved_obj not in parent.path_to_root and parent.accept_as_child(moved_obj)
+        if action == Qt.LinkAction:
+            linked_obj = mime_data.itemInstance()
+            parent = parentIndex.internalPointer()
+            if parent is None or linked_obj.name is None:
+                return False
+            from again_copy import GNAgain
+            return parent.accept_as_child(GNAgain())  # and linked_obj.name in self.names_before(parent)
         return False
 
     #def moveRow(sourceParent, sourceRow, destinationParent, destinationChild):
@@ -374,7 +393,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     #    pass
 
     # other actions:
-    def index_for_node(self, node, column = 0):
+    def index_for_node(self, node, column=0):
         if node is None or isinstance(node, GNFakeRoot): return QtCore.QModelIndex()
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), column, node)

@@ -14,7 +14,7 @@ import collections
 import sys
 
 from ..qt.QtCore import Qt
-from ..qt import QtCore, QtGui
+from ..qt import QtCore, QtGui, qt4
 from ..utils.config import CONFIG
 
 
@@ -225,3 +225,16 @@ class VerticalScrollArea(QtGui.QScrollArea):
         if obj and obj == self.widget() and event.type() == QtCore.QEvent.Resize:
             self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
         return super(VerticalScrollArea, self).eventFilter(obj, event)
+
+
+class ComboBox(QtGui.QComboBox):
+    editingFinished = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
+
+    def focusOutEvent(self, event):
+        self.editingFinished.emit()
+        super(ComboBox, self).focusOutEvent(event)
+
+    def keyPressEvent(self, event):
+        super(ComboBox, self).keyPressEvent(event)
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+            self.editingFinished.emit()

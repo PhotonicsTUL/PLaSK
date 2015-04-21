@@ -274,8 +274,12 @@ class SourceWidget(QtGui.QWidget):
         document = self.editor.document()
         cursor.movePosition(QtGui.QTextCursor.Start)
         selections = []
+        if self.find_regex.isChecked():
+            findtext = QtCore.QRegExp(self.find_edit.text())
+        else:
+            findtext = self.find_edit.text()
         while True:
-            cursor = document.find(self.find_edit.text(), cursor, self._find_flags())
+            cursor = document.find(findtext, cursor, self._find_flags())
             if not cursor.isNull():
                 selection = QtGui.QTextEdit.ExtraSelection()
                 selection.cursor = cursor
