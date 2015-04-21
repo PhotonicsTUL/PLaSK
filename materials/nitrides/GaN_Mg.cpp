@@ -70,6 +70,15 @@ bool GaN_Mg::isEqual(const Material &other) const {
     return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && o.cond_RT == this->cond_RT;
 }
 
+
+Tensor2<double> GaN_Mg_bulk::thermk(double T, double t) const {
+    return GaN_Mg::thermk(T, INFINITY);
+}
+
+
 static MaterialsDB::Register<GaN_Mg> materialDB_register_Mg;
+
+static MaterialsDB::Register<GaN_Mg_bulk> materialDB_register_GaN_Mg_bulk;
+
 
 }}       // namespace plask::materials

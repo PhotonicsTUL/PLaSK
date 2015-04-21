@@ -259,6 +259,7 @@ class PlotWidget(QtGui.QGroupBox):
         self.selectors = []
         self.axes.minorticks_on()
         if to_plot is not None:
+            xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()
             self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
             self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
             self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
@@ -269,6 +270,9 @@ class PlotWidget(QtGui.QGroupBox):
             for ax in self.axes.xaxis, self.axes.yaxis:
                 ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))
+            if not set_limits:
+                self.axes.set_xlim(xlim)
+                self.axes.set_ylim(ylim)
             self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
             self.canvas.draw()
             self.plane = plane

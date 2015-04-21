@@ -98,6 +98,14 @@ double GaN_Si::nr(double wl, double T, double n) const {
     return ( GaN::nr(wl,T) * (1-1.05*Nf_RT/1e22) );
 }
 
-MaterialsDB::Register<GaN_Si> materialDB_register_GaN_Si;
+
+Tensor2<double> GaN_Si_bulk::thermk(double T, double t) const {
+    return GaN_Si::thermk(T, INFINITY);
+}
+
+
+static MaterialsDB::Register<GaN_Si> materialDB_register_GaN_Si;
+
+static MaterialsDB::Register<GaN_Si_bulk> materialDB_register_GaN_Si_bulk;
 
 }}       // namespace plask::materials

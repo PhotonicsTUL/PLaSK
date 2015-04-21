@@ -14,7 +14,7 @@ namespace plask { namespace materials {
  */
 struct aSi: public Dielectric {
 
-    static constexpr const char* NAME = "aSi";
+    static constexpr const char* NAME = "Si";
 
     virtual std::string name() const override;
     virtual Tensor2<double> cond(double T) const override;

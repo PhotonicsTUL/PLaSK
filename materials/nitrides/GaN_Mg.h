@@ -38,6 +38,20 @@ private:
 };
 
 
+/**
+ * Represent Mg-doped bulk (substrate) GaN, its physical properties.
+ */
+struct GaN_Mg_bulk: public GaN_Mg {
+
+    static constexpr const char* NAME = "GaN_bulk:Mg";
+
+    GaN_Mg_bulk(DopingAmountType type, double val): GaN_Mg(type, val) {}
+
+    virtual Tensor2<double> thermk(double T, double t) const override;
+
+};
+
+
 }} // namespace plask::materials
 
 #endif	//PLASK__GaN_Mg_H

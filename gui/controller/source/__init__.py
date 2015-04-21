@@ -151,7 +151,7 @@ class SourceWidget(QtGui.QWidget):
         self.find_options.addAction(self.find_wholewords)
         self.find_options.addAction(self.find_regex)
         options_button = QtGui.QPushButton(self)
-        options_button.setText("Opt&ions")
+        options_button.setText("Op&tions")
         options_button.setMenu(self.find_options)
         self.find_toolbar.addWidget(options_button)
 

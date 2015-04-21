@@ -18,10 +18,10 @@ struct GaN_Si: public GaN {
     static constexpr const char* NAME = "GaN:Si";
 
     GaN_Si(DopingAmountType Type, double Val);
-	virtual std::string name() const;
+    virtual std::string name() const;
     virtual std::string str() const;
     virtual Tensor2<double> mob(double T) const;
-	virtual double Nf(double T) const; //TODO change to cm^(-3)
+    virtual double Nf(double T) const; //TODO change to cm^(-3)
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
     virtual Tensor2<double> thermk(double T, double t) const;
@@ -35,6 +35,20 @@ private:
     double ND,
            Nf_RT,
            mob_RT;
+
+};
+
+
+/**
+ * Represent Si-doped bulk (substrate) GaN, its physical properties.
+ */
+struct GaN_Si_bulk: public GaN_Si {
+
+    static constexpr const char* NAME = "GaN_bulk:Si";
+
+    GaN_Si_bulk(DopingAmountType type, double val): GaN_Si(type, val) {}
+
+    virtual Tensor2<double> thermk(double T, double t) const override;
 
 };
 
