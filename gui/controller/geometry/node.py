@@ -43,7 +43,7 @@ def aligners_to_controllers(aligners_list, position_controllers):
     if aligners_list is None: return
     for i, pos in enumerate(position_controllers):
         aligner = aligners_list[i]
-        with BlockQtSignals(pos[0], pos[1]) as ignored:
+        with BlockQtSignals(pos[0], pos[1]):
             if aligner.position is not None:
                 pos[0].setCurrentIndex(aligner.position)
             pos[1].setText(none_to_empty(aligner.value))
@@ -121,13 +121,15 @@ class GNodeController(Controller):
             )
         return res
 
-    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name = None, display_property_name = None, node = None):
+    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name = None, display_property_name = None, node = None, change_cb = None):
         res = QtGui.QComboBox()
         res.setEditable(editable)
         res.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
-        if node_property_name is None:
+        if change_cb is not None:
+            res.editTextChanged.connect(change_cb)
+        elif node_property_name is None:
             res.editTextChanged.connect(self.after_field_change)
         else:
             res.editTextChanged.connect(lambda :
@@ -175,8 +177,8 @@ class GNodeController(Controller):
         self._current_form = form_layout
         return form_layout
 
-    def construct_align_controllers(self, dim=None, add_to_current=True, aligners_dir=None, node_property_name = None, display_property_name = None):
-        """:return: list of controllers pairs, first is combo box to select aligner type,
+    def construct_align_controllers(self, dim=None, add_to_current=True, aligners_dir=None, change_cb=None):
+        """:return List[(QtGui.QComboBox, QtGui.QLineEdit)]: list of controllers pairs, first is combo box to select aligner type,
                     second is line edit for its value"""
         if aligners_dir is None:
             aligners_dir = self.node.aligners_dir()
@@ -184,18 +186,23 @@ class GNodeController(Controller):
         positions = []
         layout = QtGui.QGridLayout(None)
         layout.setContentsMargins(0, 0, 0, 0)
-        for r,c in enumerate(aligners_dir):
+        for r, c in enumerate(aligners_dir):
             axis = QtGui.QLabel(('Longitudinal:', 'Transverse:', 'Vertical:')[c+3-dim])
             layout.addWidget(axis, r, 0)
             position = QtGui.QComboBox()
             position.addItems(GNAligner.display_names(dim, c))
             layout.addWidget(position, r, 1)
             layout.addWidget(QtGui.QLabel('at'), r, 2)
-            position.currentIndexChanged.connect(self.after_field_change)
-            pos_value = self.construct_line_edit()
+            #position.currentIndexChanged.connect(self.after_field_change)
+            pos_value = self.construct_line_edit(without_cb = True)
             layout.addWidget(pos_value, r, 3)
             positions.append((position, pos_value))
             layout.addWidget(QtGui.QLabel(u'µm'), r, 4)
+        if change_cb is not None:
+            cb = lambda: change_cb(controller_to_aligners(positions))
+            for p in positions:
+                p[0].currentIndexChanged.connect(cb)
+                p[1].editingFinished.connect(cb)
         if add_to_current: self._get_current_form().addRow(layout)
         return positions
 

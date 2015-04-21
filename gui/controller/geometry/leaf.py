@@ -128,10 +128,6 @@ class GNCircleController(GNLeafController):
                                u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
         super(GNCircleController, self).fill_form()
 
-    def save_data_in_model(self):
-        super(GNCircleController, self).save_data_in_model()
-        #self.node.radius = empty_to_none(self.radius.text())
-
     def on_edit_enter(self):
         super(GNCircleController, self).on_edit_enter()
         self.radius.setText(none_to_empty(self.node.radius))
@@ -148,11 +144,6 @@ class GNCylinderController(GNLeafController):
         self.radius.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
                                u'Height of the cylinder. (float [µm], required)')
         super(GNCylinderController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNCylinderController, self).save_data_in_model()
-        #self.node.radius = empty_to_none(self.radius.text())
-        #self.node.height = empty_to_none(self.height.text())
 
     def on_edit_enter(self):
         super(GNCylinderController, self).on_edit_enter()

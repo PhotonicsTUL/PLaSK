@@ -78,12 +78,11 @@ class GNContainerBaseController(GNObjectController):
 
     def fill_form(self):
         self.pos_layout = self.construct_group('Default Items Positions')
-        self.positions = self.construct_align_controllers()
+        def setter(n, v): n.aligners = v
+        self.positions = self.construct_align_controllers(change_cb=lambda aligners:
+            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions')
+        )
         super(GNContainerBaseController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNContainerBaseController, self).save_data_in_model()
-        self.node.aligners = controller_to_aligners(self.positions)
 
     def on_edit_enter(self):
         super(GNContainerBaseController, self).on_edit_enter()
@@ -104,15 +103,11 @@ class GNStackController(GNObjectController):
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
         self.pos_layout = self.construct_group('Default Items Positions')
-        self.positions = self.construct_align_controllers()
-
+        def setter(n, v): n.aligners = v
+        self.positions = self.construct_align_controllers(change_cb=lambda aligners:
+            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions in stack')
+        )
         super(GNStackController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNStackController, self).save_data_in_model()
-        #self.node.repeat = empty_to_none(self.repeat.text())
-        #self.node.shift = empty_to_none(self.shift.text())
-        self.node.aligners = controller_to_aligners(self.positions)
 
     def on_edit_enter(self):
         super(GNStackController, self).on_edit_enter()
@@ -125,17 +120,16 @@ class GNContainerChildBaseController(GNChildController):
 
     def fill_form(self):
         self.construct_group('Position in Parent Container')
-        self.positions = self.construct_align_controllers()
+        def setter(n, v): n.in_parent = v
+        self.positions = self.construct_align_controllers(change_cb=lambda aligners:
+            self._set_node_by_setter_undoable(setter, aligners, self.child_node.in_parent, 'change item position', node=self.child_node)
+        )
         self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()),
                                              node_property_name='path', node=self.child_node)
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')
 
-    def save_data_in_model(self):
-        self.child_node.in_parent = controller_to_aligners(self.positions)
-        #self.child_node.path = empty_to_none(self.path.currentText())
-
     def on_edit_enter(self):
         aligners_to_controllers(self.child_node.in_parent, self.positions)
-        with BlockQtSignals(self.path) as _:
+        with BlockQtSignals(self.path):
             self.path.setEditText(none_to_empty(self.child_node.path))

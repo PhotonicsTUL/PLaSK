@@ -28,11 +28,6 @@ class GNClipController(GNObjectController):
             sign = '+' if sign == '-' else '-'
         super(GNClipController, self).fill_form()
 
-    def save_data_in_model(self):
-        super(GNClipController, self).save_data_in_model()
-        #for b in self.node.bound_names():
-        #    setattr(self.node, b, empty_to_none(getattr(self, b).text()))
-
     def on_edit_enter(self):
         super(GNClipController, self).on_edit_enter()
         for b in self.node.bound_names():
@@ -41,9 +36,9 @@ class GNClipController(GNObjectController):
 
 class GNFlipMirrorController(GNObjectController):
 
-    def save_data_in_model(self):
-        super(GNFlipMirrorController, self).save_data_in_model()
-        self.node.set_axis(empty_to_none(self.axis.currentText()))
+    def _save_axis_undoable(self):
+        self._set_node_by_setter_undoable(lambda n, v: n.set_axis(v), empty_to_none(self.axis.currentText()), self.node.axis, 'change axis property')
+        #self.node.set_axis(empty_to_none(self.axis.currentText()))
 
     def on_edit_enter(self):
         super(GNFlipMirrorController, self).on_edit_enter()
@@ -55,7 +50,7 @@ class GNFlipController(GNFlipMirrorController):
 
     def fill_form(self):
         self.construct_group('Flip Settings')
-        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim())
+        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;flip <b>axis</b>="" ...&gt;<br/>'
                     'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super(GNFlipController, self).fill_form()
@@ -65,7 +60,7 @@ class GNMirrorController(GNFlipMirrorController):
 
     def fill_form(self):
         self.construct_group('Mirror Settings')
-        self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim())
+        self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
                              'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super(GNMirrorController, self).fill_form()
