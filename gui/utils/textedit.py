@@ -74,6 +74,7 @@ class TextEdit(QtGui.QPlainTextEdit):
         if not cursor.hasSelection(): return []
         document = self.document()
         text = cursor.selectedText()
+        if not text.strip(): return []
         cursor.movePosition(QtGui.QTextCursor.Start)
         selections = []
         while True:
