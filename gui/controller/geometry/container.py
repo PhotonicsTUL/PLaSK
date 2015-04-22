@@ -33,15 +33,15 @@ class GNGapController(GNodeController):
         self._set_node_by_setter_undoable(GNGapController._set_gap_params, new_value, old_value,
             u'change gap size to: {}="{}"µm'.format('total' if new_value[0] else 'gap', none_to_empty(new_value[1])))
 
-    def fill_form(self):
-        super(GNGapController, self).fill_form()
+    def construct_form(self):
+        super(GNGapController, self).construct_form()
         self.gap_type = QtGui.QComboBox()
         self.gap_type.addItems(['Gap size', 'Total container size'])
         self.gap_type.currentIndexChanged.connect(self._on_change_gap_params)
         self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm', change_cb=self._on_change_gap_params)
 
-    def fill_form_using_data_from_model(self):
-        super(GNGapController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNGapController, self).fill_form()
         with BlockQtSignals(self.gap_type):
             self.gap_type.setCurrentIndex(1 if self.node.size_is_total else 0)
             self.gap_value.setText(none_to_empty(self.node.size))
@@ -49,7 +49,7 @@ class GNGapController(GNodeController):
 
 class GNShelfController(GNObjectController):
     
-    def fill_form(self):
+    def construct_form(self):
         self.construct_group('Shelf Settings')
         self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
@@ -65,10 +65,10 @@ class GNShelfController(GNObjectController):
                              u'The value of this attribute can be either true of false.'
                              u' It specifies whether all the items in the shelf are required to have the same height'
                              u' (therefore the top edge of the shelf is flat). Defaults to true.')
-        super(GNShelfController, self).fill_form()
+        super(GNShelfController, self).construct_form()
 
-    def fill_form_using_data_from_model(self):
-        super(GNShelfController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNShelfController, self).fill_form()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
         with BlockQtSignals(self.flat):
@@ -76,22 +76,22 @@ class GNShelfController(GNObjectController):
 
 class GNContainerBaseController(GNObjectController):
 
-    def fill_form(self):
+    def construct_form(self):
         self.pos_layout = self.construct_group('Default Items Positions')
         def setter(n, v): n.aligners = v
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
             self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions')
         )
-        super(GNContainerBaseController, self).fill_form()
+        super(GNContainerBaseController, self).construct_form()
 
-    def fill_form_using_data_from_model(self):
-        super(GNContainerBaseController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNContainerBaseController, self).fill_form()
         aligners_to_controllers(self.node.aligners, self.positions)
 
 
 class GNStackController(GNObjectController):
 
-    def fill_form(self):
+    def construct_form(self):
         self.construct_group('Stack Settings')
         self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
@@ -107,10 +107,10 @@ class GNStackController(GNObjectController):
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
             self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions in stack')
         )
-        super(GNStackController, self).fill_form()
+        super(GNStackController, self).construct_form()
 
-    def fill_form_using_data_from_model(self):
-        super(GNStackController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNStackController, self).fill_form()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
         aligners_to_controllers(self.node.aligners, self.positions)
@@ -118,7 +118,7 @@ class GNStackController(GNObjectController):
 
 class GNContainerChildBaseController(GNChildController):
 
-    def fill_form(self):
+    def construct_form(self):
         self.construct_group('Position in Parent Container')
         def setter(n, v): n.in_parent = v
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
@@ -129,8 +129,8 @@ class GNContainerChildBaseController(GNChildController):
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')
 
-    def fill_form_using_data_from_model(self):
-        super(GNContainerChildBaseController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNContainerChildBaseController, self).fill_form()
         aligners_to_controllers(self.child_node.in_parent, self.positions)
         with BlockQtSignals(self.path):
             self.path.setEditText(none_to_empty(self.child_node.path))

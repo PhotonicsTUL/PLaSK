@@ -28,7 +28,7 @@ class GNObjectController(GNodeController):
     #    super(GNObjectController, self).__init__(document, model, node)
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
-    def fill_form(self):
+    def construct_form(self):
         self.construct_group('Basic Settings')
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
@@ -51,10 +51,10 @@ class GNObjectController(GNodeController):
     def save_data_in_model(self):
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
-    def fill_form_using_data_from_model(self):
-        super(GNObjectController, self).fill_form_using_data_from_model()
+    def fill_form(self):
+        super(GNObjectController, self).fill_form()
         self.name.setText(none_to_empty(self.node.name))
         self.role.setText(none_to_empty(self.node.role))
         with BlockQtSignals(self.axes) as ignored:
             self.axes.setEditText(axes_to_str(self.node.axes))
-        if self.in_parent_controller is not None: self.in_parent_controller.fill_form_using_data_from_model()
+        if self.in_parent_controller is not None: self.in_parent_controller.fill_form()

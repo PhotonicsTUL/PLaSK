@@ -248,7 +248,7 @@ class GNodeController(Controller):
         self.vbox = QtGui.QVBoxLayout()
         self.vbox.setSpacing(0)
         self.form.setLayout(self.vbox)
-        self.fill_form()
+        self.construct_form()
         try:
             del self._current_form
         except:
@@ -258,7 +258,7 @@ class GNodeController(Controller):
     def node_index(self):
         self.model.index_for_node(self.node)
 
-    def fill_form(self):
+    def construct_form(self):
         pass
 
     def after_field_change(self):
@@ -270,20 +270,20 @@ class GNodeController(Controller):
     def save_data_in_model(self):
         pass
 
-    def fill_form_using_data_from_model(self):
+    def fill_form(self):
         #self.on_edit_enter()
         pass
 
-    def _fill_form_using_data_from_model_cb(self, *args, **kwargs):
-        self.fill_form_using_data_from_model()
+    def _fill_form_cb(self, *args, **kwargs):
+        self.fill_form()
 
     def on_edit_enter(self):
         super(GNodeController, self).on_edit_enter()
-        self.model.changed.connect(self._fill_form_using_data_from_model_cb)
-        self.fill_form_using_data_from_model()
+        self.model.changed.connect(self._fill_form_cb)
+        self.fill_form()
 
     def on_edit_exit(self):
-        self.model.changed.disconnect(self._fill_form_using_data_from_model_cb)
+        self.model.changed.disconnect(self._fill_form_cb)
         return super(GNodeController, self).on_edit_exit()
 
     def get_widget(self):
