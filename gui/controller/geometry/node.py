@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from __builtin__ import isinstance
 
 from ...qt import QtGui
 
@@ -74,20 +75,15 @@ class GNodeController(Controller):
         def undo(self):
             self.set_property_value(self.old_value)
 
-    class SetTextPropertyCommand(ChangeNodeCommand):
-
-        def __init__(self, model, node, property_name, new_value, display_property_name = None, unit = '', QUndoCommand_parent = None):
+    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = '', node=None, action_name=None):
+        if node is None: node = self.node
+        if isinstance(new_value, basestring): new_value = empty_to_none(new_value)
+        old_value = getattr(node, property_name)
+        if action_name is None:
             if display_property_name is None: display_property_name = property_name
-            super(GNodeController.SetTextPropertyCommand, self).__init__(model, node,
-                lambda n, v: setattr(n, property_name, v), empty_to_none(new_value), getattr(node, property_name),
-                u'change {} to "{}"{}'.format(display_property_name, new_value, none_to_empty(unit)),
-                QUndoCommand_parent)
-
-
-    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = '', node=None):
-        cmd = GNodeController.SetTextPropertyCommand(self.model, self.node if node is None else node,
-                                                     property_name, new_value, display_property_name, unit)
-        if cmd.new_value != cmd.old_value: self.model.undo_stack.push(cmd)
+            action_name = u'change {} to "{}"{}'.format(display_property_name, none_to_empty(new_value), none_to_empty(unit))
+        self._set_node_by_setter_undoable(lambda n, v: setattr(n, property_name, v), new_value, old_value,
+                                          action_name=action_name, node=node)
 
     def _set_node_by_setter_undoable(self, setter, new_value, old_value, action_name, node = None):
         if new_value != old_value:
@@ -138,7 +134,7 @@ class GNodeController(Controller):
         return res
 
     def construct_material_combo_box(self, row_name=None, items=None, node_property_name=None,
-                                     display_property_name=None, node=None):
+                                     display_property_name=None, node=None, change_cb=None):
         res = MaterialsComboBox()
         res.setEditable(True)
         res.append_list(items)
@@ -146,7 +142,9 @@ class GNodeController(Controller):
         res.append_materials_from_db()
         res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
-        if node_property_name is None:
+        if change_cb is not None:
+            res.editingFinished.connect(change_cb)
+        elif node_property_name is None:
             res.editingFinished.connect(self.after_field_change)
         else:
             res.editingFinished.connect(

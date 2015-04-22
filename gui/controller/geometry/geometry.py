@@ -22,9 +22,14 @@ from ...model.geometry.reader import GNAligner
 
 class GNGeometryController(GNObjectController):
 
+    def _borders_to_model_undoable(self):
+        self._set_node_property_undoable('borders',
+            [[empty_to_none(self.borders[dir][lh].currentText()) for lh in range(0, 2)] for dir in range(0, self.node.dim)],
+            action_name='change geometry borders')
+
     def construct_border_controllers(self, row_name=None):
         hbox, group = self._construct_hbox(row_name)
-        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'])
+        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'], change_cb=self._borders_to_model_undoable)
                     for _ in range(0, 2))
         for w in res: hbox.addWidget(w)
         return res if row_name else (res, group)
@@ -34,12 +39,6 @@ class GNGeometryController(GNObjectController):
         self.borders = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
                              for (lo, hi) in self.node.get_alternative_direction_names())
         super(GNGeometryController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNGeometryController, self).save_data_in_model()
-        for dir in range(0, self.node.dim):
-            for lh in range(0, 2):
-                self.node.borders[dir][lh] = empty_to_none(self.borders[dir][lh].currentText())
 
     def on_edit_enter(self):
         super(GNGeometryController, self).on_edit_enter()
@@ -57,10 +56,6 @@ class GNCartesian2DGeometryController(GNGeometryController):
         self.length.setToolTip(u'&lt;cartesian2d <b>length</b>="" ...&gt;<br/>'
             u'Longitudinal dimension of the geometry (float [µm]). Default value is: +infty.')
         super(GNCartesian2DGeometryController, self).fill_form()
-
-    def save_data_in_model(self):
-        super(GNCartesian2DGeometryController, self).save_data_in_model()
-        #self.node.length = empty_to_none(self.length.text())
 
     def on_edit_enter(self):
         super(GNCartesian2DGeometryController, self).on_edit_enter()

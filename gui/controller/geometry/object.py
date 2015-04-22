@@ -49,9 +49,6 @@ class GNObjectController(GNodeController):
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
     def save_data_in_model(self):
-        #self.node.name = empty_to_none(self.name.text())
-        #self.node.role = empty_to_none(self.role.text())
-        #self.node.axes = empty_to_none(self.axes.currentText())
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
     def on_edit_enter(self):
