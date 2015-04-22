@@ -24,13 +24,13 @@ class GNLeafController(GNObjectController):
 
         self.material_selection_type = QtGui.QComboBox()
         self.material_selection_type.addItems(['Solid', 'Gradual'])
-        self.material_selection_type.currentIndexChanged.connect(self.after_field_change)
+        self.material_selection_type.currentIndexChanged.connect(self._save_material_in_model_undoable)
 
-        self.material_solid = self.construct_material_combo_box(items=[''])
+        self.material_solid = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
 
         material_tb_hbox, material_tb_group = self._construct_hbox()
-        self.material_bottom = self.construct_material_combo_box(items=[''])
-        self.material_top = self.construct_material_combo_box(items=[''])
+        self.material_bottom = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
+        self.material_top = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
         material_tb_hbox.addWidget(self.material_bottom)
         material_tb_hbox.addWidget(self.material_top)
 
@@ -56,15 +56,26 @@ class GNLeafController(GNObjectController):
                                   u'Minimum step size if the object is non-uniform.'
                                   .format(self.node.tag_name(False)))
 
-    def save_data_in_model(self):
-        super(GNLeafController, self).save_data_in_model()
+    def _save_material_in_model_undoable(self):
+        def setter(n, v):
+            n.material_bottom = v[0]
+            n.material_top = v[1]
+
         if self.material_selection_type.currentIndex() == 0:
-            self.node.set_material(empty_to_none(self.material_solid.currentText()))
+            m = empty_to_none(self.material_solid.currentText())
+            new_material = (m, m)
         else:
-            self.node.material_bottom = empty_to_none(self.material_bottom.currentText())
-            self.node.material_top = empty_to_none(self.material_top.currentText())
-        #self.node.step_num = empty_to_none(self.step_num.text())
-        #self.node.step_dist = empty_to_none(self.step_dist.text())
+            new_material = ( empty_to_none(self.material_bottom.currentText()), empty_to_none(self.material_top.currentText()) )
+
+        self._set_node_by_setter_undoable(
+            setter, new_material, (self.node.material_bottom, self.node.material_top), 'change material'
+        )
+
+        #if self.material_selection_type.currentIndex() == 0:
+        #    self.node.set_material(empty_to_none(self.material_solid.currentText()))
+        #else:
+        #    self.node.material_bottom = empty_to_none(self.material_bottom.currentText())
+        #    self.node.material_top = empty_to_none(self.material_top.currentText())
 
     def on_edit_enter(self):
         super(GNLeafController, self).on_edit_enter()
