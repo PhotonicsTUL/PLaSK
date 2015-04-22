@@ -98,7 +98,7 @@ class GNStackController(GNObjectController):
                                 'Number of repetitive occurrences of stack content.'
                                 ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
                                 ' Defaults to 1. (integer))')
-        self.shift = self.construct_line_edit('Shift:', display_property_name='shift')
+        self.shift = self.construct_line_edit('Shift:', node_property_name='shift')
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')

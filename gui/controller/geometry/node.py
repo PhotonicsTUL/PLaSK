@@ -94,8 +94,7 @@ class GNodeController(Controller):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None, without_cb = False):
-        #TODO remove without_cb and do not connecting cb. default behaviour
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None):
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:
@@ -107,9 +106,7 @@ class GNodeController(Controller):
                 self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
-        elif node_property_name is None:
-            if not without_cb: res.editingFinished.connect(self.after_field_change)
-        else:
+        elif node_property_name is not None:
             res.editingFinished.connect(lambda :
                 self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit))
         return res
@@ -123,9 +120,7 @@ class GNodeController(Controller):
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
-        elif node_property_name is None:
-            res.editingFinished.connect(self.after_field_change)
-        else:
+        elif node_property_name is not None:
             res.editingFinished.connect(lambda :
                 self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
             )
@@ -142,20 +137,19 @@ class GNodeController(Controller):
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
-        elif node_property_name is None:
-            res.editingFinished.connect(self.after_field_change)
-        else:
+        elif node_property_name is not None:
             res.editingFinished.connect(
                 lambda: self._set_node_property_undoable(
                     node_property_name, res.currentText(), display_property_name, node=node))
         return res
 
-    def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None, display_property_name=None):
+    def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None, display_property_name=None, change_cb=None):
         return self.construct_combo_box(row_name,
                                         items=[''] +
                                         sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
                                         node_property_name=node_property_name,
-                                        display_property_name=display_property_name)
+                                        display_property_name=display_property_name,
+                                        change_cb=change_cb)
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)
@@ -190,8 +184,7 @@ class GNodeController(Controller):
             position.addItems(GNAligner.display_names(dim, c))
             layout.addWidget(position, r, 1)
             layout.addWidget(QtGui.QLabel('at'), r, 2)
-            #position.currentIndexChanged.connect(self.after_field_change)
-            pos_value = self.construct_line_edit(without_cb = True)
+            pos_value = self.construct_line_edit()
             layout.addWidget(pos_value, r, 3)
             positions.append((position, pos_value))
             layout.addWidget(QtGui.QLabel(u'µm'), r, 4)
@@ -223,7 +216,7 @@ class GNodeController(Controller):
         '''
         if dim is None: dim = self.node.dim
         hbox, group = self._construct_hbox(row_name)
-        res = tuple(self.construct_line_edit(without_cb = change_cb is not None) for _ in range(0, dim))
+        res = tuple(self.construct_line_edit() for _ in range(0, dim))
         for i in range(0, dim):
             hbox.addWidget(res[i])
             hbox.addWidget(QtGui.QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
@@ -259,15 +252,6 @@ class GNodeController(Controller):
         self.model.index_for_node(self.node)
 
     def construct_form(self):
-        pass
-
-    def after_field_change(self):
-        self.save_data_in_model()
-        index = self.node_index
-        self.model.dataChanged.emit(index, index)
-        self.model.fire_changed()
-
-    def save_data_in_model(self):
         pass
 
     def fill_form(self):
