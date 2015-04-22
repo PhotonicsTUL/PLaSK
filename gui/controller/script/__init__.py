@@ -58,8 +58,6 @@ scheme = {
     'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#440088')),
 }
 
-# SELECTION_COLOR = QtGui.QColor(CONFIG('editor/selection_color', '#ffff88'))
-
 
 class ScriptEditor(TextEdit):
     """Editor with some features usefult for script editing"""

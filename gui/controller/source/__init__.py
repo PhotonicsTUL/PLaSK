@@ -32,7 +32,8 @@ scheme = {
     'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
 }
 
-MATCH_COLOR = QtGui.QColor(CONFIG('editor/match_color', '#88ff88'))
+MATCH_COLOR = QtGui.QColor(CONFIG('editor/match_color', '#ddffdd'))
+REPLACE_COLOR = QtGui.QColor(CONFIG('editor/replace_color', '#ffddff'))
 
 
 class XMLEditor(TextEdit):
@@ -183,6 +184,7 @@ class SourceWidget(QtGui.QWidget):
         self.find_edit.textEdited.connect(self.find_type)
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
+        self._replaced_selections = []
 
     def _find_context_menu(self, pos):
         menu = self.find_edit.createStandardContextMenu()
@@ -287,9 +289,10 @@ class SourceWidget(QtGui.QWidget):
                 selections.append(selection)
             else:
                 break
-        self.editor.update_selections(selections)
+        self.editor.update_selections(selections + self._replaced_selections)
 
     def clear_matches(self):
+        self._replaced_selections = []
         self.editor.update_selections([])
 
     def find_next(self):
@@ -304,6 +307,8 @@ class SourceWidget(QtGui.QWidget):
         self._find(cont=True)
 
     def replace_next(self, rewind=True):
+        if rewind:
+            self._replaced_selections = []
         if not self._find(cont=True, rewind=rewind):
             return False
         pal = self.editor.palette()
@@ -315,7 +320,14 @@ class SourceWidget(QtGui.QWidget):
         else:
             cursor.insertText(self.replace_edit.text())
         end = cursor.position()
+        selection = QtGui.QTextEdit.ExtraSelection()
+        selection.cursor = self.editor.textCursor()
+        selection.cursor.setPosition(start)
+        selection.cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+        selection.format.setBackground(REPLACE_COLOR)
+        self._replaced_selections.append(selection)
         if not self._find(cont=False, rewind=rewind):
+            self.editor.update_selections(self._replaced_selections)
             cursor.setPosition(start)
             cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
             self.editor.setTextCursor(cursor)
@@ -324,6 +336,7 @@ class SourceWidget(QtGui.QWidget):
         return True
 
     def replace_all(self):
+        self._replaced_selections = []
         cursor = self.editor.textCursor()
         cursor.beginEditBlock()
         try:
