@@ -51,8 +51,16 @@ MI_PROPERTY(AlN, Eg,
             )
 double AlN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = phys::Varshni(6.10,2.63e-3,2082.,T);
+    if (point == 'G' || point == '*') tEg = phys::Varshni(6.10,2.63e-3,2082.,T);
     return (tEg);
+}
+
+double AlN::VB(double T, double e, char point, char hole) const {
+    return -0.769;
+}
+
+double AlN::Dso(double T, double e) const {
+    return 0.036;
 }
 
 MI_PROPERTY(AlN, Me,
@@ -61,7 +69,7 @@ MI_PROPERTY(AlN, Me,
             )
 Tensor2<double> AlN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
-    if (point == 'G') {
+    if (point == 'G' || point == '*') {
         tMe.c00 = 0.30;
         tMe.c11 = 0.29;
     }

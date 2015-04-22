@@ -42,6 +42,12 @@ struct PLASK_API Box2D {
      */
     constexpr double width() const { return upper.tran() - lower.tran(); }
 
+    /**
+     * Calculate center point.
+     * @return center of the box
+     */
+    constexpr Vec<2,double> center() const { return 0.5 * (upper + lower); }
+
     /// Construct uninitialized .
     constexpr Box2D() {}
 
@@ -252,7 +258,7 @@ struct PLASK_API Box2D {
         res.flip(i);
         return res;
     }
-    
+
     /**
      * Return left edge of the box. Assume that box is already correct.
      * \return left edge of the box
@@ -264,7 +270,7 @@ struct PLASK_API Box2D {
      * \return left edge of the box
      */
     double& left() { return lower.c0; }
-    
+
     /**
      * Return right edge of the box. Assume that box is already correct.
      * \return right edge of the box
@@ -276,7 +282,7 @@ struct PLASK_API Box2D {
      * \return right edge of the box
      */
     double& right() { return upper.c0; }
-    
+
     /**
      * Return bottom edge of the box. Assume that box is already correct.
      * \return bottom edge of the box
@@ -288,7 +294,7 @@ struct PLASK_API Box2D {
      * \return bottom edge of the box
      */
     double& bottom() { return lower.c1; }
-    
+
     /**
      * Return top edge of the box. Assume that box is already correct.
      * \return top edge of the box
@@ -330,25 +336,31 @@ struct PLASK_API Box3D {
      * Calculate size of this.
      * @return upper - lower
      */
-    Vec<3,double> size() const { return upper - lower; }
+    constexpr Vec<3,double> size() const { return upper - lower; }
 
     /**
      * Calculate size of this in up direction.
      * @return upper.vert() - lower.up
      */
-    double height() const { return upper.vert() - lower.vert(); }
+    constexpr double height() const { return upper.vert() - lower.vert(); }
 
     /**
      * Calculate width of this.
      * @return width of the box
      */
-    double width() const { return upper.tran() - lower.tran(); }
+    constexpr double width() const { return upper.tran() - lower.tran(); }
 
     /**
      * Calculate depth of this.
      * @return width of the box
      */
-    double depth() const { return upper.lon() - lower.lon(); }
+    constexpr double depth() const { return upper.lon() - lower.lon(); }
+
+    /**
+     * Calculate center point.
+     * @return center of the box
+     */
+    constexpr Vec<3,double> center() const { return 0.5 * (upper + lower); }
 
     /// Construct uninitialized .
     constexpr Box3D() {}
@@ -567,7 +579,7 @@ struct PLASK_API Box3D {
         res.flip(i);
         return res;
     }
-    
+
     /**
      * Return back edge of the box. Assume that box is already correct.
      * \return back edge of the box
@@ -579,7 +591,7 @@ struct PLASK_API Box3D {
      * \return back edge of the box
      */
     double& back() { return lower.c0; }
-    
+
     /**
      * Return front edge of the box. Assume that box is already correct.
      * \return front edge of the box
@@ -591,7 +603,7 @@ struct PLASK_API Box3D {
      * \return front edge of the box
      */
     double& front() { return upper.c0; }
-    
+
     /**
      * Return left edge of the box. Assume that box is already correct.
      * \return left edge of the box
@@ -603,7 +615,7 @@ struct PLASK_API Box3D {
      * \return left edge of the box
      */
     double& left() { return lower.c1; }
-    
+
     /**
      * Return right edge of the box. Assume that box is already correct.
      * \return right edge of the box
@@ -615,7 +627,7 @@ struct PLASK_API Box3D {
      * \return right edge of the box
      */
     double& right() { return upper.c1; }
-    
+
     /**
      * Return bottom edge of the box. Assume that box is already correct.
      * \return bottom edge of the box
@@ -627,7 +639,7 @@ struct PLASK_API Box3D {
      * \return bottom edge of the box
      */
     double& bottom() { return lower.c2; }
-    
+
     /**
      * Return top edge of the box. Assume that box is already correct.
      * \return top edge of the box

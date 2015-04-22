@@ -65,8 +65,16 @@ MI_PROPERTY(InGaN, Eg,
             )
 double InGaN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = In*mInN.Eg(T,e,point) + Ga*mGaN.Eg(T,e,point) - In*Ga*1.4;
+    if (point == 'G' || point == '*') tEg = In*mInN.Eg(T,e,point) + Ga*mGaN.Eg(T,e,point) - In*Ga*1.4;
     return (tEg);
+}
+
+double InGaN::VB(double T, double e, char point, char hole) const {
+    return 0.3 * (mGaN.Eg(T,e,point) - Eg(T,e,point));
+}
+
+double InGaN::Dso(double T, double e) const {
+    return In*mInN.Dso(T,e) + Ga*mGaN.Dso(T,e);
 }
 
 MI_PROPERTY(InGaN, Me,

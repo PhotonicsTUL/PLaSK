@@ -259,7 +259,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
             lineno += __globals['__manager__'].script_first_line
         except NameError: pass
         except KeyError: pass
-    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, message))
+    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, message.replace('\n', ' ')))
 
 import warnings
 warnings.showwarning = _showwarning
@@ -395,14 +395,14 @@ class StepProfile(object):
 def LAM(mat, lam, T=300.):
     """
     Compute optical wavelength in specified material.
-    
+
     This is utility function that computes the physical lenght of a single
     wavelength in specified material. Its main purpose is easier design of
     DBR stack.
-    
+
     If you are using it with custom materials, make sure that it does provide
     :meth:`~plask.material.Material.nr` method.
-    
+
     Args:
         mat (material.Material or str): Material to compute physical wavelength in.
         lam (float): Free-space wavelength to scale for material `mat`.

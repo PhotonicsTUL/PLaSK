@@ -65,8 +65,16 @@ MI_PROPERTY(AlGaN, Eg,
             )
 double AlGaN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = Al*mAlN.Eg(T,e,point) + Ga*mGaN.Eg(T,e,point) - Al*Ga*0.8;
+    if (point == 'G' || point == '*') tEg = Al*mAlN.Eg(T,e,point) + Ga*mGaN.Eg(T,e,point) - Al*Ga*0.8;
     return (tEg);
+}
+
+double AlGaN::VB(double T, double e, char point, char hole) const {
+    return 0.3 * (mGaN.Eg(T,e,point) - Eg(T,e,point));
+}
+
+double AlGaN::Dso(double T, double e) const {
+    return Al*mAlN.Dso(T,e) + Ga*mGaN.Dso(T,e);
 }
 
 MI_PROPERTY(AlGaN, Me,

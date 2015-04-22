@@ -17,16 +17,18 @@ struct InN: public Semiconductor {
 
     static constexpr const char* NAME = "InN";
 
-    virtual std::string name() const;
-    virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
-    virtual double lattC(double T, char x) const;
-    virtual double Eg(double T, double e, char point) const;
-    virtual Tensor2<double> Me(double T, double e, char point) const;
-    virtual Tensor2<double> Mhh(double T, double e) const;
-    virtual Tensor2<double> Mlh(double T, double e) const;
+    std::string name() const;
+    Tensor2<double> thermk(double T, double h=INFINITY) const;
+    double lattC(double T, char x) const;
+    double Eg(double T, double e, char point) const;
+    double VB(double T, double e, char point, char hole) const override;
+    double Dso(double T, double e) const override;
+    Tensor2<double> Me(double T, double e, char point) const;
+    Tensor2<double> Mhh(double T, double e) const;
+    Tensor2<double> Mlh(double T, double e) const;
 
 protected:
-    virtual bool isEqual(const Material& other) const;
+    bool isEqual(const Material& other) const;
 
 };
 

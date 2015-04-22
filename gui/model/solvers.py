@@ -431,6 +431,8 @@ def _load_xml(filename):
                 if at == u'choice':
                     ac = tuple(ch.text.strip() for ch in attr.findall(XNS+'choice'))
                     attrs.append((an, al, ah, ac))
+                elif at == u'bool':
+                    attrs.append((an, al, ah, ('yes', 'no')))
                 else:
                     if at:
                         ah += u' ({})'.format(at)

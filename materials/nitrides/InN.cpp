@@ -32,9 +32,18 @@ MI_PROPERTY(InN, Eg,
             )
 double InN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = phys::Varshni(0.69,0.414e-3,154.,T);
+    if (point == 'G' || point == '*') tEg = phys::Varshni(0.69,0.414e-3,154.,T);
     return (tEg);
 }
+
+double InN::VB(double T, double e, char point, char hole) const {
+    return 0.848;
+}
+
+double InN::Dso(double T, double e) const {
+    return 0.005;
+}
+
 
 MI_PROPERTY(InN, Me,
             MISource("Adachi WILEY 2009"),
@@ -42,7 +51,7 @@ MI_PROPERTY(InN, Me,
             )
 Tensor2<double> InN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
-    if (point == 'G') {
+    if (point == 'G' || point == '*') {
         tMe.c00 = 0.039;
         tMe.c11 = 0.047;
     }

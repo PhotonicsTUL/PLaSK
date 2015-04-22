@@ -6,6 +6,7 @@ TODO doc
 
 """
 import os as _os
+import collections as _collections
 import plask
 import numpy as _np
 
@@ -351,11 +352,12 @@ class ThresholdSearch(ThermoElectric):
             threshold.
 
         vstart (float or tuple of 2 floats): Voltage staring point or limits
-             fo the threshold search
+             for the threshold search
 
-        optstart (float): Approximation of the optical mode
+        optstart (float or callable): Approximation of the optical mode
             (either the effective index or the wavelength) needed for optical
-            computations.
+            computations. If this parameter is a callable it will be called
+            (without arguments) to get the optical mode approximation.
 
         optname (str): Name of the optical solver ``find_mode`` argument to
             vary. Is None than simple the first unnamed argument is varied.
@@ -496,10 +498,11 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
             try: self.diffusion.compute_threshold()
             except AttributeError: pass
+            optstart = self.optstart() if isinstance(self.optstart, _collections.Callable) else self.optstart
             if self.optname is None:
-                self.modeno = self.optical.find_mode(self.optstart, **self.optargs)
+                self.modeno = self.optical.find_mode(optstart, **self.optargs)
             else:
-                okwargs = {self.optname: self.optstart}
+                okwargs = {self.optname: optstart}
                 okwargs.update(self.optargs)
                 self.modeno = self.optical.find_mode(**okwargs)
             val = self.optical.modes[self.modeno].__getattribute__(self.loss)

@@ -79,8 +79,16 @@ MI_PROPERTY(GaN, Eg,
             )
 double GaN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = phys::Varshni(3.510,0.914e-3,825.,T);
+    if (point == 'G' || point == '*') tEg = phys::Varshni(3.510,0.914e-3,825.,T);
     return (tEg);
+}
+
+double GaN::VB(double T, double e, char point, char hole) const {
+    return 0.;
+}
+
+double GaN::Dso(double T, double e) const {
+    return 0.017;
 }
 
 MI_PROPERTY(GaN, Me,
@@ -89,7 +97,7 @@ MI_PROPERTY(GaN, Me,
             )
 Tensor2<double> GaN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
-    if (point == 'G') {
+    if (point == 'G' || point == '*') {
         tMe.c00 = 0.22;
         tMe.c11 = 0.21;
     }
