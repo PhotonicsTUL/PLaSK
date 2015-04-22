@@ -28,8 +28,8 @@ class GNClipController(GNObjectController):
             sign = '+' if sign == '-' else '-'
         super(GNClipController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNClipController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNClipController, self).fill_form_using_data_from_model()
         for b in self.node.bound_names():
             getattr(self, b).setText(none_to_empty(getattr(self.node, b)))
 
@@ -40,8 +40,8 @@ class GNFlipMirrorController(GNObjectController):
         self._set_node_by_setter_undoable(lambda n, v: n.set_axis(v), empty_to_none(self.axis.currentText()), self.node.axis, 'change axis property')
         #self.node.set_axis(empty_to_none(self.axis.currentText()))
 
-    def on_edit_enter(self):
-        super(GNFlipMirrorController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNFlipMirrorController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.axis) as ignored:
             self.axis.setEditText(none_to_empty(self.node.axis_str()))
 
@@ -75,8 +75,8 @@ class GNExtrusionController(GNObjectController):
                                u'Length of the extrusion. (float [µm], required)')
         super(GNExtrusionController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNExtrusionController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNExtrusionController, self).fill_form_using_data_from_model()
         self.length.setText(none_to_empty(self.node.length))
 
 
@@ -92,8 +92,8 @@ class GNRevolutionController(GNObjectController):
                                 u' Defaults to false.')
         super(GNRevolutionController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNRevolutionController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNRevolutionController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.auto_clip):
             self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))
 
@@ -108,8 +108,8 @@ class GNTranslationController(GNObjectController):
         )
         super(GNTranslationController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNTranslationController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNTranslationController, self).fill_form_using_data_from_model()
         for i in range(0, self.node.dim):
             self.vector[i].setText(none_to_empty(self.node.vector[i]))
 
@@ -127,8 +127,8 @@ class GNArrangeController(GNObjectController):
                                u'Number of item repetitions.')
         super(GNArrangeController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNArrangeController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNArrangeController, self).fill_form_using_data_from_model()
         for i in range(0, self.node.dim):
             self.step[i].setText(none_to_empty(self.node.step[i]))
         self.count.setText(none_to_empty(self.node.count))

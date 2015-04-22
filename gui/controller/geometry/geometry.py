@@ -40,8 +40,8 @@ class GNGeometryController(GNObjectController):
                              for (lo, hi) in self.node.get_alternative_direction_names())
         super(GNGeometryController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNGeometryController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNGeometryController, self).fill_form_using_data_from_model()
         for dir in range(0, self.node.dim):
             for lh in range(0, 2):
                 with BlockQtSignals(self.borders[dir][lh]):
@@ -57,6 +57,6 @@ class GNCartesian2DGeometryController(GNGeometryController):
             u'Longitudinal dimension of the geometry (float [µm]). Default value is: +infty.')
         super(GNCartesian2DGeometryController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNCartesian2DGeometryController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNCartesian2DGeometryController, self).fill_form_using_data_from_model()
         self.length.setText(none_to_empty(self.node.length))

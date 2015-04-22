@@ -10,8 +10,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from __builtin__ import isinstance
-
 from ...qt import QtGui
 
 from .. import Controller
@@ -272,15 +270,20 @@ class GNodeController(Controller):
     def save_data_in_model(self):
         pass
 
-    def _fill_form_using_data_from_model(self, *args, **kwargs):
-        self.on_edit_enter()
-
-    def on_edit_enter(self):
-        self.model.changed.connect(self._fill_form_using_data_from_model)
+    def fill_form_using_data_from_model(self):
+        #self.on_edit_enter()
         pass
 
+    def _fill_form_using_data_from_model_cb(self, *args, **kwargs):
+        self.fill_form_using_data_from_model()
+
+    def on_edit_enter(self):
+        super(GNodeController, self).on_edit_enter()
+        self.model.changed.connect(self._fill_form_using_data_from_model_cb)
+        self.fill_form_using_data_from_model()
+
     def on_edit_exit(self):
-        self.model.changed.disconnect(self._fill_form_using_data_from_model)
+        self.model.changed.disconnect(self._fill_form_using_data_from_model_cb)
         return super(GNodeController, self).on_edit_exit()
 
     def get_widget(self):

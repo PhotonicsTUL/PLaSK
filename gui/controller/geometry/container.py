@@ -40,8 +40,8 @@ class GNGapController(GNodeController):
         self.gap_type.currentIndexChanged.connect(self._on_change_gap_params)
         self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm', change_cb=self._on_change_gap_params)
 
-    def on_edit_enter(self):
-        super(GNGapController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNGapController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.gap_type):
             self.gap_type.setCurrentIndex(1 if self.node.size_is_total else 0)
             self.gap_value.setText(none_to_empty(self.node.size))
@@ -67,8 +67,8 @@ class GNShelfController(GNObjectController):
                              u' (therefore the top edge of the shelf is flat). Defaults to true.')
         super(GNShelfController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNShelfController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNShelfController, self).fill_form_using_data_from_model()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
         with BlockQtSignals(self.flat):
@@ -84,8 +84,8 @@ class GNContainerBaseController(GNObjectController):
         )
         super(GNContainerBaseController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNContainerBaseController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNContainerBaseController, self).fill_form_using_data_from_model()
         aligners_to_controllers(self.node.aligners, self.positions)
 
 
@@ -109,8 +109,8 @@ class GNStackController(GNObjectController):
         )
         super(GNStackController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNStackController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNStackController, self).fill_form_using_data_from_model()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
         aligners_to_controllers(self.node.aligners, self.positions)
@@ -129,7 +129,8 @@ class GNContainerChildBaseController(GNChildController):
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')
 
-    def on_edit_enter(self):
+    def fill_form_using_data_from_model(self):
+        super(GNContainerChildBaseController, self).fill_form_using_data_from_model()
         aligners_to_controllers(self.child_node.in_parent, self.positions)
         with BlockQtSignals(self.path):
             self.path.setEditText(none_to_empty(self.child_node.path))

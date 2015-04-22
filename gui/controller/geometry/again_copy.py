@@ -28,8 +28,8 @@ class GNAgainController(GNodeController):
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
-    def on_edit_enter(self):
-        super(GNAgainController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNAgainController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.ref):
             self.ref.setEditText(none_to_empty(self.node.ref))
 
@@ -41,8 +41,8 @@ class GNCopyChildController(GNodeController):
         self.construct_group('Operation Settings')
         self.object = self.construct_names_before_self_combo_box('Object:', node_property_name='object')
 
-    def on_edit_enter(self):
-        super(GNCopyChildController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNCopyChildController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.object):
             self.object.setEditText(none_to_empty(self.node.object))
 
@@ -66,8 +66,8 @@ class GNCReplaceController(GNCopyChildController):
         self.replacer.setToolTip('&lt;replace object="" <b>with</b>=""/&gt;<br/>'
             'Name of the object to replace with. This object does not need to be located in the subtree of the copied object.')
 
-    def on_edit_enter(self):
-        super(GNCReplaceController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNCReplaceController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.replacer):
             self.replacer.setEditText(none_to_empty(self.node.replacer))
 
@@ -82,8 +82,8 @@ class GNCToBlockController(GNCopyChildController):
         self.material.setToolTip('&lt;toblock object="" <b>material</b>=""/&gt;<br/>'
                                 'Material of the solid block. Required.')
 
-    def on_edit_enter(self):
-        super(GNCToBlockController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNCToBlockController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.material):
             self.material.setEditText(none_to_empty(self.node.material))
 
@@ -99,7 +99,7 @@ class GNCopyController(GNObjectController):
                                 ' Required.')
         super(GNCopyController, self).fill_form()
 
-    def on_edit_enter(self):
-        super(GNCopyController, self).on_edit_enter()
+    def fill_form_using_data_from_model(self):
+        super(GNCopyController, self).fill_form_using_data_from_model()
         with BlockQtSignals(self.source):
             self.source.setEditText(none_to_empty(self.node.source))
