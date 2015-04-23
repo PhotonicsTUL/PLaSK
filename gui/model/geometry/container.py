@@ -67,6 +67,10 @@ class GNGap(GNode):
             res.append(('total container size' if self.size_is_total else 'gap size', self.size))
         return res
 
+    def create_info(self, res, names):
+        super(GNGap, self).create_info(res, names)
+        if self.size: self._require(res, 'size')
+
     @staticmethod
     def from_xml(element, conf):
         result = GNGap()
