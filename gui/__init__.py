@@ -155,6 +155,8 @@ class MainWindow(QtGui.QMainWindow):
         self.info_table = QtGui.QListView()
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
+        info_selection_model = self.info_table.selectionModel()
+        info_selection_model.currentChanged.connect(self._on_select_info)
         pal = self.info_table.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         self.info_table.setPalette(pal)
@@ -304,6 +306,16 @@ class MainWindow(QtGui.QMainWindow):
         menu_button.setStyleSheet("font-size: {}pt;".format(fs))
 
         self.show()
+
+    def _on_select_info(self, current, _):
+        if not current.isValid(): return
+        self.current_controller.select_info(self.info_model.entries[current.row()])
+        self.info_table.setCurrentIndex(QtCore.QModelIndex())
+
+    @property
+    def current_controller(self):
+        if self.current_tab_index == -1: return None
+        return self.document.controller_by_index(self.current_tab_index)
 
     def update_recent_list(self):
         self.recent_menu.clear()

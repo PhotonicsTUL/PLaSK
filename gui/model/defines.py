@@ -77,8 +77,8 @@ class DefinesModel(TableModel):
                 res.append(Info('Definition value is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(1,)))
         for name, indexes in names.items():
             if len(indexes) > 1:
-                res.append(Info('Duplicated definition name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
-                                Info.ERROR, cols=[0], rows=indexes))
+                res.append(Info('Duplicated definition name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in indexes)),
+                                Info.ERROR, cols=(0,), rows=indexes))
         return res
 
     def create_default_entry(self):

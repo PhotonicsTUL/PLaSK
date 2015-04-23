@@ -51,25 +51,28 @@ class MultiEditorController(Controller):
             :return: true only when script has been changed (bool)
         """
         if self.get_current_index() == new_index: return False
-        if not self.currect_controller.on_edit_exit():
+        if not self.current_controller.on_edit_exit():
             return False
         self.editorWidget.setCurrentIndex(new_index)
-        self.currect_controller.on_edit_enter()
+        self.current_controller.on_edit_enter()
         return True
 
     @property
-    def currect_controller(self):
+    def current_controller(self):
         """:return: current script"""
         return self.controllers[self.get_current_index()]
 
     def save_data_in_model(self):
-        self.currect_controller.save_data_in_model()
+        self.current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        self.currect_controller.on_edit_enter()
+        self.current_controller.on_edit_enter()
 
     def on_edit_exit(self):
-        return self.currect_controller.on_edit_exit()
+        return self.current_controller.on_edit_exit()
+
+    def select_info(self, info):
+        self.current_controller.select_info(info)
 
 
 class GUIAndSourceController(MultiEditorController):
@@ -94,4 +97,3 @@ class GUIAndSourceController(MultiEditorController):
 
     def get_source_widget(self):
         return self.controllers[1].get_source_widget()
-

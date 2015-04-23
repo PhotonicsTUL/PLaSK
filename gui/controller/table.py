@@ -184,3 +184,17 @@ class TableController(Controller):
     def on_edit_enter(self):
         self.table.setFocus()
 
+    def select_info(self, info):
+        try:
+            col = info.cols[0]
+        except (AttributeError, IndexError):
+            col = 0
+        try:
+            current_row = self.table.currentIndex().row()
+            for r in info.rows:
+                if r > current_row:
+                    self.table.setCurrentIndex(self.model.createIndex(r, col))
+                    return
+            self.table.setCurrentIndex(self.model.createIndex(info.rows[0], col))
+        except AttributeError, IndexError:
+            pass
