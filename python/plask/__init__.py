@@ -259,7 +259,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
             lineno += __globals['__manager__'].script_first_line
         except NameError: pass
         except KeyError: pass
-    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, message.replace('\n', ' ')))
+    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, str(message).replace('\n', ' ')))
 
 import warnings
 warnings.showwarning = _showwarning
