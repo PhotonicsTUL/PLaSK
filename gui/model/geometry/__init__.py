@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import cgi
+from collections import OrderedDict
 
 from lxml import etree
 from copy import deepcopy
@@ -24,7 +25,7 @@ except ImportError:
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
-from .. import SectionModel
+from .. import SectionModel, Info
 from .reader import GNReadConf
 from .constructor import construct_geometry_object, construct_by_name
 from ...utils.xml import AttributeReader
@@ -461,5 +462,17 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     @property
     def roots_cartesian3d(self):
         return (root for root in self.roots if isinstance(root, GNCartesian) and root.dim == 3)
+
+    def create_info(self):
+        res = super(GeometryModel, self).create_info()
+        names = OrderedDict()
+        for root in self.roots:
+            for node in root.traverse_dfs():
+                node.create_info(res, names)
+        for name, indexes in names.items():
+            if len(indexes) > 1:
+                res.append(Info('{} objects have the same name "{}".'.format(len(indexes), name),
+                                Info.ERROR, nodes=indexes, property='name'))
+        return res
 
 from .geometry import GNCartesian, GNCylindrical

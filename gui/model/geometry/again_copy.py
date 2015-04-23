@@ -13,6 +13,7 @@ from . import construct_geometry_object
 from .reader import GNReadConf
 
 from .node import GNode
+from .. import Info
 from .object import GNObject
 from ...utils.xml import attr_to_xml
 
@@ -49,6 +50,10 @@ class GNAgain(GNode):
     def real_to_model_index(self, path_iterator):
         raise IndexError()
 
+    def create_info(self, res, names):
+        super(GNAgain, self).create_info(res, names)
+        if not self.ref: self._require(res, 'ref', 'referenced object ("ref")')
+
     #def model_to_real_index(self, index):  #TODO ??
 
     @staticmethod
@@ -81,6 +86,10 @@ class GNCopyChild(GNode):
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCopyChildController
         return GNCopyChildController(document, model, self)
+
+    def create_info(self, res, names):
+        super(GNCopyChild, self).create_info(res, names)
+        if not self.object: self._require(res, 'object')
 
 
 class GNCDelete(GNCopyChild):
@@ -121,6 +130,12 @@ class GNCReplace(GNCopyChild):
     def tag_name(self, full_name=True):
         return "replace"
 
+    def create_info(self, res, names):
+        super(GNCReplace, self).create_info(res, names)
+        if (1 if self.replacer else 0) + len(self.children) != 1:
+            self._append_info(res, 'Exactly one: "with" attribute or child must be given in {}.'.format(self.tag_name()),
+                              Info.ERROR)
+
     def major_properties(self):
         res = super(GNCReplace, self).major_properties()
         res.append(('with', self.replacer))
@@ -156,6 +171,10 @@ class GNCToBlock(GNCopyChild):
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCToBlockController
         return GNCToBlockController(document, model, self)
+
+    def create_info(self, res, names):
+        super(GNCToBlock, self).create_info(res, names)
+        if not self.material: self._require(res, 'material')
 
 
 class GNCopy(GNObject):
@@ -207,6 +226,15 @@ class GNCopy(GNObject):
 
     def real_to_model_index(self, path_iterator):
         raise IndexError()
+
+    def major_properties(self):
+        res = super(GNCopy, self).major_properties()
+        res.append(('from', self.source))
+        return res
+
+    def create_info(self, res, names):
+        super(GNCopy, self).create_info(res, names)
+        if not self.source: self._require(res, 'source', '"from" attribute')
 
     #def model_to_real_index(self, index):  #TODO ??
 

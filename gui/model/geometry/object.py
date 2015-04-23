@@ -67,3 +67,7 @@ class GNObject(GNode):
         if self.axes is not None: return axes_as_list(self.axes)
         return super(GNObject, self).get_axes_conf()
 
+    def create_info(self, res, names):
+        super(GNObject, self).create_info(res, names)
+        if self.name is not None:
+            names.setdefault(self.name, []).append(self)

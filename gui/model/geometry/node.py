@@ -15,6 +15,7 @@ from numbers import Number
 from ...utils.xml import AttributeReader, OrderedTagReader
 from .reader import GNReadConf, axes_dim
 from .types import gname
+from .. import Info
 
 
 class GNode(object):
@@ -438,6 +439,21 @@ class GNode(object):
         result = self.parent.get_model_path()
         result.append(self.index_in_parent)
         return result
+
+    def _append_info(self, res, text, level=None, **kwargs):
+        res.append(Info(text, level, nodes=(self,), **kwargs))
+
+    def _require(self, res, property, display_name=None):
+        if display_name is None: display_name = '"{}"'.format(property)
+        self._append_info(res, 'Specifying {} is required in <{}>.'.format(display_name, self.tag_name(False)),
+                        Info.ERROR, property=property)
+
+    def create_info(self, res, names):
+        '''
+        :param List(Info) res: place to append info objects
+        :param OrderedDict names: names of objects which are before this in tree
+        '''
+        pass
 
 
 class GNFakeRoot(GNode):
