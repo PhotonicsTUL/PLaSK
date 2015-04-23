@@ -227,6 +227,7 @@ class GeometryController(Controller):
         self.tree.acceptDrops()
         self.tree.showDropIndicator()
         self.tree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
+        self.tree.setDefaultDropAction(QtCore.Qt.MoveAction)
 
         return self.tree
 

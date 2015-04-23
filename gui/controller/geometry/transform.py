@@ -42,7 +42,7 @@ class GNFlipMirrorController(GNObjectController):
 
     def fill_form(self):
         super(GNFlipMirrorController, self).fill_form()
-        with BlockQtSignals(self.axis) as ignored:
+        with BlockQtSignals(self.axis):
             self.axis.setEditText(none_to_empty(self.node.axis_str()))
 
 

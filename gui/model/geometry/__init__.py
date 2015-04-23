@@ -341,7 +341,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
-            return False    # qt should call this but some version of qt have a bug
+            return False    # qt should call this earlier but some version of qt have a bug
         if action == Qt.IgnoreAction: return True
         if action == Qt.MoveAction:
             moved_obj = mime_data.itemInstance()

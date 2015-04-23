@@ -202,16 +202,15 @@ class GNodeController(Controller):
         group = QtGui.QWidget(self.form)
         group.setContentsMargins(0, 0, 0, 0)
         group.setLayout(hbox)
-        if row_name:
-            self._get_current_form().addRow(row_name, group)
+        if row_name: self._get_current_form().addRow(row_name, group)
         return hbox, group
 
     def construct_point_controllers(self, row_name=None, dim=None, change_cb=None):
         '''
 
         :param row_name:
-        :param dim:
-        :param change_cb: callable with tuple as argument
+        :param int dim: number of dims. (self.node.dim by default)
+        :param change_cb: callable to which point as tuple will be given as argument
         :return:
         '''
         if dim is None: dim = self.node.dim
