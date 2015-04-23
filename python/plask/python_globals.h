@@ -44,6 +44,8 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
+PLASK_PYTHON_API py::object py_eval(std::string string, py::object global=py::object(), py::object local=py::object());
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Exceptions
 

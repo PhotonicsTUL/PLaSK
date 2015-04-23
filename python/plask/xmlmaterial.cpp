@@ -55,7 +55,7 @@ class PythonEvalMaterial : public Material
     py::object self;
 
     friend struct PythonEvalMaterialConstructor;
-    
+
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
         return
 #if PY_VERSION_HEX >= 0x03000000

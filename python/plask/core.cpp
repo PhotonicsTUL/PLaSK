@@ -42,6 +42,27 @@ std::string getPythonExceptionMessage() {
     return py::extract<std::string>(py::str(value_h));
 }
 
+PLASK_PYTHON_API py::object py_eval(std::string string, py::object global, py::object local)
+{
+    // Set suitable default values for global and local dicts.
+    if (global.is_none()) {
+        if (PyObject *g = PyEval_GetGlobals())
+            global = py::object(py::detail::borrowed_reference(g));
+        else
+            global = py::dict();
+    }
+    if (local.is_none()) local = global;
+#   if PY_VERSION_HEX >= 0x03000000
+        PyObject* result = PyRun_String(string.c_str(), Py_eval_input, global.ptr(), local.ptr());
+#   else
+        PyCompilerFlags flags { CO_FUTURE_DIVISION };
+        PyObject* result = PyRun_StringFlags(string.c_str(), Py_eval_input, global.ptr(), local.ptr(), &flags);
+#   endif
+    if (!result) py::throw_error_already_set();
+    return py::object(py::detail::new_reference(result));
+}
+
+
 // Parallel locking
 PLASK_PYTHON_API OmpNestLock python_omp_lock;
 
@@ -422,7 +443,7 @@ BOOST_PYTHON_MODULE(_plask)
     plask::python::xml_globals = py::dict();
     py::incref(plask::python::xml_globals.ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
     scope.attr("__xml__globals") = plask::python::xml_globals;
-    
+
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
 

@@ -115,7 +115,7 @@ static py::object initPlask(int argc, const char* argv[])
     std::string user = plask::license_verifier.getUser();
     if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to: %s.", user);
 #endif
-    
+
     sys.attr("modules")["plask._plask"] = _plask;
 
     // Add program arguments to sys.argv
@@ -376,7 +376,7 @@ int main(int argc, const char *argv[])
                 py::dict locals;
                 for (const char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
-                    locals[keyval.first] = py::eval(py::str(keyval.second));
+                    locals[keyval.first] = plask::python::py_eval(keyval.second);
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();

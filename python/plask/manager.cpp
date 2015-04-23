@@ -58,7 +58,7 @@ class PythonXMLFilter {
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
         try {
-            return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
+            return py::extract<std::string>(py::str(py_eval(str, xml_globals, manager->locals)));
         } catch (py::error_already_set) {
             throw Exception(getPythonExceptionMessage());
         }
@@ -183,7 +183,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         std::string name = reader.requireAttribute("name");
         std::string value = reader.requireAttribute("value");
         if (!locals.has_key(name))
-            locals[name] = (py::eval(py::str(value), xml_globals, locals));
+            locals[name] = (py_eval(value, xml_globals, locals));
         else if (parsed.find(name) != parsed.end())
             throw XMLDuplicatedElementException(reader, format("Definition of '%1%'", name));
         parsed.insert(name);
