@@ -151,7 +151,6 @@ def read_dan(fname):
         for line in ifile:
             if line[-1] == "\n": line = line[:-1]
             if line.strip(): yield line.split()
-
     input = Input(ifile)
 
     # Header
