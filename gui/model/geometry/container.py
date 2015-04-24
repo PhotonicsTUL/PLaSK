@@ -69,7 +69,7 @@ class GNGap(GNode):
 
     def create_info(self, res, names):
         super(GNGap, self).create_info(res, names)
-        if self.size: self._require(res, 'size')
+        if not self.size: self._require(res, 'size')
 
     @staticmethod
     def from_xml(element, conf):
