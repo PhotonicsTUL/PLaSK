@@ -47,6 +47,22 @@ class Layer(object):
         self.mats = mats
 
 
+def reduce_layers(layers):
+    if len(layers) < 2: return layers
+    result = []
+    cur = layers[0]
+    for nxt in layers[1:]:
+        for c,n in zip(cur.mats, nxt.mats):
+            if c != n:
+                result.append(cur)
+                cur, nxt = nxt, None
+                break
+        if nxt is not None:
+            cur.d += nxt.d
+    result.append(cur)
+    return result
+
+
 def read_efm(fname):
 
     ifile = open(fname)
@@ -83,6 +99,8 @@ def read_efm(fname):
         mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
         mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)
         layers.append(Layer(d, mat0, mat1, mat2))
+
+    layers = reduce_layers(layers)
 
     return materials, layers, lam0, m
 
