@@ -10,8 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from pylab import pi
-
 from gui.qt import QtGui, QtCore
 
 import gui
@@ -19,26 +17,34 @@ import os
 
 
 class Material(object):
-    def __init__(self, name, nr, ar, ng, ag, tnr, tar, tng, tag, lam0):
-        self.name = name
-        self.nr = nr
-        self.ng = ng
-        self.ar = ar
-        self.ng = ag
-        self.tar = tar
-        self.tag = tag
-        self.tar = tar
-        self.tag = tag
-    def __eq__(self, other):
-        return self.nr == other.nr and self.ng == other.ng and self.ar == other.ar and self.ag == other.ag and \
-               self.tnr == other.tnr and self.tng == other.tng and self.tnr == other.tar and self.tng == other.tag
 
-materials = []
+    def __new__(cls, materials, name, nr, ar, ng, ag, tnr, tar, lam0):
+        obj = object.__new__(cls)
+        obj.name = name
+        obj.nr = nr
+        obj.ar = ar
+        obj.dn = (nr - ng) / lam0
+        obj.da = (ar - ag) / lam0
+        obj.tnr = tnr
+        obj.tar = tar
+        idx = 1
+        while obj.name in materials:
+            if materials[obj.name] == obj:
+                return materials[obj.name]
+            else:
+                obj.name = '{}_{:02d}'.format(name, idx)
+                idx += 1
+        materials[obj.name] = obj
+        return obj
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 class Layer(object):
-    def __init__(self):
-        pass
+    def __init__(self, d, *mats):
+        self.d = d * 1e4
+        self.mats = mats
 
 
 def read_efm(fname):
@@ -58,18 +64,179 @@ def read_efm(fname):
 
     # Read header
     skip(3)
-    _, nl = input.next()
+    _, nl = input.next(); nl = int(nl)
     skip(5)
-    _, lam0 = input.next()
-    lam0 *= 1e3
+    _, lam0 = input.next(); lam0 = 1e3 * float(lam0)
     skip(5)
     _, m = input.next()
-    _, vre = input.next()
-    _, vim = input.next()
-    lam_start = lam0 / (1. - (vre+1j*vim)/2.)
-    skip(3)
+    skip(5)
+
+    materials = {}
+    layers = []
 
     for i in range(nl):
-        names = input.next()
-        lines = [input.next() for j in range(3)]
+        name0, name1, name2 = input.next()
+        nr0, ar0, ng0, ag0, nr1, ar1, ng1, ag1, d = map(float, input.next()[2::2])
+        tnr0, tar0, _, _, tnr1, tar1, _, _ = map(float, input.next()[1::2])
+        nr2, ar2, ng2, ag2, tnr2, tar2, _, _ = map(float, input.next()[1::2])
+        mat0 = Material(materials, name0, nr0, ar0, ng0, ag0, tnr0, tar0, lam0)
+        mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
+        mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)
+        layers.append(Layer(d, mat0, mat1, mat2))
 
+    return materials, layers, lam0, m
+
+
+def write_xpl(fname, materials, layers, lam0, lpm):
+
+    ofile = open(fname, 'w')
+
+    def out(text=''):
+        ofile.write(text)
+        ofile.write('\n')
+
+    out('<plask>\n')
+
+    out('<defines>')
+    out('  <define name="dr1" value="1#changeme"/>')
+    out('  <define name="dr2" value="1#changeme"/>')
+    out('  <define name="dr3" value="1."/>')
+    out('</defines>')
+
+    materials = materials.values()
+    materials.sort(key=lambda m: m.name)
+
+    out('<materials>')
+    for mat in materials:
+        out('  <material name="{}" base="semiconductor">'.format(mat.name))
+        if mat.dn == 0: dn = ''
+        else: dn = '{m.dn:+g}*(wl-{l})'.format(m=mat, l=lam0)
+        if mat.tnr == 0: tn = ''
+        else: tn = '{m.tnr:+g}*(T-300.)'.format(m=mat)
+        out('    <nr>{m.nr}{dn}{tn}</nr>'.format(m=mat, dn=dn, tn=tn))
+        if mat.da == 0: da = ''
+        else: da = '{m.da:+g}*(wl-{l})'.format(m=mat, l=lam0)
+        if mat.tar == 0: ta = ''
+        else: ta = '{m.tar:+g}*(T-300.)'.format(m=mat)
+        out('    <absp>{m.ar}{da}{ta}</absp>'.format(m=mat, da=da, ta=ta))
+        out('  </material>')
+    out('</materials>\n')
+
+    out('<geometry>')
+    out('  <cylindrical axes="r,z" name="optical" outer="extend">')
+    out('    <stack>')
+    for layer in layers:
+        if layer.mats[0] == layer.mats[1] == layer.mats[2]:
+            out('      <rectangle dr="{{dr1+dr2+dr3}}" dz="{0.d}" material="{0.mats[0].name}"/>'.format(layer))
+        else:
+            out('      <shelf>')
+            if layer.mats[1] == layer.mats[2]:
+                out('        <rectangle dr="{{dr1}}" dz="{0.d}" material="{0.mats[0].name}"/>'.format(layer))
+                out('        <rectangle dr="{{dr2+dr3}}" dz="{0.d}" material="{0.mats[1].name}"/>'.format(layer))
+            elif layer.mats[0] == layer.mats[1]:
+                out('        <rectangle dr="{{dr1+dr2}}" dz="{0.d}" material="{0.mats[0].name}"/>'.format(layer))
+                out('        <rectangle dr="{{dr3}}" dz="{0.d}" material="{0.mats[2].name}"/>'.format(layer))
+            else:
+                out('        <rectangle dr="{{dr1}}" dz="{0.d}" material="{0.mats[0].name}"/>'.format(layer))
+                out('        <rectangle dr="{{dr2}}" dz="{0.d}" material="{0.mats[1].name}"/>'.format(layer))
+                out('        <rectangle dr="{{dr3}}" dz="{0.d}" material="{0.mats[2].name}"/>'.format(layer))
+            out('      </shelf>')
+    out('    </stack>')
+    out('  </cylindrical>')
+    out('</geometry>\n')
+
+    out('<solvers>')
+    out('<optical name="EFM" solver="EffectiveFrequencyCyl">')
+    out('  <geometry ref="optical"/>')
+    out('  <mode lam0="{}"/>'.format(lam0))
+    out('</optical>')
+    out('</solvers>\n')
+
+    out('<script><![CDATA[')
+    out('mn = EFM.find_mode({:.1f}, m={})\n'.format(lam0, lpm))
+    out('print_log(\'result\', "Found mode at lam = {:.3f}nm, loss = {:.2f}/cm"')
+    out('    .format(EFM.outWavelength(mn), EFM.outLoss(mn)))\n')
+    out('msh = mesh.Rectangular2D(')
+    out('    mesh.Regular(0., dr1+dr2+dr3, 501),')
+    out('    mesh.Regular(GEO.optical.bbox.lower.z, GEO.optical.bbox.upper.z, 501))\n')
+    out('plot_field(EFM.outLightMagnitude(msh))')
+    out('plot_geometry(GEO.optical, color=\'0.5\', alpha=0.35)\n')
+    out('show()')
+    out(']]></script>\n')
+    out('</plask>')
+
+
+def load_efm(parent):
+    """Convert .efm file to .xpl, save it to disk and open in PLaSK"""
+
+    remove_self = parent.document.filename is None and not parent.isWindowModified()
+
+    iname = QtGui.QFileDialog.getOpenFileName(parent, "Import EFM file", gui.CURRENT_DIR,
+                                              "EFM file (*.efm)")
+    if type(iname) == tuple:
+        iname = iname[0]
+    if not iname:
+        return
+    dest_dir = os.path.dirname(iname)
+
+    try:
+        read = read_efm(iname)
+        obase = os.path.join(dest_dir, os.path.basename(iname)[:-4])
+    except Exception as err:
+        if gui._DEBUG:
+            import traceback
+            traceback.print_exc()
+        msgbox = QtGui.QMessageBox()
+        msgbox.setWindowTitle("Import Error")
+        msgbox.setText("There was an error while reading the EFM file.\n\n"
+                       "Probably the chosen file was not in a EFM or the parser does not understand its syntax.")
+        msgbox.setDetailedText(str(err))
+        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+        msgbox.exec_()
+    else:
+        oname = obase + '.xpl'
+        n = 1
+        while os.path.exists(oname):
+            oname = obase + '-{}.xpl'.format(n)
+            n += 1
+        try:
+            write_xpl(oname, *read)
+        except Exception as err:
+            if gui._DEBUG:
+                import traceback
+                traceback.print_exc()
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("Import Error")
+            msgbox.setText("There was an error while saving the converted XPL file.")
+            msgbox.setDetailedText(str(err))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            msgbox.exec_()
+        else:
+            new_window = gui.MainWindow(oname)
+            try:
+                if new_window.document.filename is not None:
+                    new_window.resize(parent.size())
+                    gui.WINDOWS.add(new_window)
+                    if remove_self:
+                        parent.close()
+                        gui.WINDOWS.remove(parent)
+                    else:
+                        new_window.move(parent.x() + 24, parent.y() + 24)
+                else:
+                    new_window.setWindowModified(False)
+                    new_window.close()
+            except AttributeError:
+                new_window.setWindowModified(False)
+                new_window.close()
+
+
+def load_efm_operation(parent):
+    action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+                           'Import E&FM file...', parent)
+    action.triggered.connect(lambda: load_efm(parent))
+    return action
+
+
+gui.OPERATIONS.append(load_efm_operation)

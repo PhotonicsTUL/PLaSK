@@ -18,11 +18,10 @@ import re
 import subprocess
 from time import strftime
 
-from gui.qt import QtCore, QtGui
-from gui.qt.QtCore import Qt
+from ..qt import QtCore, QtGui
+from ..qt.QtCore import Qt
 
-from gui.launch import LAUNCHERS
-from gui.utils.config import CONFIG
+from ..utils.config import CONFIG
 
 
 def which(program):
@@ -441,6 +440,4 @@ class Launcher(object):
             self.dirname = dirname
             self.diredit.setText(dirname)
 
-
-LAUNCHERS.insert(0, Launcher())
 

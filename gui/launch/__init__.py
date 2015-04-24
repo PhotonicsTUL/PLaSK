@@ -12,11 +12,14 @@
 
 import shlex
 
-from .qt import QtGui
+from ..qt import QtGui
+
+from .local import Launcher as LocalLauncher
 
 
-LAUNCHERS = []
 _launch_args = ''
+
+LAUNCHERS = [LocalLauncher()]
 
 
 class LaunchDialog(QtGui.QDialog):

@@ -519,7 +519,7 @@ def load_dan(parent):
                        "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
         msgbox.setDetailedText(str(err))
         msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-        msgbox.setIcon(QtGui.QMessageBox.Error)
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
         msgbox.exec_()
     else:
         oname = obase + '.xpl'
