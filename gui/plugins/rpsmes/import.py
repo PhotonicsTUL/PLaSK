@@ -495,7 +495,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     out('</plask>')
 
 
-def load_dan(parent):
+def import_dan(parent):
     """Convert _temp.dan file to .xpl, save it to disk and open in PLaSK"""
 
     remove_self = parent.document.filename is None and not parent.isWindowModified()
@@ -556,11 +556,11 @@ def load_dan(parent):
                 new_window.close()
 
 
-def load_dan_operation(parent):
+def import_dan_operation(parent):
     action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
                            '&Import RPSMES .dan file...', parent)
-    action.triggered.connect(lambda: load_dan(parent))
+    action.triggered.connect(lambda: import_dan(parent))
     return action
 
 
-gui.OPERATIONS.append(load_dan_operation)
+gui.OPERATIONS.append(import_dan_operation)

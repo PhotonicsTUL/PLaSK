@@ -91,10 +91,10 @@ def read_efm(fname):
     layers = []
 
     for i in range(nl):
-        name0, name1, name2 = input.next()
-        nr0, ar0, ng0, ag0, nr1, ar1, ng1, ag1, d = map(float, input.next()[2::2])
-        tnr0, tar0, _, _, tnr1, tar1, _, _ = map(float, input.next()[1::2])
-        nr2, ar2, ng2, ag2, tnr2, tar2, _, _ = map(float, input.next()[1::2])
+        name0, name2, name1 = input.next()
+        nr0, ar0, ng0, ag0, nr2, ar2, ng2, ag2, d = map(float, input.next()[2::2])
+        tnr0, tar0, _, _, tnr2, tar2, _, _ = map(float, input.next()[1::2])
+        nr1, ar1, ng1, ag1, tnr1, tar1, _, _ = map(float, input.next()[1::2])
         mat0 = Material(materials, name0, nr0, ar0, ng0, ag0, tnr0, tar0, lam0)
         mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
         mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)
@@ -184,7 +184,7 @@ def write_xpl(fname, materials, layers, lam0, lpm):
     out('</plask>')
 
 
-def load_efm(parent):
+def import_efm(parent):
     """Convert .efm file to .xpl, save it to disk and open in PLaSK"""
 
     remove_self = parent.document.filename is None and not parent.isWindowModified()
@@ -250,11 +250,11 @@ def load_efm(parent):
                 new_window.close()
 
 
-def load_efm_operation(parent):
+def import_efm_operation(parent):
     action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
                            'Import E&FM file...', parent)
-    action.triggered.connect(lambda: load_efm(parent))
+    action.triggered.connect(lambda: import_efm(parent))
     return action
 
 
-gui.OPERATIONS.append(load_efm_operation)
+gui.OPERATIONS.append(import_efm_operation)
