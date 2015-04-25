@@ -22,11 +22,11 @@ class Material(object):
         obj = object.__new__(cls)
         obj.name = name
         obj.nr = nr
-        obj.ar = ar
         obj.dn = (nr - ng) / lam0
-        obj.da = (ar - ag) / lam0
         obj.tnr = tnr
-        obj.tar = tar
+        obj.ar = - ar
+        obj.da = - (ar - ag) / lam0
+        obj.tar = - tar
         idx = 1
         while obj.name in materials:
             if materials[obj.name] == obj:
