@@ -44,9 +44,9 @@ class LaunchDialog(QtGui.QDialog):
         defines_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
         defines_button.setCheckable(True)
         defines_button.toggled.connect(self.show_defines)
-        defs_label = QtGui.QLabel("Temporary de&fines:", self)
-        defs_label.setBuddy(defines_button)
-        defines_layout.addWidget(defs_label)
+        self.defs_label = QtGui.QLabel("Temporary de&fines:", self)
+        self.defs_label.setBuddy(defines_button)
+        defines_layout.addWidget(self.defs_label)
         defines_layout.addWidget(defines_button)
         self.layout.addLayout(defines_layout)
 
@@ -99,6 +99,7 @@ def launch_plask(window):
     _launch_args = dialog.args.text()
     launch_defs = []
     for line in dialog.defines.toPlainText().split('\n'):
+        if not line.strip(): continue
         if '=' not in line or line.startswith('-'):
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Wrong Defines")
