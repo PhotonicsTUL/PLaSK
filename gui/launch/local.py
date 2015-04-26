@@ -271,7 +271,7 @@ class OutputWindow(QtGui.QDockWidget):
 
 class PlaskThread(QtCore.QThread):
 
-    def __init__(self, program, fname, dirname, lines, mutex, main_window, *args):
+    def __init__(self, program, fname, dirname, lines, mutex, main_window, args, defs):
         super(PlaskThread, self).__init__()
         self.main_window = main_window
         try:
@@ -279,10 +279,11 @@ class PlaskThread(QtCore.QThread):
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
-            self.proc = subprocess.Popen([program, '-ldebug', '-u', fname] + list(args),
+            self.proc = subprocess.Popen([program, '-ldebug', '-u'] + list(defs) + [fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
-            self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
+            self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + [fname] + list(args),
+                                         startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.link = re.compile(r'({}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fname))
         self.lines = lines
@@ -398,7 +399,7 @@ class Launcher(object):
         layout.setContentsMargins(1, 1, 1, 1)
         return widget
 
-    def launch(self, main_window, *args):
+    def launch(self, main_window, args, defs):
 
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
@@ -426,7 +427,7 @@ class Launcher(object):
             dock.raise_()
 
         self.mutex = QtCore.QMutex()
-        dock.thread = PlaskThread(self.program, filename, dirname, dock.lines, self.mutex, main_window, *args)
+        dock.thread = PlaskThread(self.program, filename, dirname, dock.lines, self.mutex, main_window, args, defs)
         dock.thread.finished.connect(dock.thread_finished)
         dock.thread.start()
 
