@@ -97,22 +97,22 @@ def launch_plask(window):
     global _launch_args
     result = dialog.exec_()
     _launch_args = dialog.args.text()
-    launch_defs = []
-    for line in dialog.defines.toPlainText().split('\n'):
-        if not line.strip(): continue
-        if '=' not in line or line.startswith('-'):
-            msgbox = QtGui.QMessageBox()
-            msgbox.setWindowTitle("Wrong Defines")
-            msgbox.setText("Wrong define: '{}'".format(line))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Critical)
-            msgbox.exec_()
-            return
-        items = line.split('=')
-        name = items[0].strip()
-        value = '='.join(items[1:]).strip()
-        if value:
-            launch_defs.append('{}={}'.format(name, value))
     if result == QtGui.QDialog.Accepted:
+        launch_defs = []
+        for line in dialog.defines.toPlainText().split('\n'):
+            if not line.strip(): continue
+            if '=' not in line or line.startswith('-'):
+                msgbox = QtGui.QMessageBox()
+                msgbox.setWindowTitle("Wrong Defines")
+                msgbox.setText("Wrong define: '{}'".format(line))
+                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                msgbox.setIcon(QtGui.QMessageBox.Critical)
+                msgbox.exec_()
+                return
+            items = line.split('=')
+            name = items[0].strip()
+            value = '='.join(items[1:]).strip()
+            if value:
+                launch_defs.append('{}={}'.format(name, value))
         launcher = LAUNCHERS[dialog.current]
         launcher.launch(window, shlex.split(_launch_args), launch_defs)
