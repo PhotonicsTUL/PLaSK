@@ -137,8 +137,15 @@ class PythonEvalMaterial : public Material
     virtual double lattC(double T, char x) const override { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
     virtual double Eg(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
     virtual double CB(double T, double e, char point) const override {
-        try { PYTHON_EVAL_CALL_3(double, CB, T, e, point) }
-        catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }
+        if (cls->cache.CB) return *cls->cache.CB;
+        if (cls->CB != NULL) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
+            return py::extract<double>(py::handle<>(py_eval(cls->CB, locals)).get());
+        }
+        if (cls->VB != NULL || cls->Eg != NULL || cls->cache.VB || cls->cache.Eg)
+            return VB(T, e, point, 'H') + Eg(T, e, point);
+        return base->CB(T, e, point);
     }
     virtual double VB(double T, double e, char point, char hole) const override { PYTHON_EVAL_CALL_4(double, VB, T, e, point, hole) }
     virtual double Dso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
