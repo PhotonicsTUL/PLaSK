@@ -440,13 +440,17 @@ class GNode(object):
         result.append(self.index_in_parent)
         return result
 
-    def _append_info(self, res, text, level=None, **kwargs):
-        res.append(Info(text, level, nodes=(self,), **kwargs))
+    def _append_info(self, res, text, level=None, nodes=None, **kwargs):
+        if nodes is None: nodes = (self,)
+        res.append(Info(text, level, nodes=nodes, **kwargs))
+
+    def _append_error(self, res, text, nodes=None, **kwargs):
+        self._append_info(res, text, Info.ERROR, nodes, **kwargs)
 
     def _require(self, res, property, display_name=None):
         if display_name is None: display_name = '"{}"'.format(property)
-        self._append_info(res, 'Specifying {} is required in <{}>.'.format(display_name, self.tag_name(False)),
-                        Info.ERROR, property=property)
+        self._append_error(res, 'Specifying {} is required in <{}>.'.format(display_name, self.tag_name(False)),
+                           property=property)
 
     def create_info(self, res, names):
         '''

@@ -220,6 +220,14 @@ class GNStack(GNContainerBase):
         else:
             return 'geometry.MultiStack{}D'.format(self.dim)
 
+    def create_info(self, res, names):
+        super(GNStack, self).create_info(res, names)
+        zeros = tuple(z for z in self.children if isinstance(z, GNZero))
+        zeros_num = len(zeros) + (1 if self.shift else 0)
+        if zeros_num > 1: self._append_error(res,
+                'Position of the stack bottom edge is defined {} times in {}.'.format(zeros_num, self.tag_name(False)),
+                nodes=(self,)+zeros)
+
     def add_child_options(self):
         res = super(GNStack, self).add_child_options()
         res.insert(0, {'zero': GNZero.from_xml})
@@ -339,6 +347,19 @@ class GNShelf(GNContainerBase):
         res = super(GNShelf, self).minor_properties()
         res.append(('flat', self.flat))
         return res
+
+    def create_info(self, res, names):
+        super(GNShelf, self).create_info(res, names)
+        zeros = tuple(z for z in self.children if isinstance(z, GNZero))
+        zeros_num = len(zeros) + (1 if self.shift else 0)
+        if zeros_num > 1: self._append_error(res,
+                'Position of the shelf left edge is defined {} times.'.format(zeros_num),
+                nodes=(self,)+zeros)
+        gap_with_total = tuple(g for g in self.children if isinstance(g, GNGap) and g.size_is_total)
+        if len(gap_with_total) > 1:
+            self._append_error(res,
+                '{} gaps have been given total shelf size.'.format(len(gap_with_total)),
+                nodes=(self,)+gap_with_total)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNShelfController

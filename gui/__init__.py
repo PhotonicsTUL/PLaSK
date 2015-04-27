@@ -44,7 +44,7 @@ else:
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .model.info import InfoTreeModel, Info
+from .model.info import InfoListModel, Info
 from .launch import launch_plask
 
 from .utils.config import CONFIG
@@ -150,7 +150,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setWindowIcon(QtGui.QIcon.fromTheme('plaskgui'))
 
-        self.info_model = InfoTreeModel(None)
+        self.info_model = InfoListModel(None)
         #self.info = QtGui.QTableView(self.plot_dock)
         self.info_table = QtGui.QListView()
         self.info_table.setModel(self.info_model)

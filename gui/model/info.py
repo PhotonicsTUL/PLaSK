@@ -57,8 +57,7 @@ def infoLevelIcon(level):
     if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
     return None
 
-#TODO (?) support for groups using tree model QAbstractItemModel
-class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articles/using_qtreeview_with_qabstractitemmodel
+class InfoListModel(QtCore.QAbstractListModel):
     """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""
 
     def _set_model(self, model):
@@ -152,9 +151,9 @@ class InfoSource(object):
     def info(self):
         return self.get_info()
 
-    def getInfoListModel(self):
-        return InfoTreeModel(self)
+    def get_list_model(self):
+        return InfoListModel(self)
 
-    def refreshInfo(self):
+    def refresh_info(self):
         self._info = None
         self.infoChanged(self)
