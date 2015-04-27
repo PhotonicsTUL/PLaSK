@@ -196,5 +196,5 @@ class TableController(Controller):
                     self.table.setCurrentIndex(self.model.createIndex(r, col))
                     return
             self.table.setCurrentIndex(self.model.createIndex(info.rows[0], col))
-        except AttributeError, IndexError:
+        except (AttributeError, IndexError):
             pass

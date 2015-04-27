@@ -385,3 +385,15 @@ class GeometryController(Controller):
 
     def get_widget(self):
         return self.main_splitter
+
+    def select_info(self, info):
+        try:
+            #TODO support switching when more nodes are given
+            #current = self.tree.currentIndex()
+            #for r in info.rows:
+            #    if r > current_row:
+            #        self.table.setCurrentIndex(self.model.createIndex(r, col))
+            #        return
+            self.tree.setCurrentIndex(self.model.index_for_node(info.nodes[0]))
+        except (AttributeError, IndexError):
+            pass
