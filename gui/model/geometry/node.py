@@ -452,6 +452,10 @@ class GNode(object):
         self._append_error(res, 'Specifying {} is required in <{}>.'.format(display_name, self.tag_name(False)),
                            property=property)
 
+    def _require_child(self, res):
+        if not self.children:
+            self._append_error(res, '<{}> requires a child.'.format(self.tag_name(False)))
+
     def create_info(self, res, names):
         '''
         :param List(Info) res: place to append info objects

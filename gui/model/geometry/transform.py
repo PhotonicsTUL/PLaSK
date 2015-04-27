@@ -34,6 +34,10 @@ class GNTransform(GNObject):
         path_iterator.next()
         return 0    # some transform, like mirror, can produce some fake, extra children
 
+    def create_info(self, res, names):
+        super(GNTransform, self).create_info(res, names)
+        self._require_child(res)
+
 
 class GNTranslation(GNTransform):
 

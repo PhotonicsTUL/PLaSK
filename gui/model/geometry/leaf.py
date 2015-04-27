@@ -71,6 +71,11 @@ class GNLeaf(GNObject):
     def stub(self):
         return ''
 
+    def create_info(self, res, names):
+        super(GNLeaf, self).create_info(res, names)
+        if not self.material_bottom or not self.material_top:
+            self._require(res, 'material_bottom' if not self.material_bottom else 'material_top', 'material')
+
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNLeafController
         return GNLeafController(document, model, self)
@@ -111,6 +116,10 @@ class GNBlock(GNLeaf):
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNBlockController
         return GNBlockController(document, model, self)
+
+    def create_info(self, res, names):
+        super(GNBlock, self).create_info(res, names)
+        if None in self.size: self._require(res, None, 'size')
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -156,6 +165,11 @@ class GNCylinder(GNLeaf):
         from ...controller.geometry.leaf import GNCylinderController
         return GNCylinderController(document, model, self)
 
+    def create_info(self, res, names):
+        super(GNCylinder, self).create_info(res, names)
+        if not self.radius: self._require(res, 'radius')
+        if not self.height: self._require(res, 'height')
+
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNCylinder()
@@ -187,6 +201,10 @@ class GNCircle(GNLeaf):
         res = super(GNCircle, self).major_properties()
         res.append(('radius', self.radius))
         return res
+
+    def create_info(self, res, names):
+        super(GNCircle, self).create_info(res, names)
+        if not self.radius: self._require(res, 'radius')
 
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNCircleController
@@ -241,6 +259,10 @@ class GNTriangle(GNLeaf):
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNTriangleController
         return GNTriangleController(document, model, self)
+
+    def create_info(self, res, names):
+        super(GNTriangle, self).create_info(res, names)
+        if None in self.points[0] or None in self.points[1]: self._require(res, 'points')
 
     @staticmethod
     def from_xml_2d(element, conf):

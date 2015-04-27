@@ -79,6 +79,10 @@ class GNGeometryBase(GNObject):
         return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
                 isinstance(node, GNCopy) or isinstance(node, GNAgain)
 
+    def create_info(self, res, names):
+        super(GNGeometryBase, self).create_info(res, names)
+        self._require_child(res)
+
 
 class GNCartesian(GNGeometryBase):
 
