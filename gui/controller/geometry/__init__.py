@@ -388,12 +388,27 @@ class GeometryController(Controller):
 
     def select_info(self, info):
         try:
-            #TODO support switching when more nodes are given
-            #current = self.tree.currentIndex()
-            #for r in info.rows:
-            #    if r > current_row:
-            #        self.table.setCurrentIndex(self.model.createIndex(r, col))
-            #        return
-            self.tree.setCurrentIndex(self.model.index_for_node(info.nodes[0]))
-        except (AttributeError, IndexError):
-            pass
+            new_nodes = info.nodes
+        except AttributeError:
+            return
+        if not new_nodes: return #empty??
+
+        if len(new_nodes) == 1:
+            self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
+        else:
+            try:
+                current_node = self.model.node_for_index(self.tree.currentIndex())
+            except:
+                self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
+            else:
+                after = False
+                found = False
+                for n in new_nodes:
+                    if after:
+                        self.tree.setCurrentIndex(self.model.index_for_node(n))
+                        found = True
+                        break
+                    if n == current_node: after = True
+                if not found:
+                    self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
+        #TODO try to set focus on proper widget

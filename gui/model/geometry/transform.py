@@ -71,6 +71,10 @@ class GNTranslation(GNTransform):
             res.append(('delta', ', '.join(x if x else '?' for x in self.vector)))
         return res
 
+    def create_info(self, res, names):
+        super(GNTranslation, self).create_info(res, names)
+        if None in self.vector: self._require(res, 'vector')
+
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNTranslation(dim=2)
@@ -174,6 +178,10 @@ class GNAxisBaseTransform(GNTransform):
         super(GNAxisBaseTransform, self)._attributes_to_xml(element, conf)
         a_str = self.axis_str(conf)
         if a_str is not None: element.attrib['axis'] = a_str
+
+    def create_info(self, res, names):
+        super(GNAxisBaseTransform, self).create_info(res, names)
+        if None in self.vector: self._require(res, 'axis')
 
     def major_properties(self):
         res = super(GNAxisBaseTransform, self).major_properties()
@@ -374,6 +382,10 @@ class GNArrange(GNTransform):
         if self.count:
             res.append(('count', self.count))
         return res
+
+    def create_info(self, res, names):
+        super(GNArrange, self).create_info(res, names)
+        if not self.count: self._require(res, 'count')
 
     @staticmethod
     def from_xml_2d(element, conf):
