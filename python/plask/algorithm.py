@@ -243,7 +243,7 @@ class ThermoElectric(object):
         plask.ylabel("Voltage [V]")
         plask.gcf().canvas.set_window_title("Voltage")
 
-    def plot_junction_current(self, refine=16, bounds=True, label=None, **kwargs):
+    def plot_junction_current(self, refine=16, bounds=True, interpolation='linear', label=None, **kwargs):
         """
         Plot current density at the active region.
 
@@ -252,6 +252,13 @@ class ThermoElectric(object):
                           in the computational mesh.
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            label (str or sequence): Label for each junction. It can be a sequence
+                                     consecutive labels for each junction, or a string
+                                     in which case the same label is used for each
+                                     junction. If omitted automatic label is generated.
 
             kwargs: Keyword arguments passed to the plot function.
         """
@@ -280,7 +287,7 @@ class ThermoElectric(object):
 
         for i, y in enumerate(act):
             msh = plask.mesh.Rectangular2D(axis, plask.mesh.Ordered([y]))
-            curr = self.electrical.outCurrentDensity(msh, 'spline').array[:,0,1]
+            curr = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
             s = sum(curr)
             if label is None:
                 lab = "Junction {:d}".format(i + 1)
