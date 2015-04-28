@@ -320,6 +320,15 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         setMesh(meshxy);
     }
 
+    /// Get asymptotic flag
+    bool getAsymptotic() const { return asymptotic; }
+
+    /// Set asymptotic flag
+    bool setAsymptotic(bool value) {
+        asymptotic = value;
+        invalidate();
+    }
+
     /**
      * Find the mode around the specified effective wavelength.
      *
@@ -414,6 +423,9 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
     /// Indicator if we have veffs foe the current cache
     bool have_veffs;
+
+    /// Indicator if we want an asymptotic lateral solution in the outermost layer
+    bool asymptotic;
 
     /// Initialize the solver
     virtual void onInitialize();

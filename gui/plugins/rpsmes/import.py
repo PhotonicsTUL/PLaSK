@@ -10,9 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import gui
 from gui.qt import QtGui, QtCore
 
-import gui
 import os
 
 
@@ -43,13 +43,13 @@ class Region(object):
         self.a1 = axes[1]
         self.repeat = 0
         self.name = None
-        self.role = None
+        self.roles = []
 
     def write(self, output):
         w = '%.4f' % (self.x1 - self.x0)
         h = '%.4f' % (self.y1 - self.y0)
         more = ""
-        if self.role: more += ' role="%s"' % self.role
+        if self.roles: more += ' role="%s"' % ','.join(self.roles)
         if self.name: more += ' name="%s"' % self.name
         locals().update(self.__dict__)
         if self.repeat:
@@ -214,6 +214,12 @@ def read_dan(fname):
         kappa = [float(line[0]), float(line[1])]
         kappa_t = line[2].lower()
 
+        if mat == 'GaN':
+            h0 = kappa[1]
+            h = r.y1 - r.y0
+            if abs(h0-h) > 1e-3:
+                mat = 'GaN_bulk'
+
         # create custom material if necessary
         if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
             material = Material(mat)
@@ -246,10 +252,10 @@ def read_dan(fname):
         # heat sources
         line = input.next()
         ht = int(line[0])
-        if ht == -200:
-            r.role = 'active'
-        elif ht == 0:
-            r.role = 'noheat'
+        if sigma_t == 'j':
+            r.roles.append('active')
+        if ht == 0:
+            r.roles.append('noheat')
         elif ht == -1:
             r.name = unique_object_name()
             heats[r.name] = float(line[1])
@@ -291,7 +297,7 @@ def read_dan(fname):
     except:
         pass
 
-    actives = [r for r in regions if r.role == 'active']
+    actives = [r for r in regions if 'active' in r.roles]
     if len(actives) == 1:
         actives[0].name = "active"
         actlevel = True
@@ -561,6 +567,3 @@ def import_dan_operation(parent):
                            '&Import RPSMES .dan file...', parent)
     action.triggered.connect(lambda: import_dan(parent))
     return action
-
-
-gui.OPERATIONS.append(import_dan_operation)

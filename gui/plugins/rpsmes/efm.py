@@ -10,9 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import gui
 from gui.qt import QtGui, QtCore
 
-import gui
 import os
 
 
@@ -255,6 +255,3 @@ def import_efm_operation(parent):
                            'Import E&FM file...', parent)
     action.triggered.connect(lambda: import_efm(parent))
     return action
-
-
-gui.OPERATIONS.append(import_efm_operation)

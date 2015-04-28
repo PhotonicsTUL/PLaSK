@@ -32,7 +32,7 @@ MI_PROPERTY(GaN_Si, mob,
             )
 Tensor2<double> GaN_Si::mob(double T) const {
     double tMob = mob_RT*(1.486-T*0.001619);
-    return (Tensor2<double>(tMob,tMob));
+    return Tensor2<double>(tMob,tMob);
 }
 
 MI_PROPERTY(GaN_Si, Nf,
@@ -42,7 +42,7 @@ MI_PROPERTY(GaN_Si, Nf,
             MIComment("In the RT Nf(ND) for Si: 6e17 - 7e18 cm^-3")
             )
 double GaN_Si::Nf(double T) const {
-    return ( Nf_RT*(0.638+T*0.001217) );
+    return Nf_RT*(0.638+T*0.001217) ;
 }
 
 double GaN_Si::Dop() const {
@@ -53,7 +53,7 @@ MI_PROPERTY(GaN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> GaN_Si::cond(double T) const {
-    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
+    return Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11);
 }
 
 MI_PROPERTY(GaN_Si, thermk,
@@ -77,10 +77,15 @@ MI_PROPERTY(GaN_Si, absp,
             MIComment("no temperature dependence")
             )
 double GaN_Si::absp(double wl, double T) const {
-    double absp_t = 0.;
-    if (Nf(T) > 5e18) absp_t = (33500*exp(0.8*Nf(T)/1e19))*exp(wl*(-0.0018*Nf(T)/1e19-0.0135));
-    else absp_t = GaN::absp(wl,T);
-    return absp_t;
+    double dE = phys::h_eVc1e9 / wl - Eg(T); // dE = E - Eg
+    double N = Dop() * 1e-18;
+
+    double tNgr = -0.0003878*wl*wl + 0.3946*wl - 90.42;
+    if (N > tNgr) { // Perlin
+        double n = Nf(T) * 1e-18;
+        return 33500. * exp(0.08*n + (-0.00018*n - 0.0135) * wl);
+    } else // Piprek
+        return (19000.+4000.*N) * exp(dE / (0.019 + 0.001*N)) + (330.+200.*N) * exp(dE/(0.07+0.016* N));
 }
 
 bool GaN_Si::isEqual(const Material &other) const {
@@ -95,7 +100,7 @@ MI_PROPERTY(GaN_Si, nr,
             MIComment("no temperature dependence")
             )
 double GaN_Si::nr(double wl, double T, double n) const {
-    return ( GaN::nr(wl,T) * (1-1.05*Nf_RT/1e22) );
+    return GaN::nr(wl,T) * (1. - 1.05e-22 * (n?n:Nf(T)));
 }
 
 

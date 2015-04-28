@@ -18,8 +18,8 @@
       <attr name="vat" label="Vertical solution coord" type="float" unit="nm">Horizontal position of at which the vertical part of the field is calculated.</attr>
     </tag>
 
-    <tag name="root" label="Parameters of the Global Root-Finding Algorithm">
-      Parameters of the global root-finding algorithm.
+    <tag name="root" label="Parameters of the Horizontal Root-Finding Algorithm">
+      Parameters of the horizontal root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.
         <choice>muller</choice>
@@ -85,10 +85,11 @@
       </attr>
       <attr name="vlam" label="Vertical wavelength" type="float" unit="nm">&quot;Vertical wavelength&quot; i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators.</attr>
       <attr name="vat" label="Vertical solution coord" type="float" unit="µm">Horizontal position of at which the vertical part of the field is calculated.</attr>
+      <!--attr name="asymptotic" label="Asymptotic outer field" type="bool">Flag indicating whether the solver uses asymptotic exponential field in the outermost layer.</attr-->
     </tag>
 
-    <tag name="root" label="Parameters of the Global Root-Finding Algorithm">
-      Parameters of the global root-finding algorithm.
+    <tag name="root" label="Parameters of the Horizontal Root-Finding Algorithm">
+      Parameters of the horizontal root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice">
         Root finding algorithm.
         <choice>muller</choice>

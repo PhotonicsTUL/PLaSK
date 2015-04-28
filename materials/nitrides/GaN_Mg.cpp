@@ -33,7 +33,7 @@ MI_PROPERTY(GaN_Mg, mob,
             )
 Tensor2<double> GaN_Mg::mob(double T) const {
     double tMob = mob_RT * (T*T*2.495E-5 -T*2.268E-2 +5.557);
-    return (Tensor2<double>(tMob,tMob));
+    return Tensor2<double>(tMob,tMob);
 }
 
 MI_PROPERTY(GaN_Mg, Nf,
@@ -43,7 +43,7 @@ MI_PROPERTY(GaN_Mg, Nf,
             MIComment("Mg: 1e19 - 8e20 cm^-3")
             )
 double GaN_Mg::Nf(double T) const {
-	return ( Nf_RT * (T*T*2.884E-4 -T*0.147 + 19.080) );
+	return  Nf_RT * (T*T*2.884E-4 -T*0.147 + 19.080);
 }
 
 double GaN_Mg::Dop() const {
@@ -54,15 +54,16 @@ MI_PROPERTY(GaN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> GaN_Mg::cond(double T) const {
-    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
+    return Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11);
 }
 
 MI_PROPERTY(GaN_Mg, absp,
             MISeeClass<GaN>(MaterialInfo::absp)
             )
 double GaN_Mg::absp(double wl, double T) const {
-    double E = phys::h_eVc1e9/wl;
-    return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
+    double dE = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
+    double N = Dop() * 1e-18;
+    return  (19000.+200.*N) * exp(dE/(0.019+0.0001*N)) + (330.+30.*N) * exp(dE/(0.07+0.0008*N));
 }
 
 bool GaN_Mg::isEqual(const Material &other) const {

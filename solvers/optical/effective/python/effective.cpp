@@ -347,6 +347,9 @@ BOOST_PYTHON_MODULE(effective)
                  "in a single stripe.\n\n"
                  ROOTDIGGER_ATTRS_DOC
                 );
+//         RW_PROPERTY(asymptotic, getAsymptotic, setAsymptotic,
+//                     "Flag indicating whether the solver uses asymptotic exponential field\n"
+//                     "in the outermost layer.")
         RW_PROPERTY(emission, getEmission, setEmission, "Emission direction.");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes.");
         // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");

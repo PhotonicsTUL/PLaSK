@@ -71,7 +71,7 @@ class LaunchDialog(QtGui.QDialog):
         self.current = combo.currentIndex()
         self.launcher_widgets[self.current].setVisible(True)
 
-        self.setFixedWidth(6*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
+        self.setFixedWidth(5*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
         self.setFixedHeight(self.sizeHint().height())
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)

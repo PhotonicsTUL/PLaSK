@@ -15,7 +15,7 @@ MI_PROPERTY(GaN, cond,
             )
 Tensor2<double> GaN::cond(double T) const {
     double tCond = 255*std::pow((T/300.),-0.18);
-    return (Tensor2<double>(tCond,tCond));
+    return Tensor2<double>(tCond,tCond);
 }
 
 MI_PROPERTY(GaN, thermk,
@@ -24,8 +24,8 @@ MI_PROPERTY(GaN, thermk,
             )
 Tensor2<double> GaN::thermk(double T, double t) const {
     double fun_t = std::pow((tanh(0.001529*pow(t,0.984))),0.12),
-           tCondT = 230*fun_t*pow((T/300.),-1.43);
-    return(Tensor2<double>(tCondT,tCondT));
+           tCondT = 230. * pow((T/300.),-1.43);
+    return Tensor2<double>(tCondT, fun_t * tCondT);
  }
 
 MI_PROPERTY(GaN, absp,
@@ -34,8 +34,8 @@ MI_PROPERTY(GaN, absp,
             MIComment("no temperature dependence")
             )
 double GaN::absp(double wl, double T) const {
-    double a = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
-    return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
+    double dE = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
+    return 19000.*exp(dE/0.019) + 330*exp(dE/0.07);
 }
 
 MI_PROPERTY(GaN, nr,
@@ -44,24 +44,17 @@ MI_PROPERTY(GaN, nr,
             MIComment("no temperature dependence")
             )
 double GaN::nr(double wl, double T, double n) const {
-    double dEg = Eg(T,0.,'G') - Eg(300.,0.,'G'),
-           Eold = phys::h_eVc1e9 / wl,
-           Enew = Eold - dEg;
+    double tE = phys::h_eVc1e9 / wl - (Eg(T) - Eg(300.)), nR;
 
-    if (Enew > 1.000 && Enew < 2.138) // 580-1240 nm
-        return ( 0.013914*Enew*Enew*Enew*Enew - 0.096422*Enew*Enew*Enew + 0.27318*Enew*Enew - 0.27725*Enew + 2.3535 );
-    else if (Enew < 3.163) // 392-580 nm
-        return ( 0.1152*Enew*Enew*Enew - 0.7955*Enew*Enew + 1.959*Enew + 0.68 );
-    else if (Enew < 3.351) // 370-392 nm
-        return ( 18.2292*Enew*Enew*Enew - 174.6974*Enew*Enew + 558.535*Enew - 593.164 );
-    else if (Enew < 3.532) // 351-370 nm
-        return ( 33.63905*Enew*Enew*Enew - 353.1446*Enew*Enew + 1235.0168*Enew - 1436.09 );
-    else if (Enew < 4.100) // 336-351 nm
-        return ( -0.72116*Enew*Enew*Enew + 8.8092*Enew*Enew - 35.8878*Enew + 51.335 );
-    else if (Enew < 5.000) // 248-336 nm
-        return ( 0.351664*Enew*Enew*Enew*Enew - 6.06337*Enew*Enew*Enew + 39.2317*Enew*Enew - 112.865*Enew + 124.358 );
-    else
-        return 0.;
+    if (1.000 < tE && tE <= 2.138) nR = 0.013914*tE*tE*tE*tE - 0.096422*tE*tE*tE + 0.27318*tE*tE - 0.27725*tE + 2.3535;  // lambda: 580nm - 1240nm
+    else if (tE <= 3.163) nR = 0.1152*tE*tE*tE - 0.7955*tE*tE + 1.959*tE + 0.68;                                         // lambda: 392nm - 580nm
+    else if (tE <= 3.351) nR = 18.2292*tE*tE*tE - 174.6974*tE*tE + 558.535*tE - 593.164;                                 // lambda: 370nm - 392nm
+    else if (tE <= 3.532) nR = 33.63905*tE*tE*tE - 353.1446*tE*tE + 1235.0168*tE - 1436.09;                              // lambda: 351nm - 370nm
+    else if (tE <= 4.100) nR = -0.72116*tE*tE*tE + 8.8092*tE*tE - 35.8878*tE + 51.335;                                   // lambda: 336nm - 351nm
+    else if (tE <= 5.000) nR = 0.351664*tE*tE*tE*tE - 6.06337*tE*tE*tE + 39.2317*tE*tE - 112.865*tE + 124.358;           // lambda: 248nm - 336nm
+    else nR = NAN;
+
+    return nR;
 }
 
 MI_PROPERTY(GaN, lattC,
@@ -71,16 +64,15 @@ double GaN::lattC(double T, char x) const {
     double tLattC(0.);
     if (x == 'a') tLattC = 3.1896;
     else if (x == 'c') tLattC = 5.1855;
-    return (tLattC);
+    return tLattC;
 }
 
 MI_PROPERTY(GaN, Eg,
             MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
 double GaN::Eg(double T, double e, char point) const {
-    double tEg(0.);
-    if (point == 'G' || point == '*') tEg = phys::Varshni(3.510,0.914e-3,825.,T);
-    return (tEg);
+    if (point == 'G' || point == '*') return phys::Varshni(3.510, 0.914e-3, 825., T);
+    else return NAN;
 }
 
 double GaN::VB(double T, double e, char point, char hole) const {
@@ -101,7 +93,7 @@ Tensor2<double> GaN::Me(double T, double e, char point) const {
         tMe.c00 = 0.22;
         tMe.c11 = 0.21;
     }
-    return (tMe);
+    return tMe;
 }
 
 MI_PROPERTY(GaN, Mhh,
@@ -111,7 +103,7 @@ Tensor2<double> GaN::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.,0.);
     tMhh.c00 = 1.67;
     tMhh.c11 = 1.64;
-    return (tMhh);
+    return tMhh;
 }
 
 MI_PROPERTY(GaN, Mlh,
@@ -121,7 +113,7 @@ Tensor2<double> GaN::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.,0.);
     tMlh.c00 = 1.67;
     tMlh.c11 = 0.15;
-    return (tMlh);
+    return tMlh;
 }
 
 bool GaN::isEqual(const Material &other) const {

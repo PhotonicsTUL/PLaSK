@@ -9,3 +9,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
+from importlib import import_module
+import gui
+
+import_dan_operation = import_module('.import', package=__name__).import_dan_operation  # import is not good module name
+from .export import export_dan_operation
+from .efm import import_efm_operation
+
+gui.OPERATIONS.append(import_efm_operation)
+gui.OPERATIONS.append(import_dan_operation)
+gui.OPERATIONS.append(export_dan_operation)

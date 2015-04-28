@@ -13,6 +13,7 @@
 import gui
 from gui.qt import QtGui, QtCore
 from gui.xpldocument import XPLDocument
+
 import os
 
 try:
@@ -160,7 +161,7 @@ else:
 
         outl("THE_END")
 
-    def save_dan(parent):
+    def export_dan(parent):
         if not isinstance(parent.document, XPLDocument):
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Export Error")
@@ -200,10 +201,8 @@ else:
             msgbox.setIcon(QtGui.QMessageBox.Information)
         msgbox.exec_()
 
-    def save_dan_operation(parent):
+    def export_dan_operation(parent):
         action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'),
                                '&Export RPSMES .dan file...', parent)
-        action.triggered.connect(lambda: save_dan(parent))
+        action.triggered.connect(lambda: export_dan(parent))
         return action
-
-    gui.OPERATIONS.append(save_dan_operation)
