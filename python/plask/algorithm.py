@@ -243,7 +243,7 @@ class ThermoElectric(object):
         plask.ylabel("Voltage [V]")
         plask.gcf().canvas.set_window_title("Voltage")
 
-    def plot_junction_current(self, refine=16, bounds=True, **kwargs):
+    def plot_junction_current(self, refine=16, bounds=True, label=None, **kwargs):
         """
         Plot current density at the active region.
 
@@ -282,8 +282,14 @@ class ThermoElectric(object):
             msh = plask.mesh.Rectangular2D(axis, plask.mesh.Ordered([y]))
             curr = self.electrical.outCurrentDensity(msh, 'spline').array[:,0,1]
             s = sum(curr)
+            if label is None:
+                lab = "Junction {:d}".format(i + 1)
+            elif isinstance(label, tuple) or isinstance(label, tuple):
+                lab = label[i]
+            else:
+                lab = label
             plask.plot(msh.axis0, curr if s > 0 else -curr,
-                       label="Junction {:d}".format(i + 1), **kwargs)
+                       label=lab, **kwargs)
         if len(act) > 1:
             plask.legend(loc='best')
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))

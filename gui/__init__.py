@@ -134,6 +134,7 @@ class MainWindow(QtGui.QMainWindow):
         use_menu = CONFIG('main_window/use_menu', False)
         if use_menu:
             menu_bar = QtGui.QMenuBar(self)
+            menu_bar.setVisible(False)
 
         splitter = QtGui.QSplitter()
         splitter.setOrientation(QtCore.Qt.Vertical)

@@ -198,7 +198,6 @@ int main(int argc, const char *argv[])
 #endif
 
     // Parse commnad line
-    bool import_plask = true;
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
@@ -208,10 +207,7 @@ int main(int argc, const char *argv[])
 
     while (argc > 1) {
         std::string arg = argv[1];
-        if (arg == "-n") {
-            import_plask = false;
-            --argc; ++argv;
-        } else if (arg == "-i") {
+        if (arg == "-i") {
             force_interactive = true;
             --argc; ++argv;
         } else if (arg.substr(0,2) == "-l") {
@@ -294,11 +290,9 @@ int main(int argc, const char *argv[])
                 PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
                 throw py::error_already_set();
             }
-            if (import_plask) {
-                py::object plask = py::import("plask");
-                globals["plask"] = plask;           // import plask
-                from_import_all("plask", globals);  // from plask import *
-            }
+            py::object plask = py::import("plask");
+            globals["plask"] = plask;           // import plask
+            from_import_all("plask", globals);  // from plask import *
 
             PyObject* result = NULL;
 #           if PY_VERSION_HEX >= 0x03000000
@@ -325,16 +319,14 @@ int main(int argc, const char *argv[])
     } else if(argc > 1 && !force_interactive && argv[1][0] != 0) { // load commands from file
 
         // Add plask to the global namespace
-        if (import_plask) {
-            try {
-                py::object plask = py::import("plask");
-                globals["plask"] = plask;           // import plask
-                from_import_all("plask", globals);  // from plask import *
-            } catch (py::error_already_set) {
-                int exitcode = handlePythonException();
-                endPlask();
-                return exitcode;
-            }
+        try {
+            py::object plask = py::import("plask");
+            globals["plask"] = plask;           // import plask
+            from_import_all("plask", globals);  // from plask import *
+        } catch (py::error_already_set) {
+            int exitcode = handlePythonException();
+            endPlask();
+            return exitcode;
         }
 
         try
@@ -486,7 +478,6 @@ int main(int argc, const char *argv[])
         try
         {
             py::object interactive = py::import("plask.interactive");
-            interactive.attr("_import_all_") = import_plask;
             py::list sys_argv;
             if (argc == 1) sys_argv.append("");
             for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);

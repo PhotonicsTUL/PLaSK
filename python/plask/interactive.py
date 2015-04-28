@@ -39,7 +39,8 @@ import plask
 BANNER = '''\
 
 You are entering interactive mode of PLaSK.
-Package 'plask' is already imported'''
+Package 'plask' is already imported into global namespace.
+'''
 
 preexec_lines = [
 'from __future__ import division',
@@ -52,8 +53,6 @@ no_ipython = """\
 Couldn't locate IPython. Having IPython installed is greatly recommended.
 See http://ipython.scipy.org for more details. If you use Debian/Ubuntu,
 just install the 'ipython' package and start plask again."""
-
-_import_all = False
 
 def _init_ipython_session(argv=[]):
     """Construct new IPython session. """
@@ -119,11 +118,7 @@ def interact(ipython=None, argv=[]):
     sys.argv = argv
     global preexec_lines, banner
 
-    if _import_all_:
-        preexec_lines.append('from plask import *')
-        banner = BANNER + " into global namespace.\n"
-    else:
-        banner = BANNER + ".\n";
+    preexec_lines.append('from plask import *')
 
     in_ipython = False
 
