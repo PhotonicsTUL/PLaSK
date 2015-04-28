@@ -12,7 +12,7 @@
 
 from ..qt import QtCore, QtGui
 
-from . import Controller
+from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill
 
 
@@ -125,7 +125,6 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
 def table_with_manipulators(table, parent=None, model=None, title=None, add_undo_action=None):
     return table_and_manipulators(table, parent, model, title, add_undo_action)[0]
 
-
 class TableController(Controller):
 
     def __init__(self, document, model):
@@ -185,16 +184,4 @@ class TableController(Controller):
         self.table.setFocus()
 
     def select_info(self, info):
-        try:
-            col = info.cols[0]
-        except (AttributeError, IndexError):
-            col = 0
-        try:
-            current_row = self.table.currentIndex().row()
-            for r in info.rows:
-                if r > current_row:
-                    self.table.setCurrentIndex(self.model.createIndex(r, col))
-                    return
-            self.table.setCurrentIndex(self.model.createIndex(info.rows[0], col))
-        except (AttributeError, IndexError):
-            pass
+        select_index_from_info(info, self.model, self.table)

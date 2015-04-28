@@ -9,3 +9,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
+from bisect import bisect_left
+
+def sorted_index(sorted_list, x):
+    'Locate the leftmost value exactly equal to x, raise ValueError if x is not in sorted_list.'
+    i = bisect_left(sorted_list, x)
+    if i != len(sorted_list) and sorted_list[i] == x:
+        return i
+    raise ValueError

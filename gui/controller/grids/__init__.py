@@ -14,7 +14,7 @@ from ...qt import QtGui
 from ...qt.QtCore import Qt
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
-from .. import Controller
+from .. import Controller, select_index_from_info
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
@@ -107,3 +107,8 @@ class GridsController(Controller):
 
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.window)
+
+    def select_info(self, info):
+        if select_index_from_info(info, self.model, self.grids_table):
+            #TODO try to select property
+            pass

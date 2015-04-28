@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 from ..qt import QtGui, QtCore
-
+from ..utils import sorted_index
 
 class Controller(object):
     """
@@ -178,3 +178,19 @@ class ControllerWithSubController(Controller):
             self._last_index = self._current_index
             self.grid.selectionModel().clear()
         return True
+
+def select_index_from_info(info, model, table):
+    try:
+        col = info.cols[0]
+    except (AttributeError, IndexError):
+        col = 0
+    try:
+        current_row = table.currentIndex().row()
+        rows = sorted(info.rows)
+        try:
+            table.setCurrentIndex(model.createIndex(rows[(sorted_index(rows, current_row)+1)%len(rows)], col))
+        except ValueError:
+            table.setCurrentIndex(model.createIndex(rows[0], col))
+        return True
+    except (AttributeError, IndexError):
+        return False

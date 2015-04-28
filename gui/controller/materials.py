@@ -23,7 +23,7 @@ from ..model.materials import MaterialsModel, material_html_help, \
 from ..utils.textedit import TextEdit
 from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut, ComboBox
 from ..utils.qsignals import BlockQtSignals
-from . import Controller
+from . import Controller, select_index_from_info
 from .defines import DefinesCompletionDelegate
 from .table import table_and_manipulators, table_with_manipulators
 from .defines import get_defines_completer
@@ -356,3 +356,8 @@ class MaterialsController(Controller):
 
     def on_edit_enter(self):
         self.materials_table.setFocus()
+
+    def select_info(self, info):
+        if select_index_from_info(info, self.model, self.materials_table):
+            #TODO try to select property
+            pass

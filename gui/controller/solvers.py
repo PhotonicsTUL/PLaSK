@@ -20,7 +20,7 @@ from ..utils.widgets import table_last_col_fill, table_edit_shortcut, VerticalSc
 from ..utils.textedit import TextEdit
 from ..utils.widgets import DEFAULT_FONT
 from ..external.highlighter import SyntaxHighlighter, load_syntax
-from . import Controller
+from . import Controller, select_index_from_info
 from .table import table_with_manipulators
 from .source import scheme, syntax
 from .defines import get_defines_completer
@@ -363,6 +363,11 @@ class SolversController(Controller):
 
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.window)
+
+    def select_info(self, info):
+        if select_index_from_info(info, self.model, self.solvers_table):
+            #TODO try to select property of solver
+            pass
 
 
 class NewSolverDialog(QtGui.QDialog):
