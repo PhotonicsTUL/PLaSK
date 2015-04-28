@@ -48,6 +48,8 @@ namespace plask { namespace python {
     PLASK_PYTHON_API void setLoggingColor(std::string color);
 
     extern PLASK_PYTHON_API AxisNames current_axes;
+
+    extern PLASK_PYTHON_API py::dict xml_globals;
 }}
 
 //******************************************************************************
@@ -368,7 +370,7 @@ int main(int argc, const char *argv[])
                 py::dict locals;
                 for (const char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
-                    locals[keyval.first] = plask::python::py_eval(keyval.second);
+                    locals[keyval.first] = plask::python::py_eval(keyval.second, plask::python::xml_globals);
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();

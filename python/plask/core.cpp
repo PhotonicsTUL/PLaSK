@@ -195,7 +195,7 @@ inline static void register_config()
 
 
 // Globals for XML material
-py::dict xml_globals;
+PLASK_PYTHON_API py::dict xml_globals;
 
 // Print Python exception to PLaSK logging system
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)

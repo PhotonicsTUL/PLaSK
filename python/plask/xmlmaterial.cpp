@@ -15,7 +15,7 @@ namespace plask { namespace python {
  */
 class PythonEvalMaterial;
 
-extern py::dict xml_globals;
+extern PLASK_PYTHON_API py::dict xml_globals;
 
 struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
