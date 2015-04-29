@@ -87,10 +87,8 @@ bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const
 
 template <int dim>
 shared_ptr<Material> ArrangeContainer<dim>::getMaterial(const typename ArrangeContainer<dim>::DVec& p) const {
-std::cerr << p.c0 << "," << p.c1 << "  ";
     if (!_child) return shared_ptr<Material>();
     auto lohi = bounds(p);
-std::cerr << lohi.first << ":" << lohi.second << "\n";
     for (int i = lohi.second; i >= lohi.first; --i)
         if (auto material = _child->getMaterial(p - i * translation)) return material;
     return shared_ptr<Material>();

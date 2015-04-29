@@ -324,7 +324,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     bool getAsymptotic() const { return asymptotic; }
 
     /// Set asymptotic flag
-    bool setAsymptotic(bool value) {
+    void setAsymptotic(bool value) {
         asymptotic = value;
         invalidate();
     }
