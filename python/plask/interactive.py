@@ -155,7 +155,7 @@ def interact(ipython=None, argv=[]):
             except AttributeError:
                 mainloop = ip.start
             else:
-                mainloop = lambda: ip.shell.mainloop(banner)
+                mainloop = lambda: ip.shell.mainloop(BANNER)
 
     if not in_ipython:
         try:
@@ -164,7 +164,7 @@ def interact(ipython=None, argv=[]):
             sys.stdout.write('PLaSK exiting...\n')
             return
     else:
-        ip.write(banner)
+        ip.write(BANNER)
         ip.set_hook('shutdown_hook', lambda ip: ip.write("PLaSK exiting...\n"))
 
 if __name__ == "__main__":
