@@ -19,6 +19,7 @@ from .local import Launcher as LocalLauncher
 
 
 _launch_args = ''
+_defs_visible = False
 
 LAUNCHERS = [LocalLauncher()]
 
@@ -43,6 +44,7 @@ class LaunchDialog(QtGui.QDialog):
         defines_button = QtGui.QToolButton()
         defines_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
         defines_button.setCheckable(True)
+        defines_button.setChecked(_defs_visible)
         defines_button.toggled.connect(self.show_defines)
         self.defs_label = QtGui.QLabel("Temporary de&fines:", self)
         self.defs_label.setBuddy(defines_button)
@@ -52,7 +54,7 @@ class LaunchDialog(QtGui.QDialog):
 
         self.defines = QtGui.QPlainTextEdit()
         self.layout.addWidget(self.defines)
-        self.defines.setVisible(False)
+        self.defines.setVisible(_defs_visible)
 
         if window.document.defines is not None:
             self.defines.setPlainText('\n'.join(e.name+'=' for e in window.document.defines.model.entries))
@@ -80,6 +82,8 @@ class LaunchDialog(QtGui.QDialog):
         self.layout.addWidget(buttons)
 
     def show_defines(self, visible):
+        global _defs_visible
+        _defs_visible = visible
         self.defines.setVisible(visible)
         self.setFixedHeight(self.sizeHint().height())
         self.adjustSize()

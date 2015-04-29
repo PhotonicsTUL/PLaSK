@@ -187,6 +187,8 @@
 </connects>
 
 <script><![CDATA[
+print dupa(
+
 from scipy import optimize
 
 print mesaRadius

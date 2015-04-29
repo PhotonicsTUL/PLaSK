@@ -25,7 +25,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     using GeometryObjectTransform<dim>::getChild;
 
   protected:
-      
+
     using GeometryObjectTransform<dim>::_child;
 
     /// Translation vector for each repetition
@@ -40,23 +40,25 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
         auto box = _child->getBoundingBox();
         int hi = repeat_count - 1, lo = 0;
         for (int i = 0; i != dim; ++i) {
-            if (translation[i] >= 0.) {
-                hi = min(int(std::floor((vec[i] - box.lower[i]) / translation[i])), hi);
+            if (translation[i] > 0.) {
                 lo = max(1 + int(std::floor((vec[i] - box.upper[i]) / translation[i])), lo);
-            } else {
+                hi = min(int(std::floor((vec[i] - box.lower[i]) / translation[i])), hi);
+            } else if (translation[i] < 0.) {
                 lo = max(1 + int(std::floor((vec[i] - box.lower[i]) / translation[i])), lo);
                 hi = min(int(std::floor((vec[i] - box.upper[i]) / translation[i])), hi);
+            } else if (vec[i] < box.lower[i] || box.upper[i] < vec[i]) {
+                return std::make_pair(1, 0);
             }
         }
         return std::make_pair(lo, hi);
     }
-    
+
   public:
 
     /// Should the user be warned about overlapping bounding boxes?
     bool warn_overlapping;
 
-    ArrangeContainer(): GeometryObjectTransform<dim>(shared_ptr<ChildType>()), 
+    ArrangeContainer(): GeometryObjectTransform<dim>(shared_ptr<ChildType>()),
         translation(Primitive<dim>::ZERO_VEC), repeat_count(0), warn_overlapping(true) {}
 
     /// Create a repeat object.
@@ -72,13 +74,13 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
                 writelog(LOG_WARNING, "Arrange: item bboxes overlap");
         }
     }
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
     std::string getTypeName() const override { return NAME; }
-    
+
     Box getBoundingBox() const override;
 
     Box getRealBoundingBox() const override;
@@ -100,13 +102,13 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     std::size_t getRealChildrenCount() const override;
 
     shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
-    
+
     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
     shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
-    
+
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
-    
+
     unsigned getRepeatCount() const { return repeat_count; }
 
     void setRepeatCount(unsigned new_repeat_count) {
@@ -128,7 +130,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
         }
         this->fireChildrenChanged();
     }
-  
+
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 };
 
@@ -142,23 +144,23 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
 
 // /// Lattice container that arranges its children in two-dimensional lattice
 // struct PLASK_API Lattice: public GeometryObjectTransform<3> {
-// 
+//
 //     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
 //     typedef typename GeometryObjectTransform<3>::DVec DVec;
-// 
+//
 //     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
 //     typedef typename GeometryObjectTransform<3>::Box Box;
-// 
+//
 //     /// Type of this child.
 //     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
-// 
+//
 //     using GeometryObjectTransform<dim>::getChild;
-// 
+//
 //     /// Lattice vectors
 //     DVec vec0, vec1;
-// 
+//
 //     /// Create a lattice
-// 
+//
 // };
 
 } // namespace plask

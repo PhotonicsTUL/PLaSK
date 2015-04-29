@@ -226,7 +226,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
 
 
     std::string message = py::extract<std::string>(py::str(value));
-    boost::replace_all(message, "\n", "\n                ");
+    boost::replace_all(message, "\n", " ");
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
