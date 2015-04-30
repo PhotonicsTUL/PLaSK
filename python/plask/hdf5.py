@@ -11,19 +11,21 @@ import numpy
 import h5py
 import plask
 
-def save_rectangular1d(dest_group, mesh):
+def save_rectangular1d(dest_group, name, mesh):
     mesh_type = type(mesh)
-    dest_group.attrs['type'] = mesh_type.__name__
     if mesh_type is plask.mesh.Regular:
-        axis = dest_group.create_dataset('points', (1,), dtype=numpy.dtype([('start', float), ('stop', float), ('num', int)]))
+        axis = dest_group.create_dataset(name, (1,), dtype=numpy.dtype([('start', float), ('stop', float), ('num', int)]))
         axis[0] = mesh.start, mesh.stop, len(mesh)
-        return axis
     else:
-        return dest_group.create_dataset('points', data=numpy.array(mesh))
+        axis = dest_group.create_dataset(name, data=numpy.array(mesh))
+    axis.attrs['type'] = mesh_type.__name__
+    return axis
 
-def load_rectangular1d(src_group):
-    mesh_type = plask.mesh.__dict__[src_group.attrs['type']]
-    data = src_group['points']
+def load_rectangular1d(src_group, name):
+    data = src_group[name]
+    mesh_type = plask.mesh.__dict__[data.attrs['type']]
+    if isinstance(data, h5py.Group):
+        data = data['points']
     if mesh_type is plask.mesh.Regular:
         return plask.mesh.Regular(data[0][0], data[0][1], int(data[0][2]))
     else:
@@ -92,7 +94,7 @@ def save_field(field, file, path='', mode='a'):
 
     mesh_group = dest.create_group('mesh')
     if mst in (plask.mesh.Ordered, plask.mesh.Regular):
-        axis_dataset = save_rectangular1d(mesh_group, msh)
+        axis_dataset = save_rectangular1d(mesh_group, 'points', msh)
         if type(msh) is plask.mesh.Ordered:
             try:
                 data.dims[0].label = plask.current_axes[2]
@@ -105,8 +107,7 @@ def save_field(field, file, path='', mode='a'):
         mesh_group.attrs['type'] = mst.__name__
         #mesh_group.attrs['ordering'] = msh.ordering
         for i,ax in enumerate(axes):
-            axis_group = mesh_group.create_group('axis{:d}'.format(n-1-i))
-            axis_dataset = save_rectangular1d(axis_group, ax)
+            axis_dataset = save_rectangular1d(mesh_group, 'axis{:d}'.format(n-1-i), ax)
             if type(ax) is plask.mesh.Ordered:
                 try:
                     data.dims[i].label = plask.current_axes[3-n+i]
@@ -163,9 +164,9 @@ def load_field(file, path=''):
     mst = plask.mesh.__dict__[mtype]
 
     if mst in (plask.mesh.Regular, plask.mesh.Ordered):
-        msh = load_rectangular1d(mesh)
+        msh = load_rectangular1d(mesh, 'points')
     elif mst in (plask.mesh.Rectangular2D, plask.mesh.Rectangular3D):
-        msh = mst(*tuple(load_rectangular1d(mesh[axis]) for axis in mesh))
+        msh = mst(*tuple(load_rectangular1d(mesh, axis) for axis in mesh))
 
     data = file[path+'/data']
     data = numpy.array(data)

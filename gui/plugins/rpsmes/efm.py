@@ -63,48 +63,6 @@ def reduce_layers(layers):
     return result
 
 
-def read_efm(fname):
-
-    ifile = open(fname)
-
-    # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
-    def Input(ifile):
-        for line in ifile:
-            if line[-1] == "\n": line = line[:-1]
-            if line.strip(): yield line.split()
-    input = Input(ifile)
-
-    def skip(n):
-        for _ in range(n):
-            input.next()
-
-    # Read header
-    skip(3)
-    _, nl = input.next(); nl = int(nl)
-    skip(5)
-    _, lam0 = input.next(); lam0 = 1e3 * float(lam0)
-    skip(5)
-    _, m = input.next()
-    skip(5)
-
-    materials = {}
-    layers = []
-
-    for i in range(nl):
-        name0, name2, name1 = input.next()
-        nr0, ar0, ng0, ag0, nr2, ar2, ng2, ag2, d = map(float, input.next()[2::2])
-        tnr0, tar0, _, _, tnr2, tar2, _, _ = map(float, input.next()[1::2])
-        nr1, ar1, ng1, ag1, tnr1, tar1, _, _ = map(float, input.next()[1::2])
-        mat0 = Material(materials, name0, nr0, ar0, ng0, ag0, tnr0, tar0, lam0)
-        mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
-        mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)
-        layers.append(Layer(d, mat0, mat1, mat2))
-
-    layers = reduce_layers(layers)
-
-    return materials, layers, lam0, m
-
-
 def write_xpl(fname, materials, layers, lam0, lpm):
 
     ofile = open(fname, 'w')
@@ -182,6 +140,48 @@ def write_xpl(fname, materials, layers, lam0, lpm):
     out('show()')
     out(']]></script>\n')
     out('</plask>')
+
+
+def read_efm(fname):
+
+    ifile = open(fname)
+
+    # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
+    def Input(ifile):
+        for line in ifile:
+            if line[-1] == "\n": line = line[:-1]
+            if line.strip(): yield line.split()
+    input = Input(ifile)
+
+    def skip(n):
+        for _ in range(n):
+            input.next()
+
+    # Read header
+    skip(3)
+    _, nl = input.next(); nl = int(nl)
+    skip(5)
+    _, lam0 = input.next(); lam0 = 1e3 * float(lam0)
+    skip(5)
+    _, m = input.next()
+    skip(5)
+
+    materials = {}
+    layers = []
+
+    for i in range(nl):
+        name0, name2, name1 = input.next()
+        nr0, ar0, ng0, ag0, nr2, ar2, ng2, ag2, d = map(float, input.next()[2::2])
+        tnr0, tar0, _, _, tnr2, tar2, _, _ = map(float, input.next()[1::2])
+        nr1, ar1, ng1, ag1, tnr1, tar1, _, _ = map(float, input.next()[1::2])
+        mat0 = Material(materials, name0, nr0, ar0, ng0, ag0, tnr0, tar0, lam0)
+        mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
+        mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)
+        layers.append(Layer(d, mat0, mat1, mat2))
+
+    layers = reduce_layers(layers)
+
+    return materials, layers, lam0, m
 
 
 def import_efm(parent):

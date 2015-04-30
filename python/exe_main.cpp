@@ -115,7 +115,7 @@ static py::object initPlask(int argc, const char* argv[])
     plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 #ifdef LICENSE_CHECKING
     std::string user = plask::license_verifier.getUser();
-    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to: %s.", user);
+    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to %s.", user);
 #endif
 
     sys.attr("modules")["plask._plask"] = _plask;

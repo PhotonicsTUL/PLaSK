@@ -228,15 +228,15 @@ class ThermoElectric(object):
 
             kwargs: Keyword arguments passed to the plot function.
         """
-        if self.electrical.geometry.dim == 2:
-            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
-        else:
+        if isinstance(self.electrical.geometry, plask.geometry.Cartesian3D):
             try:
                 at0, at1 = at
             except TypeError:
                 at0 = at1 = at
             mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at0]), plask.mesh.Ordered([at1]),
                                             self.electrical.mesh.axis2)
+        else:
+            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
         plask.plot(mesh.axis1, field, **kwargs)
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))

@@ -19,48 +19,17 @@ import os
 class UniqueId(object):
     """Generator of unique names"""
 
-    def __init__(self, prefix, fmt="%02d", initial=1):
+    def __init__(self, prefix, fmt="02d", initial=1):
         self.prefix = prefix
         self.fmt = fmt
         self.counter = initial - 1
 
-    def __call__(self, prefix=None):
+    def __call__(self):
         self.counter += 1
-        if prefix is None: prefix = self.prefix
-        return prefix + self.fmt % self.counter
+        return self.prefix + ('{:'+self.fmt+'}').format(self.counter)
 
 
 unique_object_name = UniqueId("object")
-
-unique_material_name = UniqueId("material")
-
-
-class Region(object):
-    """Regions read from *.dan file"""
-
-    def __init__(self, axes):
-        self.a0 = axes[0]
-        self.a1 = axes[1]
-        self.repeat = 0
-        self.name = None
-        self.roles = []
-
-    def write(self, output):
-        w = '%.4f' % (self.x1 - self.x0)
-        h = '%.4f' % (self.y1 - self.y0)
-        more = ""
-        if self.roles: more += ' role="%s"' % ','.join(self.roles)
-        if self.name: more += ' name="%s"' % self.name
-        locals().update(self.__dict__)
-        if self.repeat:
-            sx, sy = self.shift
-            output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
-                         '<arrange d%(a0)s="%(sx)s" d%(a1)s="%(sy)s" count="%(repeat)s">\n'
-                         '        <block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/>\n'
-                         '      </arrange></item>' % locals())
-        else:
-            output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
-                         '<block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
 
 
 class Material(object):
@@ -85,24 +54,53 @@ class Material(object):
 
     def write(self, output, name):
         if self.base:
-            output.write('  <material name="%s" base="%s">\n' % (name, self.base))
+            output.write('  <material name="{}" base="{}">\n'.format(name, self.base))
         else:
             if self.condtype:
-                output.write('  <material name="%s" base="%s">\n    <condtype>%s</condtype>\n' % (
-                    name, self.kind, self.condtype))
+                output.write('  <material name="{}" base="{}">\n    <condtype>{}</condtype>\n'
+                             .format(name, self.kind, self.condtype))
             else:
-                output.write('  <material name="%s" base="%s">\n' % (name, self.kind))
+                output.write('  <material name="{}" base="{}">\n'.format(name, self.kind))
         if self.kappa is not None:
             if self.kappa[0] == self.kappa[1]:
-                output.write('    <thermk>%s</thermk>\n' % self.kappa[0])
+                output.write('    <thermk>{}</thermk>\n'.format(self.kappa[0]))
             else:
-                output.write('    <thermk>%s, %s</thermk>\n' % tuple(self.kappa))
+                output.write('    <thermk>{}, {}</thermk>\n'.format(*self.kappa))
         if self.sigma is not None:
             if self.sigma[0] == self.sigma[1]:
-                output.write('    <cond>%s</cond>\n' % self.sigma[0])
+                output.write('    <cond>{}</cond>\n'.format(self.sigma[0]))
             else:
-                output.write('    <cond>%s, %s</cond>\n' % tuple(self.sigma))
+                output.write('    <cond>{}, {}</cond>\n'.format(*self.sigma))
         output.write('  </material>\n')
+
+
+class Region(object):
+    """Regions read from *.dan file"""
+
+    def __init__(self, axes):
+        self.a0 = axes[0]
+        self.a1 = axes[1]
+        self.repeat = 0
+        self.name = None
+        self.roles = []
+
+    def write(self, output):
+        w = '{:.4f}'.format(self.x1 - self.x0)
+        h = '{:.4f}'.format(self.y1 - self.y0)
+        more = ""
+        if self.roles: more += ' role="{}"'.format(','.join(self.roles))
+        if self.name: more += ' name="{}"'.format(self.name)
+        locals().update(self.__dict__)
+        if self.repeat:
+            sx, sy = self.shift
+            output.write('      <item {a0}="{x0:.4f}" {a1}="{y0:.4f}">'
+                         '<arrange d{a0}="{sx}" d{a1}="{sy}" count="{repeat}">\n'
+                         '        <block d{a0}="{w}" d{a1}="{h}" material="{material}"{more}/>\n'
+                         '      </arrange></item>'.format(**locals()))
+        else:
+            output.write('      <item {a0}="{x0:.4f}" {a1}="{y0:.4f}">'
+                         '<block d{a0}="{w}" d{a1}="{h}" material="{material}"{more}/></item>\n'
+                         .format(**locals()))
 
 
 ownmats = {
@@ -133,9 +131,201 @@ def parse_material_name(mat, comp, dopant):
         elif comp == 1.:
             result = elements[0] + ''.join(elements[2:])
         else:
-            result = elements[0] + '(%s)' % comp + ''.join(elements[1:])
-    if dopant != 'ST': result += ":%s" % dopant
+            result = elements[0] + '({})'.format(comp) + ''.join(elements[1:])
+    if dopant != 'ST': result += ':{}'.format(dopant)
     return result
+
+
+def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
+    """Write output xpl file"""
+
+    ofile = open(name, 'w')
+
+    def out(text=''):
+        ofile.write(text)
+        ofile.write('\n')
+
+    out('<plask>\n')
+
+    geometry = ['cartesian2d', 'cylindrical'][sym]
+    suffix = ['2D', 'Cyl'][sym]
+
+    if sym == 0:
+        geomore = ' length="{}"'.format(length)
+    else:
+        geomore = ''
+
+    # materials
+    materials = list(materials.items())
+    materials.sort(key=lambda t: t[0])
+    if materials:
+        out('<materials>')
+        for mn, mat in materials:
+            mat.write(ofile, mn)
+        out('</materials>\n')
+
+    # geometry
+    out('<geometry>\n  <{} name="main" axes="{}"{}>'.format(geometry, axes, geomore))
+    out('    <container>')
+    for r in regions:
+        r.write(ofile)
+    out('    </container>')
+    out('  </{}>\n</geometry>\n'.format(geometry))
+
+    # default mesh generator
+    out('<grids>')
+    out('  <generator type="rectangular2d" method="divide" name="default">\n'
+        '    <postdiv by0="4" by1="2"/>\n  </generator>')
+    out('</grids>\n')
+
+    def save_boundaries(name):
+        if boundaries[name]:
+            out('    <{}>'.format(name))
+            for data in boundaries[name]:
+                out('      <condition {valname}="{value}" {optional}><place line="{dir}"'
+                    ' start="{start}" stop="{stop}" at="{at}"/></condition>'.format(**data))
+            out('    </{}>'.format(name))
+
+    # default solvers
+    therm = boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
+    electr = boundaries['voltage']
+
+    if therm or electr:
+        out('<solvers>')
+        if therm:
+            out('  <thermal solver="Static{}" name="THERMAL">'.format(suffix))
+            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
+            save_boundaries('temperature')
+            save_boundaries('convection')
+            save_boundaries('radiation')
+            out('  </thermal>')
+        if electr:
+            out('  <electrical solver="Shockley{}" name="ELECTRICAL">'.format(suffix))
+            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
+            if pnjcond is not None:
+                out('    <junction pnjcond="{:g}" beta="18" js="1"/>'.format(pnjcond[1]))
+            save_boundaries('voltage')
+            out('  </electrical>')
+        out('</solvers>\n')
+
+    # connections
+    if (therm and electr):
+        out('<connects>')
+        out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
+        if not heats:
+            out('  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>')
+        else:
+            out('  <!-- heats are attached in the script -->')
+        out('</connects>\n')
+
+    # # script
+    out(
+        '<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
+
+    if bool(therm) ^ bool(electr):
+        out('import sys, os')
+
+    if heats:
+        out('heat_profile = StepProfile(GEO.main)')
+        for heat in heats.items():
+            out('heat_profile[GEO.{}] = {}'.format(heat))
+
+        if electr:
+            out('THERMAL.inHeat = ELECTRICAL.outHeat + heat_profile.outHeat\n')
+        else:
+            out('THERMAL.inHeat = heat_profile.outHeat\n')
+
+    if therm and electr:
+        out('task = algorithm.ThermoElectric(THERMAL, ELECTRICAL)')
+        out('task.run()')
+    else:
+        if therm:
+            out('THERMAL.compute()')
+        elif electr:
+            out('ELECTRICAL.compute()')
+
+    if electr:
+        out('\nprint_log(LOG_INFO, "Total current: {:.3g} mA".format(abs(ELECTRICAL.get_total_current())))')
+
+    if bool(therm) ^ bool(electr):
+        if actlevel is not False:
+            if actlevel is True:
+                out('\nactbox = GEO.main.get_object_bboxes(GEO.active)[0]')
+                out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
+            else:
+                out('actlevel = {:g}'.format(actlevel))
+            out('actgrid = mesh.Rectangular2D(ELECTRICAL.mesh.axis0, mesh.Rectilinear([actlevel]))')
+        if therm:
+            out('\ntemperature = THERMAL.outTemperature(THERMAL.mesh)')
+            out('heats = THERMAL.inHeat(THERMAL.mesh)')
+        if electr:
+            out('voltage = ELECTRICAL.outPotential(ELECTRICAL.mesh)')
+            out('current = ELECTRICAL.outCurrentDensity(ELECTRICAL.mesh)')
+            if actlevel is not False:
+                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "SPLINE")')
+        out('\nh5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
+        if therm:
+            out('save_field(temperature, h5file, "Temperature")')
+            out('save_field(heats, h5file, "Heat")')
+        if electr:
+            out('save_field(voltage, h5file, "Voltage")')
+            out('save_field(current, h5file, "CurrentDensity")')
+
+        out('h5file.close()')
+
+    out('\nplot_geometry(GEO.main, margin=0.01)')
+    out('defmesh = MSG.default(GEO.main.item)')
+    out('plot_mesh(defmesh, color="0.75")')
+    if electr:
+        out('plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")')
+    if therm:
+        out('plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")')
+        out('plot_boundary(THERMAL.convection_boundary, defmesh, THERMAL.geometry, color="g")')
+        out('plot_boundary(THERMAL.radiation_boundary, defmesh, THERMAL.geometry, color="y")')
+    out('gcf().canvas.set_window_title("Default mesh")')
+
+    if therm and electr:
+        out('\nfigure()')
+        out('task.plot_temperature()')
+        out('\nfigure()')
+        out('task.plot_voltage()')
+        out('\nfigure()')
+        out('task.plot_junction_current()')
+
+    elif therm or electr:
+        if therm:
+            out('\nfigure()')
+            out('plot_field(temperature, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Temperature")')
+            out('\nfigure()')
+            out('plot_field(heats, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Heat sources density")')
+        if electr:
+            out('\nfigure()')
+            out('plot_field(voltage, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Electric potential")')
+            if actlevel is not False:
+                out('\nfigure()')
+                out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
+                out('xlabel(u"{} [\\xb5m]")'.format(axes[0]))
+                out('ylabel("current density [kA/cm$^2$]")')
+                out('simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
+                out('for x in simplemesh.axis0:')
+                out('    axvline(x, ls=":", color="k")')
+                out('xlim(0., simplemesh.axis0[-2])')
+                out('gcf().canvas.set_window_title("Current density in the active region")')
+
+    out('\nshow()')
+
+    out('\n]]></script>\n')
+
+    out('</plask>')
 
 
 def read_dan(fname):
@@ -167,7 +357,7 @@ def read_dan(fname):
     pnjcond = None
 
     if setting >= 10:
-        raise NotImplementedError("3D structure nor temporal data not implemented yet (%s)" % setting)  # TODO
+        raise NotImplementedError("3D structure nor temporal data not implemented yet ({})".format(setting))  # TODO
 
     # Set up symmetry
     axes = ['xy', 'rz'][sym]
@@ -215,16 +405,20 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         if mat == 'GaN':
-            h0 = kappa[1]
+            h0 = scale * kappa[1]
             h = r.y1 - r.y0
             if abs(h0-h) > 1e-3:
-                mat = 'GaN_bulk'
+                kappa_t = 'g'
+                kappa[0] = kappa[1] = 'self.base.thermk(T, {})'.format(h0)
 
         # create custom material if necessary
         if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
             material = Material(mat)
             if sigma_t not in ('n', 'p'):
-                material.sigma = sigma
+                if sigma_t == 'u':
+                    material.sigma = [1e-16, 1e-16]
+                else:
+                    material.sigma = sigma
             else:
                 material.base = parse_material_name(mat, sigma[0], dopant)
             if kappa_t not in ('n', 'p'):
@@ -238,16 +432,20 @@ def read_dan(fname):
                     mat = mk
                     break
             if not found:
+                unique_material_name = UniqueId(mat+'_')
                 if sigma_t in ('n', 'p') or kappa_t in ('n', 'p'):
-                    mat = unique_material_name(mat+'_')  # the given name is the one from database
+                    mat = unique_material_name()  # the given name is the one from database
                 while mat in materials and materials[mat] != material:
-                    mat = unique_material_name(mat+'_')
+                    mat = unique_material_name()
+                if material.base is not None and ':' in material.base and '=' not in material.base:
+                    mat += ':' + material.base.split(':')[1]
                 materials[mat] = material
         else:
             mat = parse_material_name(mat, kappa[0], dopant)
 
         r.material = mat
-        if ':' in mat: r.material += "=%g" % doping  # add doping information
+        if ':' in mat:
+            r.material += "={:g}".format(doping)  # add doping information
 
         # heat sources
         line = input.next()
@@ -309,198 +507,6 @@ def read_dan(fname):
     return name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel
 
 
-def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
-    """Write output xpl file"""
-
-    ofile = open(name, 'w')
-
-    def out(text=''):
-        ofile.write(text)
-        ofile.write('\n')
-
-    out('<plask>\n')
-
-    geometry = ['cartesian2d', 'cylindrical'][sym]
-    suffix = ['2D', 'Cyl'][sym]
-
-    if sym == 0:
-        geomore = ' length="%s"' % length
-    else:
-        geomore = ''
-
-    # materials
-    materials = list(materials.items())
-    materials.sort(key=lambda t: t[0])
-    if materials:
-        out('<materials>')
-        for mn, mat in materials:
-            mat.write(ofile, mn)
-        out('</materials>\n')
-
-    # geometry
-    out('<geometry>\n  <%s name="main" axes="%s"%s>' % (geometry, axes, geomore))
-    out('    <container>')
-    for r in regions:
-        r.write(ofile)
-    out('    </container>')
-    out('  </%s>\n</geometry>\n' % geometry)
-
-    # default mesh generator
-    out('<grids>')
-    out('  <generator type="rectangular2d" method="divide" name="default">\n'
-        '    <postdiv by0="4" by1="2"/>\n  </generator>')
-    out('</grids>\n')
-
-    def save_boundaries(name):
-        if boundaries[name]:
-            out('    <%s>' % name)
-            for data in boundaries[name]:
-                out(('      <condition %(valname)s="%(value)s" %(optional)s><place line="%(dir)s"' +
-                     ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>') % data)
-            out('    </%s>' % name)
-
-    # default solvers
-    therm = boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
-    electr = boundaries['voltage']
-
-    if therm or electr:
-        out('<solvers>')
-        if therm:
-            out('  <thermal solver="Static%s" name="THERMAL">' % suffix)
-            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
-            save_boundaries('temperature')
-            save_boundaries('convection')
-            save_boundaries('radiation')
-            out('  </thermal>')
-        if electr:
-            out('  <electrical solver="Shockley%s" name="ELECTRICAL">' % suffix)
-            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
-            if pnjcond is not None:
-                out('    <junction pnjcond="%g" beta="18" js="1"/>' % pnjcond[1])
-            save_boundaries('voltage')
-            out('  </electrical>')
-        out('</solvers>\n')
-
-    # connections
-    if (therm and electr):
-        out('<connects>')
-        out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
-        if not heats:
-            out('  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>')
-        else:
-            out('  <!-- heats are attached in the script -->')
-        out('</connects>\n')
-
-    # # script
-    out(
-        '<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
-
-    if bool(therm) ^ bool(electr):
-        out('import sys, os')
-
-    if heats:
-        out('heat_profile = StepProfile(GEO.main)')
-        for heat in heats.items():
-            out('heat_profile[GEO.%s] = %s' % heat)
-
-        if electr:
-            out('THERMAL.inHeat = ELECTRICAL.outHeat + heat_profile.outHeat\n')
-        else:
-            out('THERMAL.inHeat = heat_profile.outHeat\n')
-
-    if therm and electr:
-        out('task = algorithm.ThermoElectric(THERMAL, ELECTRICAL)')
-        out('task.run()')
-    else:
-        if therm:
-            out('THERMAL.compute()')
-        elif electr:
-            out('ELECTRICAL.compute()')
-
-    if electr:
-        out('\nprint_log(LOG_INFO, "Total current: %.3g mA" % abs(ELECTRICAL.get_total_current()))')
-
-    if bool(therm) ^ bool(electr):
-        if actlevel is not False:
-            if actlevel is True:
-                out('\nactbox = GEO.main.get_object_bboxes(GEO.active)[0]')
-                out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
-            else:
-                out('actlevel = %g' % actlevel)
-            out('actgrid = mesh.Rectangular2D(ELECTRICAL.mesh.axis0, mesh.Rectilinear([actlevel]))')
-        if therm:
-            out('\ntemperature = THERMAL.outTemperature(THERMAL.mesh)')
-            out('heats = THERMAL.inHeat(THERMAL.mesh)')
-        if electr:
-            out('voltage = ELECTRICAL.outPotential(ELECTRICAL.mesh)')
-            out('current = ELECTRICAL.outCurrentDensity(ELECTRICAL.mesh)')
-            if actlevel is not False:
-                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "SPLINE")')
-        out('\nh5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
-        if therm:
-            out('save_field(temperature, h5file, "Temperature")')
-            out('save_field(heats, h5file, "Heat")')
-        if electr:
-            out('save_field(voltage, h5file, "Voltage")')
-            out('save_field(current, h5file, "CurrentDensity")')
-
-        out('h5file.close()')
-
-    out('\nplot_geometry(GEO.main, margin=0.01)')
-    out('defmesh = MSG.default(GEO.main.item)')
-    out('plot_mesh(defmesh, color="0.75")')
-    if electr:
-        out('plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")')
-    if therm:
-        out('plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")')
-        out('plot_boundary(THERMAL.convection_boundary, defmesh, THERMAL.geometry, color="g")')
-        out('plot_boundary(THERMAL.radiation_boundary, defmesh, THERMAL.geometry, color="y")')
-    out('gcf().canvas.set_window_title("Default mesh")')
-
-    if therm and electr:
-        out('\nfigure()')
-        out('task.plot_temperature()')
-        out('\nfigure()')
-        out('task.plot_voltage()')
-        out('\nfigure()')
-        out('task.plot_junction_current()')
-
-    elif therm or electr:
-        if therm:
-            out('\nfigure()')
-            out('plot_field(temperature, 16)')
-            out('colorbar()')
-            out('plot_geometry(GEO.main, color="w")')
-            out('gcf().canvas.set_window_title("Temperature")')
-            out('\nfigure()')
-            out('plot_field(heats, 16)')
-            out('colorbar()')
-            out('plot_geometry(GEO.main, color="w")')
-            out('gcf().canvas.set_window_title("Heat sources density")')
-        if electr:
-            out('\nfigure()')
-            out('plot_field(voltage, 16)')
-            out('colorbar()')
-            out('plot_geometry(GEO.main, color="w")')
-            out('gcf().canvas.set_window_title("Electric potential")')
-            if actlevel is not False:
-                out('\nfigure()')
-                out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
-                out('xlabel(u"%s [\\xb5m]")' % axes[0])
-                out('ylabel("current density [kA/cm$^2$]")')
-                out('simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
-                out('for x in simplemesh.axis0:')
-                out('    axvline(x, ls=":", color="k")')
-                out('xlim(0., simplemesh.axis0[-2])')
-                out('gcf().canvas.set_window_title("Current density in the active region")')
-
-    out('\nshow()')
-
-    out('\n]]></script>\n')
-
-    out('</plask>')
-
-
 def import_dan(parent):
     """Convert _temp.dan file to .xpl, save it to disk and open in PLaSK"""
 
@@ -519,6 +525,9 @@ def import_dan(parent):
         obase = os.path.join(dest_dir,
                              os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
     except Exception as err:
+        if gui._DEBUG:
+            import traceback
+            traceback.print_exc()
         msgbox = QtGui.QMessageBox()
         msgbox.setWindowTitle("Import Error")
         msgbox.setText("There was an error while reading the RPSMES file.\n\n"
@@ -536,6 +545,9 @@ def import_dan(parent):
         try:
             write_xpl(oname, *read[1:])
         except Exception as err:
+            if gui._DEBUG:
+                import traceback
+                traceback.print_exc()
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Import Error")
             msgbox.setText("There was an error while saving the converted XPL file.")

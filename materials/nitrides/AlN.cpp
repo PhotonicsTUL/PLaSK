@@ -10,9 +10,10 @@ std::string AlN::name() const { return NAME; }
 
 MI_PROPERTY(AlN, thermk,
             MISource("G. A. Slack, J. Phys. Chem. Sol. 48 (1987) 641"),
-            MISource("Bondokov R T, J. Crystal Growth 310 (2008) 4020"))
+            MISource("Bondokov R T, J. Crystal Growth 310 (2008) 4020"),
+            MISource("M. Kuc, R.P. Sarzala and W. Nakwaski, Materials Science and Engineering B, 178 (2013) 1395-1402"))
 Tensor2<double> AlN::thermk(double T, double t) const {
-    double tCondT = 285*pow((T/300.),-1.25);
+    double tCondT = 270.*pow((T/300.),-1.25);
     return(Tensor2<double>(tCondT,tCondT));
  }
 

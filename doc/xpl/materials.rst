@@ -158,7 +158,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <eps>
 
-         Donor ionization energy *ε*\ :sub:`R` [-].
+         Dielectric constant *ε*\ :sub:`R` [-].
 
          Variables: ``T`` — temperature [K].
 
