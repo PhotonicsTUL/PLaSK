@@ -14,7 +14,7 @@ MI_PROPERTY(GaN, cond,
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
 Tensor2<double> GaN::cond(double T) const {
-    double tCond = 255*std::pow((T/300.),-0.18);
+    double tCond = 255. * std::pow((T/300.),-0.18);
     return Tensor2<double>(tCond,tCond);
 }
 
@@ -25,7 +25,9 @@ MI_PROPERTY(GaN, thermk,
 Tensor2<double> GaN::thermk(double T, double t) const {
     double fun_t = std::pow((tanh(0.001529*pow(t,0.984))),0.12),
            tCondT = 230. * pow((T/300.),-1.43);
-    return Tensor2<double>(tCondT, fun_t * tCondT);
+    // return Tensor2<double>(tCondT, fun_t * tCondT);
+    tCondT *= fun_t;
+    return Tensor2<double>(tCondT, tCondT);
  }
 
 MI_PROPERTY(GaN, absp,

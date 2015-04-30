@@ -10,9 +10,15 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import gui
-from gui.qt import QtGui, QtCore
+try:
+    import gui
+    from gui.qt import QtGui, QtCore
+except ImportError:
+    qt = False
+else:
+    qt = True
 
+import sys
 import os
 
 
@@ -184,74 +190,93 @@ def read_efm(fname):
     return materials, layers, lam0, m
 
 
-def import_efm(parent):
-    """Convert .efm file to .xpl, save it to disk and open in PLaSK"""
+if qt:
 
-    remove_self = parent.document.filename is None and not parent.isWindowModified()
+    def import_efm(parent):
+        """Convert .efm file to .xpl, save it to disk and open in PLaSK"""
 
-    iname = QtGui.QFileDialog.getOpenFileName(parent, "Import EFM file", gui.CURRENT_DIR,
-                                              "EFM file (*.efm)")
-    if type(iname) == tuple:
-        iname = iname[0]
-    if not iname:
-        return
-    dest_dir = os.path.dirname(iname)
+        remove_self = parent.document.filename is None and not parent.isWindowModified()
 
-    try:
-        read = read_efm(iname)
-        obase = os.path.join(dest_dir, os.path.basename(iname)[:-4])
-    except Exception as err:
-        if gui._DEBUG:
-            import traceback
-            traceback.print_exc()
-        msgbox = QtGui.QMessageBox()
-        msgbox.setWindowTitle("Import Error")
-        msgbox.setText("There was an error while reading the EFM file.\n\n"
-                       "Probably the chosen file was not in a EFM or the parser does not understand its syntax.")
-        msgbox.setDetailedText(str(err))
-        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-        msgbox.setIcon(QtGui.QMessageBox.Critical)
-        msgbox.exec_()
-    else:
-        oname = obase + '.xpl'
-        n = 1
-        while os.path.exists(oname):
-            oname = obase + '-{}.xpl'.format(n)
-            n += 1
+        iname = QtGui.QFileDialog.getOpenFileName(parent, "Import EFM file", gui.CURRENT_DIR,
+                                                  "EFM file (*.efm)")
+        if type(iname) == tuple:
+            iname = iname[0]
+        if not iname:
+            return
+        dest_dir = os.path.dirname(iname)
+
         try:
-            write_xpl(oname, *read)
+            read = read_efm(iname)
+            obase = os.path.join(dest_dir, os.path.basename(iname)[:-4])
         except Exception as err:
             if gui._DEBUG:
                 import traceback
                 traceback.print_exc()
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Import Error")
-            msgbox.setText("There was an error while saving the converted XPL file.")
+            msgbox.setText("There was an error while reading the EFM file.\n\n"
+                           "Probably the chosen file was not in a EFM or the parser does not understand its syntax.")
             msgbox.setDetailedText(str(err))
             msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
             msgbox.setIcon(QtGui.QMessageBox.Critical)
             msgbox.exec_()
         else:
-            new_window = gui.MainWindow(oname)
+            oname = obase + '.xpl'
+            n = 1
+            while os.path.exists(oname):
+                oname = obase + '-{}.xpl'.format(n)
+                n += 1
             try:
-                if new_window.document.filename is not None:
-                    new_window.resize(parent.size())
-                    gui.WINDOWS.add(new_window)
-                    if remove_self:
-                        parent.close()
-                        gui.WINDOWS.remove(parent)
+                write_xpl(oname, *read)
+            except Exception as err:
+                if gui._DEBUG:
+                    import traceback
+                    traceback.print_exc()
+                msgbox = QtGui.QMessageBox()
+                msgbox.setWindowTitle("Import Error")
+                msgbox.setText("There was an error while saving the converted XPL file.")
+                msgbox.setDetailedText(str(err))
+                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                msgbox.setIcon(QtGui.QMessageBox.Critical)
+                msgbox.exec_()
+            else:
+                new_window = gui.MainWindow(oname)
+                try:
+                    if new_window.document.filename is not None:
+                        new_window.resize(parent.size())
+                        gui.WINDOWS.add(new_window)
+                        if remove_self:
+                            parent.close()
+                            gui.WINDOWS.remove(parent)
+                        else:
+                            new_window.move(parent.x() + 24, parent.y() + 24)
                     else:
-                        new_window.move(parent.x() + 24, parent.y() + 24)
-                else:
+                        new_window.setWindowModified(False)
+                        new_window.close()
+                except AttributeError:
                     new_window.setWindowModified(False)
                     new_window.close()
-            except AttributeError:
-                new_window.setWindowModified(False)
-                new_window.close()
+
+    def import_efm_operation(parent):
+        action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+                               'Import E&FM file...', parent)
+        action.triggered.connect(lambda: import_efm(parent))
+        return action
 
 
-def import_efm_operation(parent):
-    action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
-                           'Import E&FM file...', parent)
-    action.triggered.connect(lambda: import_efm(parent))
-    return action
+if __name__ == '__main__':
+    iname = sys.argv[1]
+    dest_dir = os.path.dirname(iname)
+    read = read_efm(iname)
+    obase = os.path.join(dest_dir,
+                         os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
+
+    oname = obase + '.xpl'
+    n = 1
+    while os.path.exists(oname):
+        oname = obase + '-{}.xpl'.format(n)
+        n += 1
+
+    write_xpl(oname, *read[1:])
+
+    print("Wrote '{}'".format(oname))

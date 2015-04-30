@@ -663,14 +663,14 @@ if(WIN32)
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
 
-    compile_python_script(dan2xpl)
-    install(FILES utils/dan2xpl.py DESTINATION bin COMPONENT utils)
-    install(FILES utils/xpl2dan.py DESTINATION bin COMPONENT utils)
+    #compile_python_script(dan2xpl)
+    #install(FILES utils/dan2xpl.py DESTINATION bin COMPONENT utils)
+    #install(FILES utils/xpl2dan.py DESTINATION bin COMPONENT utils)
 
-else()
+#else()
 
-    install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
-    install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
+    #install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
+    #install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
 
 endif()
 
@@ -689,7 +689,8 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
 set(CPACK_STRIP_FILES ON)
 
-set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc")
+#set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc")
+set(CPACK_COMPONENTS_ALL "core;solvers;GUI;doc")
 set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
 set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User manual and examples")

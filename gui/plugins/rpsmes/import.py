@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -10,23 +11,30 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import gui
-from gui.qt import QtGui, QtCore
+try:
+    import gui
+    from gui.qt import QtGui, QtCore
+except ImportError:
+    qt = False
+else:
+    qt = True
 
+import sys
 import os
 
 
 class UniqueId(object):
     """Generator of unique names"""
 
-    def __init__(self, prefix, fmt="02d", initial=1):
+    def __init__(self, prefix, suffix='', fmt="02d", initial=1):
         self.prefix = prefix
+        self.suffix = suffix
         self.fmt = fmt
         self.counter = initial - 1
 
     def __call__(self):
         self.counter += 1
-        return self.prefix + ('{:'+self.fmt+'}').format(self.counter)
+        return self.prefix + ('{:'+self.fmt+'}').format(self.counter) + self.suffix
 
 
 unique_object_name = UniqueId("object")
@@ -405,11 +413,17 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         if mat == 'GaN':
-            h0 = scale * kappa[1]
+            h0 = scale * kappa[0]
+            h1 = scale * kappa[1]
             h = r.y1 - r.y0
-            if abs(h0-h) > 1e-3:
-                kappa_t = 'g'
-                kappa[0] = kappa[1] = 'self.base.thermk(T, {})'.format(h0)
+            if abs(h-h1) > 1e-3 or abs(h-h0) > 1e-3:
+                kappa_t = 'x'
+                kappa[0] = 'self.base.thermk(T, {})[1]'.format(h0)
+                kappa[1] = 'self.base.thermk(T, {})[1]'.format(h1)
+        elif mat == 'InGaN' and kappa_t in ('n', 'p'):
+            kappa_t = 'x'
+            kappa[0] = '{} * (T/300.)**(-1.4)'.format(1./(kappa[0]/120.+(1-kappa[0])/230.+kappa[0]*(1-kappa[0])*1.5))
+            kappa[1] = '{} * (T/300.)**(-1.4)'.format(1./(kappa[1]/120.+(1-kappa[1])/230.+kappa[1]*(1-kappa[1])*1.5))
 
         # create custom material if necessary
         if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
@@ -432,13 +446,15 @@ def read_dan(fname):
                     mat = mk
                     break
             if not found:
-                unique_material_name = UniqueId(mat+'_')
+                if material.base is not None and ':' in material.base and '=' not in material.base:
+                    suffix = ':' + material.base.split(':')[1]
+                else:
+                    suffix = ''
+                unique_material_name = UniqueId(mat+'_', suffix)
                 if sigma_t in ('n', 'p') or kappa_t in ('n', 'p'):
-                    mat = unique_material_name()  # the given name is the one from database
+                    mat = unique_material_name()  # the given name is the one from the database
                 while mat in materials and materials[mat] != material:
                     mat = unique_material_name()
-                if material.base is not None and ':' in material.base and '=' not in material.base:
-                    mat += ':' + material.base.split(':')[1]
                 materials[mat] = material
         else:
             mat = parse_material_name(mat, kappa[0], dopant)
@@ -507,75 +523,94 @@ def read_dan(fname):
     return name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel
 
 
-def import_dan(parent):
-    """Convert _temp.dan file to .xpl, save it to disk and open in PLaSK"""
+if qt:
 
-    remove_self = parent.document.filename is None and not parent.isWindowModified()
+    def import_dan(parent):
+        """Convert _temp.dan file to .xpl, save it to disk and open in PLaSK"""
 
-    iname = QtGui.QFileDialog.getOpenFileName(parent, "Import RPSMES file", gui.CURRENT_DIR,
-                                              "RPSMES file (*.dan)")
-    if type(iname) == tuple:
-        iname = iname[0]
-    if not iname:
-        return
-    dest_dir = os.path.dirname(iname)
+        remove_self = parent.document.filename is None and not parent.isWindowModified()
 
-    try:
-        read = read_dan(iname)
-        obase = os.path.join(dest_dir,
-                             os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
-    except Exception as err:
-        if gui._DEBUG:
-            import traceback
-            traceback.print_exc()
-        msgbox = QtGui.QMessageBox()
-        msgbox.setWindowTitle("Import Error")
-        msgbox.setText("There was an error while reading the RPSMES file.\n\n"
-                       "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
-        msgbox.setDetailedText(str(err))
-        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-        msgbox.setIcon(QtGui.QMessageBox.Critical)
-        msgbox.exec_()
-    else:
-        oname = obase + '.xpl'
-        n = 1
-        while os.path.exists(oname):
-            oname = obase + '-{}.xpl'.format(n)
-            n += 1
+        iname = QtGui.QFileDialog.getOpenFileName(parent, "Import RPSMES file", gui.CURRENT_DIR,
+                                                  "RPSMES file (*.dan)")
+        if type(iname) == tuple:
+            iname = iname[0]
+        if not iname:
+            return
+        dest_dir = os.path.dirname(iname)
+
         try:
-            write_xpl(oname, *read[1:])
+            read = read_dan(iname)
+            obase = os.path.join(dest_dir,
+                                 os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
         except Exception as err:
             if gui._DEBUG:
                 import traceback
                 traceback.print_exc()
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Import Error")
-            msgbox.setText("There was an error while saving the converted XPL file.")
+            msgbox.setText("There was an error while reading the RPSMES file.\n\n"
+                           "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
             msgbox.setDetailedText(str(err))
             msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
             msgbox.setIcon(QtGui.QMessageBox.Critical)
             msgbox.exec_()
         else:
-            new_window = gui.MainWindow(oname)
+            oname = obase + '.xpl'
+            n = 1
+            while os.path.exists(oname):
+                oname = obase + '-{}.xpl'.format(n)
+                n += 1
             try:
-                if new_window.document.filename is not None:
-                    new_window.resize(parent.size())
-                    gui.WINDOWS.add(new_window)
-                    if remove_self:
-                        parent.close()
-                        gui.WINDOWS.remove(parent)
+                write_xpl(oname, *read[1:])
+            except Exception as err:
+                if gui._DEBUG:
+                    import traceback
+                    traceback.print_exc()
+                msgbox = QtGui.QMessageBox()
+                msgbox.setWindowTitle("Import Error")
+                msgbox.setText("There was an error while saving the converted XPL file.")
+                msgbox.setDetailedText(str(err))
+                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                msgbox.setIcon(QtGui.QMessageBox.Critical)
+                msgbox.exec_()
+            else:
+                new_window = gui.MainWindow(oname)
+                try:
+                    if new_window.document.filename is not None:
+                        new_window.resize(parent.size())
+                        gui.WINDOWS.add(new_window)
+                        if remove_self:
+                            parent.close()
+                            gui.WINDOWS.remove(parent)
+                        else:
+                            new_window.move(parent.x() + 24, parent.y() + 24)
                     else:
-                        new_window.move(parent.x() + 24, parent.y() + 24)
-                else:
+                        new_window.setWindowModified(False)
+                        new_window.close()
+                except AttributeError:
                     new_window.setWindowModified(False)
                     new_window.close()
-            except AttributeError:
-                new_window.setWindowModified(False)
-                new_window.close()
+
+    def import_dan_operation(parent):
+        action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+                               '&Import RPSMES .dan file...', parent)
+        action.triggered.connect(lambda: import_dan(parent))
+        return action
 
 
-def import_dan_operation(parent):
-    action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
-                           '&Import RPSMES .dan file...', parent)
-    action.triggered.connect(lambda: import_dan(parent))
-    return action
+if __name__ == '__main__':
+    iname = sys.argv[1]
+    dest_dir = os.path.dirname(iname)
+    read = read_dan(iname)
+    obase = os.path.join(dest_dir,
+                         os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
+
+    oname = obase + '.xpl'
+    n = 1
+    while os.path.exists(oname):
+        oname = obase + '-{}.xpl'.format(n)
+        n += 1
+
+    write_xpl(oname, *read[1:])
+
+    print("Wrote '{}'".format(oname))

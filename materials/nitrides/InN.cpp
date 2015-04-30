@@ -14,7 +14,7 @@ MI_PROPERTY(InN, thermk,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
 Tensor2<double> InN::thermk(double T, double) const {
-    return(Tensor2<double>(126., 126.));
+    return(Tensor2<double>(126. * pow((T/300.),-1.43)));
  }
 
 MI_PROPERTY(InN, lattC,
