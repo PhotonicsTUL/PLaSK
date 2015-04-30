@@ -43,9 +43,9 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
         if (param == "config") {
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
-            matrixelemscfact = reader.getAttribute<double>("matrix-elem-sc-fact", matrixelemscfact);
-            cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
-            vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
+            matrixelemscfact = reader.getAttribute<double>("matrix-elem-scaling", matrixelemscfact);
+            cond_qw_shift = reader.getAttribute<double>("cond-shift", cond_qw_shift);
+            vale_qw_shift = reader.getAttribute<double>("vale-shift", vale_qw_shift);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
             reader.requireTagEnd();
         } else if (param == "levels") {

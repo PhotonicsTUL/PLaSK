@@ -4,7 +4,7 @@
 
 #include "../ferminew.h"
 using namespace plask;
-using namespace plask::solvers::ferminew;
+using namespace plask::solvers::FermiNew;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define V "\\"
@@ -12,9 +12,9 @@ using namespace plask::solvers::ferminew;
 #   define V "/"
 #endif
 
-struct TheSolver: public FerminewGainSolver<Geometry2DCartesian>
+struct TheSolver: public FermiNewGainSolver<Geometry2DCartesian>
 {
-    TheSolver(const std::string name=""): FerminewGainSolver<Geometry2DCartesian>(name) {}
+    TheSolver(const std::string name=""): FermiNewGainSolver<Geometry2DCartesian>(name) {}
 
    void detect_active_regions() { detectActiveRegions(); }
 };

@@ -14,30 +14,30 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../ferminew.h"
-using namespace plask::solvers::ferminew;
+using namespace plask::solvers::FermiNew;
 
 template <typename GeometryT>
-static GainSpectrum<GeometryT> FerminewGetGainSpectrum2(FerminewGainSolver<GeometryT>* solver, double c0, double c1) {
+static GainSpectrum<GeometryT> FermiNewGetGainSpectrum2(FermiNewGainSolver<GeometryT>* solver, double c0, double c1) {
     return solver->getGainSpectrum(Vec<2>(c0,c1));
 }
 
 template <typename GeometryT>
-static py::object FerminewGainSpectrum__call__(GainSpectrum<GeometryT>& self, py::object wavelengths) {
+static py::object FermiNewGainSpectrum__call__(GainSpectrum<GeometryT>& self, py::object wavelengths) {
    return UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
 }
 
 template <typename GeometryT>
-static LuminescenceSpectrum<GeometryT> FerminewGetLuminescenceSpectrum2(FerminewGainSolver<GeometryT>* solver, double c0, double c1) {
+static LuminescenceSpectrum<GeometryT> FermiNewGetLuminescenceSpectrum2(FermiNewGainSolver<GeometryT>* solver, double c0, double c1) {
     return solver->getLuminescenceSpectrum(Vec<2>(c0,c1));
 }
 
 template <typename GeometryT>
-static py::object FerminewLuminescenceSpectrum__call__(LuminescenceSpectrum<GeometryT>& self, py::object wavelengths) {
+static py::object FermiNewLuminescenceSpectrum__call__(LuminescenceSpectrum<GeometryT>& self, py::object wavelengths) {
    return UFUNC<double>([&](double x){return self.getLuminescence(x);}, wavelengths);
 }
 
 /*template <typename GeometryT>
-static py::object FerminewGain_setLevels(py::tuple args, py::dict kwargs)
+static py::object FermiNewGain_setLevels(py::tuple args, py::dict kwargs)
 {
     if (py::len(args) != 1) {
         throw TypeError("set_levels() takes exactly 1 non-keyword argument1 (%1% given)", py::len(args));
@@ -76,14 +76,14 @@ static py::object FerminewGain_setLevels(py::tuple args, py::dict kwargs)
 }*/
 
 /**
- * Initialization of Ferminew gain solver class to Python
+ * Initialization of FermiNew gain solver class to Python
  */
 BOOST_PYTHON_MODULE(complex)
 {
     plask_import_array();
 
-    {CLASS(FerminewGainSolver<Geometry2DCartesian>, "Ferminew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
-        solver.def_readwrite("strains", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
+    {CLASS(FermiNewGainSolver<Geometry2DCartesian>, "FermiNew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
+        solver.def_readwrite("strained", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
         solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
         solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
         RECEIVER(inTemperature, "");
@@ -94,33 +94,33 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
-        RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
-        RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
         RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
+        solver.def("luminescence_spectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCartesian>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("luminescence_spectrum", FermiNewGetLuminescenceSpectrum2<Geometry2DCartesian>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCartesian>, plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCartesian>)
+            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCartesian>)
         ;
         py::class_<LuminescenceSpectrum<Geometry2DCartesian>, plask::shared_ptr<LuminescenceSpectrum<Geometry2DCartesian>>>("LuminescenceSpectrum",
             "Luminescence spectrum class. You can call it like a function to get luminescences for different vavelengths.",
             py::no_init)
-            .def("__call__", &FerminewLuminescenceSpectrum__call__<Geometry2DCartesian>)
+            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCartesian>)
         ;
     }
-    {CLASS(FerminewGainSolver<Geometry2DCylindrical>, "FerminewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
-        solver.def_readwrite("strains", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
+    {CLASS(FermiNewGainSolver<Geometry2DCylindrical>, "FermiNewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
+        solver.def_readwrite("strained", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
         solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
         solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
         RECEIVER(inTemperature, "");
@@ -131,29 +131,29 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
-        RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
-        RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
         RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCylindrical>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("luminescencespectrum", FermiNewGetLuminescenceSpectrum2<Geometry2DCylindrical>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCylindrical>, plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCylindrical>)
+            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCylindrical>)
         ;
         py::class_<LuminescenceSpectrum<Geometry2DCylindrical>, plask::shared_ptr<LuminescenceSpectrum<Geometry2DCylindrical>>>("LuminescenceSpectrum",
             "Luminescence spectrum class. You can call it like a function to get luminescences for different vavelengths.",
             py::no_init)
-            .def("__call__", &FerminewLuminescenceSpectrum__call__<Geometry2DCylindrical>)
+            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCylindrical>)
         ;
     }
 

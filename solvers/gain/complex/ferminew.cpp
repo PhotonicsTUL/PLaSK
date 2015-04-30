@@ -1,12 +1,12 @@
 #include "ferminew.h"
 
-namespace plask { namespace solvers { namespace ferminew {
+namespace plask { namespace solvers { namespace FermiNew {
 
 template <typename GeometryType>
-FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): SolverWithMesh<GeometryType,OrderedMesh1D>(name),
-    outGain(this, &FerminewGainSolver<GeometryType>::getGain),
-    outLuminescence(this, &FerminewGainSolver<GeometryType>::getLuminescence)/*, // LUKASZ
-    outGainOverCarriersConcentration(this, &FerminewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
+FermiNewGainSolver<GeometryType>::FermiNewGainSolver(const std::string& name): SolverWithMesh<GeometryType,OrderedMesh1D>(name),
+    outGain(this, &FermiNewGainSolver<GeometryType>::getGain),
+    outLuminescence(this, &FermiNewGainSolver<GeometryType>::getLuminescence)/*, // LUKASZ
+    outGainOverCarriersConcentration(this, &FermiNewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
 {
     Tref = 300.; // [K], only for this temperature energy levels are calculated
     inTemperature = 300.; // temperature receiver has some sensible value
@@ -21,19 +21,19 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
     strains = false;
     fixed_qw_widths = false;
     build_struct_once = true;
-    inTemperature.changedConnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
-    inCarriersConcentration.changedConnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
+    inTemperature.changedConnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
 }
 
 template <typename GeometryType>
-FerminewGainSolver<GeometryType>::~FerminewGainSolver() {
-    inTemperature.changedDisconnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
-    inCarriersConcentration.changedDisconnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
+FermiNewGainSolver<GeometryType>::~FermiNewGainSolver() {
+    inTemperature.changedDisconnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedDisconnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
 }
 
 
 template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
+void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     // Load a configuration parameter from XML.
     while (reader.requireTagOrEnd())
@@ -99,7 +99,7 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
 
 
 template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::onInitialize() // In this function check if geometry and mesh are set
+void FermiNewGainSolver<GeometryType>::onInitialize() // In this function check if geometry and mesh are set
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
@@ -113,19 +113,19 @@ void FerminewGainSolver<GeometryType>::onInitialize() // In this function check 
 
 
 template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
+void FermiNewGainSolver<GeometryType>::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
 {
     //TODO (if needed)
 }
 
 /*template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::compute()
+void FermiNewGainSolver<GeometryType>::compute()
 {
     this->initCalculation(); // This must be called before any calculation!
 }*/
 
 template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::detectActiveRegions()
+void FermiNewGainSolver<GeometryType>::detectActiveRegions()
 {
     regions.clear();
 
@@ -346,7 +346,7 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
 }
 
 template <typename GeometryType>
-void FerminewGainSolver<GeometryType>::findEnergyLevels(const ActiveRegionInfo& region, double iT, bool iShowSpecLogs)
+void FermiNewGainSolver<GeometryType>::findEnergyLevels(const ActiveRegionInfo& region, double iT, bool iShowSpecLogs)
 {
     if (isnan(iT) || iT < 0.) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", iT);
 
@@ -390,7 +390,7 @@ void FerminewGainSolver<GeometryType>::findEnergyLevels(const ActiveRegionInfo& 
 }
 
 template <typename GeometryType>
-QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs)
+QW::gain FermiNewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
     if (isnan(n) || n < 0.) throw ComputationError(this->getId(), "Wrong carrier concentration (%1%/cm3)", n);
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", T);
@@ -432,7 +432,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         //double tQWnR = region.materialQW->nr(wavelength,T); // QW nR // earlier
 
         double tEgClad = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
-        //this->writelog(LOG_DEBUG, "mEgCladT z ferminew: %1% eV", tEgClad);
+        //this->writelog(LOG_DEBUG, "mEgCladT z FermiNew: %1% eV", tEgClad);
 
         this->writelog(LOG_DEBUG, "Creating gainModule..");
         QW::gain gainModule;
@@ -567,7 +567,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
+int FermiNewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
     this->writelog(LOG_INFO, "Building structure");
 
@@ -598,7 +598,7 @@ int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegio
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
+int FermiNewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
     mpEc.clear();
 
@@ -640,7 +640,7 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
+int FermiNewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
     mpEvhh.clear();
 
@@ -682,7 +682,7 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
+int FermiNewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs)
 {
     mpEvlh.clear();
 
@@ -724,7 +724,7 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
 }
 
 template <typename GeometryType>
-const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FermiNewGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
@@ -791,7 +791,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 } // LUKASZ
 
 template <typename GeometryType>
-const LazyData<double> FerminewGainSolver<GeometryType>::getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FermiNewGainSolver<GeometryType>::getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
@@ -853,7 +853,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getLuminescence(const s
 
 /*
 template <typename GeometryType>
-const DataVector<double> FerminewGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
+const DataVector<double> FermiNewGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
@@ -902,23 +902,23 @@ const DataVector<double> FerminewGainSolver<GeometryType>::getdGdn(const MeshD<2
 
 
 template <typename GeometryType>
-GainSpectrum<GeometryType> FerminewGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point)
+GainSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point)
 {
     this->initCalculation();
     return GainSpectrum<GeometryType>(this, point);
 }
 
 template <typename GeometryType>
-LuminescenceSpectrum<GeometryType> FerminewGainSolver<GeometryType>::getLuminescenceSpectrum(const Vec<2>& point)
+LuminescenceSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getLuminescenceSpectrum(const Vec<2>& point)
 {
     this->initCalculation();
     return LuminescenceSpectrum<GeometryType>(this, point);
 }
 
-template <> std::string FerminewGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Ferminew2D"; }
-template <> std::string FerminewGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FerminewCyl"; }
+template <> std::string FermiNewGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.FermiNew2D"; }
+template <> std::string FermiNewGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FermiNewCyl"; }
 
-template struct PLASK_SOLVER_API FerminewGainSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API FerminewGainSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API FermiNewGainSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FermiNewGainSolver<Geometry2DCylindrical>;
 
 }}} // namespace

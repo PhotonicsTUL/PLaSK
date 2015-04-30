@@ -2,13 +2,13 @@
  * \file
  * Sample solver header for your solver
  */
-#ifndef PLASK__SOLVER_GAIN_FERMINEW_H
-#define PLASK__SOLVER_GAIN_FERMINEW_H
+#ifndef PLASK__SOLVER_GAIN_FermiNew_H
+#define PLASK__SOLVER_GAIN_FermiNew_H
 
 #include <plask/plask.hpp>
 #include "kubly.h"
 
-namespace plask { namespace solvers { namespace ferminew {
+namespace plask { namespace solvers { namespace FermiNew {
 
 template <typename GeometryT> struct GainSpectrum;
 template <typename GeometryT> struct LuminescenceSpectrum;
@@ -17,7 +17,7 @@ template <typename GeometryT> struct LuminescenceSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,OrderedMesh1D>
+struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,OrderedMesh1D>
 {
     /// Structure containing information about each active region
     struct ActiveRegionInfo
@@ -37,7 +37,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             if (auto m = block->singleMaterial()) return m;
-            throw plask::Exception("FerminewGainSolver requires solid layers.");
+            throw plask::Exception("FermiNewGainSolver requires solid layers.");
         }
 
         /// Return translated bounding box of \p n-th layer
@@ -79,7 +79,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
          * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
-        void summarize(const FerminewGainSolver<GeometryType>* solver) {
+        void summarize(const FermiNewGainSolver<GeometryType>* solver) {
             auto bbox = layers->getBoundingBox();
             totallen = 1e4 * (bbox.upper[1] - bbox.lower[1] - bottomlen - toplen);  // 1e4: µm -> Å
             size_t qwn = 0;
@@ -88,7 +88,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
             for (const auto& layer: layers->children) {
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
                 auto material = block->singleMaterial();
-                if (!material) throw plask::Exception("FerminewGainSolver requires solid layers.");
+                if (!material) throw plask::Exception("FermiNewGainSolver requires solid layers.");
                 if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW"))
                 {
                     /*if (!materialQW)
@@ -142,9 +142,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     /// Provider for gain over carriers concentration derivative distribution
     typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
 
-    FerminewGainSolver(const std::string& name="");
+    FermiNewGainSolver(const std::string& name="");
 
-    virtual ~FerminewGainSolver();
+    virtual ~FermiNewGainSolver();
 
     virtual std::string getClassName() const;
 
@@ -271,22 +271,22 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 template <typename GeometryT>
 struct GainSpectrum {
 
-    FerminewGainSolver<GeometryT>* solver; ///< Source solver
+    FermiNewGainSolver<GeometryT>* solver; ///< Source solver
     Vec<2> point;                       ///< Point in which the gain is calculated
 
     /// Active region containing the point
-    const typename FerminewGainSolver<GeometryT>::ActiveRegionInfo* region;
+    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo* region;
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
     QW::gain gMod; // added
     bool gModExist; // added
 
-    GainSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
     {
         //std::cout << "Setting gModExist to false\n"; // added
         gModExist = false; // added
-    //GainSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
+    //GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -337,21 +337,21 @@ struct GainSpectrum {
 template <typename GeometryT>
 struct LuminescenceSpectrum {
 
-    FerminewGainSolver<GeometryT>* solver; ///< Source solver
+    FermiNewGainSolver<GeometryT>* solver; ///< Source solver
     Vec<2> point;                       ///< Point in which the luminescence is calculated
 
     /// Active region containing the point
-    const typename FerminewGainSolver<GeometryT>::ActiveRegionInfo* region;
+    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo* region;
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
     QW::gain gMod; // added
     bool gModExist; // added
 
-    LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
     {
         gModExist = false; // added
-    //LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
+    //LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
