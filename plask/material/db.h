@@ -16,30 +16,6 @@ namespace plask {
  */
 struct PLASK_API MaterialsDB {
 
-    /*
-     * Materials source functor which use materials database.
-     */
-    /*struct Source {
-        const MaterialsDB& materialsDB;
-        Source(const MaterialsDB& materialsDB): materialsDB(materialsDB) {}
-        shared_ptr<Material> operator()(const std::string& material_full_name) const { return materialsDB.get(material_full_name); }
-    };*/
-
-    /*
-     * Get material database wrapped by @p materialsSource.
-     * @param materialsSource source of materials, which can wrap material database
-     * @return pointer to wrapped material database or @c nullptr if materialsSource is not constructed using material database
-     */
-    //static const MaterialsDB* getFromSource(const MaterialsSource& materialsSource);
-
-    /*
-     * Convert @c this material database to material source.
-     * @return material source which use @c this database
-     */
-    /*Source toSource() const {
-        return Source(*this);
-    }*/
-
     /**
      * Get default material database.
      * @return default material database
@@ -120,7 +96,7 @@ struct PLASK_API MaterialsDB {
     /**
      * Base class for factories of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
-    struct PLASK_API MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double [0.0, 1.0]
+    struct PLASK_API MixedCompositionFactory {    //TODO nonlinear mixing with functor double [0.0, 1.0] -> double [0.0, 1.0]
 
     protected:
 
@@ -150,12 +126,11 @@ struct PLASK_API MaterialsDB {
 
     };
 
-
     /**
      * Factory of complex material which construct it version with mixed version of two compositions (for materials without dopants).
      */
     //TODO cache: double -> constructed material
-    struct PLASK_API MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nieliniowe, funkcja, funktor double [0.0, 1.0] -> double
+    struct PLASK_API MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO nonlinear mixing with functor double [0.0, 1.0] -> double [0.0, 1.0]
 
     protected:
 

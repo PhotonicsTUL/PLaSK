@@ -7,6 +7,7 @@
 #include <plask/config.h>
 #include <plask/utils/string.h>
 #include <plask/exceptions.h>
+#include <plask/material/special.h>
 #include <plask/material/db.h>
 #include <plask/material/info.h>
 
@@ -492,7 +493,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
     ptr->self = self.ptr();  // key line !!!
 
     self.attr("base") = ptr->base;
-    
+
     // Update cache
     auto found = cacheMap.find(cls.ptr());
     if (found != cacheMap.end())

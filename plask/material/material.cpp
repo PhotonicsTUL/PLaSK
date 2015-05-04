@@ -1,4 +1,5 @@
 #include "material.h"
+#include "special.h"
 
 #include <boost/lexical_cast.hpp>
 #include "../utils/stl.h"

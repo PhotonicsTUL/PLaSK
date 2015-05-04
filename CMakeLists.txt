@@ -674,6 +674,18 @@ if(WIN32)
 
 endif()
 
+
+# ----------===== Public headers for writing material databases =====--------
+
+if(NOT INSTALL_DEV)
+    install(FILES plask/material.hpp plask/math.h plask/memory.h plask/exceptions.h plask/parallel.h DESTINATION include/plask COMPONENT dev)
+    install(FILES plask/material/material.h plask/material/db.h  DESTINATION include/plask/material COMPONENT dev)
+    install(FILES plask/utils/format.h plask/utils/string.h plask/utils/system.h DESTINATION include/plask/utils COMPONENT dev)
+    install(FILES plask/vector/tensor2.h plask/vector/tensor3.h DESTINATION include/plask/vector COMPONENT dev)
+    install(FILES plask/phys/constants.h plask/phys/functions.h DESTINATION include/plask/phys COMPONENT dev)
+    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+endif()
+
 # ----------===== Packaging =====--------------------------------------------
 
 # This is ugly! Although somehow useful for quick dirty package generation
@@ -689,14 +701,15 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
 set(CPACK_STRIP_FILES ON)
 
-#set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc")
-set(CPACK_COMPONENTS_ALL "core;solvers;GUI;doc")
+#set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc;dev")
+set(CPACK_COMPONENTS_ALL "core;solvers;GUI;doc;dev")
 set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
-set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User manual and examples")
-set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational solvers")
+set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User Manual and Examples")
+set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational Solvers")
 set(CPACK_COMPONENT_GUI_DISPLAY_NAME "Graphical User Interface")
-set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-line utilities (e.g. dan2xpl)")
+set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-Line Utilities (e.g. dan2xpl)")
+set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Custom Materials Headers")
 
 # Settings for NSIS generator
 if(WIN32)

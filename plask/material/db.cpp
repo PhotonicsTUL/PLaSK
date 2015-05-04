@@ -1,4 +1,5 @@
 #include "db.h"
+#include "special.h"
 
 #include "../utils/string.h"
 #include "../utils/dynlib/manager.h"

@@ -2,7 +2,7 @@
 #define PLASK__PLASK_HPP
 
 /** @file
-This file allows for easy include all plask features.
+This file allows for easy include of all plask features.
 
 It also contains manual main page in doxygen format.
 
@@ -65,6 +65,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "vector/tensor3.h"
 
 #include "material/material.h"
+#include "material/special.h"
 #include "material/db.h"
 #include "material/info.h"
 #include "material/air.h"

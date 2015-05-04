@@ -7,9 +7,9 @@
 project(plask/your_solvergroup/your_solverlib)
 
 
-# Do not change thew following two lines
+# Do not change the following two lines
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
-find_package(PLaSK)
+include(PLaSK)
 
 
 # Uncomment and edit the line below if you need to link some external libraries.

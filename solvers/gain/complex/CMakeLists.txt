@@ -9,7 +9,7 @@ project(plask/gain/complex)
 
 # Do not change the following two lines
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
-find_package(PLaSK)
+include(PLaSK)
 
 
 # Uncomment and edit the line below if you need to link some external libraries.
