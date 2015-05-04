@@ -63,6 +63,18 @@ material.Air = lambda: material.air
 material.db.load_all()
 material.update_factories()
 
+def load(lib):
+    """
+    Load material library from file.
+
+    Args:
+        lib (str): Library to load without the extension (.so or .dll).
+    """
+    material.db.load(lib)
+    material.update_factories()
+material.load = load
+del load
+
 class _simple(object):
     """
     Decorator for custom simple material class.
