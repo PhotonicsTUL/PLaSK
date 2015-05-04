@@ -737,7 +737,7 @@ void initMaterials() {
              "This method can be used to extend the database with custom materials provided\n"
              "in a binary library.\n\n"
              "Args:\n"
-             "    lib (str): Library name to load.\n",
+             "    lib (str): Library name to load (without an extension).\n",
              py::arg("lib"))
         .staticmethod("load") // TODO make it non-static
         .def("load_all", &MaterialsDB::loadAllToDefault,
