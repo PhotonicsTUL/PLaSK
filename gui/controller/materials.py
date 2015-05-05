@@ -25,7 +25,7 @@ from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, tab
 from ..utils.qsignals import BlockQtSignals
 from . import Controller, select_index_from_info
 from .defines import DefinesCompletionDelegate
-from .table import table_and_manipulators, table_with_manipulators
+from .table import table_and_manipulators, table_with_manipulators, TableActions
 from .defines import get_defines_completer
 
 try:
@@ -249,12 +249,17 @@ class MaterialsController(Controller):
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
+        library_action = TableActions.make_action('applications-system', 'Add &Library',
+                                                  'Add new binary library to the list', self.materials_table,
+                                                  self.add_library,
+                                                  QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Plus)
+        materials_toolbar.addAction(library_action)
         self.splitter.addWidget(materials_table)
         # materials_toolbar.addSeparator()
         # materials_toolbar.addAction(self.document.window.material_plot_action)
 
-        prop_splitter = QtGui.QSplitter()
-        prop_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.prop_splitter = QtGui.QSplitter()
+        self.prop_splitter.setOrientation(QtCore.Qt.Vertical)
 
         #self.property_model = MaterialPropertyModel(material_selection_model)
         self.properties_table = QtGui.QTableView()
@@ -267,8 +272,8 @@ class MaterialsController(Controller):
         self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
         self.properties_table.setItemDelegateForColumn(3, self.help_delegate)
         #self.properties_table.setWordWrap(True)
-        prop_splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter,
-                                                        title="Properties of the material"))
+        self.prop_splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter,
+                                                             title="Properties of the material"))
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -290,7 +295,7 @@ class MaterialsController(Controller):
 
         font = QtGui.QFont(DEFAULT_FONT)
         # font.setPointSize(font.pointSize()-1)
-        self.propedit = TextEdit(prop_splitter, line_numbers=False)
+        self.propedit = TextEdit(self.prop_splitter, line_numbers=False)
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
                                                       default_font=font)
         self.propedit.hide()
@@ -301,26 +306,38 @@ class MaterialsController(Controller):
         focus_action.setShortcutContext(QtCore.Qt.WidgetShortcut)
         self.materials_table.addAction(focus_action)
 
-        prop_splitter.addWidget(self.propedit)
-        prop_splitter.setSizes([50000, 10000])
-        self.splitter.addWidget(prop_splitter)
+        self.prop_splitter.addWidget(self.propedit)
+        self.prop_splitter.setSizes([50000, 10000])
+        self.prop_splitter.setEnabled(False)
+        self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
+
+    def add_library(self):
+        index = self.materials_table.selectionModel().currentIndex()
+        if index.isValid():
+            row = self.model.insert(index.row()+1, value=MaterialsModel.Library(self.model))
+        else:
+            row = self.model.insert(value=MaterialsModel.Library(self.model))
+        if row is not None: self.materials_table.selectRow(row)
+
 
     def material_selected(self, new_selection, old_selection):
         self.propedit.hide()
         indexes = new_selection.indexes()
         if self.selected_material is not None:
             self.selected_material.dataChanged.disconnect(self.property_data_changed)
-        if indexes:
+        if indexes and isinstance(self.model.entries[indexes[0].row()], MaterialsModel.Material):
             #self.property_model.material = self.model.entries[indexes[0].row()]
             self.selected_material = self.model.entries[indexes[0].row()]
             self.properties_table.setModel(self.selected_material)
             property_selection_model = self.properties_table.selectionModel()
             property_selection_model.selectionChanged.connect(self.property_selected)
+            self.prop_splitter.setEnabled(True)
         else:
             #self.property_model.material = None
             self.selected_material = None
             self.properties_table.setModel(self.selected_material)
+            self.prop_splitter.setEnabled(False)
         if self.selected_material is not None:
             self.selected_material.dataChanged.connect(self.property_data_changed)
         #self.properties_table.resizeColumnsToContents()

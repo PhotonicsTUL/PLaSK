@@ -39,24 +39,24 @@ class LaunchDialog(QtGui.QDialog):
         combo.currentIndexChanged.connect(self.launcher_changed)
         self.layout.addWidget(combo)
 
-        defines_layout = QtGui.QHBoxLayout()
-        defines_layout.setContentsMargins(0, 0, 0, 0)
-        defines_button = QtGui.QToolButton()
-        defines_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
-        defines_button.setCheckable(True)
-        defines_button.setChecked(_defs_visible)
-        defines_button.toggled.connect(self.show_defines)
-        self.defs_label = QtGui.QLabel("Temporary de&fines:", self)
-        self.defs_label.setBuddy(defines_button)
-        defines_layout.addWidget(self.defs_label)
-        defines_layout.addWidget(defines_button)
-        self.layout.addLayout(defines_layout)
-
-        self.defines = QtGui.QPlainTextEdit()
-        self.layout.addWidget(self.defines)
-        self.defines.setVisible(_defs_visible)
-
         if window.document.defines is not None:
+            defines_layout = QtGui.QHBoxLayout()
+            defines_layout.setContentsMargins(0, 0, 0, 0)
+            defines_button = QtGui.QToolButton()
+            defines_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
+            defines_button.setCheckable(True)
+            defines_button.setChecked(_defs_visible)
+            defines_button.toggled.connect(self.show_defines)
+            self.defs_label = QtGui.QLabel("Temporary de&fines:", self)
+            self.defs_label.setBuddy(defines_button)
+            defines_layout.addWidget(self.defs_label)
+            defines_layout.addWidget(defines_button)
+            self.layout.addLayout(defines_layout)
+
+            self.defines = QtGui.QPlainTextEdit()
+            self.layout.addWidget(self.defines)
+            self.defines.setVisible(_defs_visible)
+
             self.defines.setPlainText('\n'.join(e.name+'=' for e in window.document.defines.model.entries))
 
         self.args = QtGui.QLineEdit()
@@ -103,20 +103,21 @@ def launch_plask(window):
     _launch_args = dialog.args.text()
     if result == QtGui.QDialog.Accepted:
         launch_defs = []
-        for line in dialog.defines.toPlainText().split('\n'):
-            if not line.strip(): continue
-            if '=' not in line or line.startswith('-'):
-                msgbox = QtGui.QMessageBox()
-                msgbox.setWindowTitle("Wrong Defines")
-                msgbox.setText("Wrong define: '{}'".format(line))
-                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-                msgbox.setIcon(QtGui.QMessageBox.Critical)
-                msgbox.exec_()
-                return
-            items = line.split('=')
-            name = items[0].strip()
-            value = '='.join(items[1:]).strip()
-            if value:
-                launch_defs.append('{}={}'.format(name, value))
+        if window.document.defines is not None:
+            for line in dialog.defines.toPlainText().split('\n'):
+                if not line.strip(): continue
+                if '=' not in line or line.startswith('-'):
+                    msgbox = QtGui.QMessageBox()
+                    msgbox.setWindowTitle("Wrong Defines")
+                    msgbox.setText("Wrong define: '{}'".format(line))
+                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+                    msgbox.setIcon(QtGui.QMessageBox.Critical)
+                    msgbox.exec_()
+                    return
+                items = line.split('=')
+                name = items[0].strip()
+                value = '='.join(items[1:]).strip()
+                if value:
+                    launch_defs.append('{}={}'.format(name, value))
         launcher = LAUNCHERS[dialog.current]
         launcher.launch(window, shlex.split(_launch_args), launch_defs)

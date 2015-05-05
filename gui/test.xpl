@@ -16,6 +16,7 @@
     <C>1e-029+1.4764e-33*(T-300)</C>
     <D>10+0.016670*(T-300)</D>
   </material>
+  <library name="materials_rpsmes"/>
 </materials>
 
 <geometry>
@@ -27,7 +28,7 @@
           <rectangle material="In(0.5)GaN" dtran="0.2" dvert="0.1"/>
         </stack>
       </arrange>
-      <rectangle material="GaN" dtran="1" dvert="0.2"/>
+      <rectangle material="GaN:Si=1e16" dtran="1" dvert="0.2"/>
       <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>
     </stack>

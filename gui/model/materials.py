@@ -14,6 +14,8 @@
 import re
 
 from ..qt import QtCore, QtGui
+from ..qt.QtCore import Qt
+
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
@@ -170,7 +172,6 @@ def parse_material_components(material):
     return name, label, groups, doping
 
 
-
 def material_html_help(property_name, with_unit=True, with_attr=False, font_size=None):
     prop_help, prop_unit, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None, None))
     res = ''
@@ -193,6 +194,16 @@ def material_unit(property_name):
 
 class MaterialsModel(TableModel):
 
+    class Library(object):
+
+        def __init__(self, materials_model, name='', comment=None):
+            self.materials_model = materials_model
+            self.name = name
+            self.comment = comment
+
+        def add_to_xml(self, material_section_element):
+            mat = ElementTree.SubElement(material_section_element, "library", {"name": self.name})
+
     class Material(TableModelEditMethods, QtCore.QAbstractTableModel): #(InfoSource)
 
         def __init__(self, materials_model, name, base=None, properties=None, comment=None, parent=None, *args):
@@ -206,7 +217,7 @@ class MaterialsModel(TableModel):
             self.comment = comment
 
         def add_to_xml(self, material_section_element):
-            mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
+            mat = ElementTree.SubElement(material_section_element, "material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
@@ -228,21 +239,21 @@ class MaterialsModel(TableModel):
 
         get_raw = get
 
-        def data(self, index, role=QtCore.Qt.DisplayRole):
+        def data(self, index, role=Qt.DisplayRole):
             if not index.isValid(): return None
-            if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+            if role == Qt.DisplayRole or role == Qt.EditRole:
                 return self.get(index.column(), index.row())
-    #         if role == QtCore.Qt.ToolTipRole:
+    #         if role == Qt.ToolTipRole:
     #             return '\n'.join(str(err) for err in self.info_by_row.get(index.row(), [])
     #                              if err.has_connection(u'cols', index.column())s)
-    #         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
+    #         if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
     #             max_level = -1
     #             c = index.column()
     #             for err in self.info_by_row.get(index.row(), []):
     #                 if err.has_connection(u'cols', c, c == 0):
     #                     if err.level > max_level: max_level = err.level
     #             return info.infoLevelIcon(max_level)
-            if role == QtCore.Qt.BackgroundRole and index.column() >= 2:
+            if role == Qt.BackgroundRole and index.column() >= 2:
                 return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
 
         def set(self, col, row, value):
@@ -253,16 +264,16 @@ class MaterialsModel(TableModel):
                 self.properties[row] = (n, value)
 
         def flags(self, index):
-            flags = super(MaterialsModel.Material, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+            flags = super(MaterialsModel.Material, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
-            if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
-            #flags |= QtCore.Qt.ItemIsDragEnabled
-            #flags |= QtCore.Qt.ItemIsDropEnabled
+            if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= Qt.ItemIsEditable
+            #flags |= Qt.ItemIsDragEnabled
+            #flags |= Qt.ItemIsDropEnabled
 
             return flags
 
         def headerData(self, col, orientation, role):
-            if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            if orientation == Qt.Horizontal and role == Qt.DisplayRole:
                 try:
                     return ('Name', 'Value', 'Unit', 'Help')[col]
                 except IndexError:
@@ -293,14 +304,13 @@ class MaterialsModel(TableModel):
         def undo_stack(self):
             return self.materials_model.undo_stack
 
-
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_xml_element(self, element, undoable=True):
         new_entries = []
-        with OrderedTagReader(element) as material_reader:
-            for mat in material_reader.iter('material'):
+        for mat in element:
+            if mat.tag == 'material':
                 with AttributeReader(mat) as mat_attrib:
                     properties = []
                     for prop in mat:
@@ -312,6 +322,10 @@ class MaterialsModel(TableModel):
                     new_entries.append(
                         MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties)
                     )
+            elif mat.tag == 'library':
+                new_entries.append(
+                    MaterialsModel.Library(self, mat.attrib.get('name', ''))
+                )
         self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
@@ -322,9 +336,27 @@ class MaterialsModel(TableModel):
             e.add_to_xml(res)
         return res
 
+    def data(self, index, role=Qt.DisplayRole):
+        if isinstance(self.entries[index.row()], MaterialsModel.Library):
+            if index.column() == 1 and role == Qt.BackgroundRole:
+                return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+            elif index.column() == 0 and role == Qt.DecorationRole:
+                return QtGui.QIcon.fromTheme('emblem-system')
+            elif role == Qt.ToolTipRole:
+                return "Materials Library"
+        return super(MaterialsModel, self).data(index, role)
+
+    def flags(self, index):
+        flags = super(MaterialsModel, self).flags(index)
+        if index.column() == 1 and isinstance(self.entries[index.row()], MaterialsModel.Library):
+            flags &= ~Qt.ItemIsEditable
+        return flags
+
     def get(self, col, row):
         if col == 0: return self.entries[row].name
-        if col == 1: return self.entries[row].base
+        if col == 1:
+            if isinstance(self.entries[row], MaterialsModel.Library): return ''
+            else: return self.entries[row].base
         if col == 2: return self.entries[row].comment
         raise IndexError(u'column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
@@ -343,7 +375,7 @@ class MaterialsModel(TableModel):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Base'
             if col == 2: return 'Comment'
@@ -354,22 +386,23 @@ class MaterialsModel(TableModel):
 
         names = OrderedDict()
         for i, d in enumerate(self.entries):
-            if not d.name:
-                res.append(Info(u'Material name is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
-            else:
-                names.setdefault(d.name, []).append(i)
-            if not d.base:
-                res.append(Info(u'Material base is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
-            elif plask and d.base not in (e.name for e in self.entries[:i]) and '{' not in d.base:
-                try:
-                    mat = str(d.base)
-                    if ':'  in mat and '=' not in mat:
-                        mat += '=0'
-                    plask.material.db.get(mat)
-                except (ValueError, RuntimeError) as err:
-                    res.append(
-                        Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"
-                             .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))
+            if not isinstance(d, MaterialsModel.Library):
+                if not d.name:
+                    res.append(Info(u'Material name is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
+                else:
+                    names.setdefault(d.name, []).append(i)
+                if not d.base:
+                    res.append(Info(u'Material base is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
+                elif plask and d.base not in (e.name for e in self.entries[:i]) and '{' not in d.base:
+                    try:
+                        mat = str(d.base)
+                        if ':'  in mat and '=' not in mat:
+                            mat += '=0'
+                        plask.material.db.get(mat)
+                    except (ValueError, RuntimeError) as err:
+                        res.append(
+                            Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"
+                                 .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))
 
         for name, rows in names.items():
             if len(rows) > 1:

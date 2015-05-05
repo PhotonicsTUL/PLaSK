@@ -129,7 +129,7 @@ class GeometryController(Controller):
     def plot_element(self, tree_element, set_limits):
         manager = plask.Manager(allow_unknown=True)
         try:
-            manager.load(self.document.get_content(sections='geometry'))
+            manager.load(self.document.get_content(sections=('defines', 'geometry')))
             plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
             if tree_element != self.plotted_tree_element:
                 self.geometry_view.toolbar._views.clear()

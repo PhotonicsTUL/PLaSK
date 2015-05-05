@@ -9,7 +9,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 from ..qt import QtCore, QtGui
+from ..qt.QtCore import Qt
 
 from . import SectionModel
 from . import info
@@ -42,7 +44,6 @@ class TableModelEditMethods(object):
             del self.table.entries[self.index]
             self.table.fire_changed()
             self.table.endRemoveRows()
-
 
     def insert(self, index=None, value=None):
         if self.is_read_only(): return
@@ -129,7 +130,7 @@ class TableModelEditMethods(object):
             self.table.set_and_fire(self.col, self.row, self.old_value)
 
 
-    def setData(self, index, value, role=QtCore.Qt.EditRole):
+    def setData(self, index, value, role=Qt.EditRole):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
@@ -200,13 +201,13 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
     def get_raw(self, col, row):
         return self.get(col, row)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return self.get(index.column(), index.row())
-        if role == QtCore.Qt.ToolTipRole:
+        if role == Qt.ToolTipRole:
             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
-        if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
+        if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
             max_level = -1
             c = index.column()
             for err in self.info_by_row.get(index.row(), []):
@@ -219,10 +220,10 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
             #if max_level == info.Info.INFO: return QtGui.QColor(220, 220, 255)
 
     def flags(self, index):
-        flags = super(TableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+        flags = super(TableModel, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
-        if not self.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
-        #flags |= QtCore.Qt.ItemIsDragEnabled
-        #flags |= QtCore.Qt.ItemIsDropEnabled
+        if not self.is_read_only(): flags |= Qt.ItemIsEditable
+        #flags |= Qt.ItemIsDragEnabled
+        #flags |= Qt.ItemIsDropEnabled
 
         return flags

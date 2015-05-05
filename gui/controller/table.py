@@ -56,7 +56,7 @@ class TableActions(object):
             #self.table.selectRow(index+1)
 
     @staticmethod
-    def _make_action(icon, text, tip, parent, to_call, short_cut = None):
+    def make_action(icon, text, tip, parent, to_call, short_cut = None):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), text, parent)
         action.setStatusTip(tip)
         if short_cut is not None:
@@ -67,22 +67,22 @@ class TableActions(object):
 
     def get(self, parent):
 
-        self.add_action = TableActions._make_action('list-add', '&Add',
+        self.add_action = TableActions.make_action('list-add', '&Add',
                                                     'Add new entry to the list', parent,
                                                     self.add_entry,
                                                     QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
 
-        self.remove_action = TableActions._make_action('list-remove', '&Remove',
+        self.remove_action = TableActions.make_action('list-remove', '&Remove',
                                                        'Remove selected entry from the list',
                                                        parent, self.remove_entry,
                                                        QtCore.Qt.SHIFT + QtCore.Qt.Key_Delete)
 
-        self.move_up_action = TableActions._make_action('go-up', 'Move &up',
+        self.move_up_action = TableActions.make_action('go-up', 'Move &up',
                                                         'Change order of entries: move current entry up',
                                                         parent, self.move_up,
                                                         QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
 
-        self.move_down_action = TableActions._make_action('go-down', 'Move &down',
+        self.move_down_action = TableActions.make_action('go-down', 'Move &down',
                                                           'Change order of entries: move current entry down',
                                                           parent, self.move_down,
                                                           QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
