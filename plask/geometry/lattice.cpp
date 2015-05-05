@@ -213,13 +213,15 @@ typedef std::pair<IntPoint, IntPoint> IntSegment;
 struct YEnds {
     // map: y -> 2*x, each (x, y) is point where shape begins or ends
     // odd 2*x are for each points between integer coordinates
-    std::map<int, std::set<int>> ends;
+    std::map<int, std::set<int>> coords;
 
     void add_d(int dbl_x, int y) {
-        std::set<int>& dst = ends[y];
+        std::set<int>& dst = coords[y];
         auto ins_ans = dst.insert(dbl_x);
-        if (!ins_ans.second)    //element was already included
+        if (!ins_ans.second) {    //element was already included
             dst.erase(ins_ans.first);   //we remove it
+            if (dst.empty()) coords.erase(y);
+        }
     }
 
     //void add(int x, int y) { add_d(2*x, y); }
@@ -227,9 +229,11 @@ struct YEnds {
 };
 
 
-// algorithm scetch:
-// segments - in any order, without intersections (boost geometry can produce this)
-// result: y -> set of x map of all (x, y) points inside the poligon
+/**
+ * Find all points lied on sides and inside of the poligon described by segments.
+ * @param segments in any order, without intersections (boost geometry can produce this)
+ * @return coordinates of all (x, y) points inside the poligon in the map: y -> set of x
+ */
 std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& segments) {
     std::map<int, std::set<int>> result;
     YEnds ends;
@@ -255,22 +259,33 @@ std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& se
             for (int y = low_y.y; y < hi_y.y; ++y) {
                 // x = l/m + low_y.x
                 int l = dx * (y - low_y.y);
-                int quot = l / dy;
-                int x = quot + low_y.x;
+                int x = l / dy + low_y.x;
                 int rem = l % dy;
                 if (rem == 0) {        //x, y is exactly on side
                     result[y].insert(x);    //so we imedietly add it
                     ends.add_d(2*x, y);
                 } else {
-                    //x = l / dy + lx
-
-                    //l = (y/dy)*dy + rem
-
+                    // here: real x = x + rem / dy and dy>0
+                    ends.add_d(rem > 0 ? 2*x+1 : 2*x-1, y);
                 }
             }
             ends.add(hi_y); //add point with higher y to ends
         }
-
+    }
+    for (std::pair<const int, std::set<int>>& line: ends.coords) {
+        assert(line.second.size() % 2 == 0);
+        std::set<int>& dst = result[line.first];
+        for (std::set<int>::iterator dblx_it = line.second.begin(); dblx_it != line.second.end(); ++dblx_it) {
+            // we can exlude ends of the segments as eventualy already included
+            int beg = (*dblx_it+1) / 2;
+            ++dblx_it;  // this is ok because of line.second has even length
+            int end = (*dblx_it+1) / 2;
+            // add all points from range [beg, end)
+            while (beg != end) {
+                dst.insert(beg);
+                ++beg;
+            }
+        }
     }
     return result;
 }
