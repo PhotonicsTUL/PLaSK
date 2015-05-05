@@ -24,6 +24,7 @@
         Root finding algorithm.
         <choice>muller</choice>
         <choice>broyden</choice>
+        <choice>brent</choice>
       </attr>
       <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
@@ -41,6 +42,7 @@
         Root finding algorithm.
         <choice>muller</choice>
         <choice>broyden</choice>
+        <choice>brent</choice>
       </attr>
       <attr name="tolx" label="Tolerance on effective index" type="float">Maximum change of the effective index which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
@@ -94,6 +96,7 @@
         Root finding algorithm.
         <choice>muller</choice>
         <choice>broyden</choice>
+        <choice>brent</choice>
       </attr>
       <attr name="tolx" label="Tolerance on effective frequency" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
@@ -111,6 +114,7 @@
         Root finding algorithm.
         <choice>muller</choice>
         <choice>broyden</choice>
+        <choice>brent</choice>
       </attr>
       <attr name="tolx" label="Tolerance on effective frequency" type="float">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
       <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>

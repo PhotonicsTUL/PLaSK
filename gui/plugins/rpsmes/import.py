@@ -11,6 +11,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from __future__ import print_function
+
+import sys
+import os
+from collections import OrderedDict
+
 try:
     import gui
     from gui.qt import QtGui, QtCore
@@ -18,9 +24,6 @@ except ImportError:
     qt = False
 else:
     qt = True
-
-import sys
-import os
 
 
 class UniqueId(object):
@@ -165,7 +168,6 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
     # materials
     materials = list(materials.items())
-    materials.sort(key=lambda t: t[0])
     if materials:
         out('<materials>')
         for mn, mat in materials:
@@ -371,7 +373,7 @@ def read_dan(fname):
     axes = ['xy', 'rz'][sym]
 
     regions = []
-    materials = {}
+    materials = OrderedDict()
     heats = {}
 
     # Read each region
@@ -412,18 +414,16 @@ def read_dan(fname):
         kappa = [float(line[0]), float(line[1])]
         kappa_t = line[2].lower()
 
-        if mat == 'GaN':
+        if mat in ('GaN', 'AlN', 'InN'):
             h0 = scale * kappa[0]
             h1 = scale * kappa[1]
             h = r.y1 - r.y0
             if abs(h-h1) > 1e-3 or abs(h-h0) > 1e-3:
                 kappa_t = 'x'
-                kappa[0] = 'self.base.thermk(T, {})[1]'.format(h0)
+                if abs(h-h0) <= 1e-3: h0 = 'h'
+                if abs(h-h1) <= 1e-3: h1 = 'h'
+                kappa[0] = 'self.base.thermk(T, {})[0]'.format(h0)
                 kappa[1] = 'self.base.thermk(T, {})[1]'.format(h1)
-        elif mat == 'InGaN' and kappa_t in ('n', 'p'):
-            kappa_t = 'x'
-            kappa[0] = '{} * (T/300.)**(-1.4)'.format(1./(kappa[0]/120.+(1-kappa[0])/230.+kappa[0]*(1-kappa[0])*1.5))
-            kappa[1] = '{} * (T/300.)**(-1.4)'.format(1./(kappa[1]/120.+(1-kappa[1])/230.+kappa[1]*(1-kappa[1])*1.5))
 
         # create custom material if necessary
         if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
@@ -599,18 +599,21 @@ if qt:
 
 
 if __name__ == '__main__':
-    iname = sys.argv[1]
-    dest_dir = os.path.dirname(iname)
-    read = read_dan(iname)
-    obase = os.path.join(dest_dir,
-                         os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
-
-    oname = obase + '.xpl'
-    n = 1
-    while os.path.exists(oname):
-        oname = obase + '-{}.xpl'.format(n)
-        n += 1
-
-    write_xpl(oname, *read[1:])
-
-    print("Wrote '{}'".format(oname))
+    for iname in sys.argv[1:]:
+        try:
+            dest_dir = os.path.dirname(iname)
+            read = read_dan(iname)
+            obase = os.path.join(dest_dir,
+                                 os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
+            oname = obase + '.xpl'
+            n = 1
+            while os.path.exists(oname):
+                oname = obase + '-{}.xpl'.format(n)
+                n += 1
+            write_xpl(oname, *read[1:])
+        except Exception:
+            print("In file:", iname, file=sys.stderr)
+            import traceback
+            traceback.print_exc()
+        else:
+            print("Wrote '{}'".format(oname))

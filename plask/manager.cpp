@@ -145,6 +145,7 @@ void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
     } catch (Exception& err) {
         throw XMLException(reader, err.what());
     }
+    reader.requireTagEnd();
 }
 
 
