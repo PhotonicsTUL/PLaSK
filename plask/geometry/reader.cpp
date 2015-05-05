@@ -12,7 +12,7 @@ constexpr const char* const GeometryReader::XML_MATERIAL_BOTTOM_ATTR;
 
 shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_full_name) const {
     try {
-        return materialSource->get(material_full_name);
+        return materialsDB->get(material_full_name);
     } catch (NoSuchMaterial&) {
         if (manager.allowUnknownMaterial) return make_shared<DummyMaterial>(material_full_name);
         else throw;
@@ -52,12 +52,7 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, int
 
 GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
     : materialsAreRequired(!manager.allowUnknownMaterial), expectedSuffix(0), manager(manager), source(source),
-      materialSource(new MaterialsSourceDB(materialsDB))
-{
-}
-
-GeometryReader::GeometryReader(Manager &manager, XMLReader &source, shared_ptr<const MaterialsSource> materialsSource)
-    : materialsAreRequired(!manager.allowUnknownMaterial), expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
+      materialsDB(&materialsDB)
 {
 }
 
@@ -181,7 +176,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         boost::optional<double> l = source.getAttribute<double>("length");
         shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialSource );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
         if (l) {
             cartesian2d->setExtrusion(make_shared<Extrusion>(readExactlyOneChild<GeometryObjectD<2>>(), *l));
         } else {
@@ -199,7 +194,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialSource );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
 
         auto child = readExactlyOneChild<GeometryObject>();
         auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
@@ -214,7 +209,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = make_shared<Geometry3D>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialSource );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
             readExactlyOneChild<GeometryObjectD<3>>());
 

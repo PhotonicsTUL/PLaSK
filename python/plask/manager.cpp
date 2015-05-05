@@ -162,13 +162,13 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     reader.setFilter(PythonXMLFilter(manager));
 
     if (filter == py::object()) {
-        manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename));
+        manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename));
     } else {
         py::list sections = py::list(filter);
         auto filterfun = [sections](const std::string& section) -> bool {
             return py::extract<bool>(sections.contains(section));
         };
-        manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename), filterfun);
+        manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename), filterfun);
     }
 
     manager->validatePositions();
@@ -279,18 +279,9 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
-void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB);
-
-void PythonManager::loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource)
+void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 {
-    //we always use materials DB as source in python, so this cast is safe
-    MaterialsDB& materialsDB = *const_cast<MaterialsDB*>(materialsSource->getDB());
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "material")
-            PythonEvalMaterialLoadFromXML(reader, materialsDB);
-        else
-            throw XMLUnexpectedElementException(reader, "<material>");
-    }
+    Manager::loadMaterials(reader, materialsDB);
     py::import("plask.material").attr("update_factories")();
 }
 

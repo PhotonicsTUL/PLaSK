@@ -19,8 +19,8 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     }
 }
 
-/*const MaterialsDB *MaterialsDB::getFromSource(const MaterialsSource &materialsSource) {
-    const MaterialsDB::Source* src = materialsSource.target<const MaterialsDB::Source>();
+/*const MaterialsDB *MaterialsDB::getFromSource(const MaterialsDB &materialsDB) {
+    const MaterialsDB::Source* src = materialsDB.target<const MaterialsDB::Source>();
     return src ? &src->materialsDB : nullptr;
 }*/
 

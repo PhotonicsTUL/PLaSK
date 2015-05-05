@@ -22,17 +22,19 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 
     virtual ~PythonManager() {}
 
-    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) override;
+    shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) override;
 
-    virtual void loadDefines(XMLReader& reader) override;
+    void loadDefines(XMLReader& reader) override;
 
-    virtual void loadConnects(XMLReader& reader) override;
+    void loadConnects(XMLReader& reader) override;
 
-    virtual void loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource) override;
+    void loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) override;
+
+    void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB) override;
 
     static void export_dict(py::object self, py::dict dict);
 
-    virtual void loadScript(XMLReader& reader) override;
+    void loadScript(XMLReader& reader) override;
 
   private:
     void removeSpaces(unsigned xmlline);

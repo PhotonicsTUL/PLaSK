@@ -85,21 +85,21 @@ struct PLASK_API Strategy {
      *
      * Throw excption if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
-     * @param materialsSource source of materials, typically material database, used to get material
+     * @param materialsDB source of materials, typically material database, used to get material
      * @return created strategy
      */
-    static Strategy* fromStr(const std::string& str, const MaterialsSource& materialsSource = MaterialsSourceDB(MaterialsDB::getDefault()));
+    static Strategy* fromStr(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Create new strategy described by string @p str.
      *
      * Throw excption if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
-     * @param materialsSource source of materials, typically material database, used to get material
-     * @return created strategy manged by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsSource))</code>
+     * @param materialsDB source of materials, typically material database, used to get material
+     * @return created strategy manged by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsDB))</code>
      */
-    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsSource& materialsSource = MaterialsSourceDB(MaterialsDB::getDefault())) {
-        return std::unique_ptr<Strategy>(fromStr(str, materialsSource));
+    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault()) {
+        return std::unique_ptr<Strategy>(fromStr(str, materialsDB));
     }
 };
 
@@ -278,7 +278,7 @@ class StrategyPairHolder {
 
     /// If true strategies calling order is: hi, lo
     bool reverseCallingOrder;
-    
+
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
         if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) &&
              strategy_lo.type() != Strategy::MIRROR && strategy_hi.type() != Strategy::MIRROR &&

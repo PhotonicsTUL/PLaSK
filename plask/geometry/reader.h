@@ -130,7 +130,7 @@ class PLASK_API GeometryReader {
     XMLReader& source;
 
     /// Source of materials, typically use material database.
-    shared_ptr<const MaterialsSource> materialSource;
+    const MaterialsDB* materialsDB;
 
     /**
      * Get material from material source (typically material database) connected with this reader.
@@ -142,7 +142,7 @@ class PLASK_API GeometryReader {
     shared_ptr<Material> getMaterial(const std::string& material_full_name) const;
 
     shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
-        return materialSource->getFactory(material1_full_name, material2_full_name);
+        return materialsDB->getFactory(material1_full_name, material2_full_name);
     }
 
     /**
@@ -161,13 +161,6 @@ class PLASK_API GeometryReader {
      * @param materialsDB materials database used to set leafs materials
      */
     GeometryReader(Manager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
-
-    /**
-     * @param manager
-     * @param source xml data source from which object data should be read
-     * @param materialsSource materials source used to set leafs materials
-     */
-    GeometryReader(Manager& manager, XMLReader& source,  shared_ptr<const MaterialsSource> materialsSource);
 
     /**
      * Read geometry object from @p source and add it Manager structures.

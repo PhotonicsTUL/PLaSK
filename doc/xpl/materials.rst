@@ -268,3 +268,8 @@ This section contains specification of custom materials that can be used togethe
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
          ``hole`` — hole type (``'H'`` or ``'L'``).
 
+.. xml:tag:: <library>
+
+   Load binary materials library.
+
+      :attr required name: Name of the library to load. This should be the name of the library file without the extension (``.so`` or ``.dll``). It is resolved relative to the current working directory, however you can specify the absolute path (still without the extension).

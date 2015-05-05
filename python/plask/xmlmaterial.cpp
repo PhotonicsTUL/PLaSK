@@ -5,6 +5,7 @@
 #include <plask/material/db.h>
 
 #include "python_material.h"
+#include "python_manager.h"
 #include "python_ptr.h"
 
 namespace plask { namespace python {
@@ -230,7 +231,7 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return material;
 }
 
-void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
+void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string material_name = reader.requireAttribute("name");
     std::string base_name = reader.requireAttribute("base");
     shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name);

@@ -594,67 +594,6 @@ private:
 
 };
 
-/*
- * Type of material source, can return material with given name.
- */
-//typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
-//TODO ? maybe MaterialsSource should be a class, a base class for MaterialsDB, and maybe it should has interface to append new materials
-
-/**
- * Type of material source, can return material with given name.
- */
-struct PLASK_API MaterialsSource {
-
-    virtual ~MaterialsSource() {}
-
-    virtual const MaterialsDB* getDB() const = 0;
-
-    /**
-     * Get material object.
-     * @param full_name material name, with encoded parameters in format composition[:dopant], see get(const std::string&, const std::string&)
-     * @return material with @p full_name
-     * @throw NoSuchMaterial if material with given name not exists
-     * @throw MaterialParseException if can't parse @p full_name
-     */
-    virtual shared_ptr<Material> get(const std::string& full_name) const = 0;
-
-    /**
-     * Construct mixed material factory.
-     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
-     *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
-     * @return constructed factory created using operator new, should by delete by caller
-     */
-    virtual shared_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const = 0;
-};
-
-struct PLASK_API MaterialsSourceDB: public MaterialsSource {
-
-    const MaterialsDB& db;
-
-    MaterialsSourceDB(const MaterialsDB& db): db(db) {}
-
-    virtual const MaterialsDB* getDB() const { return &db; }
-
-    /**
-     * Get material object.
-     * @param full_name material name, with encoded parameters in format composition[:dopant], see get(const std::string&, const std::string&)
-     * @return material with @p full_name
-     * @throw NoSuchMaterial if material with given name not exists
-     * @throw MaterialParseException if can't parse @p full_name
-     */
-    shared_ptr<Material> get(const std::string& full_name) const { return db.get(full_name); }
-
-    /**
-     * Construct mixed material factory.
-     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
-     *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
-     * @return constructed factory created using operator new, should by delete by caller
-     */
-    virtual shared_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
-        return db.getFactory(material1_fullname, material2_fullname);
-    }
-};
-
 }   // namespace plask
 
 #endif // PLASK__MATERIAL_DB_H
