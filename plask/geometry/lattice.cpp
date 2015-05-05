@@ -1,6 +1,14 @@
 #include "lattice.h"
 #include "reader.h"
 
+
+//used by lattice
+#include <map>
+#include <set>
+#include <utility>
+
+
+
 namespace plask {
 
 template <int dim>
@@ -21,7 +29,7 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getBoundingBox() cons
         }
     }
     return bbox;
-};
+}
 
 template <int dim>
 typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getRealBoundingBox() const {
@@ -42,7 +50,7 @@ void ArrangeContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicat
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i)
             dest.push_back(dest[i] + translation * r);
-};
+}
 
 template <int dim>
 void ArrangeContainer<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate,
@@ -58,7 +66,7 @@ void ArrangeContainer<dim>::getObjectsToVec(const GeometryObject::Predicate& pre
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i)
             dest.push_back(dest[i]);
-};
+}
 
 template <int dim>
 void ArrangeContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate,
@@ -74,7 +82,7 @@ void ArrangeContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& p
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i)
             dest.push_back(dest[i] + translation * r);
-};
+}
 
 template <int dim>
 bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const {
@@ -83,7 +91,7 @@ bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const
     for (int i = lohi.second; i >= lohi.first; --i)
         if (_child->contains(p - i * translation)) return true;
     return false;
-};
+}
 
 template <int dim>
 shared_ptr<Material> ArrangeContainer<dim>::getMaterial(const typename ArrangeContainer<dim>::DVec& p) const {
@@ -92,7 +100,7 @@ shared_ptr<Material> ArrangeContainer<dim>::getMaterial(const typename ArrangeCo
     for (int i = lohi.second; i >= lohi.first; --i)
         if (auto material = _child->getMaterial(p - i * translation)) return material;
     return shared_ptr<Material>();
-};
+}
 
 template <int dim>
 std::size_t ArrangeContainer<dim>::getChildrenCount() const {
@@ -197,5 +205,74 @@ static GeometryReader::RegisterObjectReader arrange3d_reader(ArrangeContainer<3>
 
 template struct PLASK_API ArrangeContainer<2>;
 template struct PLASK_API ArrangeContainer<3>;
+
+
+struct IntPoint { int x, y; };
+typedef std::pair<IntPoint, IntPoint> IntSegment;
+
+struct YEnds {
+    // map: y -> 2*x, each (x, y) is point where shape begins or ends
+    // odd 2*x are for each points between integer coordinates
+    std::map<int, std::set<int>> ends;
+
+    void add_d(int dbl_x, int y) {
+        std::set<int>& dst = ends[y];
+        auto ins_ans = dst.insert(dbl_x);
+        if (!ins_ans.second)    //element was already included
+            dst.erase(ins_ans.first);   //we remove it
+    }
+
+    //void add(int x, int y) { add_d(2*x, y); }
+    void add(IntPoint p) { add_d(2*p.x, p.y); }
+};
+
+
+// algorithm scetch:
+// segments - in any order, without intersections (boost geometry can produce this)
+// result: y -> set of x map of all (x, y) points inside the poligon
+std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& segments) {
+    std::map<int, std::set<int>> result;
+    YEnds ends;
+    for (const IntSegment& segment: segments) {
+        if (segment.first.y == segment.second.y) {
+            std::set<int>& dst = result[segment.first.y];
+            for (int x = segment.first.x; x <= segment.second.x; ++x)
+                dst.insert(x);  // we imedietly add all points which lie on side
+        } else {
+            result[segment.first.y].insert(segment.first.x);    // we imedietly add all vertexes
+            result[segment.second.y].insert(segment.second.x);  // we imedietly add all vertexes
+
+            IntPoint low_y, hi_y;
+            if (segment.first.y > segment.second.y) {
+                low_y = segment.second;
+                hi_y = segment.first;
+            } else {
+                low_y = segment.first;
+                hi_y = segment.second;
+            }
+            int dx = hi_y.x - low_y.x;
+            int dy = hi_y.y - low_y.y;  //dy > 0
+            for (int y = low_y.y; y < hi_y.y; ++y) {
+                // x = l/m + low_y.x
+                int l = dx * (y - low_y.y);
+                int quot = l / dy;
+                int x = quot + low_y.x;
+                int rem = l % dy;
+                if (rem == 0) {        //x, y is exactly on side
+                    result[y].insert(x);    //so we imedietly add it
+                    ends.add_d(2*x, y);
+                } else {
+                    //x = l / dy + lx
+
+                    //l = (y/dy)*dy + rem
+
+                }
+            }
+            ends.add(hi_y); //add point with higher y to ends
+        }
+
+    }
+    return result;
+}
 
 }
