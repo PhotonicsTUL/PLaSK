@@ -279,9 +279,28 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
+void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materialsDB) {
+    std::string name = reader.requireAttribute("name");
+    try {
+        if (name != "") py::import(py::str(name));
+    } catch (Exception& err) {
+        throw XMLException(reader, err.what());
+    }
+    reader.requireTagEnd();
+}
+
 void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 {
-    Manager::loadMaterials(reader, materialsDB);
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "material")
+            loadMaterial(reader, materialsDB);
+        else if (reader.getNodeName() == "library")
+            loadMaterialLib(reader, materialsDB);
+        else if (reader.getNodeName() == "module")
+            loadMaterialModule(reader, materialsDB);
+        else
+            throw XMLUnexpectedElementException(reader, "<material>");
+    }
     py::import("plask.material").attr("update_factories")();
 }
 

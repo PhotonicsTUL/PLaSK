@@ -56,11 +56,11 @@ class TableActions(object):
             #self.table.selectRow(index+1)
 
     @staticmethod
-    def make_action(icon, text, tip, parent, to_call, short_cut = None):
+    def make_action(icon, text, tip, parent, to_call, shortcut=None):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), text, parent)
         action.setStatusTip(tip)
-        if short_cut is not None:
-            action.setShortcut(short_cut)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
             action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
         action.triggered.connect(to_call)
         return action

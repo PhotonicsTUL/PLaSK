@@ -194,15 +194,20 @@ def material_unit(property_name):
 
 class MaterialsModel(TableModel):
 
-    class Library(object):
+    class External(object):
 
-        def __init__(self, materials_model, name='', comment=None):
+        def __init__(self, materials_model, what, name='', comment=None):
             self.materials_model = materials_model
+            self.what = what
             self.name = name
             self.comment = comment
 
         def add_to_xml(self, material_section_element):
-            mat = ElementTree.SubElement(material_section_element, "library", {"name": self.name})
+            ElementTree.SubElement(material_section_element, self.what, {"name": self.name})
+
+        @property
+        def base(self):
+            return {'library': 'Binary Library', 'module': 'Python Module'}[self.what]
 
     class Material(TableModelEditMethods, QtCore.QAbstractTableModel): #(InfoSource)
 
@@ -319,13 +324,9 @@ class MaterialsModel(TableModel):
                         properties.append((prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
-                    new_entries.append(
-                        MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties)
-                    )
-            elif mat.tag == 'library':
-                new_entries.append(
-                    MaterialsModel.Library(self, mat.attrib.get('name', ''))
-                )
+                    new_entries.append(MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties))
+            elif mat.tag in ('library', 'module'):
+                new_entries.append(MaterialsModel.External(self, mat.tag, mat.attrib.get('name', '')))
         self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
@@ -337,26 +338,26 @@ class MaterialsModel(TableModel):
         return res
 
     def data(self, index, role=Qt.DisplayRole):
-        if isinstance(self.entries[index.row()], MaterialsModel.Library):
-            if index.column() == 1 and role == Qt.BackgroundRole:
-                return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+        if isinstance(self.entries[index.row()], MaterialsModel.External):
+            if index.column() == 1:
+                if role == Qt.FontRole:
+                    font = QtGui.QFont()
+                    font.setItalic(True)
+                    return font
             elif index.column() == 0 and role == Qt.DecorationRole:
-                return QtGui.QIcon.fromTheme('emblem-system')
-            elif role == Qt.ToolTipRole:
-                return "Materials Library"
+                return QtGui.QIcon.fromTheme(
+                    {'library': 'emblem-system', 'module': 'application-x-executable'}[self.entries[index.row()].what])
         return super(MaterialsModel, self).data(index, role)
 
     def flags(self, index):
         flags = super(MaterialsModel, self).flags(index)
-        if index.column() == 1 and isinstance(self.entries[index.row()], MaterialsModel.Library):
-            flags &= ~Qt.ItemIsEditable
+        if index.column() == 1 and isinstance(self.entries[index.row()], MaterialsModel.External):
+            flags &= ~Qt.ItemIsEditable & ~Qt.ItemIsEnabled
         return flags
 
     def get(self, col, row):
         if col == 0: return self.entries[row].name
-        if col == 1:
-            if isinstance(self.entries[row], MaterialsModel.Library): return ''
-            else: return self.entries[row].base
+        if col == 1: return self.entries[row].base
         if col == 2: return self.entries[row].comment
         raise IndexError(u'column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
@@ -386,7 +387,7 @@ class MaterialsModel(TableModel):
 
         names = OrderedDict()
         for i, d in enumerate(self.entries):
-            if not isinstance(d, MaterialsModel.Library):
+            if isinstance(d, MaterialsModel.Material):
                 if not d.name:
                     res.append(Info(u'Material name is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
                 else:

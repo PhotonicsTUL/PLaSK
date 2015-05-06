@@ -249,11 +249,20 @@ class MaterialsController(Controller):
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
-        library_action = TableActions.make_action('applications-system', 'Add &Library',
+        library_action = TableActions.make_action('emblem-system', 'Add &Library',
                                                   'Add new binary library to the list', self.materials_table,
-                                                  self.add_library,
-                                                  QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Plus)
-        materials_toolbar.addAction(library_action)
+                                                  lambda: self.add_external('library'))
+        module_action = TableActions.make_action('application-x-executable', 'Add &Module',
+                                                 'Add new python module to the list', self.materials_table,
+                                                 lambda: self.add_external('module'))
+        tool_button = QtGui.QToolButton()
+        tool_button.setIcon(QtGui.QIcon.fromTheme('applications-system'))
+        tool_menu = QtGui.QMenu(self.materials_table)
+        tool_menu.addAction(library_action)
+        tool_menu.addAction(module_action)
+        tool_button.setMenu(tool_menu)
+        tool_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        materials_toolbar.addWidget(tool_button)
         self.splitter.addWidget(materials_table)
         # materials_toolbar.addSeparator()
         # materials_toolbar.addAction(self.document.window.material_plot_action)
@@ -312,14 +321,13 @@ class MaterialsController(Controller):
         self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
 
-    def add_library(self):
+    def add_external(self, what):
         index = self.materials_table.selectionModel().currentIndex()
         if index.isValid():
-            row = self.model.insert(index.row()+1, value=MaterialsModel.Library(self.model))
+            row = self.model.insert(index.row()+1, value=MaterialsModel.External(self.model, what))
         else:
-            row = self.model.insert(value=MaterialsModel.Library(self.model))
+            row = self.model.insert(value=MaterialsModel.External(self.model, what))
         if row is not None: self.materials_table.selectRow(row)
-
 
     def material_selected(self, new_selection, old_selection):
         self.propedit.hide()
