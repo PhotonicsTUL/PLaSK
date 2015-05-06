@@ -166,7 +166,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
                 if (allow_complex_without_composition)
                     return c->second;
                 else
-                    throw MaterialParseException(format("Material composition is required for %1%", db_Key));
+                    throw MaterialParseException(format("Material composition required for %1%", db_Key));
             } else
                 throw NoSuchMaterial(db_Key);
         }

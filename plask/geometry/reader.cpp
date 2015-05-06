@@ -14,7 +14,10 @@ shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_ful
     try {
         return materialsDB->get(material_full_name);
     } catch (NoSuchMaterial&) {
-        if (manager.allowUnknownMaterial) return make_shared<DummyMaterial>(material_full_name);
+        if (manager.draft) return make_shared<DummyMaterial>(material_full_name);
+        else throw;
+    } catch (MaterialParseException&) {
+        if (manager.draft) return make_shared<DummyMaterial>(material_full_name);
         else throw;
     }
 }
@@ -51,7 +54,7 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, int
 }
 
 GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
-    : materialsAreRequired(!manager.allowUnknownMaterial), expectedSuffix(0), manager(manager), source(source),
+    : materialsAreRequired(!manager.draft), expectedSuffix(0), manager(manager), source(source),
       materialsDB(&materialsDB)
 {
 }

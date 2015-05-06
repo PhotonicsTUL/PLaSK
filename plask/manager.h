@@ -175,7 +175,7 @@ private:
     const AxisNames* axisNames;
 
     /// Flag indicating if unknown materials are allowed
-    bool allowUnknownMaterial;
+    bool draft;
 
     /**
      * Get current axis name.
@@ -238,7 +238,7 @@ private:
         ~SetAxisNames() { manager.axisNames = old; }
     };
 
-    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")), allowUnknownMaterial(false) {}
+    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")), draft(false) {}
 
     /**
      * Get path hints with given name.

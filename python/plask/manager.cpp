@@ -531,14 +531,15 @@ void register_manager() {
         "create a default manager and use it to load the data from XPL into ther global\n"
         "namespace.\n\n"
 
-        "Manager(materials=None, allow_unknown=False)\n\n"
+        "Manager(materials=None, draft=False)\n\n"
 
         "Args:\n"
         "    materials: Material database to use.\n"
         "               If *None*, the default material database is used.\n"
-        "    allow_unknown (bool): Flag indicating if unknown materials are allowed.\n",
+        "    draft (bool): If *True* then partially incomplete XML is accepted\n"
+        "                  (e.g. non-existent materials are allowed).\n",
 
-        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("allow_unknown")=false))); manager
+        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("draft")=false))); manager
         .def("load", &PythonManager_load,
              "Load data from source.\n\n"
              "Args:\n"
@@ -576,7 +577,7 @@ void register_manager() {
              "* mesh generators (:attr:`~plask.Manager.meshgen`): ``MSG``,\n\n"
              "* custom defines (:attr:`~plask.Manager.define`): ``DEF``.\n",
              py::arg("target"))
-        .def_readwrite("allow_unknown_material", &Manager::allowUnknownMaterial,
+        .def_readwrite("draft_material", &Manager::draft,
                        "Flag indicating if unknown materials are allowed. If True then dummy material\n"
                        "is created if the proper one cannot be found in the database.\n"
                        "Otherwise an exception is raised.")
