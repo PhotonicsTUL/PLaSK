@@ -2,28 +2,12 @@
 #define PLASK__GEOMETRY_CONTAINER_TRANS_H
 
 #include "container.h"
+#include "spatial_index.h"
 
 #include <boost/thread.hpp>
 #include <atomic>
 
 namespace plask {
-
-/**
- * Base class for cache and nodes of cache.
- *
- * It has some methods similar to this in GeometryObjectContainer API and is used by TranslationContainer.
- */
-template <int DIMS>
-struct CacheNode {
-
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const = 0;
-
-    virtual bool contains(const Vec<DIMS>& p) const = 0;
-
-    virtual GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const = 0;
-
-    virtual ~CacheNode() {}
-};
 
 /**
  * Geometry objects container in which every child has an associated aligner.
