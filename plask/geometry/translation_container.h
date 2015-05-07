@@ -129,7 +129,7 @@ protected:
      * Construct cache if it not exists and return it.
      * @return non-null pointer to cache
      */
-    CacheNode<dim>* ensureHasCache();
+    SpetialIndexNode<dim>* ensureHasCache();
 
     /**
      * Construct cache if it not exists and return it.
@@ -137,7 +137,7 @@ protected:
      * This method is thread-safty (can be call by many threads at once, and only first call will build the cache).
      * @return non-null pointer to cache
      */
-    CacheNode<dim>* ensureHasCache() const;
+    SpetialIndexNode<dim>* ensureHasCache() const;
 
 private:
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, ChildAligner aligner);
@@ -146,7 +146,7 @@ private:
      * Cache which allow to do some geometry operation (like getMaterial) much faster if this container has many children.
      * It is create by first operation which use it (see ensureHasCache method), and destroy on each change of children (see invalidateCache method).
      */
-    std::atomic<CacheNode<dim>*> cache;
+    std::atomic<SpetialIndexNode<dim>*> cache;
 
     /// Mutex used by const version of ensureHasCache.
     boost::mutex cache_mutex;

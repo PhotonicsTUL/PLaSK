@@ -11,7 +11,7 @@ namespace plask {
  * It has some methods similar to this in GeometryObjectContainer API and is used by TranslationContainer.
  */
 template <int DIMS>
-struct CacheNode {
+struct SpetialIndexNode {
 
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const = 0;
 
@@ -19,19 +19,25 @@ struct CacheNode {
 
     virtual GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const = 0;
 
-    virtual ~CacheNode() {}
+    virtual ~SpetialIndexNode() {}
 };
 
 
-
+/**
+ * Build spetial index.
+ *
+ * The index prevent reverse order of children in case of material searching.
+ * @param children vector of geometry object for which index should be build
+ * @return constructed index
+ */
 template <int DIMS>
-CacheNode<DIMS>* buildCache(const std::vector< shared_ptr<Translation<DIMS>> >& children);
+std::unique_ptr<SpetialIndexNode<DIMS>> buildSpetialIndex(const std::vector< shared_ptr<Translation<DIMS>> >& children);
 
-PLASK_API_EXTERN_TEMPLATE_STRUCT(CacheNode<2>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(CacheNode<3>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(SpetialIndexNode<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(SpetialIndexNode<3>)
 
-extern template PLASK_API CacheNode<2>* buildCache(const std::vector< shared_ptr<Translation<2>> >& children);
-extern template PLASK_API CacheNode<3>* buildCache(const std::vector< shared_ptr<Translation<3>> >& children);
+extern template PLASK_API std::unique_ptr<SpetialIndexNode<2>> buildSpetialIndex(const std::vector< shared_ptr<Translation<2>> >& children);
+extern template PLASK_API std::unique_ptr<SpetialIndexNode<3>> buildSpetialIndex(const std::vector< shared_ptr<Translation<3>> >& children);
 
 }   // plask
 
