@@ -449,12 +449,12 @@ class GNode(object):
 
     def _require(self, res, property, display_name=None):
         if display_name is None: display_name = '"{}"'.format(property)
-        self._append_error(res, 'Specifying {} is required in <{}>.'.format(display_name, self.tag_name(False)),
+        self._append_error(res, 'Specifying {} is required in <{}>'.format(display_name, self.tag_name(False)),
                            property=property)
 
     def _require_child(self, res):
         if not self.children:
-            self._append_error(res, '<{}> requires a child.'.format(self.tag_name(False)))
+            self._append_error(res, '<{}> requires an item'.format(self.tag_name(False)))
 
     def create_info(self, res, names):
         '''

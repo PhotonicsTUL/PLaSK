@@ -50,12 +50,14 @@ class Info(object):
         if hasattr(self, attr_name): return value in getattr(self, attr_name)   # + 's'
         return ans_if_non_attr
 
+
 def infoLevelIcon(level):
     if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
     if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
     if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
     if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
     return None
+
 
 class InfoListModel(QtCore.QAbstractListModel):
     """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""

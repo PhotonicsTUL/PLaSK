@@ -44,7 +44,7 @@ else:
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .model.info import InfoListModel, Info
+from .model.info import InfoListModel, Info, infoLevelIcon
 from .launch import launch_plask
 
 from .utils.config import CONFIG
@@ -175,8 +175,6 @@ class MainWindow(QtGui.QMainWindow):
         if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
             self.document = XPLDocument(self)
             self.setup_model()
-
-        #self.statusBar()
 
         new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
                                    '&New', self)

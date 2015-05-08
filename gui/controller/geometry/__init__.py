@@ -249,6 +249,8 @@ class GeometryController(Controller):
         self._last_index = None
         self._current_controller = None
 
+        self._lims = None
+
         tree_with_buttons = QtGui.QGroupBox()
         vbox = QtGui.QVBoxLayout()
         tree_with_buttons.setLayout(vbox)
@@ -295,6 +297,14 @@ class GeometryController(Controller):
         self.main_splitter.addWidget(self.vertical_splitter)
         self.main_splitter.addWidget(geometry_widget)
 
+    def show_selection(self):
+        to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
+            self.manager)
+        bboxes = self.plotted_object.get_object_bboxes(to_select)
+        self.geometry_view.clean_selectors()
+        for b in bboxes: self.geometry_view.select_bbox(b)
+        self.geometry_view.canvas.draw()
+
     def set_current_index(self, new_index):
         """
             Try to change current object.
@@ -331,12 +341,7 @@ class GeometryController(Controller):
             if current_root != plotted_root:
                 self.plot(current_root)
             if self.plotted_object is not None:
-                to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
-                                                                          self.manager)
-                bboxes = self.plotted_object.get_object_bboxes(to_select)
-                self.geometry_view.clean_selectors()
-                for b in bboxes: self.geometry_view.select_bbox(b)
-                self.geometry_view.canvas.draw()
+                self.show_selection()
                 # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
@@ -368,19 +373,34 @@ class GeometryController(Controller):
 
     def on_edit_enter(self):
         self.tree.selectionModel().clear()   # model could have been completely changed
-        new_index = self.model.index(0, 0)
-        self.tree.selectionModel().select(new_index,
-                                          QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
-                                          QtGui.QItemSelectionModel.Rows)
-        self.tree.setCurrentIndex(new_index)
+        try:
+            if not self._last_index:
+                raise IndexError(self._last_index)
+            new_index = self._last_index
+            self.tree.selectionModel().select(new_index,
+                                              QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                              QtGui.QItemSelectionModel.Rows)
+            self.tree.setCurrentIndex(new_index)
+            self.plot(self.plotted_tree_element)
+            if self._lims is not None:
+                self.geometry_view.axes.set_xlim(self._lims[0])
+                self.geometry_view.axes.set_ylim(self._lims[1])
+            self.show_selection()
+        except:
+            new_index = self.model.index(0, 0)
+            self.tree.selectionModel().select(new_index,
+                                              QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                              QtGui.QItemSelectionModel.Rows)
+            self.tree.setCurrentIndex(new_index)
+            self.plot()
         self.update_actions()
-        self.plot()
         self.tree.setFocus()
 
     def on_edit_exit(self):
         if self._current_controller is not None:
             self._last_index = self._current_index
             self.tree.selectionModel().clear()
+            self._lims = self.geometry_view.axes.get_xlim(), self.geometry_view.axes.get_ylim()
         return True
 
     def get_widget(self):
