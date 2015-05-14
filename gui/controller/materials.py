@@ -294,11 +294,7 @@ class MaterialsController(Controller):
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        table_last_col_fill(self.properties_table, 4, [80, 180, 50])
-        self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        #self.properties_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.ResizeToContents)
-        self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
-        self.properties_table.horizontalHeader().setResizeMode(3, QtGui.QHeaderView.Stretch)
+        table_last_col_fill(self.properties_table, 4, [80, 320, 50])
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
 
@@ -349,6 +345,8 @@ class MaterialsController(Controller):
         if self.selected_material is not None:
             self.selected_material.dataChanged.connect(self.property_data_changed)
         #self.properties_table.resizeColumnsToContents()
+        self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        self.properties_table.resizeColumnToContents(1)
         self.properties_table.resizeRowsToContents()
 
     def property_selected(self, new_selection, old_selection):

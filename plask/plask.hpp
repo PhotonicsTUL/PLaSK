@@ -65,7 +65,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "vector/tensor3.h"
 
 #include "material/material.h"
-#include "material/special.h"
+#include "material/mixed.h"
 #include "material/db.h"
 #include "material/info.h"
 #include "material/air.h"

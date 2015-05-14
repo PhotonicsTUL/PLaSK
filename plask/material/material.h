@@ -696,6 +696,85 @@ struct PLASK_API Material {
      */
     virtual Tensor3<dcomplex> NR(double wl, double T, double n = 0) const;
 
+    // #330:
+
+    /**
+     * Get electron mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
+     * \param T temperature [K]
+     * \return mobility [cm^2/(V*s)]
+     */
+    virtual Tensor2<double> mobe(double T) const;
+
+    /**
+     * Get hole mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
+     * \param T temperature [K]
+     * \return mobility [cm^2/(V*s)]
+     */
+    virtual Tensor2<double> mobh(double T) const;
+
+    /**
+     * Get monomolecular recombination coefficient A for electrons [1/s].
+     * \param T temperature [K]
+     * \return monomolecular recombination coefficient A [1/s]
+     */
+    virtual double Ae(double T) const;
+
+    /**
+     * Get monomolecular recombination coefficient A for holes [1/s].
+     * \param T temperature [K]
+     * \return monomolecular recombination coefficient A [1/s]
+     */
+    virtual double Ah(double T) const;
+
+    /**
+     * Get Auger recombination coefficient C for electrons [cm^6/s].
+     * \param T temperature [K]
+     * \return Auger recombination coefficient C [cm^6/s]
+     */
+    virtual double Ce(double T) const;
+
+    /**
+     * Get Auger recombination coefficient C for holes [cm^6/s].
+     * \param T temperature [K]
+     * \return Auger recombination coefficient C [cm^6/s]
+     */
+    virtual double Ch(double T) const;
+
+    /**
+     * Get piezoelectric constant e13 [C/m^2]
+     * \param T temperature [K]
+     * \return piezoelectric constant e13 [C/m^2]
+     */
+    virtual double e13(double T) const;
+
+    /**
+     * Get piezoelectric constant e33 [C/m^2]
+     * \param T temperature [K]
+     * \return piezoelectric constant e33 [C/m^2]
+     */
+    virtual double e33(double T) const;
+
+    /**
+     * Get elastic constant c13 [GPa].
+     * \param T temperature [K]
+     * \return elastic constant c13 [GPa]
+     */
+    virtual double c13(double T) const;
+
+    /**
+     * Get elastic constant c33 [GPa].
+     * \param T temperature [K]
+     * \return elastic constant c33 [GPa]
+     */
+    virtual double c33(double T) const;
+
+    /**
+     * Get spontaneous polarization [C/m^2]
+     * \param T temperature [K]
+     * \return spontaneous polarization [C/m^2]
+     */
+    virtual double Psp(double T) const;
+
     /**
      * Check if this material is equal to @a other (checks type and uses isEqual).
      * @param other other material
@@ -818,6 +897,14 @@ struct PLASK_API LiquidCrystal: public Material {
     virtual Kind kind() const override;
 };
 
+/**
+ * Empty material, which can actually be instantiated
+ */
+struct PLASK_API EmptyMaterial : public Material {
+    virtual std::string name() const { return ""; }
+    virtual Material::Kind kind() const { return Material::NONE; }
+    virtual bool isEqual(const Material&) const { return true; } // all empty materials are always equal
+};
 
 } // namespace plask
 

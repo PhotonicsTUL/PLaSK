@@ -9,7 +9,6 @@ This file contains classes for some special materials.
 
 namespace plask {
 
-
 /**
  * Material which consist of several real materials.
  * It calculate averages for all properties.
@@ -166,15 +165,6 @@ private:
         return w_sum;
     }
 
-};
-
-/**
- * Empty material, which can actually be instantiated
- */
-struct PLASK_API EmptyMaterial : public Material {
-    virtual std::string name() const { return ""; }
-    virtual Material::Kind kind() const { return Material::NONE; }
-    virtual bool isEqual(const Material&) const { return true; } // all empty materials are always equal
 };
 
 } // namespace plask

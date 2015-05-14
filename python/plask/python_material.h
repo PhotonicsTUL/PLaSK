@@ -47,6 +47,18 @@ struct MaterialCache {
     boost::optional<double> absp;
     boost::optional<dcomplex> Nr;
     boost::optional<Tensor3<dcomplex>> NR;
+
+    boost::optional<Tensor2<double>> mobe;
+    boost::optional<Tensor2<double>> mobh;
+    boost::optional<double> Ae;
+    boost::optional<double> Ah;
+    boost::optional<double> Ce;
+    boost::optional<double> Ch;
+    boost::optional<double> e13;
+    boost::optional<double> e33;
+    boost::optional<double> c13;
+    boost::optional<double> c33;
+    boost::optional<double> Psp;
 };
 
 

@@ -41,6 +41,18 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K].
 
+      .. xml:tag:: <Ae>
+
+         Monomolecular recombination coefficient *A* for electrons [1/s].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <Ah>
+
+         Monomolecular recombination coefficient *A* for holes [1/s].
+
+         Variables: ``T`` — temperature [K].
+
       .. xml:tag:: <absb>
 
          Absorption coefficient *α* [cm\ :sup:`-1`].
@@ -77,6 +89,18 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K].
 
+      .. xml:tag:: <Ce>
+
+         Auger recombination coefficient *C* for electrons [cm\ :sup:`6`/s].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <Ch>
+
+         Auger recombination coefficient *C* for holes [cm\ :sup:`6`/s].
+
+         Variables: ``T`` — temperature [K].
+
       .. xml:tag:: <c11>
 
          Elastic constant *c*\ :sub:`11` [GPa].
@@ -86,6 +110,24 @@ This section contains specification of custom materials that can be used togethe
       .. xml:tag:: <c12>
 
          Elastic constant *c*\ :sub:`12` [GPa].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <c13>
+
+         Elastic constant *c*\ :sub:`13` [GPa].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <c33>
+
+         Elastic constant *c*\ :sub:`33` [GPa].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <c44>
+
+         Elastic constant *c*\ :sub:`44` [GPa].
 
          Variables: ``T`` — temperature [K].
 
@@ -136,6 +178,18 @@ This section contains specification of custom materials that can be used togethe
          Split-off energy *D*\ :sub:`so` [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+
+      .. xml:tag:: <e13>
+
+         Piezoelectric constant *e*\ :sub:`13` [C/m\ :sup:`2`].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <e33>
+
+         Piezoelectric constant *e*\ :sub:`33` [C/m\ :sup:`2`].
+
+         Variables: ``T`` — temperature [K].
 
       .. xml:tag:: <EactA>
 
@@ -204,6 +258,20 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: T — temperature [K].
 
+      .. xml:tag:: <mobe>
+
+         Electron mobility in-plane (lateral) and cross-plane (vertical) direction
+         [cm\ :sup:`2`/(V s)].
+
+         Variables: T — temperature [K].
+
+      .. xml:tag:: <mobh>
+
+         Hole mobility in-plane (lateral) and cross-plane (vertical) direction
+         [cm\ :sup:`2`/(V s)].
+
+         Variables: T — temperature [K].
+
       .. xml:tag:: <Mso>
 
          Split-off mass *M*\ :sub:`so` [*m*\ :sub:`0`].
@@ -254,6 +322,12 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
+
+      .. xml:tag:: <Psp>
+
+         Spontaneous polarization [C/m\ :sup:`2`]
+
+         Variables: ``T`` — temperature [K].
 
       .. xml:tag:: <thermk>
 

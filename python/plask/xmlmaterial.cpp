@@ -32,7 +32,8 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
-        thermk, dens, cp, nr, absp, Nr, NR;
+        thermk, dens, cp, nr, absp, Nr, NR,
+        mobe, mobh, Ae, Ah, Ce, Ch, e13, e33, c13, c33, Psp;
 
     PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name),
@@ -93,7 +94,7 @@ class PythonEvalMaterial : public Material
         return OmpLockGuard<OmpNestLock>(python_omp_lock);
     }
 
-    virtual bool isEqual(const Material& other) const override {
+    bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonEvalMaterial&>(other);
         return
             cls == theother.cls &&
@@ -101,9 +102,9 @@ class PythonEvalMaterial : public Material
             doping_amount == theother.doping_amount;
     }
 
-    virtual std::string name() const override { return cls->materialName; }
-    virtual Material::Kind kind() const override { return (cls->kind == Material::NONE)? base->kind() : cls->kind; }
-    virtual Material::ConductivityType condtype() const override { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
+    std::string name() const override { return cls->materialName; }
+    Material::Kind kind() const override { return (cls->kind == Material::NONE)? base->kind() : cls->kind; }
+    Material::ConductivityType condtype() const override { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
 
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->cache.fun) return *cls->cache.fun;\
@@ -135,9 +136,9 @@ class PythonEvalMaterial : public Material
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; locals[BOOST_PP_STRINGIZE(arg4)] = arg4; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
-    virtual double lattC(double T, char x) const override { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
-    virtual double Eg(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
-    virtual double CB(double T, double e, char point) const override {
+    double lattC(double T, char x) const override { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
+    double Eg(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
+    double CB(double T, double e, char point) const override {
         if (cls->cache.CB) return *cls->cache.CB;
         if (cls->CB != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
@@ -148,43 +149,43 @@ class PythonEvalMaterial : public Material
             return VB(T, e, point, 'H') + Eg(T, e, point);
         return base->CB(T, e, point);
     }
-    virtual double VB(double T, double e, char point, char hole) const override { PYTHON_EVAL_CALL_4(double, VB, T, e, point, hole) }
-    virtual double Dso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
-    virtual double Mso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
-    virtual Tensor2<double> Me(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }
-    virtual Tensor2<double> Mhh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mhh, T, e) }
-    virtual Tensor2<double> Mlh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mlh, T, e) }
-    virtual Tensor2<double> Mh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mh, T, e) }
-    virtual double ac(double T) const override { PYTHON_EVAL_CALL_1(double, ac, T) }
-    virtual double av(double T) const override { PYTHON_EVAL_CALL_1(double, av, T) }
-    virtual double b(double T) const override { PYTHON_EVAL_CALL_1(double, b, T) }
-    virtual double d(double T) const override { PYTHON_EVAL_CALL_1(double, d, T) }
-    virtual double c11(double T) const override { PYTHON_EVAL_CALL_1(double, c11, T) }
-    virtual double c12(double T) const override { PYTHON_EVAL_CALL_1(double, c12, T) }
-    virtual double c44(double T) const override { PYTHON_EVAL_CALL_1(double, c44, T) }
-    virtual double eps(double T) const override { PYTHON_EVAL_CALL_1(double, eps, T) }
-    virtual double chi(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, chi, T, e, point) }
-    virtual double Nc(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nc, T, e, point) }
-    virtual double Nv(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nv, T, e, point) }
-    virtual double Ni(double T) const override { PYTHON_EVAL_CALL_1(double, Ni, T) }
-    virtual double Nf(double T) const override { PYTHON_EVAL_CALL_1(double, Nf, T) }
-    virtual double EactD(double T) const override { PYTHON_EVAL_CALL_1(double, EactD, T) }
-    virtual double EactA(double T) const override { PYTHON_EVAL_CALL_1(double, EactA, T) }
-    virtual Tensor2<double> mob(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mob, T) }
-    virtual Tensor2<double> cond(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, cond, T) }
-    virtual double A(double T) const override { PYTHON_EVAL_CALL_1(double, A, T) }
-    virtual double B(double T) const override { PYTHON_EVAL_CALL_1(double, B, T) }
-    virtual double C(double T) const override { PYTHON_EVAL_CALL_1(double, C, T) }
-    virtual double D(double T) const override {
+    double VB(double T, double e, char point, char hole) const override { PYTHON_EVAL_CALL_4(double, VB, T, e, point, hole) }
+    double Dso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
+    double Mso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
+    Tensor2<double> Me(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }
+    Tensor2<double> Mhh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mhh, T, e) }
+    Tensor2<double> Mlh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mlh, T, e) }
+    Tensor2<double> Mh(double T, double e) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, Mh, T, e) }
+    double ac(double T) const override { PYTHON_EVAL_CALL_1(double, ac, T) }
+    double av(double T) const override { PYTHON_EVAL_CALL_1(double, av, T) }
+    double b(double T) const override { PYTHON_EVAL_CALL_1(double, b, T) }
+    double d(double T) const override { PYTHON_EVAL_CALL_1(double, d, T) }
+    double c11(double T) const override { PYTHON_EVAL_CALL_1(double, c11, T) }
+    double c12(double T) const override { PYTHON_EVAL_CALL_1(double, c12, T) }
+    double c44(double T) const override { PYTHON_EVAL_CALL_1(double, c44, T) }
+    double eps(double T) const override { PYTHON_EVAL_CALL_1(double, eps, T) }
+    double chi(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, chi, T, e, point) }
+    double Nc(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nc, T, e, point) }
+    double Nv(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nv, T, e, point) }
+    double Ni(double T) const override { PYTHON_EVAL_CALL_1(double, Ni, T) }
+    double Nf(double T) const override { PYTHON_EVAL_CALL_1(double, Nf, T) }
+    double EactD(double T) const override { PYTHON_EVAL_CALL_1(double, EactD, T) }
+    double EactA(double T) const override { PYTHON_EVAL_CALL_1(double, EactA, T) }
+    Tensor2<double> mob(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mob, T) }
+    Tensor2<double> cond(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, cond, T) }
+    double A(double T) const override { PYTHON_EVAL_CALL_1(double, A, T) }
+    double B(double T) const override { PYTHON_EVAL_CALL_1(double, B, T) }
+    double C(double T) const override { PYTHON_EVAL_CALL_1(double, C, T) }
+    double D(double T) const override {
         try { PYTHON_EVAL_CALL_1(double, D, T) }
         catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; } // D = µ kB T / e
     }
-    virtual Tensor2<double> thermk(double T, double h)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
-    virtual double dens(double T) const override { PYTHON_EVAL_CALL_1(double, dens, T) }
-    virtual double cp(double T) const override { PYTHON_EVAL_CALL_1(double, cp, T) }
-    virtual double nr(double wl, double T, double n = .0) const override { PYTHON_EVAL_CALL_3(double, nr, wl, T, n) }
-    virtual double absp(double wl, double T) const override { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
-    virtual dcomplex Nr(double wl, double T, double n = .0) const override {
+    Tensor2<double> thermk(double T, double h) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
+    double dens(double T) const override { PYTHON_EVAL_CALL_1(double, dens, T) }
+    double cp(double T) const override { PYTHON_EVAL_CALL_1(double, cp, T) }
+    double nr(double wl, double T, double n = .0) const override { PYTHON_EVAL_CALL_3(double, nr, wl, T, n) }
+    double absp(double wl, double T) const override { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
+    dcomplex Nr(double wl, double T, double n = .0) const override {
         if (cls->cache.Nr) return *cls->cache.Nr;
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
@@ -195,7 +196,7 @@ class PythonEvalMaterial : public Material
             return dcomplex(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
         return base->Nr(wl, T, n);
     }
-    virtual Tensor3<dcomplex> NR(double wl, double T, double n = .0) const override {
+    Tensor3<dcomplex> NR(double wl, double T, double n = .0) const override {
         if (cls->cache.NR) return *cls->cache.NR;
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
@@ -219,6 +220,19 @@ class PythonEvalMaterial : public Material
         }
         return base->NR(wl, T, n);
     }
+
+    Tensor2<double> mobe(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, mobe, T) }
+    Tensor2<double> mobh(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, mobh, T) }
+    double Ae(double T) const { PYTHON_EVAL_CALL_1(double, Ae, T) }
+    double Ah(double T) const { PYTHON_EVAL_CALL_1(double, Ah, T) }
+    double Ce(double T) const { PYTHON_EVAL_CALL_1(double, Ce, T) }
+    double Ch(double T) const { PYTHON_EVAL_CALL_1(double, Ch, T) }
+    double e13(double T) const { PYTHON_EVAL_CALL_1(double, e13, T) }
+    double e33(double T) const { PYTHON_EVAL_CALL_1(double, e33, T) }
+    double c13(double T) const { PYTHON_EVAL_CALL_1(double, c13, T) }
+    double c33(double T) const { PYTHON_EVAL_CALL_1(double, c33, T) }
+    double Psp(double T) const { PYTHON_EVAL_CALL_1(double, Psp, T) }
+
     // End of overridden methods
 };
 
@@ -335,6 +349,19 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
         COMPILE_PYTHON_MATERIAL_FUNCTION(NR)
+
+        COMPILE_PYTHON_MATERIAL_FUNCTION(mobe)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(mobh)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Ae)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Ah)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Ce)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Ch)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(e13)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(e33)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(c13)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(c33)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Psp)
+
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 

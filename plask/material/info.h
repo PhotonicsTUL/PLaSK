@@ -63,7 +63,19 @@ struct PLASK_API MaterialInfo {
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
         Nr,         ///< complex refractive index
-        NR          ///< complex refractive index tensor
+        NR,         ///< complex refractive index tensor
+
+        mobe,       ///< electron mobility
+        mobh,       ///< hole mobility
+        Ae,         ///< monomolecular recombination coefficient for electrons
+        Ah,         ///< monomolecular recombination coefficient for holes
+        Ce,         ///< Auger recombination coefficient for electrons
+        Ch,         ///< Auger recombination coefficient for holes
+        e13,        ///< piezoelectric constant
+        e33,        ///< piezoelectric constant
+        c13,        ///< elastic constant
+        c33,        ///< elastic constant
+        Psp         ///< spontaneous polarization
     };
 
     /// Names of the properties
