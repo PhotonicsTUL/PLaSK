@@ -340,6 +340,7 @@ class PythonMaterial : public Material
     double Ce(double T) const { return call<double>("Ce", &Material::Ce, cache->Ce, T); }
     double Ch(double T) const { return call<double>("Ch", &Material::Ch, cache->Ch, T); }
     double e13(double T) const { return call<double>("e13", &Material::e13, cache->e13, T); }
+    double e15(double T) const { return call<double>("e15", &Material::e15, cache->e15, T); }
     double e33(double T) const { return call<double>("e33", &Material::e33, cache->e33, T); }
     double c13(double T) const { return call<double>("c13", &Material::c13, cache->c13, T); }
     double c33(double T) const { return call<double>("c33", &Material::c33, cache->c33, T); }
@@ -566,6 +567,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         CHECK_CACHE(double, Ce, "Ce", 300.)
         CHECK_CACHE(double, Ch, "Ch", 300.)
         CHECK_CACHE(double, e13, "e13", 300.)
+        CHECK_CACHE(double, e15, "e15", 300.)
         CHECK_CACHE(double, e33, "e33", 300.)
         CHECK_CACHE(double, c13, "c13", 300.)
         CHECK_CACHE(double, c33, "c33", 300.)
@@ -715,6 +717,7 @@ py::dict getMaterialInfo(const std::string& name) {
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c33, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c44, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::e13, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::e15, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::e33, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::eps, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::chi, MaterialInfo::T);
@@ -942,6 +945,11 @@ void initMaterials() {
 
         .def("e13", &Material::c44, (py::arg("T")=300.),
              "Get piezoelectric constant e₁₃ [C/m²].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("e15", &Material::c44, (py::arg("T")=300.),
+             "Get piezoelectric constant e₁₅ [C/m²].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 

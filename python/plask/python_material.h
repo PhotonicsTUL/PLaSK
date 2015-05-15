@@ -55,6 +55,7 @@ struct MaterialCache {
     boost::optional<double> Ce;
     boost::optional<double> Ch;
     boost::optional<double> e13;
+    boost::optional<double> e15;
     boost::optional<double> e33;
     boost::optional<double> c13;
     boost::optional<double> c33;

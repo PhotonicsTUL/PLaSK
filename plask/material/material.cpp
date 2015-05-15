@@ -181,6 +181,8 @@ double Material::Ch(double T) const { throwNotImplemented("Ch(double T)"); retur
 
 double Material::e13(double T) const { throwNotImplemented("e13(double T)"); return 0; }
 
+double Material::e15(double T) const { throwNotImplemented("e15(double T)"); return 0; }
+
 double Material::e33(double T) const { throwNotImplemented("e33(double T)"); return 0; }
 
 double Material::c13(double T) const { throwNotImplemented("c13(double T)"); return 0; }

@@ -185,6 +185,12 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K].
 
+      .. xml:tag:: <e15>
+
+         Piezoelectric constant *e*\ :sub:`15` [C/m\ :sup:`2`].
+
+         Variables: ``T`` — temperature [K].
+
       .. xml:tag:: <e33>
 
          Piezoelectric constant *e*\ :sub:`33` [C/m\ :sup:`2`].

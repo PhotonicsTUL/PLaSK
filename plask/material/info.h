@@ -72,6 +72,7 @@ struct PLASK_API MaterialInfo {
         Ce,         ///< Auger recombination coefficient for electrons
         Ch,         ///< Auger recombination coefficient for holes
         e13,        ///< piezoelectric constant
+        e15,        ///< piezoelectric constant
         e33,        ///< piezoelectric constant
         c13,        ///< elastic constant
         c33,        ///< elastic constant

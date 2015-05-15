@@ -748,6 +748,13 @@ struct PLASK_API Material {
     virtual double e13(double T) const;
 
     /**
+     * Get piezoelectric constant e13 [C/m^2]
+     * \param T temperature [K]
+     * \return piezoelectric constant e13 [C/m^2]
+     */
+    virtual double e15(double T) const;
+
+    /**
      * Get piezoelectric constant e33 [C/m^2]
      * \param T temperature [K]
      * \return piezoelectric constant e33 [C/m^2]

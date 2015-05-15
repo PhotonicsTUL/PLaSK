@@ -33,7 +33,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
-        mobe, mobh, Ae, Ah, Ce, Ch, e13, e33, c13, c33, Psp;
+        mobe, mobh, Ae, Ah, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
     PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name),
@@ -228,6 +228,7 @@ class PythonEvalMaterial : public Material
     double Ce(double T) const { PYTHON_EVAL_CALL_1(double, Ce, T) }
     double Ch(double T) const { PYTHON_EVAL_CALL_1(double, Ch, T) }
     double e13(double T) const { PYTHON_EVAL_CALL_1(double, e13, T) }
+    double e15(double T) const { PYTHON_EVAL_CALL_1(double, e15, T) }
     double e33(double T) const { PYTHON_EVAL_CALL_1(double, e33, T) }
     double c13(double T) const { PYTHON_EVAL_CALL_1(double, c13, T) }
     double c33(double T) const { PYTHON_EVAL_CALL_1(double, c33, T) }
@@ -357,6 +358,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ce)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ch)
         COMPILE_PYTHON_MATERIAL_FUNCTION(e13)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(e15)
         COMPILE_PYTHON_MATERIAL_FUNCTION(e33)
         COMPILE_PYTHON_MATERIAL_FUNCTION(c13)
         COMPILE_PYTHON_MATERIAL_FUNCTION(c33)
