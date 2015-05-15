@@ -11,7 +11,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.),
     //maxerr(0.05),
     //heatmet(HEAT_JOULES),
-    outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
+//     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
     //outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
     //outHeat(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),
     //outConductivity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity),
@@ -1280,5 +1280,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             this->parseStandardConfiguration(source, manager);*/
     }
 }
+
+template<> std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.DriftDiffusion2D"; }
+template<> std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DriftDiffusionCyl"; }
+
+
+template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace

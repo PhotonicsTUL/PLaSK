@@ -19,8 +19,8 @@ include(PLaSK)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 #
-#find_package(GSL)
-#set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
+find_package(LAPACK)
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 
 # Uncomment and edit the line below if you need some special include directories.
