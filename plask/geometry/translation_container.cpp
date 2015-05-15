@@ -48,14 +48,14 @@ void TranslationContainer<dim>::invalidateCache() {
 }
 
 template <int dim>
-SpetialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() {
+SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() {
     if (!cache)
-        cache = buildSpetialIndex<dim>(children).release();
+        cache = buildSpatialIndex<dim>(children).release();
     return cache;
 }
 
 template <int dim>
-SpetialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() const {
+SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() const {
     if (cache) return cache;
     boost::lock_guard<boost::mutex> lock(const_cast<boost::mutex&>(cache_mutex));
     //this also will check if cache is non-null egain, someone could build cache when we waited for enter to critical section:

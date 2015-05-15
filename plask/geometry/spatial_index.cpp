@@ -22,7 +22,7 @@ struct GeometryObjectBBox {
 };
 
 template <int DIMS>
-struct EmptyLeafCacheNode: public SpetialIndexNode<DIMS> {
+struct EmptyLeafCacheNode: public SpatialIndexNode<DIMS> {
 
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
         return shared_ptr<Material>();
@@ -38,7 +38,7 @@ struct EmptyLeafCacheNode: public SpetialIndexNode<DIMS> {
 };
 
 template <int DIMS>
-struct LeafCacheNode: public SpetialIndexNode<DIMS> {
+struct LeafCacheNode: public SpatialIndexNode<DIMS> {
 
     /// Type of the vector holding container children
     typedef std::vector< shared_ptr<const Translation<DIMS> > > ChildVectorT;
@@ -87,13 +87,13 @@ struct LeafCacheNode: public SpetialIndexNode<DIMS> {
 
 /// Instances of this template represents all internal nodes of cache
 template <int DIMS, int dir>
-struct InternalCacheNode: public SpetialIndexNode<DIMS> {
+struct InternalCacheNode: public SpatialIndexNode<DIMS> {
 
     double offset;  ///< split coordinate
-    SpetialIndexNode<DIMS>* lo;  ///< contains all objects which has lower coordinate < offset
-    SpetialIndexNode<DIMS>* hi;  ///< contains all objects which has higher coordinate >= offset
+    SpatialIndexNode<DIMS>* lo;  ///< contains all objects which has lower coordinate < offset
+    SpatialIndexNode<DIMS>* hi;  ///< contains all objects which has higher coordinate >= offset
 
-    InternalCacheNode(const double& offset, SpetialIndexNode<DIMS>* lo, SpetialIndexNode<DIMS>* hi)
+    InternalCacheNode(const double& offset, SpatialIndexNode<DIMS>* lo, SpatialIndexNode<DIMS>* hi)
         : offset(offset), lo(lo), hi(hi)
     {}
 
@@ -121,14 +121,14 @@ inline CacheNode<DIMS>* constructInternalNode(int dir, const double& offset, Cac
 }
 
 template <>*/
-inline SpetialIndexNode<2>* constructInternalNode(int dir, const double& offset, SpetialIndexNode<2>* lo, SpetialIndexNode<2>* hi) {
+inline SpatialIndexNode<2>* constructInternalNode(int dir, const double& offset, SpatialIndexNode<2>* lo, SpatialIndexNode<2>* hi) {
     if (dir == 0) return new InternalCacheNode<2, 0>(offset, lo, hi);
     assert(dir == 1);
     return new InternalCacheNode<2, 1>(offset, lo, hi);
 }
 
 //template <>
-inline SpetialIndexNode<3>* constructInternalNode(int dir, const double& offset, SpetialIndexNode<3>* lo, SpetialIndexNode<3>* hi) {
+inline SpatialIndexNode<3>* constructInternalNode(int dir, const double& offset, SpatialIndexNode<3>* lo, SpatialIndexNode<3>* hi) {
     if (dir == 0) return new InternalCacheNode<3, 0>(offset, lo, hi);
     if (dir == 1) return new InternalCacheNode<3, 1>(offset, lo, hi);
     assert(dir == 2);
@@ -195,7 +195,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
  * @return constructed cache
  */
 template <int DIMS>
-inline SpetialIndexNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS> >* input, int max_depth = 16) {
+inline SpatialIndexNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS> >* input, int max_depth = 16) {
     if (input[0].size() < MIN_CHILD_TO_TRY_SPLIT || max_depth == 0) return new LeafCacheNode<DIMS>(input[0]);
     double bestOffset;
     int bestDir;
@@ -204,7 +204,7 @@ inline SpetialIndexNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS>
         calcOptimalSplitOffset(input[dim*2 + 1], input[dim*2 + 2], dim, bestDir, bestOffset, bestValue);
     if (bestValue == std::numeric_limits<int>::max())   //there are no enought good split point
         return new LeafCacheNode<DIMS>(input[0]);                //so we will not split more
-    SpetialIndexNode<DIMS> *lo, *hi;
+    SpatialIndexNode<DIMS> *lo, *hi;
     {
     std::vector< GeometryObjectBBox<DIMS> > input_over_offset[1 + DIMS * 2];
     for (int dim = DIMS; dim < 1 + DIMS * 2; ++dim)
@@ -216,9 +216,9 @@ inline SpetialIndexNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS>
 }
 
 template <int DIMS>
-std::unique_ptr<SpetialIndexNode<DIMS>> buildSpetialIndex(const std::vector< shared_ptr<Translation<DIMS>> >& children) {
-    if (children.empty()) return std::unique_ptr<SpetialIndexNode<DIMS>>(new EmptyLeafCacheNode<DIMS>());
-    if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return std::unique_ptr<SpetialIndexNode<DIMS>>(new LeafCacheNode<DIMS>(children));
+std::unique_ptr<SpatialIndexNode<DIMS>> buildSpatialIndex(const std::vector< shared_ptr<Translation<DIMS>> >& children) {
+    if (children.empty()) return std::unique_ptr<SpatialIndexNode<DIMS>>(new EmptyLeafCacheNode<DIMS>());
+    if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return std::unique_ptr<SpatialIndexNode<DIMS>>(new LeafCacheNode<DIMS>(children));
     std::vector< GeometryObjectBBox<DIMS> > input[1 + DIMS * 2];
     input[0].reserve(children.size());
     for (auto& c: children) input[0].emplace_back(c);
@@ -236,14 +236,14 @@ std::unique_ptr<SpetialIndexNode<DIMS>> buildSpetialIndex(const std::vector< sha
                 }
         );
     }
-    return std::unique_ptr<SpetialIndexNode<DIMS>>(buildCacheR<DIMS>(input));
+    return std::unique_ptr<SpatialIndexNode<DIMS>>(buildCacheR<DIMS>(input));
 }
 
-template struct PLASK_API SpetialIndexNode<2>;
-template struct PLASK_API SpetialIndexNode<3>;
+template struct PLASK_API SpatialIndexNode<2>;
+template struct PLASK_API SpatialIndexNode<3>;
 
-template PLASK_API std::unique_ptr<SpetialIndexNode<2>> buildSpetialIndex(const std::vector< shared_ptr<Translation<2>> >& children);
-template PLASK_API std::unique_ptr<SpetialIndexNode<3>> buildSpetialIndex(const std::vector< shared_ptr<Translation<3>> >& children);
+template PLASK_API std::unique_ptr<SpatialIndexNode<2>> buildSpatialIndex(const std::vector< shared_ptr<Translation<2>> >& children);
+template PLASK_API std::unique_ptr<SpatialIndexNode<3>> buildSpatialIndex(const std::vector< shared_ptr<Translation<3>> >& children);
 
 
 }   // namespace plask
