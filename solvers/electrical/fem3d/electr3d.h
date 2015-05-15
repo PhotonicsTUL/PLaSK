@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_FEMT_H
-#define PLASK__MODULE_THERMAL_FEMT_H
+#ifndef PLASK__MODULE_ELECTRICAL_FEMV_H
+#define PLASK__MODULE_ELECTRICAL_FEMV_H
 
 #include <plask/plask.hpp>
 
