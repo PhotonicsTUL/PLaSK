@@ -91,6 +91,7 @@ void register_geometry_path()
              "    container (GeometryObject): Container to get items from.")
         .def("cleanup",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects.")
         .def(py::self == py::other<PathHints>())
+        // .def(py::self < py::other<PathHints>())
     ;
 
     py::implicitly_convertible<PathHints::Hint,PathHints>();
