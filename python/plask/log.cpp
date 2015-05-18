@@ -1,6 +1,8 @@
 #include "python_globals.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/python/enum.hpp>
+#include <boost/python/raw_function.hpp>
 
 #include <plask/log/log.h>
 #include <plask/log/data.h>
@@ -253,8 +255,26 @@ void LoggingConfig::setLoggingDest(py::object dest) {
     throw TypeError("Setting output for current logging system does not make sense.");
 }
 
-void print_log(LogLevel level, py::object msg) {
-    writelog(level, py::extract<std::string>(py::str(msg)));
+py::object print_log(py::tuple args, py::dict kwargs) {
+    bool kw = kwargs.has_key("level");
+    if (py::len(kwargs) > (kw ? 1 : 0)) {
+        py::stl_input_iterator<std::string> key(kwargs);
+        if (*key == "level") ++key;
+        throw TypeError("print_log() got an unexpected keyword argument '%s'", std::string(*key));
+    }
+    if (!kw && py::len(args) < 1)
+        throw TypeError("print_log() takes at least 1 argument (0 given)");
+    LogLevel level = py::extract<LogLevel>(kw ? kwargs["level"] : args[0]);
+    py::stl_input_iterator<py::object> begin(args), end;
+    if (!kw) ++begin;
+    std::string msg;
+    bool cont = false;
+    for (auto iter = begin; iter != end; ++iter) {
+        if (cont) msg += " "; cont = true;
+        msg += py::extract<std::string>(py::str(*iter));
+    }
+    writelog(level, msg);
+    return py::object();
 }
 
 void register_python_log()
@@ -271,7 +291,14 @@ void register_python_log()
     LOG_ENUM(ERROR_DETAIL);
     LOG_ENUM(DEBUG);
 
-    py::def("print_log", print_log, "Print log message into specified log level", (py::arg("level"), "msg"));
+    py::detail::scope_setattr_doc("print_log", py::raw_function(print_log),
+            "print_log(level, *args)\n\n"
+            "Print log message into a specified log level.\n\n"
+            "Args:\n"
+            "    level (str): Log level to print the message to.\n"
+            "    args: Items to print. They are concatenated togeter and separated by space,\n"
+            "          similarly to the ``print`` function.\n"
+           );
 
     py::class_<LogOO>("DataLog2",
         "Class used to log relations between two variables (argument and value)\n\n"
