@@ -43,13 +43,18 @@ template<typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::compute()
 {
     writelog(LOG_INFO, "Begining DDM calculations");
+
+    loadFile("str.txt");
+
     this->initCalculation(); // This must be called before any calculation!
 
     mFnFpCalc = "many";
     setStructure();
+    int zzz;
+    std::cin >> zzz;
     saveResP("results/res_polarizations.txt");
     setScaleParam();
-    setMesh2();
+    setMeshPoints();
     setNodes();
     setElements();
     calcPsiI();
@@ -138,7 +143,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setScaleParam()
 }
 
 template<typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setMesh2()
+int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshPoints()
 {
     /*if (0) TODO13
     {
@@ -206,6 +211,27 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setMesh2()
 
     }*/
 
+    nx = this->mesh->axis0->size();
+    std::cout << "Number of x-nodes: " << nx << std::endl;
+    vX.clear();
+    for (int i=0; i<nx; ++i) {
+        std::cout << this->mesh->axis0->at(i) << "\t";
+        vX.push_back(this->mesh->axis0->at(i)); // vX stores node x-positions (um)
+    }
+    std::cout << "\n";
+
+    ny = this->mesh->axis1->size();
+    std::cout << "Number of y-nodes: " << ny << std::endl;
+    vY.clear();
+    for (int i=0; i<ny; ++i) {
+        std::cout << this->mesh->axis1->at(i) << "\t";
+        vY.push_back(this->mesh->axis1->at(i)); // vY stores node y-positions (um)
+    }
+    std::cout << "\n";
+
+    int zzz;
+    std::cin >> zzz;
+/*
     if (1)
     {
         // constant x- and y-steps - old code
@@ -238,7 +264,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setMesh2()
             vY.push_back(y1+dy*i); // vY stores node y-positions (um)
         }
     }
-
+*/
     //int ccc;
     //std::cin >> ccc;
 
@@ -773,7 +799,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::updNodes(std::vector<double>
     double mcT = (maxcorrT)/scaleT;
     double mcPsi0 = (maxcorrPsi0)/scaleE;
     double mcPsi = (maxcorrPsi)/scaleE;
-    double mcFnFp = (maxcorrFnFp)/scaleE; // TODO
+    //double mcFnFp = (maxcorrFnFp)/scaleE; // TODO
     while (ttN != vN.end()) {
 		if ((ttN->getSide() == '-') || (ttN->getSide() == 'i')) {
             if (iType == "T") {

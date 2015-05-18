@@ -42,7 +42,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     void setStructure(); /// set structure
     void setScaleParam(); /// set scalling parameters
-    int setMesh2(); /// set mesh
+    int setMeshPoints(); /// set mesh
     int setNodes(); /// set nodes
     char checkPos(double iX); /// check position of node (boundary/interface)
     int setElements(); /// set elements

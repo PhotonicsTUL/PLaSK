@@ -874,7 +874,7 @@ void initMaterials() {
              "    e (float): Lateral strain [-].\n")
 
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get split-off mass Mso [m₀].\n\n"
+             "Get electron effective mass Me [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n"
