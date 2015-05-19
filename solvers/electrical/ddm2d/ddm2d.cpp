@@ -145,77 +145,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setScaleParam()
 template<typename Geometry2DType>
 int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshPoints()
 {
-    /*if (0) TODO13
-    {
-        std::cout << "Setting mesh..\n";
-
-        std::cout << "Refining mesh..\n";
-
-        vX.clear(); // vector with main mesh-points (main mesh-points -> mesh-points at interfaces and boundaries)
-        double tX = 0.; // temporary x-position
-        vX.push_back(tX); // left edge of the structure
-        vX.push_back(0.0001);
-        vX.push_back(0.0002);
-
-        vY.clear(); // vector with main mesh-points (main mesh-points -> mesh-points at interfaces and boundaries)
-        double tY = 0.; // temporary x-position
-        vY.push_back(tY); // left edge of the structure
-        for (std::vector<Layer2D>::iterator it=vL.begin(); it!=vL.end(); ++it) {
-            tY += it->getThicknessY();
-            vY.push_back(tY); // right layer edges
-        }
-
-        std::cout << "Structure length: " << tX << "\n";
-
-        //std::cout << "Main mesh-points: "; // TEST
-        //for (std::vector<double>::iterator it=vX.begin(); it!=vX.end(); ++it) {
-        //    std::cout << *it << " ";
-        //}
-        //std::cout << "\n";
-
-        std::vector<double> vXtmp(0.); vXtmp.clear(); // here we store mesh-points which will be added to the vX at he end
-
-        for (std::vector<double>::iterator it=vX.begin(); it!=vX.end()-1; ++it) {
-            std::vector<double> vXloc(0.); vXloc.clear(); // here we store mesh-points between main mesh-points
-            double xMin = setts::dxMin;
-            double xL = (*it)+xMin;
-            double xR = (*(it+1))-xMin;
-            vXloc.push_back(xL);
-            vXloc.push_back(xR);
-            xMin *= setts::dxDiv;
-            if (xMin > setts::dxMax) xMin = setts::dxMax;
-            while (xR-xL>xMin)
-            {
-                xL += xMin;
-                xR -= xMin;
-                vXloc.push_back(xL);
-                vXloc.push_back(xR);
-                xMin *= setts::dxDiv;
-                if (xMin > setts::dxMax) xMin = setts::dxMax;
-            }
-            vXtmp.insert(vXtmp.end(), vXloc.begin(), vXloc.end());
-        }
-
-        vX.insert(vX.end(), vXtmp.begin(), vXtmp.end());
-        std::sort(vX.begin(), vX.end());
-
-        nx = vX.size();
-        std::cout << "Number of mesh x-points in the structure: " << nx << "\n";
-
-        //std::ofstream f;
-        //f.open("meshpoints.txt");
-        //for (std::vector<double>::iterator it=vX.begin(); it!=vX.end()-1; ++it) {
-        //    f << *it << "\n";
-        //}
-        //f.close();
-
-    }*/
-
     nx = this->mesh->axis0->size();
     std::cout << "Number of x-nodes: " << nx << std::endl;
     vX.clear();
     for (int i=0; i<nx; ++i) {
-        std::cout << this->mesh->axis0->at(i) << "\t";
+        //std::cout << this->mesh->axis0->at(i) << "\t"; // TEST
         vX.push_back(this->mesh->axis0->at(i)); // vX stores node x-positions (um)
     }
     std::cout << "\n";
@@ -224,49 +158,25 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshPoints()
     std::cout << "Number of y-nodes: " << ny << std::endl;
     vY.clear();
     for (int i=0; i<ny; ++i) {
-        std::cout << this->mesh->axis1->at(i) << "\t";
+        //std::cout << this->mesh->axis1->at(i) << "\t"; // TEST
         vY.push_back(this->mesh->axis1->at(i)); // vY stores node y-positions (um)
     }
     std::cout << "\n";
 
+    std::cout << "Mesh->size: " << this->mesh->size() << "\n"; // TEST
+
+    // Set stiffness matrix and load vector // TEST
+    /*for (auto e: this->mesh->elements) {
+        size_t i = e.getIndex();
+        size_t loleftno = e.getLoLoIndex();
+        size_t lorghtno = e.getUpLoIndex();
+        size_t upleftno = e.getLoUpIndex();
+        size_t uprghtno = e.getUpUpIndex();
+        std::cout << i << " " << loleftno << " " << lorghtno << " " << upleftno << " " << uprghtno << " " << e.getLower0() << " " << e.getUpper0() << " " << e.getLower1() << " " << e.getUpper1() << "\n";
+    }*/
+
     int zzz;
     std::cin >> zzz;
-/*
-    if (1)
-    {
-        // constant x- and y-steps - old code
-        std::cout << "Setting mesh..\n";
-        double x1 = 0.; // structure edge left (um)
-        double x2 = 0.; // structure edge right (um)
-        for (std::vector<Layer2D>::iterator it=vL.begin(); it!=vL.end(); ++it)
-            x2 = it->getThicknessX();
-        std::cout << "Structure width: " << x2 << "\n";
-        double dx = dxEq; // step (um)
-        nx = static_cast<int>((x2-x1)/dx+dxAcc)+1; // number of mesh x-points
-        std::cout << "Number of mesh x-points in the structure: " << nx << "\n";
-
-        vX.clear();
-        for (int i=0; i<nx; ++i) {
-            vX.push_back(x1+dx*i); // vX stores node x-positions (um)
-        }
-
-        double y1 = 0.; // structure edge bottom (um)
-        double y2 = 0.; // structure edge top (um)
-        for (std::vector<Layer2D>::iterator it=vL.begin(); it!=vL.end(); ++it)
-            y2 += it->getThicknessY();
-        std::cout << "Structure length: " << y2 << "\n";
-        double dy = dyEq; // step (um)
-        ny = static_cast<int>((y2-y1)/dy+dyAcc)+1; // number of mesh y-points
-        std::cout << "Number of mesh y-points in the structure: " << ny << "\n";
-
-        vY.clear();
-        for (int i=0; i<ny; ++i) {
-            vY.push_back(y1+dy*i); // vY stores node y-positions (um)
-        }
-    }
-*/
-    //int ccc;
-    //std::cin >> ccc;
 
     return 0;
 }
@@ -292,10 +202,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setNodes()
         else vN[i].setT((300.)/scaleT);
     }
 
-    /*for (int i=0; i<nn; ++i) {
-        vN[i].getInfo();
-    }
-    int zzz;
+    /*int zzz;
     std::cin >> zzz;*/
 
     return 0;
@@ -1245,10 +1152,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
     {
         std::string param = source.getNodeName();
         // TODO (tylko skopiowane z femV)
-        /*if (param == "voltage" || param == "potential")
+        if (param == "voltage" || param == "potential")
             this->readBoundaryConditions(manager, source, voltage_boundary);
 
-        else if (param == "loop") {
+        /*else if (param == "loop") {
             maxerr = source.getAttribute<double>("maxerr", maxerr);
             source.requireTagEnd();
         }

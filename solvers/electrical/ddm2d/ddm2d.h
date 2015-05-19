@@ -60,6 +60,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     double scaleE, scaleX, scaleT, scaleN, scaleEpsR, scaleK, scaleMi, scaleJ, scaleR, scalet, scaleB, scaleC, scaleH;
 
+    DataVector<char> vSide;       ///< n-contact: side='n', p-contact: side='p', interface: side='i', node inside the layer: side='-'
+    DataVector<double> vPsi;      ///< Computed potentials
+    DataVector<double> vFn;       ///< Computed quasi-Fermi levels for electrons (Fn)
+    DataVector<double> vFp;       ///< Computed quasi-Fermi levels for holes (Fp)
+    DataVector<double> vFnEta;    ///< Computed exp(Fn)
+    DataVector<double> vFpKsi;    ///< Computed exp(-Fp)
+    DataVector<Vec<2,double>> vJ; ///< Computed current densities
+
 /*    /// scale coordinate (x)
     double scaleX(double iX);
     /// rescale coordinate (x)
@@ -162,7 +170,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
   public:
 
-    typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;    
+    /// Boundary condition
+    BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
+
+    typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
+    typename ProviderFor<Potential, Geometry2DType>::Delegate outQuasiFermiLevE;
+    typename ProviderFor<Potential, Geometry2DType>::Delegate outQuasiFermiLevH;
     
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
     
@@ -171,9 +184,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double compute(); /// run calculations
     
     void saveResN(std::string filename); /// save results for nodes
-    
-    void saveResE(std::string filename); /// save results for nodes
-    
+    void saveResE(std::string filename); /// save results for electrons
     void saveResP(std::string filename); /// save polarizations
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
