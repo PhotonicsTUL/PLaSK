@@ -371,6 +371,7 @@ int main(int argc, const char *argv[])
                 for (const char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
                     locals[keyval.first] = plask::python::py_eval(keyval.second, plask::python::xml_globals);
+                    plask::writelog(plask::LOG_DATA, "%s = %s", keyval.first, keyval.second);
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();
