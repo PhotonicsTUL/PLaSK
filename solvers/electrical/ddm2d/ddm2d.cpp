@@ -195,12 +195,12 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setNodes()
         }
     }
 
-    // boundary conditions
-    for (int i=0; i<nn; ++i) {
+    // boundary conditions for temperature
+    /*for (int i=0; i<nn; ++i) {
         if (vN[i].getSide() == 'p') vN[i].setT((300.)/scaleT);
         else if (vN[i].getSide() == 'n') vN[i].setT((300.)/scaleT);
         else vN[i].setT((300.)/scaleT);
-    }
+    }*/
 
     /*int zzz;
     std::cin >> zzz;*/
@@ -306,6 +306,41 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::calcPsiI()
         vE[i].setP4(calcP(vE[i].getL()->getNvNorm(), vE[i].getN4Ptr()->getFpKsi(), vE[i].getPsi(), vE[i].getL()->getEv0Norm(), vE[i].getN4Ptr()->getT()));
     }
 
+    // below code integrate with PLaSK
+
+    std::cout << "INTEGRATE WITH PLASK\n";
+
+    //double oldEg(-1.), oldNd(-1.), oldNa(-1); // old Eg, Nd, Na values
+    std::string oldID("-"), tmpID; // old material ID / temporary material ID
+    //double tmpEg, tmpNd, tmpNa; // temporary Eg, Nd, Na values
+    double oldPsiI(-1.), tmpPsiI; // initial potential
+
+
+    for (auto e: this->mesh->elements) {
+        size_t i = e.getIndex();
+        size_t loleftno = e.getLoLoIndex();
+        size_t lorghtno = e.getUpLoIndex();
+        size_t upleftno = e.getLoUpIndex();
+        size_t uprghtno = e.getUpUpIndex();
+        Vec<2,double> midpoint = e.getMidpoint();
+        //tmpEg = this->geometry->getMaterial(midpoint)->Eg(300.);
+        tmpID = this->geometry->getMaterial(midpoint)->name();
+        if (tmpID!=oldID)
+        {
+            tmpPsiI = findPsiI(this->geometry->getMaterial(midpoint)->CB(300.,0.,'G')/scaleE, this->geometry->getMaterial(midpoint)->VB(300.,0.,'G')/scaleE,
+                               this->geometry->getMaterial(midpoint)->Nc(300.,0.,'G')/scaleN, this->geometry->getMaterial(midpoint)->Nv(300.,0.,'G')/scaleN,
+                               this->geometry->getMaterial(midpoint)->Nd()/scaleN, this->geometry->getMaterial(midpoint)->Na()/scaleN,
+                               this->geometry->getMaterial(midpoint)->EactD(300.)/scaleE, this->geometry->getMaterial(midpoint)->EactA(300.)/scaleE,
+                               exp(0.),exp(0.),300.);
+            oldID = tmpID;
+            int ccc;
+            std::cin >> ccc;
+        }
+
+
+        std::cout << i << " " << /*tmpEg <<*/ " " << tmpID << "\n";// << upleftno << " " << uprghtno << " " << e.getLower0() << " " << e.getUpper0() << " " << e.getLower1() << " " << e.getUpper1() << "\n";
+    }
+
     //int zzz;
     //std::cin >> zzz;
 }
@@ -336,7 +371,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::solve()
 		std::cout << "Starting calculations..\n";
 
 		// --------------- U = 0 V (thermal model only) ---------------------------------------
-        if (1) { // TODO13
+        /*if (1) { // TODO13
             if (!U) {
                 std::cout << "U = 0 V.";
                 std::cout << "\nCalculating T.. ";
@@ -346,7 +381,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::solve()
             std::stringstream s1("");
             s1 << "results/res_nodesT(" << U << "V).txt";
             saveResN(s1.str());
-        }
+        }*/
 
 		// --------------- U = 0 V ------------------------------------------------------------
 		if (1) {

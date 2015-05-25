@@ -16,6 +16,20 @@ GaAs_Si::GaAs_Si(DopingAmountType Type, double Val) {
     mob_RT = 6600./(1+pow((Nf_RT/5e17),0.53));
 }
 
+MI_PROPERTY(GaAs_Si, EactA,
+            MIComment("this parameter will be removed")
+            )
+double GaAs_Si::EactA(double T) const {
+    return 0.;
+}
+
+MI_PROPERTY(GaAs_Si, EactD,
+            MISource("L. Piskorski, PhD thesis (2010)")
+            )
+double GaAs_Si::EactD(double T) const {
+    return 1e-3;
+}
+
 MI_PROPERTY(GaAs_Si, mob,
             MISource("fit to n-GaAs:Si (based on 8 papers 1982 - 2003)"),
             MIComment("no temperature dependence")
@@ -31,6 +45,20 @@ MI_PROPERTY(GaAs_Si, Nf,
             )
 double GaAs_Si::Nf(double T) const {
     return ( Nf_RT );
+}
+
+MI_PROPERTY(GaAs_Si, Na,
+            MIComment("-")
+            )
+double GaAs_Si::Na() const {
+    return ( 0. );
+}
+
+MI_PROPERTY(GaAs_Si, Nd,
+            MIComment("-")
+            )
+double GaAs_Si::Nd() const {
+    return ( ND );
 }
 
 double GaAs_Si::Dop() const {

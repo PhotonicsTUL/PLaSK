@@ -61,6 +61,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double scaleE, scaleX, scaleT, scaleN, scaleEpsR, scaleK, scaleMi, scaleJ, scaleR, scalet, scaleB, scaleC, scaleH;
 
     DataVector<char> vSide;       ///< n-contact: side='n', p-contact: side='p', interface: side='i', node inside the layer: side='-'
+    DataVector<double> vPsiI;     ///< Computed initial potentials
+    DataVector<int> vPsiIflag;    ///< 0 -> no initial Psi written to this node, 1 -> one initial Psi written to this node
     DataVector<double> vPsi;      ///< Computed potentials
     DataVector<double> vFn;       ///< Computed quasi-Fermi levels for electrons (Fn)
     DataVector<double> vFp;       ///< Computed quasi-Fermi levels for holes (Fp)

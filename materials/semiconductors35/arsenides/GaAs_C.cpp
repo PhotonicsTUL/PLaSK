@@ -22,6 +22,20 @@ GaAs_C::GaAs_C(DopingAmountType Type, double Val) {
     mob_RT = 530./(1+pow((Nf_RT/1e17),0.30));
 }
 
+MI_PROPERTY(GaAs_C, EactA,
+            MISource("R. Heilman et al., Semicond. Sci. Technol. 5 (1990) 1040-1045")
+            )
+double GaAs_C::EactA(double T) const {
+    return 26.7e-3;
+}
+
+MI_PROPERTY(GaAs_C, EactD,
+            MIComment("this parameter will be removed")
+            )
+double GaAs_C::EactD(double T) const {
+    return 0.;
+}
+
 MI_PROPERTY(GaAs_C, mob,
             MISource("fit to p-GaAs:C (based on 23 papers 1988 - 2006)"),
             MIComment("no temperature dependence")
@@ -37,6 +51,20 @@ MI_PROPERTY(GaAs_C, Nf,
             )
 double GaAs_C::Nf(double T) const {
     return ( Nf_RT );
+}
+
+MI_PROPERTY(GaAs_C, Na,
+            MIComment("-")
+            )
+double GaAs_C::Na() const {
+    return ( NA );
+}
+
+MI_PROPERTY(GaAs_C, Nd,
+            MIComment("-")
+            )
+double GaAs_C::Nd() const {
+    return ( 0. );
 }
 
 double GaAs_C::Dop() const {

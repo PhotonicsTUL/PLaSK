@@ -284,12 +284,20 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
+      .. xml:tag:: <Na>
+
+         Acceptor concentration *N*\ :sub:`a` [cm\ :sup:`-3`].
+
       .. xml:tag:: <Nc>
 
          Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
+
+      .. xml:tag:: <Nd>
+
+         Donor concentration *N*\ :sub:`d` [cm\ :sup:`-3`].
 
       .. xml:tag:: <Nf>
 

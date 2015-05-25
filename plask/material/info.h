@@ -44,7 +44,9 @@ struct PLASK_API MaterialInfo {
         c44,        ///< elastic constant
         eps,        ///< dielectric constant
         chi,        ///< electron affinity
+        Na,         ///< acceptor concentration
         Nc,         ///< effective density of states in the conduction band
+        Nd,         ///< donor concentration
         Nv,         ///< effective density of states in the valence band
         Ni,         ///< intrinsic carrier concentration
         Nf,         ///< free carrier concentration

@@ -31,7 +31,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
-        Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
+        Na, Nc, Nd, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
         mobe, mobh, Ae, Ah, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
@@ -106,6 +106,13 @@ class PythonEvalMaterial : public Material
     Material::Kind kind() const override { return (cls->kind == Material::NONE)? base->kind() : cls->kind; }
     Material::ConductivityType condtype() const override { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
 
+#   define PYTHON_EVAL_CALL_0(rtype, fun) \
+        if (cls->cache.fun) return *cls->cache.fun;\
+        if (cls->fun == NULL) return base->fun(); \
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
+        py::dict locals; locals["self"] = self; \
+        return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
+
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1); \
@@ -165,7 +172,9 @@ class PythonEvalMaterial : public Material
     double c44(double T) const override { PYTHON_EVAL_CALL_1(double, c44, T) }
     double eps(double T) const override { PYTHON_EVAL_CALL_1(double, eps, T) }
     double chi(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, chi, T, e, point) }
+    double Na() const override { PYTHON_EVAL_CALL_0(double, Na) }
     double Nc(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nc, T, e, point) }
+    double Nd() const override { PYTHON_EVAL_CALL_0(double, Nd) }
     double Nv(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nv, T, e, point) }
     double Ni(double T) const override { PYTHON_EVAL_CALL_1(double, Ni, T) }
     double Nf(double T) const override { PYTHON_EVAL_CALL_1(double, Nf, T) }
@@ -331,7 +340,9 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         COMPILE_PYTHON_MATERIAL_FUNCTION(c44)
         COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
         COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Na)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nd)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nv)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
