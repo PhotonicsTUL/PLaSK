@@ -49,87 +49,115 @@ struct PLASK_API MixedMaterial: public Material {
     virtual ~MixedMaterial() {}
 
     //Material methods implementation:
-    virtual std::string name() const override;
+    std::string name() const override;
 
-    virtual Kind kind() const override;
+    Kind kind() const override;
 
-    virtual double lattC(double T, char x) const override;
+    double lattC(double T, char x) const override;
 
-    virtual double Eg(double T, double e=0., char point='*') const override;
+    double Eg(double T, double e=0., char point='*') const override;
 
-    virtual double CB(double T, double e=0., char point='*') const override;
+    double CB(double T, double e=0., char point='*') const override;
 
-    virtual double VB(double T, double e=0., char point='*', char hole='H') const override;
+    double VB(double T, double e=0., char point='*', char hole='H') const override;
 
-    virtual double Dso(double T, double e=0.) const override;
+    double Dso(double T, double e=0.) const override;
 
-    virtual double Mso(double T, double e=0.) const override;
+    double Mso(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Me(double T, double e=0., char point='*') const override;
+    Tensor2<double> Me(double T, double e=0., char point='*') const override;
 
-    virtual Tensor2<double> Mhh(double T, double e=0.) const override;
+    Tensor2<double> Mhh(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Mlh(double T, double e=0.) const override;
+    Tensor2<double> Mlh(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Mh(double T, double e=0.) const override;
+    Tensor2<double> Mh(double T, double e=0.) const override;
 
-    virtual double ac(double T) const override;
+    double ac(double T) const override;
 
-    virtual double av(double T) const override;
+    double av(double T) const override;
 
-    virtual double b(double T) const override;
+    double b(double T) const override;
 
-    virtual double d(double T) const override;
+    double d(double T) const override;
 
-    virtual double c11(double T) const override;
+    double c11(double T) const override;
 
-    virtual double c12(double T) const override;
+    double c12(double T) const override;
 
-    virtual double c44(double T) const override;
+    double c44(double T) const override;
 
-    virtual double eps(double T) const override;
+    double eps(double T) const override;
 
-    virtual double chi(double T, double e=0., char point='*') const override;
+    double chi(double T, double e=0., char point='*') const override;
 
-    virtual double Nc(double T, double e=0., char point='*') const override;
+    double Nc(double T, double e=0., char point='*') const override;
 
-    virtual double Nv(double T, double e=0., char point='*') const override;
+    double Nv(double T, double e=0., char point='*') const override;
 
-    virtual double Ni(double T=0.) const override;
+    double Ni(double T=0.) const override;
 
-    virtual double Nf(double T=0.) const override;
+    double Nf(double T=0.) const override;
 
-    virtual double EactD(double T) const override;
+    double EactD(double T) const override;
 
-    virtual double EactA(double T) const override;
+    double EactA(double T) const override;
 
-    virtual Tensor2<double> mob(double T) const override;
+    Tensor2<double> mob(double T) const override;
 
-    virtual Tensor2<double> cond(double T) const override;
+    Tensor2<double> cond(double T) const override;
 
-    virtual ConductivityType condtype() const override;
+    ConductivityType condtype() const override;
 
-    virtual double A(double T) const override;
+    double A(double T) const override;
 
-    virtual double B(double T) const override;
+    double B(double T) const override;
 
-    virtual double C(double T) const override;
+    double C(double T) const override;
 
-    virtual double D(double T) const override;
+    double D(double T) const override;
 
-    virtual Tensor2<double> thermk(double T, double h) const override;
+    Tensor2<double> thermk(double T, double h) const override;
 
-    virtual double dens(double T) const override;
+    double dens(double T) const override;
 
-    virtual double cp(double T) const override;
+    double cp(double T) const override;
 
-    virtual double nr(double wl, double T, double n = 0.0) const override;
+    double nr(double wl, double T, double n = 0.0) const override;
 
-    virtual double absp(double wl, double T) const override;
+    double absp(double wl, double T) const override;
 
-    virtual dcomplex Nr(double wl, double T, double n = 0.0) const override;
+    dcomplex Nr(double wl, double T, double n = 0.0) const override;
 
-    virtual Tensor3<dcomplex> NR(double wl, double T, double n = 0.0) const override;
+    Tensor3<dcomplex> NR(double wl, double T, double n = 0.0) const override;
+
+    Tensor2<double> mobe(double T) const override;
+
+    Tensor2<double> mobh(double T) const override;
+
+    double Ae(double T) const override;
+
+    double Ah(double T) const override;
+
+    double Ce(double T) const override;
+
+    double Ch(double T) const override;
+
+    double e13(double T) const override;
+
+    double e15(double T) const override;
+
+    double e33(double T) const override;
+
+    double c13(double T) const override;
+
+    double c33(double T) const override;
+
+    double Psp(double T) const override;
+
+    double Na() const override;
+
+    double Nd() const override;
 
 private:
 

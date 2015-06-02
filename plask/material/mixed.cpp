@@ -194,6 +194,64 @@ double MixedMaterial::VB(double T, double e, char point, char hole) const  {
     return avg([&](const Material& m) { return m.VB(T, e, point); });
 }
 
+
+Tensor2<double> MixedMaterial::mobe(double T) const {
+    return avg_pairs([&](const Material& m) { return m.mobe(T); });
+}
+
+Tensor2<double> MixedMaterial::mobh(double T) const {
+    return avg_pairs([&](const Material& m) { return m.mobh(T); });
+}
+
+double MixedMaterial::Ae(double T) const {
+    return avg([&](const Material& m) { return m.Ae(T); });
+}
+
+double MixedMaterial::Ah(double T) const {
+    return avg([&](const Material& m) { return m.Ah(T); });
+}
+
+double MixedMaterial::Ce(double T) const {
+    return avg([&](const Material& m) { return m.Ce(T); });
+}
+
+double MixedMaterial::Ch(double T) const {
+    return avg([&](const Material& m) { return m.Ch(T); });
+}
+
+double MixedMaterial::e13(double T) const {
+    return avg([&](const Material& m) { return m.e13(T); });
+}
+
+double MixedMaterial::e15(double T) const {
+    return avg([&](const Material& m) { return m.e15(T); });
+}
+
+double MixedMaterial::e33(double T) const {
+    return avg([&](const Material& m) { return m.e33(T); });
+}
+
+double MixedMaterial::c13(double T) const {
+    return avg([&](const Material& m) { return m.c13(T); });
+}
+
+double MixedMaterial::c33(double T) const {
+    return avg([&](const Material& m) { return m.c33(T); });
+}
+
+double MixedMaterial::Psp(double T) const {
+    return avg([&](const Material& m) { return m.Psp(T); });
+}
+
+double MixedMaterial::Na() const {
+    return avg([&](const Material& m) { return m.Na(); });
+}
+
+double MixedMaterial::Nd() const {
+    return avg([&](const Material& m) { return m.Nd(); });
+}
+
+
 bool Material::isEqual(const Material &other) const {
     return this->str() == other.str();
 }

@@ -544,12 +544,6 @@ struct PLASK_API Material {
     virtual double chi(double T, double e=0., char point='*') const;
 
     /**
-     * Get acceptor concentration Na [cm^(-3)].
-     * @return acceptor concentration Na [cm^(-3)]
-     */
-    virtual double Na() const;
-
-    /**
      * Get effective density of states in the conduction band Nc [cm^(-3)].
      * @param T temperature [K]
      * @param e lateral strain [-]
@@ -557,12 +551,6 @@ struct PLASK_API Material {
      * @return effective density of states in the conduction band Nc [cm^(-3)]
      */
     virtual double Nc(double T, double e=0., char point='*') const;
-
-    /**
-     * Get donor concentration Nd [cm^(-3)].
-     * @return donor concentration Nd [cm^(-3)]
-     */
-    virtual double Nd() const;
 
     /**
      * Get effective density of states in the valance band Nv [cm^(-3)].
@@ -793,6 +781,20 @@ struct PLASK_API Material {
      * \return spontaneous polarization [C/m^2]
      */
     virtual double Psp(double T) const;
+
+    /**
+     * Get acceptor concentration Na [cm^(-3)].
+     * @return acceptor concentration Na [cm^(-3)]
+     */
+    virtual double Na() const;
+
+    /**
+     * Get donor concentration Nd [cm^(-3)].
+     * @return donor concentration Nd [cm^(-3)]
+     */
+    virtual double Nd() const;
+
+
 
     /**
      * Check if this material is equal to @a other (checks type and uses isEqual).

@@ -140,11 +140,7 @@ Tensor2<double> Material::mob(double T) const { throwNotImplemented("mob(double 
 
 double Material::Mso(double T, double e) const { throwNotImplemented("Mso(double T, double e)"); return 0; }
 
-double Material::Na() const { throwNotImplemented("Na()"); return 0; }
-
 double Material::Nc(double T, double e, char point) const { throwNotImplemented("Nc(double T, double e, char point)"); return 0; }
-
-double Material::Nd() const { throwNotImplemented("Nd()"); return 0; }
 
 double Material::Nv(double T, double e, char point) const { throwNotImplemented("Nv(double T, double e, char point)"); return 0; }
 
@@ -194,6 +190,10 @@ double Material::c13(double T) const { throwNotImplemented("c13(double T)"); ret
 double Material::c33(double T) const { throwNotImplemented("c33(double T)"); return 0; }
 
 double Material::Psp(double T) const { throwNotImplemented("Psp(double T)"); return 0; }
+
+double Material::Na() const { throwNotImplemented("Na()"); return 0; }
+
+double Material::Nd() const { throwNotImplemented("Nd()"); return 0; }
 
 
 
