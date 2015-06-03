@@ -484,8 +484,9 @@ void ExpansionPW2D::prepareField()
         field.reset(N);
         if (field_params.method != INTERPOLATION_FOURIER) {
             Component sym = (field_params.which == FieldParams::E)? symmetry : Component(3-symmetry);
-            fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym), 3);    // tran
-            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym), 3); // long
+            int df = SOLVER->dct2()? 0 : 4;
+            fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym+df), 3);    // tran
+            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym+df), 3); // long
         }
     } else {
         field.reset(N + 1);
