@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
     size(12),
     expansion(this),
-    dct(1),
+    dct(2),
     refine(32),
     oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)

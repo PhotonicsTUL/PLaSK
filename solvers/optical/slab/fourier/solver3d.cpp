@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D>(name),
     size_long(12), size_tran(12),
     expansion(this),
-    dct(1),
+    dct(2),
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
 {
