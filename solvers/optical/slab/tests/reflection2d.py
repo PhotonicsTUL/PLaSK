@@ -46,5 +46,5 @@ class Reflection2D_Test(unittest.TestCase):
             #mesh.Rectangular2D(mesh.Regular(-0.75, 0.75, 100), mesh.Regular(-0.25, 0.75, 100))))
         #plot_geometry(self.solver.geometry, color='w', mirror=True)
         #show()
-        self.assertAlmostEqual( self.solver.modes[nm].neff, 3.197, 3 )
-        #self.assertAlmostEqual( self.solver.modes[nm].neff, 3.199, 3 )
+        #self.assertAlmostEqual( self.solver.modes[nm].neff, 3.197, 3 )  # DCT 1
+        self.assertAlmostEqual( self.solver.modes[nm].neff, 3.199, 3 )  # DCT 2

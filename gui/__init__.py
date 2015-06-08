@@ -78,6 +78,7 @@ elif type(RECENT) is not list:
 
 def update_recent_files(filename):
     global RECENT, CURRENT_DIR
+    filename = filename.replace('/', os.path.sep)
     CURRENT_DIR = os.path.dirname(filename)
     CONFIG['session/recent_dir'] = CURRENT_DIR
     try:

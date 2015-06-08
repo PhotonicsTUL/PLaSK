@@ -286,8 +286,11 @@ class PlaskThread(QtCore.QThread):
                                          startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         fd, fb = os.path.split(fname)
-        self.link = re.compile(r'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'
-                               .format(fd, os.path.sep, fb))
+        sep = os.path.sep
+        if sep == '\\':
+            sep = '\\\\'
+            fd = fd.replace('\\', '\\\\')
+        self.link = re.compile(r'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fd, sep, fb))
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)

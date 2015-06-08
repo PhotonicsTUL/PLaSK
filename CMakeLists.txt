@@ -749,6 +749,9 @@ if(WIN32)
         !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
         !insertmacro UPDATEFILEASSOC
     ")
+    set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "
+        RmDir /r \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\"
+    ") #HACK Temporary fix to remove files from old versions
 endif()
 
 # Settings for DEB and RPM generator
