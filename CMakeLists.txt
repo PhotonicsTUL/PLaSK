@@ -774,7 +774,6 @@ if(WIN32)
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\pyeditor.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\external\\\\pyqtfrontend.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\external\\\\highlighter\\\\js.py*\\\"
-        Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\XPLDocument.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\resources.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\main.py*\\\"
     ") #HACK Temporary fix to remove files from old versions
