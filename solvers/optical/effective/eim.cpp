@@ -390,15 +390,13 @@ void EffectiveIndex2D::stageOne()
                 epsilons[i] += yweights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
             }
         }
-#ifndef NDEBUG
-        {
+        if (maxLoglevel >= LOG_DEBUG) {
             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i) {
                 dcomplex n = sqrt(epsilons[i]); if (abs(n.real()) < 1e-10) n.real(0.); if (abs(n.imag()) < 1e-10) n.imag(0.);
                 nrs << ", " << str(n);
             }
-            writelog(LOG_DEBUG, "horizontal neffs = [%1% ]", nrs.str().substr(1));
+            writelog(LOG_DEBUG, "vertical neffs = [%1% ]", nrs.str().substr(1));
         }
-#endif
         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
         for (size_t i = xbegin; i < xend; ++i) {
             dcomplex n = sqrt(epsilons[i]);

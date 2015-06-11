@@ -305,7 +305,9 @@ class ThermoElectric(object):
             simplemesh = plask.mesh.Rectangular2D.SimpleGenerator()\
                 (self.electrical.geometry.item)
             for x in simplemesh.axis0:
-                plask.axvline(x, ls=":", color="k")
+                plask.axvline(x,
+                              linestyle=plask.rc.grid.linestyle, linewidth=plask.rc.grid.linewidth,
+                              color=plask.rc.grid.color, alpha=plask.rc.grid.alpha)
         plask.gcf().canvas.set_window_title("Current Density")
 
 
