@@ -56,8 +56,10 @@ class CompletionsController(QtGui.QCompleter):
             QtGui.QApplication.restoreOverrideCursor()
 
         QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-        BackgroundTask(lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
-                       thread_finished).start()
+        task = BackgroundTask(
+            lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
+            thread_finished)
+        task.start()
 
     def show_completion_popup(self, completion_prefix, completions):
         if completions:

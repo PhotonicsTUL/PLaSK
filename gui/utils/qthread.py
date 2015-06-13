@@ -13,33 +13,43 @@
 from ..qt import QtCore
 
 
-class BackgroundTask(QtCore.QThread):
+class BackgroundTask(object):
 
-    _tasks = set()
+    instances = set()
+
+    class Thread(QtCore.QThread):
+
+        def __init__(self, task):
+            super(BackgroundTask.Thread, self).__init__()
+            self._task = task
+
+        def run(self):
+            self._task.result = self._task.task()
 
     def __init__(self, task, callback=None):
-        super(BackgroundTask, self).__init__()
-        self._task = task
-        self._callback = callback
-        BackgroundTask._tasks.add(self)
-        self.finished.connect(self._task_finished)
-        self._result = None
+        self.task = task
+        self.callback = callback
+        BackgroundTask.instances.add(self)
+        self.thread = BackgroundTask.Thread(self)
+        self.thread.finished.connect(self.task_finished)
+        self.result = None
 
-    def run(self):
-        self._result = self._task()
+    def start(self):
+        self.thread.start()
 
-    def _task_finished(self):
+    def task_finished(self):
+        del self.thread
+        if self.callback is not None:
+            if self.result is None:
+                self.callback()
+            elif type(self.result) is tuple:
+                self.callback(*self.result)
+            else:
+                self.callback(self.result)
         try:
-            BackgroundTask._tasks.remove(self)
+            BackgroundTask.instances.remove(self)
         except KeyError:
             pass
-        if self._callback is not None:
-            if self._result is None:
-                self._callback()
-            elif type(self._result) is tuple:
-                self._callback(*self._result)
-            else:
-                self._callback(self._result)
 
 
 class Lock(object):

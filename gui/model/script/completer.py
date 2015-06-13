@@ -25,19 +25,31 @@ except ImportError:
 
 JEDI_MUTEX = QtCore.QMutex()
 
+PREAMBLE = '''\
+from pylab import *
+import plask
+from plask import *
+import plask.geometry, plask.mesh, plask.material, plask.plow, plask.phys, plask.algorithm
+from plask import geometry, mesh, material, flow, phys, algorithm
+from plask.pylab import *
+from plask.hdf5 import *
+'''
+
 
 def preload_jedi_modules():
     with Lock(JEDI_MUTEX) as lck:
-        jedi.preload_module('pylab', 'plask')
+        jedi.Script(PREAMBLE, 8, 0, None).completions()
 
 
 def prepare_completions():
     if jedi:
+        from ... import _DEBUG
         # if _DEBUG:
         #     def print_debug(obj, txt):
         #         sys.stderr.write(txt + '\n')
         #     jedi.set_debug_function(print_debug)
-        BackgroundTask(preload_jedi_modules)
+        task = BackgroundTask(preload_jedi_modules)
+        task.start()
 
 
 class CompletionsModel(QtCore.QAbstractTableModel):
@@ -92,16 +104,6 @@ class CompletionsModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, parent=QtCore.QModelIndex()):
         return 1
-
-
-PREAMBLE = '''\
-from pylab import *
-from plask import *
-from plask import geometry, mesh, material, flow, phys, algorithm
-import plask.geometry, plask.mesh, plask.material, plask.plow, plask.phys, plask.algorithm
-from plask.pylab import *
-from plask.hdf5 import *
-'''
 
 
 def _try_type(compl):
