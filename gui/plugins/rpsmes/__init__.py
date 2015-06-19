@@ -19,4 +19,6 @@ from .efm import import_efm_operation
 
 gui.OPERATIONS.append(import_efm_operation)
 gui.OPERATIONS.append(import_dan_operation)
-gui.OPERATIONS.append(export_dan_operation)
+
+if export_dan_operation is not None:
+    gui.OPERATIONS.append(export_dan_operation)

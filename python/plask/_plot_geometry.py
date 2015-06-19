@@ -580,7 +580,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         periods = array((periods, periods), int)
     try:
         if geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or \
-           type(geometry) == plask.geometry.Cylindrical2D:
+           isinstance(geometry, plask.geometry.Cylindrical2D):
             hshift *= 2
             hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
             hmirror = mirror

@@ -19,7 +19,7 @@ import os
 try:
     import plask
 except ImportError:
-    pass
+    export_dan_operation = None
 else:
 
     def _pad(val, l=11):

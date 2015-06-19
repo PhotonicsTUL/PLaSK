@@ -53,13 +53,14 @@ class CompletionsController(QtGui.QCompleter):
             tc = self._edit.textCursor()
             if tc.blockNumber() == row and tc.positionInBlock() == col:
                 self.show_completion_popup(completion_prefix, completions)
-            QtGui.QApplication.restoreOverrideCursor()
+            # QtGui.QApplication.restoreOverrideCursor()
 
-        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
         task = BackgroundTask(
             lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
             thread_finished)
         task.start()
+        # thread_finished(get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col))
 
     def show_completion_popup(self, completion_prefix, completions):
         if completions:

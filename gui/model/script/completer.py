@@ -166,3 +166,18 @@ def get_docstring(document, text, block, column):
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
+
+
+def get_definitions(document, text, block, column):
+    if jedi is None: return None, None
+    with Lock(JEDI_MUTEX) as lck:
+        script = jedi.Script(text, block+1, column, document.filename)
+        try:
+            defs = script.goto_assignments()
+        except:
+            return None, None
+        if defs:
+            d = defs[0]
+            if d.line is not None:
+                return d.line-1, d.column
+        return None, None

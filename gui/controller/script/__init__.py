@@ -12,6 +12,7 @@
 
 import sys
 from copy import copy
+from time import sleep
 
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
@@ -19,7 +20,7 @@ from ...qt.QtCore import Qt
 from ...utils.qthread import BackgroundTask
 
 from .completer import CompletionsController
-from ...model.script.completer import get_docstring
+from ...model.script.completer import get_docstring, get_definitions
 
 from .brackets import get_selections as get_bracket_selections
 from .indenter import indent, unindent, autoindent
@@ -80,7 +81,9 @@ class ScriptEditor(TextEdit):
 
         self.completer = CompletionsController(self)
 
-        self._link_cursor = False
+        self._pointer_blocked = False
+        self._pointer_definition = None, None
+
         self.setMouseTracking(True)
 
     def highlight_brackets(self):
@@ -192,6 +195,39 @@ class ScriptEditor(TextEdit):
                 not self.completer.popup().isVisible():
             self.completer.start_completion()
 
+    def link_definition(self, row, col):
+        self._pointer_blocked = False
+        self._pointer_definition = row, col
+        cursor = QtGui.QApplication.overrideCursor()
+        if not cursor and row is not None:
+            QtGui.QApplication.setOverrideCursor(Qt.PointingHandCursor)
+        elif cursor and cursor.shape() == Qt.PointingHandCursor and row is None:
+            QtGui.QApplication.restoreOverrideCursor()
+
+    def mouseMoveEvent(self, event):
+        super(ScriptEditor, self).mouseMoveEvent(event)
+        if event.modifiers() == Qt.CTRL:
+            if self._pointer_blocked: return
+            self._pointer_blocked = True
+            cursor = self.cursorForPosition(event.pos())
+            row = cursor.blockNumber()
+            col = cursor.positionInBlock()
+            # task = BackgroundTask(lambda: get_definitions(self.controller.document, self.toPlainText(), row, col),
+            #                       self.link_definition)
+            # task.start()
+            self.link_definition(*get_definitions(self.controller.document, self.toPlainText(), row, col))
+        else:
+            cursor = QtGui.QApplication.overrideCursor()
+            if cursor and cursor.shape() == Qt.PointingHandCursor:
+                QtGui.QApplication.restoreOverrideCursor()
+
+    def mouseReleaseEvent(self, event):
+        super(ScriptEditor, self).mouseReleaseEvent(event)
+        row, col = self._pointer_definition
+        if event.modifiers() == Qt.CTRL and not self._pointer_blocked and row:
+            cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(row))
+            cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, col)
+            self.setTextCursor(cursor)
 
 class ScriptController(SourceEditController):
 
@@ -306,9 +342,10 @@ class ScriptController(SourceEditController):
         cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-        BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col),
-                       self.help_dock.show_help).start()
+        # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        task = BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col),
+                              self.help_dock.show_help)
+        task.start()
 
 
 class HelpDock(QtGui.QDockWidget):
@@ -333,4 +370,4 @@ class HelpDock(QtGui.QDockWidget):
             self.setWindowTitle("Help: " + name)
             self.textarea.setText(docstring)
             self.show()
-        QtGui.QApplication.restoreOverrideCursor()
+        # QtGui.QApplication.restoreOverrideCursor()

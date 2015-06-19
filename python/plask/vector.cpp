@@ -188,9 +188,9 @@ inline static int vec_attr_indx(const std::string& attr) {
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, current_axes.str());
+            throw AttributeError("vector attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, current_axes.str());
         else
-            throw AttributeError("'vector' object has no attribute '%s'", attr);
+            throw AttributeError("'vec' object has no attribute '%s'", attr);
     }
     return i;
 }
@@ -199,7 +199,8 @@ template <int dim, typename T>
 struct VecAttr {
     typedef Vec<dim, T> V;
     static T get(const V& self, const std::string& attr) { return self[vec_attr_indx<dim>(attr)]; }
-    static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
+//     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
+    static void set(V& self, const std::string& attr, T val) { throw TypeError("vector attribute '%s' cannot be changed", attr); }
 };
 
 template <int dim, typename T>
@@ -229,9 +230,9 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         , py::no_init);
     vec_class
         .def("__getattr__", &VecAttr<dim,T>::get)
-//         .def("__setattr__", &VecAttr<dim,T>::set)
+        .def("__setattr__", &VecAttr<dim,T>::set)
         .def("__getitem__", &vec__getitem__<dim,T>)
-//         .def("__setitem__", &vec__setitem__<dim,T>)
+        // .def("__setitem__", &vec__setitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
         .def("__len__", &vec__len__<dim>)
         .def("__str__", &vec__str__<dim,T>)

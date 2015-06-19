@@ -13,10 +13,16 @@
 import shutil
 from lxml import etree
 
+try:
+    import plask
+except ImportError:
+    plask = None
+
 from .model import SectionModelTreeBased
 from .controller.source import SourceEditController
 from .controller.defines import DefinesController
-from .controller.geometry import GeometryController
+if plask is not None:
+    from .controller.geometry import GeometryController
 from .controller.script import ScriptController
 from .controller.multi import GUIAndSourceController
 from .controller.solvers import SolversController
@@ -26,11 +32,6 @@ from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
 
 #from .qt import QtGui
-
-try:
-    import plask
-except ImportError:
-    plask = None
 
 
 class XPLDocument(object):
@@ -68,14 +69,14 @@ class XPLDocument(object):
         self.set_changed(False)
         if filename: self.load_from_file(filename)
 
-        if _DEBUG:  #very useful!
+        if _DEBUG and plask is not None:  # very useful!
             from .utils.modeltest import ModelTest
             ModelTest(self.model_by_name('geometry'))
-        #self.tree = etree()
+        # self.tree = etree()
 
-        #self.undo_group = QtGui.QUndoGroup()    #does we need this?
-        #for c in self.controllers:
-        #    self.undo_group.addStack(c.model.undo_stack)
+        # self.undo_group = QtGui.QUndoGroup()    #does we need this?
+        # for c in self.controllers:
+        #     self.undo_group.addStack(c.model.undo_stack)
 
     coding = 'utf-8'
 
