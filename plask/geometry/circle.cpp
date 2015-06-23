@@ -12,6 +12,7 @@ template <int dim>
 Circle<dim>::Circle(double radius, const shared_ptr<plask::Material> &material)
 : GeometryObjectLeaf<dim>(material), radius(radius)
 {
+    if (radius < 0.) throw BadInput((dim==2)? "Circle" : "Sphere", "negative radius");
 }
 
 template <>

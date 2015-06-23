@@ -35,6 +35,7 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
      * @param new_radius new radius to set
      */
     void setRadius(double new_radius) {
+        if (new_radius < 0.) throw BadInput("Cylinder", "trying to set negative radius");
         this->radius = new_radius;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
@@ -44,6 +45,7 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
      * @param new_height new height to set
      */
     void setHeight(double new_height) {
+        if (new_height < 0.) throw BadInput("Cylinder", "trying to set negative height");
         this->height = new_height;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }

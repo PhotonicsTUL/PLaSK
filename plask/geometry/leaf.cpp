@@ -103,10 +103,12 @@ inline static double readAlternativeAttrs(GeometryReader& reader, const std::str
     auto value2 = reader.source.getAttribute<double>(attr2);
     if (value1) {
         if (value2) throw XMLConflictingAttributesException(reader.source, attr1, attr2);
-        else return *value1;
+        if (*value1 < 0.) throw XMLBadAttrException(reader.source, attr1, boost::lexical_cast<std::string>(*value1));
+        return *value1;
     } else {
         if (!value2) throw XMLNoAttrException(reader.source, format("%1%' or '%2%", attr1, attr2));
-        else return *value2;
+        if (*value2 < 0.) throw XMLBadAttrException(reader.source, attr2, boost::lexical_cast<std::string>(*value2));
+        return *value2;
     }
 }
 
