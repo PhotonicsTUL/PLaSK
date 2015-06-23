@@ -248,8 +248,7 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
      */
     void setSize(DVec&& new_size) {
         for(int i = 0; i != dim; ++i)
-            if (new_size[i] < 0.)
-                throw BadInput((dim==2)?"Rectangle":"Cuboid", "trying to set negative dimension %d", i);
+            if (new_size[i] < 0.) new_size[i] = 0.;
         size = new_size;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
@@ -271,7 +270,7 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
     explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, const shared_ptr<Material>& material = shared_ptr<Material>())
         : GeometryObjectLeaf<dim>(material), size(size) {
         for(int i = 0; i != dim; ++i)
-            if (size[i] < 0.) throw BadInput((dim==2)?"Rectangle":"Cuboid", "negative dimension %d", i);
+            if (size[i] < 0.) this->size[i] = 0.;
     }
 
     explicit Block(const DVec& size, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): GeometryObjectLeaf<dim>(materialTopBottom), size(size) {}

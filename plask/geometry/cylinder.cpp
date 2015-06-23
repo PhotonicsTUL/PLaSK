@@ -6,15 +6,15 @@ namespace plask {
 Cylinder::Cylinder(double radius, double height, const shared_ptr<Material>& material)
     : GeometryObjectLeaf<3>(material), radius(radius), height(height)
 {
-    if (radius < 0.) throw BadInput("Cylinder", "negative radius");
-    if (height < 0.) throw BadInput("Cylinder", "negative height");
+    if (radius < 0.) radius = 0.;
+    if (height < 0.) height = 0.;
 }
 
 Cylinder::Cylinder(double radius, double height, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom)
     : GeometryObjectLeaf<3>(materialTopBottom), radius(radius), height(height)
 {
-    if (radius < 0.) throw BadInput("Cylinder", "negative radius");
-    if (height < 0.) throw BadInput("Cylinder", "negative height");
+    if (radius < 0.) radius = 0.;
+    if (height < 0.) height = 0.;
 }
 
 Cylinder::Box Cylinder::getBoundingBox() const {

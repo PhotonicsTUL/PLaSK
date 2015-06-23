@@ -31,7 +31,7 @@ struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
     explicit Circle(double radius, const shared_ptr<Material>& material = shared_ptr<Material>());
 
     explicit Circle(double radius, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): GeometryObjectLeaf<dim>(materialTopBottom), radius(radius) {
-        if (radius < 0.) throw BadInput((dim==2)? "Circle" : "Sphere", "negative radius");
+        if (radius < 0.) radius = 0.;
     }
 
     virtual Box getBoundingBox() const override;
@@ -47,7 +47,7 @@ struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
      * @param radius new radius
      */
     void setRadius(double new_radius) {
-        if (new_radius < 0.) throw BadInput((dim==2)? "Circle" : "Sphere", "trying to set negative radius");
+        if (new_radius < 0.) new_radius = 0.;
         this->radius = new_radius;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
