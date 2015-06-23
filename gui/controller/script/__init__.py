@@ -179,7 +179,7 @@ class ScriptEditor(TextEdit):
             txt = cursor.block().text()
             col = cursor.positionInBlock()
             mode = QtGui.QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QtGui.QTextCursor.MoveAnchor
-            if txt[:col].strip():
+            if txt[:col].strip() or (col == 0 and txt.strip()):
                 cursor.movePosition(QtGui.QTextCursor.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
                     cursor.movePosition(QtGui.QTextCursor.Right, mode)
