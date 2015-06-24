@@ -215,8 +215,21 @@ geometry.AlignContainer3D = geometry.Align3D
 
 ## ## plask.manager ## ##
 
-def loadxpl(source, vars={}, sections=None, destination=None):
-    """Load the XPL file."""
+def loadxpl(source, vars={}, sections=None, destination=None, new=True):
+    """
+    Load the XPL file. All sections contents is read into the `destination` scope.
+
+    Args:
+        source (str): Name of the XPL file or open file object.
+        vars (dict): Optional dictionary with substitution variables. Values
+                     specified in the <defines> section of the XPL file are
+                     overridden with the one specified in this parameter.
+        sections (list): List of section names to read.
+        destination (dict): Destination scope. If None, ``globals()`` is used.
+        new (bool): If the flag is true, all data got from the previous call to
+                    :fun:`loadxpl` are neglected. Set it to ``False`` if you want
+                    to append some data from another file.
+    """
 
     if destination is None:
         try:
@@ -224,11 +237,13 @@ def loadxpl(source, vars={}, sections=None, destination=None):
         except NameError:
             import __main__
             destination = __main__.__dict__
-    try:
-        manager = destination['__manager__']
-    except KeyError:
-        manager = Manager()
-        destination['__manager__'] = manager
+    if new:
+        destination['__manager__'] = manager = Manager()
+    else:
+        try:
+            manager = destination['__manager__']
+        except KeyError:
+            destination['__manager__'] = manager = Manager()
     manager.load(source, vars, sections)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
@@ -238,10 +253,15 @@ def loadxpl(source, vars={}, sections=None, destination=None):
     if same: current_axes = lst[0]
 
 def runxpl(source, vars={}):
-    """Load and run the code from the XPL file.
+    """
+    Load and run the code from the XPL file. Unlike :fun:`loadxpl` this function
+    does not modify the current global scope.
 
-       'source' is the name of the XPL file or open file object.
-       'vars' is the optional dictionary with substitution variables
+    Args:
+        source (str): Name of the XPL file or open file object.
+        vars (dict): Optional dictionary with substitution variables. Values
+                     specified in the <defines> section of the XPL file are
+                     overridden with the one specified in this parameter.
     """
     env = globals().copy()
     env['plask'] = sys.modules["plask"]
