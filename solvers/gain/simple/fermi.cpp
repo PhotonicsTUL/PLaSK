@@ -597,27 +597,31 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
+    void setupFromAxis(const shared_ptr<RectangularAxis>& axis) {
+        regpoints.reserve(solver->regions.size());
+        InterpolationFlags flags(solver->geometry);
+        for (size_t r = 0; r != solver->regions.size(); ++r) {
+            std::set<double> pts;
+            auto box = solver->regions[r].getBoundingBox();
+            double y = 0.5 * (box.lower.c1 + box.upper.c1);
+            for (double x: *axis) {
+                auto p = flags.wrap(vec(x,y));
+                if (solver->regions[r].contains(p)) pts.insert(p.c0);
+            }
+            auto msh = make_shared<OrderedAxis>();
+            msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
+            regpoints.emplace_back(std::move(msh));
+        }
+    }
+
     DataBase(FermiGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
         solver(solver), dest_mesh(dst_mesh)
     {
         // Create horizontal points lists
         if (solver->mesh) {
-            regpoints.assign(solver->regions.size(), solver->mesh);
+            setupFromAxis(solver->mesh);
         } else if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh)) {
-            regpoints.reserve(solver->regions.size());
-            InterpolationFlags flags(solver->geometry);
-            for (size_t r = 0; r != solver->regions.size(); ++r) {
-                std::set<double> pts;
-                auto box = solver->regions[r].getBoundingBox();
-                double y = 0.5 * (box.lower.c1 + box.upper.c1);
-                for (double x: *rect_mesh->axis0) {
-                    auto p = flags.wrap(vec(x,y));
-                    if (solver->regions[r].contains(p)) pts.insert(p.c0);
-                }
-                auto msh = make_shared<OrderedAxis>();
-                msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
-                regpoints.emplace_back(std::move(msh));
-            }
+            setupFromAxis(rect_mesh->axis0);
         } else {
             regpoints.reserve(solver->regions.size());
             InterpolationFlags flags(solver->geometry);
@@ -654,7 +658,8 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
                 try {
-                    values[i] = getValue(wavelength, temps[i], concs[i], solver->regions[reg]);
+                    // Make concentration non-zero
+                    values[i] = getValue(wavelength, temps[i], max(concs[i], 1e-9), solver->regions[reg]);
                 } catch(...) {
                     #pragma omp critical
                     error = std::current_exception();

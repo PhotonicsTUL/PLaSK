@@ -288,7 +288,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         int ile = 0;
                         for (auto n: n_present)
                         {
-                            if (n <= 0) ile++;
+                            if (n <= 0.) ile++;
                         }
                         write_debug("n < 0: %1% times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
@@ -617,7 +617,7 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
             inqw = true;
             break;
         }
-    if (!inqw) return 0.; // small number but non-zero to make gain solver happy
+    if (!inqw) return 0.;
     return concentration[i];
 }
 
@@ -772,7 +772,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
-    
+
     shared_ptr<RectangularMesh<2>> grid = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
 
