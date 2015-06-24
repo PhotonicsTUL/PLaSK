@@ -290,7 +290,7 @@ class PlaskThread(QtCore.QThread):
         if sep == '\\':
             sep = '\\\\'
             fd = fd.replace('\\', '\\\\')
-        self.link = re.compile(r'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fd, sep, fb))
+        self.link = re.compile(ur'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fd, sep, fb))
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
@@ -314,11 +314,11 @@ class PlaskThread(QtCore.QThread):
         elif cat == "DEBUG         :": color = "gray   "
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
-        line = self.link.sub(r'<a style="color: {}" href="line:\2">\1&nbsp;line&nbsp;\2\3</a>'.format(color), line)
         try:
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
             line = line.decode('utf-8')
+        line = self.link.sub(ur'<a style="color: {}" href="line:\2">\1&nbsp;line&nbsp;\2\3</a>'.format(color), line)
         try:
             self.mutex.lock()
             self.lines.append((cat[:-1].strip(),
@@ -359,7 +359,7 @@ class Launcher(object):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
+            dirname = os.path.dirname(os.path.abspath(main_window.document.filename or u'dummy'))
         dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
         dirbutton.pressed.connect(lambda: self.select_workdir(main_window.document.filename))
         dirlayout = QtGui.QHBoxLayout()

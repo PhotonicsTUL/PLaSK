@@ -180,7 +180,7 @@ else:
             current_model = controller.current_root()
             name = controller.current_root().name
             geom = manager.geometry[str(name)]
-            filename = '{}_{}'.format(os.path.splitext(parent.document.filename)[0], name)
+            filename = u'{}_{}'.format(os.path.splitext(parent.document.filename)[0], name)
             write_dan(filename, manager.solver.values(), geom)
         except Exception as err:
             msgbox = QtGui.QMessageBox()

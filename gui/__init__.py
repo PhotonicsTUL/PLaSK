@@ -173,7 +173,7 @@ class MainWindow(QtGui.QMainWindow):
         splitter.addWidget(self.info_table)
         self.info_model.layoutChanged.connect(lambda: self.info_table.setVisible(self.info_model.rowCount() > 0))
 
-        if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
+        if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = XPLDocument(self)
             self.setup_model()
 
@@ -391,7 +391,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def _save_document(self, filename):
         try:
-            self.document.save_to_file(str(filename))
+            self.document.save_to_file(unicode(filename))
         except Exception as err:
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("Save Error")
