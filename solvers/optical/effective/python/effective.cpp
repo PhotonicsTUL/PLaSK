@@ -264,6 +264,8 @@ BOOST_PYTHON_MODULE(effective)
                "    neff (complex): Mode effective index.\n"
                "    symmetry ('+' or '-'): Symmetry of the mode to search.\n",
                "neff", arg("symmetry")=py::object());
+        METHOD(clear_modes, clearModes,
+               "Clear all computed modes.\n");
         solver.def("get_total_absorption", (double (EffectiveIndex2D::*)(size_t))&EffectiveIndex2D::getTotalAbsorption,
                "Get total energy absorbed by from a mode in unit time.\n\n"
                "Args:\n"
@@ -397,6 +399,8 @@ BOOST_PYTHON_MODULE(effective)
                    "    loss (float): Mode losses. Allowed only if *lam* is a float.\n"
                    "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
                    (py::arg("lam"), "loss", py::arg("m")=0));
+        METHOD(clear_modes, clearModes,
+               "Clear all computed modes.\n");
         solver.def("get_total_absorption", (double (EffectiveFrequencyCyl::*)(size_t))&EffectiveFrequencyCyl::getTotalAbsorption,
                "Get total energy absorbed from a mode in unit time.\n\n"
                "Args:\n"

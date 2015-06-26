@@ -306,6 +306,11 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      */
     size_t setMode(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT);
 
+    /// Clear computed modes
+    void clearModes() {
+        modes.clear();
+    }
+    
     /**
      * Compute field weights
      * \param num mode number to consider

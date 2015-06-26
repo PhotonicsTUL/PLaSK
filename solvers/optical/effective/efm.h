@@ -401,6 +401,11 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss));
     }
 
+    /// Clear computed modes
+    void clearModes() {
+        modes.clear();
+    }
+    
     /**
      * Return total amount of energy absorbed by the matter in a unit time.
      * \param num mode number
