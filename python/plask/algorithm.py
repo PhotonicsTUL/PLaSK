@@ -115,7 +115,7 @@ class ThermoElectric(object):
             self.electrical.inTemperature = self.thermal.outTemperature
             self.thermal.inHeat = self.electrical.outHeat
 
-    def run(self, save=True):
+    def run(self, save=True, noinit=False):
         """
         Execute the algorithm.
 
@@ -127,11 +127,14 @@ class ThermoElectric(object):
             save (bool or str): If `True` the computed fields are saved to the
                 HDF5 file named after the script name with the suffix denoting
                 either the batch job id or the current time if no batch system
-                is used. The filename can be overriden by setting this parameted
+                is used. The filename can be overridden by setting this paramete
                 as a string.
+            noinit (bool): If this flas is set, solvers are not invalidated
+                           in the beginning of the computations.
         """
-        self.thermal.invalidate()
-        self.electrical.invalidate()
+        if not noinit:
+            self.thermal.invalidate()
+            self.electrical.invalidate()
 
         verr = 2. * self.electrical.maxerr
         terr = 2. * self.thermal.maxerr
@@ -466,7 +469,7 @@ class ThresholdSearch(ThermoElectric):
         if self.loss not in ('neff', 'wavelength', 'loss'):
             raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
 
-    def run(self, save=True):
+    def run(self, save=True, noinit=False):
         """
         Execute the algorithm.
 
@@ -481,6 +484,8 @@ class ThresholdSearch(ThermoElectric):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overriden by setting this parameted
                 as a string.
+            noinit (bool): If this flas is set, solvers are not invalidated
+                           in the beginning of the computations.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
@@ -490,10 +495,11 @@ class ThresholdSearch(ThermoElectric):
             123.0
         """
 
-        self.thermal.invalidate()
-        self.electrical.invalidate()
-        self.diffusion.invalidate()
-        self.optical.invalidate()
+        if not noinit:
+            self.thermal.invalidate()
+            self.electrical.invalidate()
+            self.diffusion.invalidate()
+            self.optical.invalidate()
 
         def func(volt):
             """Function to search zero of"""
