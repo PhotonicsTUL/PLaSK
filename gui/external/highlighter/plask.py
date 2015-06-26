@@ -30,6 +30,7 @@ syntax = {
             'Data',
             'Manager',
             'StepProfile',
+            'ComputationError',
             'loadxpl',
             'runxpl',
             'print_log',

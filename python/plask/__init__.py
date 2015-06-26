@@ -215,7 +215,7 @@ geometry.AlignContainer3D = geometry.Align3D
 
 ## ## plask.manager ## ##
 
-def loadxpl(source, vars={}, sections=None, destination=None, new=True):
+def loadxpl(source, vars={}, sections=None, destination=None, update=False):
     """
     Load the XPL file. All sections contents is read into the `destination` scope.
 
@@ -226,9 +226,9 @@ def loadxpl(source, vars={}, sections=None, destination=None, new=True):
                      overridden with the one specified in this parameter.
         sections (list): List of section names to read.
         destination (dict): Destination scope. If None, ``globals()`` is used.
-        new (bool): If the flag is true, all data got from the previous call to
-                    :fun:`loadxpl` are neglected. Set it to ``False`` if you want
-                    to append some data from another file.
+        update (bool): If the flag is ``False``, all data got from the previous
+                       call to :fun:`loadxpl` are discarded. Set it to ``True``
+                       if you want to append some data from another file.
     """
 
     if destination is None:
@@ -237,13 +237,13 @@ def loadxpl(source, vars={}, sections=None, destination=None, new=True):
         except NameError:
             import __main__
             destination = __main__.__dict__
-    if new:
-        destination['__manager__'] = manager = Manager()
-    else:
+    if update:
         try:
             manager = destination['__manager__']
         except KeyError:
             destination['__manager__'] = manager = Manager()
+    else:
+        destination['__manager__'] = manager = Manager()
     manager.load(source, vars, sections)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
