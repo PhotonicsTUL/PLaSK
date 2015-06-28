@@ -282,6 +282,7 @@ void register_python_log()
     py_enum<LogLevel> loglevel;
     py::scope scope;
     LOG_ENUM(CRITICAL_ERROR);
+    loglevel.value("CRITICAL", LOG_CRITICAL_ERROR); scope.attr("LOG_CRITICAL") = "CRITICAL";
     LOG_ENUM(ERROR);
     LOG_ENUM(WARNING);
     LOG_ENUM(INFO);
