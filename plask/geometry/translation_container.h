@@ -54,17 +54,6 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     PathHints::Hint addUnsafe(shared_ptr<ChildType> el, ChildAligner aligner);
 
     /**
-     * Add new child (trasnlated) to end of children vector.
-     * @param el new child
-     * @param aligner
-     * @return path hint, see @ref geometry_paths
-     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
-     */
-    PathHints::Hint add(shared_ptr<ChildType> el, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*el);
-        return addUnsafe(el, aligner);
-    }
-    /**
      * Add new child (translated) to end of children vector.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el new child
@@ -74,7 +63,19 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     PathHints::Hint addUnsafe(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC);
 
     /**
-     * Add new child (trasnlated) to end of children vector.
+     * Add new child (translated) to end of children vector.
+     * @param el new child
+     * @param aligner
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint add(shared_ptr<ChildType> el, ChildAligner aligner) {
+        this->ensureCanHaveAsChild(*el);
+        return addUnsafe(el, aligner);
+    }
+
+    /**
+     * Add new child (translated) to end of children vector.
      * @param el new child
      * @param translation trasnalation of child
      * @return path hint, see @ref geometry_paths
@@ -83,6 +84,52 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     PathHints::Hint add(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
+    }
+
+    /**
+     * Insert new child (translated) to end of children vector.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after inserting the new child.
+     * @param el new child
+     * @param pos insert position
+     * @param aligner
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint insertUnsafe(const std::size_t pos, shared_ptr<ChildType> el, ChildAligner aligner);
+
+    /**
+     * Insert new child (translated) to end of children vector.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after inserting the new child.
+     * @param el new child
+     * @param pos insert position
+     * @param translation trasnalation of child
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint insertUnsafe(const std::size_t pos, shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC);
+
+    /**
+     * Insert new child (translated) to end of children vector.
+     * @param el new child
+     * @param pos insert position
+     * @param aligner
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if inserting the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint insert(const std::size_t pos, shared_ptr<ChildType> el, ChildAligner aligner) {
+        this->ensureCanHaveAsChild(*el);
+        return insertUnsafe(pos, el, aligner);
+    }
+
+    /**
+     * Insert new child (translated) to end of children vector.
+     * @param el new child
+     * @param pos insert position
+     * @param translation trasnalation of child
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if inserting the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint insert(const std::size_t pos, shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+        this->ensureCanHaveAsChild(*el);
+        return insertUnsafe(pos, el, translation);
     }
 
     //methods overwrite to use cache:

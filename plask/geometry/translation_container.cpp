@@ -17,13 +17,18 @@ PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationConta
 
 template <int dim>
 PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationContainer<dim>::ChildType> el, const TranslationContainer<dim>::DVec& translation) {
-    /*shared_ptr<TranslationContainer<dim>::TranslationT> trans_geom(new TranslationContainer<dim>::TranslationT(el, translation));
-    this->connectOnChildChanged(*trans_geom);
-    children.push_back(trans_geom);
-    invalidateCache();
-    this->fireChildrenInserted(children.size()-1, children.size());
-    return PathHints::Hint(shared_from_this(), trans_geom);*/
     return this->addUnsafe(el, align::fromVector(translation));
+}
+
+template <int dim>
+PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
+    invalidateCache();
+    return this->_insertUnsafe(pos, newTranslation(el, aligner), aligner);
+}
+
+template <int dim>
+PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<TranslationContainer<dim>::ChildType> el, const TranslationContainer<dim>::DVec& translation) {
+    return this->insertUnsafe(pos, el, align::fromVector(translation));
 }
 
 /*template <>

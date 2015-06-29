@@ -295,8 +295,8 @@ protected:
     std::vector< ChildAligner > aligners;
 
     ///Do everything, but align to_insert by aligner.
-    PathHints::Hint _insertUnsafe(shared_ptr<TranslationT> to_insert, const std::size_t pos, ChildAligner aligner) {
-        this->ensureIsValidInserPosition(pos, "insertUnsafe");
+    PathHints::Hint _insertUnsafe(const std::size_t pos, shared_ptr<TranslationT> to_insert, ChildAligner aligner) {
+        this->ensureIsValidInsertPosition(pos, "insertUnsafe");
         this->children.insert(children.begin() + pos, to_insert);
         aligners.insert(aligners.begin() + pos, aligner);
         this->connectOnChildChanged(*to_insert);
@@ -304,9 +304,9 @@ protected:
         return PathHints::Hint(this->shared_from_this(), to_insert);
     }
 
-    PathHints::Hint _insert(shared_ptr<TranslationT> to_insert, const std::size_t pos, ChildAligner aligner) {
+    PathHints::Hint _insert(const std::size_t pos, shared_ptr<TranslationT> to_insert, ChildAligner aligner) {
         this->ensureCanHaveAsChild(*to_insert);
-        return _insertUnsafe(to_insert, pos, aligner);
+        return _insertUnsafe(pos, to_insert, aligner);
     }
 
     PathHints::Hint _addUnsafe(shared_ptr<TranslationT> to_add, ChildAligner aligner) {

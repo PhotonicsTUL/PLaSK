@@ -990,7 +990,7 @@ protected:
      * @param arg_name name of index argument in caller method, used to format excption message
      * @throw OutOfBoundsException if index is not valid
      */
-    void ensureIsValidInserPosition(std::size_t child_no, const char* method_name = "insert", const char* arg_name = "pos") const {
+    void ensureIsValidInsertPosition(std::size_t child_no, const char* method_name = "insert", const char* arg_name = "pos") const {
         std::size_t children_count = getRealChildrenCount();
         if (child_no > children_count)
             throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count-1);

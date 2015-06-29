@@ -76,6 +76,23 @@ static PathHints::Hint TranslationContainer3_add
     return self.add(el, Vec<3>(c0, c1, c2));
 }
 
+static PathHints::Hint TranslationContainer2_insert
+    (int pos, TranslationContainer<2>& self, shared_ptr<typename TranslationContainer<2>::ChildType> el, double c0, double c1) {
+    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+    return self.insert(pos, el, Vec<2>(c0, c1));
+}
+
+static PathHints::Hint TranslationContainer3_insert
+    (int pos, TranslationContainer<3>& self, shared_ptr<typename TranslationContainer<3>::ChildType> el, double c0, double c1, double c2) {
+    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+    return self.insert(pos, el, Vec<3>(c0, c1, c2));
+}
+
+template <int dim>
+PathHints::Hint TranslationContainer_insert_vec(TranslationContainer<dim>& self, int pos, shared_ptr<typename TranslationContainer<dim>::ChildType> item, const Vec<dim>& vec) {
+    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+    return self.insert(pos, item, vec);
+}
 
 template <typename ContainerT>
 PathHints::Hint TranslationContainer_add(py::tuple args, py::dict kwargs) {
@@ -88,6 +105,18 @@ PathHints::Hint TranslationContainer_add(py::tuple args, py::dict kwargs) {
         return self->add(child, py::extract<typename ContainerT::ChildAligner>(kwargs));
 }
 
+template <typename ContainerT>
+PathHints::Hint TranslationContainer_insert(py::tuple args, py::dict kwargs) {
+    parseKwargs("insert", args, kwargs, "self", "pos", "item");
+    ContainerT* self = py::extract<ContainerT*>(args[0]);
+    int pos = py::extract<int>(args[1]);
+    if (pos < 0) pos += self->getRealChildrenCount() + 1;
+    shared_ptr<typename ContainerT::ChildType> child = py::extract<shared_ptr<typename ContainerT::ChildType>>(args[2]);
+    if (py::len(kwargs) == 0)
+        return self->insert(pos, child);
+    else
+        return self->insert(pos, child, py::extract<typename ContainerT::ChildAligner>(kwargs));
+}
 
 void register_geometry_container_stack();
 
@@ -121,6 +150,7 @@ void register_geometry_container()
             "append(item, **alignments)\n\n"
             "Add new object to the container with provided alignment.\n\n"
             "Args:\n"
+            "    item (geometry object): Item to add.\n"
             "    translation (:class:`plask.vec`): Two-dimensional vector specifying\n"
             "                                      the position of the item origin.\n"
             "    c0 (float): Horizontal component of the vector specifying the position\n"
@@ -135,12 +165,27 @@ void register_geometry_container()
             "                       for each axis must be given.\n"
         )
 
-        // alias to append
-        .def("add", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>), "add(item, **alignments)" )
-        .def("add", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
-            (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)))
-        .def("add", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"),
-            "Alias for :meth:`~plask.geometry.Align2D.append`.\n"
+        .def("insert", py::raw_function(&TranslationContainer_insert<TranslationContainer<2>>))
+        .def("insert", TranslationContainer_insert_vec<2>,
+             (py::arg("pos"), "item", py::arg("translation")=Vec<2>(0.,0.)))
+        .def("insert", &TranslationContainer2_insert, (py::arg("pos"), "item", "c0", "c1"),
+            "insert(item, **alignments)\n\n"
+            "Insert new object to the container at specified position with provided alignment.\n\n"
+            "Args:\n"
+            "    post (int): Item postion after insertion.\n"
+            "    item (geometry object): Item to insert.\n"
+            "    translation (:class:`plask.vec`): Two-dimensional vector specifying\n"
+            "                                      the position of the item origin.\n"
+            "    c0 (float): Horizontal component of the vector specifying the position\n"
+            "                of the item origin.\n"
+            "    c1 (float): Vertical component of the vector specifying the position\n"
+            "                of the item origin.\n"
+            "    alignments (dict): Alignment specifications. The keys in this dictionary\n"
+            "                       can be ``left``, ``right``, ``top``, ``bottom``,\n"
+            "                       ``#center``, and `#`` where `#` is an axis name.\n"
+            "                       The corresponding values are positions of a given\n"
+            "                       edge/center/origin of the item. Exactly one alignment\n"
+            "                       for each axis must be given.\n"
         )
 
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<2>>),
@@ -180,6 +225,7 @@ void register_geometry_container()
             "append(item, **alignments)\n\n"
             "Add new object to the container with provided alignment.\n\n"
             "Args:\n"
+            "    item (geometry object): Item to add.\n"
             "    translation (:class:`plask.vec`): Three-dimensional vector specifying\n"
             "                                      the position of the item origin.\n"
             "    c0 (float): Longitudinal component of the vector specifying the position\n"
@@ -196,12 +242,29 @@ void register_geometry_container()
             "                       alignment for each axis must be given.\n"
         )
 
-        // alias to append
-        .def("add", py::raw_function(&TranslationContainer_add<TranslationContainer<3>>), "add(item, **alignments)")
-        .def("add", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
-             (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)))
-        .def("add", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"),
-            "Alias for :meth:`~plask.geometry.Align3D.append`.\n"
+        .def("insert", py::raw_function(&TranslationContainer_insert<TranslationContainer<3>>))
+        .def("insert", TranslationContainer_insert_vec<3>,
+             (py::arg("pos"), "item", py::arg("translation")=Vec<3>(0.,0.,0.)))
+        .def("insert", &TranslationContainer3_insert, (py::arg("pos"), "item", "c0", "c1", "c2"),
+            "insert(item, **alignments)\n\n"
+            "Insert new object to the container at specified position with provided alignment.\n\n"
+            "Args:\n"
+            "    post (int): Item postion after insertion.\n"
+            "    item (geometry object): Item to insert.\n"
+            "    translation (:class:`plask.vec`): Two-dimensional vector specifying\n"
+            "                                      the position of the item origin.\n"
+            "    c0 (float): Longitudinal component of the vector specifying the position\n"
+            "                of the item origin.\n"
+            "    c1 (float): Transverse component of the vector specifying the position\n"
+            "                of the item origin.\n"
+            "    c2 (float): Vertical component of the vector specifying the position\n"
+            "                of the item origin.\n"
+            "    alignments (dict): Alignment specifications. The keys in this dictionary\n"
+            "                       can be ``left``, ``right``, ``top``, ``bottom``,\n"
+            "                       ``front``, ``back``, ``#center``, and `#`` where `#`\n"
+            "                       is an axis name. The corresponding values are positions\n"
+            "                       of a given edge/center/origin of the item. Exactly one\n"
+            "                       alignment for each axis must be given.\n"
         )
 
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<3>>), "Move item in container")
