@@ -116,13 +116,16 @@ class XPLDocument(object):
         data = '<plask loglevel="{}">\n\n'.format(self.loglevel)
         current_line_in_file = 3
         for c in self.controllers:
-            if sections is not None and c.model.name not in sections: continue
             if update_lines: c.update_line_numbers(current_line_in_file)
             element = c.model.get_file_xml_element()
             if len(element) or element.text:
                 section_string = etree.tostring(element, encoding="UTF-8", pretty_print=True)
-                data += section_string + '\n'
-                current_line_in_file += section_string.count('\n') + 1
+                lines_count = section_string.count('\n') + 1
+                current_line_in_file += lines_count
+                if sections is None or c.model.name in sections:
+                    data += section_string + '\n'
+                else:
+                    data += '\n' * lines_count
         data += '</plask>\n'
         return data
 
