@@ -22,11 +22,11 @@ class GNLeaf(GNObject):
         self.step_dist = None
         self.material_top = None
         self.material_bottom = None
-        
+
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNLeaf, self)._attributes_from_xml(attribute_reader, conf)
-        self.step_num = attribute_reader.get('step-num')
-        self.step_dist = attribute_reader.get('step-dist')
+        self.step_num = attribute_reader.get('steps-num')
+        self.step_dist = attribute_reader.get('steps-dist')
         self.set_material(attribute_reader.get('material'))
         if self.material_bottom is None:
             self.material_bottom = attribute_reader.get('material-bottom')
@@ -34,8 +34,8 @@ class GNLeaf(GNObject):
 
     def _attributes_to_xml(self, element, conf):
         super(GNLeaf, self)._attributes_to_xml(element, conf)
-        if self.step_num is not None: element.attrib['step-num'] = self.step_num
-        if self.step_dist is not None: element.attrib['step-dist'] = self.step_dist
+        if self.step_num is not None: element.attrib['steps-num'] = self.step_num
+        if self.step_dist is not None: element.attrib['steps-dist'] = self.step_dist
         if self.material_top == self.material_bottom:
             if self.material_top is not None: element.attrib['material'] = self.material_top
         else:
@@ -135,7 +135,7 @@ class GNBlock(GNLeaf):
 
 
 class GNCylinder(GNLeaf):
-    
+
     def __init__(self, parent=None):
         super(GNCylinder, self).__init__(parent=parent, dim=3)
         self.radius = None  #required in PLaSK but not in GUI
@@ -175,10 +175,10 @@ class GNCylinder(GNLeaf):
         result = GNCylinder()
         result.set_xml_element(element, conf)
         return result
-    
+
 
 class GNCircle(GNLeaf):
-    
+
     def __init__(self, parent=None, dim=None):
         super(GNCircle, self).__init__(parent=parent, dim=dim)
         self.radius = None  #required in PLaSK but not in GUI

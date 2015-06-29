@@ -15,7 +15,7 @@ dcomplex RootMuller::find(dcomplex start) const
 
     double xtol2 = params.tolx * params.tolx;
     double fmin2 = params.tolf_min * params.tolf_min;
-    double fmax2 = params.tolf_min * params.tolf_min;
+    double fmax2 = params.tolf_max * params.tolf_max;
 
     dcomplex x2 = first, x1 = second, x0 = start;
 
