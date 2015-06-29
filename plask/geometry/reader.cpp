@@ -179,7 +179,9 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         boost::optional<double> l = source.getAttribute<double>("length");
         shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
+        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+                           }, getAxisNames(), *materialsDB );
         if (l) {
             cartesian2d->setExtrusion(make_shared<Extrusion>(readExactlyOneChild<GeometryObjectD<2>>(), *l));
         } else {
@@ -197,8 +199,9 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
-
+        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+                           }, getAxisNames(), *materialsDB );
         auto child = readExactlyOneChild<GeometryObject>();
         auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
         if (child_as_revolution) {
@@ -212,7 +215,9 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = make_shared<Geometry3D>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), *materialsDB );
+        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+                           }, getAxisNames(), *materialsDB );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
             readExactlyOneChild<GeometryObjectD<3>>());
 
