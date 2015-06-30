@@ -25,10 +25,11 @@ class PLASK_API GeometryReader {
 
   public:
 
-    static constexpr const char* const XML_NAME_ATTR = "name";                        ///< name of object's/geometry's name attribute in XML
-    static constexpr const char* const XML_MATERIAL_ATTR = "material";                ///< name of material attribute in XML
-    static constexpr const char* const XML_MATERIAL_TOP_ATTR = "material-top";          ///< name of top material attribute in XML
-    static constexpr const char* const XML_MATERIAL_BOTTOM_ATTR = "material-bottom";    ///< name of bottom material attribute in XML
+    static constexpr const char* const XML_NAME_ATTR = "name";                        ///< name of the object's/geometry's name attribute in XML
+    static constexpr const char* const XML_MATERIAL_ATTR = "material";                ///< name of the material attribute in XML
+    static constexpr const char* const XML_MATERIAL_TOP_ATTR = "material-top";        ///< name of the top material attribute in XML
+    static constexpr const char* const XML_MATERIAL_BOTTOM_ATTR = "material-bottom";  ///< name of the bottom material attribute in XML
+    static constexpr const char* const XML_MATERIAL_GRADING_ATTR = "material-shape";///< name of the shape exponent attribute in XML
 
     /// @c true if materials in leafs are required, @c false if we read only shape
     bool materialsAreRequired;
@@ -141,8 +142,8 @@ class PLASK_API GeometryReader {
      */
     shared_ptr<Material> getMaterial(const std::string& material_full_name) const;
 
-    shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
-        return materialsDB->getFactory(material1_full_name, material2_full_name);
+    shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name, double shape=1.) const {
+        return materialsDB->getFactory(material1_full_name, material2_full_name, shape);
     }
 
     /**

@@ -24,8 +24,8 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     return src ? &src->materialsDB : nullptr;
 }*/
 
-MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
-    : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition) {
+MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition, double shape)
+    : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition), shape(shape) {
     //check if compositions are fine and simillar:
     checkCompositionSimilarity(material1composition, material2composition);
     checkCompositionSimilarity(material2composition, material1composition);
@@ -38,7 +38,7 @@ Material::Composition plask::MaterialsDB::MixedCompositionOnlyFactory::mixedComp
     for (auto& p1: result) {
         if (!std::isnan(p1.second)) {
             auto p2 = material2composition.find(p1.first);
-            p1.second = p1.second * m1_weight + p2->second * (1.0 - m1_weight);
+            p1.second = p1.second * pow(m1_weight, shape) + p2->second * (1.0 - pow(m1_weight, shape));
         }
     }
     return result;
@@ -232,7 +232,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(Material::Parameters(full_name));
 }
 
-shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
+shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname, double shape) const {
     Material::Parameters m1(material1_fullname), m2(material2_fullname);
     if (m1.dopantName != m2.dopantName)
         throw MaterialParseException("Cannot mix materials with different doping: '%1%' and '%2%'", material1_fullname, material2_fullname);
@@ -249,7 +249,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
             throw MaterialParseException("%1%: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);
 
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
-                    new MixedDopantFactory(getConstructor(m1), m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount)
+                    new MixedDopantFactory(getConstructor(m1), m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount, shape)
                     );
     }
 
@@ -258,12 +258,12 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
                     new MixedCompositionAndDopantFactory(getConstructor(m1),
                                                     m1.composition, m2.composition,
-                                                    m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount)
+                                                    m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount, shape)
                     );
 
     //both undopped
     return shared_ptr<MaterialsDB::MixedCompositionFactory>(
-            new MixedCompositionOnlyFactory(getConstructor(m1), m1.composition, m2.composition)
+            new MixedCompositionOnlyFactory(getConstructor(m1), m1.composition, m2.composition, shape)
     );
 
     /*std::string m1comp, m1dop, m2comp, m2dop;

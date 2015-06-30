@@ -96,7 +96,7 @@ struct PLASK_API MaterialsDB {
     /**
      * Base class for factories of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
-    struct PLASK_API MixedCompositionFactory {    //TODO nonlinear mixing with functor double [0.0, 1.0] -> double [0.0, 1.0]
+    struct PLASK_API MixedCompositionFactory {
 
     protected:
 
@@ -136,6 +136,8 @@ struct PLASK_API MaterialsDB {
 
         Material::Composition material1composition, material2composition;
 
+        double shape;
+
         /**
          * Calculate mixed composition, of material1composition and material2composition.
          * @param m1_weight weight of first composition (material1composition)
@@ -149,8 +151,9 @@ struct PLASK_API MaterialsDB {
          * @param constructor material constructor
          * @param material1composition incomplate composition of first material
          * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
+         * \param shape changing material shape exponent
          */
-        MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
+        MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition, double shape=1.);
 
         /**
          * Construct material.
@@ -183,10 +186,11 @@ struct PLASK_API MaterialsDB {
          * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
          * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
+         * \param shape changing material shape exponent
          */
         MixedCompositionAndDopantFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
-                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
-            : MixedCompositionOnlyFactory(constructor, material1composition, material2composition), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
+                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount, double shape=1.)
+            : MixedCompositionOnlyFactory(constructor, material1composition, material2composition, shape), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
          * Construct material.
@@ -195,7 +199,7 @@ struct PLASK_API MaterialsDB {
          */
         shared_ptr<Material> operator()(double m1_weight) const {
             return (*constructor)(mixedComposition(m1_weight), dopAmountType,
-                                  m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+                                  m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
         virtual shared_ptr<Material> singleMaterial() const {
@@ -213,15 +217,18 @@ struct PLASK_API MaterialsDB {
 
         double m1DopAmount, m2DopAmount;
 
+        double shape;
+
     public:
         /**
          * Construct MixedDopantFactory for given material constructor of simple material, and doping amounts for this constructor.
          * @param constructor material constructor
          * @param dopAmountType type of doping amounts, common for both materials
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
+         * \param shape changing material shape exponent
          */
-        MixedDopantFactory(shared_ptr<const MaterialConstructor> constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
-            : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
+        MixedDopantFactory(shared_ptr<const MaterialConstructor> constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount, double shape=1.)
+            : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount), shape(shape) {}
 
         /**
          * Construct material.
@@ -229,7 +236,7 @@ struct PLASK_API MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const {
-            return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+            return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
         virtual shared_ptr<Material> singleMaterial() const {
@@ -444,9 +451,10 @@ public:
      * Construct mixed material factory.
      * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[_label][:dopant],
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
+     * \param shape changing material shape exponent
      * @return constructed factory
      */
-    shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const;
+    shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname, double shape=1.) const;
 
     /*
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.

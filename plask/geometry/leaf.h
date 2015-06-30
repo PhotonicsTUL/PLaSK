@@ -111,7 +111,7 @@ protected:
 
 public:
 
-    GeometryReader & readMaterial(GeometryReader &src);
+    GeometryReader& readMaterial(GeometryReader &src);
 
     //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add singleMaterial
 

@@ -8,6 +8,7 @@ constexpr const char* const GeometryReader::XML_NAME_ATTR;
 constexpr const char* const GeometryReader::XML_MATERIAL_ATTR;
 constexpr const char* const GeometryReader::XML_MATERIAL_TOP_ATTR;
 constexpr const char* const GeometryReader::XML_MATERIAL_BOTTOM_ATTR;
+constexpr const char* const GeometryReader::XML_MATERIAL_GRADING_ATTR;
 
 
 shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_full_name) const {

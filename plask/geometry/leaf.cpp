@@ -21,15 +21,17 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     auto top_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR);
     auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
     if (!top_attr && !bottom_attr) {
-        if (src.materialsAreRequired) {
+        if (src.source.hasAttribute(GeometryReader::XML_MATERIAL_GRADING_ATTR))
+            src.source.throwException(format("'%s' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));        if (src.materialsAreRequired) {
             this->setMaterialFast(src.getMaterial(src.source.requireAttribute(GeometryReader::XML_MATERIAL_ATTR)));
         } else if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
             this->setMaterialFast(src.getMaterial(*matstr));
     } else {
         if (!top_attr || !bottom_attr)
-            src.source.throwException(format("If \"%1%\" or \"%2%\" attribute is given, the second one is also required.",
+            src.source.throwException(format("If '%1%' or '%2%' attribute is given, the second one is also required",
                                                 GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
-        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr));
+        double shape = src.source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
+        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
     }
     return src;
 }

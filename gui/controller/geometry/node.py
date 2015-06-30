@@ -73,7 +73,8 @@ class GNodeController(Controller):
         def undo(self):
             self.set_property_value(self.old_value)
 
-    def _set_node_property_undoable(self, property_name, new_value, display_property_name = None, unit = '', node=None, action_name=None):
+    def _set_node_property_undoable(self, property_name, new_value, display_property_name=None,
+                                    unit='', node=None, action_name=None):
         if node is None: node = self.node
         if isinstance(new_value, basestring): new_value = empty_to_none(new_value)
         old_value = getattr(node, property_name)
@@ -83,7 +84,7 @@ class GNodeController(Controller):
         self._set_node_by_setter_undoable(lambda n, v: setattr(n, property_name, v), new_value, old_value,
                                           action_name=action_name, node=node)
 
-    def _set_node_by_setter_undoable(self, setter, new_value, old_value, action_name, node = None):
+    def _set_node_by_setter_undoable(self, setter, new_value, old_value, action_name, node=None):
         if new_value != old_value:
             self.model.undo_stack.push(GNodeController.ChangeNodeCommand(
                 self.model, self.node if node is None else node,
@@ -94,7 +95,8 @@ class GNodeController(Controller):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
-    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None, node_property_name = None, display_property_name = None, change_cb = None):
+    def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None,
+                            node_property_name=None, display_property_name=None, change_cb=None):
         res = QtGui.QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:

@@ -22,6 +22,7 @@ class GNLeaf(GNObject):
         self.step_dist = None
         self.material_top = None
         self.material_bottom = None
+        self.material_shape = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNLeaf, self)._attributes_from_xml(attribute_reader, conf)
@@ -31,6 +32,7 @@ class GNLeaf(GNObject):
         if self.material_bottom is None:
             self.material_bottom = attribute_reader.get('material-bottom')
             self.material_top = attribute_reader.get('material-top')
+            self.material_shape = attribute_reader.get('material-shape')
 
     def _attributes_to_xml(self, element, conf):
         super(GNLeaf, self)._attributes_to_xml(element, conf)
@@ -41,11 +43,12 @@ class GNLeaf(GNObject):
         else:
             if self.material_top is not None: element.attrib['material-top'] = self.material_top
             if self.material_bottom is not None: element.attrib['material-bottom'] = self.material_bottom
+            if self.material_shape is not None: element.attrib['material-shape'] = self.material_shape
 
     def major_properties(self):
         res = super(GNLeaf, self).major_properties()
         if self.material_top == self.material_bottom:
-            res.append(('material', self.material_top))
+            res.append(('material', self.material_bottom))
         else:
             #if self.material_top is not None and self.material_bottom is not None:
             #    res.append(('bottom / top materials', '{} / {}'.format(self.material_bottom, self.material_top)))
@@ -53,6 +56,7 @@ class GNLeaf(GNObject):
             res.append('materials:')
             res.append(('bottom', self.material_bottom))
             res.append(('top', self.material_top))
+            if self.material_shape is not None: res.append(('shape', self.material_shape))
             res.append(None)
         return res
 

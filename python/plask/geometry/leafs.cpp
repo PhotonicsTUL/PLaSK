@@ -25,11 +25,14 @@ void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omater
         self->setMaterial(material);
     } catch (py::error_already_set) {
         PyErr_Clear();
-        if (py::len(omaterial) != 2)
+        auto l = py::len(omaterial);
+        double shape = 1.;
+        if (l != 2 && l != 3)
             throw TypeError("Argument is not a proper material");
         std::string mat1 = py::extract<std::string>(omaterial[0]);
         std::string mat2 = py::extract<std::string>(omaterial[1]);
-        self->setMaterialTopBottomComposition(MaterialsDB::getDefault().getFactory(mat2, mat1));
+        if (l == 3) shape = py::extract<double>(omaterial[2]);
+        self->setMaterialTopBottomComposition(MaterialsDB::getDefault().getFactory(mat2, mat1, shape));
     }
 }
 

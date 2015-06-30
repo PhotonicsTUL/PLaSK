@@ -23,15 +23,31 @@ class GNLeafController(GNObjectController):
         material_form = self.construct_group('Material')
 
         self.material_selection_type = QtGui.QComboBox()
-        self.material_selection_type.addItems(['Solid', 'Gradual'])
-        self.material_selection_type.currentIndexChanged.connect(self._save_material_in_model_undoable)
+        self.material_selection_type.addItems(['Solid', 'Bottom/Top'])
+        self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
 
-        self.material_solid = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
+        self.material_solid = self.construct_material_combo_box(items=[''],
+                                                                change_cb=self._save_material_in_model_undoable)
 
         material_tb_hbox, material_tb_group = self._construct_hbox()
-        self.material_bottom = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
-        self.material_top = self.construct_material_combo_box(items=[''], change_cb=self._save_material_in_model_undoable)
+        self.material_bottom = self.construct_material_combo_box(items=[''],
+                                                                 change_cb=self._save_material_in_model_undoable)
+        self.material_top = self.construct_material_combo_box(items=[''],
+                                                              change_cb=self._save_material_in_model_undoable)
+        self.material_shape = self.construct_line_edit(None, node_property_name='material_shape',
+                                                       display_property_name='material shape exponent',
+                                                       change_cb=self._save_material_in_model_undoable)
+        self.material_shape.setToolTip(u'&lt;{} <b>material-shape</b>="" ...&gt;<br/>'
+                                 u'Shape exponent of changing material. Setting this value to anything different than '
+                                 u'one allows to specify non-linearly varying material. (float)'
+                                 .format(self.node.tag_name(False)))
+        self.material_bottom.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.material_top.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.material_shape.setMaximumWidth(50)
         material_tb_hbox.addWidget(self.material_bottom)
+        material_tb_hbox.addWidget(QtGui.QLabel('...'))
+        material_tb_hbox.addWidget(self.material_shape)
+        material_tb_hbox.addWidget(QtGui.QLabel('...'))
         material_tb_hbox.addWidget(self.material_top)
 
         self.material_group = QtGui.QStackedWidget()
@@ -56,38 +72,48 @@ class GNLeafController(GNObjectController):
                                   u'Minimum step size if the object is non-uniform.'
                                   .format(self.node.tag_name(False)))
 
+    def _material_type_changed(self):
+        if self.material_selection_type.currentIndex() == 1:
+            with BlockQtSignals(self.material_bottom, self.material_top):
+                material = self.material_solid.currentText()
+                self.material_bottom.setEditText(material)
+                self.material_top.setEditText(material)
+        else:
+            with BlockQtSignals(self.material_solid):
+                self.material_solid.setEditText(self.material_bottom.currentText())
+        self._save_material_in_model_undoable()
+
     def _save_material_in_model_undoable(self):
         def setter(n, v):
             n.material_bottom = v[0]
             n.material_top = v[1]
+            n.material_shape = v[2]
 
         if self.material_selection_type.currentIndex() == 0:
             m = empty_to_none(self.material_solid.currentText())
-            new_material = (m, m)
+            new_material = (m, m, None)
         else:
-            new_material = ( empty_to_none(self.material_bottom.currentText()), empty_to_none(self.material_top.currentText()) )
+            new_material = (empty_to_none(self.material_bottom.currentText()),
+                            empty_to_none(self.material_top.currentText()),
+                            empty_to_none(self.material_shape.text()))
 
         self._set_node_by_setter_undoable(
-            setter, new_material, (self.node.material_bottom, self.node.material_top), 'change material'
-        )
-
-        #if self.material_selection_type.currentIndex() == 0:
-        #    self.node.set_material(empty_to_none(self.material_solid.currentText()))
-        #else:
-        #    self.node.material_bottom = empty_to_none(self.material_bottom.currentText())
-        #    self.node.material_top = empty_to_none(self.material_top.currentText())
+            setter, new_material, (self.node.material_bottom, self.node.material_top, self.node.material_shape),
+            'change material')
 
     def fill_form(self):
         super(GNLeafController, self).fill_form()
-        with BlockQtSignals(self.material_selection_type, self.material_bottom, self.material_top, self.material_solid):
+        with BlockQtSignals(self.material_selection_type,
+                            self.material_solid, self.material_bottom, self.material_top, self.material_shape):
             index = 0 if self.node.is_solid() else 1
             self.material_selection_type.setCurrentIndex(index)
             self.material_group.setCurrentIndex(index)
             if self.node.is_solid():
-                self.material_solid.setEditText(none_to_empty(self.node.material_top))
+                self.material_solid.setEditText(none_to_empty(self.node.material_bottom))
             else:
                 self.material_bottom.setEditText(none_to_empty(self.node.material_bottom))
                 self.material_top.setEditText(none_to_empty(self.node.material_top))
+                self.material_shape.setText(none_to_empty(self.node.material_shape))
         self.step_num.setText(none_to_empty(self.node.step_num))
         self.step_dist.setText(none_to_empty(self.node.step_dist))
 
