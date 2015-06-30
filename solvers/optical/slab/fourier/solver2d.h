@@ -14,7 +14,7 @@ namespace plask { namespace solvers { namespace slab {
  */
 struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> {
 
-    std::string getClassName() const { return "optical.Fourier2D"; }
+    std::string getClassName() const override { return "optical.Fourier2D"; }
 
     /// Indication of parameter to search
     enum What {
@@ -51,9 +51,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// Class responsible for computing expansion coefficients
     ExpansionPW2D expansion;
 
-    void onInitialize();
+    void onInitialize() override;
 
-    void onInvalidate();
+    void onInvalidate() override;
 
     void computeCoefficients() override {
         expansion.computeMaterialCoefficients();
@@ -85,7 +85,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     FourierSolver2D(const std::string& name="");
 
-    void loadConfiguration(XMLReader& reader, Manager& manager);
+    void loadConfiguration(XMLReader& reader, Manager& manager) override;
 
     /**
      * Find the mode around the specified effective index.
@@ -335,7 +335,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         return modes.size()-1;
     }
 
-    size_t nummodes() const { return modes.size(); }
+    size_t nummodes() const override { return modes.size(); }
 
     /**
      * Return mode effective index

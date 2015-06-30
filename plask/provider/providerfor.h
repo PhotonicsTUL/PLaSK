@@ -1185,7 +1185,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return values.size();
         }
 

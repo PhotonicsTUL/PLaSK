@@ -189,7 +189,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void saveResE(std::string filename); /// save results for electrons
     void saveResP(std::string filename); /// save polarizations
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     DriftDiffusionModel2DSolver(const std::string& name="");
 

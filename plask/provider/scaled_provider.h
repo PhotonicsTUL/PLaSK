@@ -132,7 +132,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, MULTI_FIELD_PROPERTY,
         return (*this->source)(n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }
     
-    virtual size_t size() const {
+    virtual size_t size() const override {
         this->ensureHasProvider();
         return this->source->size();
     }

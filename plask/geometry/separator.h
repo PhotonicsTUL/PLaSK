@@ -103,7 +103,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
     static constexpr const char* NAME = "gap";              ///< name of gap type, used as XML tag name when write to XML
     static constexpr const char* XML_SIZE_ATTR = "size";    ///< name of size attribute in XML
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     /// Size of gap.
     double size;

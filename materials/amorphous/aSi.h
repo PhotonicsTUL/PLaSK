@@ -24,7 +24,7 @@ struct aSi: public Dielectric {
     virtual double absp(double wl, double T) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const;
+    virtual bool isEqual(const Material& other) const override;
 
 };
 

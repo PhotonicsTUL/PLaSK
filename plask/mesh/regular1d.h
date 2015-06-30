@@ -94,7 +94,7 @@ class PLASK_API RegularAxis: public RectangularAxis {
     }
 
     /// @return true only if there are no points in mesh
-    bool empty() const { return points_count == 0; }
+    bool empty() const override { return points_count == 0; }
 
     /**
      * Get point by index.
@@ -121,7 +121,7 @@ class PLASK_API RegularAxis: public RectangularAxis {
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
-    std::size_t findIndex(double to_find) const {
+    std::size_t findIndex(double to_find) const override {
         return clamp(int(std::ceil((to_find - lo) / _step)), 0, int(points_count));
     }
 
@@ -151,7 +151,7 @@ class PLASK_API RegularAxis: public RectangularAxis {
      * @param to_find
      * @return index i for which abs((*this)[i]-to_find) is minimal
      */
-    std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
+    std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
 
     virtual shared_ptr<RectangularMesh<1>> clone() const override { return make_shared<RegularAxis>(*this); }
 

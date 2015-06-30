@@ -72,7 +72,7 @@ public:
      * @param write_cb
      * @param axes
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames axes) const override;
 
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
@@ -177,7 +177,7 @@ public:
         return children[child_no];
     }*/
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
 
     /**
      * Remove all children which fulfil predicate.

@@ -227,7 +227,7 @@ struct PLASK_API MeshD: public Mesh {
     enum { DIM = dimension };
 
     ///@return true only if there are no points in mesh
-    bool empty() const { return size() == 0; }
+    bool empty() const override { return size() == 0; }
 
     /// Type of vector representing coordinates in local space
     typedef typename Primitive<DIM>::DVec LocalCoords;

@@ -288,7 +288,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         junction_conductivity = cond.claim();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodElectrical2DSolver(const std::string& name="");
 

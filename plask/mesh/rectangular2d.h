@@ -522,7 +522,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * Get number of points in mesh.
      * @return number of points in mesh
      */
-    std::size_t size() const { return axis0->size() * axis1->size(); }
+    std::size_t size() const override { return axis0->size() * axis1->size(); }
 
     /**
      * Get maximum of sizes axis0 and axis1
@@ -543,7 +543,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     void writeXML(XMLElement& object) const override;
 
     /// @return true only if there are no points in mesh
-    bool empty() const { return axis0->empty() || axis1->empty(); }
+    bool empty() const override { return axis0->empty() || axis1->empty(); }
 
     /**
      * Calculate this mesh index using indexes of axis0 and axis1->
@@ -606,7 +606,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    virtual Vec<2, double> at(std::size_t index) const {
+    virtual Vec<2, double> at(std::size_t index) const override {
         return Vec<2, double>(axis0->at(index0(index)), axis1->at(index1(index)));
     }
 

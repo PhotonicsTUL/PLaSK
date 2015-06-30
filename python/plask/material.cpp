@@ -335,18 +335,18 @@ class PythonMaterial : public Material
         return base->NR(wl, T, n);
     }
 
-    Tensor2<double> mobe(double T) const { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
-    Tensor2<double> mobh(double T) const { return call<Tensor2<double>>("mobh", &Material::mobh, cache->mobh, T); }
-    double Ae(double T) const { return call<double>("Ae", &Material::Ae, cache->Ae, T); }
-    double Ah(double T) const { return call<double>("Ah", &Material::Ah, cache->Ah, T); }
-    double Ce(double T) const { return call<double>("Ce", &Material::Ce, cache->Ce, T); }
-    double Ch(double T) const { return call<double>("Ch", &Material::Ch, cache->Ch, T); }
-    double e13(double T) const { return call<double>("e13", &Material::e13, cache->e13, T); }
-    double e15(double T) const { return call<double>("e15", &Material::e15, cache->e15, T); }
-    double e33(double T) const { return call<double>("e33", &Material::e33, cache->e33, T); }
-    double c13(double T) const { return call<double>("c13", &Material::c13, cache->c13, T); }
-    double c33(double T) const { return call<double>("c33", &Material::c33, cache->c33, T); }
-    double Psp(double T) const { return call<double>("Psp", &Material::Psp, cache->Psp, T); }
+    Tensor2<double> mobe(double T) const override { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
+    Tensor2<double> mobh(double T) const override { return call<Tensor2<double>>("mobh", &Material::mobh, cache->mobh, T); }
+    double Ae(double T) const override { return call<double>("Ae", &Material::Ae, cache->Ae, T); }
+    double Ah(double T) const override { return call<double>("Ah", &Material::Ah, cache->Ah, T); }
+    double Ce(double T) const override { return call<double>("Ce", &Material::Ce, cache->Ce, T); }
+    double Ch(double T) const override { return call<double>("Ch", &Material::Ch, cache->Ch, T); }
+    double e13(double T) const override { return call<double>("e13", &Material::e13, cache->e13, T); }
+    double e15(double T) const override { return call<double>("e15", &Material::e15, cache->e15, T); }
+    double e33(double T) const override { return call<double>("e33", &Material::e33, cache->e33, T); }
+    double c13(double T) const override { return call<double>("c13", &Material::c13, cache->c13, T); }
+    double c33(double T) const override { return call<double>("c33", &Material::c33, cache->c33, T); }
+    double Psp(double T) const override { return call<double>("Psp", &Material::Psp, cache->Psp, T); }
 
     // End of overriden methods
 

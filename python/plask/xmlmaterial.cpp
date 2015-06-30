@@ -41,7 +41,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
     {}
 
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override;
 
     bool isSimple() const override { return true; }
 };
@@ -230,18 +230,18 @@ class PythonEvalMaterial : public Material
         return base->NR(wl, T, n);
     }
 
-    Tensor2<double> mobe(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, mobe, T) }
-    Tensor2<double> mobh(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, mobh, T) }
-    double Ae(double T) const { PYTHON_EVAL_CALL_1(double, Ae, T) }
-    double Ah(double T) const { PYTHON_EVAL_CALL_1(double, Ah, T) }
-    double Ce(double T) const { PYTHON_EVAL_CALL_1(double, Ce, T) }
-    double Ch(double T) const { PYTHON_EVAL_CALL_1(double, Ch, T) }
-    double e13(double T) const { PYTHON_EVAL_CALL_1(double, e13, T) }
-    double e15(double T) const { PYTHON_EVAL_CALL_1(double, e15, T) }
-    double e33(double T) const { PYTHON_EVAL_CALL_1(double, e33, T) }
-    double c13(double T) const { PYTHON_EVAL_CALL_1(double, c13, T) }
-    double c33(double T) const { PYTHON_EVAL_CALL_1(double, c33, T) }
-    double Psp(double T) const { PYTHON_EVAL_CALL_1(double, Psp, T) }
+    Tensor2<double> mobe(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mobe, T) }
+    Tensor2<double> mobh(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mobh, T) }
+    double Ae(double T) const override { PYTHON_EVAL_CALL_1(double, Ae, T) }
+    double Ah(double T) const override { PYTHON_EVAL_CALL_1(double, Ah, T) }
+    double Ce(double T) const override { PYTHON_EVAL_CALL_1(double, Ce, T) }
+    double Ch(double T) const override { PYTHON_EVAL_CALL_1(double, Ch, T) }
+    double e13(double T) const override { PYTHON_EVAL_CALL_1(double, e13, T) }
+    double e15(double T) const override { PYTHON_EVAL_CALL_1(double, e15, T) }
+    double e33(double T) const override { PYTHON_EVAL_CALL_1(double, e33, T) }
+    double c13(double T) const override { PYTHON_EVAL_CALL_1(double, c13, T) }
+    double c33(double T) const override { PYTHON_EVAL_CALL_1(double, c33, T) }
+    double Psp(double T) const override { PYTHON_EVAL_CALL_1(double, Psp, T) }
 
     // End of overridden methods
 };

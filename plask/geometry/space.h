@@ -268,7 +268,7 @@ public:
      * @param el object to search for
      * @return @c true only if @a el is in subtree with child of @c this in root
      */
-    bool hasInSubtree(const GeometryObject& el) const {
+    bool hasInSubtree(const GeometryObject& el) const override {
         return getChild()->hasInSubtree(el);
     }
 
@@ -282,7 +282,7 @@ public:
      * @param pathHints (optional) path hints which limits search space
      * @return sub-tree with paths to given object (@p el is in all leafs), empty sub-tree if @p el is not in subtree with child of @c this in root
      */
-    Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const {
+    Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const override {
         return getChild()->getPathsTo(el, pathHints);
     }
 
@@ -292,7 +292,7 @@ public:
      * @param dest destination vector
      * @param path (optional) path hints which limits search space
      */
-    void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
+    void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override {
         return getChild()->getObjectsToVec(predicate, dest, path);
     }
 
@@ -492,7 +492,7 @@ public:
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */
-    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {
+    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override {
         return getChild()->changedVersion(changer, translation);
     }
 
@@ -612,7 +612,7 @@ public:
         return getChild()->getRolesAt(point, &path);
     }
 
-    virtual void setPlanarBorders(const border::Strategy& border_to_set);
+    virtual void setPlanarBorders(const border::Strategy& border_to_set) override;
 
     // /*
     //  * Get the sub/super-space of this one (automatically detected)
@@ -642,7 +642,7 @@ public:
     //     return subspace;
     // }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
 };
 
@@ -681,7 +681,7 @@ public:
 
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D;
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for the left border.
@@ -737,7 +737,7 @@ public:
      * \param border_lo new strategy for the border with lower coordinate
      * \param border_hi new strategy for the border with higher coordinate
      */
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
 
     /**
      * Set strategies for a border in specified direction
@@ -745,9 +745,9 @@ public:
      * \param higher indicates whether higher- or lower-coordinate border is to be set
      * \param border_to_set new strategy for the border with higher coordinate
      */
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const override;
 
     /**
      * Set material on the positive side of the axis along the extrusion.
@@ -785,11 +785,11 @@ public:
      * Get child of extrusion object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryObjectD<2> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const override;
 
-    void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
+    void removeAtUnsafe(std::size_t) override { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
@@ -803,7 +803,7 @@ public:
      * Get extrusion object included in this geometry.
      * @return extrusion object included in this geometry
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const { return extrusion; }
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override { return extrusion; }
 
     /**
      * Set new extrusion object for this geometry and inform observers about changing of geometry.
@@ -819,7 +819,7 @@ public:
 //         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
 //     }
 
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
 };
 
@@ -842,7 +842,7 @@ public:
 
     static constexpr const char* NAME = "cylindrical";
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for inner border.
@@ -910,11 +910,11 @@ public:
      * Get child of revolution object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryObjectD<2> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const override;
 
-    void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
+    void removeAtUnsafe(std::size_t) override { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
@@ -928,7 +928,7 @@ public:
      * Get revolution object included in this geometry.
      * @return revolution object included in this geometry
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const { return revolution; }
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override { return revolution; }
 
     /**
      * Set new revolution object for this geometry and inform observers about changing of geometry.
@@ -944,24 +944,24 @@ public:
 //         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
 //     }
 
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
 
-    void setBorders(Direction direction, const border::Strategy& border_to_set);
+    void setBorders(Direction direction, const border::Strategy& border_to_set) override;
 
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const override;
 
-    virtual bool isSymmetric(Direction direction) const {
+    virtual bool isSymmetric(Direction direction) const override {
         if (direction == DIRECTION_TRAN) return true;
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
 
-    void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
+    void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
   protected:
 
-    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const {
+    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const override {
         const char* directions[3][2] = { {"cw", "ccw"}, {"inner", "outer"}, {"bottom", "top"} };
         return directions[ax][orient];
     }
@@ -983,7 +983,7 @@ public:
 
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D;
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for the left border.
@@ -1039,9 +1039,9 @@ public:
      * \param border_lo new strategy for the border with lower coordinate
      * \param border_hi new strategy for the border with higher coordinate
      */
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
 
-    void setBorders(Direction direction, const border::Strategy& border_to_set);
+    void setBorders(Direction direction, const border::Strategy& border_to_set) override;
 
     /**
      * Set strategies for a border in specified direction
@@ -1049,9 +1049,9 @@ public:
      * \param higher indicates whether higher- or lower-coordinate border is to be set
      * \param border_to_set new strategy for the border with higher coordinate
      */
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const override;
 
     /**
      * Construct geometry over given 3D @p child object.
@@ -1063,9 +1063,9 @@ public:
      * Get child object used by this geometry.
      * @return child object
      */
-    virtual shared_ptr< GeometryObjectD<3> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<3> > getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<3> > getChildUnsafe() const;
+    virtual shared_ptr< GeometryObjectD<3> > getChildUnsafe() const override;
 
     /**
      * Set new child.
@@ -1093,13 +1093,13 @@ public:
      */
     bool hasChild() const { return this->child != nullptr; }
 
-    void removeAtUnsafe(std::size_t) { setChildUnsafe(shared_ptr< GeometryObjectD<3> >()); }
+    void removeAtUnsafe(std::size_t) override { setChildUnsafe(shared_ptr< GeometryObjectD<3> >()); }
 
     /**
      * Get child object used by this geometry.
      * @return child object
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const;
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override;
 
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
 

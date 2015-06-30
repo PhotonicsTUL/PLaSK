@@ -17,7 +17,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
                 ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 

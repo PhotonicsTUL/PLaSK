@@ -41,7 +41,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual Box getBoundingBox() const;
+    virtual Box getBoundingBox() const override;
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 

@@ -64,9 +64,9 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
             layerMaterialCoefficients(l);
     }
 
-    virtual size_t lcount() const;
+    virtual size_t lcount() const override;
 
-    virtual bool diagonalQE(size_t l) const {
+    virtual bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 

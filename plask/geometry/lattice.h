@@ -97,7 +97,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
 
     std::size_t getChildrenCount() const override;
 
-    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
     std::size_t getRealChildrenCount() const override;
 

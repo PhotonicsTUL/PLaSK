@@ -83,9 +83,9 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         if (error) std::rethrow_exception(error);
     }
 
-    virtual size_t lcount() const;
+    virtual size_t lcount() const override;
 
-    virtual bool diagonalQE(size_t l) const {
+    virtual bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 

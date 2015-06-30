@@ -73,7 +73,7 @@ struct LevelsAdapterGeneric: public LevelsAdapter
         size_t index(size_t i) const override;
         double vpos() const override;
         std::size_t size() const override { return matching.size(); }
-        shared_ptr<const plask::Mesh> mesh() const { return make_shared<const Mesh>(this); }
+        shared_ptr<const plask::Mesh> mesh() const override { return make_shared<const Mesh>(this); }
     };
 
     /// Original mesh

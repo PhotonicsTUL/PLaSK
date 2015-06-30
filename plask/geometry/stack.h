@@ -179,7 +179,7 @@ public:
 
     static constexpr const char* NAME = "shelf";
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     /**
      * Check if all children have the same heights.
@@ -303,7 +303,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
                 ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     ChildAligner default_aligner;
 
@@ -458,9 +458,9 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const override;
 
 protected:
-    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
+    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const override;
 
-    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
 };
 
@@ -567,9 +567,9 @@ class PLASK_API MultiStackContainer: public UpperClass {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
+    virtual std::size_t getChildrenCount() const override { return children.size() * repeat_count; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
     virtual std::size_t getRealChildrenCount() const override;
 

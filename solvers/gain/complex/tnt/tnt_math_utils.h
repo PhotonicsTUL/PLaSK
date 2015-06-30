@@ -19,11 +19,11 @@ Real hypot(const Real &a, const Real &b)
 {
 	
 	if (a== 0)
-		return fabs(b);
+		return std::abs(b);
 	else
 	{
 		Real c = b/a;
-		return fabs(a) * sqrt(1 + c*c);
+		return std::abs(a) * sqrt(1 + c*c);
 	}
 }
 } /* TNT namespace */

@@ -410,11 +410,11 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * Write mesh to XML
      * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& object) const;
+    virtual void writeXML(XMLElement& object) const override;
 
 
     /// @return true only if there are no points in mesh
-    bool empty() const { return axis0->empty() || axis1->empty() || axis2->empty(); }
+    bool empty() const override { return axis0->empty() || axis1->empty() || axis2->empty(); }
 
     /**
      * Calculate this mesh index using indexes of c0, c1 and c2.
@@ -497,7 +497,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    virtual Vec<3, double> at(std::size_t index) const {
+    virtual Vec<3, double> at(std::size_t index) const override {
         return operator() (index0(index), index1(index), index2(index));
     }
 

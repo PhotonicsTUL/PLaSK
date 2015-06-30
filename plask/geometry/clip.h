@@ -16,7 +16,7 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
                 ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override { return NAME; }
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 

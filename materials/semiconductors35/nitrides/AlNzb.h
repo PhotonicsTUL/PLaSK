@@ -16,7 +16,7 @@ struct AlNzb: public Semiconductor {
 
     static constexpr const char* NAME = "AlNzb";
 
-    virtual std::string name() const;
+    virtual std::string name() const override;
 
     virtual double lattC(double T, char x) const override;
     virtual double Eg(double T, double e, char point) const override;
