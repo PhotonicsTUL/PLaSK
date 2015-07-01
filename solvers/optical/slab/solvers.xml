@@ -203,21 +203,13 @@
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
       <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
       <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry" label="Mode symmetry" type="choice">
-        Mode symmetry. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        You cannot set this attribute together with ‘Longitudinal mode symmetry’ (&lt;tt&gt;symmetry-long&lt;/tt&gt;) and Transverse mode symmetry’ (&lt;tt&gt;symmetry-long&lt;/tt&gt;).
-        <choice>Etran</choice>
-        <choice>Elong</choice>
-      </attr>
       <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice">
         Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        You cannot set this attribute together with ‘Mode symmetries’ (&lt;tt&gt;symmetry&lt;/tt&gt;).
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
       <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice">
         Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        You cannot set this attribute together with ‘Mode symmetries’ (&lt;tt&gt;symmetry&lt;/tt&gt;).
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
