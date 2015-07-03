@@ -537,7 +537,7 @@ class ThresholdSearch(ThermoElectric):
         try:
             vmin, vmax = self.vstart
         except TypeError:
-            result = scipy.optimize.newton(func, self.vstart, tol=self.vtol)[0]
+            result = scipy.optimize.newton(func, self.vstart, tol=self.vtol)
         else:
             result = scipy.optimize.brentq(func, vmin, vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
