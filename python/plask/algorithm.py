@@ -370,7 +370,7 @@ class ThresholdSearch(ThermoElectric):
             threshold.
 
         vstart (float or tuple of 2 floats): Voltage staring point or limits
-             for the threshold search
+             for the threshold search.
 
         optstart (float or callable): Approximation of the optical mode
             (either the effective index or the wavelength) needed for optical
@@ -503,8 +503,6 @@ class ThresholdSearch(ThermoElectric):
 
         def func(volt):
             """Function to search zero of"""
-            try: volt = volt[0]
-            except TypeError: pass
             self.electrical.voltage_boundary[self.ivb].value = volt
             if self.invalidate:
                 self.thermal.invalidate()
@@ -539,7 +537,7 @@ class ThresholdSearch(ThermoElectric):
         try:
             vmin, vmax = self.vstart
         except TypeError:
-            result = scipy.optimize.fsolve(func, [self.vstart], xtol=self.vtol)[0]
+            result = scipy.optimize.newton(func, self.vstart, tol=self.vtol)[0]
         else:
             result = scipy.optimize.brentq(func, vmin, vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
