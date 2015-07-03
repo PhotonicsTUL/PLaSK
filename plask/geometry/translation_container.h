@@ -42,7 +42,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
 
     ~TranslationContainer();
 
-    virtual std::string getTypeName() const { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /**
      * Add new child (translated) to end of children vector.
@@ -133,25 +133,25 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     }
 
     //methods overwrite to use cache:
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+    shared_ptr<Material> getMaterial(const DVec& p) const override {
         return ensureHasCache()->getMaterial(p);
     }
 
-    virtual bool contains(const DVec& p) const {
+    bool contains(const DVec& p) const override {
         return ensureHasCache()->contains(p);
     }
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const {
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
         return ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
     }
 
     //some methods must be overwrite to invalidate cache:
-    virtual void onChildChanged(const GeometryObject::Event& evt) {
+    void onChildChanged(const GeometryObject::Event& evt) override {
         if (evt.isResize()) invalidateCache();
         WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::onChildChanged(evt);
     }
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override {
         if (WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::removeIfTUnsafe(predicate)) {
             invalidateCache();
             return true;
@@ -159,7 +159,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
             return false;
     }
 
-    virtual void removeAtUnsafe(std::size_t index) {
+    void removeAtUnsafe(std::size_t index) override {
         invalidateCache();
         WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::removeAtUnsafe(index);
     }
@@ -167,7 +167,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     //virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 protected:
-    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
     /// Destroy geometry cache, this should be called when children was changed (it will be rebuild by first operation which use it).
     void invalidateCache();

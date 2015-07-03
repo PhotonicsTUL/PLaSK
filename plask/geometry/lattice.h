@@ -6,6 +6,8 @@
 #include "transform.h"
 #include "../log/log.h"
 
+#include "spatial_index.h"  // used by lattiece
+
 namespace plask {
 
 /// Sequence container that repeats its child over a line shifted by a vector.
@@ -142,26 +144,54 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
 
 
 
-// /// Lattice container that arranges its children in two-dimensional lattice
-// struct PLASK_API Lattice: public GeometryObjectTransform<3> {
-//
-//     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-//     typedef typename GeometryObjectTransform<3>::DVec DVec;
-//
-//     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-//     typedef typename GeometryObjectTransform<3>::Box Box;
-//
-//     /// Type of this child.
-//     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
-//
-//     using GeometryObjectTransform<dim>::getChild;
-//
-//     /// Lattice vectors
-//     DVec vec0, vec1;
-//
-//     /// Create a lattice
-//
-// };
+/// Lattice container that arranges its children in two-dimensional lattice
+struct PLASK_API Lattice: public GeometryObjectTransform<3> {
+
+     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
+     typedef typename GeometryObjectTransform<3>::DVec DVec;
+
+     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
+     typedef typename GeometryObjectTransform<3>::Box Box;
+
+     /// Type of this child.
+     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
+
+     using GeometryObjectTransform<3>::getChild;
+
+    static constexpr const char* NAME = "lattice";
+
+     /// Lattice vectors
+     DVec vec0, vec1;
+
+     std::unique_ptr<SpatialIndexNode<3>> cache;
+
+     std::string getTypeName() const override { return NAME; }
+
+     /// Create a lattice
+
+     //methods overwrite to use cache:
+     shared_ptr<Material> getMaterial(const DVec& p) const override {
+         return cache->getMaterial(p);
+     }
+
+     bool contains(const DVec& p) const override {
+         return cache->contains(p);
+     }
+
+     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
+         return cache->getPathsAt(this->shared_from_this(), point, all);
+     }
+
+     //some methods must be overwrite to invalidate cache:
+     void onChildChanged(const GeometryObject::Event& evt) override {
+         if (evt.isResize()) rebuildCache();
+         GeometryObjectTransform<3>::onChildChanged(evt);
+     }
+
+     void rebuildCache() {
+         //TODO
+     }
+};
 
 } // namespace plask
 
