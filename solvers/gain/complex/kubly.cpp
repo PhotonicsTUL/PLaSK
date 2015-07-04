@@ -1,25 +1,29 @@
 #include "kubly.h"
 
-using QW::warstwa;
-using QW::warstwa_skraj;
+using namespace plask::phys;
+using plask::abs;
+using plask::fermiDiracHalf;
+
+using QW::Warstwa;
+using QW::WarstwaSkraj;
 using QW::stan;
-using QW::punkt;
-using QW::struktura;
-using QW::obszar_aktywny;
-using QW::gain;
+using QW::Punkt;
+using QW::Struktura;
+using QW::ObszarAktywny;
+using QW::Gain;
 
 //const double struktura::przelm=10*1.05459/(sqrt(1.60219*9.10956));
-const double struktura::przelm=1e10*(phys::hb_J)/(sqrt((phys::qe)*(phys::me)));
+const double Struktura::przelm=1e10*(hb_J)/(sqrt((qe)*(me)));
 //const double struktura::przels=1.05459/1.60219*1e-3;
-const double struktura::przels=(phys::hb_J)/(phys::qe)*1e12;
+const double Struktura::przels=(hb_J)/(qe)*1e12;
 //const double struktura::kB=1.38062/1.60219*1e-4;
-const double struktura::kB=(phys::kB_J)/(phys::qe);
+const double Struktura::kB=(kB_J)/(qe);
 //const double struktura::eps0=8.8542*1.05459/(100*1.60219*sqrt(1.60219*9.10956));
-const double struktura::eps0=(phys::epsilon0)*(phys::hb_J)/((phys::qe)*sqrt((phys::qe)*(phys::me)));
+const double Struktura::eps0=(epsilon0)*(hb_J)/((qe)*sqrt((qe)*(me)));
 //const double struktura::c=300*sqrt(9.10956/1.60219);
-const double struktura::c=phys::c*sqrt((phys::me)/(phys::qe));
+const double Struktura::c=plask::phys::c*sqrt((me)/(qe));
 //const double struktura::pi=4*atan(1.);
-const double struktura::pi=M_PI;
+const double Struktura::pi=M_PI;
 
 /*****************************************************************************
 warstwa::warstwa(const warstwa & war) : x_pocz(war.x_pocz), x_kon(war.x_kon), y_pocz(war.y_pocz), y_kon(war.y_kon), masa(war.masa) {}
@@ -29,7 +33,7 @@ warstwa & warstwa::operator=(const warstwa & war)
   return *this;
 }
 *****************************************************************************/
-warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/struktura::przelm), x_kon(x_k/struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r) // Położenia w A
+Warstwa::Warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/Struktura::przelm), x_kon(x_k/Struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r) // Położenia w A
 {
   if(x_k <= x_p)
     {
@@ -41,15 +45,15 @@ warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, dou
   pole = (y_kon - y_pocz)/(x_kon - x_pocz);
 }
 /*****************************************************************************/
-warstwa_skraj::warstwa_skraj(strona lczyp, double m_p, double m_r, double x0, double y0) : warstwa(m_p, m_r, (lczyp == lewa)?x0 - 1:x0, y0, (lczyp == lewa)?x0:x0 + 1, y0), lp(lczyp), masa_p(m_p), masa_r(m_r), iks(x0/struktura::przelm), y(y0) {} // x0 w A
+WarstwaSkraj::WarstwaSkraj(strona lczyp, double m_p, double m_r, double x0, double y0) : Warstwa(m_p, m_r, (lczyp == lewa)?x0 - 1:x0, y0, (lczyp == lewa)?x0:x0 + 1, y0), lp(lczyp), masa_p(m_p), masa_r(m_r), iks(x0/Struktura::przelm), y(y0) {} // x0 w A
 /*****************************************************************************/
-warstwa_skraj::warstwa_skraj() : warstwa(0., 0., 0., 0., 1., 0.)
+WarstwaSkraj::WarstwaSkraj() : Warstwa(0., 0., 0., 0., 1., 0.)
 {
 }
 /*****************************************************************************/
-warstwa_skraj::warstwa_skraj(const warstwa_skraj & war) : warstwa(war.masa_p, war.masa_r, (war.lp == lewa)?war.iks - 1:war.iks, war.y, (war.lp == lewa)?war.iks:war.iks + 1, war.y), lp(war.lp), iks(war.iks), y(war.y) {}
+WarstwaSkraj::WarstwaSkraj(const WarstwaSkraj & war) : Warstwa(war.masa_p, war.masa_r, (war.lp == lewa)?war.iks - 1:war.iks, war.y, (war.lp == lewa)?war.iks:war.iks + 1, war.y), lp(war.lp), iks(war.iks), y(war.y) {}
 /*****************************************************************************/
-inline double warstwa::masa_p(double E) const
+inline double Warstwa::masa_p(double E) const
 {
   double wynik;
   double Ek = E - (y_pocz + y_kon)/2;
@@ -67,13 +71,13 @@ inline double warstwa::masa_p(double E) const
   return wynik;
 }
 /*****************************************************************************/
-void warstwa::przesun_igreki(double dE)
+void Warstwa::przesun_igreki(double dE)
 {
   y_pocz += dE;
   y_kon += dE;
 }
 /*****************************************************************************/
-double warstwa::ffala(double x, double E) const
+double Warstwa::ffala(double x, double E) const
 {
   double wartosc;
   //  std::clog<<" E = "<<E<<"\n";
@@ -98,7 +102,7 @@ double warstwa::ffala(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa::ffala_prim(double x, double E) const
+double Warstwa::ffala_prim(double x, double E) const
 {
   double wartosc;
   if(pole !=0)
@@ -119,7 +123,7 @@ double warstwa::ffala_prim(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa::ffalb(double x, double E) const
+double Warstwa::ffalb(double x, double E) const
 {
   double wartosc;
   if(pole !=0)
@@ -140,7 +144,7 @@ double warstwa::ffalb(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa::ffalb_prim(double x, double E) const
+double Warstwa::ffalb_prim(double x, double E) const
 {
   double wartosc;
   if(pole !=0)
@@ -161,7 +165,7 @@ double warstwa::ffalb_prim(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa::tryga(double x, double E) const
+double Warstwa::tryga(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
@@ -171,7 +175,7 @@ double warstwa::tryga(double x, double E) const
   return sin(k*x);
 }
 /*****************************************************************************/
-double warstwa::tryga_prim(double x, double E) const
+double Warstwa::tryga_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
@@ -181,7 +185,7 @@ double warstwa::tryga_prim(double x, double E) const
   return k*cos(k*x);
 }
 /*****************************************************************************/
-double warstwa::trygb(double x, double E) const
+double Warstwa::trygb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
@@ -191,7 +195,7 @@ double warstwa::trygb(double x, double E) const
   return cos(k*x);
 }
 /*****************************************************************************/
-double warstwa::trygb_prim(double x, double E) const
+double Warstwa::trygb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
@@ -201,7 +205,7 @@ double warstwa::trygb_prim(double x, double E) const
   return -k*sin(k*x);
 }
 /*****************************************************************************/
-double warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) const
+double Warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) const
 {
   if((y_kon != y_pocz) || (E <= y_pocz))
     {
@@ -213,7 +217,7 @@ double warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) con
   return (A*A + B*B)*x/2  + (si2*(B*B - A*A)/4 - A*B*co*co)/k;
 }
 /*****************************************************************************/
-double warstwa::expa(double x, double E) const
+double Warstwa::expa(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
@@ -223,7 +227,7 @@ double warstwa::expa(double x, double E) const
   return exp(-kp*(x - x_pocz));
 }
 /*****************************************************************************/
-double warstwa::expa_prim(double x, double E) const
+double Warstwa::expa_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
@@ -233,7 +237,7 @@ double warstwa::expa_prim(double x, double E) const
   return -kp*exp(-kp*(x - x_pocz));
 }
 /*****************************************************************************/
-double warstwa::expb(double x, double E) const
+double Warstwa::expb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
@@ -243,7 +247,7 @@ double warstwa::expb(double x, double E) const
   return exp(kp*(x - x_kon));
 }
 /*****************************************************************************/
-double warstwa::expb_prim(double x, double E) const
+double Warstwa::expb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
@@ -253,7 +257,7 @@ double warstwa::expb_prim(double x, double E) const
   return kp*exp(kp*(x - x_kon));
 }
 /*****************************************************************************/
-double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) const
+double Warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
@@ -265,7 +269,7 @@ double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) cons
   return (B*B*b*b - A*A*a*a)/(2*kp) + 2*A*B*x*exp(kp*(x_pocz - x_kon));
 }
 /*****************************************************************************/
-double warstwa::Ai(double x, double E) const
+double Warstwa::Ai(double x, double E) const
 {
   if(y_kon == y_pocz)
       throw "Ai: Bad function";
@@ -296,7 +300,7 @@ double warstwa::Ai(double x, double E) const
 //  return gsl_sf_airy_Ai_scaled(arg, GSL_PREC_DOUBLE); // Na razie nie ma
 //}
 /*****************************************************************************/
-double warstwa::Ai_prim(double x, double E) const
+double Warstwa::Ai_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
       throw "Ai_prim: Bad function";
@@ -308,7 +312,7 @@ double warstwa::Ai_prim(double x, double E) const
   return a13 * boost::math::airy_ai_prime(arg);
 }
 /*****************************************************************************/
-double warstwa::Bi(double x, double E) const
+double Warstwa::Bi(double x, double E) const
 {
   if(y_kon == y_pocz)
       throw "Bi: Bad function";
@@ -324,7 +328,7 @@ double warstwa::Bi(double x, double E) const
   return boost::math::airy_bi(arg);
 }
 /*****************************************************************************/
-double warstwa::Bi_prim(double x, double E) const
+double Warstwa::Bi_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
       throw "Bi_prim: Bad function";
@@ -336,7 +340,7 @@ double warstwa::Bi_prim(double x, double E) const
   return a13 * boost::math::airy_bi_prime(arg);
 }
 /*****************************************************************************/
-double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) const
+double Warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) const
 {
   if(y_kon == y_pocz)
       throw "airy_kwadr_pierwotna: Bad function";
@@ -348,7 +352,7 @@ double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) con
   return (x + b_a23)*f*f - fp*fp/a;
 }
 /*****************************************************************************/
-double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod bariery (- kp^2)
+double Warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod bariery (- kp^2)
 {
   double wartosc;
   if(pole !=0)
@@ -362,7 +366,7 @@ double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod b
   return wartosc;
 }
 /*****************************************************************************/
-int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, double sasiad_z_prawej) const // wartości sąsiadów po to, żeby uniknąć kłopotów, kiedy zero wypada na łączeniu
+int Warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, double sasiad_z_prawej) const // wartości sąsiadów po to, żeby uniknąć kłopotów, kiedy zero wypada na łączeniu
 {
   int tylezer = 0;
   double wart_kon = (funkcjafal(x_kon, E, A, B) + sasiad_z_prawej)/2; // Uśrednienie dla uniknięcia kłopotów z zerami na łączeniu, gdzie malutka nieciągłość może generować zmiany znaków
@@ -438,7 +442,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       x2 = -b_a23 + boost::math::airy_bi_zero<double>(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
-	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+	  std::cerr<<"\n xlew="<<Struktura::dlugosc_na_A(xlew)<<" xpra="<<Struktura::dlugosc_na_A(xpra);
 	  //      std::cerr<<"\n A "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(xl,E,funkcja,struk);
 	  if(wart_pocz*funkcjafal(xlew, E, A, B) < 0)
 	    //	  if(funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)*funkcja_z_polem_do_oo(xl,E,funkcja,struk)<0)
@@ -489,7 +493,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
   return tylezer;
 }
 /*****************************************************************************/
-int warstwa::zera_ffal(double E, double A, double B) const
+int Warstwa::zera_ffal(double E, double A, double B) const
 {
   int tylezer = 0;
   double wart_kon = funkcjafal(x_kon, E, A, B);
@@ -563,7 +567,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
       x2 = -b_a23 + boost::math::airy_bi_zero<double>(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
-	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+	  std::cerr<<"\n xlew="<<Struktura::dlugosc_na_A(xlew)<<" xpra="<<Struktura::dlugosc_na_A(xpra);
 	  //      std::cerr<<"\n A "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(xl,E,funkcja,struk);
 	  if(funkcjafal(x_pocz, E, A, B)*funkcjafal(xlew, E, A, B) < 0)
 	    //	  if(funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)*funkcja_z_polem_do_oo(xl,E,funkcja,struk)<0)
@@ -614,17 +618,17 @@ int warstwa::zera_ffal(double E, double A, double B) const
   return tylezer;
 }
 /*****************************************************************************/
-double warstwa::funkcjafal(double x, double E, double A, double B) const
+double Warstwa::funkcjafal(double x, double E, double A, double B) const
 {
   return A*ffala(x, E) + B*ffalb(x, E);
 }
 /*****************************************************************************/
-double warstwa::funkcjafal_prim(double x, double E, double A, double B) const
+double Warstwa::funkcjafal_prim(double x, double E, double A, double B) const
 {
   return A*ffala_prim(x, E) + B*ffalb_prim(x, E);
 }
 /*****************************************************************************/
-double warstwa::norma_kwadr(double E, double A, double B) const
+double Warstwa::norma_kwadr(double E, double A, double B) const
 {
   double wartosc;
   if(pole !=0)
@@ -648,18 +652,18 @@ double warstwa::norma_kwadr(double E, double A, double B) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa::Eodk(double k) const
+double Warstwa::Eodk(double k) const
 {
   return k*k/(2*masa_r);
 }
 /*****************************************************************************/
-void warstwa_skraj::przesun_igreki(double dE)
+void WarstwaSkraj::przesun_igreki(double dE)
 {
   y += dE;
-  warstwa::przesun_igreki(dE);
+  Warstwa::przesun_igreki(dE);
 }
 /*****************************************************************************/
-double warstwa_skraj::ffala(double x, double E) const
+double WarstwaSkraj::ffala(double x, double E) const
 {
   double wartosc;
   if(lp == lewa)
@@ -682,7 +686,7 @@ double warstwa_skraj::ffala(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa_skraj::ffalb(double x, double E) const
+double WarstwaSkraj::ffalb(double x, double E) const
 {
   double wartosc;
   if(lp == prawa)
@@ -704,7 +708,7 @@ double warstwa_skraj::ffalb(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa_skraj::ffala_prim(double x, double E) const
+double WarstwaSkraj::ffala_prim(double x, double E) const
 {
   double wartosc;
   if(lp == lewa)
@@ -726,7 +730,7 @@ double warstwa_skraj::ffala_prim(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-double warstwa_skraj::ffalb_prim(double x, double E) const
+double WarstwaSkraj::ffalb_prim(double x, double E) const
 {
   double wartosc;
   if(lp == prawa)
@@ -748,12 +752,12 @@ double warstwa_skraj::ffalb_prim(double x, double E) const
   return wartosc;
 }
 /*****************************************************************************/
-int warstwa_skraj::zera_ffal(double, double, double) const
+int WarstwaSkraj::zera_ffal(double, double, double) const
 {
   return 0;
 }
 /*****************************************************************************/
-double warstwa_skraj::norma_kwadr(double E, double C) const
+double WarstwaSkraj::norma_kwadr(double E, double C) const
 {
   if(E > y)
     {
@@ -764,7 +768,7 @@ double warstwa_skraj::norma_kwadr(double E, double C) const
   return C*C/(2*kp);
 }
 /*****************************************************************************/
-double warstwa_skraj::funkcjafal(double x, double E, double C) const
+double WarstwaSkraj::funkcjafal(double x, double E, double C) const
 {
   double wynik;
   if(lp == lewa)
@@ -778,7 +782,7 @@ double warstwa_skraj::funkcjafal(double x, double E, double C) const
   return wynik;
 }
 /*****************************************************************************/
-double warstwa_skraj::funkcjafal_prim(double x, double E, double C) const
+double WarstwaSkraj::funkcjafal_prim(double x, double E, double C) const
 {
   double wynik;
   if(lp == lewa)
@@ -794,18 +798,18 @@ double warstwa_skraj::funkcjafal_prim(double x, double E, double C) const
 /*****************************************************************************/
 
 /*****************************************************************************/
-punkt::punkt()
+Punkt::Punkt()
 {
   
 }
 /*****************************************************************************/
-punkt::punkt(double e, double w)
+Punkt::Punkt(double e, double w)
 {
   en=e;
   wart = w;
 }
 /*****************************************************************************/
-punkt::punkt(const stan & st)
+Punkt::Punkt(const stan & st)
 {
   en=st.poziom;
   wart = 0;
@@ -880,18 +884,18 @@ struktura::struktura(const std::vector<warstwa> & tablica)
   dokl = 1e-6;
 }
 *****************************************************************************/
-struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
+Struktura::Struktura(const std::vector<Warstwa*> & tablica, rodzaj co)
 {
-  lewa = *((const warstwa_skraj *)  tablica[0]);
-  if(lewa.lp == warstwa_skraj::prawa)
+  lewa = *((const WarstwaSkraj *)  tablica[0]);
+  if(lewa.lp == WarstwaSkraj::prawa)
     {
       std::cerr<<"Pierwsza warstwa nie jest lewa!\n";
       abort();
     }
   gora = lewa.y; // Zero to warstwa skrajna
   dol = gora;
-  prawa = *((const warstwa_skraj *) tablica.back());
-  if(prawa.lp == warstwa_skraj::lewa)
+  prawa = *((const WarstwaSkraj *) tablica.back());
+  if(prawa.lp == WarstwaSkraj::lewa)
     {
       std::cerr<<"Ostatnia warstwa nie jest prawa!\n";
       abort();
@@ -907,11 +911,11 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   for(i = 1; i <= (int) tablica.size() - 2; i++)
     {
       //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-    //writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+    //plask::writelog(plask::LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
     if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
 	{
       //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
-      writelog(LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
       abort();
 	}
       kawalki.push_back(*tablica[i]);
@@ -929,12 +933,12 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   //  std::clog<<"i = "<<i<<"\tx_pocz("<<(i-1)"<<(tablica[i - 1]->x_pocz)<<"\n";
 
   //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-  //writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+  //plask::writelog(plask::LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
   if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
     {
-      std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";
-      writelog(LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
-      writelog(LOG_DETAIL, "Rozne krance warstw"); // LUKASZ
+      //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";
+      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw"); // LUKASZ
       abort();
     }
   if(dol >= gora)
@@ -959,15 +963,15 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   dokl = 1e-6;
 
   std::string tCo; tCo.clear();
-  if (co==QW::struktura::el) tCo = "electrons";
-  else if (co==QW::struktura::hh) tCo = "heavy holes";
-  else if (co==QW::struktura::lh) tCo = "light holes";
+  if (co==QW::Struktura::el) tCo = "electrons";
+  else if (co==QW::Struktura::hh) tCo = "heavy holes";
+  else if (co==QW::Struktura::lh) tCo = "light holes";
 
-  writelog(LOG_DETAIL, "Computing energy levels for %1%", tCo); // LUKASZ
+  plask::writelog(plask::LOG_DETAIL, "Computing energy levels for %1%", tCo); // LUKASZ
   szukanie_poziomow(gora);
-  writelog(LOG_DETAIL, "Normalisation"); // LUKASZ
+  plask::writelog(plask::LOG_DETAIL, "Normalisation"); // LUKASZ
   normowanie();
-  writelog(LOG_DETAIL, "Structure built for %1%", tCo); // LUKASZ
+  plask::writelog(plask::LOG_DETAIL, "Structure built for %1%", tCo); // LUKASZ
   // profil(0., 1e-5);
 }
 /*****************************************************************************/
@@ -1155,7 +1159,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   normowanie();
 }*/
 /*****************************************************************************/
-void struktura::przesun_energie(double dE)
+void Struktura::przesun_energie(double dE)
 {
   gora += dE;
   dol += dE;
@@ -1175,22 +1179,22 @@ void struktura::przesun_energie(double dE)
     }
 }
 /*****************************************************************************/
-double struktura::dlugosc_z_A(const double dlugA)
+double Struktura::dlugosc_z_A(const double dlugA)
 {
   return dlugA/przelm;
 }
 /*****************************************************************************/
-double struktura::dlugosc_na_A(const double dlug)
+double Struktura::dlugosc_na_A(const double dlug)
 {
   return dlug*przelm;
 }
 /*****************************************************************************/
-double struktura::koncentracja_na_cm_3(const double k_w_wew)
+double Struktura::koncentracja_na_cm_3(const double k_w_wew)
 {
   return k_w_wew/(przelm*przelm*przelm)*1e24;
 }
 /*****************************************************************************/
-double struktura::czyosobliwa(double E)
+double Struktura::czyosobliwa(double E)
 {
   int N = kawalki.size() + 2; //liczba warstw
   // Bylo bez '+ 2'
@@ -1262,7 +1266,7 @@ void struktura::zrobmacierz(double E, A2D & macierz)
   macierz[2*n + 1][2*n + 1] = -kawalki[n+1].ffala_prim(x, E)/kawalki[n + 1].masa;
  }
 *****************************************************************************/
-void struktura::zrobmacierz(double E, A2D & macierz)
+void Struktura::zrobmacierz(double E, A2D & macierz)
 {
   int N = kawalki.size() + 2; // liczba warstw
   double x = lewa.iks;
@@ -1297,7 +1301,7 @@ void struktura::zrobmacierz(double E, A2D & macierz)
   macierz[2*n + 1][2*n + 1] = -prawa.ffala_prim(x, E)/prawa.masa_p;
  }
 /*****************************************************************************/
-std::vector<std::vector<double> > struktura::rysowanie_funkcji(double E, double x0A, double xkA, double krokA)
+std::vector<std::vector<double> > Struktura::rysowanie_funkcji(double E, double x0A, double xkA, double krokA)
 {
   double x0 = x0A/przelm;
   double xk = xkA/przelm;
@@ -1402,7 +1406,7 @@ int struktura::ilezer_ffal(double E)
   return sumazer;
 }
 *****************************************************************************/
-int struktura::ilezer_ffal(double E, A2D & V)
+int Struktura::ilezer_ffal(double E, A2D & V)
 {
   int N = kawalki.size() + 2; //liczba warstw
   // Bylo bez '+ 2'
@@ -1474,9 +1478,9 @@ int struktura::ilezer_ffal(double E, A2D & V)
   //  return 0; //do testow tylko!
 }
 /*****************************************************************************/
-std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza aż znajdzie inny znak, zakłada, że początkowe znaki są takie same
+std::vector<double> Struktura::zageszczanie(Punkt p0, Punkt pk) // Zagęszcza aż znajdzie inny znak, zakłada, że początkowe znaki są takie same
 {
-  std::list<punkt> lista;
+  std::list<Punkt> lista;
   std::vector<double> wynik;
   lista.push_front(p0);
   lista.push_back(pk);
@@ -1487,7 +1491,7 @@ std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza a�
       std::cerr<<"W zageszczaniu znaki sie roznia!\n";
       abort();
     }
-  std::list<punkt>::iterator iter, iterl, iterp;
+  std::list<Punkt>::iterator iter, iterl, iterp;
   iter=lista.begin();
   /*
   if(minipasma)
@@ -1510,7 +1514,7 @@ std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza a�
 	  iterl--;
 	  E=(iterp->en + iterl->en)/2;
 	  if (mInfo) std::clog<<"El = "<<iterl->en<<" Eit = "<<E<<" Ep = "<<iterp->en<<"\n"; // LUKASZ
-	  iter = lista.insert(iterp, punkt(E,czyosobliwa(E)));
+	  iter = lista.insert(iterp, Punkt(E,czyosobliwa(E)));
 	  if(znak * iter->wart < 0)
 	    {
 	      wynik.push_back(iterl->en);
@@ -1524,7 +1528,7 @@ std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza a�
   return wynik;
 }
 /*****************************************************************************/
-void struktura::profil(double Ek, double rozdz) 
+void Struktura::profil(double Ek, double rozdz) 
 {
   double E0 = dol;
   if(Ek <= E0)
@@ -1539,7 +1543,7 @@ void struktura::profil(double Ek, double rozdz)
   std::cout<<std::flush;
 }
 /*****************************************************************************/
-void struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obsluge niezbiegania sie metody siecznych
+void Struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obsluge niezbiegania sie metody siecznych
 {
   double E0 = dol;
   if(Ek <= E0)
@@ -1550,7 +1554,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obs
   int M = 2*(kawalki.size() + 2) - 2;
   // Bylo 'int M = 2*kawalki.size() - 2;'
   double wartakt;
-  double (struktura::*fun)(double) = & struktura::czyosobliwa;
+  double (Struktura::*fun)(double) = & Struktura::czyosobliwa;
   std::vector<double> trojka;
   if (mInfo) std::clog<<"W szukaniu\n"; // LUKASZ
   double wartpop = czyosobliwa(Ek);
@@ -1583,15 +1587,15 @@ void struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obs
   stan nowy(Eost, V, ostatnie_dobre);
   rozwiazania[ilepoziomow - 1] = nowy;
   if (mInfo) std::clog<<"Eost = "<<Eost<<" ilepoziomow = "<<ilepoziomow<<"\n"; // LUKASZ
-  punkt ost, ostdob, pierw;
+  Punkt ost, ostdob, pierw;
   nast_dobre = -1;
   while(ostatnie_dobre >= 1)
     {
-      ostdob = punkt(rozwiazania[ostatnie_dobre]);
+      ostdob = Punkt(rozwiazania[ostatnie_dobre]);
       E = ostdob.en - rozdz;
-      ost = punkt(E, czyosobliwa(E));
+      ost = Punkt(E, czyosobliwa(E));
       E = (nast_dobre >= 0)?(rozwiazania[nast_dobre].poziom + rozdz):(E0 + rozdz);
-      pierw = punkt(E, czyosobliwa(E));
+      pierw = Punkt(E, czyosobliwa(E));
       //     std::clog<<"Eost = "<<ost.en<<" wartost = "<<ost.wart<<"\n";
       //      std::clog<<"Epierw = "<<pierw.en<<" wartpierw = "<<pierw.wart<<"\n";
       if(ost.wart*pierw.wart > 0)
@@ -1640,7 +1644,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obs
   if (mInfo) std::clog<<"Liczba rozwiazan = "<<rozwiazania.size()<<"\n"; // LUKASZ
 }
 /*****************************************************************************/
-double struktura::sieczne(double (struktura::*f)(double), double pocz, double kon)
+double Struktura::sieczne(double (Struktura::*f)(double), double pocz, double kon)
 {
   std::clog.precision(12);
   //const double eps = 1e-14; // limit zmian x
@@ -1700,7 +1704,7 @@ double struktura::sieczne(double (struktura::*f)(double), double pocz, double ko
   return x;
 }
 /*****************************************************************************/
-double struktura::norma_stanu(stan & st) // liczy norme i wypelnia prawdopodobienstwa
+double Struktura::norma_stanu(stan & st) // liczy norme i wypelnia prawdopodobienstwa
 {
   double porcja = lewa.norma_kwadr(st.poziom, st.wspolczynniki.front());
   st.prawdopodobienstwa.push_back(porcja);
@@ -1721,7 +1725,7 @@ double struktura::norma_stanu(stan & st) // liczy norme i wypelnia prawdopodobie
   return sqrt(norma2);
 }
 /*****************************************************************************/
-void struktura::normowanie()
+void Struktura::normowanie()
 {
   std::vector<stan>::iterator it = rozwiazania.begin();
   //  std::clog<<"Liczba stanow = "<<rozwiazania.size()<<"\n";
@@ -1738,7 +1742,7 @@ void struktura::normowanie()
     }
 }
 /*****************************************************************************/
-double struktura::ilenosnikow(double qFl, double T)
+double Struktura::ilenosnikow(double qFl, double T)
 {
   double tylenosnikow = 0;
   double niepomnozone;
@@ -1771,7 +1775,7 @@ double struktura::ilenosnikow(double qFl, double T)
   return tylenosnikow;
 }
 /*****************************************************************************/
-std::vector<double> struktura::koncentracje_w_warstwach(double qFl, double T)
+std::vector<double> Struktura::koncentracje_w_warstwach(double qFl, double T)
 {
   double tylenosnikow = 0;
   double niepomnozone;
@@ -1808,9 +1812,9 @@ std::vector<double> struktura::koncentracje_w_warstwach(double qFl, double T)
   return koncentr;
 }
 /*****************************************************************************/
-void struktura::struktura_do_pliku(std::ofstream & plik)
+void Struktura::struktura_do_pliku(std::ofstream & plik)
 {
-  std::vector<warstwa>::iterator it_war = kawalki.begin();
+  std::vector<Warstwa>::iterator it_war = kawalki.begin();
   plik<<dlugosc_na_A(lewa.iks)<<" "<<(lewa.y)<<"\n";
   while(it_war != kawalki.end())
     {
@@ -1821,7 +1825,7 @@ void struktura::struktura_do_pliku(std::ofstream & plik)
   plik<<dlugosc_na_A(prawa.iks)<<" "<<(prawa.y);
 }
 /*****************************************************************************/
-void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
+void Struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
 {
     //if (mInfo) std::clog<<"W f_do_p"<<std::endl; // LUKASZ
     //plik<<"#\t";
@@ -1880,7 +1884,7 @@ void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
       }
 }
 /*****************************************************************************/
-void struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
+void Struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
 {
     std::vector<stan>::iterator it_stan = rozwiazania.begin();
     int tQWno = 1;
@@ -1891,7 +1895,7 @@ void struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
         for (int i=0; i<iNoOfQWs; i++)
         {
             tAvgEnLev += it_stan->poziom;
-            writelog(LOG_DETAIL, "QW %1% - energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, it_stan->poziom);
+            plask::writelog(plask::LOG_DETAIL, "QW %1% - energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, it_stan->poziom);
             it_stan++;
             if (it_stan == rozwiazania.end())
             {
@@ -1900,14 +1904,14 @@ void struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
             }
         }
         if (tCalcAvg)
-            writelog(LOG_DETAIL, "QW %1% - average energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, tAvgEnLev/iNoOfQWs);
+            plask::writelog(plask::LOG_DETAIL, "QW %1% - average energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, tAvgEnLev/iNoOfQWs);
         tQWno++;
     }
 }
 /*****************************************************************************/
-double struktura::energia_od_k_na_ntym(double k, int nr_war, int n)
+double Struktura::energia_od_k_na_ntym(double k, int nr_war, int n)
 {
-  warstwa * war;
+  Warstwa * war;
   if(nr_war == 0)
     {
       war = &lewa;
@@ -1932,7 +1936,7 @@ double dE_po_dl(size_t nr, chrop ch)
   double licznik = 
 }
 *****************************************************************************/
-obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, double Temp, double iMatrixElemScFact, bool iShowM)
+ObszarAktywny::ObszarAktywny(Struktura * elektron, const std::vector<Struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, double Temp, double iMatrixElemScFact, bool iShowM)
 {
   przekr_max = 0.;
   pasmo_przew.push_back(elektron);
@@ -1963,15 +1967,15 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   for(int i = 0; i <= liczba_war - 1; i++)
     {
       el_mac.push_back(element(i)*iMatrixElemScFact);
-      if (iShowM) writelog(LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
+      if (iShowM) plask::writelog(plask::LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
     }
   //zrob_macierze_przejsc();
 }
 /*****************************************************************************/
-void obszar_aktywny::paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v)
+void ObszarAktywny::paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v)
 {
-  struktura * el = pasmo_przew[nr_c];
-  struktura * dziu = pasmo_wal[nr_v];
+  Struktura * el = pasmo_przew[nr_c];
+  Struktura * dziu = pasmo_wal[nr_v];
   A2D * m_prz = calki_przekrycia[nr_c][nr_v];
   double E0;
   for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
@@ -1982,7 +1986,7 @@ void obszar_aktywny::paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v
       }
 }
 /*****************************************************************************/
-double obszar_aktywny::min_przerwa_energetyczna()
+double ObszarAktywny::min_przerwa_energetyczna()
 {
   double przerwa = pasmo_przew[0]->dol + pasmo_wal[0]->dol + Egcv[0];
   for(int i = 0; i <= (int) pasmo_przew.size() - 1; i++)
@@ -1993,7 +1997,7 @@ double obszar_aktywny::min_przerwa_energetyczna()
   return przerwa;
 }
 /*****************************************************************************/
-void obszar_aktywny::policz_calki(const struktura * elektron, const struktura * dziura, A2D & macierz, TNT::Array2D<std::vector<double> > & wekt_calk_kaw)
+void ObszarAktywny::policz_calki(const Struktura * elektron, const Struktura * dziura, A2D & macierz, TNT::Array2D<std::vector<double> > & wekt_calk_kaw)
 {
   double tymcz;
   if (mInfo) std::cerr<<"W funkcji policz_calki\n"; // LUKASZ
@@ -2025,7 +2029,7 @@ void obszar_aktywny::policz_calki_kawalki(const struktura * elektron, const stru
       }
 }
 *****************************************************************************/
-double obszar_aktywny::iloczyn_pierwotna_bezpola(double x, int nr_war, const struktura * struk1, const struktura * struk2, int i, int j)
+double ObszarAktywny::iloczyn_pierwotna_bezpola(double x, int nr_war, const Struktura * struk1, const Struktura * struk2, int i, int j)
 {
   double Ec = struk1->rozwiazania[i].poziom;
   double Ev = struk2->rozwiazania[j].poziom;
@@ -2055,7 +2059,7 @@ double obszar_aktywny::iloczyn_pierwotna_bezpola(double x, int nr_war, const str
   return wynik;
 }
 /*****************************************************************************/
-double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1, const struktura * struk2, int i, int j) // numeryczne całkowanie
+double ObszarAktywny::calka_iloczyn_zpolem(int nr_war, const Struktura * struk1, const Struktura * struk2, int i, int j) // numeryczne całkowanie
 {
   std::clog<<"\nW całk numer. Warstwa "<<nr_war<<" poziom el "<<i<<" poziom j "<<j<<"\n";;
   double krok = 1.; // na razie krok na sztywno przelm (ok 2.6) A
@@ -2083,7 +2087,7 @@ double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1
   return wynik;
 }
 /*****************************************************************************/
-double obszar_aktywny::calka_ij(const struktura * elektron, const struktura * dziura, int i, int j, vector<double> & wektor_calk_kaw)
+double ObszarAktywny::calka_ij(const Struktura * elektron, const Struktura * dziura, int i, int j, vector<double> & wektor_calk_kaw)
 {
   double Ec = elektron->rozwiazania[i].poziom;
   double Ev = dziura->rozwiazania[j].poziom;
@@ -2133,7 +2137,7 @@ double obszar_aktywny::calka_ij(const struktura * elektron, const struktura * dz
   return calka;
 }
 /*****************************************************************************/
-void obszar_aktywny::zrob_macierze_przejsc()
+void ObszarAktywny::zrob_macierze_przejsc()
 {
   if (mInfo) std::cerr<<"W funkcji zrob_macierze_przejsc\n"; // LUKASZ
   A2D * macierz_calek;
@@ -2179,9 +2183,9 @@ void obszar_aktywny::zrob_macierze_kawalkow()
     }
 }
 *****************************************************************************/
-double obszar_aktywny::element(int nr_war) // Do przerobienia
+double ObszarAktywny::element(int nr_war) // Do przerobienia
 {
-  warstwa * warc, * warv;
+  Warstwa * warc, * warv;
   if(nr_war == 0)
     {
       warc = & pasmo_przew[0]->lewa;
@@ -2205,35 +2209,35 @@ double obszar_aktywny::element(int nr_war) // Do przerobienia
   return (1/warc->masa_p(0.) - 1)*(Eg+DeltaSO[nr_war])*Eg/(Eg+2*DeltaSO[nr_war]/3)/2;
 }
 /*****************************************************************************/
-double gain::kodE(double E, double mc, double mv)
+double Gain::kodE(double E, double mc, double mv)
 {
   double m=(1/mc+1/mv);
   return sqrt(2*E/m);
 }
 /*****************************************************************************/
-double gain::rored(double, double mc, double mv)
+double Gain::rored(double, double mc, double mv)
 {
   double m=(1/mc+1/mv);
-  return 1/(m*2*struktura::pi*szer_do_wzmoc);
+  return 1/(m*2*Struktura::pi*szer_do_wzmoc);
 }
 /*****************************************************************************/
-double gain::erf_dorored(double E, double E0, double sigma)
+double Gain::erf_dorored(double E, double E0, double sigma)
 {
   return 0.5*(1 + erf((E - E0)/(sqrt(2)*sigma)));
 }
 /*****************************************************************************/
-double gain::rored_posz(double E, double E0, double mc, double mv, double sigma) // gestosc do chopowatej studni o nominalnej roznicy energii poziomow E0. Wersja najprostsza -- jedno poszerzenie na wszystko
+double Gain::rored_posz(double E, double E0, double mc, double mv, double sigma) // gestosc do chopowatej studni o nominalnej roznicy energii poziomow E0. Wersja najprostsza -- jedno poszerzenie na wszystko
 {
   double m=(1/mc+1/mv);
   //  double sigma = posz_en
-  return erf_dorored(E, E0, sigma)/(m*2*struktura::pi*szer_do_wzmoc);
+  return erf_dorored(E, E0, sigma)/(m*2*Struktura::pi*szer_do_wzmoc);
 }
 /*****************************************************************************/
-gain::gain() // LUKASZ
+Gain::Gain() // LUKASZ
 {
 }
 /*****************************************************************************/
-void gain::setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double temp, double wsp_zal, double EgClad) // LUKASZ
+void Gain::setGain(plask::shared_ptr<ObszarAktywny> obsz, double konc_pow, double temp, double wsp_zal, double EgClad) // LUKASZ
 //    : pasma(obsz)
 {
   pasma = obsz;
@@ -2248,7 +2252,7 @@ void gain::setGain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, doub
   //policz_qFlv();
 }
 /*****************************************************************************/
-void gain::ustaw_przerwy() // TODO MW
+void Gain::ustaw_przerwy() // TODO MW
 {
   Egcv_T.resize(pasma->Egcv.size());
   //std::cout << "mEgCladT z funkcji ustaw_przerwy(): " << mEgClad << "eV\n";
@@ -2256,23 +2260,23 @@ void gain::ustaw_przerwy() // TODO MW
      {
        //Egcv_T[i] = pasma->Egcv[i]; // prymitywne przepisanie z obszaru aktywnego
        Egcv_T[i] = mEgClad; // juz nie prymitywne przepisanie z obszaru aktywnego
-       //writelog(LOG_DETAIL,"mEgClad po wywolaniu ustaw przerwy: %1%",mEgClad);
+       //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu ustaw przerwy: %1%",mEgClad);
      }
 }
 /*****************************************************************************/
-void gain::setEgClad(double iEgClad) // TODO MW 2
+void Gain::setEgClad(double iEgClad) // TODO MW 2
 {
   mEgClad = iEgClad;
-  //writelog(LOG_DETAIL,"mEgClad po wywolaniu setEgClad: %1%",mEgClad);
+  //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu setEgClad: %1%",mEgClad);
 }
 /*****************************************************************************/
-void gain::setNsurf(double iNsurf) // 15.12.2014
+void Gain::setNsurf(double iNsurf) // 15.12.2014
 {
   nosniki_c = przel_gest_z_cm2(iNsurf);
   nosniki_v = nosniki_c;
 }
 /*****************************************************************************/
-double gain::policz_qFlc()
+double Gain::policz_qFlc()
 {
   double Fp, Fk, krok;
   double np, nk;
@@ -2292,13 +2296,13 @@ double gain::policz_qFlc()
       Fk += krok;
       nk = nosniki_w_c(Fk);
     }
-  double (gain::*fun)(double) = &gain::gdzie_qFlc;
+  double (Gain::*fun)(double) = &Gain::gdzie_qFlc;
   //  std::clog<<"Sieczne Fermi\n";
   qFlc = sieczne(fun, Fp, Fk);
   return sieczne(fun, Fp, Fk);
 }
 /*****************************************************************************/
-double gain::policz_qFlv()
+double Gain::policz_qFlv()
 {
   double Fp, Fk, krok;
   double np, nk;
@@ -2318,18 +2322,18 @@ double gain::policz_qFlv()
       Fk += krok;
       nk = nosniki_w_v(Fk);
     }
-  double (gain::*fun)(double) = &gain::gdzie_qFlv;
+  double (Gain::*fun)(double) = &Gain::gdzie_qFlv;
   //  std::clog<<"Sieczne Fermi\n";
   qFlv = - sieczne(fun, Fp, Fk);
   return - sieczne(fun, Fp, Fk); // minus, bo energie sa odwrocone, bo F-D opisuje obsadzenia elektronowe
 }
 /*****************************************************************************/
-double gain::getT()
+double Gain::getT()
 {
   return T;
 }
 /*****************************************************************************/
-double gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
+double Gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
 {
     /*double tGehh, tGelh;
     tGehh = tGelh = 0.;
@@ -2339,25 +2343,25 @@ double gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
     return (tGehh+tGelh);*/
     //WRITELOG(LOG_DETAIL, "Tau in kubly: %1% ps", iTau);
     if (!iTau) return ( wzmocnienie_calk_bez_splotu(E) / iL ); //20.10.2014 adding lifetime
-    else return ( wzmocnienie_calk_ze_splotem(E,phys::hb_eV*1e12/iTau) / iL ); //20.10.2014 adding lifetime
+    else return ( wzmocnienie_calk_ze_splotem(E,hb_eV*1e12/iTau) / iL ); //20.10.2014 adding lifetime
 }
 /*****************************************************************************/
-double gain::Get_luminescence_at_n(double E, double hQW, double iL)
+double Gain::Get_luminescence_at_n(double E, double hQW, double iL)
 {
     return ( luminescencja_calk(E) / iL ); //20.10.2014 adding lifetime
 }
 /*****************************************************************************/
-double gain::gdzie_qFlc(double E)
+double Gain::gdzie_qFlc(double E)
 {
   return nosniki_w_c(E) - nosniki_c;
 }
 /*****************************************************************************/
-double gain::gdzie_qFlv(double E)
+double Gain::gdzie_qFlv(double E)
 {
   return nosniki_w_v(E) - nosniki_v;
 }
 /*****************************************************************************/
-double gain::nosniki_w_c(double Fl)
+double Gain::nosniki_w_c(double Fl)
 {
   double przes;
   double n = pasma->pasmo_przew[0]->ilenosnikow(Fl, T);
@@ -2371,7 +2375,7 @@ double gain::nosniki_w_c(double Fl)
   return n;
 }
 /*****************************************************************************/
-double gain::nosniki_w_v(double Fl)
+double Gain::nosniki_w_v(double Fl)
 {
   double przes;
   double n = pasma->pasmo_wal[0]->ilenosnikow(Fl, T);
@@ -2386,7 +2390,7 @@ double gain::nosniki_w_v(double Fl)
   return n;
 }
 /*****************************************************************************/
-double gain::sieczne(double (gain::*f)(double), double pocz, double kon)
+double Gain::sieczne(double (Gain::*f)(double), double pocz, double kon)
 {
   std::clog.precision(12);
   //const double eps = 1e-14; // limit zmian x
@@ -2446,17 +2450,17 @@ double gain::sieczne(double (gain::*f)(double), double pocz, double kon)
   return x;
 }
 /*****************************************************************************/
-double gain::L(double x, double b)
+double Gain::L(double x, double b)
 {
   return 1/(M_PI*b)/(1 + x/b*x/b );
 }
 /*****************************************************************************/
-double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podzial na kawalek o promieniu Rb wokol 0 i reszte
+double Gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podzial na kawalek o promieniu Rb wokol 0 i reszte
 {
   //  double blad = 0.005;
   // b energia do poszerzenia w lorentzu
-  struktura * el = pasma->pasmo_przew[0];
-  struktura * dziu = pasma->pasmo_wal[0];
+  Struktura * el = pasma->pasmo_przew[0];
+  Struktura * dziu = pasma->pasmo_wal[0];
   double E0pop = Egcv_T[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom; // energia potencjalna + energia prostopadla
   double E0min=E0pop;;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
@@ -2547,15 +2551,15 @@ double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // pod
   return calka;
 }
 /*****************************************************************************/
-double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
+double Gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
 {
   //  std::cerr<<"\npasmo walencyjna nr "<<nr_v<<"\n";
   if ( (nr_c >= pasma->pasmo_przew.size()) || (nr_v >= pasma->pasmo_wal.size()) ) // added by LUKASZ
     return 0.;
   else
   {
-    struktura * el = pasma->pasmo_przew[nr_c];
-    struktura * dziu = pasma->pasmo_wal[nr_v];
+    Struktura * el = pasma->pasmo_przew[nr_c];
+    Struktura * dziu = pasma->pasmo_wal[nr_v];
     A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
     double wzmoc = 0;
     double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
@@ -2578,11 +2582,11 @@ double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
   }
 }
 /*****************************************************************************/
-double gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
+double Gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
 {
   //  std::cerr<<"\npasmo walencyjna nr "<<nr_v<<"\n";
-  struktura * el = pasma->pasmo_przew[nr_c];
-  struktura * dziu = pasma->pasmo_wal[nr_v];
+  Struktura * el = pasma->pasmo_przew[nr_c];
+  Struktura * dziu = pasma->pasmo_wal[nr_v];
   A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
   double spont = 0;
   double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
@@ -2604,12 +2608,12 @@ double gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
   return spont;
 }
 /*****************************************************************************/
-double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
+double Gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
 {
   double wynik;
   double cos2tet; // zmiana elementu macierzowego z k_prost
-  struktura * el = pasma->pasmo_przew[nr_c];
-  struktura * dziu = pasma->pasmo_wal[nr_v];
+  Struktura * el = pasma->pasmo_przew[nr_c];
+  Struktura * dziu = pasma->pasmo_wal[nr_v];
   double Eg; // lokalna przerwa energetyczna
   double E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
   //  std::cerr<<"\npoziom_el = "<<el->rozwiazania[poz_c].poziom<<"\n";
@@ -2642,7 +2646,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
   double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
-  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
+  double sr_E_E0_dod = posz_en/(sqrt(2*Struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //      std::cerr<<"lewa Eg = "<<Eg<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
@@ -2652,7 +2656,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   //      std::cerr<<"lewa po calkikawalki\n";
   przekr_w_war = calki_kawalki[0];
   //      std::cerr<<"lewa przed wynikiem\n";
-  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
+  mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
   wynik = sqrt(pasma->el_mac[0] * mnoznik_pol) * przekr_w_war;
   //      std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[0]<<" wynik = "<<wynik;
   for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
@@ -2660,7 +2664,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
       Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
       cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
-      mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
+      mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
       //	  std::cerr<<"\nkawalek "<<i;
       //	  std::cerr<<" mnoz_pol = "<<mnoznik_pol<<" cos2tet = "<<cos2tet;
       
@@ -2677,7 +2681,7 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
-  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
+  mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
   //  std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac.back()<<" wynik = "<<wynik<<" rored = "<<rored(srednie_k, srednia_masa_el, srednia_masa_dziu)<<"\n";
   wynik *= wynik; // dopiero teraz kwadrat modułu
@@ -2685,15 +2689,15 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   
   wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en) * rozn_obsadzen;
       //      std::cerr<<"\nrored = "<<rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en);
-  return wynik*struktura::pi/(struktura::c*n_r*struktura::eps0*E)/struktura::przelm*1e8;
+  return wynik*Struktura::pi/(Struktura::c*n_r*Struktura::eps0*E)/Struktura::przelm*1e8;
 }
 /*****************************************************************************/
-double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
+double Gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
 {
   double wynik;
   double cos2tet; // zmiana elementu macierzowego z k_prost
-  struktura * el = pasma->pasmo_przew[nr_c];
-  struktura * dziu = pasma->pasmo_wal[nr_v];
+  Struktura * el = pasma->pasmo_przew[nr_c];
+  Struktura * dziu = pasma->pasmo_wal[nr_v];
   double Eg; // lokalna przerwa energetyczna
   double E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[poz_c].poziom + dziu->rozwiazania[poz_v].poziom; // energia potencjalna + energia prostopadla
   //  std::cerr<<"spont: poziom c = "<<poz_c<<" poziom v = "<<poz_v<<" E0 = "<<E0<<"\n";
@@ -2717,14 +2721,14 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   //  double erf_dor = erf_dorored(E, E0, posz_en);
   double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
-  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
+  double sr_E_E0_dod = posz_en/(sqrt(2*Struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
   //  std::clog<<(E-E0)<<" "<<sr_E_E0_dod<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   //  cos2tet = 1.0; // na chwilę
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   calki_kawalki =  (*(pasma->calki_przekrycia_kawalki[nr_c][nr_v]))[poz_c][poz_v]; 
   przekr_w_war = calki_kawalki[0];
-  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
+  mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
   wynik = sqrt(pasma->el_mac[0] * mnoznik_pol) * przekr_w_war;
   for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
     {
@@ -2734,7 +2738,7 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
       //      cos2tet = 1.0; // na chwilę
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.0;
       cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
-      mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
+      mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
       //      std::cerr<<" mnoz_pol = "<<mnoznik_pol<<" cos2tet = "<<cos2tet<<"\n";
       przekr_w_war = calki_kawalki[i + 1];
       wynik += sqrt(pasma->el_mac[i + 1] * mnoznik_pol) * przekr_w_war;
@@ -2749,17 +2753,17 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   //  cos2tet = 1.0; // na chwilę
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg);//:1.0;
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
-  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
+  mnoznik_pol = (dziu->typ == Struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
   wynik *= wynik; // dopiero teraz kwadrat modułu
   //  double posz_en = 2*(E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
   wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en)*obsadzenia;
   //  std::cerr<<"typ_"<<dziu->typ<<" "<<E<<" "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<"\n";
   //  std::cerr<<"\nrored = "<<rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en);
-  return wynik*E*E*n_r/(struktura::c*struktura::c*struktura::c*struktura::pi*struktura::eps0)/(struktura::przelm*struktura::przelm*struktura::przelm)*1e24/struktura::przels*1e12; // w 1/(cm^3 s)
+  return wynik*E*E*n_r/(Struktura::c*Struktura::c*Struktura::c*Struktura::pi*Struktura::eps0)/(Struktura::przelm*Struktura::przelm*Struktura::przelm)*1e24/Struktura::przels*1e12; // w 1/(cm^3 s)
 }
 /*****************************************************************************/
-double gain::wzmocnienie_calk_bez_splotu(double E)
+double Gain::wzmocnienie_calk_bez_splotu(double E)
 {
   double wynik = 0.;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
@@ -2768,7 +2772,7 @@ double gain::wzmocnienie_calk_bez_splotu(double E)
   return wynik;
 }
 /*****************************************************************************/
-double gain::luminescencja_calk(double E) // LUKASZ
+double Gain::luminescencja_calk(double E) // LUKASZ
 {
   double wynik = 0.;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
@@ -2777,7 +2781,7 @@ double gain::luminescencja_calk(double E) // LUKASZ
   return wynik;
 }
 /*****************************************************************************/
-void gain::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
+void Gain::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
   double wynik;
     for(double E = pocz; E <= kon; E += krok)
@@ -2790,7 +2794,7 @@ void gain::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double po
     }
 }
 /*****************************************************************************/
-void gain::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b)
+void Gain::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b)
 {
   for(double E = pocz; E <= kon; E += krok)
     {
@@ -2798,7 +2802,7 @@ void gain::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double po
     }
 }
 /*****************************************************************************/
-void gain::profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
+void Gain::profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
   //  double wynik;
   /*
@@ -2821,10 +2825,10 @@ void gain::profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, d
     }
 }
 /*****************************************************************************/
-double gain::moc_lumin()
+double Gain::moc_lumin()
 {
-  struktura * el = pasma->pasmo_przew[0];
-  struktura * dziu = pasma->pasmo_wal[0];
+  Struktura * el = pasma->pasmo_przew[0];
+  Struktura * dziu = pasma->pasmo_wal[0];
   double min_E0 = Egcv_T[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double lok_min_E0;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
@@ -2836,10 +2840,10 @@ double gain::moc_lumin()
   double minimalna_przerwa = pasma->min_przerwa_energetyczna();
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
   double pocz = min_E0 - 2*posz_en;
-  double kon = min_E0 + 6*struktura::kB*T;
-  kon = (pocz<kon)?kon:pocz + 2*struktura::kB*T;
+  double kon = min_E0 + 6*Struktura::kB*T;
+  kon = (pocz<kon)?kon:pocz + 2*Struktura::kB*T;
   std::clog<<"\nW mocy. pocz = "<<pocz<<" kon = "<<kon<<"\n";
-  double krok = struktura::kB*T/30;
+  double krok = Struktura::kB*T/30;
   double wynik = 0;
   for(double E = pocz; E <= kon; E += krok)
     {
@@ -2852,24 +2856,24 @@ double gain::moc_lumin()
   return wynik*krok;
 }
 /*****************************************************************************/
-double gain::fc(double E)
+double Gain::fc(double E)
 {
-  double arg=(E-qFlc)/(struktura::kB*T);
+  double arg=(E-qFlc)/(Struktura::kB*T);
   return 1/(1 + exp(arg));
 }
 /*****************************************************************************/
-double gain::fv(double E)
+double Gain::fv(double E)
 {
-  double arg=(E-qFlv)/(struktura::kB*T);
+  double arg=(E-qFlv)/(Struktura::kB*T);
   return 1/(1 + exp(arg));
 }
 /*****************************************************************************/
-double gain::przel_gest_z_cm2(double gest_w_cm2) // gestosc powierzchniowa
+double Gain::przel_gest_z_cm2(double gest_w_cm2) // gestosc powierzchniowa
 {
-  return gest_w_cm2*1e-16*struktura::przelm*struktura::przelm;
+  return gest_w_cm2*1e-16*Struktura::przelm*Struktura::przelm;
 }
 /*****************************************************************************/
-double gain::przel_gest_na_cm2(double gest_w_wew) // gestosc powierzchniowa
+double Gain::przel_gest_na_cm2(double gest_w_wew) // gestosc powierzchniowa
 {
-  return gest_w_wew/(1e-16*struktura::przelm*struktura::przelm);
+  return gest_w_wew/(1e-16*Struktura::przelm*Struktura::przelm);
 }

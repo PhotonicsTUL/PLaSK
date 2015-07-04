@@ -154,7 +154,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
 
     friend struct GainSpectrum<GeometryType>;
     friend struct LuminescenceSpectrum<GeometryType>;
-    friend class QW::gain;
+    friend class QW::Gain;
 
     double cond_qw_shift;           ///< additional conduction band shift for qw [eV]
     double vale_qw_shift;           ///< additional valence band shift for qw [eV]
@@ -170,10 +170,10 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
     double Tref;                    ///< reference temperature [K]                                          // 11.12.2014 - dodana linia
 
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
-    std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
-    QW::warstwa *mpLay;
-    QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
-    plask::shared_ptr<QW::obszar_aktywny> aktyw; // 11.12.2014 - dodana linia
+    std::vector<QW::Warstwa *> mpEc, mpEvhh, mpEvlh;
+    QW::Warstwa *mpLay;
+    QW::Struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
+    plask::shared_ptr<QW::ObszarAktywny> aktyw; // 11.12.2014 - dodana linia
     int buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
@@ -187,9 +187,9 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
 //    double lambda;
 
     void findEnergyLevels(const ActiveRegionInfo& region, double iT, bool iShowSpecLogs);
-    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    QW::Gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
-    void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
+    void prepareLevels(QW::Gain& gmodule, const ActiveRegionInfo& region) {
     }
 
     double nm_to_eV(double wavelength) {
@@ -279,7 +279,7 @@ struct GainSpectrum {
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
-    QW::gain gMod; // added
+    QW::Gain gMod; // added
     bool gModExist; // added
 
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
@@ -345,7 +345,7 @@ struct LuminescenceSpectrum {
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
-    QW::gain gMod; // added
+    QW::Gain gMod; // added
     bool gModExist; // added
 
     LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
