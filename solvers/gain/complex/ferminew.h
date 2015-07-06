@@ -354,8 +354,11 @@ struct GainSpectrum {
     bool gModExist;
 
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
-        solver(solver), point(point), T(NAN), n(NAN), gModExist(false)
+        solver(solver), point(point), gModExist(false)
     {
+        auto mesh = make_shared<const OnePointMesh<2>>(point);
+        T = solver->inTemperature(mesh)[0];
+        n = solver->inCarriersConcentration(mesh)[0];
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -368,13 +371,19 @@ struct GainSpectrum {
     }
 
     GainSpectrum(const GainSpectrum& orig):
-        solver(orig.solver), point(orig.point), region(orig.region), T(NAN), n(NAN), gModExist(false) {}
-    
+        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n), gModExist(false) {}
+
     GainSpectrum(GainSpectrum&& orig) = default;
     
-    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
+    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        gModExist = false;
+    }
 
-    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
+    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        gModExist = false;
+    }
 
     ~GainSpectrum() {
         solver->inTemperature.changedDisconnectMethod(this, &GainSpectrum::onTChange);
@@ -388,20 +397,12 @@ struct GainSpectrum {
      */
     double getGain(double wavelength)
     {
-        if (isnan(T)) {
-            T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
-            gModExist = false;
-        }
-        if (isnan(n)) {
-            n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
-            gModExist = false;
-        }
         if (!gModExist) {
             solver->findEnergyLevels(levels, *region, T, true);
             gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);
             gModExist = true;
         }
-        return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime()); // added
+        return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime());
     }
 };
 
@@ -424,8 +425,11 @@ struct LuminescenceSpectrum {
     bool gModExist;
 
     LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
-        solver(solver), point(point), T(NAN), n(NAN), gModExist(false)
+        solver(solver), point(point), gModExist(false)
     {
+        auto mesh = make_shared<const OnePointMesh<2>>(point);
+        T = solver->inTemperature(mesh)[0];
+        n = solver->inCarriersConcentration(mesh)[0];
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -438,13 +442,20 @@ struct LuminescenceSpectrum {
     }
 
     LuminescenceSpectrum(const LuminescenceSpectrum& orig):
-        solver(orig.solver), point(orig.point), region(orig.region), T(NAN), n(NAN), gModExist(false) {}
-    
-    LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
-    
-    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
+        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n), gModExist(false) {}
 
-    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
+    LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
+        
+    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        gModExist = false;
+    }
+
+    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        gModExist = false;
+    }
+
 
     ~LuminescenceSpectrum() {
         solver->inTemperature.changedDisconnectMethod(this, &LuminescenceSpectrum::onTChange);
@@ -458,14 +469,6 @@ struct LuminescenceSpectrum {
      */
     double getLuminescence(double wavelength)
     {
-        if (isnan(T)) {
-            T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
-            gModExist = false;
-        }
-        if (isnan(n)) {
-            n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
-            gModExist = false;
-        }
         if (!gModExist) {
             solver->findEnergyLevels(levels, *region, T, true);
             gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);

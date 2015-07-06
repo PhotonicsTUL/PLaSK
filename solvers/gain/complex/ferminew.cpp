@@ -574,11 +574,11 @@ QW::Gain FermiNewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         double tEgClad = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
         //this->writelog(LOG_DEBUG, "mEgCladT z FermiNew: %1% eV", tEgClad);
 
-        this->writelog(LOG_DEBUG, "Creating gain module");
+        // this->writelog(LOG_DEBUG, "Creating gain module");
         QW::Gain gainModule;
         gainModule.setGain(levels.aktyw, n*(tQWTotH*1e-7), T, tQWnR, tEgClad);
 
-        this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
+        // this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
         double tStep = 1e-1*n; // TODO
         double nQW=n;
         double iN1=0.,tn1=0.;
@@ -597,7 +597,6 @@ QW::Gain FermiNewGainSolver<GeometryType>::getGainModule(double wavelength, doub
                 auto tMaxElem = std::max_element(tN.begin(), tN.end());
                 tn1 = *tMaxElem;
                 tn1 = QW::Struktura::koncentracja_na_cm_3(tn1);
-                this->writelog(LOG_DEBUG, "max. conc.: %1%", tn1); // TEST
                 if(tn1>=nQW)
                     n-=tStep;
                 else
@@ -616,7 +615,7 @@ QW::Gain FermiNewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             if (!levels.mEvhh) levels.mpStrEvhh->showEnergyLevels("heavy holes", round(region.qwtotallen/region.qwlen));
             if (!levels.mEvlh) levels.mpStrEvlh->showEnergyLevels("light holes", round(region.qwtotallen/region.qwlen));
         }
-        this->writelog(LOG_DETAIL, "Calculating quasi-Fermi levels and carrier concentrations..");
+        // this->writelog(LOG_DETAIL, "Calculating quasi-Fermi levels and carrier concentrations..");
         double tFe = gainModule.policz_qFlc();
         double tFp = gainModule.policz_qFlv();
         if (iShowSpecLogs)
