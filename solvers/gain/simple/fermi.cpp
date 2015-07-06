@@ -691,7 +691,6 @@ struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
-        if (conc < 0.) conc = 0.;
         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
         double len = (this->solver->extern_levels)? region.qwtotallen : region.qwlen;
         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
@@ -710,14 +709,8 @@ struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::
         if (this->solver->extern_levels) len = region.qwtotallen;
         double h = 0.5 * this->solver->differenceQuotient;
         double conc1, conc2;
-        if (conc < 0.) {
-            conc = 1.;
-            conc1 = 0.;
-            conc2 = 2.*h;
-        } else {
-            conc1 = (1.-h)*conc;
-            conc2 = (1.+h)*conc;
-        }
+        conc1 = (1.-h) * conc;
+        conc2 = (1.+h) * conc;
         double gain1 =
             this->solver->getGainModule(wavelength, temp, conc1, region)
                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
@@ -746,7 +739,7 @@ const LazyData<double> FermiGainSolver<GeometryType>::getGain(const shared_ptr<c
 template <typename GeometryType>
 const LazyData<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
-    this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration first derivative");
+    this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
     this->initCalculation(); // This must be called before any calculation!
 
     DgdnData* data = new DgdnData(this, dst_mesh);

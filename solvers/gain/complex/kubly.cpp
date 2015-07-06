@@ -33,7 +33,7 @@ warstwa & warstwa::operator=(const warstwa & war)
   return *this;
 }
 *****************************************************************************/
-Warstwa::Warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/Struktura::przelm), x_kon(x_k/Struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r) // Położenia w A
+Warstwa::Warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/Struktura::przelm), x_kon(x_k/Struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), /*nast(NULL),*/ masa_r(m_r) // Położenia w A
 {
   if(x_k <= x_p)
     {
@@ -841,76 +841,25 @@ void stan::przesun_poziom(double dE)
 }
 /*****************************************************************************/
 
-/***************************************************************************** Stara wersja
-struktura::struktura(const std::vector<warstwa> & tablica)
+Struktura::Struktura(const std::vector<unique_ptr<Warstwa>>& tablica, rodzaj co)
 {
-  gora = tablica[0].y_kon;
-  dol = gora;
-  double czydol;
-  if( tablica[0].pole != 0 || tablica[tablica.size() - 1].pole != 0 || tablica[0].y_kon != tablica[tablica.size() - 1].y_pocz)
-    {
-      std::cerr<<"Zle energie skajnych warstw!\n";
-      abort();
-    }
-  kawalki.push_back(tablica.front());
-  for(int i = 1; i <= (int) tablica.size() - 2; i++)
-    {
-      kawalki.push_back(tablica[i]);
-      czydol = (tablica[i].y_pocz > tablica[i].y_kon)?tablica[i].y_kon:tablica[i].y_pocz;
-      if(czydol < dol)
-	{
-	  dol = czydol;
-	}
-      if(tablica[i].pole == 0)
-	{
-	  progi.push_back(tablica[i].y_pocz);
-	}
-    }
-  kawalki.push_back(tablica.back());
-  if(dol >= gora)
-    {
-      std::cerr<<"Brak jakiejkolwiek studni!\n";
-      abort();
-    }
-  std::vector<double>::iterator it = progi.begin();
-  while(it != progi.end())
-    {
-      if( *it == dol)
-	{
-	  progi.erase(it);
-	}
-      it++;
-    }
-  dokl = 1e-6;
-}
-*****************************************************************************/
-Struktura::Struktura(const std::vector<Warstwa*> & tablica, rodzaj co)
-{
-  lewa = *((const WarstwaSkraj *)  tablica[0]);
-  if(lewa.lp == WarstwaSkraj::prawa)
-    {
-      std::cerr<<"Pierwsza warstwa nie jest lewa!\n";
-      abort();
-    }
+  const WarstwaSkraj* lewap = static_cast<const WarstwaSkraj*>(tablica[0].get());
+  if(!lewap || lewap->lp == WarstwaSkraj::prawa)
+      throw plask::CriticalException("Bad first layer");
+  lewa = *lewap;
   gora = lewa.y; // Zero to warstwa skrajna
   dol = gora;
-  prawa = *((const WarstwaSkraj *) tablica.back());
-  if(prawa.lp == WarstwaSkraj::lewa)
-    {
-      std::cerr<<"Ostatnia warstwa nie jest prawa!\n";
-      abort();
-    }
+  const WarstwaSkraj* prawap = static_cast<const WarstwaSkraj*>(tablica.back().get());
+  if(!prawap || prawap->lp == WarstwaSkraj::lewa)
+      throw plask::CriticalException("Bad last layer");
+  prawa = *prawap;
 
   double czydol;
   if( lewa.y != prawa.y)
-    {
-      std::cerr<<"Zle energie skajnych warstw!\n";
-      abort();
-    }
+    throw "Cladding layers have different energy";
   int i;
-  for(i = 1; i <= (int) tablica.size() - 2; i++)
-    {
-      //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
+  for(i = 1; i <= (int) tablica.size() - 2; i++) {
+    //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
     //plask::writelog(plask::LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
     if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
 	{
@@ -919,7 +868,7 @@ Struktura::Struktura(const std::vector<Warstwa*> & tablica, rodzaj co)
       abort();
 	}
       kawalki.push_back(*tablica[i]);
-      tablica[i-1]->nast = tablica[i]; // ustawianie wskaznika na sasiadke
+//       tablica[i-1]->nast = tablica[i]; // ustawianie wskaznika na sasiadke
       czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
       if(czydol < dol)
 	{
@@ -942,10 +891,7 @@ Struktura::Struktura(const std::vector<Warstwa*> & tablica, rodzaj co)
       abort();
     }
   if(dol >= gora)
-    {
-      std::cerr<<"Brak jakiejkolwiek studni!\n";
-      abort();
-    }
+      throw "No quantum well detected";
   std::vector<double>::iterator it = progi.begin();
   while(it != progi.end())
     {
@@ -974,190 +920,6 @@ Struktura::Struktura(const std::vector<Warstwa*> & tablica, rodzaj co)
   plask::writelog(plask::LOG_DETAIL, "Structure built for %1%", tCo); // LUKASZ
   // profil(0., 1e-5);
 }
-/*****************************************************************************/
-/*struktura::struktura(std::ifstream & plik, rodzaj co)
-{
-  std::string wiersz, bezkoment;
-  boost::regex wykoment("#.*");
-  std::string nic("");
-  boost::regex pust("\\s+");
-  boost::regex pole("pole");
-  std::vector<double> parametry;
-  double liczba;
-  double x_pocz = 0, x_kon, y_pocz, y_kon, npar1, npar2, masa_p, masa_r;
-  bool bylalewa = false, bylawew = false, bylaprawa = false;
-  std::vector<warstwa*> tablica;
-  warstwa * wskazwar;
-  std::getline(plik, wiersz);
-  bool jestpole = regex_search(wiersz, pole);
-  std::clog<<"\njestpole = "<<jestpole<<"\n";
-  int max_par = (jestpole)?7:6;
-  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrów w wierszu
-  while (!plik.eof()) 
-    {
-      bezkoment = regex_replace(wiersz, wykoment, nic);
-      boost::sregex_token_iterator it(bezkoment.begin(), bezkoment.end(), pust, -1);
-      boost::sregex_token_iterator kon;
-      if(it != kon) // niepusta zawartość
-	{
-	  parametry.clear();
-	  while (it != kon) 
-	    {
-	      std::clog << *it << " * ";
-	      try {
-		liczba = boost::lexical_cast<double>(*it);
-		it++;
-	      } catch(boost::bad_lexical_cast&) {
-		std::cerr<<"\n napis "<< *it<<" nie jest liczbą\n";
-		abort();
-	      }
-	      parametry.push_back(liczba);
-	      std::clog<<"\n";
-	    }
-	  if(bylalewa && ( ((int)parametry.size() < min_par && parametry.size() != 1) || (int)parametry.size() > max_par) )
-	    {
-	      if(jestpole)
-		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrów, a są "<<parametry.size()<<"\n";
-	      else
-		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrów, a są "<<parametry.size()<<"\n";
-	      abort();
-	    }
-	  if(bylalewa)
-	    {
-	      if(parametry.size() == 1) // prawa
-		{
-		  bylaprawa = true;
-		  wskazwar = new warstwa_skraj(warstwa_skraj::prawa, parametry[0], parametry[0], x_pocz, 0.);
-		  std::clog<<"\nrobi się prawa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
-		  tablica.push_back(wskazwar);
-		  break;
-		}
-	      else // wewnętrzna
-		{	     
-		  x_kon = x_pocz + parametry[0];
-		  y_pocz = -parametry[1];
-		  if (jestpole)
-		    {
-		      y_kon = -parametry[2];;
-		      masa_p = parametry[3];
-		      masa_r = parametry[4];
-		    }
-		  else
-		    {
-		      y_kon = y_pocz;
-		      masa_p = parametry[2];
-		      masa_r = parametry[3];
-		    }
-		  npar1 = 0.;
-		  npar2 = 0.;
-		  if( (parametry[0] <= 0.) || (masa_p <= 0.) || (masa_r <= 0.) )
-		    {
-		      std::cerr<<"\nAaaaaa!\n";
-		      abort();
-		    }
-		  bylalewa = true;
-		  if((int)parametry.size() == min_par + 1)
-		    {
-		      npar1 = parametry[min_par];
-		    }
-		  if((int)parametry.size() == min_par + 2)
-		    {
-		      npar1 = parametry[min_par];
-		      npar2 = parametry[min_par + 1];
-		    }
-		  wskazwar = new warstwa(masa_p, masa_r, x_pocz, y_pocz, x_kon, y_kon, npar1, npar2);
-		  std::clog<<"masa_p = "<<masa_p<<", masa_r = "<<masa_r<<", x_pocz = "<<x_pocz<<", y_pocz = "<<y_pocz<<", x_kon = "<<x_kon<<", y_kon = "<<y_kon<<", npar1 = "<<npar1<<", npar2 = "<<npar2<<"\n";;
-		  tablica.push_back(wskazwar);
-		  x_pocz = x_kon;
-		}
-	    }
-	  else
-	    {
-	      bylalewa = true;
-	      wskazwar = new warstwa_skraj(warstwa_skraj::lewa, parametry[0], parametry[0], x_pocz, 0.);
-	      tablica.push_back(wskazwar);
-	      std::clog<<"\nrobi się lewa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
-	    }
-	}
-      if(bylalewa && bylawew && bylaprawa)
-	{
-	  std::clog<<"\nWsystko było\n";
-	}
-      std::getline(plik, wiersz);
-    }
-
-  // poniżej zawartość konstruktora od tablicy
-
-  lewa = *((const warstwa_skraj *)  tablica[0]);
-  if(lewa.lp == warstwa_skraj::prawa)
-    {
-      std::cerr<<"Pierwsza warstwa nie jest lewa!\n";
-      abort();
-    }
-  gora = lewa.y; // Zero to warstwa skrajna
-  dol = gora;
-  prawa = *((const warstwa_skraj *) tablica.back());
-  if(prawa.lp == warstwa_skraj::lewa)
-    {
-      std::cerr<<"Ostatnia warstwa nie jest prawa!\n";
-      abort();
-    }
-
-  double czydol;
-  if( lewa.y != prawa.y)
-    {
-      std::cerr<<"Zle energie skajnych warstw!\n";
-      abort();
-    }
-  int i;
-  for(i = 1; i <= (int) tablica.size() - 2; i++)
-    {
-      if(tablica[i - 1]->x_kon != tablica[i]->x_pocz)
-	{
-	  std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
-	  abort();
-	}
-      kawalki.push_back(*tablica[i]);
-      tablica[i-1]->nast = tablica[i]; // ustawianie wskaźnika na sąsiadkę
-      czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
-      if(czydol < dol)
-	{
-	  dol = czydol;
-	}
-      if(tablica[i]->pole == 0)
-	{
-	  progi.push_back(tablica[i]->y_pocz);
-	}
-    }
-  //  std::clog<<"i = "<<i<<"\tx_pocz("<<(i-1)"<<(tablica[i - 1]->x_pocz)<<"\n";
-  if(tablica[i - 1]->x_kon != tablica[i]->x_pocz)
-    {
-      std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";
-      abort();
-    }
-  if(dol >= gora)
-    {
-      std::cerr<<"Brak jakiejkolwiek studni!\n";
-      abort();
-    }
-  std::vector<double>::iterator it = progi.begin();
-  while(it != progi.end())
-    {
-      //      std::clog<<"prog = "<<(*it)<<"\n";
-      if( *it == dol)
-	{
-	  it = progi.erase(it);
-	}
-      else
-	{
-	  it++;
-	}
-    }
-  typ = co;
-  dokl = 1e-6;
-  szukanie_poziomow(gora);
-  normowanie();
-}*/
 /*****************************************************************************/
 void Struktura::przesun_energie(double dE)
 {
@@ -1199,10 +961,7 @@ double Struktura::czyosobliwa(double E)
   int N = kawalki.size() + 2; //liczba warstw
   // Bylo bez '+ 2'
   if(N < 3)
-    {
-      std::cerr<<"Za mało warstw, bo "<<N<<"\n";
-      abort();
-    }
+      throw plask::format("Too few layers (%d)", N);
   int M = 2*N - 2; // liczba rownan
   A2D macierz(M, M, 0.0);
   zrobmacierz(E, macierz);
@@ -1230,42 +989,7 @@ double Struktura::czyosobliwa(double E)
   return(detUV*S[S.dim() - 1])/dzielnik;
   //  return(S[S.dim() - 1]);
 }
-/***************************************************************************** Stare
-void struktura::zrobmacierz(double E, A2D & macierz)
-{
-  int N = kawalki.size(); // liczba warstw
-  double x = kawalki[1].x_pocz;
-  macierz[0][0] = kawalki[0].ffalb(x, E);
-  macierz[0][1] = -kawalki[1].ffala(x, E);
-  macierz[0][2] = -kawalki[1].ffalb(x, E);
-  macierz[1][0] = kawalki[0].ffalb_prim(x, E)/kawalki[0].masa;
-  macierz[1][1] = -kawalki[1].ffala_prim(x, E)/kawalki[1].masa;
-  macierz[1][2] = -kawalki[1].ffalb_prim(x, E)/kawalki[1].masa;
-  int n = 1;
-  for(n = 1; n <= N - 3; n++)
-    {
-      x = kawalki[n + 1].x_pocz;
-      macierz[2*n][2*n - 1] = kawalki[n].ffala(x, E);
-      macierz[2*n][2*n] = kawalki[n].ffalb(x, E);
-      macierz[2*n][2*n + 1] = -kawalki[n+1].ffala(x, E);
-      macierz[2*n][2*n + 2] = -kawalki[n+1].ffalb(x, E);
-
-      macierz[2*n + 1][2*n - 1] = kawalki[n].ffala_prim(x, E)/kawalki[n].masa;
-      macierz[2*n + 1][2*n] = kawalki[n].ffalb_prim(x, E)/kawalki[n].masa;
-      macierz[2*n + 1][2*n + 1] = -kawalki[n+1].ffala_prim(x, E)/kawalki[n + 1].masa;
-      macierz[2*n + 1][2*n + 2] = -kawalki[n+1].ffalb_prim(x, E)/kawalki[n + 1].masa;      
-    }
-  x = kawalki[N - 1].x_pocz;
-  // std::clog<<"ostatni x = "<<(x*warstwa::przelm)<<"\n";
-  macierz[2*n][2*n - 1] = kawalki[n].ffala(x, E);
-  macierz[2*n][2*n] = kawalki[n].ffalb(x, E);
-  macierz[2*n][2*n + 1] = -kawalki[n+1].ffala(x, E);
-   
-  macierz[2*n + 1][2*n - 1] = kawalki[n].ffala_prim(x, E)/kawalki[n].masa;
-  macierz[2*n + 1][2*n] = kawalki[n].ffalb_prim(x, E)/kawalki[n].masa;
-  macierz[2*n + 1][2*n + 1] = -kawalki[n+1].ffala_prim(x, E)/kawalki[n + 1].masa;
- }
-*****************************************************************************/
+/*****************************************************************************/
 void Struktura::zrobmacierz(double E, A2D & macierz)
 {
   int N = kawalki.size() + 2; // liczba warstw
@@ -1364,48 +1088,7 @@ std::vector<std::vector<double> > Struktura::rysowanie_funkcji(double E, double 
     }
   return funkcja;
 }
-/*****************************************************************************
-int struktura::ilezer_ffal(double E)
-{
-  int N = kawalki.size() + 2; //liczba warstw
-  // Bylo bez '+ 2'
-  int M = 2*N - 2; // liczba rownan
-  A2D macierz(M, M, 0.0);
-  zrobmacierz(E, macierz);
-  A2D V(M, M);
-  JAMA::SVD<double> rozklad(macierz);
-  rozklad.getV(V);
-  int sumazer = 0;
-  double A, B, As, Bs;
-  //  bool juz = false, jeszcze = true; // czy już lub jeszcze warto sprawdzać (nie będzie zer w warstwie, w której poziom jest pod przerwą i tak samo jest we wszystkich od lub do skrajnej)
-  int pierwsza = -1;
-  do
-    {
-      pierwsza++;
-    }while(pierwsza <= N-3 && (kawalki[pierwsza].y_pocz > E && kawalki[pierwsza].y_kon > E) );
-  int ostatnia = N-2;
-  do
-    {
-      ostatnia--;
-    }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
-  std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia;
-
-  double sasiad; // wartosc ffal na lewym brzegu sasiada z prawej (ta, ktora powinna byc wspolna do obu)
-  for(int j = pierwsza; j <= ostatnia - 1; j++)
-    {
-      A = V[2*j+1][V.dim2() - 1];
-      B = V[2*j+2][V.dim2() - 1];
-      As = V[2*(j+1)+1][V.dim2() - 1];
-      Bs = V[2*(j+1)+2][V.dim2() - 1];
-      sasiad = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, As, Bs); 
-      sumazer += kawalki[j].zera_ffal(E, A, B, sasiad);
-    }
-  A = V[2*ostatnia+1][V.dim2() - 1];
-  B = V[2*ostatnia+2][V.dim2() - 1];
-  sumazer += kawalki[ostatnia].zera_ffal(E, A, B); // W ostatniej warstwie nie może byc zera na laczeniu, wiec nie ma problemu
-  return sumazer;
-}
-*****************************************************************************/
+/*****************************************************************************/
 int Struktura::ilezer_ffal(double E, A2D & V)
 {
   int N = kawalki.size() + 2; //liczba warstw
@@ -1528,29 +1211,23 @@ std::vector<double> Struktura::zageszczanie(Punkt p0, Punkt pk) // Zagęszcza a�
   return wynik;
 }
 /*****************************************************************************/
-void Struktura::profil(double Ek, double rozdz) 
-{
-  double E0 = dol;
-  if(Ek <= E0)
-    {
-      std::cerr<<"Zły zakres energii!\n";
-      abort();
-    }
-  for( double E = E0; E <= Ek; E += rozdz)
-    {
-      std::cout<<E<<"\t"<<czyosobliwa(E)<<"\n";
-    }
-  std::cout<<std::flush;
-}
+// void Struktura::profil(double Ek, double rozdz) 
+// {
+//   double E0 = dol;
+//   if(Ek <= E0)
+//       throw Exception("Fermi Gain: Bad energy range");
+//   for( double E = E0; E <= Ek; E += rozdz)
+//     {
+//       std::cout<<E<<"\t"<<czyosobliwa(E)<<"\n";
+//     }
+//   std::cout<<std::flush;
+// }
 /*****************************************************************************/
 void Struktura::szukanie_poziomow(double Ek, double rozdz) // Trzeba dorobic obsluge niezbiegania sie metody siecznych
 {
   double E0 = dol;
   if(Ek <= E0)
-    {
-      std::cerr<<"Zły zakres energii!\n";
-      abort();
-    }
+      throw "Bad energy range";
   int M = 2*(kawalki.size() + 2) - 2;
   // Bylo 'int M = 2*kawalki.size() - 2;'
   double wartakt;
@@ -1651,13 +1328,6 @@ double Struktura::sieczne(double (Struktura::*f)(double), double pocz, double ko
   double dokl = 1e-7;
   double xp = kon;
   double xl = pocz;
-  /*
-  if((this->*f)(pocz)*(this->*f)(kon) > 0)
-    {
-      std::cerr<<"Złe krańce przedziału!\n";
-      abort();
-    }
-  */
   double x, fc, fp, fl, xlp, xpp; // -p -- poprzednie krance 
   fl = (this->*f)(xl);
   fp = (this->*f)(xp);
@@ -1986,7 +1656,7 @@ void ObszarAktywny::paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v)
       }
 }
 /*****************************************************************************/
-double ObszarAktywny::min_przerwa_energetyczna()
+double ObszarAktywny::min_przerwa_energetyczna() const
 {
   double przerwa = pasmo_przew[0]->dol + pasmo_wal[0]->dol + Egcv[0];
   for(int i = 0; i <= (int) pasmo_przew.size() - 1; i++)
@@ -2237,7 +1907,7 @@ Gain::Gain() // LUKASZ
 {
 }
 /*****************************************************************************/
-void Gain::setGain(plask::shared_ptr<ObszarAktywny> obsz, double konc_pow, double temp, double wsp_zal, double EgClad) // LUKASZ
+void Gain::setGain(plask::shared_ptr<const ObszarAktywny> obsz, double konc_pow, double temp, double wsp_zal, double EgClad) // LUKASZ
 //    : pasma(obsz)
 {
   pasma = obsz;
@@ -2397,13 +2067,6 @@ double Gain::sieczne(double (Gain::*f)(double), double pocz, double kon)
   double dokl = 1e-6;
   double xp = kon;
   double xl = pocz;
-  /*
-  if((this->*f)(pocz)*(this->*f)(kon) > 0)
-    {
-      std::cerr<<"Złe krańce przedziału!\n";
-      abort();
-    }
-  */
   double x, fc, fp, fl, xlp, xpp; // -p -- poprzednie krance 
   fl = (this->*f)(xl);
   fp = (this->*f)(xp);

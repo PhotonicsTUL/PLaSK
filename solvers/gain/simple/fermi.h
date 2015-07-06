@@ -165,9 +165,6 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
     double matrixelemscfact;        ///< scaling factor for optical matrix element [-]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
-    DataVector<const double> nOnMesh; // carriers concentration on the mesh
-    DataVector<const double> TOnMesh;
-
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {

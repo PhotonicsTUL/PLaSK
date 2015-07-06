@@ -48,7 +48,7 @@ class Warstwa {
   inline double masa_p(double E) const;
 
  protected:
-  Warstwa * nast; // wskaznik na sasiadke z prawej
+//   Warstwa * nast; // wskaznik na sasiadke z prawej
   double masa_r; // masa rownolegla
   double tryga(double x, double E) const;
   double trygb(double x, double E) const;
@@ -186,7 +186,7 @@ public:
     static const double c;
     static const double kB;
 
-    Struktura(const std::vector<Warstwa*> &, rodzaj);
+    Struktura(const std::vector<std::unique_ptr<Warstwa>>&, rodzaj);
     //struktura(std::ifstream & plik, rodzaj co); // won't be used LUKASZ
 
     static double dlugosc_z_A(const double);
@@ -208,7 +208,7 @@ public:
     void przesun_energie(double);
     //  double dE_po_dl(size_t nr, chrop ch); //pochodna nr-tego poziomu po szerokosci studni
 
-    void profil(double Ek, double rozdz);
+//     void profil(double Ek, double rozdz);
     std::vector<std::vector<double> > rysowanie_funkcji(double E, double x0, double xk, double krok);
 };
 /*******************************************************************/
@@ -233,7 +233,7 @@ public:
 
     ObszarAktywny(Struktura * elektron, const std::vector<Struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo, double Temp, double iMatrixElemScFact, bool iShowM); // najprostszy konstruktor: jeden elektron i wspolna przerwa
 
-    double min_przerwa_energetyczna();
+    double min_przerwa_energetyczna() const;
     //  void policz_calki(const struktura * elektron, const struktura * dziura, A2D & macierz);
     void policz_calki(const Struktura * elektron, const Struktura * dziura, A2D & macierz, TNT::Array2D<std::vector<double> > & wekt_calk_kaw);
     void policz_calki_kawalki(const Struktura * elektron, const Struktura * dziura, TNT::Array2D<vector<double> > & macierz); //dopisane na szybko, bo kompilator nie widzial
@@ -251,7 +251,7 @@ private:
 /*******************************************************************/
 class PLASK_SOLVER_API Gain
 {
-    plask::shared_ptr<ObszarAktywny> pasma;
+    plask::shared_ptr<const ObszarAktywny> pasma;
     double nosniki_c, nosniki_v; // gestosc powierzchniowa
     double T;
     std::vector<double> Egcv_T;
@@ -275,7 +275,7 @@ class PLASK_SOLVER_API Gain
     double fv(double E);
 public:
     Gain(); // LUKASZ remember to delete this
-    void setGain(plask::shared_ptr<ObszarAktywny> obsz, double konc_pow, double T, double wsp_zal, double EgClad);
+    void setGain(plask::shared_ptr<const ObszarAktywny> obsz, double konc_pow, double T, double wsp_zal, double EgClad);
     void setEgClad(double iEgClad);
     void setNsurf(double iNsurf);
     double nosniki_w_c(double Fl);

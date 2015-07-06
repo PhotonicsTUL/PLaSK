@@ -63,6 +63,13 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
             return getBoundingBox().contains(point);
         }
 
+        /// Return \p true if given point is inside quantum well
+        bool inQW(const Vec<2>& point) const {
+            if (!contains(point)) return false;
+            assert(layers->getChildForHeight(point.c1-origin.c1));
+            return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
+        }
+
         // LUKASZ
         std::vector< shared_ptr<Material> > actMaterials; ///< All materials in the active region
         std::vector<double> lens; ///< Thicknesses of the layers in the active region
@@ -152,6 +159,22 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
 
   protected:
 
+    struct DataBase;
+    struct GainData;
+    struct DgDnData;
+    struct LuminescenceData;
+
+    struct Levels {
+        int mEc, mEvhh, mEvlh;          // to choose the correct band edges
+        std::vector<std::unique_ptr<QW::Warstwa>> mpEc, mpEvhh, mpEvlh;
+        std::unique_ptr<QW::Struktura> mpStrEc, mpStrEvhh, mpStrEvlh;
+        plask::shared_ptr<QW::ObszarAktywny> aktyw;
+        bool invalid;
+        Levels(): mEc(-1), mEvhh(-1), mEvlh(-1), invalid(true) {}
+    };
+
+    std::vector<Levels> region_levels;
+    
     friend struct GainSpectrum<GeometryType>;
     friend struct LuminescenceSpectrum<GeometryType>;
     friend class QW::Gain;
@@ -164,35 +187,22 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
     double matrix_elem;             ///< optical matrix element [m0*eV]
     double matrix_elem_sc_fact;     ///< scaling factor for optical matrix element [-]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
-    //bool fixQWsWidths;              ///< if true QW widths will not be changed for gain calculations
-    bool calcLev;                   ///< if true energy levels will be calculated
-    //bool buildStructOnce;           //// if true the active-region structure is built only at the beginning of the gain calculations and energy levels are calculated only once (after that they are only shifted with the use of Eg(T) relation for cladding)
+    //bool fixQWsWidths;            ///< if true QW widths will not be changed for gain calculations
     double Tref;                    ///< reference temperature [K]                                          // 11.12.2014 - dodana linia
 
-    int mEc, mEvhh, mEvlh; // to choose the correct band edges
-    std::vector<QW::Warstwa *> mpEc, mpEvhh, mpEvlh;
-    QW::Warstwa *mpLay;
-    QW::Struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
-    plask::shared_ptr<QW::ObszarAktywny> aktyw; // 11.12.2014 - dodana linia
-    int buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
-    int buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double iT, bool iShowSpecLogs=false);
+    int buildStructure(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEc(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEvhh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEvlh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
-    DataVector<const double> nOnMesh; // carriers concentration on the mesh
-    DataVector<const double> TOnMesh;
-
-//    double lambda_start;
-//    double lambda_stop;
-//    double lambda;
-
-    void findEnergyLevels(const ActiveRegionInfo& region, double iT, bool iShowSpecLogs);
-    QW::Gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    QW::Gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, 
+                           const Levels& levels, bool iShowSpecLogs=false);
 
     void prepareLevels(QW::Gain& gmodule, const ActiveRegionInfo& region) {
     }
 
-    double nm_to_eV(double wavelength) {
+    inline static double nm_to_eV(double wavelength) {
         return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
     }
 
@@ -223,35 +233,95 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
      * \return gain distribution
      */
     const LazyData<double> getGain(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getDgDn(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
     const LazyData<double> getLuminescence(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
-    //const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT); // LUKASZ
 
-  public:
 
     bool strains;            ///< Consider strain in QWs and barriers?
     bool fixed_qw_widths;    ///< Fix widths of the QWs?
     bool build_struct_once;  ///< Build active-region structure only once?
 
+  public:
+
+    bool getStrains() const { return strains; }
+    void setStrains(bool value)  {
+        if (strains != value) {
+            strains = value;
+            if (build_struct_once) this->invalidate();
+        }
+    }
+
+    bool getFixedQwWidths() const { return fixed_qw_widths; }
+    void setFixedQwWidths(bool value)  {
+        if (fixed_qw_widths != value) {
+            fixed_qw_widths = value;
+            this->invalidate();
+        }
+    }
+
+    bool getBuildStructOnce() const { return build_struct_once; }
+    void setBuildStructOnce(bool value)  {
+        if (build_struct_once != value) {
+            build_struct_once = value;
+            this->invalidate();
+        }
+    }
+
     double getRoughness() const { return roughness; }
-    void setRoughness(double iRoughness)  { roughness = iRoughness; }
+    void setRoughness(double iRoughness)  {
+        if (roughness != iRoughness) {
+            roughness = iRoughness;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getLifeTime() const { return lifetime; }
-    void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
+    void setLifeTime(double iLifeTime)  {
+        if (lifetime != iLifeTime) {
+            lifetime = iLifeTime;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getMatrixElem() const { return matrix_elem; }
-    void setMatrixElem(double iMatrixElem)  { matrix_elem = iMatrixElem; }
+    void setMatrixElem(double iMatrixElem)  {
+        if (matrix_elem != iMatrixElem) {
+            matrix_elem = iMatrixElem;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getMatrixElemScFact() const { return matrix_elem_sc_fact; }
-    void setMatrixElemScFact(double iMatrixElemScFact)  { matrix_elem_sc_fact = iMatrixElemScFact; }
+    void setMatrixElemScFact(double iMatrixElemScFact)  {
+        if (matrix_elem_sc_fact != iMatrixElemScFact) {
+            matrix_elem_sc_fact = iMatrixElemScFact;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getCondQWShift() const { return cond_qw_shift; }
-    void setCondQWShift(double iCondQWShift)  { cond_qw_shift = iCondQWShift; }
+    void setCondQWShift(double iCondQWShift)  {
+        if (cond_qw_shift != iCondQWShift) {
+            cond_qw_shift = iCondQWShift;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getValeQWShift() const { return vale_qw_shift; }
-    void setValeQWShift(double iValeQWShift)  { vale_qw_shift = iValeQWShift; }
+    void setValeQWShift(double iValeQWShift)  {
+        if (vale_qw_shift != iValeQWShift) {
+            vale_qw_shift = iValeQWShift;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     double getTref() const { return Tref; }
-    void setTref(double iTref)  { Tref = iTref; }
+    void setTref(double iTref)  { 
+        if (Tref != iTref) {
+            Tref = iTref;
+            if (build_struct_once) this->invalidate();
+        }
+    }
 
     /**
      * Reg gain spectrum object for future use;
@@ -279,14 +349,13 @@ struct GainSpectrum {
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
-    QW::Gain gMod; // added
-    bool gModExist; // added
+    typename FermiNewGainSolver<GeometryT>::Levels levels; ///< Computed energy levels
+    QW::Gain gMod;
+    bool gModExist;
 
-    GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
+        solver(solver), point(point), T(NAN), n(NAN), gModExist(false)
     {
-        //std::cout << "Setting gModExist to false\n"; // added
-        gModExist = false; // added
-    //GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -298,6 +367,11 @@ struct GainSpectrum {
         throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
     }
 
+    GainSpectrum(const GainSpectrum& orig):
+        solver(orig.solver), point(orig.point), region(orig.region), T(NAN), n(NAN), gModExist(false) {}
+    
+    GainSpectrum(GainSpectrum&& orig) = default;
+    
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
@@ -314,20 +388,20 @@ struct GainSpectrum {
      */
     double getGain(double wavelength)
     {
-        //double getGain(double wavelength) {
-        if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
-        if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
-        if (!gModExist) // added
-        { // added
-            //std::cout << "Getting GainModule in spectrum\n"; // added
-            gMod = solver->getGainModule(wavelength, T, n, *region, true); // added
-            gModExist = true; // added
-        } // added
+        if (isnan(T)) {
+            T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+            gModExist = false;
+        }
+        if (isnan(n)) {
+            n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+            gModExist = false;
+        }
+        if (!gModExist) {
+            solver->findEnergyLevels(levels, *region, T, true);
+            gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);
+            gModExist = true;
+        }
         return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime()); // added
-        //return solver->getGainModule(wavelength, T, n, *region) // commented
-        //    .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // commented
-        /*return solver->getGainModule(wavelength, T, n, *region)
-            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);*/
     }
 };
 
@@ -345,13 +419,13 @@ struct LuminescenceSpectrum {
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
-    QW::Gain gMod; // added
-    bool gModExist; // added
+    typename FermiNewGainSolver<GeometryT>::Levels levels; ///< Computed energy levels
+    QW::Gain gMod;
+    bool gModExist;
 
-    LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
+        solver(solver), point(point), T(NAN), n(NAN), gModExist(false)
     {
-        gModExist = false; // added
-    //LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -363,6 +437,11 @@ struct LuminescenceSpectrum {
         throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
     }
 
+    LuminescenceSpectrum(const LuminescenceSpectrum& orig):
+        solver(orig.solver), point(orig.point), region(orig.region), T(NAN), n(NAN), gModExist(false) {}
+    
+    LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
+    
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
@@ -379,20 +458,20 @@ struct LuminescenceSpectrum {
      */
     double getLuminescence(double wavelength)
     {
-        //double getLuminescence(double wavelength) {
-        if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
-        if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
-        if (!gModExist) // added
-        { // added
-            //std::cout << "Getting GainModule in spectrum\n"; // added
-            gMod = solver->getGainModule(wavelength, T, n, *region, true); // added
-            gModExist = true; // added
-        } // added
+        if (isnan(T)) {
+            T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+            gModExist = false;
+        }
+        if (isnan(n)) {
+            n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+            gModExist = false;
+        }
+        if (!gModExist) {
+            solver->findEnergyLevels(levels, *region, T, true);
+            gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);
+            gModExist = true;
+        }
         return gMod.Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // added
-        //return solver->getGainModule(wavelength, T, n, *region) // commented
-        //    .Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // commented
-        /*return solver->getGainModule(wavelength, T, n, *region)
-            .Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);*/
     }
 };
 

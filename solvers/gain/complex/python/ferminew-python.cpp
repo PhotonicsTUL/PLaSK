@@ -83,9 +83,14 @@ BOOST_PYTHON_MODULE(complex)
     plask_import_array();
 
     {CLASS(FermiNewGainSolver<Geometry2DCartesian>, "FermiNew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
-        solver.def_readwrite("strained", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
-        solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
-        solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
+        solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
+                            "Consider strain in QW and barriers? (True or False).");
+        solver.add_property("fixed_qw_widths", &__Class__::getFixedQwWidths, &__Class__::setFixedQwWidths,
+                            "Fix widths of the QWs? (True or False).");
+        solver.add_property("fast_levels", &__Class__::getBuildStructOnce, &__Class__::setBuildStructOnce,
+                            "Compute levels only once and simply shift for different temperatures?\n"
+                            "Setting this to True stongly increases computation speed, but makes the results\n"
+                            "less accurate for high gains. (True or False).");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
@@ -97,7 +102,9 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
-        RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
+        RW_PROPERTY(Tref, getTref, setTref,
+                    "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
+                    "for initial computation of the energy levels [K].");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
@@ -120,9 +127,14 @@ BOOST_PYTHON_MODULE(complex)
         ;
     }
     {CLASS(FermiNewGainSolver<Geometry2DCylindrical>, "FermiNewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
-        solver.def_readwrite("strained", &__Class__::strains, "Consider strain in QW and barriers? (True or False)");
-        solver.def_readwrite("fixed_qw_widths", &__Class__::fixed_qw_widths, "Fix widths of the QWs? (True or False)");
-        solver.def_readwrite("build_struct_once", &__Class__::build_struct_once, "Build structure once? (True or False)");
+        solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
+                            "Consider strain in QW and barriers? (True or False).");
+        solver.add_property("fixed_qw_widths", &__Class__::getFixedQwWidths, &__Class__::setFixedQwWidths,
+                            "Fix widths of the QWs? (True or False).");
+        solver.add_property("fast_levels", &__Class__::getBuildStructOnce, &__Class__::setBuildStructOnce,
+                            "Compute levels only once and simply shift for different temperatures?\n"
+                            "Setting this to True stongly increases computation speed, but makes the results\n"
+                            "less accurate for high gains. (True or False).");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
@@ -134,7 +146,9 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
-        RW_PROPERTY(Tref, getTref, setTref, "Reference temperature [K]");
+        RW_PROPERTY(Tref, getTref, setTref,
+                    "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
+                    "for initial computation of the energy levels [K].");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
