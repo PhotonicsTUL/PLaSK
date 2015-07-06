@@ -19,8 +19,8 @@ FermiNewGainSolver<GeometryType>::FermiNewGainSolver(const std::string& name): S
     matrix_elem_sc_fact = 1.; // [-] change it when numerical value is different from the experimental one
     differenceQuotient = 0.01;  // [%]
     strains = false;
-    fixed_qw_widths = false;
     build_struct_once = true;
+    adjust_widths = true;
     inTemperature.changedConnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
     inCarriersConcentration.changedConnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
 }
@@ -43,55 +43,55 @@ void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
             roughness = reader.getAttribute<double>("roughness", roughness);
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrix_elem = reader.getAttribute<double>("matrix-elem", matrix_elem);
-            matrix_elem_sc_fact = reader.getAttribute<double>("matrix-elem-sc-fact", matrix_elem_sc_fact);
+            matrix_elem_sc_fact = reader.getAttribute<double>("matrix-elem-scaling", matrix_elem_sc_fact);
             cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
             vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
             Tref = reader.getAttribute<double>("Tref", Tref);
-            strains = reader.getAttribute<bool>("strains", strains);
-            fixed_qw_widths = reader.getAttribute<bool>("fixed-qw-widths", fixed_qw_widths);
+            strains = reader.getAttribute<bool>("strained", strains);
+            adjust_widths = reader.getAttribute<bool>("adjust-layers", adjust_widths);
             build_struct_once = reader.getAttribute<bool>("fast-levels", build_struct_once);
             reader.requireTagEnd();
-        } else if (param == "levels") {
-            std::string els, hhs, lhs;
-            if (reader.hasAttribute("el") || reader.hasAttribute("hh") || reader.hasAttribute("lh")) {
-                els = reader.requireAttribute("el");
-                hhs = reader.requireAttribute("hh");
-                lhs = reader.requireAttribute("lh");
-                reader.requireTagEnd();
-            } else {
-                while (reader.requireTagOrEnd()) {
-                    if (reader.getNodeName() == "el") els = reader.requireTextInCurrentTag();
-                    else if (reader.getNodeName() == "hh") hhs = reader.requireTextInCurrentTag();
-                    else if (reader.getNodeName() == "lh") lhs = reader.requireTextInCurrentTag();
-                    else throw XMLUnexpectedElementException(reader, "<el>, <hh>, or <lh>");
-                }
-                if (els == "") throw XMLUnexpectedElementException(reader, "<el>");
-                if (hhs == "") throw XMLUnexpectedElementException(reader, "<hh>");
-                if (lhs == "") throw XMLUnexpectedElementException(reader, "<lh>");
-            }
-            boost::char_separator<char> sep(", ");
-            boost::tokenizer<boost::char_separator<char>> elt(els, sep), hht(hhs, sep), lht(lhs, sep);
-            /*double *el = nullptr, *hh = nullptr, *lh = nullptr;
-            try {
-                el = new double[std::distance(elt.begin(), elt.end())+1];
-                hh = new double[std::distance(hht.begin(), hht.end())+1];
-                lh = new double[std::distance(lht.begin(), lht.end())+1];
-                double* e = el; for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
-                double* h = hh; for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
-                double* l = lh; for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
-            } catch(...) {
-                delete[] el; delete[] hh; delete[] lh;
-            }*/
-            std::unique_ptr<double[]> el(new double[std::distance(elt.begin(), elt.end())+1]);
-            std::unique_ptr<double[]> hh(new double[std::distance(hht.begin(), hht.end())+1]);
-            std::unique_ptr<double[]> lh(new double[std::distance(lht.begin(), lht.end())+1]);
-            double* e = el.get(); for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
-            double* h = hh.get(); for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
-            double* l = lh.get(); for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
-            /*if (extern_levels) {
-                delete[] extern_levels->el; delete[] extern_levels->hh; delete[] extern_levels->lh;
-            }
-            extern_levels.reset(QW::ExternalLevels(el.release(), hh.release(), lh.release()));*/
+        // } else if (param == "levels") {
+        // std::string els, hhs, lhs;
+        // if (reader.hasAttribute("el") || reader.hasAttribute("hh") || reader.hasAttribute("lh")) {
+        //     els = reader.requireAttribute("el");
+        //     hhs = reader.requireAttribute("hh");
+        //     lhs = reader.requireAttribute("lh");
+        //     reader.requireTagEnd();
+        // } else {
+        //     while (reader.requireTagOrEnd()) {
+        //         if (reader.getNodeName() == "el") els = reader.requireTextInCurrentTag();
+        //         else if (reader.getNodeName() == "hh") hhs = reader.requireTextInCurrentTag();
+        //         else if (reader.getNodeName() == "lh") lhs = reader.requireTextInCurrentTag();
+        //         else throw XMLUnexpectedElementException(reader, "<el>, <hh>, or <lh>");
+        //     }
+        //     if (els == "") throw XMLUnexpectedElementException(reader, "<el>");
+        //     if (hhs == "") throw XMLUnexpectedElementException(reader, "<hh>");
+        //     if (lhs == "") throw XMLUnexpectedElementException(reader, "<lh>");
+        // }
+        // boost::char_separator<char> sep(", ");
+        // boost::tokenizer<boost::char_separator<char>> elt(els, sep), hht(hhs, sep), lht(lhs, sep);
+        // /*double *el = nullptr, *hh = nullptr, *lh = nullptr;
+        // try {
+        //     el = new double[std::distance(elt.begin(), elt.end())+1];
+        //     hh = new double[std::distance(hht.begin(), hht.end())+1];
+        //     lh = new double[std::distance(lht.begin(), lht.end())+1];
+        //     double* e = el; for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
+        //     double* h = hh; for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
+        //     double* l = lh; for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
+        // } catch(...) {
+        //     delete[] el; delete[] hh; delete[] lh;
+        // }*/
+        // std::unique_ptr<double[]> el(new double[std::distance(elt.begin(), elt.end())+1]);
+        // std::unique_ptr<double[]> hh(new double[std::distance(hht.begin(), hht.end())+1]);
+        // std::unique_ptr<double[]> lh(new double[std::distance(lht.begin(), lht.end())+1]);
+        // double* e = el.get(); for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
+        // double* h = hh.get(); for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
+        // double* l = lh.get(); for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
+        // /*if (extern_levels) {
+        //     delete[] extern_levels->el; delete[] extern_levels->hh; delete[] extern_levels->lh;
+        // }
+        // extern_levels.reset(QW::ExternalLevels(el.release(), hh.release(), lh.release()));*/
         } else
             this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <levels>, or <config>");
     }
@@ -312,7 +312,7 @@ void FermiNewGainSolver<GeometryType>::detectActiveRegions()
         this->writelog(LOG_DEBUG, "Number of QWs in the above active region: %1%", tNoOfQWs);
         this->writelog(LOG_DEBUG, "QW initial thickness: %1% nm", 0.1*region.qwlen);
 
-        if (!fixed_qw_widths)
+        if (adjust_widths)
         {
             double tHstep = region.qwlen*roughness/qw_width_mod;
             if ( !(tNoOfQWs%2) )
@@ -334,7 +334,7 @@ void FermiNewGainSolver<GeometryType>::detectActiveRegions()
                     if (region.isQW(i))
                     {
                         region.lens[i] = tH0;
-                        this->writelog(LOG_DETAIL, "Layer %1% - modified thickness: %2% nm", i+1, 0.1*region.lens[i]);
+                        this->writelog(LOG_DETAIL, "Layer %1% modified thickness: %2% nm", i+1, 0.1*region.lens[i]);
                         tH0 += tHstep;
                     }
                 }
@@ -343,7 +343,6 @@ void FermiNewGainSolver<GeometryType>::detectActiveRegions()
         }
         n++;
     }
-
 }
 
 template <typename GeometryType>
@@ -440,7 +439,7 @@ int FermiNewGainSolver<GeometryType>::buildEc(Levels& levels, double T, const Ac
 
     double tX = 0.;
     double tEc = (region.getLayerMaterial(0)->CB(T,eClad1)-tDEc);
-    if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - CB: %2% eV", 1, region.getLayerMaterial(0)->CB(T,eClad1));
+    if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% CB: %2% eV", 1, region.getLayerMaterial(0)->CB(T,eClad1));
     levels.mpEc.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::lewa, region.getLayerMaterial(0)->Me(T,eClad1).c00, region.getLayerMaterial(0)->Me(T,eClad1).c11, tX, tEc)); // left cladding
     for (int i=1; i<tN-1; ++i)
     {
@@ -450,14 +449,14 @@ int FermiNewGainSolver<GeometryType>::buildEc(Levels& levels, double T, const Ac
         double tCBaddShift(0.);
         if (region.isQW(i)) tCBaddShift = cond_qw_shift;
         tEc = (region.getLayerMaterial(i)->CB(T,e)+tCBaddShift-tDEc);
-        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - CB: %2% eV", i+1, region.getLayerMaterial(i)->CB(T,e)+tCBaddShift);
+        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% CB: %2% eV", i+1, region.getLayerMaterial(i)->CB(T,e)+tCBaddShift);
         levels.mpEc.emplace_back(new QW::Warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, tEc, (tX+tH), tEc)); // wells and barriers
         tX += tH;
         if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
             tfStructOK = false;
     }
     tEc = (region.getLayerMaterial(tN-1)->CB(T,eClad2)-tDEc);
-    if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - CB: %2% eV", tN, region.getLayerMaterial(tN-1)->CB(T,eClad2));
+    if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% CB: %2% eV", tN, region.getLayerMaterial(tN-1)->CB(T,eClad2));
     levels.mpEc.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::prawa, region.getLayerMaterial(tN-1)->Me(T,eClad2).c00, region.getLayerMaterial(tN-1)->Me(T,eClad2).c11, tX, tEc)); // right cladding
 
     if (tfStructOK) return 0; // band structure OK
@@ -480,7 +479,7 @@ int FermiNewGainSolver<GeometryType>::buildEvhh(Levels& levels, double T, const 
 
         double tX = 0.;
         double tEvhh = -(region.getLayerMaterial(0)->VB(T,eClad1,'G','H')-tDEvhh);
-        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(hh): %2% eV", 1, region.getLayerMaterial(0)->VB(T,eClad1,'G','H'));
+        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(hh): %2% eV", 1, region.getLayerMaterial(0)->VB(T,eClad1,'G','H'));
         levels.mpEvhh.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::lewa, region.getLayerMaterial(0)->Mhh(T,eClad1).c00, region.getLayerMaterial(0)->Mhh(T,eClad1).c11, tX, tEvhh)); // left cladding
         for (int i=1; i<tN-1; ++i)
         {
@@ -490,14 +489,14 @@ int FermiNewGainSolver<GeometryType>::buildEvhh(Levels& levels, double T, const 
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
             tEvhh = -(region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift-tDEvhh);
-            if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(hh): %2% eV", i+1, region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift);
+            if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(hh): %2% eV", i+1, region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift);
             levels.mpEvhh.emplace_back(new QW::Warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, tEvhh, (tX+tH), tEvhh)); // wells and barriers
             tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','H') <= tDEvhh)
                 tfStructOK = false;
         }
         tEvhh = -(region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','H')-tDEvhh);
-        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(hh): %2% eV", tN, region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','H'));
+        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(hh): %2% eV", tN, region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','H'));
         levels.mpEvhh.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::prawa, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c11, tX, tEvhh)); // add delete somewhere! TODO
 
         if (tfStructOK) return 0; // band structure OK
@@ -520,7 +519,7 @@ int FermiNewGainSolver<GeometryType>::buildEvlh(Levels& levels, double T, const 
 
         double tX = 0.;
         double tEvlh = -(region.getLayerMaterial(0)->VB(T,eClad1,'G','L')-tDEvlh);
-        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(lh): %2% eV", 1, region.getLayerMaterial(0)->VB(T,eClad1,'G','L'));
+        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(lh): %2% eV", 1, region.getLayerMaterial(0)->VB(T,eClad1,'G','L'));
         levels.mpEvlh.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::lewa, region.getLayerMaterial(0)->Mlh(T,eClad1).c00, region.getLayerMaterial(0)->Mlh(T,eClad1).c11, tX, tEvlh)); // left cladding
         for (int i=1; i<tN-1; ++i)
         {
@@ -530,14 +529,14 @@ int FermiNewGainSolver<GeometryType>::buildEvlh(Levels& levels, double T, const 
             double tVBaddShift(0.);
             if (region.isQW(i)) tVBaddShift = vale_qw_shift;
             tEvlh = -(region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift-tDEvlh);
-            if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(lh): %2% eV", i+1, region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift);
+            if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(lh): %2% eV", i+1, region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift);
             levels.mpEvlh.emplace_back(new QW::Warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, tEvlh, (tX+tH), tEvlh)); // wells and barriers
             tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','L') <= tDEvlh)
                 tfStructOK = false;
         }
         tEvlh = -(region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','L')-tDEvlh);
-        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% - VB(lh): %2% eV", tN, region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','L'));
+        if (iShowSpecLogs) this->writelog(LOG_DETAIL, "Layer %1% VB(lh): %2% eV", tN, region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','L'));
         levels.mpEvlh.emplace_back(new QW::WarstwaSkraj(QW::WarstwaSkraj::prawa, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c11, tX, tEvlh)); // add delete somewhere! TODO
 
         if (tfStructOK) return 0; // band structure OK

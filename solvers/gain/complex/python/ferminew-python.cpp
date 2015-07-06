@@ -85,19 +85,21 @@ BOOST_PYTHON_MODULE(complex)
     {CLASS(FermiNewGainSolver<Geometry2DCartesian>, "FermiNew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
-        solver.add_property("fixed_qw_widths", &__Class__::getFixedQwWidths, &__Class__::setFixedQwWidths,
-                            "Fix widths of the QWs? (True or False).");
+        solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,
+                            "Adjust thicknesses of quantum wells?\n\n"
+                            "Setting this to True, allows to adjust the widths of the gain region layers\n"
+                            "by few angstroms to improve numerical stability.");
         solver.add_property("fast_levels", &__Class__::getBuildStructOnce, &__Class__::setBuildStructOnce,
-                            "Compute levels only once and simply shift for different temperatures?\n"
+                            "Compute levels only once and simply shift for different temperatures?\n\n"
                             "Setting this to True stongly increases computation speed, but makes the results\n"
-                            "less accurate for high gains. (True or False).");
+                            "less accurate for high gains.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         PROVIDER(outLuminescence, "");
         PROVIDER(outGainOverCarriersConcentration, "");
-        RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
-        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
+        RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness of the layers [-].");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
         RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
@@ -129,19 +131,21 @@ BOOST_PYTHON_MODULE(complex)
     {CLASS(FermiNewGainSolver<Geometry2DCylindrical>, "FermiNewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
-        solver.add_property("fixed_qw_widths", &__Class__::getFixedQwWidths, &__Class__::setFixedQwWidths,
-                            "Fix widths of the QWs? (True or False).");
+        solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,
+                            "Adjust thicknesses of quantum wells?\n\n"
+                            "Setting this to True, allows to adjust the widths of the gain region layers\n"
+                            "by few angstroms to improve numerical stability.");
         solver.add_property("fast_levels", &__Class__::getBuildStructOnce, &__Class__::setBuildStructOnce,
-                            "Compute levels only once and simply shift for different temperatures?\n"
+                            "Compute levels only once and simply shift for different temperatures?\n\n"
                             "Setting this to True stongly increases computation speed, but makes the results\n"
-                            "less accurate for high gains. (True or False).");
+                            "less accurate for high gains.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         PROVIDER(outLuminescence, "");
         PROVIDER(outGainOverCarriersConcentration, "");
-        RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
-        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
+        RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness of the layers [-].");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");

@@ -20,11 +20,20 @@
         Value of the squared matrix element in gain computations.
         If it is not set it is estimated automatically.
       </attr>
+      <attr name="matrix-elem-scaling" label="Matrix element scaling" unit="-" type="float">
+        Scaling factor for optical matrix element. If left blank, no scalling to matrix element is applied.
+      </attr>     
       <attr name="strained" label="Strained" type="bool">
         Boolean attribute indicated if the solver should consider strain in the active region.
         If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
         the quantum wells.
+      </attr>
+      <attr name="cond-shift" label="Conduction band shift" type="float" unit="eV">
+          Additional conduction band shift for quantum wells.
+      </attr>
+      <attr name="vale-shift" label="Valence band shift" type="float" unit="eV">
+          Additional valence band shift for quantum wells.
       </attr>
     </tag>
 

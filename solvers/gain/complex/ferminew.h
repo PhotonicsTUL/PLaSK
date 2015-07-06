@@ -238,7 +238,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
 
 
     bool strains;            ///< Consider strain in QWs and barriers?
-    bool fixed_qw_widths;    ///< Fix widths of the QWs?
+    bool adjust_widths;      ///< Adjust widths of the QWs?
     bool build_struct_once;  ///< Build active-region structure only once?
 
   public:
@@ -251,10 +251,10 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
         }
     }
 
-    bool getFixedQwWidths() const { return fixed_qw_widths; }
-    void setFixedQwWidths(bool value)  {
-        if (fixed_qw_widths != value) {
-            fixed_qw_widths = value;
+    bool getAdjustWidths() const { return adjust_widths; }
+    void setAdjustWidths(bool value)  {
+        if (adjust_widths != value) {
+            adjust_widths = value;
             this->invalidate();
         }
     }

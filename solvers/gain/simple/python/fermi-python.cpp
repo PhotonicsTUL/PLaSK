@@ -116,8 +116,8 @@ BOOST_PYTHON_MODULE(simple)
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
         RW_PROPERTY(matrix_elem_scaling, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
-        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV].");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV].");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
