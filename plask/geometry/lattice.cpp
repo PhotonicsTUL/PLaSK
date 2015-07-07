@@ -206,7 +206,6 @@ static GeometryReader::RegisterObjectReader arrange3d_reader(ArrangeContainer<3>
 template struct PLASK_API ArrangeContainer<2>;
 template struct PLASK_API ArrangeContainer<3>;
 
-
 struct IntPoint { int x, y; };
 typedef std::pair<IntPoint, IntPoint> IntSegment;
 
@@ -289,5 +288,60 @@ std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& se
     }
     return result;
 }
+
+
+void Lattice::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    if (vec0.lon() != 0.)  dest_xml_object.attr("a"+axes.getNameForLong(), vec0.lon());
+    if (vec0.tran() != 0.) dest_xml_object.attr("a"+axes.getNameForTran(), vec0.tran());
+    if (vec0.vert() != 0.) dest_xml_object.attr("a"+axes.getNameForVert(), vec0.vert());
+    if (vec1.lon() != 0.)  dest_xml_object.attr("b"+axes.getNameForLong(), vec1.lon());
+    if (vec1.tran() != 0.) dest_xml_object.attr("b"+axes.getNameForTran(), vec1.tran());
+    if (vec1.vert() != 0.) dest_xml_object.attr("b"+axes.getNameForVert(), vec1.vert());
+}
+
+/*std::size_t Lattice::getChildrenCount() const
+{
+}
+
+shared_ptr<GeometryObject> Lattice::getChildNo(std::size_t child_no) const
+{
+}
+
+Lattice::Box Lattice::getBoundingBox() const
+{
+}
+
+
+shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+    auto result = make_shared<Lattice>();
+    result->vec0.lon() =  reader.source.getAttribute("a"+reader.getAxisLongName(), 0.);
+    result->vec0.tran() = reader.source.getAttribute("a"+reader.getAxisTranName(), 0.);
+    result->vec0.vert() = reader.source.getAttribute("a"+reader.getAxisVertName(), 0.);
+    result->vec1.lon() =  reader.source.getAttribute("b"+reader.getAxisLongName(), 0.);
+    result->vec1.tran() = reader.source.getAttribute("b"+reader.getAxisTranName(), 0.);
+    result->vec1.vert() = reader.source.getAttribute("b"+reader.getAxisVertName(), 0.);
+    reader.source.requireTag("segments");
+    std::string segments = reader.source.requireTextInCurrentTag();
+    boost::tokenizer<boost::char_separator<char> > tokens(segments, boost::char_separator<char>(" \t\n\r", ";^"));
+    result->segments.emplace_back();
+    int cords_in_current_point = 0;
+    for (const std::string& t: tokens) {
+        if (t == ";" || t == "^") { //end of point or segment
+            if (cords_in_current_point != 2) throw Exception("Each point must have two coordinates.");
+            cords_in_current_point = 0;
+            if (t == "^")   //end of segment, add new one
+                result->segments.emplace_back();
+        } else {    //end of point coordinate
+            if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"|\") expected, but got %1%.", t);
+            if (cords_in_current_point == 0) result->segments.back().emplace_back();
+            result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
+        }
+    }
+    auto child = reader.readExactlyOneChild<typename Lattice::ChildType>();
+}
+
+static GeometryReader::RegisterObjectReader lattice_reader(Lattice::NAME, read_lattice);*/
+
 
 }

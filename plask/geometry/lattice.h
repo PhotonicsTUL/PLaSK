@@ -142,8 +142,6 @@ template <> void ArrangeContainer<3>::writeXMLAttr(XMLWriter::Element& dest_xml_
 PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
 
-
-
 /// Lattice container that arranges its children in two-dimensional lattice
 struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
@@ -165,9 +163,17 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
      std::unique_ptr<SpatialIndexNode<3>> cache;
 
+     std::vector< std::vector<Vec<2, int>> > segments; //segments to xor
+
      std::string getTypeName() const override { return NAME; }
 
-     /// Create a lattice
+     /**
+      * Create a lattice object.
+      * @param child Object to repeat.
+      * @param vec0, vec1 basis vectors
+      */
+     Lattice(const shared_ptr<ChildType>& child = shared_ptr<ChildType>(), const DVec& vec0 = Primitive<3>::ZERO_VEC, const DVec& vec1 = Primitive<3>::ZERO_VEC)
+         : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1) {}
 
      //methods overwrite to use cache:
      shared_ptr<Material> getMaterial(const DVec& p) const override {
@@ -191,6 +197,53 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      void rebuildCache() {
          //TODO
      }
+
+     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+
+     /*Box getBoundingBox() const override;
+
+     Box getRealBoundingBox() const override;
+
+     using GeometryObjectTransform<3>::getPathsTo;
+
+     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+
+     void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+
+     void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+
+     void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+
+     GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
+
+     std::size_t getChildrenCount() const override;
+
+     shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+
+     std::size_t getRealChildrenCount() const override;
+
+     shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;*/
+
+     /*
+      * Get shallow copy of this.
+      * @return shallow copy of this
+      */
+     /*shared_ptr<Mirror<dim>> copyShallow() const {
+          return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, getChild()));
+     }
+
+     shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;*/
+
+
+
+
+     //virtual shared_ptr<Lattice> shallowCopy() const override;
+
+     /*shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopy(const shared_ptr<ChildType>& child) const {
+         shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = shallowCopy();
+         result->setChild(child);
+         return result;
+     }*/
 };
 
 } // namespace plask
