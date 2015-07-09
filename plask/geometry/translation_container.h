@@ -42,6 +42,9 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
 
     TranslationContainer(): cache(nullptr) {}
 
+    TranslationContainer(const TranslationContainer& to_copy)
+        : WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>(to_copy) {}
+
     ~TranslationContainer();
 
     std::string getTypeName() const override { return NAME; }

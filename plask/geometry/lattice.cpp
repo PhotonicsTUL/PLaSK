@@ -241,8 +241,17 @@ struct SegmentsIterator {
 
     int seg_nr, point_nr;
 
+    /**
+     * Construct iterator. After first next() call iterator will point to the first point.
+     * @param segments vector of closed polygons, each consist of number of successive verticles, one side is between last and first vertex.
+     *  These polygons are xored. Sides must not cross each other.
+     */
     SegmentsIterator(const std::vector< std::vector<Vec<2, int>> >& segments): segments(segments), seg_nr(0), point_nr(-1) {}
 
+    /**
+     * Go to next segment. Set new values of first, second.
+     * @return @c true only if next segment exists.
+     */
     bool next() {
         if (seg_nr == segments.size()) return false;
         ++point_nr;
@@ -395,8 +404,9 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
         }
     }
-    auto child = reader.readExactlyOneChild<typename Lattice::ChildType>();
-    //TODO
+    result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>());
+    result->refillContainer();
+    return result;
 }
 
 static GeometryReader::RegisterObjectReader lattice_reader(Lattice::NAME, read_lattice);

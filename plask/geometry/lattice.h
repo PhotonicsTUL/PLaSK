@@ -158,12 +158,16 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
     static constexpr const char* NAME = "lattice";
 
-     /// Lattice vectors
+     /// Basis vectors
      DVec vec0, vec1;
 
      shared_ptr<TranslationContainer<3>> container;
 
-     std::vector< std::vector<Vec<2, int>> > segments; //segments to xor
+     /**
+      * Vector of closed polygons, each consist of number of successive verticles, one side is between last and first vertex.
+      * These polygons are xored. Sides must not cross each other.
+      */
+     std::vector< std::vector<Vec<2, int>> > segments;  //TODO checking somewhere if sides do not cros each other
 
      std::string getTypeName() const override { return NAME; }
 
@@ -175,7 +179,6 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      Lattice(const shared_ptr<ChildType>& child = shared_ptr<ChildType>(), const DVec& vec0 = Primitive<3>::ZERO_VEC, const DVec& vec1 = Primitive<3>::ZERO_VEC)
          : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1), container(make_shared<TranslationContainer<3>>()) {}
 
-     //methods overwrite to use cache:
      shared_ptr<Material> getMaterial(const DVec& p) const override {
          return container->getMaterial(p);
      }
@@ -232,9 +235,9 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override { return container->getChildNo(child_no); }
 
      shared_ptr<Lattice> copyShallow() const {
-         //TODO !!
-
-        return make_shared<Lattice>();
+        auto result = make_shared<Lattice>(*this);
+        result->container = make_shared<TranslationContainer<3>>(*result->container);
+        return result;
      }
 
      shared_ptr<GeometryObjectTransform<3>> shallowCopy() const override { return copyShallow(); }
@@ -242,7 +245,7 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      //probably unused
      Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }
 
-     protected:
+     //protected:
 
      /// Use segments, vec0, vec1 to refill container.
      void refillContainer();
