@@ -206,8 +206,7 @@ static GeometryReader::RegisterObjectReader arrange3d_reader(ArrangeContainer<3>
 template struct PLASK_API ArrangeContainer<2>;
 template struct PLASK_API ArrangeContainer<3>;
 
-struct IntPoint { int x, y; };
-typedef std::pair<IntPoint, IntPoint> IntSegment;
+
 
 struct YEnds {
     // map: y -> 2*x, each (x, y) is point where shape begins or ends
@@ -224,41 +223,84 @@ struct YEnds {
     }
 
     //void add(int x, int y) { add_d(2*x, y); }
-    void add(IntPoint p) { add_d(2*p.x, p.y); }
+    void add(Vec<2, int> p) { add_d(2*p.c0, p.c1); }
+};
+
+/**
+ * Iterate over segments.
+ * SegmentsIterator it(segments);
+ * while (it.next()) {
+ *  //use it.first, it.second
+ * }
+ */
+struct SegmentsIterator {
+
+    const std::vector< std::vector<Vec<2, int>> >& segments;
+
+    Vec<2, int> first, second;
+
+    int seg_nr, point_nr;
+
+    SegmentsIterator(const std::vector< std::vector<Vec<2, int>> >& segments): segments(segments), seg_nr(0), point_nr(-1) {}
+
+    bool next() {
+        if (seg_nr == segments.size()) return false;
+        ++point_nr;
+        if (point_nr < segments[seg_nr].size()) return true;
+        point_nr = 0;   //go to next segment
+        do {
+            ++seg_nr;
+            if (seg_nr == segments.size()) return false;
+        } while (2 <= segments[seg_nr].size());  //loop skips segments with less than 2 points
+        first = segments[seg_nr][point_nr];
+        second = segments[seg_nr][(point_nr+1) % segments[seg_nr].size()];
+        return true;
+    }
+
 };
 
 
-/**
+/*
  * Find all points lied on sides and inside of the poligon described by segments.
  * @param segments in any order, without intersections (boost geometry can produce this)
  * @return coordinates of all (x, y) points inside the poligon in the map: y -> set of x
  */
+/*struct IntPoint { int x, y; };
+typedef std::pair<IntPoint, IntPoint> IntSegment;
 std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& segments) {
-    std::map<int, std::set<int>> result;
+    return result;
+}*/
+
+void Lattice::refillContainer()
+{
+    container->clear();
+
+    std::map<int, std::set<int>> result;    //coordinates of all (x, y) points inside the poligon in the map: y -> set of x
     YEnds ends;
-    for (const IntSegment& segment: segments) {
-        if (segment.first.y == segment.second.y) {
-            std::set<int>& dst = result[segment.first.y];
-            for (int x = segment.first.x; x <= segment.second.x; ++x)
+    SegmentsIterator segment(this->segments);
+    while (segment.next()) {
+        if (segment.first.c1 == segment.second.c1) {
+            std::set<int>& dst = result[segment.first.c1];
+            for (int x = segment.first.c0; x <= segment.second.c0; ++x)
                 dst.insert(x);  // we imedietly add all points which lie on side
         } else {
-            result[segment.first.y].insert(segment.first.x);    // we imedietly add all vertexes
-            result[segment.second.y].insert(segment.second.x);  // we imedietly add all vertexes
+            result[segment.first.c1].insert(segment.first.c0);    // we imedietly add all vertexes
+            result[segment.second.c1].insert(segment.second.c0);  // we imedietly add all vertexes
 
-            IntPoint low_y, hi_y;
-            if (segment.first.y > segment.second.y) {
+            Vec<2, int> low_y, hi_y;
+            if (segment.first.c1 > segment.second.c1) {
                 low_y = segment.second;
                 hi_y = segment.first;
             } else {
                 low_y = segment.first;
                 hi_y = segment.second;
             }
-            int dx = hi_y.x - low_y.x;
-            int dy = hi_y.y - low_y.y;  //dy > 0
-            for (int y = low_y.y; y < hi_y.y; ++y) {
-                // x = l/m + low_y.x
-                int l = dx * (y - low_y.y);
-                int x = l / dy + low_y.x;
+            int dx = hi_y.c0 - low_y.c0;
+            int dy = hi_y.c1 - low_y.c1;  //dy > 0
+            for (int y = low_y.c1; y < hi_y.c1; ++y) {
+                // x = l/m + low_y.c0
+                int l = dx * (y - low_y.c1);
+                int x = l / dy + low_y.c0;
                 int rem = l % dy;
                 if (rem == 0) {        //x, y is exactly on side
                     result[y].insert(x);    //so we imedietly add it
@@ -286,8 +328,15 @@ std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& se
             }
         }
     }
-    return result;
+
+    for (auto& p: result) { //p is pair: set of x's, and one y
+        for (auto x: p.second) {
+            container->addUnsafe(this->_child, x * vec0 + p.first * vec1);
+        }
+    }
 }
+
+
 
 
 void Lattice::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
@@ -299,18 +348,26 @@ void Lattice::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames 
     if (vec1.vert() != 0.) dest_xml_object.attr("b"+axes.getNameForVert(), vec1.vert());
 }
 
-/*std::size_t Lattice::getChildrenCount() const
-{
-}
+#define LATTICE_XML_SEGMENTS_TAG_NAME "segments"
 
-shared_ptr<GeometryObject> Lattice::getChildNo(std::size_t child_no) const
-{
+void Lattice::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
+    {   // write <segments>
+        XMLElement segments_tag(dest_xml_object, LATTICE_XML_SEGMENTS_TAG_NAME);
+        bool first = true;
+        for (const std::vector<Vec<2, int>>& s: segments) {
+            if (!first) segments_tag.writeText(" ^\n");
+            first = false;
+            bool first_point = true;
+            for (Vec<2, int> p: s) {
+                if (!first_point) { segments_tag.writeText("; "); }
+                first_point = false;
+                segments_tag.writeText(p[0]).writeText(' ').writeText(p[1]);
+            }
+        }
+    }   // </segments>
+    // write child:
+    GeometryObjectTransform<3>::writeXML(dest_xml_object, write_cb, axes);
 }
-
-Lattice::Box Lattice::getBoundingBox() const
-{
-}
-
 
 shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
@@ -321,7 +378,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     result->vec1.lon() =  reader.source.getAttribute("b"+reader.getAxisLongName(), 0.);
     result->vec1.tran() = reader.source.getAttribute("b"+reader.getAxisTranName(), 0.);
     result->vec1.vert() = reader.source.getAttribute("b"+reader.getAxisVertName(), 0.);
-    reader.source.requireTag("segments");
+    reader.source.requireTag(LATTICE_XML_SEGMENTS_TAG_NAME);
     std::string segments = reader.source.requireTextInCurrentTag();
     boost::tokenizer<boost::char_separator<char> > tokens(segments, boost::char_separator<char>(" \t\n\r", ";^"));
     result->segments.emplace_back();
@@ -333,15 +390,16 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
             if (t == "^")   //end of segment, add new one
                 result->segments.emplace_back();
         } else {    //end of point coordinate
-            if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"|\") expected, but got %1%.", t);
+            if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"^\") was expected, but got \"%1%\".", t);
             if (cords_in_current_point == 0) result->segments.back().emplace_back();
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
         }
     }
     auto child = reader.readExactlyOneChild<typename Lattice::ChildType>();
+    //TODO
 }
 
-static GeometryReader::RegisterObjectReader lattice_reader(Lattice::NAME, read_lattice);*/
+static GeometryReader::RegisterObjectReader lattice_reader(Lattice::NAME, read_lattice);
 
 
 }

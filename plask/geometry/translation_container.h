@@ -16,6 +16,8 @@ namespace plask {
 template < int dim >
 struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>> {
 
+    friend struct Lattice;
+
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
 

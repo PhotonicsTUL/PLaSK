@@ -245,6 +245,9 @@ public:
      */
     virtual void removeAtUnsafe(std::size_t index) override;
 
+    /// Remove all children from the container.
+    void clear() { removeIfT([](const shared_ptr<ChildType>&){ return true; }); }
+
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectContainer<2>)
