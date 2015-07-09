@@ -133,3 +133,28 @@ class GNArrangeController(GNObjectController):
             self.step[i].setText(none_to_empty(self.node.step[i]))
         self.count.setText(none_to_empty(self.node.count))
 
+
+class GNLatticeController(GNObjectController):
+
+    def _on_point_set(self, index, value):
+        def setter(n, v): n.vectors = n.vectors[0:index] + (v,) + n.vectors[index+1:]
+        self._set_node_by_setter_undoable(setter, value, self.node.vectors[index],
+            'change {} basis vector of lattice'.format('first' if index == 0 else 'second')
+        )
+
+    def construct_form(self):
+        self.construct_group('Lattice Settings')
+        self.segments = self.construct_line_edit('Segments:', node_property_name='segments')
+        self.segments.setToolTip(u'Polygons separated by "^".\n'
+                                 u'Each polygon can consist with two or more (2D) points separated by ";".\n'
+                                 u'Coordinates of each point should be separated by space.')
+        self.construct_group('Basis vectors')
+        self.v0 = self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec))
+        self.v1 = self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec))
+        super(GNLatticeController, self).construct_form()
+
+    def fill_form(self):
+        super(GNLatticeController, self).fill_form()
+        for i in range(0, self.node.dim):
+            self.v0[i].setText(none_to_empty(self.node.vectors[0][i]))
+            self.v1[i].setText(none_to_empty(self.node.vectors[1][i]))

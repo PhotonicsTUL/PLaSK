@@ -39,7 +39,7 @@ def gname(key, menu=False):
 
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
 from .container import GNStack, GNAlignContainer, GNShelf
-from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation, GNIntersection, GNArrange
+from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation, GNIntersection, GNArrange, GNLattice
 from .again_copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
@@ -102,6 +102,7 @@ geometry_types_3d_core_transforms = OrderedDict((
     ('mirror3d', GNMirror.from_xml_3d),
     ('translation3d', GNTranslation.from_xml_3d),
     ('intersection3d', GNIntersection.from_xml_3d),
+    ('lattice', GNLattice.from_xml_3d),
 ))
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_extrusion)
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_revolution)

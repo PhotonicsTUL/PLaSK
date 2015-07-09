@@ -10,9 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from lxml import etree
+
 from .object import GNObject
 from .constructor import construct_geometry_object
-from ...utils.xml import xml_to_attr, attr_to_xml
+from ...utils.str import none_to_empty
+from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children
 
 
 class GNTransform(GNObject):
@@ -406,3 +409,76 @@ class GNArrange(GNTransform):
         path_iterator.next()
         path_iterator.next()
         return 0
+
+
+class GNLattice(GNTransform):
+
+    def __init__(self, parent=None):
+        super(GNLattice, self).__init__(parent=parent, dim=3, children_dim=3)
+        self.vectors = ((None, None, None), (None, None, None))
+        self.segments = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNLattice, self)._attributes_from_xml(attribute_reader, conf)
+        n = conf.axes_names(3)
+        r = attribute_reader
+        self.vectors = (
+            (r.get('a' + n[0]), r.get('a' + n[1]), r.get('a' + n[2])),
+            (r.get('b' + n[0]), r.get('b' + n[1])), r.get('b' + n[2])
+        )
+
+    def _attributes_to_xml(self, element, conf):
+        super(GNLattice, self)._attributes_to_xml(element, conf)
+        axis_names = conf.axes_names(3)
+        for vector_nr in range(0, 2):
+            for axis_nr in range(0, self.dim):
+                v = self.vectors[vector_nr][axis_nr]
+                element.attrib[('a', 'b')[vector_nr] + axis_names[axis_nr]] = v if v is not None else '00'
+
+    def tag_name(self, full_name=True):
+        return "lattice"
+
+    def python_type(self):
+        return 'geometry.Lattice'
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.transform import GNLatticeController
+        return GNLatticeController(document, model, self)
+
+    def major_properties(self):
+        res = super(GNLattice, self).major_properties()
+        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
+                               for x in self.vectors if x != (None, None, None))
+        if vectors_str: res.append(('basis vectors', vectors_str))
+        return res
+
+    def create_info(self, res, names):
+        super(GNLattice, self).create_info(res, names)
+        if None in self.vectors[0] or None in self.vectors[1] or None in self.vectors[2]: self._require(res, 'basis vectors')
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNLattice()
+        result.set_xml_element(element, conf)
+        return result
+
+    def model_to_real_index(self, index):
+        return index, 0
+
+    def real_to_model_index(self, path_iterator):
+        path_iterator.next()
+        path_iterator.next()
+        return 0
+
+    def get_xml_element(self, conf):
+        el = super(GNLattice, self).get_xml_element(conf)
+        seg_el = etree.Element('segments')
+        seg_el.text = none_to_empty(self.segments)
+        el.insert(0, seg_el)
+        return el
+
+    def _children_from_xml(self, ordered_reader, conf):
+        seg_el = ordered_reader.require('segments')
+        require_no_children(seg_el)
+        self.segments = seg_el.text
+        super(GNLattice, self)._children_from_xml(ordered_reader, conf)
