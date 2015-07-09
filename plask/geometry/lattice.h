@@ -142,7 +142,7 @@ template <> void ArrangeContainer<3>::writeXMLAttr(XMLWriter::Element& dest_xml_
 PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
 
-/// Lattice container that arranges its children in two-dimensional lattice
+/// Lattice container that arranges its children in two-dimensional lattice.
 struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
      /// Vector of doubles type in space on this, vector in space with dim number of dimensions.

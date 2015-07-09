@@ -55,6 +55,13 @@ void register_geometry_container_lattice()
 {
     init_Arange<2>();
     init_Arange<3>();
+
+    py::class_<Lattice, shared_ptr<Lattice>, py::bases<GeometryObjectTransform<3>>,
+            boost::noncopyable>("Lattice", "Lattice container that arranges its children in two-dimensional lattice.",
+         py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
+         ((py::arg("item"), "vec0", "vec1")))
+        .def("__len__", &Lattice::getChildrenCount)
+        ;
 }
 
     
