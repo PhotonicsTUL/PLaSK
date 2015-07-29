@@ -447,14 +447,14 @@ class GNLattice(GNTransform):
 
     def major_properties(self):
         res = super(GNLattice, self).major_properties()
-        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
+        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?', x[2] if x[2] else '?')
                                for x in self.vectors if x != (None, None, None))
         if vectors_str: res.append(('basis vectors', vectors_str))
         return res
 
     def create_info(self, res, names):
         super(GNLattice, self).create_info(res, names)
-        if None in self.vectors[0] or None in self.vectors[1] or None in self.vectors[2]: self._require(res, 'basis vectors')
+        if None in self.vectors[0] or None in self.vectors[1] or None: self._require(res, 'basis vectors')
 
     @staticmethod
     def from_xml_3d(element, conf):

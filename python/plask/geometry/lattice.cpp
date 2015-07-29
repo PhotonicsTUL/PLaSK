@@ -51,6 +51,8 @@ inline static void init_Arange()
         ;
 }
 
+shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i);
+
 void register_geometry_container_lattice()
 {
     init_Arange<2>();
@@ -61,6 +63,7 @@ void register_geometry_container_lattice()
          py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
          ((py::arg("item"), "vec0", "vec1")))
         .def("__len__", &Lattice::getChildrenCount)
+        .def("__getitem__", &GeometryObject__getitem__)
         ;
 }
 
