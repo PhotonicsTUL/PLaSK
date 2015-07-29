@@ -234,6 +234,10 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
      shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override { return container->getChildNo(child_no); }
 
+     std::size_t getRealChildrenCount() const override { return GeometryObjectTransform<3>::getRealChildrenCount(); }
+
+     shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override { return GeometryObjectTransform<3>::getRealChildNo(child_no); }
+
      shared_ptr<Lattice> copyShallow() const {
         auto result = make_shared<Lattice>(*this);
         result->container = make_shared<TranslationContainer<3>>(*result->container);

@@ -87,8 +87,12 @@ template <> struct MethodsD<3> {
 shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
     GeometryObject* self = py::extract<GeometryObject*>(oself);
     int n = self->getChildrenCount();
-    if (n == 0)
-        throw TypeError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+    if (n == 0) {
+        if (self->isLeaf())
+            throw TypeError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+        else
+            throw IndexError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+    }
     if (i < 0) i = n + i;
     if (i < 0 || i >= n) {
         throw IndexError("%1% index %2% out of range (0 <= index < %3%)",

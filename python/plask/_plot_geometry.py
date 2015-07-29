@@ -459,8 +459,8 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_p
     drawer = _geometry_drawers.get(type(geometry_object))
     if drawer is None:
         try:
-            for indx, child in enumerate(geometry_object):
-                _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [indx])
+            for index, child in enumerate(geometry_object):
+                _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
             #for child in geometry_object:
             #    _draw_geometry_object(env, child, transform, clipbox)
         except TypeError:
