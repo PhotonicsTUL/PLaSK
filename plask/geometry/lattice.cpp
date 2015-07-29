@@ -379,7 +379,7 @@ void Lattice::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObje
 }
 
 shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     auto result = make_shared<Lattice>();
     result->vec0.lon() =  reader.source.getAttribute("a"+reader.getAxisLongName(), 0.);
     result->vec0.tran() = reader.source.getAttribute("a"+reader.getAxisTranName(), 0.);

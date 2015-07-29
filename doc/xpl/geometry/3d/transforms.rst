@@ -28,21 +28,6 @@ Transforms always contain a single geometry object (possibly container) as their
        A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`. Object to clip.
 
 
-.. xml:tag:: <intersection3d> (or <intersection>)
-
-   Corresponding Python class: :py:class:`plask.geometry.Intersection3D`.
-
-   Clip child object to given shape.
-
-   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
-   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
-   :attr role: Object role. Important for some solvers.
-
-   .. xml:contents::
-
-       Two :ref:`three-dimensional geometry objects <sec-xpl-Geometry-objects-3D>`. First is a clipped object, second is a clipping envelope (materials are not required in its leafs).
-
-
 .. xml:tag:: <extrusion>
 
    Corresponding Python class: :py:class:`plask.geometry.Extrusion`.
@@ -57,9 +42,6 @@ Transforms always contain a single geometry object (possibly container) as their
    .. xml:contents::
 
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
-
-
-
 
 
 .. xml:tag:: <flip3d> (or <flip>)
@@ -93,6 +75,33 @@ Transforms always contain a single geometry object (possibly container) as their
 
        Two :ref:`three-dimensional geometry objects <sec-xpl-Geometry-objects-3D>`. First is a child of this, second is a clipping shape (materials are not required in its leafs).
 
+
+.. xml:tag:: <lattice>
+
+   Corresponding Python class: :py:class:`plask.geometry.Lattice`.
+
+   Lattice container that arranges its children in two-dimensional lattice.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+   :attr required a{X}: where **{X}** is the longitudinal axis name: Coordinate of the first basis vector. (float [µm])
+   :attr required a{Y}: where **{Y}** is the transverse axis name: Coordinate of the first basis vector. (float [µm])
+   :attr required a{Z}: where **{Y}** is the vertical axis name: Coordinate of the first basis vector. (float [µm])
+   :attr required b{X}: where **{X}** is the longitudinal axis name: Coordinate of the second basis vector. (float [µm])
+   :attr required b{Y}: where **{Y}** is the transverse axis name: Coordinate of the second basis vector. (float [µm])
+   :attr required b{Z}: where **{Y}** is the vertical axis name: Coordinate of the second basis vector. (float [µm])
+
+   .. xml:contents::
+
+       ``segments`` tag followed by a :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
+
+       .. xml:tag:: <segments>
+
+          .. xml:contents::
+
+          One or more polygons separated by ``^`` characters. Each polygon is formed by a two or more vertices, separated by ``;`` characters. Each vertex consists with two, space-separated integers.
+          Sides of polygons cannot cross each other. 
 
 
 .. xml:tag:: <revolution>
