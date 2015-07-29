@@ -424,7 +424,7 @@ class GNLattice(GNTransform):
         r = attribute_reader
         self.vectors = (
             (r.get('a' + n[0]), r.get('a' + n[1]), r.get('a' + n[2])),
-            (r.get('b' + n[0]), r.get('b' + n[1])), r.get('b' + n[2])
+            (r.get('b' + n[0]), r.get('b' + n[1]), r.get('b' + n[2]))
         )
 
     def _attributes_to_xml(self, element, conf):
