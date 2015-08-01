@@ -294,8 +294,8 @@ void Lattice::refillContainer()
             for (int x = segment.first.c0; x <= segment.second.c0; ++x)
                 dst.insert(x);  // we imedietly add all points which lie on side
         } else {
-            result[segment.first.c1].insert(segment.first.c0);    // we imedietly add all vertexes, TODO probably can be removed
-            result[segment.second.c1].insert(segment.second.c0);  // we imedietly add all vertexes, TODO probably can be removed
+            result[segment.first.c1].insert(segment.first.c0);    // we imedietly add all vertexes
+            result[segment.second.c1].insert(segment.second.c0);  // we imedietly add all vertexes
 
             Vec<2, int> low_y, hi_y;
             if (segment.first.c1 > segment.second.c1) {

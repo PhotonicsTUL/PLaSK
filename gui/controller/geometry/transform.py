@@ -158,3 +158,4 @@ class GNLatticeController(GNObjectController):
         for i in range(0, self.node.dim):
             self.v0[i].setText(none_to_empty(self.node.vectors[0][i]))
             self.v1[i].setText(none_to_empty(self.node.vectors[1][i]))
+        self.segments.setText(none_to_empty(self.node.segments))
