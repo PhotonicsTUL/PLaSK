@@ -260,7 +260,7 @@ struct SegmentsIterator {
             do {
                 ++seg_nr;
                 if (seg_nr == segments.size()) return false;
-            } while (2 <= segments[seg_nr].size());  //loop skips segments with less than 2 points
+            } while (!segments[seg_nr].empty());  //loop skips empty segments
         }
         first = segments[seg_nr][point_nr];
         second = segments[seg_nr][(point_nr+1) % segments[seg_nr].size()];
