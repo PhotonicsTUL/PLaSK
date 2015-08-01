@@ -255,12 +255,13 @@ struct SegmentsIterator {
     bool next() {
         if (seg_nr == segments.size()) return false;
         ++point_nr;
-        if (point_nr < segments[seg_nr].size()) return true;
-        point_nr = 0;   //go to next segment
-        do {
-            ++seg_nr;
-            if (seg_nr == segments.size()) return false;
-        } while (2 <= segments[seg_nr].size());  //loop skips segments with less than 2 points
+        if (point_nr == segments[seg_nr].size()) {  //end of segment?
+            point_nr = 0;   //go to next segment
+            do {
+                ++seg_nr;
+                if (seg_nr == segments.size()) return false;
+            } while (2 <= segments[seg_nr].size());  //loop skips segments with less than 2 points
+        }
         first = segments[seg_nr][point_nr];
         second = segments[seg_nr][(point_nr+1) % segments[seg_nr].size()];
         return true;
@@ -306,7 +307,7 @@ void Lattice::refillContainer()
             }
             int dx = hi_y.c0 - low_y.c0;
             int dy = hi_y.c1 - low_y.c1;  //dy > 0
-            for (int y = low_y.c1; y < hi_y.c1; ++y) {
+            for (int y = low_y.c1/*+1*/; y < hi_y.c1; ++y) {
                 // x = l/m + low_y.c0
                 int l = dx * (y - low_y.c1);
                 int x = l / dy + low_y.c0;

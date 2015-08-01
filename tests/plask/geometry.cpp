@@ -156,4 +156,14 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         stack1->add(stack2);
     }
 
+    BOOST_AUTO_TEST_CASE(lattice) {
+        plask::MaterialsDB materialsDB;
+        initDumbMaterialDb(materialsDB);
+        plask::shared_ptr<plask::Lattice> lattice(new plask::Lattice(plask::make_shared<plask::Block<3>>(plask::vec(1,1,1), materialsDB.get("Al")),
+                                                                     plask::vec(1.0, 0.0, 0.0), plask::vec(0.0, 1.0, 0.0)));
+        lattice->segments.emplace_back(std::vector<plask::Vec<2, int>>{plask::vec(0,0), plask::vec(0,2), plask::vec(2,2), plask::vec(2,0)});
+        lattice->refillContainer();
+        BOOST_CHECK_EQUAL(lattice->getChildrenCount(), 3*3);
+    }
+
 BOOST_AUTO_TEST_SUITE_END()
