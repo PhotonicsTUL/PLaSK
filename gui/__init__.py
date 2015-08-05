@@ -624,12 +624,12 @@ def main():
             'figure.dpi': pd.logicalDpiY(),
             'font.size': ft.pointSize() + 1,
             'font.family': ft.family(),
-            'mathtext.fontset': 'custom',
-            'mathtext.cal': ft.family(),
-            'mathtext.rm': ft.family(),
-            'mathtext.it': ft.family() + ':italic',
-            'mathtext.bf': ft.family() + ':bold',
-            'mathtext.sf': ft.family()
+            'mathtext.fontset': 'stixsans',
+            # 'mathtext.cal': ft.family(),
+            # 'mathtext.rm': ft.family(),
+            # 'mathtext.it': ft.family() + ':italic',
+            # 'mathtext.bf': ft.family() + ':bold',
+            # 'mathtext.sf': ft.family()
         })
 
     if len(sys.argv) > 1:

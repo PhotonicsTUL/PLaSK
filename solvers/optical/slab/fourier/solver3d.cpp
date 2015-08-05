@@ -308,7 +308,7 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(LightE::NAME);
+    assert(num < modes.size());
     assert(transfer);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
@@ -322,7 +322,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(LightH::NAME);
+    assert(num < modes.size());
     assert(transfer);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
@@ -336,7 +336,8 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared
 
 const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
+    assert(num < modes.size());
+    assert(transfer);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].klong;

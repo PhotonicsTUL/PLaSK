@@ -54,7 +54,6 @@ public:
     StringInterpreter& operator=(StringInterpreter&&) = default;
     StringInterpreter& operator=(const StringInterpreter&) = default;
 
-
     /**
      * Parse given text @a str, interpret it as type @p RequiredType.
      *
@@ -69,7 +68,7 @@ public:
         auto i = parsers.find(std::type_index(typeid((RequiredType*)0)));
         if (i != parsers.end())
             return boost::any_cast<RequiredType>(i->second(str));
-        return boost::lexical_cast<RequiredType>(str);
+        return boost::lexical_cast<RequiredType>(boost::trim_copy(str));
     }
 
     /**

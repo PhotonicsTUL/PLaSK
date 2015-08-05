@@ -159,7 +159,7 @@ Effective frequency solver does not need to have a mesh defined, as it will come
 
 The first line of the above snippet creates the ``profile`` object. The ``StepProfile`` class — conveniently provided by PLaSK — takes a geometry in which the profile is defined as an argument. It is also possible to set the default value for every object in the geometry by providing a value to the ``default`` parameter. In the next line, we specify that there is a step gain of 500 cm\ :sup:`-1` (default units for the gain in PLaSK) at the object named ‘gain-region’ in the XPL file (``-`` in names is replaced with ``_`` when using the attribute access to geometry objects) [#object-names]_. Finally, we connect the gain receiver of the ``efm`` solver with the profile's gain provider. This way, all future changes to the ``profile`` be visible from the connected solver.
 
-Now we can perform the computations. We have already set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) in the solver configuration. Then we look for the mode with the wavelength closest to 980.5nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function ``efm.find_mode``, we use, returns an index of the found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use this number to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
+Now we can perform the computations. We have already set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) in the solver configuration. Then we look for the mode with the wavelength closest to 980.5nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function is called ``efm.find_mode``. It takes a starting wavelength approximation as its argument (we set it to 980.5 nm to make sure it will converge to the funcamental mode) and returns an index of a found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use it to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
 
    efm.lam0 = 980.
    mode_number = efm.find_mode(980.5)
@@ -218,13 +218,13 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
 
       def loss_on_gain(gain):
           profile[GEO.gain_region] = gain
-          mode_number = efm.find_mode(980.)
+          mode_number = efm.find_mode(980.5)
           return efm.outLoss(mode_number)
 
       threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
       profile[GEO.gain_region] = threshold_gain
-      mode_number = efm.find_mode(980.)
+      mode_number = efm.find_mode(980.5)
       mode_wavelength = efm.outWavelength(mode_number)
       print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"

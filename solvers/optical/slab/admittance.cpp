@@ -104,8 +104,8 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
             gamma = diagonalizer->Gamma(solver->stack[start]);
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
-            for (int i = 0; i < N; i++) Y(i,i) = y1[i] - Y(i,i);        // off-diagonal elements of Y are 0
-            for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / Y(i,i) - y1[i]; // Y = y2 * inv(Y) * y2 - y1
+	    // off-diagonal elements of Y are 0
+            for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / (y1[i] - Y(i,i)) - y1[i]; // Y = y2 * inv(y1-Y) * y2 - y1
 
             // save the Y matrix for 1-st layer
             storeY(start);

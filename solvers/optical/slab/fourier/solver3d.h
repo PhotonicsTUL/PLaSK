@@ -323,7 +323,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         return modes.size()-1;
     }
 
-    size_t nummodes() const override { return 1; }
+    size_t nummodes() const override { return modes.size(); }
 
      /**
       * Return mode effective index
