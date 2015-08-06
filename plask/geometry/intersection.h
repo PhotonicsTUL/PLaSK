@@ -93,7 +93,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
         return make_shared<Intersection<dim>>(getChild(), clipShape);
     }
 
-    protected:
+  protected:
 
     void writeXMLChildren(XMLWriter::Element& dest_xml_object, GeometryObject::WriteXMLCallback& write_cb, const AxisNames &axes) const override;
 

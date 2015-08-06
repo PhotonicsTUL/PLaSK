@@ -432,7 +432,10 @@ _geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
 
 
 def _draw_Intersection(env, geometry_object, transform, clipbox, plask_real_path):
-    _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox, plask_real_path + [0])
+    if geometry_object.envelope is not None:
+        _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox, plask_real_path + [0])
+    else:
+        _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
 
 _geometry_drawers[plask.geometry.Intersection2D] = _draw_Intersection
 _geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection

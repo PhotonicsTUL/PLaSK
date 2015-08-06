@@ -257,6 +257,10 @@ class GNIntersection(GNTransform):
     def accept_new_child(self):
         return len(self.children) < 2
 
+    def _children_from_xml(self, ordered_reader, conf):
+        construct_geometry_object(ordered_reader.get(), conf)
+        construct_geometry_object(ordered_reader.get(), conf)
+
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNIntersection(dim=2)

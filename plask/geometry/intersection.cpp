@@ -6,32 +6,38 @@ namespace plask {
 
 template <int dim>
 typename Intersection<dim>::Box Intersection<dim>::getBoundingBox() const {
-    return getChild()->getBoundingBox().intersection(envelope->getBoundingBox());
+    if (envelope)
+        return getChild()->getBoundingBox().intersection(envelope->getBoundingBox());
+    else
+        return getChild()->getBoundingBox();
 }
 
 template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
-    return envelope->contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
+    return (!envelope || envelope->contains(p)) ? getChild()->getMaterial(p) : shared_ptr<Material>();
 }
 
 template <int dim>
 bool Intersection<dim>::contains(const typename Intersection<dim>::DVec &p) const {
-    return envelope->contains(p) && getChild()->contains(p);
+    return (!envelope || envelope->contains(p)) && getChild()->contains(p);
 }
 
 template <int dim>
 GeometryObject::Subtree Intersection<dim>::getPathsAt(const Intersection<dim>::DVec &point, bool all) const
 {
-    if (envelope->contains(point))
+    if (!envelope || envelope->contains(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
-        else
+    else
         return GeometryObject::Subtree();
 }
 
 template <int dim>
 typename Intersection<dim>::Box Intersection<dim>::fromChildCoords(const typename Intersection<dim>::ChildType::Box &child_bbox) const
 {
-    return envelope->getBoundingBox().intersection(child_bbox);
+    if (envelope)
+        return envelope->getBoundingBox().intersection(child_bbox);
+    else
+        return child_bbox;
 }
 
 template <int dim>
@@ -42,10 +48,15 @@ void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& p
     }
     std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
     dest.reserve(dest.size() + result.size());
-    Box clipBox = envelope->getBoundingBox();
-    for (Box& r: result) {
-        r.makeIntersection(clipBox);
-        dest.push_back(r);
+    if (envelope) {
+        Box clipBox = envelope->getBoundingBox();
+        for (Box& r: result) {
+            r.makeIntersection(clipBox);
+            dest.push_back(r);
+        }
+    } else {
+        for (Box& r: result)
+            dest.push_back(r);
     }
 }
 
@@ -75,12 +86,13 @@ template <int dim>
 shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Intersection<dim> > intersection = make_shared<Intersection<dim>>();
+    reader.source.requireTag();
     intersection->setChild(reader.readObject<typename Intersection<dim>::ChildType>());
-    {
+    if (reader.source.requireTagOrEnd()) {
         GeometryReader::RevertMaterialsAreRequired enableShapeOnlyMode(reader, false);
         intersection->envelope = reader.readObject<typename Intersection<dim>::ChildType>();
+        reader.source.requireTagEnd();
     }
-    reader.source.requireTagEnd();
     return intersection;
 }
 
