@@ -85,7 +85,7 @@ void register_geometry_container_lattice()
          py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
          ((py::arg("item"), py::arg("vec0") = plask::Primitive<3>::ZERO_VEC, py::arg("vec1") = plask::Primitive<3>::ZERO_VEC)))
         .def("__len__", &Lattice::getChildrenCount)
-        .def("set_segments", lattice_set_segments)
+        .def("set_segments", lattice_set_segments)  //TODO get_segments - format? tuple of tuple of int pairs(?)
         //.def("__getitem__", &GeometryObject__getitem__)   //is in GeometryObject
         ;
 }

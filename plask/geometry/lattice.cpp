@@ -260,7 +260,7 @@ struct SegmentsIterator {
             do {
                 ++seg_nr;
                 if (seg_nr == segments.size()) return false;
-            } while (!segments[seg_nr].empty());  //loop skips empty segments
+            } while (segments[seg_nr].empty());  //loop skips empty segments
         }
         first = segments[seg_nr][point_nr];
         second = segments[seg_nr][(point_nr+1) % segments[seg_nr].size()];
@@ -290,7 +290,9 @@ void Lattice::refillContainer()
     SegmentsIterator segment(this->segments);
     while (segment.next()) {
         if (segment.first.c1 == segment.second.c1) {
-            std::set<int>& dst = result[segment.first.c1];
+            std::set<int>& dst = result[segment.first.c1];           
+            if (segment.first.c0 > segment.second.c0)
+                std::swap(segment.first.c0, segment.second.c0);
             for (int x = segment.first.c0; x <= segment.second.c0; ++x)
                 dst.insert(x);  // we imedietly add all points which lie on side
         } else {
