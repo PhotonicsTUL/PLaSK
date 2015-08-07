@@ -103,6 +103,36 @@ Transforms always contain a single geometry object (possibly container) as their
           One or more polygons separated by ``^`` characters. Each polygon is formed by a two or more vertices, separated by ``;`` characters. Each vertex consists with two, space-separated integers.
           Sides of polygons cannot cross each other. 
 
+   Example:
+
+   .. code-block:: xml
+
+      <cartesian3d name="lattice" axes="xy">
+        <lattice az="0.8" ax="0.2" ay="0" bz="0" bx="1" by="0">
+          <segments>
+            -2 -2; -2 3; 2 3; 2 -2 ^
+            -1 -1; -1 1; 1 1; 1 -1 ^
+             1 4
+          </segments>
+          <cylinder material="AlN" radius="0.3" height="3"/>
+        </lattice>
+      </cartesian3d>
+
+.. _fig-lattice-poligons:
+.. figure:: lattice_helper.*
+   :scale: 50%
+   :align: center
+
+   Points described by the ``segments`` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``.
+
+
+.. _fig-lattice-finall:
+.. figure:: lattice_finall.*
+   :scale: 50%
+   :align: center
+
+   Finall ``lattice``.
+
 
 .. xml:tag:: <revolution>
 
