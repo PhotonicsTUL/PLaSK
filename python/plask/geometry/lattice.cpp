@@ -53,6 +53,28 @@ inline static void init_Arange()
 
 //shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i);
 
+void lattice_set_segments(py::object self, const py::object& value) {
+    std::vector< std::vector<Vec<2, int>> > segments;
+    py::stl_input_iterator<py::object> segments_it(value), segments_end_it;
+    for ( ; segments_it != segments_end_it; ++segments_it) {
+        std::vector<Vec<2, int>> segment;
+        py::stl_input_iterator<py::object> points_it(*segments_it), points_end_it;
+        for ( ; points_it != points_end_it; ++points_it) {
+            py::stl_input_iterator<int> coord_it(*points_it), coord_end_it;
+            int a = *coord_it;
+            ++coord_it;
+            int b = *coord_it;
+            ++coord_it;
+            if (coord_it != coord_end_it)
+                throw IndexError("too many elements in lattice segment's point (exactly 2 coordinates are required)");;
+            segment.emplace_back(a, b);
+        }
+        segments.push_back(std::move(segment));
+    }
+    Lattice& l = py::extract<Lattice&>(self);
+    l.setSegments(std::move(segments));
+}
+
 void register_geometry_container_lattice()
 {
     init_Arange<2>();
@@ -63,6 +85,7 @@ void register_geometry_container_lattice()
          py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
          ((py::arg("item"), py::arg("vec0") = plask::Primitive<3>::ZERO_VEC, py::arg("vec1") = plask::Primitive<3>::ZERO_VEC)))
         .def("__len__", &Lattice::getChildrenCount)
+        .def("set_segments", lattice_set_segments)
         //.def("__getitem__", &GeometryObject__getitem__)   //is in GeometryObject
         ;
 }

@@ -379,6 +379,11 @@ void Lattice::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObje
     GeometryObjectTransform<3>::writeXML(dest_xml_object, write_cb, axes);
 }
 
+void Lattice::setSegments(std::vector< std::vector<Vec<2, int>> > new_segments) {
+    this->segments = std::move(new_segments);
+    refillContainer();
+}
+
 shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     auto result = make_shared<Lattice>();

@@ -249,6 +249,8 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      //probably unused
      Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }
 
+     void setSegments(std::vector< std::vector<Vec<2, int>> > new_segments);
+
      //protected:
 
      /// Use segments, vec0, vec1 to refill container.
