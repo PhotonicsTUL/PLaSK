@@ -94,9 +94,9 @@ Transforms always contain a single geometry object (possibly container) as their
 
    .. xml:contents::
 
-       ``segments`` tag followed by a :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
+       :xml:tag:`segments  [in <lattice>]` tag followed by a :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-       .. xml:tag:: <segments>
+       .. xml:tag:: <segments> [in <lattice>]
 
           .. xml:contents::
 
@@ -105,6 +105,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Example:
 
+   .. _lis-lattice:
    .. code-block:: xml
 
       <cartesian3d name="lattice" axes="xy">
@@ -118,20 +119,22 @@ Transforms always contain a single geometry object (possibly container) as their
         </lattice>
       </cartesian3d>
 
-.. _fig-lattice-poligons:
-.. figure:: lattice_helper.*
-   :scale: 50%
-   :align: center
-
-   Points described by the ``segments`` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``.
 
 
-.. _fig-lattice-finall:
-.. figure:: lattice_finall.*
-   :scale: 50%
-   :align: center
+   .. _fig-lattice-poligons:
+   .. figure:: lattice_helper.*
+      :scale: 100%
+      :align: center
 
-   Finall ``lattice``.
+      Points described by the :xml:tag:`segments  [in <lattice>]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. First polygon (``-2 -2; -2 3; 2 3; 2 -2``) consists the red rectangle. Second (``-1 -1; -1 1; 1 1; 1 -1``) the green one. Since it (green) is included in the first (red) one, it is subtracted from them (xor operation). But points which lies on any sides (also on green rectangle) are always included in final figure. The last segment (``1 4``) is constituted by only one point. Being outside (and also "on side"), it is added to final figure (xor operation).
+
+
+   .. _fig-lattice-finall:
+   .. figure:: lattice_finall.*
+      :scale: 100%
+      :align: center
+
+      Lattice described by :ref:`the example code <lis-lattice>`. Top view.
 
 
 .. xml:tag:: <revolution>
