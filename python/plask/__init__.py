@@ -97,9 +97,9 @@ class _simple(object):
 material.simple = _simple
 del _simple
 
-class _complex(object):
+class _alloy(object):
     """
-    Decorator for custom complex material class.
+    Decorator for custom complex material (alloy) class.
 
     Args:
         base (str or material.Material): Base class specification.
@@ -110,14 +110,15 @@ class _complex(object):
     """
     def __init__(self, base=None):
         if isinstance(base, type):
-            raise TypeError("material.complex argument is a class (you probably forgot parenthes)")
+            raise TypeError("material.alloy argument is a class (you probably forgot parenthes)")
         self.base = base
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         material._register_material_complex(cls.name, cls, self.base)
         return cls
-material.complex = _complex
-del _complex
+material.alloy = _alloy
+material.complex = _alloy
+del _alloy
 
 material.const = staticmethod
 

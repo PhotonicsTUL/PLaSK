@@ -400,6 +400,9 @@ BOOST_PYTHON_MODULE(_plask)
     // Exceptions
     register_exception<plask::Exception>(PyExc_RuntimeError);
 
+    py::register_exception_translator<std::string>( [=](const std::string& err) { PyErr_SetString(PyExc_RuntimeError, err.c_str()); } );
+    py::register_exception_translator<const char*>( [=](const char* err) { PyErr_SetString(PyExc_RuntimeError, err); } );
+    
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
     register_exception<plask::OutOfBoundsException>(PyExc_IndexError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);

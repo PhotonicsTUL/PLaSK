@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
+
+  <solver name="FermiNew2D" category="gain" lib="complex">
+    Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
+
+    <geometry type="Cartesian2D"/>
+
+    <mesh type="Ordered" optional="yes"/>
+
+    <tag name="config" label="Gain Parameters">
+      Some important gain parameters.
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+        Average carriers lifetime. This parameter is used for gain spectrum broadening.
+      </attr>
+      <attr name="matrix-elem" label="Matrix element"
+            unit="(eV/m&lt;sub&gt;0&lt;/sub&gt;)&lt;sup&gt;2&lt;/sup&gt;" type="float">
+        Value of the squared matrix element in gain computations.
+        If it is not set it is estimated automatically.
+      </attr>
+      <attr name="matrix-elem-scaling" label="Matrix element scaling" type="float">
+        Scaling factor for optical matrix element. If left blank, no scalling to matrix element is applied.
+      </attr>     
+      <attr name="strained" label="Strained" type="bool">
+        Boolean attribute indicated if the solver should consider strain in the active region.
+        If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
+        in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
+        the quantum wells.
+      </attr>
+      <attr name="cond-shift" label="Conduction band shift" type="float" unit="eV">
+          Additional conduction band shift for quantum wells.
+      </attr>
+      <attr name="vale-shift" label="Valence band shift" type="float" unit="eV">
+          Additional valence band shift for quantum wells.
+      </attr>
+      <attr name="adjust-layers" label="Adjust layers widths" type="bool">
+          Setting this to true, allows to adjust the widths of the gain region layers
+          by few angstroms to improve numerical stability.
+      </attr>
+      <attr name="roughness" label="Layers roughness" type="float">
+          Roughness of the thicknesses of the quantum wells.
+      </attr>
+      <attr name="fast-levels" label="Fast levels" type="bool">
+            Compute levels only once and simply shift for different temperatures?
+            Setting this to True stongly increases computation speed, but makes the results
+            less accurate for high gains.
+      </attr>
+      <attr name="Tref" label="Reference temperature" type="float" unit="K">
+        Reference temperature. If fast-levels is set, this is the temperature used
+        for initial computation of the energy levels.
+      </attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inCarriersConcentration"/>
+      <provider name="outGain"/>
+      <provider name="outGainOverCarriersConcentration"/>
+      <provider name="outLuminescence"/>
+    </flow>
+
+  </solver>
+
+  <solver name="FermiNewCyl" category="gain" lib="complex">
+    Simple gain solver based on Fermi Golden Rule for Cylindrical geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
+
+    <geometry type="Cylindrical"/>
+
+    <mesh type="Ordered" optional="yes"/>
+
+    <tag name="config" label="Gain Parameters">
+      Some important gain parameters.
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+        Average carriers lifetime. This parameter is used for gain spectrum broadening.
+      </attr>
+      <attr name="matrix-elem" label="Matrix element"
+            unit="(eV/m&lt;sub&gt;0&lt;/sub&gt;)&lt;sup&gt;2&lt;/sup&gt;" type="float">
+        Value of the squared matrix element in gain computations.
+        If it is not set it is estimated automatically.
+      </attr>
+      <attr name="matrix-elem-scaling" label="Matrix element scaling" type="float">
+        Scaling factor for optical matrix element. If left blank, no scalling to matrix element is applied.
+      </attr>     
+      <attr name="strained" label="Strained" type="bool">
+        Boolean attribute indicated if the solver should consider strain in the active region.
+        If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
+        in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
+        the quantum wells.
+      </attr>
+      <attr name="cond-shift" label="Conduction band shift" type="float" unit="eV">
+          Additional conduction band shift for quantum wells.
+      </attr>
+      <attr name="vale-shift" label="Valence band shift" type="float" unit="eV">
+          Additional valence band shift for quantum wells.
+      </attr>
+      <attr name="adjust-layers" label="Adjust layers widths" type="bool">
+          Setting this to true, allows to adjust the widths of the gain region layers
+          by few angstroms to improve numerical stability.
+      </attr>
+      <attr name="roughness" label="Layers roughness" type="float">
+          Roughness of the thicknesses of the quantum wells.
+      </attr>
+      <attr name="fast-levels" label="Fast levels" type="bool">
+            Compute levels only once and simply shift for different temperatures?
+            Setting this to True stongly increases computation speed, but makes the results
+            less accurate for high gains.
+      </attr>
+      <attr name="Tref" label="Reference temperature" type="float" unit="K">
+        Reference temperature. If fast-levels is set, this is the temperature used
+        for initial computation of the energy levels.
+      </attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inCarriersConcentration"/>
+      <provider name="outGain"/>
+      <provider name="outGainOverCarriersConcentration"/>
+      <provider name="outLuminescence"/>
+    </flow>
+
+  </solver>
+
+</solvers>
