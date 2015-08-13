@@ -61,7 +61,23 @@ class PLASK_API Logger {
 
   public:
 
-    Logger(): silent(false) {}
+    enum ColorMode {
+        COLOR_NONE,
+        COLOR_ANSI
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        , COLOR_WINDOWS
+#endif
+    };
+
+    ColorMode color;
+
+    Logger(): silent(false), color(
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        Logger::COLOR_WINDOWS
+#else
+        isatty(fileno(stderr))? Logger::COLOR_ANSI : Logger::COLOR_NONE
+#endif
+    ) {}
 
     virtual ~Logger() {}
 

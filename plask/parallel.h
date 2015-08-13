@@ -9,9 +9,7 @@ namespace plask {
 
 #if defined(OPENMP_FOUND) || defined(DOXYGEN)
 
-    /**
-     * OMP nest lock class.
-     */
+    /// OMP nest lock class.
     class OmpNestLock {
 
         omp_nest_lock_t lck;
@@ -38,9 +36,7 @@ namespace plask {
         void unlock() { omp_unset_nest_lock(&lck); }
     };
 
-    /**
-     * OMP lock class.
-     */
+    /// OMP lock class.
     class OmpLock {
 
         omp_lock_t lck;
@@ -88,16 +84,12 @@ namespace plask {
             lck->lock();
         }
 
-        /**
-         * Move the lock
-         */
+        /// Move the lock
         OmpLockGuard(OmpLockGuard<LockType>&& orig): lck(orig.lck) {
             orig.lck = nullptr;
         };
 
-        /**
-         * Move the lock
-         */
+        /// Move the lock
         OmpLockGuard& operator=(OmpLockGuard&& orig) {
             if (lck) lck->unlock();
             lck = orig.lck;
@@ -108,7 +100,7 @@ namespace plask {
         OmpLockGuard(const OmpLockGuard&) = delete;
         OmpLockGuard& operator=(const OmpLockGuard&) = delete;
 
-        /** Unlock the lock */
+        /// Unlock the lock
         ~OmpLockGuard() {
             if (lck) lck->unlock();
         }
