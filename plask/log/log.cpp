@@ -80,6 +80,7 @@ PLASK_API bool forcedLoglevel = false;
             SetConsoleTextAttribute(hstderr, csbi.wAttributes);
         }
     };
+    
     const HANDLE StderrLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
 
 #else
@@ -143,8 +144,9 @@ PLASK_API bool forcedLoglevel = false;
             fprintf(stderr, "%s: %s%s\n", head(level), msg.c_str(), tty? DEFAULT : "");
         }
     };
+    
     const bool StderrLogger::tty = isatty(fileno(stderr));
-
+    
 #endif
 
 PLASK_API shared_ptr<Logger> default_logger;

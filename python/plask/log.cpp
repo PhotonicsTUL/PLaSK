@@ -158,9 +158,9 @@ const char* PythonSysLogger::head(LogLevel level) {
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-//     PyFrameObject* frame = PyEval_GetFrame();
-//     if (frame)
-//         pyinfo = format("%2%:%1%: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
+    // PyFrameObject* frame = PyEval_GetFrame();
+    // if (frame)
+    //     pyinfo = format("%2%:%1%: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
             PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
@@ -188,8 +188,8 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
 #endif
-shared_ptr<Logger> makePythonLogger() {
-    return shared_ptr<Logger>(new PythonSysLogger);
+void createPythonLogger() {
+    plask::default_logger = make_shared<PythonSysLogger>();
 }
 
 
@@ -311,9 +311,19 @@ void register_python_log()
     ;
 
     py::class_<LoggingConfig>("LoggingConfig", "Settings of the logging system", py::no_init)
-        .add_property("color", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output color type")
-        .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination")
-        .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, "Maximum log level")
+        .add_property("colors", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output color type ('ansi'"
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+            ", windows,"
+#       endif
+        " or 'none').")
+        .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination ('stderr' or 'stdout').")
+        .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, "Maximum log level.")
+        .def("use_python", createPythonLogger,
+             "Use Python for log output.\n\n"
+             "By default PLaSK uses system calls for printing. This is more efficient,\n"
+             "but can make log not visible if PLaSK is used interactively. Call this method\n"
+             "to use Python sys.stderr or sys.stdout for log printing.\n")
+        .staticmethod("use_python")
     ;
 }
 

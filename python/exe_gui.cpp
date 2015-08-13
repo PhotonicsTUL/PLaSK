@@ -36,7 +36,7 @@ namespace plask { namespace python {
 
     int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
 
-    shared_ptr<Logger> makePythonLogger();
+    void createPythonLogger();
 }}
 
 void showError(const std::string& msg, const std::string& cap="Error");
@@ -155,6 +155,10 @@ void showError(const std::string& msg, const std::string& cap) {
 int main(int argc, const char *argv[])
 {
 #endif
+    // Set the Python logger
+    // plask::python::createPythonLogger();
+    plask::createDefaultLogger();
+
     // Initalize python and load the plask module
     try {
         initPlask(argc, argv);
@@ -167,9 +171,6 @@ int main(int argc, const char *argv[])
         endPlask();
         return 102;
     }
-
-    // Set the Python logger
-    plask::default_logger = plask::python::makePythonLogger();
 
     // Import and run GUI
     try {

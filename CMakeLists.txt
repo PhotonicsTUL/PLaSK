@@ -784,10 +784,12 @@ if(UNIX)
     set(CPACK_GENERATOR "DEB;RPM")
 
     file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask\n/sbin/ldconfig\n")
-    file(WRITE ${CMAKE_BINARY_DIR}/rpmpostin "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall \$RPM_INSTALL_PREFIX/lib/plask\n/sbin/ldconfig\n")
     file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/rpmpostin "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall \$RPM_INSTALL_PREFIX/lib/plask\n/sbin/ldconfig\n")
     file(WRITE ${CMAKE_BINARY_DIR}/rpmpreun "#!/bin/sh\nset -e\nfind \$RPM_INSTALL_PREFIX/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
     file(WRITE ${CMAKE_BINARY_DIR}/rpmpostun "#!/bin/sh\nset -e\n/sbin/ldconfig\n")
+
+    execute_process(COMMAND chmod 0755 ${CMAKE_BINARY_DIR}/postinst ${CMAKE_BINARY_DIR}/prerm)
 
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
                     OUTPUT_VARIABLE boostver)
@@ -796,7 +798,7 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3, python (>= 2.7.0), python-numpy")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3, python (>= 2.7.0), python-numpy")
     if(BUILD_GUI)
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python-pyside")
     endif()

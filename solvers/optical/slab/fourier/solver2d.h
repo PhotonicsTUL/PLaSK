@@ -367,7 +367,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute magnetic field
@@ -375,7 +375,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute light intensity
@@ -383,7 +383,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
   public:
 

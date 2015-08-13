@@ -43,7 +43,7 @@ namespace plask { namespace python {
 
     PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
-    PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
+    PLASK_PYTHON_API void createPythonLogger();
 
     PLASK_PYTHON_API void setLoggingColor(std::string color);
 
@@ -204,6 +204,7 @@ int main(int argc, const char *argv[])
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
     bool color_log = true;
+    bool python_logger = false;
 
     std::deque<const char*> defs;
 
@@ -251,6 +252,9 @@ int main(int argc, const char *argv[])
             setbuf(stderr, NULL);
             color_log = false;
             --argc; ++argv;
+        } else if (arg == "-p") {
+            python_logger = true;
+            --argc; ++argv;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         } else if (arg == "-w") {
             if (console_count == 1) { // we are the only ones using the console
@@ -267,7 +271,8 @@ int main(int argc, const char *argv[])
     }
 
     // Set the Python logger
-    plask::default_logger = plask::python::makePythonLogger();
+    if (python_logger) plask::python::createPythonLogger();
+    else plask::createDefaultLogger();
     if (!color_log) plask::python::setLoggingColor("none");
     if (loglevel) plask::maxLoglevel = *loglevel;
 

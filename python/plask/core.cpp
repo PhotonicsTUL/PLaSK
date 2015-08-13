@@ -16,7 +16,7 @@ using namespace plask::python;
 // Declare some initialization functions
 namespace plask { namespace python {
 
-PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
+PLASK_PYTHON_API void createPythonLogger();
 
 void initMaterials();
 void initGeometry();
@@ -90,7 +90,7 @@ py::list axeslist_by_name(const std::string& axes_names) {
 
 std::string Config::__str__() const {
     return  "axes:        " + axes_name()
-        + "\nlog.color:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
+        + "\nlog.colors:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
         + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
         + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
     ;
@@ -99,7 +99,7 @@ std::string Config::__str__() const {
 std::string Config:: __repr__() const {
     return
         format("config.axes = '%s'", axes_name()) +
-           + "\nlog.color = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
+           + "\nlog.colors = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
            + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
            + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
     ;
@@ -120,7 +120,7 @@ inline static void register_config()
         "    >>> config.log.level = 'debug'\n"
         "    >>> print config\n"
         "    axes:        zxy\n"
-        "    log.color:   ansi\n"
+        "    log.colors:  ansi\n"
         "    log.level:   DEBUG\n"
         "    log.output:  stdout\n"
 
@@ -454,5 +454,5 @@ BOOST_PYTHON_MODULE(_plask)
     register_standard_properties();
 
     // Logging
-    if (!plask::default_logger) plask::default_logger = plask::python::makePythonLogger();
+    if (!plask::default_logger) plask::python::createPythonLogger();
 }

@@ -40,7 +40,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     toolitems = (
         # ('Home', 'Reset original view', 'go-home', 'home'),
-        ('Plot', 'Plot selected geometry object', 'applications-graphics', 'plot', None),
+        ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
         ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
         (None, None, None, None, None),
         ('Back', 'Back to  previous view', 'go-previous', 'back', None),

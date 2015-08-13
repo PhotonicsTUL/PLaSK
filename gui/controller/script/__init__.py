@@ -270,7 +270,7 @@ class ScriptController(SourceEditController):
             window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
-        doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-browser'), 'Show &docstring', source)
+        doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-contextual'), 'Show &docstring', source)
         doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
         doc_action.triggered.connect(self.show_docstring)
         source.editor.addAction(doc_action)
