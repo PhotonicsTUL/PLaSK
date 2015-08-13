@@ -54,7 +54,7 @@ struct StderrLogger: public plask::Logger {
 #   define COL_BRIGHT_WHITE 15
 
     inline void StderrLogger::setcolor(unsigned short fg) {
-        HANDLE handle = GetStdHandle((dest==DEST_STDERR)?STD_ERROR_HANDLE:STD_OUTPUT_HANDLE);
+        HANDLE handle = GetStdHandle(STD_ERROR_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         GetConsoleScreenBufferInfo(handle, &csbi);
         previous_color = csbi.wAttributes;
