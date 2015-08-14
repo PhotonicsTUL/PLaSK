@@ -41,7 +41,7 @@ void Transfer::initDiagonalization() {
         solver->computeIntegrals();
         solver->recompute_integrals = false;
     }
-    this->diagonalizer->initDiagonalization(solver->k0, solver->klong, solver->ktran);
+    this->diagonalizer->initDiagonalization();
 }
 
 
@@ -136,7 +136,7 @@ DataVector<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh>
     double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FieldParams::E, solver->k0, solver->klong, solver->ktran, method);
+    diagonalizer->source()->initField(Expansion::FIELD_E, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
@@ -160,7 +160,7 @@ DataVector<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>
     double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FieldParams::H, solver->k0, solver->klong, solver->ktran, method);
+    diagonalizer->source()->initField(Expansion::FIELD_H, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);

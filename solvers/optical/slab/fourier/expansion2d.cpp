@@ -340,10 +340,12 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
 }
 
 
-void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
+void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
+    dcomplex k0 = SOLVER->k0, beta = SOLVER->klong, kx = SOLVER->ktran;
+    
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
@@ -479,18 +481,18 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
 
 void ExpansionPW2D::prepareField()
 {
-    if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
+    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_SPLINE;
     if (symmetric()) {
         field.reset(N);
-        if (field_params.method != INTERPOLATION_FOURIER) {
-            Component sym = (field_params.which == FieldParams::E)? symmetry : Component(3-symmetry);
+        if (field_interpolation != INTERPOLATION_FOURIER) {
+            Component sym = (which_field == FIELD_E)? symmetry : Component(3-symmetry);
             int df = SOLVER->dct2()? 0 : 4;
             fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym+df), 3);    // tran
             fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym+df), 3); // long
         }
     } else {
         field.reset(N + 1);
-        if (field_params.method != INTERPOLATION_FOURIER)
+        if (field_interpolation != INTERPOLATION_FOURIER)
             fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
     }
 }
@@ -506,10 +508,10 @@ void ExpansionPW2D::cleanupField()
 
 DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
-    Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
+    Component sym = (which_field == FIELD_E)? symmetry : Component(2-symmetry);
 
-    const dcomplex beta = field_params.klong;
-    const dcomplex kx = field_params.ktran;
+    const dcomplex beta = SOLVER->klong;
+    const dcomplex kx = SOLVER->ktran;
 
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
@@ -517,10 +519,10 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     double vpos = level->vpos();
 
-    int dx = (symmetric() && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran component
-    int dz = (symmetric() && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
+    int dx = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran component
+    int dz = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
 
-    if (field_params.which == FieldParams::E) {
+    if (which_field == FIELD_E) {
         if (separated()) {
             if (polarization == E_LONG) {
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
@@ -546,7 +548,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                             for (int j = -order; j <= order; ++j)
                                 field[iE(i)-dz].vert() += iepsyy(l,i-j) * (b*double(j)-kx) * H[iH(j)];
                         }
-                        field[iE(i)-dz].vert() /= field_params.k0;
+                        field[iE(i)-dz].vert() /= SOLVER->k0;
                     }
                 }
             }
@@ -571,11 +573,11 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                         for (int j = -order; j <= order; ++j)
                             field[iE(i)-dz].vert() -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-kx) * H[iHz(j)]);
                     }
-                    field[iE(i)-dz].vert() /= field_params.k0;
+                    field[iE(i)-dz].vert() /= SOLVER->k0;
                 }
             }
         }
-    } else { // field_params.which == FieldParams::H
+    } else { // which_field == FIELD_H
         if (separated()) {
             if (polarization == E_TRAN) {  // polarization == H_LONG
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
@@ -601,7 +603,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                             for (int j = -order; j <= order; ++j)
                                 field[iH(i)-dz].vert() -= imuyy(l,i-j) * (b*double(j)-kx) * E[iE(j)];
                         }
-                        field[iH(i)-dz].vert() /= field_params.k0;
+                        field[iH(i)-dz].vert() /= SOLVER->k0;
                     }
                 }
             }
@@ -627,7 +629,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                         for (int j = -order; j <= order; ++j)
                             field[iE(i)-dz].vert() += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-kx) * E[iEz(j)]);
                     }
-                    field[iH(i)].vert() /= field_params.k0;
+                    field[iH(i)].vert() /= SOLVER->k0;
                 }
             }
         }
@@ -636,7 +638,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
     if (dx) { field[field.size()-1].tran() = 0.; }
     if (dz) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
 
-    if (field_params.method == INTERPOLATION_FOURIER) {
+    if (field_interpolation == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double L = right - left;
         if (!symmetric()) {
@@ -678,7 +680,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            return interpolate(src_mesh, field, dest_mesh, field_params.method,
+            return interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                InterpolationFlags(SOLVER->getGeometry(),
                                     (sym == E_TRAN)? InterpolationFlags::Symmetry::NPN : InterpolationFlags::Symmetry::PNP,
                                     InterpolationFlags::Symmetry::NO),
@@ -687,7 +689,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                       InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
                                       false).claim();
             dcomplex ikx = I * kx;

@@ -18,9 +18,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
-        int m;                          ///< Angular mode order
         BesselSolverCyl* solver;        ///< Solver this mode belongs to
         dcomplex k0;                    ///< Stored mode frequency
+        int m;                          ///< 
         double power;                   ///< Mode power [mW]
 
         Mode(BesselSolverCyl* solver): solver(solver), power(1e-9) {}
@@ -30,7 +30,23 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
         }
     };
 
+    struct ParamGuard {
+        BesselSolverCyl* solver;
+        dcomplex k0;
+        int m;
+        bool recomp;
+        ParamGuard(BesselSolverCyl* solver, bool recomp=false): solver(solver),
+            k0(solver->k0), m(solver->m), recomp(recomp) {}
+        ~ParamGuard() {
+            solver->m = m;
+            solver->setK0(k0, recomp);
+        }
+    };
+
   protected:
+
+    /// Angular dependency index
+    int m;
 
     /// Maximum order of the orthogonal base
     size_t size;

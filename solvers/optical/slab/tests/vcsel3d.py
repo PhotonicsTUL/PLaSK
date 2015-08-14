@@ -72,6 +72,7 @@ class VCSEL(unittest.TestCase):
             <solvers>
               <optical name="fourier3d" solver="Fourier3D">
                 <geometry ref="vcsel"/>
+                <interface object="QW"/>
               </optical>
             </solvers>
           </plask>''')
@@ -79,7 +80,7 @@ class VCSEL(unittest.TestCase):
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
         self.solver.refine = 32
-        self.solver.size = 7
+        self.solver.size = 5
         self.solver.root.method = 'broyden'
         self.solver.symmetry = 'Ex', 'Ex'
         self.solver.vpml.factor = 1.

@@ -78,9 +78,7 @@ struct PLASK_SOLVER_API SlabBase {
     /// Position of the matching interface
     size_t interface;
 
-    dcomplex k0,                                ///< Normalized frequency [1/µm]
-             klong,                             ///< Longitudinal wavevector [1/µm]
-             ktran;                             ///< Transverse wavevector [1/µm]
+    dcomplex k0;                                ///< Normalized frequency [1/µm]
 
     /// Parameters for vertical PMLs (if used)
     PML vpml;
@@ -102,7 +100,7 @@ struct PLASK_SOLVER_API SlabBase {
         detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::METHOD_AUTO),
         interface(size_t(-1)),
-        k0(NAN), klong(0.), ktran(0.),
+        k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_integrals(true), group_layers(true) {}
 
@@ -130,24 +128,6 @@ struct PLASK_SOLVER_API SlabBase {
             if (k0 == 0.) k0 = 1e-12;
             this->recompute_integrals |= recompute;
         }
-    }
-
-    /// Get longitudinal wavevector
-    dcomplex getKlong() const { return klong; }
-
-    /// Set longitudinal wavevector
-    void setKlong(dcomplex k)  {
-        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        klong = k;
-    }
-
-    /// Get transverse wavevector
-    dcomplex getKtran() const { return ktran; }
-
-    /// Set transverse wavevector
-    void setKtran(dcomplex k)  {
-        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        ktran = k;
     }
 
     /**

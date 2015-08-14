@@ -55,7 +55,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     size_t matrixSize() const override { return 2*N; } // TODO should be N for m = 0?
 
-    void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH) override;
+    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 

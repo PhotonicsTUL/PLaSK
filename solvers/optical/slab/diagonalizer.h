@@ -51,7 +51,7 @@ class Diagonalizer
     inline Expansion* source() { return src; }
 
     /// Initiate the diagonalization
-    virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky) = 0;
+    virtual void initDiagonalization() = 0;
 
     /// Calculate the diagonalization of given layer
     /// \return \c true if any work has been done and \c false if it was not necessary
@@ -90,9 +90,6 @@ class Diagonalizer
 class SimpleDiagonalizer : public Diagonalizer
 {
   protected:
-    dcomplex k0;                        // The frequency for which we compute the diagonalization for all layers
-    dcomplex Kx, Ky;                    // The wavevector for which we compute the diagonalization for all layers
-
     std::vector<cdiagonal> gamma;       ///< Diagonal matrices Gamma
     std::vector<cmatrix> Te, Th;        ///< Matrices TE and TH
     std::vector<cmatrix> Te1, Th1;      ///< Matrices TE^-1 and TH^-1
@@ -109,7 +106,7 @@ class SimpleDiagonalizer : public Diagonalizer
 
     virtual int matrixSize() const { return src->matrixSize(); }
 
-    virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky);
+    virtual void initDiagonalization();
 
     virtual bool diagonalizeLayer(size_t layer);
 

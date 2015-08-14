@@ -30,7 +30,7 @@ void ExpansionBessel::layerIntegrals(size_t l)
 }
 
 
-void ExpansionBessel::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
+void ExpansionBessel::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
 }
 

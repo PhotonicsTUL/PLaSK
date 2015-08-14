@@ -17,19 +17,12 @@ struct PLASK_SOLVER_API Expansion {
         E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
     };
 
-    struct FieldParams {
-        /// Identification of the field obtained by the getField
-        enum Which {
-            E,                      ///< Electric field
-            H                       ///< Magnetic field
-        };
-        Which which;                ///< Which field is being computed
-        dcomplex k0;                ///< Normalized frequency [1/µm]
-        dcomplex klong;             ///< Longitudinal wavevector component [1/µm]
-        dcomplex ktran;             ///< Longitudinal wavevector component [1/µm]
-        InterpolationMethod method; ///< Interpolation method
+    enum WhichField {
+        FIELD_E,            ///< Electric field
+        FIELD_H             ///< Magnetic field
     };
-    FieldParams field_params;
+    WhichField which_field;
+    InterpolationMethod field_interpolation;
 
     /// Solver which performs calculations (and is the interface to the outside world)
     Solver* solver;
@@ -62,7 +55,7 @@ struct PLASK_SOLVER_API Expansion {
      * \param klong,ktran horizontal wavevector components [1/µm]
      * \param[out] RE,RH resulting matrix
      */
-    virtual void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH) = 0;
+    virtual void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
      * Get refractive index back from expansion
@@ -77,13 +70,11 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Prepare for computatiations of the fields
      * \param field which field is computed
-     * \param k0 normalized frequency [1/µm]
-     * \param klong,ktran horizontal wavevector components [1/µm]
      * \param method interpolation method
      */
-    void initField(FieldParams::Which field, dcomplex k0, dcomplex klong, dcomplex ktran, InterpolationMethod method) {
-        field_params.which = field; field_params.k0 = k0; field_params.klong = klong; field_params.ktran = ktran;
-        field_params.method = method;
+    void initField(WhichField which, InterpolationMethod method) {
+        which_field = which;
+        field_interpolation = method;
         prepareField();
     }
 

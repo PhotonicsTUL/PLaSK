@@ -72,7 +72,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     size_t matrixSize() const override { return separated()? N : 2*N; }
 
-    void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH) override;
+    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 

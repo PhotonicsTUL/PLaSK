@@ -5,6 +5,7 @@ namespace plask { namespace solvers { namespace slab {
 
 FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D>(name),
     size_long(12), size_tran(12),
+    klong(0.), ktran(0.),
     expansion(this),
     dct(2),
     refine_long(16), refine_tran(16),
@@ -186,6 +187,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
             break;
     }
+    ParamGuard guard(this);
     root->find(start);
     return insertMode();
 }
@@ -310,6 +312,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].klong;
@@ -324,6 +327,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].klong;
@@ -338,6 +342,7 @@ const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].klong;
@@ -346,6 +351,5 @@ const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_
     }
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
-//
-//
+
 }}} // namespace

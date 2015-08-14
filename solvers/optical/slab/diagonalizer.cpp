@@ -56,10 +56,8 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
 }
 
 
-void SimpleDiagonalizer::initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky)
+void SimpleDiagonalizer::initDiagonalization()
 {
-    k0 = ko; Kx = kx, Ky = ky;
-
     for (int layer = 0; layer < lcount; layer++)
         diagonalized[layer] = false;
 }
@@ -89,7 +87,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // First find necessary matrices
         cmatrix RE = Th1[layer], RH = Th[layer];
 
-        src->getMatrices(layer, k0, Kx, Ky, RE, RH);
+        src->getMatrices(layer, RE, RH);
 
         // Ugly hack to avoid singularities
         for (int i = 0; i != N; ++i) {

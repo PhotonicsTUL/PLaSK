@@ -24,7 +24,7 @@ depth = 1.0
 sym = 'Ex'
 
 #interp = 'fourier'
-interp = 'nearest'
+interp = 'linear'
 
 
 provider = solver.outElectricField

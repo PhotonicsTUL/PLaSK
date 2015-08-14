@@ -540,10 +540,12 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 }
 
 
-void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
+void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
+    dcomplex k0 = SOLVER->k0, klong = SOLVER->klong, ktran = SOLVER->ktran;
+    
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
     char symx = symmetric_long()? 2 * int(symmetry_long) - 3 : 0,
@@ -608,13 +610,13 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 
 void ExpansionPW3D::prepareField()
 {
-    if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
+    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_SPLINE;
     if (symmetric_long() || symmetric_tran()) {
-        Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(3-symmetry_long),
-                  symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(3-symmetry_tran);
+        Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long),
+                  symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);
         size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl;
         size_t nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
-        if (field_params.method != INTERPOLATION_FOURIER) {
+        if (field_interpolation != INTERPOLATION_FOURIER) {
             int df = SOLVER->dct2()? 0 : 4;
             FFT::Symmetry x1, xz2, yz1, y2;
             if (symmetric_long()) { x1 = FFT::Symmetry(3-syml + df); yz1 = FFT::Symmetry(syml + df); }
@@ -627,7 +629,7 @@ void ExpansionPW3D::prepareField()
         }
         field.reset(nl*nt);
     } else {
-        if (field_params.method != INTERPOLATION_FOURIER)
+        if (field_interpolation != INTERPOLATION_FOURIER)
             fft_z = FFT::Backward2D(3, Nl, Nt, FFT::SYMMETRY_NONE, FFT::SYMMETRY_NONE, 3, Nl+1);
         field.reset((Nl+1)*(Nt+1));
     }
@@ -645,13 +647,13 @@ void ExpansionPW3D::cleanupField()
 
 DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
-    Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(3-symmetry_long);
-    Component symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(3-symmetry_tran);
+    Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long);
+    Component symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);
 
     size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
            nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
 
-    const dcomplex kx = field_params.klong, ky = field_params.ktran;
+    const dcomplex kx = SOLVER->klong, ky = SOLVER->ktran;
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
@@ -663,7 +665,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
     double vpos = level->vpos();
 
     int dxl = 0, dyl = 0, dxt = 0, dyt = 0;
-    if (field_params.method != INTERPOLATION_FOURIER) {
+    if (field_interpolation != INTERPOLATION_FOURIER) {
         if (symmetric_long()) {
             if (syml == E_TRAN) dxl = 1; else dyl = 1;
             for (size_t t = 0, end = nl*nt; t != end; t += nl) field[nl-1+t] = Vec<3,dcomplex>(0.,0.,0.);
@@ -674,7 +676,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
         }
     }
 
-    if (field_params.which == FieldParams::E) {
+    if (which_field == FIELD_E) {
         for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                 // How expensive is checking conditions in each loop?
@@ -698,11 +700,11 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                                 (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
                                  + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                         }
-                    field[iez].vert() /= field_params.k0;
+                    field[iez].vert() /= SOLVER->k0;
                 }
             }
         }
-    } else { // field_params.which == FieldParams::H
+    } else { // which_field == FIELD_H
         for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                 size_t ihx = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
@@ -724,13 +726,13 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                                 (- (bl*double(jl)-kx) * fey*E[iEy(jl,jt)]
                                  + (bt*double(jt)-ky) * fex*E[iEx(jl,jt)]);
                         }
-                    field[ihz].vert() /= field_params.k0;
+                    field[ihz].vert() /= SOLVER->k0;
                 }
             }
         }
     }
 
-    if (field_params.method == INTERPOLATION_FOURIER) {
+    if (field_interpolation == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double Ll = (symmetric_long()? 2. : 1.) * (front - back),
                Lt = (symmetric_tran()? 2. : 1.) * (right - left);
@@ -802,7 +804,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                       InterpolationFlags(SOLVER->getGeometry(),
                                                          symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
                                                          symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
@@ -853,7 +855,7 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            auto result = interpolate(src_mesh, field, dest_mesh, field_params.method,
+            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                       InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
                                       false).claim();
             dcomplex ikx = I * kx, iky = I * ky;

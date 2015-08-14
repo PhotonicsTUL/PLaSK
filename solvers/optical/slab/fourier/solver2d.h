@@ -14,6 +14,8 @@ namespace plask { namespace solvers { namespace slab {
  */
 struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> {
 
+    friend struct ExpansionPW2D;
+    
     std::string getClassName() const override { return "optical.Fourier2D"; }
 
     /// Indication of parameter to search
@@ -43,7 +45,22 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         }
     };
 
+    struct ParamGuard {
+        FourierSolver2D* solver;
+        dcomplex k0, klong, ktran;
+        bool recomp;
+        ParamGuard(FourierSolver2D* solver, bool recomp=false): solver(solver),
+            k0(solver->k0), klong(solver->klong), ktran(solver->ktran), recomp(recomp) {}
+        ~ParamGuard() {
+            solver->klong = klong; solver->ktran = ktran;
+            solver->setK0(k0, recomp);
+        }
+    };
+
   protected:
+
+    dcomplex klong,                             ///< Longitudinal wavevector [1/µm]
+             ktran;                             ///< Transverse wavevector [1/µm]
 
     /// Maximum order of the orthogonal base
     size_t size;
@@ -115,6 +132,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
 
+    /// Get transverse wavevector
+    dcomplex getKtran() const { return ktran; }
+
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0. && expansion.symmetric()) {
@@ -126,7 +146,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         ktran = k;
     }
 
-    /// Set transverse wavevector
+    /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
         if (k != 0. && expansion.separated()) {
             Solver::writelog(LOG_WARNING, "Resetting polarizations separation");
@@ -136,6 +156,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
     }
+
+    /// Get longitudinal wavevector
+    dcomplex getKlong() const { return klong; }
 
     /// Return current mode symmetry
     Expansion::Component getSymmetry() const { return expansion.symmetry; }
@@ -412,12 +435,15 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
          */
         Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
             outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                FourierSolver2D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
             outMagneticField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                FourierSolver2D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
             outLightMagnitude([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+                FourierSolver2D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
         {}

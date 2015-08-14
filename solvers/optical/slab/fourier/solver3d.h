@@ -14,6 +14,8 @@ namespace plask { namespace solvers { namespace slab {
  */
 struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
+    friend struct ExpansionPW3D;
+    
     std::string getClassName() const override { return "optical.Fourier3D"; }
 
     /// Indication of parameter to search
@@ -43,12 +45,27 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         }
     };
 
+    struct ParamGuard {
+        FourierSolver3D* solver;
+        dcomplex k0, klong, ktran;
+        bool recomp;
+        ParamGuard(FourierSolver3D* solver, bool recomp=false): solver(solver),
+            k0(solver->k0), klong(solver->klong), ktran(solver->ktran), recomp(recomp) {}
+        ~ParamGuard() {
+            solver->klong = klong; solver->ktran = ktran;
+            solver->setK0(k0, recomp);
+        }
+    };
+
     /// Maximum order of the orthogonal base in longitudinal direction
     size_t size_long;
     /// Maximum order of the orthogonal base in transverse direction
     size_t size_tran;
 
   protected:
+
+    dcomplex klong,                             ///< Longitudinal wavevector [1/µm]
+             ktran;                             ///< Transverse wavevector [1/µm]
 
     /// Class responsoble for computing expansion coefficients
     ExpansionPW3D expansion;
@@ -159,6 +176,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         expansion.symmetry_tran = symmetry;
     }
 
+    /// Get longitudinal wavevector
+    dcomplex getKlong() const { return klong; }
+
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
         if (k != 0. && expansion.symmetric_long()) {
@@ -169,6 +189,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
     }
+
+    /// Get transverse wavevector
+    dcomplex getKtran() const { return ktran; }
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
@@ -367,14 +390,17 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
           */
          Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
              outElectricField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-                 parent->setWavelength(wavelength);
-                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
+                FourierSolver3D::ParamGuard guard(parent);
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
              outMagneticField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-                 parent->setWavelength(wavelength);
-                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
+                FourierSolver3D::ParamGuard guard(parent);
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
              outLightMagnitude([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
-                 parent->setWavelength(wavelength);
-                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
+                FourierSolver3D::ParamGuard guard(parent);
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
          {}
      };
 };

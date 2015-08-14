@@ -51,14 +51,6 @@
 
 
 <script><![CDATA[
-rc('figure', figsize = (4,3))
-rc('figure.subplot', left=0.1, bottom=0.05, right=0.99, top=0.92)
-rc('figure', dpi=150)
-rc('savefig', dpi=150)
-rc('font', family='serif')
-#rc('font', **{'serif': 'ZapfHumnstDmPL'})
-
-
 lams = linspace(1000., 2200., 1201)
 
 R_TE = solver.compute_reflectivity(lams, 'El', 'top', dispersive=False)

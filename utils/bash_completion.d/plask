@@ -28,8 +28,8 @@ _plask()
             elif [[ "$cur" == -* ]]; then
                 COMPREPLY=($(compgen -W $'-c\n-i\n-l' -- "$cur"))
             else
-                #COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -o plusdirs -- "$cur"))
-                COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -- "$cur"))
+                COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -o plusdirs -- "$cur"))
+                #COMPREPLY=($(compgen -f -X "!*.+(xpl|py)" -- "$cur"))
             fi
             return 0
         ;;

@@ -4,6 +4,7 @@
 namespace plask { namespace solvers { namespace slab {
 
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
+    klong(0.), ktran(0.),
     size(12),
     expansion(this),
     dct(2),
@@ -295,6 +296,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -309,6 +311,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -323,6 +326,7 @@ const DataVector<const double> FourierSolver2D::getIntensity(size_t num, shared_
 {
     assert(num < modes.size());
     assert(transfer);
+    ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;

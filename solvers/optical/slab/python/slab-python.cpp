@@ -14,6 +14,7 @@ using namespace plask::python;
 
 #include "../fourier/solver2d.h"
 #include "../fourier/solver3d.h"
+#include "../bessel/solvercyl.h"
 using namespace plask::solvers::slab;
 
 #define ROOTDIGGER_ATTRS_DOC \
@@ -257,23 +258,33 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (ktran) self->setKtran(*ktran);
 
     switch (what) {
-        case WHAT_NOTHING: return py::object(self->getDeterminant());
-        case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
-            [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_K0: return UFUNC<dcomplex>(
-            [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_NEFF: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setKlong(x * self->getK0()); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_KTRAN: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
-            array
-        );
+        case WHAT_NOTHING:
+            return py::object(self->getDeterminant());
+        case WHAT_WAVELENGTH: {
+            FourierSolver2D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_K0: {
+            FourierSolver2D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_NEFF: {
+            FourierSolver2D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self](dcomplex x) -> dcomplex { self->setKlong(x * self->getK0()); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_KTRAN: {
+            FourierSolver2D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+                array
+            );
+        }
     }
     return py::object();
 }
@@ -308,11 +319,12 @@ size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
 template <typename SolverT>
 py::object FourierSolver_computeReflectivity(SolverT* self,
                                              py::object wavelength,
-                                             ExpansionPW2D::Component polarization,
+                                             Expansion::Component polarization,
                                              Transfer::IncidentDirection incidence,
                                              bool dispersive
                                             )
 {
+    typename SolverT::ParamGuard guard(self, dispersive);
     return UFUNC<double>([=](double lam)->double {
         self->setWavelength(lam, dispersive);
         return 100. * self->getReflection(polarization, incidence);
@@ -322,11 +334,12 @@ py::object FourierSolver_computeReflectivity(SolverT* self,
 template <typename SolverT>
 py::object FourierSolver_computeTransmittivity(SolverT* self,
                                                py::object wavelength,
-                                               ExpansionPW2D::Component polarization,
+                                               Expansion::Component polarization,
                                                Transfer::IncidentDirection incidence,
                                                bool dispersive
                                               )
 {
+    typename SolverT::ParamGuard guard(self, dispersive);
     return UFUNC<double>([=](double lam)->double {
         self->setWavelength(lam, dispersive);
         return 100. * self->getTransmission(polarization, incidence);
@@ -346,13 +359,15 @@ static inline py::object arrayFromVec2D(cvector data, bool sep) {
     return py::object(py::handle<>(arr));
 }
 
-py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    FourierSolver2D::ParamGuard guard(&self);
     self.setWavelength(lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
-py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    FourierSolver2D::ParamGuard guard(&self);
     self.setWavelength(lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
@@ -371,7 +386,7 @@ void FourierSolver2D_setPML(FourierSolver2D* self, const PmlWrapper& value) {
 template <typename SolverT>
 shared_ptr<typename SolverT::Reflected> FourierSolver_getReflected(SolverT* parent,
                                                                   double wavelength,
-                                                                  ExpansionPW2D::Component polarization,
+                                                                  Expansion::Component polarization,
                                                                   Transfer::IncidentDirection side)
 {
     return make_shared<typename SolverT::Reflected>(parent, wavelength, polarization, side);
@@ -394,15 +409,6 @@ template <typename Mode>
 dcomplex getModeWavelength(const Mode& mode) {
     return 2e3 * M_PI / mode.k0;
 }
-
-py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, const std::string name) {
-    auto axes = getCurrentAxes();
-    if (name == "k"+axes->getNameForLong()) return py::object(mode.klong);
-    if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
-    throw AttributeError("'Mode' object has no attribute '%1%'", name);
-    return py::object();
-}
-
 
 std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
     AxisNames* axes = getCurrentAxes();
@@ -444,6 +450,23 @@ std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
     }
     return format("Fourier2D.Mode(lam=%1%, neff=%2%, ktran=%3%, polarization=%4%, symmetry=%5%, power=%6%)",
                   str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
+}
+
+
+std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
+    return format("<m: %d, lam: %.2fnm, power: %.2g mW>", self.m, str(2e3*M_PI / self.k0), self.power);
+}
+std::string BesselSolverCyl_Mode_repr(const BesselSolverCyl::Mode& self) {
+    return format("BesselCyl.Mode(m=%d, lam=%g, power=%g)", self.m, str(2e3*M_PI / self.k0), self.power);
+}
+
+
+py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, const std::string name) {
+    auto axes = getCurrentAxes();
+    if (name == "k"+axes->getNameForLong()) return py::object(mode.klong);
+    if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
+    throw AttributeError("'Mode' object has no attribute '%1%'", name);
+    return py::object();
 }
 
 
@@ -714,23 +737,33 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (k0) self->setK0(*k0, dispersive);
 
     switch (what) {
-        case WHAT_NOTHING: return py::object(self->getDeterminant());
-        case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
-            [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_K0: return UFUNC<dcomplex>(
-            [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_KLONG: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setKlong(x); return self->getDeterminant(); },
-            array
-        );
-        case WHAT_KTRAN: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
-            array
-        );
+        case WHAT_NOTHING:
+            return py::object(self->getDeterminant());
+        case WHAT_WAVELENGTH: {
+            FourierSolver3D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_K0: {
+            FourierSolver3D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_KLONG: {
+            FourierSolver3D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self](dcomplex x) -> dcomplex { self->setKlong(x); return self->getDeterminant(); },
+                array
+            );
+        } case WHAT_KTRAN: {
+            FourierSolver3D::ParamGuard guard(self);
+            return UFUNC<dcomplex>(
+                [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+                array
+            );
+        }
     }
     return py::object();
 }
@@ -790,10 +823,6 @@ inline void export_base(Class solver) {
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
     solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
-    solver.add_property("wavelength", &Solver::getWavelength, &Solver_setWavelength<Solver>, "Wavelength of the light [nm].");
-    solver.add_property("k0", &Solver::getK0, &Solver_setK0<Solver>, "Normalized frequency of the light [1/µm].");
-    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light [1/µm].");
-    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light [1/µm].");
     solver.def_readwrite("root", &Solver::root,
                          "Configuration of the root searching algorithm.\n\n"
                          ROOTDIGGER_ATTRS_DOC
@@ -889,6 +918,10 @@ BOOST_PYTHON_MODULE(slab)
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
+        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
+        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
+        RW_PROPERTY(klong, getKlong, setKlong, "Longitudinal propagation constant of the light [1/µm].");
+        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light [1/µm].");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
         RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
         solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
@@ -1039,6 +1072,10 @@ BOOST_PYTHON_MODULE(slab)
                             &FourierSolver3D_SymmetryLongTranWrapper::setter,
                             "Longitudinal and transverse mode symmetries.\n");
         solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
+        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
+        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
+        solver.add_property("klong", &__Class__::getKlong, &__Class__::setKlong, "Longitudinal propagation constant of the light [1/µm].");
+        solver.add_property("ktran", &__Class__::getKtran, &__Class__::setKtran, "Transverse propagation constant of the light [1/µm].");
         solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
@@ -1137,6 +1174,112 @@ BOOST_PYTHON_MODULE(slab)
         FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");
         FourierSolver3D_LongTranWrapper<PML>::register_("PMLs");
         FourierSolver3D_SymmetryLongTranWrapper::register_();
+    }
+    
+    {CLASS(BesselSolverCyl, "BesselCyl",
+        "Optical Solver using Bessel expansion in cylindrical coordinates.\n\n"
+        "It calculates optical modes and optical field distribution using Bessel slab method\n"
+        "and reflection transfer in two-dimensional cylindrical space.")
+        export_base(solver);
+//         solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
+        PROVIDER(outWavelength, "");
+        PROVIDER(outLoss, "");
+//         solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
+//                    "Compute the mode near the specified effective index.\n\n"
+//                    "Only one of the following arguments can be given through a keyword.\n"
+//                    "It is the starting point for search of the specified parameter.\n\n"
+//                    "Args:\n"
+//                    "    lam (complex): Wavelength.\n"
+//                    "    k0 (complex): Normalized frequency.\n"
+//                    "    neff (complex): Longitudinal effective index.\n"
+//                    "    ktran (complex): Transverse wavevector.\n");
+//         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+//         solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
+//                    "Compute discontinuity matrix determinant.\n\n"
+//                    "Arguments can be given through keywords only.\n\n"
+//                    "Args:\n"
+//                    "    lam (complex): Wavelength.\n"
+//                    "    k0 (complex): Normalized frequency.\n"
+//                    "    neff (complex): Longitudinal effective index.\n"
+//                    "    ktran (complex): Transverse wavevector.\n"
+//                    "    dispersive (bool): If ``False`` then material coefficients are not\n"
+//                    "                       recomputed even if the wavelength is changed.\n");
+//         solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
+//                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+//                    "Args:\n"
+//                    "    lam (float or array of floats): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+//                    "        name of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+//                    "        wavelength, as they may change due to the dispersion.\n"
+//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//         solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
+//                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+//                    "Args:\n"
+//                    "    lam (float or array of floats): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+//                    "        of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+//                    "        wavelength, as they may change due to the dispersion.\n"
+//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//         solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
+//                    "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
+//                    "Args:\n"
+//                    "    lam (float): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+//                    "        name of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    , (py::arg("lam"), "polarization", "side"));
+//         solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
+//                    "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
+//                    "Args:\n"
+//                    "    lam (float): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+//                    "        name of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    , (py::arg("lam"), "polarization", "side"));
+//         solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
+//                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
+//                    "Fresnel equations.");
+//         solver.add_property("pml", py::make_function(&FourierSolver2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
+//                             &FourierSolver2D_setPML,
+//                             "Side Perfectly Matched Layers boundary conditions.\n\n"
+//                             PML_ATTRS_DOC
+//                            );
+//         RO_FIELD(modes, "Computed modes.");
+//         solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
+//                    "Access to the reflected field.\n\n"
+//                    "Args:\n"
+//                    "    lam (float): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+//                    "        of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n\n"
+//                    ":rtype: Fourier2D.Reflected\n"
+//                    , (py::arg("lam"), "polarization", "side"));
+        py::scope scope = solver;
+
+        register_vector_of<BesselSolverCyl::Mode>("Modes");
+        py::class_<BesselSolverCyl::Mode>("Mode", "Detailed information about the mode.", py::no_init)
+            .add_property("lam", &getModeWavelength<BesselSolverCyl::Mode>, "Mode wavelength [nm].")
+            .add_property("wavelength", &getModeWavelength<BesselSolverCyl::Mode>, "Mode wavelength [nm].")
+            .def_readonly("k0", &BesselSolverCyl::Mode::k0, "Mode normalized frequency [1/µm].")
+            .def_readonly("m", &BesselSolverCyl::Mode::m, "Angular mode order.")
+            .def_readwrite("power", &BesselSolverCyl::Mode::power, "Total power emitted into the mode.")
+            .def("__str__", &BesselSolverCyl_Mode_str)
+            .def("__repr__", &BesselSolverCyl_Mode_repr)
+        ;
     }
 }
 
