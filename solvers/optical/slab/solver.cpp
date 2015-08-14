@@ -235,9 +235,9 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
 {
     this->initCalculation();
     initTransfer(getExpansion(), false);
-    if (recompute_coefficients) {
-        computeCoefficients();
-        recompute_coefficients = false;
+    if (recompute_integrals) {
+        computeIntegrals();
+        recompute_integrals = false;
     }
 
     //TODO maybe there is a more efficient way to implement this

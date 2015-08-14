@@ -88,8 +88,8 @@ struct PLASK_SOLVER_API SlabBase {
     /// Parameters for main rootdigger
     RootDigger::Params root;
 
-    /// Force re-computation of material coefficients
-    bool recompute_coefficients;
+    /// Force re-computation of material coefficients/integrals
+    bool recompute_integrals;
 
   protected:
 
@@ -104,7 +104,7 @@ struct PLASK_SOLVER_API SlabBase {
         interface(size_t(-1)),
         k0(NAN), klong(0.), ktran(0.),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_coefficients(true), group_layers(true) {}
+        recompute_integrals(true), group_layers(true) {}
 
     /// Get current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
@@ -115,7 +115,7 @@ struct PLASK_SOLVER_API SlabBase {
         if (k != k0) {
             if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
             k0 = k;
-            this->recompute_coefficients |= recompute;
+            this->recompute_integrals |= recompute;
         }
     }
 
@@ -128,7 +128,7 @@ struct PLASK_SOLVER_API SlabBase {
             if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
             k0 = k;
             if (k0 == 0.) k0 = 1e-12;
-            this->recompute_coefficients |= recompute;
+            this->recompute_integrals |= recompute;
         }
     }
 
@@ -179,8 +179,8 @@ struct PLASK_SOLVER_API SlabBase {
     /// \return layer sets
     const OrderedAxis& getLayerPoints(size_t n) const { return lverts[n]; }
 
-    /// Recompute expansion coefficients
-    virtual void computeCoefficients() = 0;
+    /// Recompute integrals used in RE and RH matrices
+    virtual void computeIntegrals() = 0;
 
 };
 
@@ -195,7 +195,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
 
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->recompute_coefficients = true;
+        this->recompute_integrals = true;
     }
 
   protected:

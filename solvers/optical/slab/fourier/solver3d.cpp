@@ -150,7 +150,7 @@ void FourierSolver3D::onInitialize()
     Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
-    this->recompute_coefficients = true;
+    this->recompute_integrals = true;
 }
 
 
@@ -164,7 +164,7 @@ void FourierSolver3D::onInvalidate()
 
 size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
-    this->recompute_coefficients = true;
+    this->recompute_integrals = true;
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;

@@ -242,6 +242,78 @@
       <provider name="outLoss" for="ModalLoss"/>
       <provider name="outWavelenght"/>
     </flow>
-
   </solver>
+
+  <solver name="BesselCyl" category="optical" lib="slab">
+    Vectorial optical solver based on the Bessel expansion reflection transfer method.
+
+    <geometry type="Cartesian2D"/>
+
+    <tag name="expansion" label="Details on Bessel Expansion">
+      Details on Bessel expansion used in computations
+      <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
+      <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
+      <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
+    </tag>
+
+    <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
+      Matching interface position in the stack.
+      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
+      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
+      <attr name="object" label="Object name">Name of the geometry object below which the interface is located.</attr>
+      <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+    </tag>
+
+    <tag name="vpml" label="Vertical Pmls">
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
+      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+    </tag>
+
+    <tag name="transfer" label="Transfer Algorithm Settings">
+      Vertical field transfer settings.
+      <attr name="method" label="Transfer method" type="choice">
+        Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
+        <choice>auto</choice>
+        <choice>reflection</choice>
+        <choice>admittance</choice>
+      </attr>
+    </tag>
+
+    <!--tag name="pml" label="Horizontal Pmls">
+      Side absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
+      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+    </tag-->
+
+    <tag name="root" label="Parameters of the Root-Finding Algorithm">
+      Parameters of the global root-finding algorithm.
+      <attr name="method" label="Root finding method" type="choice">
+        Root finding algorithm (Muller's method or Broyden's method).
+        <choice>muller</choice>
+        <choice>broyden</choice>
+        <choice>brent</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on argument" type="float">Maximum change of the argument which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <flow>
+      <receiver name="inTemperature"/>
+      <receiver name="inGain"/>
+      <provider name="outLightMagnitude"/>
+      <provider name="outRefractiveIndex"/>
+      <provider name="outHeat"/>
+    </flow>
+  </solver>
+
 </solvers>

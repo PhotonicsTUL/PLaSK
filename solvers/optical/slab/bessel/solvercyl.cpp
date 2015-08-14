@@ -72,16 +72,26 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 
 void BesselSolverCyl::onInitialize()
 {
+    this->setupLayers();
+    this->ensureInterface();
+    Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver (%1% layers in the stack, interface after %2% layer%3%)",
+                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    expansion.init();
+    this->recompute_integrals = true;
 }
+
 
 void BesselSolverCyl::onInvalidate()
 {
+    modes.clear();
+    expansion.reset();
+    transfer.reset();
 }
 
 
-size_t BesselSolverCyl::findMode(dcomplex start)
+size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
-    this->recompute_coefficients = true;
+    this->recompute_integrals = true;
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });
@@ -89,5 +99,20 @@ size_t BesselSolverCyl::findMode(dcomplex start)
     return insertMode();
 }
 
-    
+
+const DataVector<const Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+{
+}
+
+
+const DataVector<const Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+{
+}
+
+
+const DataVector<const double> BesselSolverCyl::getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+{
+}
+
+
 }}} // # namespace plask::solvers::slab

@@ -13,16 +13,13 @@ struct BesselSolverCyl;
 
 struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
-    RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
+    OrderedAxis xmesh;                  ///< Horizontal axis for structure sampling for integration
 
     size_t N;                           ///< Number of expansion coefficients
     bool initialized;                   ///< Expansion is initialized
 
 //     size_t pil,                         ///< Index of the beginning of the left PML
 //            pir;                         ///< Index of the beginning of the right PML
-
-    /// Cached permittivity expansion coefficients
-    std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
@@ -31,13 +28,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
      * Create new expansion
      * \param solver solver which performs calculations
      */
-    ExpansionPW2D(BesselSolverCyl* solver);
-
-    /// Indicates if the expansion is a symmetric one
-    bool symmetric() const { return symmetry != E_UNSPECIFIED; }
-
-    /// Indicates whether TE and TM modes can be separated
-    bool separated() const { return polarization != E_UNSPECIFIED; }
+    ExpansionBessel(BesselSolverCyl* solver);
 
     /**
      * Init expansion
@@ -51,14 +42,14 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     /// Compute itegrals for RE and RH matrices
     void computeIntegrals() {
         size_t nlayers = lcount();
-        assert(coeffs.size() == nlayers);
+//TODO         assert(coeffs.size() == nlayers);
         for (size_t l = 0; l < nlayers; ++l)
             layerIntegrals(l);
     }
 
-    virtual size_t lcount() const override;
+    size_t lcount() const override;
 
-    virtual bool diagonalQE(size_t l) const override {
+    bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 

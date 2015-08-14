@@ -51,7 +51,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/inclu
 #set(solver_src file1.cpp file2.cpp file3.h file4.hpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
-file(GLOB solver_src *.cpp *.h fourier/*.cpp fourier/*.h)
+file(GLOB solver_src *.cpp *.h fourier/*.cpp fourier/*.h bessel/*.cpp bessel/*.h)
 
 
 # To add unit tests to your project create appropriate targets (binary executables

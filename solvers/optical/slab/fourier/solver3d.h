@@ -57,7 +57,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     void onInvalidate() override;
 
-    void computeCoefficients() override {
+    void computeIntegrals() override {
         expansion.computeMaterialCoefficients();
     }
 

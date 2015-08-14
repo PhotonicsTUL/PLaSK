@@ -37,9 +37,9 @@ Transfer::~Transfer()
 
 void Transfer::initDiagonalization() {
     // Get new coefficients if needed
-    if (solver->recompute_coefficients) {
-        solver->computeCoefficients();
-        solver->recompute_coefficients = false;
+    if (solver->recompute_integrals) {
+        solver->computeIntegrals();
+        solver->recompute_integrals = false;
     }
     this->diagonalizer->initDiagonalization(solver->k0, solver->klong, solver->ktran);
 }

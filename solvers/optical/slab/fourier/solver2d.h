@@ -55,7 +55,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     void onInvalidate() override;
 
-    void computeCoefficients() override {
+    void computeIntegrals() override {
         expansion.computeMaterialCoefficients();
     }
 

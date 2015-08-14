@@ -13,7 +13,7 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCartesian> {
+struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical> {
 
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
@@ -36,14 +36,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCartesian> 
     size_t size;
 
     /// Class responsible for computing expansion coefficients
-    ExpansionPW2D expansion;
+    ExpansionBessel expansion;
 
     void onInitialize() override;
 
     void onInvalidate() override;
 
-    void computeCoefficients() override {
-        expansion.computeMaterialCoefficients();
+    void computeIntegrals() override {
+        expansion.computeIntegrals();
     }
 
     /// Type of discrete cosine transform. Can be only 1 or two
@@ -83,7 +83,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCartesian> 
      * \param start initial wavelength value to search the mode around
      * \return determined effective index
      */
-    size_t findMode(dcomplex start);
+    size_t findMode(dcomplex start, int m=0);
 
     /// Get order of the orthogonal base
     size_t getSize() const { return size; }
@@ -129,7 +129,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCartesian> 
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return 2e4 * modes[n].lam.imag();  // 2e4  2/µm -> 2/cm
+        return 2e4 * modes[n].k0.imag();  // 2e4  2/µm -> 2/cm
     }
 
     /**
