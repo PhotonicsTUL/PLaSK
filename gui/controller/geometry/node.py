@@ -113,6 +113,18 @@ class GNodeController(Controller):
                 self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit))
         return res
 
+    #TODO does not work properly... textChanged -> focus lost
+    def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None, change_cb=None):
+        res = QtGui.QPlainTextEdit()
+        if row_name: self._get_current_form().addRow(row_name, res)
+        if change_cb is not None:
+            res.textChanged.connect(change_cb)  #TODO: should be focus lost situation, now it is unusable
+        elif node_property_name is not None:
+            res.textChanged.connect(lambda :
+                self._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
+            )
+        return res
+
     def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name=None,
                             display_property_name=None, node=None, change_cb=None):
         res = ComboBox()
