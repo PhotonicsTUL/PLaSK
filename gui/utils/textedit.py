@@ -17,8 +17,8 @@ from ..qt import QtCore, QtGui
 from .widgets import DEFAULT_FONT
 from .config import CONFIG
 
-CURRENT_LINE_COLOR = QtGui.QColor(CONFIG('editor/current_line_color', '#ffffee'))
-SELECTION_COLOR = QtGui.QColor(CONFIG('editor/selection_color', '#ffffdd'))
+CURRENT_LINE_COLOR = QtGui.QColor(CONFIG['editor/current_line_color'])
+SELECTION_COLOR = QtGui.QColor(CONFIG['editor/selection_color'])
 
 
 class TextEdit(QtGui.QPlainTextEdit):

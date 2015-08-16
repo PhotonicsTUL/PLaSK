@@ -23,6 +23,7 @@ from ..model.materials import MaterialsModel, material_html_help, \
 from ..utils.textedit import TextEdit
 from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut, ComboBox
 from ..utils.qsignals import BlockQtSignals
+from ..utils.config import CONFIG
 from . import Controller, select_index_from_info
 from .defines import DefinesCompletionDelegate
 from .table import table_and_manipulators, table_with_manipulators, TableActions
@@ -305,6 +306,8 @@ class MaterialsController(Controller):
                                                       default_font=font)
         self.propedit.hide()
 
+        self.document.window.config_changed.connect(self.reconfig)
+
         focus_action = QtGui.QAction(self.materials_table)
         focus_action.triggered.connect(lambda: self.properties_table.setFocus())
         focus_action.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Return))
@@ -316,6 +319,11 @@ class MaterialsController(Controller):
         self.prop_splitter.setEnabled(False)
         self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
+
+    def reconfig(self):
+        font = self.propedit.font()
+        font.setPointSize(int(CONFIG['editor/font_size']))
+        self.propedit.setFont(font)
 
     def add_external(self, what):
         index = self.materials_table.selectionModel().currentIndex()

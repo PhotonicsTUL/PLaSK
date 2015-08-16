@@ -25,6 +25,7 @@ License: MIT
 import inspect
 from weakref import WeakKeyDictionary
 
+
 class Signal(object):
     def __init__(self):
         self._functions = set()

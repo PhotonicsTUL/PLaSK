@@ -15,6 +15,8 @@ namespace plask { namespace solvers { namespace slab {
  */
 struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical> {
 
+    friend struct ExpansionBessel;
+    
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {

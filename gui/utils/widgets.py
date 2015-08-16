@@ -14,7 +14,7 @@ import collections
 import sys
 
 from ..qt.QtCore import Qt
-from ..qt import QtCore, QtGui, qt4
+from ..qt import QtCore, QtGui, QtSignal
 from ..utils.config import CONFIG
 
 
@@ -31,7 +31,7 @@ if _font_family is None:
     DEFAULT_FONT.setStyleHint(QtGui.QFont.TypeWriter)
 DEFAULT_FONT.setFamily(_font_family)
 del _font_family
-DEFAULT_FONT.setPointSize(int(CONFIG('editor/font_size', DEFAULT_FONT.pointSize())))
+DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))
 
 
 def table_edit_shortcut(table, col, key):
@@ -228,7 +228,7 @@ class VerticalScrollArea(QtGui.QScrollArea):
 
 
 class ComboBox(QtGui.QComboBox):
-    editingFinished = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
+    editingFinished = QtSignal()
 
     def focusOutEvent(self, event):
         self.editingFinished.emit()

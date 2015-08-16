@@ -31,7 +31,7 @@ from .controller import materials
 from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
 
-#from .qt import QtGui
+from .utils.config import CONFIG
 
 
 class XPLDocument(object):
@@ -132,10 +132,11 @@ class XPLDocument(object):
     def save_to_file(self, filename):
         # safe write: maybe inefficient, but does not destroy the file if the error occurs
         data = self.get_content()
-        try:
-            shutil.copyfile(filename, filename+'.bak')
-        except (IOError, OSError):
-            pass
+        if CONFIG['main_window/make_backup']:
+            try:
+                shutil.copyfile(filename, filename+'.bak')
+            except (IOError, OSError):
+                pass
         open(filename, 'w').write(data)
         self.filename = filename
         self.set_changed(False)

@@ -8,6 +8,7 @@ else
 fi
 
 for icon in ${icons}; do
+    echo "Adding ${icon}"
     for size in 16 24 32; do
         iconfile=${guidir}/icons/hicolor/${size}x${size}/actions/${icon}.png
         if [ ! -f ${iconfile} ]; then

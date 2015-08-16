@@ -27,7 +27,7 @@ except KeyError:
     _DEBUG = False
 
 
-from .qt import QtGui, QtCore, qt4
+from .qt import QtGui, QtCore, qt4, QtSignal
 from .qt.QtCore import Qt
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
@@ -47,7 +47,7 @@ from .pydocument import PyDocument
 from .model.info import InfoListModel, Info, infoLevelIcon
 from .launch import launch_plask
 
-from .utils.config import CONFIG
+from .utils.config import CONFIG, ConfigDialog
 
 try:
     import plask
@@ -120,9 +120,11 @@ class MainWindow(QtGui.QMainWindow):
         'connects': "Define connections between computational solvers (Alt+C)",
         'script': "Edit control script for your computations (Alt+R)"}
 
-    closing = QtCore.pyqtSignal(QtGui.QCloseEvent) if qt4 == 'PyQt4' else QtCore.Signal(QtGui.QCloseEvent)
+    closing = QtSignal(QtGui.QCloseEvent)
 
-    closed = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
+    closed = QtSignal()
+
+    config_changed = QtSignal()
 
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
@@ -132,7 +134,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
 
-        use_menu = CONFIG('main_window/use_menu', False)
+        use_menu = CONFIG['main_window/use_menu']
         if use_menu:
             menu_bar = QtGui.QMenuBar(self)
             menu_bar.setVisible(False)
@@ -213,6 +215,11 @@ class MainWindow(QtGui.QMainWindow):
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.goto_line)
 
+        settings_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-properties'),
+                                    'GUI Se&ttings...', self)
+        settings_action.setStatusTip('Change some GUI settings')
+        settings_action.triggered.connect(self.show_settings)
+
         exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('application-exit'),
                                     'E&xit', self)
         exit_action.setShortcut(QtGui.QKeySequence.Quit)
@@ -239,6 +246,8 @@ class MainWindow(QtGui.QMainWindow):
             self.menu.addSeparator()
             for op in OPERATIONS:   # for plugins use
                 self.menu.addAction(op(self))
+        self.menu.addSeparator()
+        self.menu.addAction(settings_action)
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
 
@@ -452,6 +461,10 @@ class MainWindow(QtGui.QMainWindow):
             return msgbox.exec_() == QtGui.QMessageBox.Yes
         return True
 
+    def show_settings(self):
+        dialog = ConfigDialog(self)
+        dialog.exec_()
+
     def current_section_exit(self):
         """"Should be called just before leaving the current section."""
         if self.current_tab_index != -1:
@@ -603,13 +616,15 @@ def main():
     APPLICATION.setApplicationName("PLaSK")
     sys.argv = APPLICATION.arguments()
 
-    if CONFIG('main_window/theme_icons', True):
+    icons_theme = str(CONFIG['main_window/icons_theme']).lower()
+    if icons_theme == 'system':
         icons_path = QtGui.QIcon.themeSearchPaths()[:-1]
         if not QtGui.QIcon.themeName():
             QtGui.QIcon.setThemeName('hicolor')
     else:
+        if icons_theme == 'tango': icons_theme = 'hicolor'
         icons_path = []
-        QtGui.QIcon.setThemeName('hicolor')
+        QtGui.QIcon.setThemeName(icons_theme)
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QtGui.QIcon.setThemeSearchPaths(icons_path)
 

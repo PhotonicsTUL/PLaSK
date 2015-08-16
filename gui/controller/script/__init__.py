@@ -43,20 +43,20 @@ syntax['formats'].update(plask_syntax['formats'])
 syntax['scanner'][None][-1:-1] = plask_syntax['scanner']
 
 scheme = {
-    'syntax_comment': parse_highlight(CONFIG('syntax/python_comment', 'color=green, italic=true')),
-    'syntax_string': parse_highlight(CONFIG('syntax/python_string', 'color=blue')),
-    'syntax_builtin': parse_highlight(CONFIG('syntax/python_builtin', 'color=maroon')),
-    'syntax_keyword': parse_highlight(CONFIG('syntax/python_keyword', 'color=black, bold=true')),
-    'syntax_number': parse_highlight(CONFIG('syntax/python_number', 'color=darkblue')),
-    'syntax_member': parse_highlight(CONFIG('syntax/python_member', 'color=#444400')),
-    'syntax_plask': parse_highlight(CONFIG('syntax/python_plask', 'color=#0088ff')),
-    'syntax_provider': parse_highlight(CONFIG('syntax/python_provider', 'color=#888800')),
-    'syntax_receiver': parse_highlight(CONFIG('syntax/python_receiver', 'color=#888800')),
-    'syntax_log': parse_highlight(CONFIG('syntax/python_log', 'color=blue')),
-    'syntax_solver': parse_highlight(CONFIG('syntax/python_solver', 'color=red')),
-    'syntax_define': parse_highlight(CONFIG('syntax/python_define', 'italic=true')),
-    'syntax_loaded': parse_highlight(CONFIG('syntax/python_loaded', 'color=#ff8800')),
-    'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#440088')),
+    'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
+    'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
+    'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
+    'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
+    'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
+    'syntax_member': parse_highlight(CONFIG['syntax/python_member']),
+    'syntax_plask': parse_highlight(CONFIG['syntax/python_plask']),
+    'syntax_provider': parse_highlight(CONFIG['syntax/python_provider']),
+    'syntax_receiver': parse_highlight(CONFIG['syntax/python_receiver']),
+    'syntax_log': parse_highlight(CONFIG['syntax/python_log']),
+    'syntax_solver': parse_highlight(CONFIG['syntax/python_solver']),
+    'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
+    'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
+    'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
 }
 
 
@@ -239,7 +239,7 @@ class ScriptController(SourceEditController):
         window = QtGui.QMainWindow(parent)
         window.setWindowFlags(QtCore.Qt.Widget)
 
-        source = SourceWidget(window, ScriptEditor, self)
+        source = SourceWidget(parent, ScriptEditor, self)
         source.editor.setReadOnly(self.model.is_read_only())
         window.editor = source.editor
 
@@ -265,6 +265,7 @@ class ScriptController(SourceEditController):
             source.editor.uncomment_action.setEnabled(False)
 
         self.help_dock = HelpDock(window)
+        parent.config_changed.connect(self.help_dock.reconfig)
         state = CONFIG['session/scriptwindow']
         if state is None or not window.restoreState(state):
             window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
@@ -350,7 +351,7 @@ class ScriptController(SourceEditController):
 
 class HelpDock(QtGui.QDockWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super(HelpDock, self).__init__(parent)
         self.textarea = QtGui.QTextEdit()
         self.textarea.setReadOnly(True)
@@ -371,3 +372,9 @@ class HelpDock(QtGui.QDockWidget):
             self.textarea.setText(docstring)
             self.show()
         # QtGui.QApplication.restoreOverrideCursor()
+
+    def reconfig(self):
+        font = self.textarea.font()
+        font.setPointSize(int(CONFIG['editor/font_size'])-2)
+        self.textarea.setFont(font)
+

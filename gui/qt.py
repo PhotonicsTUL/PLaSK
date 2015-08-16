@@ -19,12 +19,14 @@ except (ImportError, AttributeError):
 
 if qt4 == 'PySide':
     from PySide import QtCore, QtGui
+    QtSignal = QtCore.Signal
 else:
     import sip
     for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"):
         sip.setapi(n, 2)
     from PyQt4 import QtCore, QtGui
+    QtSignal = QtCore.pyqtSignal
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtGui', 'qt']
+__all__ = ['QtCore', 'QtGui', 'qt', 'QtSignal']

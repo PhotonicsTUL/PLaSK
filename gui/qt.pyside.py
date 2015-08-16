@@ -14,7 +14,10 @@ from PySide import QtCore, QtGui
 
 qt4 = 'PySide'
 
+QtSignal = QtCore.Signal
+
 import sys
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtGui', 'qt']
+
+__all__ = ['QtCore', 'QtGui', 'qt', 'QtSignal']

@@ -25,15 +25,15 @@ from .indenter import indent, unindent, autoindent
 
 
 scheme = {
-    'syntax_comment': parse_highlight(CONFIG('syntax/xml_comment', 'color=green, italic=true')),
-    'syntax_tag': parse_highlight(CONFIG('syntax/xml_tag', 'color=maroon, bold=true')),
-    'syntax_attr': parse_highlight(CONFIG('syntax/xml_attr', 'color=#888800')),
-    'syntax_value': parse_highlight(CONFIG('syntax/xml_value', 'color=darkblue')),
-    'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
+    'syntax_comment': parse_highlight(CONFIG['syntax/xml_comment']),
+    'syntax_tag': parse_highlight(CONFIG['syntax/xml_tag']),
+    'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
+    'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
+    'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
 }
 
-MATCH_COLOR = QtGui.QColor(CONFIG('editor/match_color', '#ddffdd'))
-REPLACE_COLOR = QtGui.QColor(CONFIG('editor/replace_color', '#ffddff'))
+MATCH_COLOR = QtGui.QColor(CONFIG['editor/match_color'])
+REPLACE_COLOR = QtGui.QColor(CONFIG['editor/replace_color'])
 
 
 class XMLEditor(TextEdit):
@@ -85,11 +85,13 @@ class XMLEditor(TextEdit):
 
 class SourceWidget(QtGui.QWidget):
 
-    def __init__(self, parent=None, editor_class=TextEdit, *args, **kwargs):
+    def __init__(self, parent, editor_class=TextEdit, *args, **kwargs):
         super(SourceWidget, self).__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)
         self.editor.setFont(DEFAULT_FONT)
+
+        parent.config_changed.connect(self.reconfig)
 
         self.toolbar = QtGui.QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -116,6 +118,11 @@ class SourceWidget(QtGui.QWidget):
         layout.setSpacing(0)
 
         self.setLayout(layout)
+
+    def reconfig(self):
+        font = self.editor.font()
+        font.setPointSize(int(CONFIG['editor/font_size']))
+        self.editor.setFont(font)
 
     def make_find_replace_widget(self):
         self.find_toolbar = QtGui.QToolBar(self)

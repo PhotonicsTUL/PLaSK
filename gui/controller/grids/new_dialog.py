@@ -16,6 +16,7 @@ from ...model.grids import Grid
 from ...model.grids.types import construct_grid, meshes_types, generators_types,\
     generator_methods, xml_name
 
+
 class NewGridDialog(QtGui.QDialog):
 
     def __init__(self, parent=None):

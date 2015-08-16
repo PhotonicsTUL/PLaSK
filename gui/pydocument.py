@@ -14,8 +14,8 @@ import shutil
 import re
 
 from .qt import QtGui
-
 from .controller.script import ScriptController
+from .utils.config import CONFIG
 
 coding_re = re.compile(r"(?:\s*#[^\n]*\n)?\s*#[^\n]*coding[=:]\s*([-\w.]+)")
 
@@ -76,10 +76,11 @@ class PyDocument(object):
         else:
             text = text.encode('utf-8')
             self.coding = 'utf-8'
-        try:
-            shutil.copyfile(filename, filename+'.bak')
-        except (IOError, OSError):
-            pass
+        if CONFIG['main_window/make_backup']:
+            try:
+                shutil.copyfile(filename, filename+'.bak')
+            except (IOError, OSError):
+                pass
         open(filename, 'w').write(text)
         self.filename = filename
         self.set_changed(False)

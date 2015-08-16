@@ -4,8 +4,8 @@
 #include <plask/plask.hpp>
 
 #include "../expansion.h"
+#include "../patterson.h"
 #include "../meshadapter.h"
-
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -13,17 +13,57 @@ struct BesselSolverCyl;
 
 struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
-    OrderedAxis xmesh;                  ///< Horizontal axis for structure sampling for integration
-
     size_t N;                           ///< Number of expansion coefficients
     bool initialized;                   ///< Expansion is initialized
 
 //     size_t pil,                         ///< Index of the beginning of the left PML
 //            pir;                         ///< Index of the beginning of the right PML
 
+    /// Horizontal axis with separate integration intervals.
+    /// material functions contain discontinuities at these points
+    OrderedAxis xbounds;                
+    
+    /// Matrices with computed integrals necessary to construct RE and RH matrices
+    class Integrals {
+        cvector iem;    ///< J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr
+        cvector iep;    ///< J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr
+        cvector dem;    ///< J_{m-1}(gr) deps/dr J_{m}(kr) r dr
+        cvector dep;    ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
+        cvector em;     ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
+        cvector ep;     ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
+        inline size_t idx(size_t i, size_t j) const { return (i<=j)? j*(j+1)/2 + i: i*(i+1)/2 + j; }
+      public:
+        Integrals() {}
+        Integrals(size_t N) { reset(N); }
+        void reset(size_t N) {
+            size_t len = N*(N+1)/2;
+            iem.reset(len);
+            iep.reset(len);
+            dem.reset(len);
+            dep.reset(len);
+            em.reset(len);
+            ep.reset(len);
+        }
+        dcomplex& ieps_minus(size_t i, size_t j) { return iem[idx(i,j)]; }
+        const dcomplex& ieps_minus(size_t i, size_t j) const { return iem[idx(i,j)]; }
+        dcomplex& ieps_plus(size_t i, size_t j) { return iep[idx(i,j)]; }
+        const dcomplex& ieps_plus(size_t i, size_t j) const { return iep[idx(i,j)]; }
+        dcomplex& deps_minus(size_t i, size_t j) { return dem[idx(i,j)]; }
+        const dcomplex& deps_minus(size_t i, size_t j) const { return dem[idx(i,j)]; }
+        dcomplex& deps_plus(size_t i, size_t j) { return dep[idx(i,j)]; }
+        const dcomplex& deps_plus(size_t i, size_t j) const { return dep[idx(i,j)]; }
+        dcomplex& eps_minus(size_t i, size_t j) { return em[idx(i,j)]; }
+        const dcomplex& eps_minus(size_t i, size_t j) const { return em[idx(i,j)]; }
+        dcomplex& eps_plus(size_t i, size_t j) { return ep[idx(i,j)]; }
+        const dcomplex& eps_plus(size_t i, size_t j) const { return ep[idx(i,j)]; }
+    };
+
+    /// Computed integrals
+    std::vector<Integrals> integrals;
+    
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
-
+    
     /**
      * Create new expansion
      * \param solver solver which performs calculations
