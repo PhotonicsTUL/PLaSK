@@ -144,7 +144,7 @@ class GNLatticeController(GNObjectController):
 
     def construct_form(self):
         self.construct_group('Lattice Settings')
-        self.segments = self.construct_line_edit('Segments:', node_property_name='segments')
+        self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments')
         self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
                                  u'Each polygon is formed by a two or more vertices, separated by ``;`` characters.\n'
                                  u'Each vertex consists with two, space-separated integers.')
@@ -158,4 +158,4 @@ class GNLatticeController(GNObjectController):
         for i in range(0, self.node.dim):
             self.v0[i].setText(none_to_empty(self.node.vectors[0][i]))
             self.v1[i].setText(none_to_empty(self.node.vectors[1][i]))
-        self.segments.setText(none_to_empty(self.node.segments))
+        self.segments.setPlainText(none_to_empty(self.node.segments))
