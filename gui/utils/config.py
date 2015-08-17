@@ -55,6 +55,7 @@ def parse_highlight(string):
     result = {}
     for item in string.split(','):
         item = item.strip()
+        if not item: continue
         key, val = item.split('=')
         result[key] = _parsed.get(val, val)
     return result
@@ -132,60 +133,148 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.value()
 
-    class Color(QtGui.QPushButton):
-        pass
+    class Color(QtGui.QToolButton):
+        def __init__(self, entry, parent=None, help=None):
+            super(ConfigDialog.Color, self).__init__(parent)
+            self.entry = entry
+            self._color = CONFIG[entry]
+            self.setStyleSheet(u"background-color: {};".format(self._color))
+            if help is not None:
+                self.setWhatsThis(help)
+            self.clicked.connect(self.on_press)
+            self.setSizePolicy(QtGui.QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+        def on_press(self):
+            dlg = QtGui.QColorDialog(self.parent())
+            if self._color:
+                dlg.setCurrentColor(QtGui.QColor(self._color))
+            if dlg.exec_():
+                self._color = dlg.currentColor().name()
+                self.setStyleSheet(u"background-color: {};".format(self._color))
+        def save(self):
+            CONFIG[self.entry] = self._color
+
+    class Syntax(QtGui.QWidget):
+        def __init__(self, entry, parent=None, help=None):
+            super(ConfigDialog.Syntax, self).__init__(parent)
+            self.entry = entry
+            syntax = parse_highlight(CONFIG[entry])
+            layout = QtGui.QHBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(4)
+            self.setLayout(layout)
+            self.color_button = QtGui.QToolButton(self)
+            self.color_button.setSizePolicy(QtGui.QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
+            self.color_button.clicked.connect(self.on_color_press)
+            layout.addWidget(self.color_button)
+            self._color = syntax.get('color')
+            if self._color is not None:
+                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
+            layout.addWidget(self.color_button)
+            self.bold = QtGui.QCheckBox('B', self)
+            self.bold.setChecked(syntax.get('bold', False))
+            layout.addWidget(self.bold)
+            self.italic = QtGui.QCheckBox('I', self)
+            self.italic.setChecked(syntax.get('italic', False))
+            layout.addWidget(self.italic)
+            if help is not None:
+                self.setWhatsThis(help)
+        def on_color_press(self):
+            if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.CTRL:
+                self._color = None
+                self.color_button.setStyleSheet("")
+                return
+            dlg = QtGui.QColorDialog(self.parent())
+            if self._color:
+                dlg.setCurrentColor(QtGui.QColor(self._color))
+            if dlg.exec_():
+                self._color = dlg.currentColor().name()
+                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
+        def save(self):
+            syntax = []
+            if self._color is not None: syntax.append('color=' + self._color)
+            if self.bold.isChecked(): syntax.append('bold=true')
+            if self.italic.isChecked(): syntax.append('italic=true')
+            CONFIG[self.entry] = ', '.join(syntax)
 
     def __init__(self, parent):
         super(ConfigDialog, self).__init__(parent)
         self.setWindowTitle("GUI Settings")
         vlayout = QtGui.QVBoxLayout()
 
-        groups = QtGui.QListWidget()
+        categories = QtGui.QListWidget()
         stack = QtGui.QStackedWidget()
-        groups.currentRowChanged.connect(stack.setCurrentIndex)
+        categories.currentRowChanged.connect(stack.setCurrentIndex)
 
         hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(groups)
+        hlayout.addWidget(categories)
         hlayout.addWidget(stack)
         vlayout.addLayout(hlayout)
 
         # current_layout = QtGui.QFormLayout()
 
         self.items = [
-            "General",
-            ("Create backup files on save",
-             ConfigDialog.CheckBox('main_window/make_backup', self,
-                                   "Create backup files on save.\n\n"
-                                   "It is recommended to keep this option on, to keep the backup of the "
-                                   "edited files in case the new one becomes corrupt or you accidentally "
-                                   "remove some important parts.")),
-            ("Show menu bar (requires restart)",
-             ConfigDialog.CheckBox('main_window/use_menu', self,
-                                   "Show menu bar.\n\n"
-                                   "Setting this option can be useful in Ubuntu Linux, so the available "
-                                   "operations appear in the global menu and are accessible through HUD. "
-                                   "If you are not using Ubuntu, you probably may leave it unchecked.")),
-            ("Icons theme (requires restart)",
-             ConfigDialog.Combo('main_window/icons_theme', ['system', 'Tango', 'Breeze'], self,
-                                "Main window icons theme.")),
-            "Text Editor",
-            ("Font size",
-             ConfigDialog.SpinBox('editor/font_size', self,
-                                  "Font size in text editors."))
-
+            ("General", (
+                ("Create backup files on save",
+                 ConfigDialog.CheckBox('main_window/make_backup', self,
+                                       "Create backup files on save. "
+                                       "It is recommended to keep this option on, to keep the backup of the "
+                                       "edited files in case the new one becomes corrupt or you accidentally "
+                                       "remove some important parts.")),
+                ("Icons theme (requires restart)",
+                 ConfigDialog.Combo('main_window/icons_theme',
+                                    ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
+                                    self,
+                                    "Main window icons theme.")),
+            )),
+            ("Text Editor", (
+                ("Font size",
+                 ConfigDialog.SpinBox('editor/font_size', self,
+                                      "Font size in text editors.")),
+                ("Find result color", ConfigDialog.Color('editor/match_color', self,
+                                                         "Background color of strings matching current search.")),
+                ("Replaced result color", ConfigDialog.Color('editor/replace_color', self,
+                                                             "Background color of strings right after replace.")),
+                ("Word highlight color", ConfigDialog.Color('editor/selection_color', self,
+                                                            "Highlight color for the current word.")),
+            )),
+            ("Syntax Highlighting", (
+                "Python Syntax",
+                ("Comment", ConfigDialog.Syntax('syntax/python_comment', self, "Python syntax highlighting.")),
+                ("String", ConfigDialog.Syntax('syntax/python_string', self, "Python syntax highlighting.")),
+                ("Builtin", ConfigDialog.Syntax('syntax/python_builtin', self, "Python syntax highlighting.")),
+                ("Keyword", ConfigDialog.Syntax('syntax/python_keyword', self, "Python syntax highlighting.")),
+                ("Number", ConfigDialog.Syntax('syntax/python_number', self, "Python syntax highlighting.")),
+                ("Class member", ConfigDialog.Syntax('syntax/python_member', self, "Python syntax highlighting.")),
+                ("PLaSK function", ConfigDialog.Syntax('syntax/python_plask', self, "Python syntax highlighting.")),
+                ("PLaSK provider", ConfigDialog.Syntax('syntax/python_provider', self, "Python syntax highlighting.")),
+                ("PLaSK receiver", ConfigDialog.Syntax('syntax/python_receiver', self, "Python syntax highlighting.")),
+                ("Log level", ConfigDialog.Syntax('syntax/python_log', self, "Python syntax highlighting.")),
+                ("Solver", ConfigDialog.Syntax('syntax/python_solver', self, "Python syntax highlighting.")),
+                ("XPL Definition", ConfigDialog.Syntax('syntax/python_define', self, "Python syntax highlighting.")),
+                ("PLaSK dictionary", ConfigDialog.Syntax('syntax/python_loaded', self, "Python syntax highlighting.")),
+                ("Pylab identifier", ConfigDialog.Syntax('syntax/python_pylab', self, "Python syntax highlighting.")),
+                "XML Syntax",
+                ("XML Tag", ConfigDialog.Syntax('syntax/xml_tag', self, "XML syntax highlighting.")),
+                ("XML Attribute", ConfigDialog.Syntax('syntax/xml_attr', self, "XML syntax highlighting.")),
+                ("XML Value", ConfigDialog.Syntax('syntax/xml_value', self, "XML syntax highlighting.")),
+                ("XML Text", ConfigDialog.Syntax('syntax/xml_text', self, "XML syntax highlighting.")),
+                ("XML Comment", ConfigDialog.Syntax('syntax/xml_comment', self, "XML syntax highlighting.")),
+            )),
         ]
 
-        for item in self.items:
-            if isinstance(item, str):
-                tab = QtGui.QGroupBox(item)
-                current_layout = QtGui.QFormLayout()
-                tab.setLayout(current_layout)
-                stack.addWidget(tab)
-                groups.addItem(item)
-            else:
-                current_layout.addRow(*item)
+        for cat, items in self.items:
+            tab = QtGui.QGroupBox(self)
+            tab_layout = QtGui.QFormLayout()
+            tab.setLayout(tab_layout)
+            stack.addWidget(tab)
+            categories.addItem(cat)
+            for item in items:
+                if isinstance(item, str):
+                    tab_layout.addRow(QtGui.QLabel("<b>"+item+"</b>", self))
+                else:
+                    tab_layout.addRow(*item)
 
-        groups.setFixedWidth(groups.sizeHintForColumn(0) + 4)
+        categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
         buttons = QtGui.QDialogButtonBox(
             QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Apply | QtGui. QDialogButtonBox.Cancel)
@@ -196,11 +285,16 @@ class ConfigDialog(QtGui.QDialog):
         vlayout.addWidget(buttons)
         self.setLayout(vlayout)
 
+        self.resize(600, 0)
+
     def apply(self):
-        for item in self.items:
-            if not isinstance(item, str):
-                item[1].save()
+        for _, items in self.items:
+            for item in items:
+                if isinstance(item, tuple):
+                    item[1].save()
         CONFIG.sync()
+        from .widgets import DEFAULT_FONT
+        DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))
         self.parent().config_changed.emit()
 
     def accept(self):

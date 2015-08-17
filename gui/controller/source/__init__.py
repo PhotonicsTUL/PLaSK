@@ -15,6 +15,7 @@ from ...qt.QtCore import Qt
 
 from .. import Controller
 from ...utils.config import CONFIG, parse_highlight
+from ...utils.qsignals import BlockQtSignals
 from ...utils.textedit import TextEdit
 from ...utils.widgets import DEFAULT_FONT
 
@@ -24,13 +25,16 @@ from ...external.highlighter.xml import syntax
 from .indenter import indent, unindent, autoindent
 
 
-scheme = {
-    'syntax_comment': parse_highlight(CONFIG['syntax/xml_comment']),
-    'syntax_tag': parse_highlight(CONFIG['syntax/xml_tag']),
-    'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
-    'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
-    'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
-}
+def update_xml_scheme():
+    global scheme
+    scheme = {
+        'syntax_comment': parse_highlight(CONFIG['syntax/xml_comment']),
+        'syntax_tag': parse_highlight(CONFIG['syntax/xml_tag']),
+        'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
+        'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
+        'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
+    }
+update_xml_scheme()
 
 MATCH_COLOR = QtGui.QColor(CONFIG['editor/match_color'])
 REPLACE_COLOR = QtGui.QColor(CONFIG['editor/replace_color'])
@@ -91,8 +95,6 @@ class SourceWidget(QtGui.QWidget):
         self.editor = editor_class(self, *args, **kwargs)
         self.editor.setFont(DEFAULT_FONT)
 
-        parent.config_changed.connect(self.reconfig)
-
         self.toolbar = QtGui.QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
 
@@ -118,11 +120,6 @@ class SourceWidget(QtGui.QWidget):
         layout.setSpacing(0)
 
         self.setLayout(layout)
-
-    def reconfig(self):
-        font = self.editor.font()
-        font.setPointSize(int(CONFIG['editor/font_size']))
-        self.editor.setFont(font)
 
     def make_find_replace_widget(self):
         self.find_toolbar = QtGui.QToolBar(self)
@@ -363,6 +360,8 @@ class SourceEditController(Controller):
         self.visible = False
         self.edited = False  # True only if text has been edited after last save_data_in_model
         self.source_widget = None
+        self.document.window.config_changed.connect(self.reconfig)
+        self.highlighter = None
 
     def _on_text_edit(self):
         self.edited = True
@@ -384,6 +383,14 @@ class SourceEditController(Controller):
     # GUI editor, by default use source editor
     def get_widget(self):
         return self.get_source_widget()
+
+    def reconfig(self):
+        if self.highlighter is not None:
+            with BlockQtSignals(self.source_widget.editor):
+                update_xml_scheme()
+                self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
+                                                     *load_syntax(syntax, scheme),
+                                                     default_font=DEFAULT_FONT)
 
     def refresh_editor(self, *args, **kwargs):
         if self.visible:

@@ -134,10 +134,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
 
-        use_menu = CONFIG['main_window/use_menu']
-        if use_menu:
-            menu_bar = QtGui.QMenuBar(self)
-            menu_bar.setVisible(False)
+        menu_bar = QtGui.QMenuBar(self)
+        menu_bar.setVisible(False)
 
         splitter = QtGui.QSplitter()
         splitter.setOrientation(QtCore.Qt.Vertical)
@@ -264,19 +262,18 @@ class MainWindow(QtGui.QMainWindow):
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
 
-        if use_menu:
-            tabs_menu = QtGui.QMenu("Sect&ions")
-            def add_tab_menu(indx):
-                def show_tab():
-                    self.tabs.setCurrentIndex(indx)
-                    self.tab_change(indx)
-                tabs_action.triggered.connect(show_tab)
-            for i in range(self.tabs.count()):
-                tabs_action = QtGui.QAction(self.tabs.tabText(i), self)
-                add_tab_menu(i)
-                tabs_menu.addAction(tabs_action)
-            menu_bar.addMenu(self.menu)
-            menu_bar.addMenu(tabs_menu)
+        tabs_menu = QtGui.QMenu("Sect&ions")
+        def add_tab_menu(indx):
+            def show_tab():
+                self.tabs.setCurrentIndex(indx)
+                self.tab_change(indx)
+            tabs_action.triggered.connect(show_tab)
+        for i in range(self.tabs.count()):
+            tabs_action = QtGui.QAction(self.tabs.tabText(i), self)
+            add_tab_menu(i)
+            tabs_menu.addAction(tabs_action)
+        menu_bar.addMenu(self.menu)
+        menu_bar.addMenu(tabs_menu)
 
         source_button = QtGui.QToolButton(self)
         source_button.setDefaultAction(self.showsource_action)

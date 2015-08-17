@@ -299,11 +299,10 @@ class MaterialsController(Controller):
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
 
-        font = QtGui.QFont(DEFAULT_FONT)
         # font.setPointSize(font.pointSize()-1)
         self.propedit = TextEdit(self.prop_splitter, line_numbers=False)
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
-                                                      default_font=font)
+                                                      default_font=DEFAULT_FONT)
         self.propedit.hide()
 
         self.document.window.config_changed.connect(self.reconfig)
@@ -321,9 +320,10 @@ class MaterialsController(Controller):
         self.splitter.setSizes([10000, 30000])
 
     def reconfig(self):
-        font = self.propedit.font()
-        font.setPointSize(int(CONFIG['editor/font_size']))
-        self.propedit.setFont(font)
+        with BlockQtSignals(self.propedit):
+            del self.propedit.highlighter
+            self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
+                                                          default_font=DEFAULT_FONT)
 
     def add_external(self, what):
         index = self.materials_table.selectionModel().currentIndex()

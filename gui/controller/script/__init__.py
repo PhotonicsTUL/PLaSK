@@ -16,6 +16,7 @@ from time import sleep
 
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
+from ...utils.qsignals import BlockQtSignals
 
 from ...utils.qthread import BackgroundTask
 
@@ -42,22 +43,26 @@ from ...external.highlighter.plask import syntax as plask_syntax
 syntax['formats'].update(plask_syntax['formats'])
 syntax['scanner'][None][-1:-1] = plask_syntax['scanner']
 
-scheme = {
-    'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
-    'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
-    'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
-    'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
-    'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
-    'syntax_member': parse_highlight(CONFIG['syntax/python_member']),
-    'syntax_plask': parse_highlight(CONFIG['syntax/python_plask']),
-    'syntax_provider': parse_highlight(CONFIG['syntax/python_provider']),
-    'syntax_receiver': parse_highlight(CONFIG['syntax/python_receiver']),
-    'syntax_log': parse_highlight(CONFIG['syntax/python_log']),
-    'syntax_solver': parse_highlight(CONFIG['syntax/python_solver']),
-    'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
-    'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
-    'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
-}
+
+def update_python_scheme():
+    global scheme
+    scheme = {
+        'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
+        'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
+        'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
+        'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
+        'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
+        'syntax_member': parse_highlight(CONFIG['syntax/python_member']),
+        'syntax_plask': parse_highlight(CONFIG['syntax/python_plask']),
+        'syntax_provider': parse_highlight(CONFIG['syntax/python_provider']),
+        'syntax_receiver': parse_highlight(CONFIG['syntax/python_receiver']),
+        'syntax_log': parse_highlight(CONFIG['syntax/python_log']),
+        'syntax_solver': parse_highlight(CONFIG['syntax/python_solver']),
+        'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
+        'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
+        'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
+    }
+update_python_scheme()
 
 
 class ScriptEditor(TextEdit):
@@ -229,11 +234,14 @@ class ScriptEditor(TextEdit):
             cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, col)
             self.setTextCursor(cursor)
 
+
 class ScriptController(SourceEditController):
 
     def __init__(self, document, model=None):
         if model is None: model = ScriptModel()
         SourceEditController.__init__(self, document, model)
+        self.document.window.config_changed.connect(self.reconfig)
+        self.highlighter = None
 
     def create_source_widget(self, parent):
         window = QtGui.QMainWindow(parent)
@@ -315,8 +323,12 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
+        self.rehighlight()
+        super(ScriptController, self).on_edit_enter()
+
+    def rehighlight(self):
         if (self.document.solvers and self.document.solvers.model.entries) or \
-           (self.document.defines and self.document.defines.model.entries):
+                (self.document.defines and self.document.defines.model.entries):
             current_syntax = {'formats': syntax['formats'],
                               'partitions': syntax['partitions'],
                               'scanner': copy(syntax['scanner'])}
@@ -333,7 +345,12 @@ class ScriptController(SourceEditController):
                                              *load_syntax(current_syntax, scheme),
                                              default_font=DEFAULT_FONT)
         self.highlighter.rehighlight()
-        super(ScriptController, self).on_edit_enter()
+
+    def reconfig(self):
+        if self.highlighter is not None:
+            with BlockQtSignals(self.source_widget.editor):
+                update_python_scheme()
+                self.rehighlight()
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
