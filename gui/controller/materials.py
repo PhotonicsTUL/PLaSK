@@ -250,14 +250,14 @@ class MaterialsController(Controller):
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
-        library_action = TableActions.make_action('emblem-system', 'Add &Library',
+        library_action = TableActions.make_action('material-library', 'Add &Library',
                                                   'Add new binary library to the list', self.materials_table,
                                                   lambda: self.add_external('library'))
-        module_action = TableActions.make_action('application-x-executable', 'Add &Module',
+        module_action = TableActions.make_action('material-module', 'Add &Module',
                                                  'Add new python module to the list', self.materials_table,
                                                  lambda: self.add_external('module'))
         tool_button = QtGui.QToolButton()
-        tool_button.setIcon(QtGui.QIcon.fromTheme('applications-system'))
+        tool_button.setIcon(QtGui.QIcon.fromTheme('material-external'))
         tool_menu = QtGui.QMenu(self.materials_table)
         tool_menu.addAction(library_action)
         tool_menu.addAction(module_action)

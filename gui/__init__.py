@@ -145,7 +145,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(splitter)
 
         self.showsource_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme('accessories-text-editor'),
+            QtGui.QIcon.fromTheme('show-source'),
             'Show Sour&ce', self)
         self.showsource_action.setShortcut(QtGui.QKeySequence(Qt.Key_F4))
         self.showsource_action.setCheckable(True)
