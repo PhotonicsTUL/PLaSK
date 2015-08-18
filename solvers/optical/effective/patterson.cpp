@@ -3,16 +3,16 @@
 
 namespace plask { namespace solvers { namespace effective {
 
-template <typename R, typename T>
-R patterson(const std::function<R(T)>& fun, T a, T b, double& err)
+template <typename S, typename T>
+S patterson(const std::function<S(T)>& fun, T a, T b, double& err)
 {
     double eps = err;
     err *= 2.;
 
-    R result, result2;
+    S result, result2;
     T D = (b - a) / 2., Z = (a + b) / 2.;
 
-    R values[256]; // std::fill_n(values, 256, 0.);
+    S values[256]; 
     values[0] = fun(Z);
     result = (b - a) * values[0];
 
@@ -20,18 +20,20 @@ R patterson(const std::function<R(T)>& fun, T a, T b, double& err)
 
     for (n = 1; err > eps && n < 9; ++n) {
         unsigned N = 1 << n; // number of points in current iteration on one side of zero
-        unsigned stp = 256 >> n; // step in x array
+        unsigned N0 = N >> 1; // number of points in previous iteration on one side of zero
         result2 = result;
-        // Compute integral on scaled range [-1, +1]
-        result = patterson_weights[n][0] * values[0];
-        for (unsigned i = stp, j = 1; j < N; i += stp, ++j) {
-            if (j % 2) { // only odd points are new ones
-                double x = patterson_points[i];
-                T z1 = Z - D * x;
-                T z2 = Z + D * x;
-                values[i] = fun(z1) + fun(z2);
-            }
-            result += patterson_weights[n][j] * values[i];
+        result = 0.;
+        // Add previously computed points
+        for (unsigned i = 0; i < N0; ++i) {
+            result +=  patterson_weights[n][i] * values[i];
+        }
+        // Compute and add new points
+        for (unsigned i = N0; i < N; ++i) {
+            double x = patterson_points[i];
+            T z1 = Z - D * x;
+            T z2 = Z + D * x;
+            values[i] = fun(z1) + fun(z2);
+            result +=  patterson_weights[n][i] * values[i];
         }
         // Rescale integral and compute error
         result *= D;
