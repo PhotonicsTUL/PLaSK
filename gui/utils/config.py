@@ -170,10 +170,10 @@ class ConfigDialog(QtGui.QDialog):
             if self._color is not None:
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
             layout.addWidget(self.color_button)
-            self.bold = QtGui.QCheckBox('B', self)
+            self.bold = QtGui.QCheckBox('bold', self)
             self.bold.setChecked(syntax.get('bold', False))
             layout.addWidget(self.bold)
-            self.italic = QtGui.QCheckBox('I', self)
+            self.italic = QtGui.QCheckBox('italic', self)
             self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
             if help is not None:
@@ -253,7 +253,7 @@ class ConfigDialog(QtGui.QDialog):
                 ("XPL Definition", ConfigDialog.Syntax('syntax/python_define', self, "Python syntax highlighting.")),
                 ("PLaSK dictionary", ConfigDialog.Syntax('syntax/python_loaded', self, "Python syntax highlighting.")),
                 ("Pylab identifier", ConfigDialog.Syntax('syntax/python_pylab', self, "Python syntax highlighting.")),
-                "XML Syntax",
+                "<hr/>XML Syntax",
                 ("XML Tag", ConfigDialog.Syntax('syntax/xml_tag', self, "XML syntax highlighting.")),
                 ("XML Attribute", ConfigDialog.Syntax('syntax/xml_attr', self, "XML syntax highlighting.")),
                 ("XML Value", ConfigDialog.Syntax('syntax/xml_value', self, "XML syntax highlighting.")),

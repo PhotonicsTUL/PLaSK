@@ -58,6 +58,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         const dcomplex& eps_plus(size_t i, size_t j) const { return ep[idx(i,j)]; }
     };
 
+    /// Get epsilons for missing points for Patterson quadrature
+    void getPattersonEpsilon(size_t layer, cvector eps, double left, double right, unsigned start, unsigned stop, const shared_ptr<OrderedAxis>& zaxis);
+    
     /// Computed integrals
     std::vector<Integrals> integrals;
     

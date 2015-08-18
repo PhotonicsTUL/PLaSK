@@ -1,5 +1,6 @@
 #include "expansioncyl.h"
 #include "solvercyl.h"
+#include "../patterson-data.h"
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 
@@ -32,6 +33,37 @@ void ExpansionBessel::reset()
 {
     integrals.clear();
     initialized = false;
+}
+
+
+void ExpansionBessel::getPattersonEpsilon(size_t layer, cvector eps, double left, double right, unsigned start, unsigned stop,
+                                          const shared_ptr<OrderedAxis>& zaxis)
+{
+    double D = (right - left) / 2., Z = (left + right) / 2.;
+    unsigned mask = (256>>start) - (256>>stop);
+    unsigned dj = (start==0)? 1 : 0;
+    unsigned len = (2<<stop) - (2<<start) + dj;
+    unsigned jz = len / 2;
+    std::vector<double> points(len);
+    if (start == 0) points[jz] = Z;
+    for (unsigned i = 0, j = 0; i < 256; ++i) {
+        if (i & mask) {
+            double x = patterson_points[i];
+            points[jz+j+dj] = Z + D*x;
+            points[jz-j-1] = Z - D*x;
+            ++j;
+        }
+    }
+    auto raxis = make_shared<OrderedAxis>(std::move(points));
+    auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis);
+
+    // 1. Dzielimy według granic materiałów
+    // 2. Każdą z podsekcji dzielimy na początkową ilość elementów (potęgi 2, w miarę proporcjonalnie do szerokości)
+    // 3. Robimy początkową listę punktów, pobieramy materiały i zapamiętujemy
+    // 4. Liczymy całki na każdym przedziale osobno
+    // 5. Błąd szacujemy dla całości na podstawie całki JJ (wiemy, jaka powinna być)
+    // 6. Teraz najprościej by było zagęścić każdy przedział, ale lepiej jakoś oszacować błąd na każdym przedziale by zagęścić ten co trzeba
+    
 }
 
 
