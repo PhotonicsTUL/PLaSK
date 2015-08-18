@@ -659,7 +659,7 @@ void register_geometry_object()
                       "It is possible to assign simply an integer number to this parameter, in which\n"
                       "case it changes its ``num`` attribute.\n"
                      )
-        .add_property("DIMS", &GeometryObject::getDimensionsCount, "Number of object's dimentions, 2 or 3 (int).")
+        .add_property("dims", &GeometryObject::getDimensionsCount, "Number of object's dimensions (int, 2 or 3).")
         .def("validate", &GeometryObject::validate,
              "Check if the object is complete and ready for calculations.\n\n"
              "This method is specific for a particular object. It raises an exception if\n"

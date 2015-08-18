@@ -559,7 +559,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
             axes = figure.add_subplot(111)
 
     # if isinstance(geometry, plask.geometry.Cartesian3D):
-    if geometry.DIMS == 3:
+    if geometry.dims == 3:
         fill = False    # we ignore fill parameter in 3D
         dd = 0
         #if plane is None: plane = 'xy'
