@@ -86,6 +86,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/interpolation.h"
 #include "mesh/boundary_conditions.h"
 #include "mesh/rectangular.h"
+#include "mesh/unordered1d.h"
 #include "mesh/generator_rectilinear.h"
 #include "mesh/rectangular_spline.h"
 #include "mesh/basic.h"

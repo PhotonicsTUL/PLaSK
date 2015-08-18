@@ -3,17 +3,17 @@
 
 namespace plask { namespace solvers { namespace effective {
 
-template <typename T>
-T patterson(const std::function<T(T)>& fun, T a, T b, double& err)
+template <typename R, typename T>
+R patterson(const std::function<R(T)>& fun, T a, T b, double& err)
 {
     double eps = err;
     err *= 2.;
 
-    T result, result2;
+    R result, result2;
     T D = (b - a) / 2., Z = (a + b) / 2.;
 
-    T values[511]; std::fill_n(values, 511, 0.);
-    values[255] = fun(Z);
+    R values[256]; // std::fill_n(values, 256, 0.);
+    values[0] = fun(Z);
     result = (b - a) * values[0];
 
     unsigned n;
@@ -23,16 +23,15 @@ T patterson(const std::function<T(T)>& fun, T a, T b, double& err)
         unsigned stp = 256 >> n; // step in x array
         result2 = result;
         // Compute integral on scaled range [-1, +1]
-        result = patterson_weights[n][0] * values[255];
+        result = patterson_weights[n][0] * values[0];
         for (unsigned i = stp, j = 1; j < N; i += stp, ++j) {
             if (j % 2) { // only odd points are new ones
                 double x = patterson_points[i];
                 T z1 = Z - D * x;
                 T z2 = Z + D * x;
-                values[255-i] = fun(z1);
-                values[255+i] = fun(z2);
+                values[i] = fun(z1) + fun(z2);
             }
-            result += patterson_weights[n][j] * (values[255-i] + values[255+i]);
+            result += patterson_weights[n][j] * values[i];
         }
         // Rescale integral and compute error
         result *= D;
@@ -46,6 +45,6 @@ T patterson(const std::function<T(T)>& fun, T a, T b, double& err)
     return result;
 }
 
-template double patterson<double>(const std::function<double(double)>& fun, double a, double b, double& err);
+template double patterson<double,double>(const std::function<double(double)>& fun, double a, double b, double& err);
 
 }}} // namespace plask::solvers::effective

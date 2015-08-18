@@ -53,7 +53,7 @@ OrderedAxis &OrderedAxis::operator=(const RectangularAxis &src) {
     points.clear();
     points.reserve(src.size());
     for (auto i: src) points.push_back(i);
-    std::sort(points.begin(), points.end());    //TODO is this required?
+    std::sort(points.begin(), points.end());
     if (resized) fireResized(); else fireChanged();
     return *this;
 }

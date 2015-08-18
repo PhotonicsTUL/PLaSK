@@ -20,8 +20,8 @@ extern const double patterson_weights[][256];
  * \param[in,out] err on input maximum error, on output estimated error
  * \return computed integral
  **/
-template <typename T>
-T patterson(const std::function<T(T)>& fun, T a, T b, double& err);
+template <typename R, typename T>
+R patterson(const std::function<R(T)>& fun, T a, T b, double& err);
 
 
 }}} // namespace plask::solvers::effective

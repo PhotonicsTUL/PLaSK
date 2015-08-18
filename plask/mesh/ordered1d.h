@@ -13,7 +13,6 @@ This file contains rectilinear mesh for 1d space.
 #include "../vec.h"
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
-#include "regular1d.h"
 
 #include "rectangular1d.h"
 
@@ -108,14 +107,14 @@ public:
 
     /**
      * Construct mesh with points given in a vector.
-     * It use algorithm which has logarithmic time complexity pew point in @p points.
+     * It use algorithm which has logarithmic time complexity per point in @p points.
      * @param points points, in any order
      */
     OrderedAxis(const std::vector<PointType>& points);
 
     /**
      * Construct mesh with points given in a vector.
-     * It use algorithm which has logarithmic time complexity pew point in @p points.
+     * It use algorithm which has logarithmic time complexity per point in @p points.
      * @param points points, in any order
      */
     OrderedAxis(std::vector<PointType>&& points);
@@ -234,7 +233,7 @@ public:
 template <typename RandomAccessContainer>
 inline auto OrderedAxis::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
-    if (index == size()) return data[index - 1];     //TODO what should it do if mesh is empty?
+    if (index == size()) return data[index-1];     //TODO what should it do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; // hit exactly
     // here: points[index-1] < point < points[index]
     return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);

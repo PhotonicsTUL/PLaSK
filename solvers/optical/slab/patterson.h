@@ -18,10 +18,11 @@ extern const double patterson_weights[][256];
  * \param a starting point
  * \param b final point
  * \param[in,out] err on input maximum error, on output estimated error
+ * \param[out] order required quadrature order
  * \return computed integral
  **/
-template <typename T>
-T patterson(const std::function<T(T)>& fun, T a, T b, double& err);
+template <typename S, typename T>
+S patterson(const std::function<S(T)>& fun, T a, T b, double& err, unsigned* order=nullptr);
 
 
 }}} // namespace plask::solvers::effective

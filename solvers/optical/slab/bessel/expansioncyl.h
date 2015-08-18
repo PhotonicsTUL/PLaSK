@@ -21,51 +21,10 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     /// Horizontal axis with separate integration intervals.
     /// material functions contain discontinuities at these points
-    OrderedAxis xbounds;                
+    shared_ptr<OrderedAxis> rbounds;
     
-    /// Matrices with computed integrals necessary to construct RE and RH matrices
-    class Integrals {
-        cvector iem;    ///< J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr
-        cvector iep;    ///< J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr
-        cvector dem;    ///< J_{m-1}(gr) deps/dr J_{m}(kr) r dr
-        cvector dep;    ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
-        cvector em;     ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
-        cvector ep;     ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
-        inline size_t idx(size_t i, size_t j) const { return (i<=j)? j*(j+1)/2 + i: i*(i+1)/2 + j; }
-      public:
-        Integrals() {}
-        Integrals(size_t N) { reset(N); }
-        void reset(size_t N) {
-            size_t len = N*(N+1)/2;
-            iem.reset(len);
-            iep.reset(len);
-            dem.reset(len);
-            dep.reset(len);
-            em.reset(len);
-            ep.reset(len);
-        }
-        dcomplex& ieps_minus(size_t i, size_t j) { return iem[idx(i,j)]; }
-        const dcomplex& ieps_minus(size_t i, size_t j) const { return iem[idx(i,j)]; }
-        dcomplex& ieps_plus(size_t i, size_t j) { return iep[idx(i,j)]; }
-        const dcomplex& ieps_plus(size_t i, size_t j) const { return iep[idx(i,j)]; }
-        dcomplex& deps_minus(size_t i, size_t j) { return dem[idx(i,j)]; }
-        const dcomplex& deps_minus(size_t i, size_t j) const { return dem[idx(i,j)]; }
-        dcomplex& deps_plus(size_t i, size_t j) { return dep[idx(i,j)]; }
-        const dcomplex& deps_plus(size_t i, size_t j) const { return dep[idx(i,j)]; }
-        dcomplex& eps_minus(size_t i, size_t j) { return em[idx(i,j)]; }
-        const dcomplex& eps_minus(size_t i, size_t j) const { return em[idx(i,j)]; }
-        dcomplex& eps_plus(size_t i, size_t j) { return ep[idx(i,j)]; }
-        const dcomplex& eps_plus(size_t i, size_t j) const { return ep[idx(i,j)]; }
-    };
-
-    /// Get epsilons for missing points for Patterson quadrature
-    void getPattersonEpsilon(size_t layer, cvector eps, double left, double right, unsigned start, unsigned stop, const shared_ptr<OrderedAxis>& zaxis);
-    
-    /// Computed integrals
-    std::vector<Integrals> integrals;
-    
-    /// Information if the layer is diagonal
-    std::vector<bool> diagonals;
+    ///  Argument coefficients for Bessel expansion base
+    std::vector<double> factors;
     
     /**
      * Create new expansion
@@ -73,6 +32,11 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
      */
     ExpansionBessel(BesselSolverCyl* solver);
 
+    /**
+     * fill factors with Bessel zeros
+     */
+    void computeBesselZeros();
+    
     /**
      * Init expansion
      * \param compute_coeffs compute material coefficients
@@ -85,7 +49,8 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     /// Compute itegrals for RE and RH matrices
     void computeIntegrals() {
         size_t nlayers = lcount();
-//TODO         assert(coeffs.size() == nlayers);
+        assert(integrals.size() == nlayers);
+        #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l)
             layerIntegrals(l);
     }
@@ -114,6 +79,64 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
   protected:
 
+    /// Integration segment data
+    struct Segment {
+        double Z;               ///< Center of the segment
+        double D;               ///< Width of the segment divideb by 2.
+        unsigned n;             ///< Patterson integration order for segment
+    };
+    
+    /// Integration segments
+    std::vector<Segment> segments;
+    
+    /// Axis for obtaining material parameters
+    UnorderedAxis raxis;
+    
+    /// Matrices with computed integrals necessary to construct RE and RH matrices
+    struct Integral {
+        dcomplex iem;   ///< J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr
+        dcomplex iep;   ///< J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr
+        dcomplex dem;   ///< J_{m-1}(gr) deps/dr J_{m}(kr) r dr
+        dcomplex dep;   ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
+        dcomplex em;    ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
+        dcomplex ep;    ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
+    };
+    
+    class Integrals {
+        DataVector<Integral> data;
+        inline size_t idx(size_t i, size_t j) const { return (i<=j)? j*(j+1)/2 + i: i*(i+1)/2 + j; }
+      public:
+        Integrals() {}
+        Integrals(size_t N) { reset(N); }
+        void reset(size_t N) {
+            size_t len = N*(N+1)/2;
+            data.reset(len);
+        }
+        dcomplex& ieps_minus(size_t i, size_t j) { return data[idx(i,j)].iem; }
+        const dcomplex& ieps_minus(size_t i, size_t j) const { return data[idx(i,j)].iem; }
+        dcomplex& ieps_plus(size_t i, size_t j) { return data[idx(i,j)].iep; }
+        const dcomplex& ieps_plus(size_t i, size_t j) const { return data[idx(i,j)].iep; }
+        dcomplex& deps_minus(size_t i, size_t j) { return data[idx(i,j)].dem; }
+        const dcomplex& deps_minus(size_t i, size_t j) const { return data[idx(i,j)].dem; }
+        dcomplex& deps_plus(size_t i, size_t j) { return data[idx(i,j)].dep; }
+        const dcomplex& deps_plus(size_t i, size_t j) const { return data[idx(i,j)].dep; }
+        dcomplex& eps_minus(size_t i, size_t j) { return data[idx(i,j)].em; }
+        const dcomplex& eps_minus(size_t i, size_t j) const { return data[idx(i,j)].em; }
+        dcomplex& eps_plus(size_t i, size_t j) { return data[idx(i,j)].ep; }
+        const dcomplex& eps_plus(size_t i, size_t j) const { return data[idx(i,j)].ep; }
+    };
+
+    /// Computed integrals
+    std::vector<Integrals> integrals;
+    
+    /// Information if the layer is diagonal
+    std::vector<bool> diagonals;
+
+    /**
+     * Obtain epsilons for given layer
+     */
+    cvector getEpsilon(size_t layer, const OrderedAxis& zaxis, const UnorderedAxis& raxis);
+    
     /**
      * Compute itegrals for RE and RH matrices
      * \param l layer number

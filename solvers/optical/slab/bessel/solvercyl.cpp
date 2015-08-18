@@ -6,6 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<Geometry2DCylindrical>(name),
     size(12),
     expansion(this),
+    integral_error(1e-9),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
@@ -91,7 +92,7 @@ void BesselSolverCyl::onInvalidate()
 
 size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
-    this->recompute_integrals = true;
+    setM(m);
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });

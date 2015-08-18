@@ -48,7 +48,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
   protected:
 
     /// Angular dependency index
-    int m;
+    unsigned m;
 
     /// Maximum order of the orthogonal base
     size_t size;
@@ -72,19 +72,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
     /// Computed modes
     std::vector<Mode> modes;
 
-    /// Mesh multiplier for finer computation of the refractive indices
-    size_t refine;
-
-    /// Factor by which the number of coefficients is multiplied for FFT.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling;
-
-    /// Lateral PMLs
-    PML pml;
-
-    /// Mirror reflectivities
-    boost::optional<std::pair<double,double>> mirrors;
-
+    /// Expected integration estimate error
+    double integral_error;
+    
     /// Provider for computed resonant wavelength
     typename ProviderFor<Wavelength>::Delegate outWavelength;
 
@@ -109,6 +99,16 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
     void setSize(size_t n) {
         size = n;
         invalidate();
+    }
+
+    /// Get order of the orthogonal base
+    unsigned getM() const { return m; }
+    /// Set order of the orthogonal base
+    void setM(unsigned n) {
+        if (n != m) {
+            m = n;
+            recompute_integrals = true;
+        }
     }
 
     Expansion& getExpansion() override { return expansion; }

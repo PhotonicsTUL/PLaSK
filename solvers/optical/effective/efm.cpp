@@ -579,7 +579,7 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
         double start = mesh->axis0->at(i);
         double end = (i != rsize-1)? mesh->axis0->at(i+1) : 3.0 * mesh->axis0->at(mesh->axis0->size()-1);
         double err = perr;
-        mode.rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
+        mode.rweights[i] = patterson<double,double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
         //TODO use exponential asymptotic approximation to compute weight in the last stripe
         sum += mode.rweights[i];
     }

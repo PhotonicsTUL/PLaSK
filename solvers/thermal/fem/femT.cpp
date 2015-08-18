@@ -622,7 +622,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 template<typename Geometry2DType>
 const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DEBUG, "Getting temperatures");
-    if (!temperatures) return DataVector<const double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
+    if (!temperatures) return LazyData<double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry);
 }
@@ -631,7 +631,7 @@ const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTe
 template<typename Geometry2DType>
 const LazyData<Vec<2>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
-    if (!temperatures) return DataVector<const Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
+    if (!temperatures) return LazyData<Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes, dest_mesh, method,
