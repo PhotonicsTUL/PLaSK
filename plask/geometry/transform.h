@@ -36,8 +36,9 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
         if (predicate(*this)) {
             dest.push_back(this->shared_from_this());
-        } else
-            getChild()->getObjectsToVec(predicate, dest, path);
+        } else {
+            if (hasChild()) _child->getObjectsToVec(predicate, dest, path);
+        }
     }
 
     /// Called by child.change signal, call this change
@@ -142,6 +143,11 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      */
     virtual shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopy() const = 0;
 
+    /**
+     * Get copy of this, and change child in the copy,
+     * @param child child for the copy
+     * @return the copy of this
+     */
     shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopy(const shared_ptr<ChildType>& child) const {
         shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = shallowCopy();
         result->setChild(child);
@@ -172,7 +178,8 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
             dest.push_back(this->getBoundingBox());
             return;
         }
-        auto child_boxes = getChild()->getBoundingBoxes(predicate, path);
+        if (!hasChild()) return;
+        auto child_boxes = this->_child->getBoundingBoxes(predicate, path);
         dest.reserve(dest.size() + child_boxes.size());
         for (auto& r: child_boxes) dest.push_back(this->fromChildCoords(r));
     }
@@ -216,7 +223,8 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
             dest.push_back(Primitive<this_dim>::ZERO_VEC);
             return;
         }
-        const std::size_t s = getChild()->getPositions(predicate, path).size();
+        if (!this->hasChild()) return;
+        const std::size_t s = this->_child->getPositions(predicate, path).size();
         for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<this_dim>::NAN_VEC);
    }
 };

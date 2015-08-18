@@ -19,22 +19,24 @@ shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjec
 
 template <int dim>
 typename Translation<dim>::Box Translation<dim>::getBoundingBox() const {
+    //TODO what if there is no child?
     return getChild()->getBoundingBox().translated(translation);
 }
 
 template <int dim>
 shared_ptr<Material> Translation<dim>::getMaterial(const typename Translation<dim>::DVec &p) const {
-    return getChild()->getMaterial(p-translation);
+    return this->hasChild() ? this->_child->getMaterial(p-translation) : shared_ptr<Material>();
 }
 
 template <int dim>
 bool Translation<dim>::contains(const typename Translation<dim>::DVec &p) const {
-    return getChild()->contains(p-translation);
+    return this->hasChild() ? this->_child->contains(p-translation) : false;
 }
 
 template <int dim>
 GeometryObject::Subtree Translation<dim>::getPathsAt(const Translation::DVec &point, bool all) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point-translation, all));
+    if (!this->hasChild()) return GeometryObject::Subtree();
+    return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point-translation, all));
 }
 
 template <int dim>
