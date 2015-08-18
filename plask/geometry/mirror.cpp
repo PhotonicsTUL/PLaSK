@@ -7,11 +7,6 @@ template <int dim>
 std::string Flip<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
-typename Flip<dim>::Box Flip<dim>::getBoundingBox() const {
-    return fliped(getChild()->getBoundingBox());
-}
-
-template <int dim>
 shared_ptr<Material> Flip<dim>::getMaterial(const Flip::DVec &p) const {
     return getChild()->getMaterial(fliped(p));
 }
@@ -56,7 +51,7 @@ std::string Mirror<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
 typename Mirror<dim>::Box Mirror<dim>::getBoundingBox() const {
-    return extended(getChild()->getBoundingBox());
+    return this->hasChild() ? extended(getChild()->getBoundingBox()) : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
 }
 
 template <int dim>

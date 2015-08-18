@@ -5,14 +5,6 @@
 namespace plask {
 
 template <int dim>
-typename Intersection<dim>::Box Intersection<dim>::getBoundingBox() const {
-    if (envelope)
-        return getChild()->getBoundingBox().intersection(envelope->getBoundingBox());
-    else
-        return getChild()->getBoundingBox();
-}
-
-template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
     return (!envelope || envelope->contains(p)) ? getChild()->getMaterial(p) : shared_ptr<Material>();
 }
@@ -43,7 +35,7 @@ typename Intersection<dim>::Box Intersection<dim>::fromChildCoords(const typenam
 template <int dim>
 void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
+        dest.push_back(this->getBoundingBox());
         return;
     }
     std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);

@@ -45,8 +45,6 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
     explicit Clip(GeometryObjectD<dim>& child, const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
-    virtual Box getBoundingBox() const override;
-
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     virtual bool contains(const DVec& p) const override;

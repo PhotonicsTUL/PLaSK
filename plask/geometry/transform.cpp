@@ -18,12 +18,6 @@ shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjec
 }
 
 template <int dim>
-typename Translation<dim>::Box Translation<dim>::getBoundingBox() const {
-    //TODO what if there is no child?
-    return getChild()->getBoundingBox().translated(translation);
-}
-
-template <int dim>
 shared_ptr<Material> Translation<dim>::getMaterial(const typename Translation<dim>::DVec &p) const {
     return this->hasChild() ? this->_child->getMaterial(p-translation) : shared_ptr<Material>();
 }

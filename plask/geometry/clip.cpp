@@ -7,11 +7,6 @@
 namespace plask {
 
 template <int dim>
-typename Clip<dim>::Box Clip<dim>::getBoundingBox() const {
-    return getChild()->getBoundingBox().intersection(clipBox);
-}
-
-template <int dim>
 shared_ptr<Material> Clip<dim>::getMaterial(const typename Clip<dim>::DVec &p) const {
     return clipBox.contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
 }

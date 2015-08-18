@@ -43,8 +43,6 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
     /// 2D or 3D axis number
     typename Primitive<dim>::Direction flipDir;
 
-    virtual Box getBoundingBox() const override;
-
     /**
      * Get fliped version of @p v.
      * @param v vector

@@ -14,10 +14,6 @@ bool Revolution::contains(const GeometryObjectD< 3 >::DVec& p) const {
     return getChild()->intersects(childBox(area));
 }*/
 
-Revolution::Box Revolution::getBoundingBox() const {
-    return parentBox(getChild()->getBoundingBox());
-}
-
 shared_ptr<Material> Revolution::getMaterial(const DVec& p) const {
     return getChild()->getMaterial(childVec(p));
 }

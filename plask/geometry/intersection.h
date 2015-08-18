@@ -58,8 +58,6 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
     explicit Intersection(GeometryObjectD<dim>& child, shared_ptr< GeometryObjectD<dim> > clipShape = shared_ptr< GeometryObjectD<dim> >())
         : GeometryObjectTransform<dim>(child), envelope(clipShape) {}
 
-    virtual Box getBoundingBox() const override;
-
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     virtual bool contains(const DVec& p) const override;

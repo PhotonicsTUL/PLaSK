@@ -21,10 +21,6 @@ bool Extrusion::contains(const DVec& p) const {
     return canIntersect(area) && getChild()->intersects(childBox(area));
 }*/
 
-Extrusion::Box Extrusion::getBoundingBox() const {
-    return parentBox(getChild()->getBoundingBox());
-}
-
 shared_ptr<Material> Extrusion::getMaterial(const DVec& p) const {
     return canBeInside(p) ? getChild()->getMaterial(childVec(p)) : shared_ptr<Material>();
 }

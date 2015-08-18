@@ -173,6 +173,12 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      */
     virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const = 0;
 
+    Box getBoundingBox() const override {
+        return this->hasChild() ?
+                    this->fromChildCoords(this->_child->getBoundingBox()) :
+                    Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
+    }
+
     void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
         if (predicate(*this)) {
             dest.push_back(this->getBoundingBox());
@@ -278,8 +284,6 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
      * @return constructed translation
      */
     static shared_ptr<Translation<dim>> compress(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);
-
-    virtual Box getBoundingBox() const override;
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 

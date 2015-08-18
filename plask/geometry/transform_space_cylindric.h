@@ -31,8 +31,6 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual Box getBoundingBox() const override;
-
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
