@@ -309,7 +309,7 @@ void Lattice::refillContainer()
             }
             int dx = hi_y.c0 - low_y.c0;
             int dy = hi_y.c1 - low_y.c1;  //dy > 0
-            for (int y = low_y.c1/*+1*/; y < hi_y.c1; ++y) {
+            for (int y = low_y.c1+1; y < hi_y.c1; ++y) {
                 // x = l/m + low_y.c0
                 int l = dx * (y - low_y.c1);
                 int x = l / dy + low_y.c0;
