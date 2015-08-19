@@ -52,7 +52,8 @@ void ExpansionPW2D::init()
         nM = size_t(round(SOLVER->oversampling * nN));      // N = 3  nN = 5  refine = 4  M = 20
         M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
-        xmesh = RegularAxis(left-dx, right-dx-L/M, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        xmesh = make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                                         left-dx, right-dx-L/M, M);      
     } else {
         L = 2 * right;
         N = SOLVER->getSize() + 1;
@@ -61,11 +62,12 @@ void ExpansionPW2D::init()
         M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
             double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
-            xmesh = RegularAxis(dx, right - dx, M);         // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+            xmesh = make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                                             dx, right - dx, M);         
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
             double dx = 0.5 * L * (refine-1) / (refine*nNa);
-            xmesh = RegularAxis(-dx, right+dx, M);
+            xmesh = make_shared<RegularAxis>(-dx, right+dx, M);
         }
     }
 
@@ -93,16 +95,16 @@ void ExpansionPW2D::init()
         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         if (symmetric()) pil = 0;
-        else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
-        pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
+        else pil = std::lower_bound(xmesh->begin(), xmesh->end(), pl) - xmesh->begin();
+        pir = std::lower_bound(xmesh->begin(), xmesh->end(), pr) - xmesh->begin();
         for (size_t i = 0; i != nM; ++i) {
             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
                 dcomplex sy = 1.;
                 if (j < pil) {
-                    double h = (pl - xmesh[j]) / SOLVER->pml.size;
+                    double h = (pl - xmesh->at(j)) / SOLVER->pml.size;
                     sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
                 } else if (j > pir) {
-                    double h = (xmesh[j] - pr) / SOLVER->pml.size;
+                    double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
                     sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
                 }
                 work[i] += Tensor2<dcomplex>(sy, 1./sy);
@@ -151,7 +153,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    const OrderedAxis& axis1 = SOLVER->getLayerPoints(l);
+    auto axis1 = SOLVER->getLayerPoints(l);
 
     size_t refine = SOLVER->refine;
     if (refine == 0) refine = 1;
@@ -163,7 +165,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points)", l, refine * nM);
     #endif
 
-    auto mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(xmesh), make_shared<OrderedAxis>(axis1), RectangularMesh<2>::ORDER_01);
+    auto mesh = make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -173,12 +175,12 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     double factor = 1. / refine;
-    double maty = axis1[0]; // at each point along any vertical axis material is the same
+    double maty = axis1->at(0); // at each point along any vertical axis material is the same
     double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
     Tensor3<dcomplex> refl, refr;
     if (!periodic) {
-        double Tl = 0.; for (size_t v = pil * axis1.size(), end = (pil+1) * axis1.size(); v != end; ++v) Tl += temperature[v]; Tl /= axis1.size();
-        double Tr = 0.; for (size_t v = pir * axis1.size(), end = (pir+1) * axis1.size(); v != end; ++v) Tr += temperature[v]; Tr /= axis1.size();
+        double Tl = 0.; for (size_t v = pil * axis1->size(), end = (pil+1) * axis1->size(); v != end; ++v) Tl += temperature[v]; Tl /= axis1->size();
+        double Tr = 0.; for (size_t v = pir * axis1->size(), end = (pir+1) * axis1->size(); v != end; ++v) Tr += temperature[v]; Tr /= axis1->size();
         refl = geometry->getMaterial(vec(pl,maty))->NR(lambda, Tl).sqr();
         refr = geometry->getMaterial(vec(pr,maty))->NR(lambda, Tr).sqr();
     }
@@ -196,22 +198,22 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     // Average material parameters
     for (size_t i = 0; i != nM; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-            auto material = geometry->getMaterial(vec(xmesh[j],maty));
-            double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
+            auto material = geometry->getMaterial(vec(xmesh->at(j),maty));
+            double T = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) T += temperature[v]; T /= axis1->size();
             Tensor3<dcomplex> nr = material->NR(lambda, T);
             if (nr.c01 != 0.) {
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
             if (gain_connected) {
-                auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
+                auto roles = geometry->getRolesAt(vec(xmesh->at(j),maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     if (!gain_computed) {
                         gain = SOLVER->inGain(mesh, lambda);
                         gain_computed = true;
                     }
-                    double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
-                    double ni = lambda * g/axis1.size() * (0.25e-7/M_PI);
+                    double g = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) g += gain[v];
+                    double ni = lambda * g/axis1->size() * (0.25e-7/M_PI);
                     nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
                 }
             }
@@ -220,11 +222,11 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
             // Add PMLs
             if (!periodic) {
                 if (j < pil) {
-                    double h = (pl - xmesh[j]) / SOLVER->pml.size;
+                    double h = (pl - xmesh->at(j)) / SOLVER->pml.size;
                     dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
                     nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
                 } else if (j > pir) {
-                    double h = (xmesh[j] - pr) / SOLVER->pml.size;
+                    double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
                     dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
                     nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
                 }

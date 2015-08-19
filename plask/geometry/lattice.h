@@ -145,116 +145,108 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(ArrangeContainer<3>)
 /// Lattice container that arranges its children in two-dimensional lattice.
 struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
-     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-     typedef typename GeometryObjectTransform<3>::DVec DVec;
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    typedef typename GeometryObjectTransform<3>::DVec DVec;
 
-     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-     typedef typename GeometryObjectTransform<3>::Box Box;
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename GeometryObjectTransform<3>::Box Box;
 
-     /// Type of this child.
-     typedef typename GeometryObjectTransform<3>::ChildType ChildType;
+    /// Type of this child.
+    typedef typename GeometryObjectTransform<3>::ChildType ChildType;
 
-     using GeometryObjectTransform<3>::getChild;
+    using GeometryObjectTransform<3>::getChild;
 
-    static constexpr const char* NAME = "lattice";
+   static constexpr const char* NAME = "lattice";
 
-     /// Basis vectors
-     DVec vec0, vec1;
+    /// Basis vectors
+    DVec vec0, vec1;
 
-     shared_ptr<TranslationContainer<3>> container;
+    shared_ptr<TranslationContainer<3>> container;
 
-     /**
-      * Vector of closed polygons, each consist of number of successive verticles, one side is between last and first vertex.
-      * These polygons are xored. Sides must not cross each other.
-      */
-     std::vector< std::vector<Vec<2, int>> > segments;  //TODO checking somewhere if sides do not cros each other
+    /**
+     * Vector of closed polygons, each consist of number of successive verticles, one side is between last and first vertex.
+     * These polygons are xored. Sides must not cross each other.
+     */
+    std::vector< std::vector<Vec<2, int>> > segments;  //TODO checking somewhere if sides do not cros each other
 
-     std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
-     /**
-      * Create a lattice object.
-      * @param child Object to repeat.
-      * @param vec0, vec1 basis vectors
-      */
-     Lattice(const shared_ptr<ChildType>& child = shared_ptr<ChildType>(), const DVec& vec0 = Primitive<3>::ZERO_VEC, const DVec& vec1 = Primitive<3>::ZERO_VEC)
-         : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1), container(make_shared<TranslationContainer<3>>()) {}
+    /**
+     * Create a lattice object.
+     * @param child Object to repeat.
+     * @param vec0, vec1 basis vectors
+     */
+    Lattice(const shared_ptr<ChildType>& child = shared_ptr<ChildType>(), const DVec& vec0 = Primitive<3>::ZERO_VEC, const DVec& vec1 = Primitive<3>::ZERO_VEC)
+        : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1), container(make_shared<TranslationContainer<3>>()) {}
 
-     shared_ptr<Material> getMaterial(const DVec& p) const override {
-         return container->getMaterial(p);
-     }
+    shared_ptr<Material> getMaterial(const DVec& p) const override {
+        return container->getMaterial(p);
+    }
 
-     bool contains(const DVec& p) const override {
-         return container->contains(p);
-     }
+    bool contains(const DVec& p) const override {
+        return container->contains(p);
+    }
 
-     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
-         return container->ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
-     }
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
+        return container->ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
+    }
 
-     //some methods must be overwrite to invalidate cache:
-     void onChildChanged(const GeometryObject::Event& evt) override {
-         //if (evt.isResize()) invalidateCache();
-         container->onChildChanged(evt);    //force early cache rebuilding
-         GeometryObjectTransform<3>::onChildChanged(evt);
-     }
+    //some methods must be overwrite to invalidate cache:
+    void onChildChanged(const GeometryObject::Event& evt) override {
+        //if (evt.isResize()) invalidateCache();
+        container->onChildChanged(evt);    //force early cache rebuilding
+        GeometryObjectTransform<3>::onChildChanged(evt);
+    }
 
-     /*void rebuildCache() {
-         //TODO
-     }*/
+    /*void rebuildCache() {
+        //TODO
+    }*/
 
-     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
-     void writeXMLChildren(XMLWriter::Element& dest_xml_object, WriteXMLCallback& write_cb, const AxisNames &axes) const override;
+    void writeXMLChildren(XMLWriter::Element& dest_xml_object, WriteXMLCallback& write_cb, const AxisNames &axes) const override;
 
-     Box getBoundingBox() const override { return container->getBoundingBox(); }
+    Box getBoundingBox() const override { return container->getBoundingBox(); }
 
-     Box getRealBoundingBox() const override { return container->getRealBoundingBox(); }
+    Box getRealBoundingBox() const override { return container->getRealBoundingBox(); }
 
-     //using GeometryObjectTransform<3>::getPathsTo;
+    //using GeometryObjectTransform<3>::getPathsTo;
 
-     //Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    //Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-     void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override {
-         return container->getBoundingBoxesToVec(predicate, dest, path);
-     }
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-     void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override {
-         return container->getObjectsToVec(predicate, dest, path);    //TODO skip container ??
-     }
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-     void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override {
-         return container->getPositionsToVec(predicate, dest, path);    //TODO skip container ??
-     }
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
-     GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override {
-         return container->getPathsTo(el, path);    //TODO skip container in paths
-     }
+    GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-     std::size_t getChildrenCount() const override { return container->getChildrenCount(); }
+    std::size_t getChildrenCount() const override { return container->getChildrenCount(); }
 
-     shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override { return container->getChildNo(child_no); }
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override { return container->getChildNo(child_no); }
 
-     std::size_t getRealChildrenCount() const override { return GeometryObjectTransform<3>::getRealChildrenCount(); }
+    std::size_t getRealChildrenCount() const override { return GeometryObjectTransform<3>::getRealChildrenCount(); }
 
-     shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override { return GeometryObjectTransform<3>::getRealChildNo(child_no); }
+    shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override { return GeometryObjectTransform<3>::getRealChildNo(child_no); }
 
-     shared_ptr<Lattice> copyShallow() const {
-        auto result = make_shared<Lattice>(*this);
-        result->container = make_shared<TranslationContainer<3>>(*result->container);
-        return result;
-     }
+    shared_ptr<Lattice> copyShallow() const {
+       auto result = make_shared<Lattice>(*this);
+       result->container = make_shared<TranslationContainer<3>>(*result->container);
+       return result;
+    }
 
-     shared_ptr<GeometryObjectTransform<3>> shallowCopy() const override { return copyShallow(); }
+    shared_ptr<GeometryObjectTransform<3>> shallowCopy() const override { return copyShallow(); }
 
-     //probably unused
-     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }
+    //probably unused
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }
 
-     void setSegments(std::vector< std::vector<Vec<2, int>> > new_segments);
+    void setSegments(std::vector< std::vector<Vec<2, int>> > new_segments);
 
-     //protected:
+    //protected:
 
-     /// Use segments, vec0, vec1 to refill container.
-     void refillContainer();
+    /// Use segments, vec0, vec1 to refill container.
+    void refillContainer();
 
 };
 

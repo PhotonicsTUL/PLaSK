@@ -265,7 +265,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    const OrderedAxis& axis2 = SOLVER->getLayerPoints(l);
+    auto axis2 = SOLVER->getLayerPoints(l);
 
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
@@ -284,9 +284,9 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     auto mesh = make_shared<RectangularMesh<3>>
                            (make_shared<RegularAxis>(long_mesh),
                             make_shared<RegularAxis>(tran_mesh),
-                            make_shared<OrderedAxis>(axis2),
+                            axis2,
                             RectangularMesh<3>::ORDER_102);
-    double matv = axis2[0]; // at each point along any vertical axis material is the same
+    double matv = axis2->at(0); // at each point along any vertical axis material is the same
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -328,8 +328,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
                     auto material = geometry->getMaterial(vec(long_mesh[l], tran_mesh[t], matv));
                     double T = 0.; // average temperature in all vertical points
-                    for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v != end; ++v) T += temperature[v];
-                    T /= axis2.size();
+                    for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v != end; ++v) T += temperature[v];
+                    T /= axis2->size();
                     cell[j] = material->NR(lambda, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
@@ -342,8 +342,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                                 gain_computed = true;
                             }
                             double g = 0.; // average gain in all vertical points
-                            for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v < end; ++v) g += gain[v];
-                            double ni = lambda * g/axis2.size() * (0.25e-7/M_PI);
+                            for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v < end; ++v) g += gain[v];
+                            double ni = lambda * g/axis2->size() * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
                             cell[j].c22.imag(ni);

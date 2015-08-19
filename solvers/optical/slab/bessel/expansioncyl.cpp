@@ -62,7 +62,8 @@ void ExpansionBessel::init()
     double expected = cyl_bessel_j(m+1, a); expected = 0.5 * expected*expected;
     double err = 2. * SOLVER->integral_error;
     bool can_refine = true;
-    //TODO this loop can be more effective if done by hand...
+    
+    //TODO maybe this loop can be more effective if done by hand...
     while (abs(1. - total/expected) > SOLVER->integral_error && can_refine) {
         err *= 0.5;
         can_refine = false;
@@ -73,19 +74,20 @@ void ExpansionBessel::init()
             if (segments[i].n < 8) can_refine = true;
         }
     }
-//     for (size_t seg = 0; seg < nseg; ++seg) {
-//         raxis.appendPoint(segments[seg].Z);
-//         const unsigned nj = (2 << nstart) - 1;
-//         for (unsigned j = 1; j < nj; ++j) {
-//             double x = patterson_points[j];
-//             raxis.appendPoint(segments[seg].Z - segments[seg].D * x);
-//             raxis.appendPoint(segments[seg].Z + segments[seg].D * x);
-//         }
-//     }
+    
+    raxis.reset(new UnorderedAxis);
+    for (size_t i = 0; i < nseg; ++i) {
+        const unsigned nj = 1 << segments[i].n;
+        for (unsigned j = 1; j < nj; ++j) {
+            double x = patterson_points[j];
+            raxis->appendPoint(segments[i].Z - segments[i].D * x);
+            raxis->appendPoint(segments[i].Z + segments[i].D * x);
+        }
+    }
 
     // Allocate memory for integrals
     size_t nlayers = lcount();
-    integrals.resize(nlayers);
+    layers_integrals.resize(nlayers);
     diagonals.assign(nlayers, false);
     
     initialized = true;
@@ -95,39 +97,12 @@ void ExpansionBessel::init()
 void ExpansionBessel::reset()
 {
     segments.clear();
-    integrals.clear();
+    layers_integrals.clear();
     factors.clear();
     initialized = false;
+    raxis.reset();
 }
 
-
-// void ExpansionBessel::getPattersonEpsilon(size_t layer, cvector eps, double left, double right, unsigned start, unsigned stop,
-//                                           const shared_ptr<OrderedAxis>& zaxis)
-// {
-//     double D = (right - left) / 2., Z = (left + right) / 2.;
-//     unsigned mask = (256>>start) - (256>>stop);
-//     unsigned dj = (start==0)? 1 : 0;
-//     unsigned len = (2<<stop) - (2<<start) + dj;
-//     unsigned jz = len / 2;
-//     std::vector<double> points(len);
-//     if (start == 0) points[jz] = Z;
-//     for (unsigned i = 0, j = 0; i < 256; ++i) {
-//         if (i & mask) {
-//             double x = patterson_points[i];
-//             points[jz+j+dj] = Z + D*x;
-//             points[jz-j-1] = Z - D*x;
-//             ++j;
-//         }
-//     }
-//     auto raxis = make_shared<OrderedAxis>(std::move(points));
-//     auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis);
-//     
-// }
-
-
-cvector ExpansionBessel::getEpsilon(size_t layer, const OrderedAxis& zaxis, const UnorderedAxis& raxis)
-{
-}
 
 void ExpansionBessel::layerIntegrals(size_t layer)
 {
@@ -135,7 +110,7 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    const OrderedAxis& zaxis = SOLVER->getLayerPoints(layer);
+    auto zaxis = SOLVER->getLayerPoints(layer);
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
         SOLVER->writelog(LOG_DEBUG, "Computing integrals for layer %d in thread %d", layer, omp_get_thread_num());
@@ -143,70 +118,31 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         SOLVER->writelog(LOG_DEBUG, "Computing integrals for layer %d", l);
     #endif
 
-    size_t nseg = rbounds->size() - 1;
+    size_t nseg = rbounds->size() - 1, nr = raxis->size(), N = SOLVER->size;
 
-    // 1. Dzielimy według granic materiałów
-    // 2. Każdą z podsekcji dzielimy na początkową ilość elementów (potęgi 2, w miarę proporcjonalnie do szerokości)
-    // 3. Robimy początkową listę punktów, pobieramy materiały i zapamiętujemy
-    // 4. Liczymy całki na każdym przedziale osobno
-    // 5. Błąd szacujemy dla całości na podstawie całki JJ (wiemy, jaka powinna być)
-    // 6. Teraz najprościej by było zagęścić każdy przedział, ale lepiej jakoś oszacować błąd na każdym przedziale by zagęścić ten co trzeba
+    auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
 
-//     std::vector<std::deque<dcomplex>> epsilons(nseg);   // epsilons got from the structure
-//     std::vector<size_t> ns(nseg, 2*nstart+1);           // sizes for current retrieval of temperature and gain
-// 
-//     raxis.reserve(nseg * (2*nstart+1));
-//     
-//     // Compute initial integral (of order 3 i.e. in 15 points)
-// 
-//     auto eps = getEpsilon(layer, zaxis, raxis);
-//     for (size_t seg = 0, delta = 0; seg < nseg; ++seg, delta += epsilons[seg].size()) {
-// //         epsilons[seg].reserve(2*nstart+1);
-// //         epsilons[seg]
-//     }
+    double lambda = real(2e3*M_PI/SOLVER->k0);
+
+    LazyData<double> gain;
+    auto temperature = SOLVER->inTemperature(mesh);
+    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
+
+    double matz = zaxis->at(0); // at each point along any vertical axis material is the same
+
+    Integrals& integrals = layers_integrals[layer];
+    integrals.reset(N);
     
-        
-// //     auto mesh = make_shared<RectangularMesh<2>>(rmesh, make_shared<OrderedAxis>(axis1), RectangularMesh<2>::ORDER_01);
-// 
-//     double lambda = real(2e3*M_PI/SOLVER->k0);
-// 
-//     auto temperature = SOLVER->inTemperature(mesh);
-// 
-//     LazyData<double> gain;
-//     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
-// 
-//     double maty = axis1[0]; // at each point along any vertical axis material is the same
-// 
-//     // Make space for the result
-//     DataVector<Tensor3<dcomplex>> work;
-//     if (nN != nM) {
-//         coeffs[l].reset(nN);
-//         work.reset(nM, Tensor3<dcomplex>(0.));
-//     } else {
-//         coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
-//         work = coeffs[l];
-//     }
-// 
-//     // Average material parameters
-//     for (size_t i = 0; i != nM; ++i) {
-//         auto material = geometry->getMaterial(vec(rmesh[j],maty));
-//         double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
-//         dcomplex nr = material->Nr(lambda, T);
-//         if (gain_connected) {
-//             auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
-//             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-//                 if (!gain_computed) {
-//                     gain = SOLVER->inGain(mesh, lambda);
-//                     gain_computed = true;
-//                 }
-//                 double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
-//                 double ni = lambda * g/axis1.size() * (0.25e-7/M_PI);
-//                 nr.imag(ni);
-//             }
-//         }
-//         nr = nr*nr;
-//     }
-// 
+    // Compute integrals
+    for (size_t i = 0, s = 0, j = 1, nj = 2<<segments[0].n; i != nr; ++i, ++j) {
+        if (j == nj) {
+            j = 1;
+            nj = 2 << segments[++s].n;
+        }
+        double r = raxis->at(i);
+        double w = patterson_weights[segments[s].n][j/2] * segments[s].D;
+    }
+    
 //     // Check if the layer is uniform
 //     diagonals[l] = true;
 //     for (size_t i = 1; i != N; ++i) {

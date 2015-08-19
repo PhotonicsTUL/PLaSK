@@ -457,12 +457,11 @@ class GNode(object):
             self._append_error(res, '<{}> requires an item'.format(self.tag_name(False)))
 
     def create_info(self, res, names):
-        '''
+        """
         :param List(Info) res: place to append info objects
         :param OrderedDict names: names of objects which are before this in tree
-        '''
+        """
         pass
-
 
 class GNFakeRoot(GNode):
 

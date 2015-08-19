@@ -13,6 +13,7 @@
 import operator
 
 import plask
+from plask._plot_geometry import plane_to_axes
 
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
@@ -300,9 +301,11 @@ class GeometryController(Controller):
     def show_selection(self):
         to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
             self.manager)
-        bboxes = self.plotted_object.get_object_bboxes(to_select)
         self.geometry_view.clean_selectors()
-        for b in bboxes: self.geometry_view.select_bbox(b)
+        bboxes = self.plotted_object.get_object_bboxes(to_select)
+        if not bboxes: return
+        axes = plane_to_axes(self.geometry_view.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
+        for b in bboxes: self.geometry_view.select_bbox(b, axes)
         self.geometry_view.canvas.draw()
 
     def set_current_index(self, new_index):

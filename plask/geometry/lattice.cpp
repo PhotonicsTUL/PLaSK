@@ -270,6 +270,38 @@ struct SegmentsIterator {
 };
 
 
+
+void Lattice::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(getBoundingBox());
+        return;
+    }
+    return container->getBoundingBoxesToVec(predicate, dest, path);
+}
+
+void Lattice::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(this->shared_from_this());
+        return;
+    }
+    return container->getObjectsToVec(predicate, dest, path);    //TODO skip container ??
+}
+
+void Lattice::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(Primitive<3>::ZERO_VEC);
+        return;
+    }
+    return container->getPositionsToVec(predicate, dest, path);    //TODO skip container ??
+}
+
+GeometryObject::Subtree Lattice::getPathsTo(const GeometryObject& el, const PathHints* path) const {
+    if (this == &el) return this->shared_from_this();
+    return container->getPathsTo(el, path);    //TODO skip container in paths
+}
+
+
+
 /*
  * Find all points lied on sides and inside of the poligon described by segments.
  * @param segments in any order, without intersections (boost geometry can produce this)

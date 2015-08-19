@@ -49,7 +49,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     /// Compute itegrals for RE and RH matrices
     void computeIntegrals() {
         size_t nlayers = lcount();
-        assert(integrals.size() == nlayers);
+        assert(layers_integrals.size() == nlayers);
         #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l)
             layerIntegrals(l);
@@ -90,7 +90,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     std::vector<Segment> segments;
     
     /// Axis for obtaining material parameters
-    UnorderedAxis raxis;
+    shared_ptr<UnorderedAxis> raxis;
     
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integral {
@@ -100,6 +100,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         dcomplex dep;   ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
         dcomplex em;    ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
         dcomplex ep;    ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
+        Integral(): iem(0.), iep(0.), dem(0.), dep(0.), em(0.), ep(0.) {}
     };
     
     class Integrals {
@@ -127,16 +128,11 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     };
 
     /// Computed integrals
-    std::vector<Integrals> integrals;
+    std::vector<Integrals> layers_integrals;
     
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
 
-    /**
-     * Obtain epsilons for given layer
-     */
-    cvector getEpsilon(size_t layer, const OrderedAxis& zaxis, const UnorderedAxis& raxis);
-    
     /**
      * Compute itegrals for RE and RH matrices
      * \param l layer number

@@ -223,20 +223,19 @@ class PlotWidget(QtGui.QGroupBox):
             artist.remove()
         self.selectors = []
 
-    def select(self, selector_patch):
+    def add_patch(self, selector_patch):
         self.axes.add_patch(selector_patch)
         self.selectors.append(selector_patch)
 
-    def select_bbox(self, bbox):
-        axes = plane_to_axes(self.plane, 2 if isinstance(bbox, plask.geometry.Box2D) else 3)
-        rect =  matplotlib.patches.Rectangle(
+    def select_bbox(self, bbox, axes):
+        rect = matplotlib.patches.Rectangle(
             (bbox.lower[axes[0]], bbox.lower[axes[1]]),
              bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
             ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, #linestyle='dashed',
             fill=False
             #fc=(0.4, 0.1, 0.8, 0.0),
         )
-        self.select(rect)
+        self.add_patch(rect)
 
     def zoom_bbox(self, box, margin=0.1):
         if self.toolbar._views.empty():

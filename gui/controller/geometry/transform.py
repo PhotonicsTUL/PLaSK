@@ -146,8 +146,8 @@ class GNLatticeController(GNObjectController):
         self.construct_group('Lattice Settings')
         self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments')
         self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
-                                 u'Each polygon is formed by a two or more vertices, separated by ``;`` characters.\n'
-                                 u'Each vertex consists with two, space-separated integers.')
+                                 u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
+                                 u'Each vertex consists with two space-separated integers.')
         self.construct_group('Basis vectors')
         self.v0 = self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec))
         self.v1 = self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec))

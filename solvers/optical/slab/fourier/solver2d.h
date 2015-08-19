@@ -198,7 +198,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     Expansion& getExpansion() override { return expansion; }
 
-    RegularAxis getMesh() const { return expansion.xmesh; }
+    RegularAxis getMesh() const { return *expansion.xmesh; }
 
   private:
 

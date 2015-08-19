@@ -41,10 +41,22 @@ using namespace plask::solvers::slab;
     ":rtype: PML"
 
 template <typename SolverT>
-static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) { return self.getStack(); }
+static py::list SlabSolver_getStack(const SolverT& self) {
+    py::list result;
+    for (auto i: self.getStack()) {
+        result.append(i);
+    }
+    return result;
+}
 
 template <typename SolverT>
-static const std::vector<OrderedAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
+static py::list SlabSolver_getLayerSets(const SolverT& self) {
+    py::list result;
+    for (auto i: self.getLayersPoints()) {
+        result.append(i);
+    }
+    return result;
+}
 
 struct PythonComponentConventer {
 
@@ -812,8 +824,8 @@ inline void export_base(Class solver) {
                "Args:\n"
                "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
-    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers.");
-    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
+    solver.add_property("stack", &SlabSolver_getStack<Solver>, "Stack of distinct layers.");
+    solver.add_property("layer_sets", &SlabSolver_getLayerSets<Solver>, "Vertical positions of layers in each layer set.");
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
                         "If this property is ``True``, similar layers are grouped for efficiency.");

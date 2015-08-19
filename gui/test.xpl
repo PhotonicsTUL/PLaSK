@@ -99,6 +99,14 @@
       <cuboid material="GaAs" dlong="1" dtran="100" dvert="100"/>
     </align>
   </cartesian3d>
+  <cartesian3d>
+    <stack>
+      <lattice along="0" atran="1.0" avert="0" blong="0" btran="0.5" bvert="{sqrt(3)/2}">
+        <segments>0 -2; 2 -2; 2 0; 0 2; -2 2; -2 0 ^  0 -1; 1 -1; 0 1; -1 1</segments>
+        <sphere material="GaAs" radius="0.35"/>
+      </lattice>
+    </stack>
+  </cartesian3d>
 </geometry>
 
 <grids>

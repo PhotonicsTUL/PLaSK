@@ -138,7 +138,7 @@ void SlabSolver<GeometryT>::setupLayers()
                     }
                 }
                 if (!unique) {
-                    lverts[i].addPoint(v);
+                    lverts[i]->addPoint(v);
                     stack.push_back(i);
                     break;
                 }
@@ -147,7 +147,7 @@ void SlabSolver<GeometryT>::setupLayers()
         if (unique) {
             layers.emplace_back(std::move(layer));
             stack.push_back(lverts.size());
-            lverts.emplace_back<std::initializer_list<double>>({v});
+            lverts.emplace_back(make_shared<OrderedAxis,std::initializer_list<double>>({v}));
             lgained.push_back(gain);
         }
     }
@@ -208,7 +208,7 @@ void SlabSolver<Geometry3D>::setupLayers()
                     }
                 }
                 if (!unique) {
-                    lverts[i].addPoint(v);
+                    lverts[i]->addPoint(v);
                     stack.push_back(i);
                     break;
                 }
@@ -217,7 +217,7 @@ void SlabSolver<Geometry3D>::setupLayers()
         if (unique) {
             layers.emplace_back(std::move(layer));
             stack.push_back(lverts.size());
-            lverts.emplace_back<std::initializer_list<double>>({v});
+            lverts.emplace_back(make_shared<OrderedAxis,std::initializer_list<double>>({v}));
             lgained.push_back(gain);
         }
     }

@@ -13,7 +13,7 @@ struct FourierSolver2D;
 
 struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
-    RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
+    shared_ptr<RegularAxis> xmesh;      ///< Horizontal axis for structure sampling
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
