@@ -66,13 +66,25 @@ void lattice_set_segments(py::object self, const py::object& value) {
             int b = *coord_it;
             ++coord_it;
             if (coord_it != coord_end_it)
-                throw IndexError("too many elements in lattice segment's point (exactly 2 coordinates are required)");;
+                throw IndexError("too many elements in lattice segment boundary patch point (exactly 2 coordinates are required)");;
             segment.emplace_back(a, b);
         }
         segments.push_back(std::move(segment));
     }
     Lattice& l = py::extract<Lattice&>(self);
     l.setSegments(std::move(segments));
+}
+
+py::list lattice_get_segments(const Lattice& self) {
+    py::list result;
+    for (auto segment: self.segments) {
+        py::list psegment;
+        for (auto point: segment) {
+            psegment.append(py::make_tuple(point[0], point[1]));
+        }
+        result.append(psegment);
+    }
+    return result;
 }
 
 void register_geometry_container_lattice()
@@ -85,7 +97,10 @@ void register_geometry_container_lattice()
          py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
          ((py::arg("item"), py::arg("vec0") = plask::Primitive<3>::ZERO_VEC, py::arg("vec1") = plask::Primitive<3>::ZERO_VEC)))
         .def("__len__", &Lattice::getChildrenCount)
-        .def("set_segments", lattice_set_segments)  //TODO get_segments - format? tuple of tuple of int pairs(?)
+        .def("set_segments", lattice_set_segments, "Set polygons specifying lattice boundaries.")  //TODO get_segments - format? tuple of tuple of int pairs(?)
+        .add_property("segments", lattice_get_segments, "List of polygons limiting lattice segments.")
+        .def_readonly("vec0", &Lattice::vec0, "First lattice vector.")  //TODO allow to set it 
+        .def_readonly("vec1", &Lattice::vec1, "Second lattice vector.")  //TODO allow to set it 
         //.def("__getitem__", &GeometryObject__getitem__)   //is in GeometryObject
         ;
 }

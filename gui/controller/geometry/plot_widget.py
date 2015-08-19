@@ -265,7 +265,7 @@ class PlotWidget(QtGui.QGroupBox):
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
             margin = 0.1 if set_limits else None
             plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, margin=margin, zorder=1,
-                                plane=plane, lw=1.5, picker=self.picker)
+                                plane=plane, lw=1.5, picker=self.picker, guidelines=(0.25, 0.75, 0.50, 0.9))
             for ax in self.axes.xaxis, self.axes.yaxis:
                 ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))

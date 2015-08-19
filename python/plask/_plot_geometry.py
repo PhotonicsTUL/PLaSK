@@ -224,7 +224,8 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None):
+    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
+                 guidelines=None):
         """
         :param plane: plane to draw (important in 3D)
         :param dest: mpl axis where artist should be appended
@@ -233,6 +234,7 @@ class DrawEnviroment(object):
         :param lw: line width
         :param alpha: opacity of the drawn environment
         :param zorder: artists z order
+        :param guidelines: color for guidelines
         """
         super(DrawEnviroment, self).__init__()
         self.dest = dest
@@ -243,6 +245,7 @@ class DrawEnviroment(object):
         self.axes = plane
         self.zorder = zorder
         self.picker = picker
+        self.guidelines = guidelines
 
         if get_color is None:
             self.get_color = _ColorFromDict(DEFAULT_COLORS, dest)
@@ -251,7 +254,7 @@ class DrawEnviroment(object):
         else:
             self.get_color = get_color
 
-    def append(self, artist, clipbox, geometry_object, plask_real_path = None):
+    def append(self, artist, clipbox, geometry_object, plask_real_path=None):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
@@ -268,6 +271,25 @@ class DrawEnviroment(object):
         artist.set_alpha(self.alpha)
         artist.set_picker(self.picker)
         artist.plask_real_path = plask_real_path
+        self.dest.add_patch(artist)
+        if clipbox is not None:
+            artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
+            #artist.set_clip_box(clipbox)
+            #artist.set_clip_on(True)
+            #artist.set_clip_path(clipbox)
+        artist.set_zorder(self.zorder)
+
+    def append_guideline(self, artist, clipbox):
+        """
+        Configure and append artist to destination axis object.
+        :param artist: artist to append
+        :param matplotlib.transforms.BboxBase clipbox: clipping box for artist, optional
+        :param geometry_object: plask's geometry object which is represented by the artist
+        """
+        artist.set_fill(False)
+        artist.set_linewidth(self.lw/2)
+        artist.set_ec(self.guidelines)
+        artist.set_alpha(self.alpha)
         self.dest.add_patch(artist)
         if clipbox is not None:
             artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
@@ -334,8 +356,6 @@ def _draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
         for leaf_bbox in geometry_object.get_leafs_bboxes():
             _draw_bbox(env, None, leaf_bbox, transform, clipbox, plask_real_path)
 
-
-
 _geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
 
 
@@ -374,6 +394,22 @@ _geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
 _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 
 
+def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
+    for index, child in enumerate(geometry_object):
+        _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
+    if env.guidelines is not None:
+        v0, v1 = geometry_object.vec0, geometry_object.vec1
+        for segment in geometry_object.segments:
+            polygon = []
+            for a0, a1 in segment:
+                point = v0 * a0 + v1 * a1
+                polygon.append((point[env.axes[0]], point[env.axes[1]]))
+            env.append_guideline(
+                matplotlib.patches.Polygon(polygon, closed=True, transform=transform, ec=env.guidelines), clipbox)
+
+_geometry_drawers[plask.geometry.Lattice] = _draw_Lattice
+
+
 def _draw_Flipped(env, geometry_object, transform, clipbox, axis_nr, plask_real_path):
     if axis_nr == env.axes[0]:
         _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clipbox, plask_real_path)
@@ -381,6 +417,7 @@ def _draw_Flipped(env, geometry_object, transform, clipbox, axis_nr, plask_real_
         _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clipbox, plask_real_path)
     else:
         _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
+
 
 def _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path):
     _draw_Flipped(env, geometry_object.item, transform, clipbox, geometry_object.axis_nr, plask_real_path + [0])
@@ -483,7 +520,8 @@ def plane_to_axes(plane, dim):
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, set_limits=None, picker=None):
+                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, guidelines=None, picker=None,
+                  set_limits=None):
     """
     Plot specified geometry.
 
@@ -531,8 +569,11 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 range [0, 1]. Any other format accepted by set_facecolor()
                 method of matplotlib Artist should work as well.
 
-        alpha (float): Opacity of the drawn geomtry (1: fully opaque,
+        alpha (float): Opacity of the drawn geometry (1: fully opaque,
                 0: fully transparent)
+
+        guidelines (str or None): Color for drawing guidelines. If `None` then no
+                guidelines are plotted.
 
         picker (None|float|boolean|callable) matplotlib picker attribute
                 for all artists appended to plot (see matplotlib doc.).
@@ -574,7 +615,8 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     if zorder is None:
         zorder = 0.5 if fill else 2.0
 
-    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, alpha, zorder=zorder, picker=picker)
+    env = DrawEnviroment(ax, axes, fill, color, get_color, lw, alpha, zorder=zorder, picker=picker,
+                         guidelines=guidelines)
 
     hshift, vshift = (geometry.bbox.size[a] for a in ax)
     try:

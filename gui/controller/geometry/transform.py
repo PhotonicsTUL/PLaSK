@@ -139,7 +139,7 @@ class GNLatticeController(GNObjectController):
     def _on_point_set(self, index, value):
         def setter(n, v): n.vectors = n.vectors[0:index] + (v,) + n.vectors[index+1:]
         self._set_node_by_setter_undoable(setter, value, self.node.vectors[index],
-            'change {} basis vector of lattice'.format('first' if index == 0 else 'second')
+            'change {} lattice vector'.format('first' if index == 0 else 'second')
         )
 
     def construct_form(self):
@@ -147,8 +147,8 @@ class GNLatticeController(GNObjectController):
         self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments')
         self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
                                  u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
-                                 u'Each vertex consists with two space-separated integers.')
-        self.construct_group('Basis vectors')
+                                 u'Each vertex consists of two space-separated integers.')
+        self.construct_group('Lattice vectors')
         self.v0 = self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec))
         self.v1 = self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec))
         super(GNLatticeController, self).construct_form()
