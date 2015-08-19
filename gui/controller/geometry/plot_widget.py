@@ -192,6 +192,7 @@ class PlotWidget(QtGui.QGroupBox):
 
         self.picker = picker
         self.selectors = []
+        self.guidelines = {}
         self.controller = controller
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -223,19 +224,27 @@ class PlotWidget(QtGui.QGroupBox):
             artist.remove()
         self.selectors = []
 
-    def add_patch(self, selector_patch):
-        self.axes.add_patch(selector_patch)
-        self.selectors.append(selector_patch)
+    def add_selector(self, artist, clipbox=None):
+        self.axes.add_patch(artist)
+        if clipbox is not None:
+             artist.set_clip_box(clipbox)
+        self.selectors.append(artist)
 
-    def select_bbox(self, bbox, axes):
-        rect = matplotlib.patches.Rectangle(
-            (bbox.lower[axes[0]], bbox.lower[axes[1]]),
-             bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
-            ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, #linestyle='dashed',
-            fill=False
-            #fc=(0.4, 0.1, 0.8, 0.0),
-        )
-        self.add_patch(rect)
+    def select_object(self, root, selected):
+        self.clean_selectors()
+        bboxes = root.get_object_bboxes(selected)
+        if not bboxes: return
+        axes = plane_to_axes(self.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
+        for bbox in bboxes:
+            rect = matplotlib.patches.Rectangle(
+                (bbox.lower[axes[0]], bbox.lower[axes[1]]),
+                 bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
+                ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, fill=False)
+            self.add_selector(rect)
+            guidelines = self.guidelines.get(selected, ())
+            for guideline in guidelines:
+                self.add_selector(*guideline)
+        self.canvas.draw()
 
     def zoom_bbox(self, box, margin=0.1):
         if self.toolbar._views.empty():
@@ -264,8 +273,10 @@ class PlotWidget(QtGui.QGroupBox):
             self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
             margin = 0.1 if set_limits else None
-            plask.plot_geometry(axes=self.axes, geometry=to_plot, fill=True, margin=margin, zorder=1,
-                                plane=plane, lw=1.5, picker=self.picker, guidelines=(0.25, 0.75, 0.50, 0.9))
+            _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=to_plot,
+                                                     fill=True, margin=margin, zorder=1,
+                                                     plane=plane, lw=1.5, picker=self.picker,
+                                                     extra=dict(ec=(0.25, 0.5, 1.00, 0.9), lw=1.0))
             for ax in self.axes.xaxis, self.axes.yaxis:
                 ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))

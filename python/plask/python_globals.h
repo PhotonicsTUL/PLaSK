@@ -108,6 +108,11 @@ bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
     return a == b;
 }
 
+template <typename T>
+long __hash__(const shared_ptr<T>& a) {
+    return long(a.get());
+}
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 inline py::object pass_through(const py::object& o) { return o; }

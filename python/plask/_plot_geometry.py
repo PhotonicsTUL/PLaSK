@@ -225,7 +225,7 @@ class DrawEnviroment(object):
     """
 
     def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
-                 guidelines=None):
+                 extra=None):
         """
         :param plane: plane to draw (important in 3D)
         :param dest: mpl axis where artist should be appended
@@ -234,7 +234,7 @@ class DrawEnviroment(object):
         :param lw: line width
         :param alpha: opacity of the drawn environment
         :param zorder: artists z order
-        :param guidelines: color for guidelines
+        :param extra: flag indicating if extra_patches should be taken
         """
         super(DrawEnviroment, self).__init__()
         self.dest = dest
@@ -245,7 +245,8 @@ class DrawEnviroment(object):
         self.axes = plane
         self.zorder = zorder
         self.picker = picker
-        self.guidelines = guidelines
+        self.extra_patches = {}
+        self.extra = extra
 
         if get_color is None:
             self.get_color = _ColorFromDict(DEFAULT_COLORS, dest)
@@ -279,7 +280,7 @@ class DrawEnviroment(object):
             #artist.set_clip_path(clipbox)
         artist.set_zorder(self.zorder)
 
-    def append_guideline(self, artist, clipbox):
+    def append_extra(self, geometry_object, artist, clipbox):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
@@ -287,17 +288,13 @@ class DrawEnviroment(object):
         :param geometry_object: plask's geometry object which is represented by the artist
         """
         artist.set_fill(False)
-        artist.set_linewidth(self.lw/2)
-        artist.set_ec(self.guidelines)
-        artist.set_alpha(self.alpha)
-        self.dest.add_patch(artist)
+        for attr in self.extra:
+            getattr(artist, 'set_'+attr)(self.extra[attr])
         if clipbox is not None:
-            artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
-            #artist.set_clip_box(clipbox)
-            #artist.set_clip_on(True)
-            #artist.set_clip_path(clipbox)
-        artist.set_zorder(self.zorder)
-
+            clipbox = BBoxIntersection(clipbox, artist.get_clip_box())
+        else:
+            clipbox = artist.get_clip_box()
+        self.extra_patches.setdefault(geometry_object, []).append((artist, clipbox))
 
 def _draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
     block = matplotlib.patches.Rectangle(
@@ -397,15 +394,11 @@ _geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
 def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
     for index, child in enumerate(geometry_object):
         _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
-    if env.guidelines is not None:
+    if env.extra is not None:
         v0, v1 = geometry_object.vec0, geometry_object.vec1
         for segment in geometry_object.segments:
-            polygon = []
-            for a0, a1 in segment:
-                point = v0 * a0 + v1 * a1
-                polygon.append((point[env.axes[0]], point[env.axes[1]]))
-            env.append_guideline(
-                matplotlib.patches.Polygon(polygon, closed=True, transform=transform, ec=env.guidelines), clipbox)
+            polygon = [(p[env.axes[0]], p[env.axes[1]]) for p in (v0*a0+v1*a1 for (a0,a1) in segment)]
+            env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform), clipbox)
 
 _geometry_drawers[plask.geometry.Lattice] = _draw_Lattice
 
@@ -520,7 +513,7 @@ def plane_to_axes(plane, dim):
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, guidelines=None, picker=None,
+                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None,
                   set_limits=None):
     """
     Plot specified geometry.
@@ -572,8 +565,11 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         alpha (float): Opacity of the drawn geometry (1: fully opaque,
                 0: fully transparent)
 
-        guidelines (str or None): Color for drawing guidelines. If `None` then no
-                guidelines are plotted.
+        extra (None|dict): If this parameter is not None, a dictionary with optional
+                extra patches for some geometry objects is returned in addition
+                to axes. In such case this parameter value must be a dict with extra
+                patches style (with keys like 'edgeceolor', 'linewidth', etc.,
+                see Matplotlib documentation for details).
 
         picker (None|float|boolean|callable) matplotlib picker attribute
                 for all artists appended to plot (see matplotlib doc.).
@@ -581,15 +577,17 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     Returns:
         matplotlib.axes.Axes: appended or given axes object
 
+        dict (optional): dictionary mapping geometry objects to extra_patches.
+
     Limitations:
-        Intersection is not drawn precisely (item is clipped to bonding box of
+        Intersection is not drawn precisely (item is clipped to bounding box of
         the envelope).
 
         Filling is not supported when 3D geometry object or Cartesian3D geometry is drawn.
     """
 
     if set_limits is not None:
-        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolette, set 'margin' instead")
+        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolete, set 'margin' instead")
         if margin is None:
             margin = 0.
 
@@ -616,7 +614,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
         zorder = 0.5 if fill else 2.0
 
     env = DrawEnviroment(ax, axes, fill, color, get_color, lw, alpha, zorder=zorder, picker=picker,
-                         guidelines=guidelines)
+                         extra=extra)
 
     hshift, vshift = (geometry.bbox.size[a] for a in ax)
     try:
@@ -693,4 +691,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
-    return axes
+    if extra is not None:
+        return axes, env.extra_patches
+    else:
+        return axes

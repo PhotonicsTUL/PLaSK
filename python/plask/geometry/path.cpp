@@ -91,6 +91,7 @@ void register_geometry_path()
              "    container (GeometryObject): Container to get items from.")
         .def("cleanup",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects.")
         .def(py::self == py::other<PathHints>())
+        .def("__hash__", __hash__<PathHints>)
         // .def(py::self < py::other<PathHints>())
     ;
 
@@ -132,6 +133,7 @@ void register_geometry_path()
         .def(py::self += py::other<shared_ptr<const GeometryObject>>())
         .def(py::self += py::other<GeometryObject::Subtree>())
         .def("__eq__", __is__<Path>)
+        .def("__hash__", __hash__<Path>)
     ;
     py::implicitly_convertible<Path,PathHints>();
 
@@ -140,6 +142,7 @@ void register_geometry_path()
         .add_property("brached", &GeometryObject::Subtree::hasBranches, "Bool indicating whether the subtree has more than one branch.")
         .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree.")
         .def("__eq__", __is__<GeometryObject::Subtree>)
+        .def("__hash__", __hash__<GeometryObject::Subtree>)
     ;
     py::implicitly_convertible<GeometryObject::Subtree,PathHints>();
     py::implicitly_convertible<GeometryObject::Subtree,Path>();

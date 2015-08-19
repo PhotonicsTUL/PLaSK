@@ -113,12 +113,15 @@ class GNodeController(Controller):
                 self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit))
         return res
 
-    def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None, change_cb=None):
+    def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
+                                  change_cb=None):
 
         class TextEditWithFocusOutCB(QtGui.QPlainTextEdit):
             def __init__(self, focus_out_cb = None):
                 super(TextEditWithFocusOutCB, self).__init__()
                 self.focus_out_cb = focus_out_cb
+                self.setTabChangesFocus(True)
+                self.setFixedHeight(int(3.5 * QtGui.QFontMetrics(self.font()).height()))
 
             def focusOutEvent(self, e):
                 super(TextEditWithFocusOutCB, self).focusOutEvent(e)

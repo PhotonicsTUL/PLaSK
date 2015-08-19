@@ -41,21 +41,21 @@ using namespace plask::solvers::slab;
     ":rtype: PML"
 
 template <typename SolverT>
-static py::list SlabSolver_getStack(const SolverT& self) {
+static py::tuple SlabSolver_getStack(const SolverT& self) {
     py::list result;
     for (auto i: self.getStack()) {
         result.append(i);
     }
-    return result;
+    return py::tuple(result);
 }
 
 template <typename SolverT>
-static py::list SlabSolver_getLayerSets(const SolverT& self) {
+static py::tuple SlabSolver_getLayerSets(const SolverT& self) {
     py::list result;
     for (auto i: self.getLayersPoints()) {
         result.append(i);
     }
-    return result;
+    return py::tuple(result);
 }
 
 struct PythonComponentConventer {

@@ -75,16 +75,16 @@ void lattice_set_segments(py::object self, const py::object& value) {
     l.setSegments(std::move(segments));
 }
 
-py::list lattice_get_segments(const Lattice& self) {
+py::tuple lattice_get_segments(const Lattice& self) {
     py::list result;
     for (auto segment: self.segments) {
         py::list psegment;
         for (auto point: segment) {
             psegment.append(py::make_tuple(point[0], point[1]));
         }
-        result.append(psegment);
+        result.append(py::tuple(psegment));
     }
-    return result;
+    return py::tuple(result);
 }
 
 void register_geometry_container_lattice()

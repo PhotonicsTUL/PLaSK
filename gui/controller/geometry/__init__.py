@@ -10,14 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import operator
-
 import plask
-from plask._plot_geometry import plane_to_axes
 
 from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
+from ...model.geometry.geometry import GNGeometryBase
 
 from .. import Controller
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea
@@ -159,7 +157,8 @@ class GeometryController(Controller):
             palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
             self.status_bar.setPalette(palette)
             self.status_bar.setAutoFillBackground(False)
-        return True
+            self.show_selection()
+            return True
 
     def plot(self, tree_element=None):
         if tree_element is None:
@@ -299,14 +298,13 @@ class GeometryController(Controller):
         self.main_splitter.addWidget(geometry_widget)
 
     def show_selection(self):
-        to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
-            self.manager)
-        self.geometry_view.clean_selectors()
-        bboxes = self.plotted_object.get_object_bboxes(to_select)
-        if not bboxes: return
-        axes = plane_to_axes(self.geometry_view.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
-        for b in bboxes: self.geometry_view.select_bbox(b, axes)
-        self.geometry_view.canvas.draw()
+        node = self._current_index.internalPointer()
+        if isinstance(node, GNGeometryBase):
+            self.geometry_view.clean_selectors()    #TODO: show borders
+            self.geometry_view.canvas.draw()
+        else:
+            selected = self.model.fake_root.get_corresponding_object(node, self.manager)
+            self.geometry_view.select_object(self.plotted_object, selected)
 
     def set_current_index(self, new_index):
         """

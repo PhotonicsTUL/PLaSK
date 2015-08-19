@@ -691,6 +691,7 @@ void register_geometry_object()
         .def("__iter__", GeometryObjectIter::__iter__)
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
+        .def("__hash__", __hash__<GeometryObject>)
     ;
 
     {py::scope scope = geometry_object;
