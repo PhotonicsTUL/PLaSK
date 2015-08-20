@@ -119,9 +119,10 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     #endif
 
     size_t nseg = rbounds->size() - 1, nr = raxis->size(), N = SOLVER->size;
+    double ib = 1. / rbounds->at(rbounds->size()-1);
+    int m = int(SOLVER->m);
 
     auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
-
     double lambda = real(2e3*M_PI/SOLVER->k0);
 
     LazyData<double> gain;
@@ -134,13 +135,57 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     integrals.reset(N);
     
     // Compute integrals
-    for (size_t i = 0, s = 0, j = 1, nj = 2<<segments[0].n; i != nr; ++i, ++j) {
-        if (j == nj) {
-            j = 1;
-            nj = 2 << segments[++s].n;
+    for (size_t ri = 0, seg = 0, wi = 1, nw = 2<<segments[0].n; ri != nr; ++ri, ++wi) {
+        if (wi == nw) {
+            wi = 1;
+            nw = 2 << segments[++seg].n;
         }
-        double r = raxis->at(i);
-        double w = patterson_weights[segments[s].n][j/2] * segments[s].D;
+        double r = raxis->at(ri);
+        double w = patterson_weights[segments[seg].n][wi/2] * segments[seg].D;
+
+        auto material = geometry->getMaterial(vec(r, matz));
+        double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
+        dcomplex eps = material->Nr(lambda, T);
+        if (gain_connected) {
+            auto roles = geometry->getRolesAt(vec(r, matz));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                if (!gain_computed) {
+                    gain = SOLVER->inGain(mesh, lambda);
+                    gain_computed = true;
+                }
+                double g = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) g += gain[v];
+                double ni = lambda * g/zaxis->size() * (0.25e-7/M_PI);
+                eps.imag(ni);
+            }
+        }
+        eps = eps * eps;
+        dcomplex ieps = 1. / eps;
+        
+        for (int i = 0; i < N; ++i) {
+            double g = factors[i] * ib; double gr = g*r;
+            for (int j = i; j < N; ++j) {
+                double k = factors[j] * ib; double kr = k*r;
+                
+                double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, kr),
+                       Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
+                double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
+                
+                integrals.ieps_minus(i,j) += w * r * Jmg * ieps * Jmk;
+                integrals.ieps_plus(i,j)  += w * r * Jpg * ieps * Jpk;
+                integrals.eps_minus(i,j)  += w * r * Jmg * eps * Jmk;
+                integrals.eps_plus(i,j)   += w * r * Jpg * eps * Jpk;
+                
+                integrals.deps_minus(i,j) -= ieps * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
+                integrals.deps_plus(i,j)  -= ieps * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
+
+                if (j != i) {
+                    double Jm2k = cyl_bessel_j(m-2, kr), Jp2k = cyl_bessel_j(m+2, kr);
+                    integrals.deps_minus(j,i) -= ieps * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
+                    integrals.deps_plus(j,i)  -= ieps * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
+                }
+            }
+        }
+        
     }
     
 //     // Check if the layer is uniform
@@ -175,10 +220,50 @@ DataVector<const Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
 {
 }
 
-LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t l,
+LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
                                     const shared_ptr<const typename LevelsAdapter::Level>& level,
                                     InterpolationMethod interp)
 {
+    assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
+
+    auto geometry = SOLVER->getGeometry();
+    auto zaxis = SOLVER->getLayerPoints(layer);
+
+    auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
+    double lambda = real(2e3*M_PI/SOLVER->k0);
+
+    LazyData<double> gain;
+    auto temperature = SOLVER->inTemperature(mesh);
+    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
+
+    double matz = zaxis->at(0); // at each point along any vertical axis material is the same
+
+    DataVector<Tensor3<dcomplex>> result(raxis->size());
+    
+    for (size_t ri = 0; ri != raxis->size(); ++ri) {
+        double r = raxis->at(ri);
+        auto material = geometry->getMaterial(vec(r, matz));
+        double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
+        dcomplex nr = material->Nr(lambda, T);
+        if (gain_connected) {
+            auto roles = geometry->getRolesAt(vec(r, matz));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                if (!gain_computed) {
+                    gain = SOLVER->inGain(mesh, lambda);
+                    gain_computed = true;
+                }
+                double g = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) g += gain[v];
+                double ni = lambda * g/zaxis->size() * (0.25e-7/M_PI);
+                nr.imag(ni);
+            }
+        }
+        result[ri] = nr;
+        auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+        return interpolate(src_mesh, result, dest_mesh, interp,
+                           InterpolationFlags(geometry, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::NO)
+                          );
+    }
 }
 
 

@@ -69,11 +69,11 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     void cleanupField() override;
 
-    DataVector<const Vec<3,dcomplex>> getField(size_t l,
+    DataVector<const Vec<3,dcomplex>> getField(size_t layer,
                                                const shared_ptr<const typename LevelsAdapter::Level>& level,
                                                const cvector& E, const cvector& H) override;
 
-    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t l,
+    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t layer,
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
@@ -93,18 +93,20 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     shared_ptr<UnorderedAxis> raxis;
     
     /// Matrices with computed integrals necessary to construct RE and RH matrices
-    struct Integral {
-        dcomplex iem;   ///< J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr
-        dcomplex iep;   ///< J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr
-        dcomplex dem;   ///< J_{m-1}(gr) deps/dr J_{m}(kr) r dr
-        dcomplex dep;   ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
-        dcomplex em;    ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
-        dcomplex ep;    ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
-        Integral(): iem(0.), iep(0.), dem(0.), dep(0.), em(0.), ep(0.) {}
-    };
-    
-    class Integrals {
-        DataVector<Integral> data;
+    struct Integrals {
+        struct Data {
+            dcomplex iem;   ///< J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr
+            dcomplex iep;   ///< J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr
+            dcomplex em;    ///< J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr
+            dcomplex ep;    ///< J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr
+            dcomplex dem;   ///< J_{m-1}(gr) deps/dr J_{m}(kr) r dr
+            dcomplex dep;   ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
+            dcomplex bem;   ///< J_{m-1}(kr) deps/dr J_{m}(gr) r dr
+            dcomplex bep;   ///< J_{m+1}(kr) deps/dr J_{m}(gr) r dr
+            Data(): iem(0.), iep(0.), em(0.), ep(0.), dem(0.), dep(0.), bem(0.), bep(0.) {}
+        };
+      private:
+        DataVector<Data> data;
         inline size_t idx(size_t i, size_t j) const { return (i<=j)? j*(j+1)/2 + i: i*(i+1)/2 + j; }
       public:
         Integrals() {}
@@ -117,14 +119,27 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         const dcomplex& ieps_minus(size_t i, size_t j) const { return data[idx(i,j)].iem; }
         dcomplex& ieps_plus(size_t i, size_t j) { return data[idx(i,j)].iep; }
         const dcomplex& ieps_plus(size_t i, size_t j) const { return data[idx(i,j)].iep; }
-        dcomplex& deps_minus(size_t i, size_t j) { return data[idx(i,j)].dem; }
-        const dcomplex& deps_minus(size_t i, size_t j) const { return data[idx(i,j)].dem; }
-        dcomplex& deps_plus(size_t i, size_t j) { return data[idx(i,j)].dep; }
-        const dcomplex& deps_plus(size_t i, size_t j) const { return data[idx(i,j)].dep; }
         dcomplex& eps_minus(size_t i, size_t j) { return data[idx(i,j)].em; }
         const dcomplex& eps_minus(size_t i, size_t j) const { return data[idx(i,j)].em; }
         dcomplex& eps_plus(size_t i, size_t j) { return data[idx(i,j)].ep; }
         const dcomplex& eps_plus(size_t i, size_t j) const { return data[idx(i,j)].ep; }
+
+        dcomplex& deps_minus(size_t i, size_t j) {
+            if (i <= j) return data[j*(j+1)/2+i].dem;
+            else return data[i*(i+1)/2+j].bem;
+        }
+        const dcomplex& deps_minus(size_t i, size_t j) const {
+            if (i <= j) return data[j*(j+1)/2+i].dem;
+            else return data[i*(i+1)/2+j].bem;
+        }
+        dcomplex& deps_plus(size_t i, size_t j) {
+            if (i <= j) return data[j*(j+1)/2+i].dep;
+            else return data[i*(i+1)/2+j].bep;
+        }
+        const dcomplex& deps_plus(size_t i, size_t j) const {
+            if (i <= j) return data[j*(j+1)/2+i].dep;
+            else return data[i*(i+1)/2+j].bep;
+        }
     };
 
     /// Computed integrals
