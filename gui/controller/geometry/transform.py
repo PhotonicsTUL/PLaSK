@@ -11,6 +11,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from ...qt.QtCore import Qt
+
 from .object import GNObjectController
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
@@ -142,9 +144,22 @@ class GNLatticeController(GNObjectController):
             'change {} lattice vector'.format('first' if index == 0 else 'second')
         )
 
+    def _segments_keypress(self, event):
+        if event.key() == Qt.Key_Return and not event.modifiers():
+            cursor = self.segments.textCursor()
+            self._set_node_property_undoable('segments', self.segments.toPlainText())
+            self.segments.setTextCursor(cursor)
+            return False
+        if event.text() in ('^', ';'):
+            cursor = self.segments.textCursor()
+            self._set_node_property_undoable('segments', self.segments.toPlainText())
+            self.segments.setTextCursor(cursor)
+        return True
+
     def construct_form(self):
         self.construct_group('Lattice Settings')
-        self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments')
+        self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments',
+                                                       key_cb=self._segments_keypress)
         self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
                                  u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
                                  u'Each vertex consists of two space-separated integers.')

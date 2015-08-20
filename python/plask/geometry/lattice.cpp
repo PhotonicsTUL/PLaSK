@@ -53,29 +53,25 @@ inline static void init_Arange()
 
 //shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i);
 
-void lattice_set_segments(py::object self, const py::object& value) {
+static void lattice_set_segments(Lattice& self, const py::object& value) {
     std::vector< std::vector<Vec<2, int>> > segments;
     py::stl_input_iterator<py::object> segments_it(value), segments_end_it;
     for ( ; segments_it != segments_end_it; ++segments_it) {
         std::vector<Vec<2, int>> segment;
         py::stl_input_iterator<py::object> points_it(*segments_it), points_end_it;
         for ( ; points_it != points_end_it; ++points_it) {
-            py::stl_input_iterator<int> coord_it(*points_it), coord_end_it;
-            int a = *coord_it;
-            ++coord_it;
-            int b = *coord_it;
-            ++coord_it;
-            if (coord_it != coord_end_it)
-                throw IndexError("too many elements in lattice segment boundary patch point (exactly 2 coordinates are required)");;
-            segment.emplace_back(a, b);
+            if (py::len(*points_it) != 2)
+                throw TypeError("Each vertex in lattice segment must have exactly two integer coordinates");
+            py::stl_input_iterator<int> coord_it(*points_it);
+            segment.emplace_back(*(coord_it++), *(coord_it++));
+            
         }
         segments.push_back(std::move(segment));
     }
-    Lattice& l = py::extract<Lattice&>(self);
-    l.setSegments(std::move(segments));
+    self.setSegments(std::move(segments));
 }
 
-py::tuple lattice_get_segments(const Lattice& self) {
+static py::tuple lattice_get_segments(const Lattice& self) {
     py::list result;
     for (auto segment: self.segments) {
         py::list psegment;
@@ -85,6 +81,16 @@ py::tuple lattice_get_segments(const Lattice& self) {
         result.append(py::tuple(psegment));
     }
     return py::tuple(result);
+}
+
+static void lattice_set_vec0(Lattice& self, const Vec<3>& vec) {
+    self.vec0 = vec;
+    self.refillContainer();
+}
+
+static void lattice_set_vec1(Lattice& self, const Vec<3>& vec) {
+    self.vec1 = vec;
+    self.refillContainer();
 }
 
 void register_geometry_container_lattice()
@@ -97,11 +103,9 @@ void register_geometry_container_lattice()
          py::init<const shared_ptr<typename Lattice::ChildType>&, const typename Lattice::DVec, const typename Lattice::DVec>
          ((py::arg("item"), py::arg("vec0") = plask::Primitive<3>::ZERO_VEC, py::arg("vec1") = plask::Primitive<3>::ZERO_VEC)))
         .def("__len__", &Lattice::getChildrenCount)
-        .def("set_segments", lattice_set_segments, "Set polygons specifying lattice boundaries.")  //TODO get_segments - format? tuple of tuple of int pairs(?)
-        .add_property("segments", lattice_get_segments, "List of polygons limiting lattice segments.")
-        .def_readonly("vec0", &Lattice::vec0, "First lattice vector.")  //TODO allow to set it 
-        .def_readonly("vec1", &Lattice::vec1, "Second lattice vector.")  //TODO allow to set it 
-        //.def("__getitem__", &GeometryObject__getitem__)   //is in GeometryObject
+        .add_property("segments", lattice_get_segments, lattice_set_segments, "List of polygons limiting lattice segments.")
+        .add_property("vec0", py::make_getter(&Lattice::vec0), lattice_set_vec0, "First lattice vector.")
+        .add_property("vec1", py::make_getter(&Lattice::vec1), lattice_set_vec1, "Second lattice vector.")
         ;
 }
 

@@ -234,26 +234,35 @@ class PlotWidget(QtGui.QGroupBox):
         self.clean_selectors()
         bboxes = root.get_object_bboxes(selected)
         if not bboxes: return
-        axes = plane_to_axes(self.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
-        for bbox in bboxes:
-            rect = matplotlib.patches.Rectangle(
-                (bbox.lower[axes[0]], bbox.lower[axes[1]]),
-                 bbox.upper[axes[0]]-bbox.lower[axes[0]], bbox.upper[axes[1]]-bbox.lower[axes[1]],
-                ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, fill=False)
-            self.add_selector(rect)
-            guidelines = self.guidelines.get(selected, ())
-            for guideline in guidelines:
-                self.add_selector(*guideline)
+        ax = plane_to_axes(self.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
+        positions = root.get_object_positions(selected)
+        for bbox, pos in zip(bboxes, positions):
+            x, y = bbox.lower[ax[0]], bbox.lower[ax[1]]
+            dx, dy = bbox.upper[ax[0]] - x, bbox.upper[ax[1]] - y
+            if dx >= 0 and dy >= 0:
+                rect = matplotlib.patches.Rectangle((x, y), dx, dy,
+                                                    ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, fill=False)
+                self.add_selector(rect)
+                origin = matplotlib.lines.Line2D((pos[ax[0]],), (pos[ax[1]],), zorder=101.0, marker='+',
+                                                 # mew=1.5, ms=10.0, mec=(1.00, 0.75, 0.25, 0.9))
+                                                 mew=3.0, ms=10.0, mec=(1.0, 0.25, 0.25, 0.9))
+                self.axes.add_line(origin)
+                self.selectors.append(origin)
+        guidelines = self.guidelines.get(selected, ())
+        for guideline in guidelines:
+            self.add_selector(*guideline)
         self.canvas.draw()
 
     def zoom_bbox(self, box, margin=0.1):
         if self.toolbar._views.empty():
             self.toolbar.push_current()
-        axes = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
-        m = (box.upper[axes[0]] - box.lower[axes[0]]) * margin
-        self.axes.set_xlim(box.lower[axes[0]] - m, box.upper[axes[0]] + m)
-        m = (box.upper[axes[1]] - box.lower[axes[1]]) * margin
-        self.axes.set_ylim(box.lower[axes[1]] - m, box.upper[axes[1]] + m)
+        ax = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
+        m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin
+        self.axes.set_xlim(box.lower[ax[0]] - m, box.upper[ax[0]] + m)
+        m = (box.upper[ax[1]] - box.lower[ax[1]]) * margin
+        self.axes.set_ylim(box.lower[ax[1]] - m, box.upper[ax[1]] + m)
+        if ax[0] > ax[1] and not self.axes.yaxis_inverted():
+            self.axes.invert_yaxis()
         self.toolbar.push_current()
         self.canvas.draw()
 

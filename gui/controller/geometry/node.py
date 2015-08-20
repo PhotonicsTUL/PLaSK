@@ -114,25 +114,30 @@ class GNodeController(Controller):
         return res
 
     def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
-                                  change_cb=None):
+                                  change_cb=None, key_cb=None):
 
-        class TextEditWithFocusOutCB(QtGui.QPlainTextEdit):
+        class TextEditWithCB(QtGui.QPlainTextEdit):
             def __init__(self, focus_out_cb = None):
-                super(TextEditWithFocusOutCB, self).__init__()
+                super(TextEditWithCB, self).__init__()
                 self.focus_out_cb = focus_out_cb
                 self.setTabChangesFocus(True)
                 self.setFixedHeight(int(3.5 * QtGui.QFontMetrics(self.font()).height()))
 
-            def focusOutEvent(self, e):
-                super(TextEditWithFocusOutCB, self).focusOutEvent(e)
+            def focusOutEvent(self, event):
+                super(TextEditWithCB, self).focusOutEvent(event)
                 if self.focus_out_cb is not None: self.focus_out_cb()
 
-        res = TextEditWithFocusOutCB()
+            def keyPressEvent(self, event):
+                if key_cb is None or key_cb(event):
+                    super(TextEditWithCB, self).keyPressEvent(event)
+
+
+        res = TextEditWithCB()
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
-            res.focus_out_cb = lambda : self._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
+            res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
         return res
 
     def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name=None,

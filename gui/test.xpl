@@ -101,9 +101,9 @@
   </cartesian3d>
   <cartesian3d>
     <stack longcenter="0" trancenter="0">
-      <lattice along="0.0" atran="1.0" avert="0" blong="{sqrt(3)/2}" btran="0.5" bvert="0">
+      <lattice along="-{sqrt(3)/2}" atran="0.5" avert="0" blong="0.0" btran="1.0" bvert="0">
         <segments>0 -3; 3 -3; 3 0; 0 3; -3 3; -3 0 ^
- 0 -1; 1 -1; 0 1; -1 1</segments>
+-1 0; -1 1; 1 0; 1 -1</segments>
         <cylinder material="GaAs" radius="0.35" height="1.0"/>
       </lattice>
     </stack>

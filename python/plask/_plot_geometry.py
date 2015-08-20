@@ -397,6 +397,7 @@ def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
     if env.extra is not None:
         v0, v1 = geometry_object.vec0, geometry_object.vec1
         for segment in geometry_object.segments:
+            if not segment: continue
             polygon = [(p[env.axes[0]], p[env.axes[1]]) for p in (v0*a0+v1*a1 for (a0,a1) in segment)]
             env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform), clipbox)
 
