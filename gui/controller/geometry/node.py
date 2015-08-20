@@ -128,9 +128,9 @@ class GNodeController(Controller):
                 if self.focus_out_cb is not None: self.focus_out_cb()
 
             def keyPressEvent(self, event):
-                if key_cb is None or key_cb(event):
-                    super(TextEditWithCB, self).keyPressEvent(event)
-
+                super(TextEditWithCB, self).keyPressEvent(event)
+                if key_cb is not None:
+                    key_cb(event)
 
         res = TextEditWithCB()
         if row_name: self._get_current_form().addRow(row_name, res)

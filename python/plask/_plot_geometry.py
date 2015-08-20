@@ -280,7 +280,7 @@ class DrawEnviroment(object):
             #artist.set_clip_path(clipbox)
         artist.set_zorder(self.zorder)
 
-    def append_extra(self, geometry_object, artist, clipbox):
+    def append_extra(self, geometry_object, artist, clipbox=None):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
@@ -396,10 +396,16 @@ def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
         _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
     if env.extra is not None:
         v0, v1 = geometry_object.vec0, geometry_object.vec1
+        for v in v0, v1:
+            arrow = matplotlib.patches.FancyArrowPatch((0, 0), (v[env.axes[0]], v[env.axes[1]]),
+                                                       arrowstyle='->', mutation_scale=40,
+                                                       transform=transform)
+            env.append_extra(geometry_object, arrow, clipbox)
         for segment in geometry_object.segments:
             if not segment: continue
             polygon = [(p[env.axes[0]], p[env.axes[1]]) for p in (v0*a0+v1*a1 for (a0,a1) in segment)]
-            env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform), clipbox)
+            env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform),
+                             clipbox)
 
 _geometry_drawers[plask.geometry.Lattice] = _draw_Lattice
 

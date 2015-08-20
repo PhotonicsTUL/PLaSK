@@ -145,14 +145,11 @@ class GNLatticeController(GNObjectController):
         )
 
     def _segments_keypress(self, event):
-        if event.key() == Qt.Key_Return and not event.modifiers():
-            cursor = self.segments.textCursor()
+        if event.key() == Qt.Key_Return or event.text() in ('^', ';'):
+            pos = self.segments.textCursor().position()
             self._set_node_property_undoable('segments', self.segments.toPlainText())
-            self.segments.setTextCursor(cursor)
-            return False
-        if event.text() in ('^', ';'):
             cursor = self.segments.textCursor()
-            self._set_node_property_undoable('segments', self.segments.toPlainText())
+            cursor.setPosition(pos)
             self.segments.setTextCursor(cursor)
         return True
 
