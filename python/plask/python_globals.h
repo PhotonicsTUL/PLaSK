@@ -110,7 +110,8 @@ bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
 
 template <typename T>
 long __hash__(const shared_ptr<T>& a) {
-    return reinterpret_cast<long>(a.get());
+    auto p = a.get();
+    return *reinterpret_cast<long*>(&p);
 }
 
 
