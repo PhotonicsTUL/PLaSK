@@ -12,9 +12,39 @@
 namespace plask {
 
 template <int dim>
+std::pair<int, int> ArrangeContainer<dim>::bounds(const ArrangeContainer<dim>::DVec &vec) const {
+    if (!this->hasChild() || repeat_count == 0) return std::make_pair(1, 0);
+    auto box = _child->getBoundingBox();
+    int hi = repeat_count - 1, lo = 0;
+    for (int i = 0; i != dim; ++i) {
+        if (translation[i] > 0.) {
+            lo = max(1 + int(std::floor((vec[i] - box.upper[i]) / translation[i])), lo);
+            hi = min(int(std::floor((vec[i] - box.lower[i]) / translation[i])), hi);
+        } else if (translation[i] < 0.) {
+            lo = max(1 + int(std::floor((vec[i] - box.lower[i]) / translation[i])), lo);
+            hi = min(int(std::floor((vec[i] - box.upper[i]) / translation[i])), hi);
+        } else if (vec[i] < box.lower[i] || box.upper[i] < vec[i]) {
+            return std::make_pair(1, 0);
+        }
+    }
+    return std::make_pair(lo, hi);
+}
+
+template <int dim>
+void ArrangeContainer<dim>::warmOverlaping() const
+{
+    if (warn_overlapping && this->hasChild()) {
+        Box box = this->_child->getBoundingBox();
+        box -= box.lower;
+        if (box.intersects(box + translation))
+            writelog(LOG_WARNING, "Arrange: item bboxes overlap");
+    }
+}
+
+template <int dim>
 typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getBoundingBox() const {
     Box bbox;
-    if (!_child) {
+    if (!this->hasChild()) {
         bbox.makeInvalid();
     } else {
         Box box = _child->getBoundingBox();
@@ -38,12 +68,12 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getRealBoundingBox() 
 
 template <int dim>
 void ArrangeContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
-                                        std::vector<ArrangeContainer<dim>::Box>& dest, const PathHints* path) const {
+                                                  std::vector<ArrangeContainer<dim>::Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
     }
-    if (repeat_count == 0 || !_child) return;
+    if (repeat_count == 0 || !this->hasChild()) return;
     std::size_t old_size = dest.size();
     _child->getBoundingBoxesToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -59,7 +89,7 @@ void ArrangeContainer<dim>::getObjectsToVec(const GeometryObject::Predicate& pre
         dest.push_back(this->shared_from_this());
         return;
     }
-    if (repeat_count == 0 || !_child) return;
+    if (repeat_count == 0 || !this->hasChild()) return;
     std::size_t old_size = dest.size();
     _child->getObjectsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -75,7 +105,7 @@ void ArrangeContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& p
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
-    if (repeat_count == 0 || !_child) return;
+    if (repeat_count == 0 || !this->hasChild()) return;
     std::size_t old_size = dest.size();
     _child->getPositionsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
@@ -86,7 +116,7 @@ void ArrangeContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& p
 
 template <int dim>
 bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const {
-    if (!_child) return false;
+    if (!this->hasChild()) return false;
     auto lohi = bounds(p);
     for (int i = lohi.second; i >= lohi.first; --i)
         if (_child->contains(p - i * translation)) return true;
@@ -95,7 +125,7 @@ bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const
 
 template <int dim>
 shared_ptr<Material> ArrangeContainer<dim>::getMaterial(const typename ArrangeContainer<dim>::DVec& p) const {
-    if (!_child) return shared_ptr<Material>();
+    if (!this->hasChild()) return shared_ptr<Material>();
     auto lohi = bounds(p);
     for (int i = lohi.second; i >= lohi.first; --i)
         if (auto material = _child->getMaterial(p - i * translation)) return material;
@@ -104,8 +134,7 @@ shared_ptr<Material> ArrangeContainer<dim>::getMaterial(const typename ArrangeCo
 
 template <int dim>
 std::size_t ArrangeContainer<dim>::getChildrenCount() const {
-    if (!_child) return 0;
-    return repeat_count;
+    return this->hasChild() ? repeat_count : 0;
 }
 
 template <int dim>
@@ -127,7 +156,7 @@ shared_ptr<GeometryObject> ArrangeContainer<dim>::getRealChildNo(std::size_t chi
 
 template <int dim>
 GeometryObject::Subtree ArrangeContainer<dim>::getPathsAt(const typename ArrangeContainer<dim>::DVec& point, bool all) const {
-    if (!_child) return GeometryObject::Subtree();
+    if (!this->hasChild()) return GeometryObject::Subtree();
     GeometryObject::Subtree result;
     auto lohi = bounds(point);
     if (all) {

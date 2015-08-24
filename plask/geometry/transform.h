@@ -196,6 +196,15 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
   protected:
     shared_ptr<ChildType> _child;
 
+    /// Possible implementation for getPositionsToVec, which does not change children position and is used by many subclasses.
+    void _getNotChangedPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+        if (predicate(*this)) {
+            dest.push_back(Primitive<dim>::ZERO_VEC);
+            return;
+        }
+        if (this->hasChild()) this->_child->getPositionsToVec(predicate, dest, path);
+    }
+
 };
 
 /**

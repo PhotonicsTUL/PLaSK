@@ -164,7 +164,7 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
      * @return shallow copy of this
      */
     shared_ptr<Mirror<dim>> copyShallow() const {
-         return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, getChild()));
+         return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, this->_child));
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;

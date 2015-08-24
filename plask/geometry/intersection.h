@@ -91,6 +91,15 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
         return make_shared<Intersection<dim>>(getChild(), clipShape);
     }
 
+    /**
+     * Check if point is included in the envelop.
+     * @param p point to check
+     * @return @c true if @p p is in envelope or there is no envelope.
+     */
+    inline bool inEnvelop(const typename Intersection<dim>::DVec &p) const {
+        return !envelope || envelope->contains(p);
+    }
+
   protected:
 
     void writeXMLChildren(XMLWriter::Element& dest_xml_object, GeometryObject::WriteXMLCallback& write_cb, const AxisNames &axes) const override;

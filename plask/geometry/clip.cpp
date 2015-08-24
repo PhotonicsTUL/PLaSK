@@ -35,11 +35,7 @@ typename Clip<dim>::Box Clip<dim>::fromChildCoords(const typename  Clip<dim>::Ch
 
 template <int dim>
 void Clip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(Primitive<dim>::ZERO_VEC);
-        return;
-    }
-    if (this->hasChild()) this->_child->getPositionsToVec(predicate, dest, path);
+    this->_getNotChangedPositionsToVec(predicate, dest, path);
 }
 
 template <int dim>

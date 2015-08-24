@@ -37,23 +37,10 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     unsigned repeat_count;
 
     /// Reduce vector to the first repetition
-    std::pair<int, int> bounds(const DVec& vec) const {
-        if (!_child || repeat_count == 0) return std::make_pair(1, 0);
-        auto box = _child->getBoundingBox();
-        int hi = repeat_count - 1, lo = 0;
-        for (int i = 0; i != dim; ++i) {
-            if (translation[i] > 0.) {
-                lo = max(1 + int(std::floor((vec[i] - box.upper[i]) / translation[i])), lo);
-                hi = min(int(std::floor((vec[i] - box.lower[i]) / translation[i])), hi);
-            } else if (translation[i] < 0.) {
-                lo = max(1 + int(std::floor((vec[i] - box.lower[i]) / translation[i])), lo);
-                hi = min(int(std::floor((vec[i] - box.upper[i]) / translation[i])), hi);
-            } else if (vec[i] < box.lower[i] || box.upper[i] < vec[i]) {
-                return std::make_pair(1, 0);
-            }
-        }
-        return std::make_pair(lo, hi);
-    }
+    std::pair<int, int> bounds(const DVec& vec) const;
+
+    /// Warm if warn_overlapping is set and item bboxes overlap.
+    void warmOverlaping() const;
 
   public:
 
@@ -69,12 +56,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     /// \param count Number of repetitions.
     ArrangeContainer(const shared_ptr<ChildType>& child, const DVec& step, unsigned repeat, bool warn=true):
          GeometryObjectTransform<dim>(child), translation(step), repeat_count(repeat), warn_overlapping(warn) {
-        if (warn) {
-            Box box = getChild()->getBoundingBox();
-            box -= box.lower;
-            if (box.intersects(box + translation))
-                writelog(LOG_WARNING, "Arrange: item bboxes overlap");
-        }
+        warmOverlaping();
     }
 
     static constexpr const char* NAME = dim == 2 ?
@@ -124,12 +106,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
     void setTranslation(DVec new_translation) {
         if (translation == new_translation) return;
         translation = new_translation;
-        if (warn_overlapping) {
-            Box box = getChild()->getBoundingBox();
-            box -= box.lower;
-            if (box.intersects(box + translation))
-                writelog(LOG_WARNING, "Arrange: item bboxes overlap");
-        }
+        warmOverlaping();
         this->fireChildrenChanged();
     }
 

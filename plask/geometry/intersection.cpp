@@ -6,19 +6,21 @@ namespace plask {
 
 template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
-    return (!envelope || envelope->contains(p)) ? getChild()->getMaterial(p) : shared_ptr<Material>();
+    return (this->hasChild() && this->inEnvelop(p)) ?
+                this->_child->getMaterial(p) :
+                shared_ptr<Material>();
 }
 
 template <int dim>
 bool Intersection<dim>::contains(const typename Intersection<dim>::DVec &p) const {
-    return (!envelope || envelope->contains(p)) && getChild()->contains(p);
+    return this->hasChild() && (inEnvelop(p)) && this->_child->contains(p);
 }
 
 template <int dim>
 GeometryObject::Subtree Intersection<dim>::getPathsAt(const Intersection<dim>::DVec &point, bool all) const
 {
-    if (!envelope || envelope->contains(point))
-        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
+    if (this->hasChild() && inEnvelop(point))
+        return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point, all));
     else
         return GeometryObject::Subtree();
 }
@@ -38,7 +40,8 @@ void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& p
         dest.push_back(this->getBoundingBox());
         return;
     }
-    std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
+    if (!this->hasChild()) return;
+    std::vector<Box> result = this->_child->getBoundingBoxes(predicate, path);
     dest.reserve(dest.size() + result.size());
     if (envelope) {
         Box clipBox = envelope->getBoundingBox();
@@ -54,11 +57,7 @@ void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& p
 
 template <int dim>
 void Intersection<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
-    if (predicate(*this)) {
-        dest.push_back(Primitive<dim>::ZERO_VEC);
-        return;
-    }
-    getChild()->getPositionsToVec(predicate, dest, path);
+    this->_getNotChangedPositionsToVec(predicate, dest, path);
 }
 
 template <int dim>
@@ -68,7 +67,7 @@ shared_ptr<GeometryObjectTransform<dim> > Intersection<dim>::shallowCopy() const
 
 template <int dim>
 void Intersection<dim>::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
-    if (auto child = getChild()) {
+    if (auto child = getChild()) {  //TODO work without child, maybe change the sequence child <-> envelope?
         child->writeXML(dest_xml_object, write_cb, axes);
         if (envelope) envelope->writeXML(dest_xml_object, write_cb, axes);
     }

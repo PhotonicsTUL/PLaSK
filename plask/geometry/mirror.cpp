@@ -8,17 +8,18 @@ std::string Flip<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
 shared_ptr<Material> Flip<dim>::getMaterial(const Flip::DVec &p) const {
-    return getChild()->getMaterial(fliped(p));
+    return this->hasChild() ? this->_child->getMaterial(fliped(p)) : shared_ptr<Material>();
 }
 
 template <int dim>
 bool Flip<dim>::contains(const Flip<dim>::DVec &p) const {
-    return getChild()->contains(fliped(p));
+    return this->hasChild() && this->_child->contains(fliped(p));
 }
 
 template <int dim>
 GeometryObject::Subtree Flip<dim>::getPathsAt(const Flip::DVec &point, bool all) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(fliped(point), all));
+    if (!this->hasChild()) return GeometryObject::Subtree();
+    return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(fliped(point), all));
 }
 
 template <int dim>
@@ -32,7 +33,8 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
-    const std::size_t s = getChild()->getPositions(predicate, path).size();
+    if (!this->hasChild()) return;
+    const std::size_t s = this->_child->getPositions(predicate, path).size();
     for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<dim>::NAN_VEC);   //we can't get proper position
 }
 
@@ -51,22 +53,22 @@ std::string Mirror<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
 typename Mirror<dim>::Box Mirror<dim>::getBoundingBox() const {
-    return this->hasChild() ? extended(getChild()->getBoundingBox()) : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
+    return this->hasChild() ? extended(this->_child->getBoundingBox()) : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
 }
 
 template <int dim>
 typename Mirror<dim>::Box Mirror<dim>::getRealBoundingBox() const {
-    return getChild()->getBoundingBox();
+    return this->hasChild() ? this->_child->getBoundingBox() : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
 }
 
 template <int dim>
 shared_ptr<Material> Mirror<dim>::getMaterial(const Mirror<dim>::DVec &p) const {
-    return getChild()->getMaterial(flipedIfNeg(p));
+    return this->hasChild() ? this->_child->getMaterial(flipedIfNeg(p)) : shared_ptr<Material>();
 }
 
 template <int dim>
 bool Mirror<dim>::contains(const Mirror<dim>::DVec &p) const {
-    return getChild()->contains(flipedIfNeg(p));
+    return this->hasChild() && this->_child->contains(flipedIfNeg(p));
 }
 
 template <int dim>
@@ -80,8 +82,9 @@ void Mirror<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predica
         dest.push_back(getBoundingBox());
         return;
     }
+    if (!this->hasChild()) return;
     std::size_t old_size = dest.size();
-    getChild()->getBoundingBoxesToVec(predicate, dest, path);
+    this->_child->getBoundingBoxesToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
     for (std::size_t i = old_size; i < new_size; ++i)
         dest.push_back(dest[i].fliped(flipDir));
@@ -93,8 +96,9 @@ void Mirror<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate, st
         dest.push_back(this->shared_from_this());
         return;
     }
+    if (!this->hasChild()) return;
     std::size_t old_size = dest.size();
-    getChild()->getObjectsToVec(predicate, dest, path);
+    this->_child->getObjectsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
     for (std::size_t i = old_size; i < new_size; ++i)
         dest.push_back(dest[i]);
@@ -106,8 +110,9 @@ void Mirror<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, 
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
+    if (!this->hasChild()) return;
     std::size_t old_size = dest.size();
-    getChild()->getPositionsToVec(predicate, dest, path);
+    this->_child->getPositionsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
     for (std::size_t i = old_size; i < new_size; ++i)
         dest.push_back(Primitive<dim>::NAN_VEC);    //we can't get proper position for fliped child
@@ -124,7 +129,8 @@ GeometryObject::Subtree Mirror<dim>::getPathsTo(const GeometryObject& el, const 
 
 template <int dim>
 GeometryObject::Subtree Mirror<dim>::getPathsAt(const Mirror<dim>::DVec &point, bool all) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(flipedIfNeg(point), all));
+    if (!this->hasChild()) GeometryObject::Subtree();
+    return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(flipedIfNeg(point), all));
 }
 
 template <int dim>
@@ -135,11 +141,11 @@ std::size_t Mirror<dim>::getChildrenCount() const {
 template <int dim>
 shared_ptr<GeometryObject> Mirror<dim>::getChildNo(std::size_t child_no) const {
     if (child_no >= getChildrenCount()) throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
-    //child_no is 0 or 1 now
+    //child_no is 0 or 1 now, and hasChild() is true
     if (child_no == 0)
-        return getChild();
+        return this->_child;
     else
-        return make_shared<Flip<dim>>(flipDir, getChild());
+        return make_shared<Flip<dim>>(flipDir, this->_child);
 }
 
 template <int dim>
