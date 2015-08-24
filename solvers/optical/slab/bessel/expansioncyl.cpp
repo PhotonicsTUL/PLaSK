@@ -199,6 +199,12 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     
     if (diagonals[layer]) {
         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        integrals.zero();
+        for (int i = 0; i < N; ++i) {
+            double val = cyl_bessel_j(m+1, factors[i]) * rbounds->at(rbounds->size()-1); val = 0.5 * val*val;;
+            integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
+            integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
+        }
     }
 }
 

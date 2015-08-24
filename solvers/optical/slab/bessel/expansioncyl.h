@@ -103,7 +103,8 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
             dcomplex dep;   ///< J_{m+1}(gr) deps/dr J_{m}(kr) r dr
             dcomplex bem;   ///< J_{m-1}(kr) deps/dr J_{m}(gr) r dr
             dcomplex bep;   ///< J_{m+1}(kr) deps/dr J_{m}(gr) r dr
-            Data(): iem(0.), iep(0.), em(0.), ep(0.), dem(0.), dep(0.), bem(0.), bep(0.) {}
+            Data() {}
+            Data(dcomplex val): iem(val), iep(val), em(val), ep(val), dem(val), dep(val), bem(val), bep(val) {}
         };
       private:
         DataVector<Data> data;
@@ -113,7 +114,10 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         Integrals(size_t N) { reset(N); }
         void reset(size_t N) {
             size_t len = N*(N+1)/2;
-            data.reset(len);
+            data.reset(len, Data(0.));
+        }
+        void zero() {
+            std::fill(data.begin(), data.end(), Data(0.));
         }
         dcomplex& ieps_minus(size_t i, size_t j) { return data[idx(i,j)].iem; }
         const dcomplex& ieps_minus(size_t i, size_t j) const { return data[idx(i,j)].iem; }
