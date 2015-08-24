@@ -48,7 +48,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     /// Connect onChildChanged to current child change signal
     void connectOnChildChanged() {
-        if (_child)
+        if (hasChild())
             _child->changed.connect(
                 boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1)
             );
@@ -56,7 +56,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     /// Disconnect onChildChanged from current child change signal
     void disconnectOnChildChanged() {
-        if (_child)
+        if (hasChild())
             _child->changed.disconnect(
                 boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1)
             );
@@ -67,15 +67,9 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * @return child
      */
     inline shared_ptr<ChildType> getChild() const { 
-        if (_child) return _child;
+        if (hasChild()) return _child;
         throw NoChildException();
     }
-
-    /**
-     * Get type of child.
-     * @return type of child
-     */
-    inline GeometryObject::Type getChildType() const { return getChild()->getType(); }
 
     /**
      * Set new child.
@@ -122,7 +116,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const {
         if (this == &el) return GeometryObject::Subtree(this->shared_from_this());
-        if (!_child) GeometryObject::Subtree();
+        if (!hasChild()) GeometryObject::Subtree();
         GeometryObject::Subtree e = _child->getPathsTo(el, path);
         if (e.empty()) return GeometryObject::Subtree();
         GeometryObject::Subtree result(this->shared_from_this());
@@ -190,6 +184,15 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         for (auto& r: child_boxes) dest.push_back(this->fromChildCoords(r));
     }
 
+    /**
+     * Check if child of this has given type.
+     * @param type required type
+     * @return @c true only if this has a child of required @c type
+     */
+    inline bool childHasType(GeometryObject::Type type) const {
+         return hasChild() && (_child->getType() == type);
+    }
+
   protected:
     shared_ptr<ChildType> _child;
 
@@ -233,6 +236,7 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
         const std::size_t s = this->_child->getPositions(predicate, path).size();
         for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<this_dim>::NAN_VEC);
    }
+
 };
 
 /**

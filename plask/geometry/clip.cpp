@@ -8,20 +8,22 @@ namespace plask {
 
 template <int dim>
 shared_ptr<Material> Clip<dim>::getMaterial(const typename Clip<dim>::DVec &p) const {
-    return clipBox.contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
+    return (this->hasChild() && clipBox.contains(p)) ?
+                this->_child->getMaterial(p) :
+                shared_ptr<Material>();
 }
 
 template <int dim>
 bool Clip<dim>::contains(const typename Clip<dim>::DVec &p) const {
-    return clipBox.contains(p) && getChild()->contains(p);
+    return this->hasChild() && clipBox.contains(p) && this->_child->contains(p);
 }
 
 template <int dim>
 GeometryObject::Subtree Clip<dim>::getPathsAt(const Clip<dim>::DVec &point, bool all) const
 {
-    if (clipBox.contains(point))
-        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
-        else
+    if (this->hasChild() && clipBox.contains(point))
+        return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point, all));
+    else
         return GeometryObject::Subtree();
 }
 
@@ -37,7 +39,7 @@ void Clip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
-    getChild()->getPositionsToVec(predicate, dest, path);
+    if (this->hasChild()) this->_child->getPositionsToVec(predicate, dest, path);
 }
 
 template <int dim>

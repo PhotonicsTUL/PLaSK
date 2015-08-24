@@ -295,13 +295,13 @@ PathHints::Hint ShelfContainer2D::addGap(double size) {
 
 bool ShelfContainer2D::isFlat() const {
     std::size_t first = 0;
-    while (first < children.size() && children[first]->getChildType() == GeometryObject::TYPE_SEPARATOR)
+    while (first < children.size() && children[first]->childHasType(GeometryObject::TYPE_SEPARATOR))
         ++first;
     if (first+2 >= children.size()) //will we outside when we go 2 steps forward?
         return true;    //(almost) same separators
     const double height = children[first]->getBoundingBoxSize().vert();
     for (std::size_t i = first+1; i < children.size(); ++i)
-        if (children[i]->getChildType() != GeometryObject::TYPE_SEPARATOR &&
+        if (!children[i]->childHasType(GeometryObject::TYPE_SEPARATOR) &&
             !is_zero(height - children[i]->getBoundingBoxSize().vert()))
             return false;
     return true;

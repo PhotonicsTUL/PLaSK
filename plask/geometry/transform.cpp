@@ -45,8 +45,9 @@ void Translation<dim>::getPositionsToVec(const GeometryObject::Predicate& predic
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
+    if (!this->hasChild()) return;
     const std::size_t old_size = dest.size();
-    getChild()->getPositionsToVec(predicate, dest, path);
+    this->_child->getPositionsToVec(predicate, dest, path);
     for (std::size_t i = old_size; i < dest.size(); ++i)
         dest[i] += translation;
 }
