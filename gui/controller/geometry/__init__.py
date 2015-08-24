@@ -167,6 +167,11 @@ class GeometryController(Controller):
             tree_element = current_index.internalPointer()
         self.plot_element(tree_element, set_limits=True)
 
+    def reconfig(self):
+        root = self.current_root()
+        if root is not None and self.get_widget().isVisible():
+            self.plot(root)
+
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:
             self.plot_element(self.plotted_tree_element, set_limits=False)
@@ -296,6 +301,8 @@ class GeometryController(Controller):
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
         self.main_splitter.addWidget(geometry_widget)
+
+        self.document.window.config_changed.connect(self.reconfig)
 
     def show_selection(self):
         node = self._current_index.internalPointer()

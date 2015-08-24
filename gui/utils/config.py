@@ -13,6 +13,8 @@
 import os
 from ..qt import QtCore, QtGui
 
+from numpy import log10, ceil
+
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 
 
@@ -25,6 +27,8 @@ DEFAULTS = {
     'editor/selection_color': '#ffffdd',
     'editor/match_color': '#ddffdd',
     'editor/replace_color': '#ffddff',
+    'editor/matching_bracket_color': '#aaffaa',
+    'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher_local/font_size': 10,
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
@@ -45,8 +49,17 @@ DEFAULTS = {
     'syntax/python_define': 'italic=true',
     'syntax/python_loaded': 'color=#ff8800',
     'syntax/python_pylab': 'color=#440088',
-    'editor/matching_bracket_color': '#aaffaa',
-    'editor/not_matching_bracket_color': '#ffaaaa',
+    'geometry/selected_color': '#ff4444',
+    'geometry/selected_alpha': 0.9,
+    'geometry/selected_width': 3.0,
+    'geometry/show_origin': True,
+    'geometry/origin_color': '#ff4444',
+    'geometry/origin_alpha': 0.9,
+    'geometry/origin_width': 3.0,
+    'geometry/origin_size': 10.0,
+    'geometry/extra_color': '#00aaff',
+    'geometry/extra_alpha': 0.9,
+    'geometry/extra_width': 1.0,
 }
 
 
@@ -102,8 +115,7 @@ class ConfigDialog(QtGui.QDialog):
             super(ConfigDialog.CheckBox, self).__init__(parent)
             self.entry = entry
             self.setChecked(bool(CONFIG[entry]))
-            if help is not None:
-                self.setWhatsThis(help)
+            if help is not None: self.setWhatsThis(help)
         def save(self):
             CONFIG[self.entry] = self.isChecked()
 
@@ -123,13 +135,27 @@ class ConfigDialog(QtGui.QDialog):
             CONFIG[self.entry] = self.currentText()
 
     class SpinBox(QtGui.QSpinBox):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, parent=None, min=None, max=None, help=None):
             super(ConfigDialog.SpinBox, self).__init__(parent)
             self.entry = entry
-            self.setMinimum(1)
+            if min is not None: self.setMinimum(min)
+            if max is not None: self.setMaximum(min)
             self.setValue(int(CONFIG[entry]))
-            if help is not None:
-                self.setWhatsThis(help)
+            if help is not None: self.setWhatsThis(help)
+        def save(self):
+            CONFIG[self.entry] = self.value()
+
+    class FloatSpinBox(QtGui.QDoubleSpinBox):
+        def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None):
+            super(ConfigDialog.FloatSpinBox, self).__init__(parent)
+            self.entry = entry
+            if min is not None: self.setMinimum(min)
+            if max is not None: self.setMaximum(max)
+            if step is not None:
+                self.setSingleStep(step)
+                self.setDecimals(int(ceil(-log10(step))))
+            self.setValue(float(CONFIG[entry]))
+            if help is not None: self.setWhatsThis(help)
         def save(self):
             CONFIG[self.entry] = self.value()
 
@@ -139,8 +165,7 @@ class ConfigDialog(QtGui.QDialog):
             self.entry = entry
             self._color = CONFIG[entry]
             self.setStyleSheet(u"background-color: {};".format(self._color))
-            if help is not None:
-                self.setWhatsThis(help)
+            if help is not None: self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QtGui.QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
         def on_press(self):
@@ -176,8 +201,7 @@ class ConfigDialog(QtGui.QDialog):
             self.italic = QtGui.QCheckBox('italic', self)
             self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
-            if help is not None:
-                self.setWhatsThis(help)
+            if help is not None: self.setWhatsThis(help)
         def on_color_press(self):
             if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.CTRL:
                 self._color = None
@@ -213,7 +237,7 @@ class ConfigDialog(QtGui.QDialog):
         # current_layout = QtGui.QFormLayout()
 
         self.items = [
-            ("General", (
+            ("General Settings", (
                 ("Create backup files on save",
                  ConfigDialog.CheckBox('main_window/make_backup', self,
                                        "Create backup files on save. "
@@ -226,16 +250,58 @@ class ConfigDialog(QtGui.QDialog):
                                     self,
                                     "Main window icons theme.")),
             )),
-            ("Text Editor", (
+            ("Window Display", (
+                "Geometry View",
+                ("Selection frame color", ConfigDialog.Color('geometry/selected_color', self,
+                                                             "Color of a frame around the selected object.")),
+                ("Selection frame opacity", ConfigDialog.FloatSpinBox('geometry/selected_alpha', self,
+                                                                      step=0.1, min=0.0, max=1.0,
+                                                                      help="Opacity of a frame around "
+                                                                           "the selected object.")),
+                ("Selection frame width", ConfigDialog.FloatSpinBox('geometry/selected_width', self,
+                                                                     step=0.1, min=0.1,
+                                                                     help="Width of a frame around "
+                                                                          "the selected object.")),
+                ("Show local origin", ConfigDialog.CheckBox('geometry/show_origin', self,
+                                                            "Show local origin of the selected object")),
+                ("Origin mark color", ConfigDialog.Color('geometry/origin_color', self,
+                                                         "Color of a local origin mark.")),
+                ("Origin mark opacity", ConfigDialog.FloatSpinBox('geometry/origin_alpha', self,
+                                                                  step=0.1, min=0.0, max=1.0,
+                                                                  help="Opacity of a local origin mark.")),
+                ("Origin mark size", ConfigDialog.FloatSpinBox('geometry/origin_size', self,
+                                                                step=0.1, min=0.1,
+                                                                help="Size of a local origin mark.")),
+                ("Origin mark width", ConfigDialog.FloatSpinBox('geometry/origin_width', self,
+                                                                step=0.1, min=0.1,
+                                                                help="Line width of the local origin mark.")),
+                ("Info lines color", ConfigDialog.Color('geometry/extra_color', self,
+                                                        "Color of info lines for the selected object.")),
+                ("Info lines opacity", ConfigDialog.FloatSpinBox('geometry/origin_alpha', self,
+                                                                  step=0.1, min=0.0, max=1.0,
+                                                                  help="Opacity of info lines for the selected object.")),
+                ("Info lines width", ConfigDialog.FloatSpinBox('geometry/extra_width', self,
+                                                               step=0.1, min=0.1,
+                                                               help="Width of info lines for the selected object.")),
+
+                "Text Editor",
                 ("Font size",
-                 ConfigDialog.SpinBox('editor/font_size', self,
-                                      "Font size in text editors.")),
+                 ConfigDialog.SpinBox('editor/font_size', self, min=1,
+                                      help="Font size in text editors.")),
+                ("Current line color", ConfigDialog.Color('editor/current_line_color', self,
+                                                          "Background color of the current line.")),
                 ("Find result color", ConfigDialog.Color('editor/match_color', self,
                                                          "Background color of strings matching current search.")),
                 ("Replaced result color", ConfigDialog.Color('editor/replace_color', self,
                                                              "Background color of strings right after replace.")),
                 ("Word highlight color", ConfigDialog.Color('editor/selection_color', self,
                                                             "Highlight color for the current word.")),
+                ("Matching bracket color", ConfigDialog.Color('editor/matching_bracket_color', self,
+                                                              "Highlight color for matching brackets "
+                                                              "in script editor.")),
+                ("Unmatched bracket color", ConfigDialog.Color('editor/not_matching_bracket_color', self,
+                                                               "Highlight color for unmatched brackets "
+                                                               "in script editor.")),
             )),
             ("Syntax Highlighting", (
                 "Python Syntax",
@@ -253,7 +319,7 @@ class ConfigDialog(QtGui.QDialog):
                 ("XPL Definition", ConfigDialog.Syntax('syntax/python_define', self, "Python syntax highlighting.")),
                 ("PLaSK dictionary", ConfigDialog.Syntax('syntax/python_loaded', self, "Python syntax highlighting.")),
                 ("Pylab identifier", ConfigDialog.Syntax('syntax/python_pylab', self, "Python syntax highlighting.")),
-                "<hr/>XML Syntax",
+                "XML Syntax",
                 ("XML Tag", ConfigDialog.Syntax('syntax/xml_tag', self, "XML syntax highlighting.")),
                 ("XML Attribute", ConfigDialog.Syntax('syntax/xml_attr', self, "XML syntax highlighting.")),
                 ("XML Value", ConfigDialog.Syntax('syntax/xml_value', self, "XML syntax highlighting.")),
@@ -268,9 +334,11 @@ class ConfigDialog(QtGui.QDialog):
             tab.setLayout(tab_layout)
             stack.addWidget(tab)
             categories.addItem(cat)
+            hr = ""
             for item in items:
                 if isinstance(item, str):
-                    tab_layout.addRow(QtGui.QLabel("<b>"+item+"</b>", self))
+                    tab_layout.addRow(QtGui.QLabel(hr+"<b>"+item+"</b>", self))
+                    hr = "<hr/>"
                 else:
                     tab_layout.addRow(*item)
 

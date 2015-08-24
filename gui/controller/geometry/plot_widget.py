@@ -10,8 +10,11 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.ticker import MultipleLocator, MaxNLocator
+from matplotlib.colors import ColorConverter
+to_rgba = ColorConverter().to_rgba
 
 from ...utils.qsignals import BlockQtSignals
+from ...utils.config import CONFIG
 
 
 class Cursors(object):
@@ -236,18 +239,26 @@ class PlotWidget(QtGui.QGroupBox):
         if not bboxes: return
         ax = plane_to_axes(self.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)
         positions = root.get_object_positions(selected)
+        box_color = to_rgba(CONFIG['geometry/selected_color'], alpha=float(CONFIG['geometry/selected_alpha']))
+        box_lw = float(CONFIG['geometry/selected_width'])
+        show_origin = CONFIG['geometry/show_origin']
+        origin_color = CONFIG['geometry/origin_color']
+        origin_alpha = float(CONFIG['geometry/origin_alpha'])
+        origin_lw = float(CONFIG['geometry/origin_width'])
+        origin_size = float(CONFIG['geometry/origin_size'])
         for bbox, pos in zip(bboxes, positions):
             x, y = bbox.lower[ax[0]], bbox.lower[ax[1]]
             dx, dy = bbox.upper[ax[0]] - x, bbox.upper[ax[1]] - y
             if dx >= 0 and dy >= 0:
-                rect = matplotlib.patches.Rectangle((x, y), dx, dy,
-                                                    ec=(1.0, 0.25, 0.25, 0.9), zorder=100.0, lw=3.0, fill=False)
+                rect = matplotlib.patches.Rectangle((x, y), dx, dy, zorder=100.0, fill=False,
+                                                    ec=box_color, lw=box_lw)
                 self.add_selector(rect)
-                origin = matplotlib.lines.Line2D((pos[ax[0]],), (pos[ax[1]],), zorder=101.0, marker='+',
-                                                 # mew=1.5, ms=10.0, mec=(1.00, 0.75, 0.25, 0.9))
-                                                 mew=3.0, ms=10.0, mec=(1.0, 0.25, 0.25, 0.9))
-                self.axes.add_line(origin)
-                self.selectors.append(origin)
+                if show_origin:
+                    origin = matplotlib.lines.Line2D((pos[ax[0]],), (pos[ax[1]],), zorder=101.0, marker='+',
+                                                     mec=origin_color, alpha=origin_alpha,
+                                                     mew=origin_lw, ms=origin_size)
+                    self.axes.add_line(origin)
+                    self.selectors.append(origin)
         guidelines = self.guidelines.get(selected, ())
         for guideline in guidelines:
             self.add_selector(*guideline)
@@ -285,7 +296,9 @@ class PlotWidget(QtGui.QGroupBox):
             _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=to_plot,
                                                      fill=True, margin=margin, zorder=1,
                                                      plane=plane, lw=1.5, picker=self.picker,
-                                                     extra=dict(ec=(0.25, 0.5, 1.00, 0.9), lw=1.0))
+                                                     extra=dict(ec=to_rgba(CONFIG['geometry/extra_color'],
+                                                                           alpha=float(CONFIG['geometry/extra_alpha'])),
+                                                                lw=float(CONFIG['geometry/extra_width'])))
             for ax in self.axes.xaxis, self.axes.yaxis:
                 ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
                 ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))

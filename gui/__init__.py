@@ -48,6 +48,7 @@ from .model.info import InfoListModel, Info, infoLevelIcon
 from .launch import launch_plask
 
 from .utils.config import CONFIG, ConfigDialog
+from .utils.textedit import update_textedit_colors
 
 try:
     import plask
@@ -310,6 +311,8 @@ class MainWindow(QtGui.QMainWindow):
         fs = int(1.3 * QtGui.QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
         menu_button.setStyleSheet("font-size: {}pt;".format(fs))
+
+        self.config_changed.connect(update_textedit_colors)
 
         self.show()
 

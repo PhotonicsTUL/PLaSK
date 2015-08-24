@@ -100,9 +100,9 @@
     </align>
   </cartesian3d>
   <cartesian3d name="l3cavity">
-    <stack longcenter="0" trancenter="0">
+    <stack front="0">
       <lattice along="-{sqrt(3)/2}" atran="0.5" avert="0" blong="{sqrt(3)/2}" btran="0.5" bvert="0">
-        <segments>-3 0; 0 3; 3 3; 3 0; 0 -3; -3 -3 ^ 2 1; 1 2; -2 -1; -1 -2
+        <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ 2 1; 1 2; -2 -1; -1 -2
 
 
 </segments>

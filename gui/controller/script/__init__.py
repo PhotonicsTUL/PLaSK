@@ -23,7 +23,7 @@ from ...utils.qthread import BackgroundTask
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
 
-from .brackets import get_selections as get_bracket_selections
+from .brackets import get_selections as get_bracket_selections, update_brackets_colors
 from .indenter import indent, unindent, autoindent
 
 from ..source import SourceEditController, SourceWidget
@@ -347,6 +347,7 @@ class ScriptController(SourceEditController):
         self.highlighter.rehighlight()
 
     def reconfig(self):
+        update_brackets_colors()
         if self.highlighter is not None:
             with BlockQtSignals(self.source_widget.editor):
                 update_python_scheme()

@@ -17,8 +17,11 @@ from ...qt import QtGui
 from ...utils.config import CONFIG
 
 
-MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/matching_bracket_color'])
-NOT_MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/not_matching_bracket_color'])
+def update_brackets_colors():
+    global MATCHING_BRACKET_COLOR, NOT_MATCHING_BRACKET_COLOR
+    MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/matching_bracket_color'])
+    NOT_MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/not_matching_bracket_color'])
+update_brackets_colors()
 
 
 _START_BRACKETS = '({['
