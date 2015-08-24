@@ -67,8 +67,9 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * @return child
      */
     inline shared_ptr<ChildType> getChild() const { 
-        if (hasChild()) return _child;
-        throw NoChildException();
+        return _child;
+        /*if (hasChild()) return _child;    //TODO
+        throw NoChildException();*/
     }
 
     /**
@@ -88,12 +89,12 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * Set new child. Call change signal to inform observer about it.
      * @param child new child
      * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
-     * @throw NoChildException if child is an empty pointer
+     * TODO @throw NoChildException if child is an empty pointer
      */
     void setChild(const shared_ptr<ChildType>& child) {
-        if (!child) throw NoChildException();
+        //if (!child) throw NoChildException();
         if (child == _child) return;
-        this->ensureCanHaveAsChild(*child);
+        if (child) this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
         this->fireChildrenChanged();
     }
