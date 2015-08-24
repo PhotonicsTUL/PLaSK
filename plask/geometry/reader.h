@@ -284,7 +284,9 @@ inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
 // specialization for most types
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild(bool required) {
-    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readExactlyOneChild(required));
+    auto before_cast = readExactlyOneChild(required);
+    if (!required && !before_cast) return shared_ptr<RequiredObjectType>();
+    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(before_cast);
     if (!result) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
