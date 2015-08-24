@@ -6,7 +6,7 @@ namespace plask {
 std::string Revolution::getTypeName() const { return NAME; }
 
 bool Revolution::contains(const GeometryObjectD< 3 >::DVec& p) const {
-    return getChild()->contains(childVec(p));
+    return this->hasChild() && this->_child->contains(childVec(p));
 }
 
 
@@ -15,7 +15,7 @@ bool Revolution::contains(const GeometryObjectD< 3 >::DVec& p) const {
 }*/
 
 shared_ptr<Material> Revolution::getMaterial(const DVec& p) const {
-    return getChild()->getMaterial(childVec(p));
+    return this->hasChild() ? this->_child->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
 Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &child_bbox) const {
@@ -23,16 +23,16 @@ Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &ch
 }
 
 shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallowCopy() const {
-    return make_shared<Revolution>(this->getChild());
+    return make_shared<Revolution>(this->_child);
 }
 
 GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(childVec(point), all));
+    if (!this->hasChild()) return GeometryObject::Subtree();
+    return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(childVec(point), all));
 }
 
 bool Revolution::childIsClipped() const {
-    if (!this->getChild()) return false;
-    return this->getChild()->getBoundingBox().lower.tran() < 0;
+    return this->hasChild() && (this->_child->getBoundingBox().lower.tran() < 0);
 }
 
 // void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {

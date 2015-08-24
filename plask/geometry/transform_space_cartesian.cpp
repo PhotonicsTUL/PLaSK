@@ -14,7 +14,7 @@ void Extrusion::setLength(double new_length) {
 }
 
 bool Extrusion::contains(const DVec& p) const {
-    return canBeInside(p) && getChild()->contains(childVec(p));
+    return (this->hasChild() && canBeInside(p)) && this->_child->contains(childVec(p));
 }
 
 /*bool Extrusion::intersects(const Box& area) const {
@@ -22,7 +22,7 @@ bool Extrusion::contains(const DVec& p) const {
 }*/
 
 shared_ptr<Material> Extrusion::getMaterial(const DVec& p) const {
-    return canBeInside(p) ? getChild()->getMaterial(childVec(p)) : shared_ptr<Material>();
+    return (this->hasChild() && canBeInside(p)) ? this->_child->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
 Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box &child_bbox) const {
@@ -34,11 +34,11 @@ Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box &child
 }*/
 
 shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
-    return shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));
+    return shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>>(new Extrusion(this->_child, length));
 }
 
 GeometryObject::Subtree Extrusion::getPathsAt(const DVec& point, bool all) const {
-    if (canBeInside(point))
+    if (this->hasChild() && canBeInside(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(childVec(point), all));
     else
         return GeometryObject::Subtree();
