@@ -73,6 +73,37 @@ void XMLReader::initParser() {
     XML_SetCharacterDataHandler(parser, &XMLReader::characterData);
 }
 
+XMLReader::NodeType XMLReader::requireNodeType(int required_types, const char *new_tag_name) const
+{
+    NodeType result = this->getNodeType();
+    if (((required_types & result) == 0) ||
+        (new_tag_name && (result == NODE_ELEMENT) && (new_tag_name != getNodeName())))
+    {
+        std::string msg;
+        if (required_types & NODE_ELEMENT) {
+            if (new_tag_name) {
+                msg += "begin of tag ";
+                msg += new_tag_name;
+            } else
+                msg += "begin of a new tag";
+        }
+        if (required_types & NODE_ELEMENT_END) {
+            if (!msg.empty()) msg += " or ";
+            if (result == NODE_ELEMENT) {
+                assert(path.size() >= 2);
+                msg += "</" + path[path.size()-2] + ">";
+            } else
+                msg += "</" + path.back() + ">";
+        }
+        if (required_types & NODE_TEXT) {
+            if (!msg.empty()) msg += " or ";
+            msg += "content of <" + path.back() + "> tag";
+        }
+        throwUnexpectedElementException(msg);
+    }
+    return result;
+}
+
 XMLReader::XMLReader(std::unique_ptr<DataSource> &&source):
     source(std::move(source)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
@@ -170,7 +201,7 @@ const std::map<std::string, std::string>& XMLReader::getAttributes() {
 
 void XMLReader::removeAlienNamespaceAttr() {
     if (getNodeType() != NODE_ELEMENT)
-        throw XMLUnexpectedElementException(*this, "element");
+        throwUnexpectedElementException("element");
     auto iter = states.front().attributes.begin();
     while (iter != states.front().attributes.end()) {
         if (iter->first.find(' ') != std::string::npos) //not in default NS?
@@ -232,44 +263,32 @@ std::string XMLReader::requireAttribute(const std::string& attr_name) const {
 }
 
 void XMLReader::requireNext() {
-    if (!next()) throw XMLUnexpectedEndException(*this);
+    if (!next()) throwUnexpectedEndException();
 }
 
 void XMLReader::requireTag() {
     requireNext();
-    if (getNodeType() != NODE_ELEMENT)
-        throw XMLUnexpectedElementException(*this, "begin of a new tag");
+    requireNodeType(NODE_ELEMENT);
 }
 
 void XMLReader::requireTag(const std::string& name) {
     requireNext();
-    if (getNodeType() != NODE_ELEMENT || getNodeName() != name)
-        throw XMLUnexpectedElementException(*this, "begin of tag <" + name + ">");
+    requireNodeType(NODE_ELEMENT, name.c_str());
 }
 
 bool XMLReader::requireTagOrEnd() {
     requireNext();
-    if (getNodeType() != NODE_ELEMENT && getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException(*this, "begin of a new tag or </" + path.back() + ">");
-    return getNodeType() == NODE_ELEMENT;
+    return requireNodeType(NODE_ELEMENT | NODE_ELEMENT_END) == NODE_ELEMENT;
 }
 
 bool XMLReader::requireTagOrEnd(const std::string& name) {
-    if (requireTagOrEnd()) {
-        if (getNodeName() != name)
-            throw XMLUnexpectedElementException(*this, "begin of tag <" + name + ">");
-        return true;
-    } else
-        return false;
+    requireNext();
+    return requireNodeType(NODE_ELEMENT | NODE_ELEMENT_END, name.c_str()) == NODE_ELEMENT;
 }
 
 void XMLReader::requireTagEnd() {
     requireNext();
-    if (getNodeType() == NODE_ELEMENT) {
-        path.pop_back();
-        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
-    } else if (getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
+    requireNodeType(NODE_ELEMENT_END);
 }
 
 std::string XMLReader::requireText() {

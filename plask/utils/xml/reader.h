@@ -451,7 +451,28 @@ private:
      * Throw exception which include information about current position in XML and typically describe logic error in XML file.
      * @param msg custom part of exception message
      */
-    void throwException(const std::string& msg) { return throw XMLException(*this, msg); }
+    void throwException(const std::string& msg) const { throw XMLException(*this, msg); }
+
+    /**
+     * Throw XMLUnexpectedEndException.
+     */
+    void throwUnexpectedEndException() const { throw XMLUnexpectedEndException(*this); }
+
+    /**
+     * Throw XMLUnexpectedElementException.
+     * @param args... XMLUnexpectedElementException constructor arguments to use, exluding the first one
+     */
+    template <typename... Args>
+    void throwUnexpectedElementException(Args&&... args) const { throw XMLUnexpectedElementException(*this, std::forward<Args>(args)...); }
+
+    /**
+     * Throw XMLUnexpectedElementException if node type is not included in required_types or
+     * (only when new_tag_name is given) node type is NODE_ELEMENT and name is not equal to new_tag_name.
+     * @param required_types bit sum of NodeType-s
+     * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
+     * @return type of current node
+     */
+    NodeType requireNodeType(int required_types, const char* new_tag_name = nullptr) const;
 
     /**
      * Construct XML reader to read XML from given source.
