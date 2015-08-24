@@ -75,16 +75,17 @@ void ExpansionBessel::init()
         }
     }
     
-    raxis.reset(new UnorderedAxis);
+    size_t n; for (size_t i = 0; i < nseg; ++i) n += (2 << segments[i].n) - 1;
+    std::vector<double> points;
+    points.reserve(n);
+    
     for (size_t i = 0; i < nseg; ++i) {
-        const unsigned nj = 1 << segments[i].n;
-        for (unsigned j = 1; j < nj; ++j) {
-            double x = patterson_points[j];
-            raxis->appendPoint(segments[i].Z - segments[i].D * x);
-            raxis->appendPoint(segments[i].Z + segments[i].D * x);
-        }
+        const double stp = 256 >> segments[i].n;
+        for (unsigned j = 256 - stp; j > 0; j -= stp) points.push_back(segments[i].Z - segments[i].D * patterson_points[j]);
+        for (unsigned j = 0; j < 256; j += stp) points.push_back(segments[i].Z + segments[i].D * patterson_points[j]);
     }
-
+    raxis.reset(new OrderedAxis(std::move(points), 0.));
+    
     // Allocate memory for integrals
     size_t nlayers = lcount();
     layers_integrals.resize(nlayers);
@@ -134,14 +135,20 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     Integrals& integrals = layers_integrals[layer];
     integrals.reset(N);
     
+    // For checking if the layer is uniform
+    dcomplex eps0;
+    diagonals[layer] = true;
+    
     // Compute integrals
-    for (size_t ri = 0, seg = 0, wi = 1, nw = 2<<segments[0].n; ri != nr; ++ri, ++wi) {
+    ptrdiff_t wi = - 1 << segments[0].n + 1;
+    for (size_t ri = 0, seg = 0, nw = 1<<segments[0].n, hw = 1<<segments[0].n; ri != nr; ++ri, ++wi) {
         if (wi == nw) {
             wi = 1;
-            nw = 2 << segments[++seg].n;
+            nw = 1 << segments[++seg].n;
+            hw = - nw + 1;
         }
         double r = raxis->at(ri);
-        double w = patterson_weights[segments[seg].n][wi/2] * segments[seg].D;
+        double w = patterson_weights[segments[seg].n][abs(wi)] * segments[seg].D;
 
         auto material = geometry->getMaterial(vec(r, matz));
         double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
@@ -160,6 +167,9 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         }
         eps = eps * eps;
         dcomplex ieps = 1. / eps;
+        
+        if (ri == 0) eps0 = eps;
+        else if (!is_zero(eps - eps0)) diagonals[layer] = false;
         
         for (int i = 0; i < N; ++i) {
             double g = factors[i] * ib; double gr = g*r;
@@ -185,20 +195,11 @@ void ExpansionBessel::layerIntegrals(size_t layer)
                 }
             }
         }
-        
     }
     
-//     // Check if the layer is uniform
-//     diagonals[l] = true;
-//     for (size_t i = 1; i != N; ++i) {
-//         if (false) {  //TODO do the test here
-//             diagonals[l] = false;
-//             break;
-//         }
-// 
-//     if (diagonals[l]) {
-//         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-//     }
+    if (diagonals[layer]) {
+        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+    }
 }
 
 

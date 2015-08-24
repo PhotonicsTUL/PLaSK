@@ -26,7 +26,7 @@ class PLASK_API OrderedAxis: public RectangularAxis {
     /// Points coordinates in ascending order.
     std::vector<double> points;
 
-    void sortPointsAndRemoveNonUnique();
+    void sortPointsAndRemoveNonUnique(double min_dist);
 
 public:
 
@@ -102,22 +102,25 @@ public:
      * Construct mesh with given points.
      * It use algorithm which has logarithmic time complexity.
      * @param points points, in any order
+     * \param min_dist minimum distance to the existing point
      */
-    OrderedAxis(std::initializer_list<PointType> points);
+    OrderedAxis(std::initializer_list<PointType> points, double min_dist=MIN_DISTANCE);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity per point in @p points.
      * @param points points, in any order
+     * \param min_dist minimum distance to the existing point
      */
-    OrderedAxis(const std::vector<PointType>& points);
+    OrderedAxis(const std::vector<PointType>& points, double min_dist=MIN_DISTANCE);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity per point in @p points.
      * @param points points, in any order
+     * \param min_dist minimum distance to the existing point
      */
-    OrderedAxis(std::vector<PointType>&& points);
+    OrderedAxis(std::vector<PointType>&& points, double min_dist=MIN_DISTANCE);
 
     /// Assign a new mesh. This operation preserves the \a owner.
     OrderedAxis& operator=(const OrderedAxis& src);
@@ -178,10 +181,11 @@ public:
      * It uses algorithm which has linear time complexity.
      * @param begin, end ordered range of points in ascending order
      * @param points_count_hint number of points in range (can be approximate, or 0)
+     * \param min_dist minimum distance to the existing point
      * @tparam IteratorT input iterator
      */
     template <typename IteratorT>
-    void addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint);
+    void addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint, double min_dist=MIN_DISTANCE);
 
     /**
      * Add points from ordered range.
@@ -240,13 +244,13 @@ inline auto OrderedAxis::interpolateLinear(const RandomAccessContainer& data, do
 }
 
 template <typename IteratorT>
-inline void OrderedAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
+inline void OrderedAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint, double min_dist) {
     std::vector<double> result;
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
     this->points = std::move(result);
     // Remove points too close to each other
-    auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
+    auto almost_equal = [min_dist](const double& x, const double& y) -> bool { return std::abs(x-y) < min_dist; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
     fireResized();
 }

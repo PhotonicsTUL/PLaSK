@@ -12,28 +12,26 @@ S patterson(const std::function<S(T)>& fun, T a, T b, double& err, unsigned* ord
     S result, result2;
     T D = (b - a) / 2., Z = (a + b) / 2.;
 
-    S values[256]; 
+    S values[256]; std::fill_n(values, 256, 0.);
     values[0] = fun(Z);
     result = (b - a) * values[0];
 
     unsigned n;
 
     for (n = 1; err > eps && n < 9; ++n) {
-        unsigned N = 1 << n; // number of points in current iteration on one side of zero
-        unsigned N0 = N >> 1; // number of points in previous iteration on one side of zero
+        const unsigned N = 1 << n; // number of points in current iteration on one side of zero
+        const unsigned stp = 256 >> n; // step in x array
         result2 = result;
-        result = 0.;
-        // Add previously computed points
-        for (unsigned i = 0; i < N0; ++i) {
-            result +=  patterson_weights[n][i] * values[i];
-        }
-        // Compute and add new points
-        for (unsigned i = N0; i < N; ++i) {
-            double x = patterson_points[i];
-            T z1 = Z - D * x;
-            T z2 = Z + D * x;
-            values[i] = fun(z1) + fun(z2);
-            result +=  patterson_weights[n][i] * values[i];
+        // Compute integral on scaled range [-1, +1]
+        result = patterson_weights[n][0] * values[255];
+        for (unsigned i = stp, j = 1; j < N; i += stp, ++j) {
+            if (j % 2) { // only odd points are new ones
+                const double x = patterson_points[i];
+                T z1 = Z - D * x;
+                T z2 = Z + D * x;
+                values[i] = fun(z1) + fun(z2);
+            }
+            result += patterson_weights[n][j] * values[i];
         }
         // Rescale integral and compute error
         result *= D;

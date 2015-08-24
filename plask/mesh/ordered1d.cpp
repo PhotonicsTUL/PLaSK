@@ -5,23 +5,23 @@
 
 namespace plask {
 
-void OrderedAxis::sortPointsAndRemoveNonUnique()
+void OrderedAxis::sortPointsAndRemoveNonUnique(double min_dist)
 {
     std::sort(this->points.begin(), this->points.end());
-    auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
+    auto almost_equal = [min_dist](const double& x, const double& y) -> bool { return std::abs(x-y) < min_dist; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
 }
 
-OrderedAxis::OrderedAxis(std::initializer_list<PointType> points): points(points) {
-    sortPointsAndRemoveNonUnique();
+OrderedAxis::OrderedAxis(std::initializer_list<PointType> points, double min_dist): points(points) {
+    sortPointsAndRemoveNonUnique(min_dist);
 }
 
-OrderedAxis::OrderedAxis(const std::vector<PointType>& points): points(points) {
-    sortPointsAndRemoveNonUnique();
+OrderedAxis::OrderedAxis(const std::vector<PointType>& points, double min_dist): points(points) {
+    sortPointsAndRemoveNonUnique(min_dist);
 }
 
-OrderedAxis::OrderedAxis(std::vector<PointType>&& points): points(std::move(points)) {
-    sortPointsAndRemoveNonUnique();
+OrderedAxis::OrderedAxis(std::vector<PointType>&& points, double min_dist): points(std::move(points)) {
+    sortPointsAndRemoveNonUnique(min_dist);
 }
 
 bool OrderedAxis::operator==(const plask::OrderedAxis& to_compare) const {

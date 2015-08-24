@@ -90,7 +90,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     std::vector<Segment> segments;
     
     /// Axis for obtaining material parameters
-    shared_ptr<UnorderedAxis> raxis;
+    shared_ptr<OrderedAxis> raxis;
     
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integrals {
