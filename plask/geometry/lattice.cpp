@@ -1,6 +1,6 @@
 #include "lattice.h"
 #include "reader.h"
-
+#include "../manager.h"
 
 //used by lattice
 #include <map>
@@ -213,7 +213,7 @@ shared_ptr<GeometryObject> read_arrange2d(GeometryReader& reader) {
     vec.vert() = reader.source.getAttribute("d"+reader.getAxisVertName(), 0.);
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
-    auto child = reader.readExactlyOneChild<typename ArrangeContainer<2>::ChildType>();
+    auto child = reader.readExactlyOneChild<typename ArrangeContainer<2>::ChildType>(!reader.manager.draft);
     return make_shared<ArrangeContainer<2>>(child, vec, repeat, warn);
 }
 
@@ -225,7 +225,7 @@ shared_ptr<GeometryObject> read_arrange3d(GeometryReader& reader) {
     vec.vert() = reader.source.getAttribute("d"+reader.getAxisVertName(), 0.);
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
-    auto child = reader.readExactlyOneChild<typename ArrangeContainer<3>::ChildType>();
+    auto child = reader.readExactlyOneChild<typename ArrangeContainer<3>::ChildType>(!reader.manager.draft);
     return make_shared<ArrangeContainer<3>>(child, vec, repeat, warn);
 }
 
@@ -473,7 +473,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
         }
     }
-    result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>());
+    result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>(!reader.manager.draft));
     result->refillContainer();
     return result;
 }

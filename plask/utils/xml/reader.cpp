@@ -73,11 +73,11 @@ void XMLReader::initParser() {
     XML_SetCharacterDataHandler(parser, &XMLReader::characterData);
 }
 
-XMLReader::NodeType XMLReader::requireNodeType(int required_types, const char *new_tag_name) const
+XMLReader::NodeType XMLReader::ensureNodeTypeIs(int required_types, const char *new_tag_name) const
 {
     NodeType result = this->getNodeType();
     if (((required_types & result) == 0) ||
-        (new_tag_name && (result == NODE_ELEMENT) && (new_tag_name != getNodeName())))
+        (new_tag_name && (result == NODE_ELEMENT) && (getNodeName() != new_tag_name)))
     {
         std::string msg;
         if (required_types & NODE_ELEMENT) {
@@ -266,29 +266,29 @@ void XMLReader::requireNext() {
     if (!next()) throwUnexpectedEndException();
 }
 
-void XMLReader::requireTag() {
+XMLReader::NodeType XMLReader::requireNext(int required_types, const char *new_tag_name) {
     requireNext();
-    requireNodeType(NODE_ELEMENT);
+    return ensureNodeTypeIs(required_types, new_tag_name);
+}
+
+void XMLReader::requireTag() {
+    requireNext(NODE_ELEMENT);
 }
 
 void XMLReader::requireTag(const std::string& name) {
-    requireNext();
-    requireNodeType(NODE_ELEMENT, name.c_str());
+    requireNext(NODE_ELEMENT, name.c_str());
 }
 
 bool XMLReader::requireTagOrEnd() {
-    requireNext();
-    return requireNodeType(NODE_ELEMENT | NODE_ELEMENT_END) == NODE_ELEMENT;
+    return requireNext(NODE_ELEMENT | NODE_ELEMENT_END) == NODE_ELEMENT;
 }
 
 bool XMLReader::requireTagOrEnd(const std::string& name) {
-    requireNext();
-    return requireNodeType(NODE_ELEMENT | NODE_ELEMENT_END, name.c_str()) == NODE_ELEMENT;
+    return requireNext(NODE_ELEMENT | NODE_ELEMENT_END, name.c_str()) == NODE_ELEMENT;
 }
 
 void XMLReader::requireTagEnd() {
-    requireNext();
-    requireNodeType(NODE_ELEMENT_END);
+    requireNext(NODE_ELEMENT_END);
 }
 
 std::string XMLReader::requireText() {

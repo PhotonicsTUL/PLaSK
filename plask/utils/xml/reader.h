@@ -472,7 +472,7 @@ private:
      * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
      * @return type of current node
      */
-    NodeType requireNodeType(int required_types, const char* new_tag_name = nullptr) const;
+    NodeType ensureNodeTypeIs(int required_types, const char* new_tag_name = nullptr) const;
 
     /**
      * Construct XML reader to read XML from given source.
@@ -720,10 +720,21 @@ private:
     }
 
     /**
-     * Call read(), one or more times skipping comments.
+     * Go to next element.
      * @throw XMLUnexpectedEndException if there is no next element
      */
     void requireNext();
+
+    /**
+     * Go to next element.
+     * @param required_types bit sum of NodeType-s
+     * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
+     * @return type of new current node
+     * @throw XMLUnexpectedElementException if node type is not included in @p required_types or
+     * (only when new_tag_name is given) node type is @c NODE_ELEMENT and name is not equal to @p new_tag_name.
+     * @throw XMLUnexpectedEndException if there is no next element
+     */
+    NodeType requireNext(int required_types, const char *new_tag_name = nullptr);
 
     /**
      * Call requireNext() and next check if current element is tag opening. Throw exception if it's not.

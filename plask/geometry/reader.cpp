@@ -155,10 +155,12 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     return new_object;
 }
 
-shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild() {
-    source.requireTag();
-    shared_ptr<GeometryObject> result = readObject();
-    source.requireTagEnd();
+shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild(bool required) {
+    shared_ptr<GeometryObject> result;
+    if (source.requireNext(required ? XMLReader::NODE_ELEMENT : (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)) == XMLReader::NODE_ELEMENT) {
+        result = readObject();
+        source.requireTagEnd();
+    }
     return result;
 }
 

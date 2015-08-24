@@ -182,9 +182,10 @@ class PLASK_API GeometryReader {
      *
      * Befor call source reader should point to parent object tag (typically transform object)
      * and after call it will be point to end of parent object tag.
-     * @return child object which was read and create or to which reference was read
+     * @param required indicate if child is required
+     * @return child object which was read and create or to which reference was read, or an empty pointer if there is no child and required is true
      */
-    shared_ptr<GeometryObject> readExactlyOneChild();
+    shared_ptr<GeometryObject> readExactlyOneChild(bool required = true);
 
     /**
      * Call readObject() and try dynamic cast it to @a RequiredObjectType.
@@ -200,11 +201,12 @@ class PLASK_API GeometryReader {
 
     /**
      * Call readExactlyOneChild() and try dynamic cast it to @a RequiredObjectType.
-     * @return object (casted to RequiredObjectType) which was return by readExactlyOneChild()
+     * @param required indicate if child is required
+     * @return object (casted to RequiredObjectType) which was return by readExactlyOneChild(), or an empty pointer if there is no child and required is true
      * @tparam RequiredObjectType required type of object
      */
     template <typename RequiredObjectType>
-    shared_ptr<RequiredObjectType> readExactlyOneChild();
+    shared_ptr<RequiredObjectType> readExactlyOneChild(bool required = true);
 
     /**
      * Try reading calculation space. Throw exception if can't.
@@ -281,16 +283,16 @@ inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
 
 // specialization for most types
 template <typename RequiredObjectType>
-inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild() {
-    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readExactlyOneChild());
+inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild(bool required) {
+    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readExactlyOneChild(required));
     if (!result) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 
 // specialization for GeometryObject which doesn't required dynamic_cast
 template <>
-inline shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild<GeometryObject>() {
-    return readExactlyOneChild();
+inline shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild<GeometryObject>(bool required) {
+    return readExactlyOneChild(required);
 }
 
 /*template <typename FunctorType, typename RequiredObjectType>

@@ -1,6 +1,7 @@
 #include "intersection.h"
 
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -67,8 +68,8 @@ shared_ptr<GeometryObjectTransform<dim> > Intersection<dim>::shallowCopy() const
 
 template <int dim>
 void Intersection<dim>::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
-    if (auto child = getChild()) {  //TODO work without child, maybe change the sequence child <-> envelope?
-        child->writeXML(dest_xml_object, write_cb, axes);
+    if (this->hasChild()) {
+        this->_child->writeXML(dest_xml_object, write_cb, axes);
         if (envelope) envelope->writeXML(dest_xml_object, write_cb, axes);
     }
 }
@@ -77,12 +78,15 @@ template <int dim>
 shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Intersection<dim> > intersection = make_shared<Intersection<dim>>();
-    reader.source.requireTag();
-    intersection->setChild(reader.readObject<typename Intersection<dim>::ChildType>());
-    if (reader.source.requireTagOrEnd()) {
-        GeometryReader::RevertMaterialsAreRequired enableShapeOnlyMode(reader, false);
-        intersection->envelope = reader.readObject<typename Intersection<dim>::ChildType>();
-        reader.source.requireTagEnd();
+    if (reader.source.requireNext(reader.manager.draft ? (XMLReader::NODE_ELEMENT|XMLReader::NODE_ELEMENT_END) : XMLReader::NODE_ELEMENT)
+            == XMLReader::NODE_ELEMENT)
+    {
+        intersection->setChild(reader.readObject<typename Intersection<dim>::ChildType>());
+        if (reader.source.requireTagOrEnd()) {
+            GeometryReader::RevertMaterialsAreRequired enableShapeOnlyMode(reader, false);
+            intersection->envelope = reader.readObject<typename Intersection<dim>::ChildType>();
+            reader.source.requireTagEnd();
+        }
     }
     return intersection;
 }

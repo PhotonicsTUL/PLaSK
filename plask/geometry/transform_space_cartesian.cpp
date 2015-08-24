@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -61,7 +62,7 @@ void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisName
 shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
+    return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(!reader.manager.draft), length);
 }
 
 static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(Extrusion::NAME, read_cartesianExtend);

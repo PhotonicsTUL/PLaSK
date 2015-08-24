@@ -1,5 +1,6 @@
 #include "mirror.h"
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -175,7 +176,7 @@ template <typename GeometryType>
 shared_ptr<GeometryObject> read_flip_like(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, GeometryType::DIM == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     auto flipDir = reader.getAxisNames().get<GeometryType::DIM>(reader.source.requireAttribute("axis"));
-    return make_shared< GeometryType >(flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>());
+    return make_shared< GeometryType >(flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>(!reader.manager.draft));
 }
 
 static GeometryReader::RegisterObjectReader flip2D_reader(Flip<2>::NAME, read_flip_like<Flip<2>>);

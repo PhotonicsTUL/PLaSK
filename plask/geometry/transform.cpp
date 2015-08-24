@@ -1,6 +1,7 @@
 #include "transform.h"
 
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -102,7 +103,7 @@ template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {
     translation.translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
     translation.translation.vert() = reader.source.getAttribute(reader.getAxisVertName(), 0.0);
-    translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
+    translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>(!reader.manager.draft));
 }
 
 shared_ptr<GeometryObject> read_translation2D(GeometryReader& reader) {

@@ -1,6 +1,7 @@
 #include "clip.h"
 
 #include "reader.h"
+#include "../manager.h"
 
 #include <limits>
 
@@ -71,7 +72,7 @@ inline static void setupClip2D3D(GeometryReader& reader, ClipType& clip) {
     clip.clipBox.right() = reader.source.getAttribute<double>("right", std::numeric_limits<double>::infinity());
     clip.clipBox.top() = reader.source.getAttribute<double>("top", std::numeric_limits<double>::infinity());
     clip.clipBox.bottom() = reader.source.getAttribute<double>("bottom", - std::numeric_limits<double>::infinity());
-    clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>());
+    clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>(!reader.manager.draft));
 }
 
 shared_ptr<GeometryObject> read_Clip2D(GeometryReader& reader) {

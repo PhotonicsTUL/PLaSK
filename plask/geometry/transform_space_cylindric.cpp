@@ -1,5 +1,6 @@
 #include "transform_space_cylindric.h"
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -62,7 +63,7 @@ Box3D Revolution::parentBox(const ChildBox& r) {
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     bool auto_clip = reader.source.getAttribute("auto-clip", false);
-    return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(), auto_clip);
+    return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
     /*if (res->childIsClipped()) {
         writelog(LOG_WARNING, "Child of <revolution>, read from XPL line %1%, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
     }*/
