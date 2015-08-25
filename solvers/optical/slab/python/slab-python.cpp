@@ -190,6 +190,26 @@ void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
     self->invalidate();
 }
 
+struct CMatrix_Python {
+    cmatrix data;
+    CMatrix_Python(const cmatrix& data): data(data) {}
+    CMatrix_Python(const CMatrix_Python& src): data(src.data) {}
+    
+    static PyObject* convert(const cmatrix& self) {
+        npy_intp dims[2] = { self.rows(), self.cols() };
+        npy_intp strides[2] = {sizeof(dcomplex), self.rows() * sizeof(dcomplex)};
+        
+        PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
+                                    (void*)self.data(), 0, 0, NULL);
+        if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
+        // Make sure the data vector stays alive as long as the array
+        py::object oself {CMatrix_Python(self)};
+        py::incref(oself.ptr());        
+        PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
+        return arr;
+    }
+};
+
 
 py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
@@ -265,6 +285,9 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
+    
+    FourierSolver2D::ParamGuard guard(self);
+
     if (lambda) self->setWavelength(*lambda, dispersive);
     if (neff) self->setKlong(*neff * self->getK0());
     if (ktran) self->setKtran(*ktran);
@@ -272,31 +295,26 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
-        case WHAT_WAVELENGTH: {
-            FourierSolver2D::ParamGuard guard(self);
+        case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
                 [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_K0: {
-            FourierSolver2D::ParamGuard guard(self);
+        case WHAT_K0:
             return UFUNC<dcomplex>(
                 [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_NEFF: {
-            FourierSolver2D::ParamGuard guard(self);
+        case WHAT_NEFF:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->setKlong(x * self->getK0()); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_KTRAN: {
-            FourierSolver2D::ParamGuard guard(self);
+        case WHAT_KTRAN:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
                 array
             );
-        }
     }
     return py::object();
 }
@@ -472,6 +490,65 @@ std::string BesselSolverCyl_Mode_repr(const BesselSolverCyl::Mode& self) {
     return format("BesselCyl.Mode(m=%d, lam=%g, power=%g)", self.m, str(2e3*M_PI / self.k0), self.power);
 }
 
+py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+    BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
+
+    enum What {
+        WHAT_NOTHING = 0,
+        WHAT_WAVELENGTH,
+        WHAT_K0,
+    };
+    What what = WHAT_NOTHING;
+    py::object array;
+    int m = 1;
+
+    boost::optional<dcomplex> lambda;
+    bool dispersive = true;
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam" || *i == "wavelength") {
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_WAVELENGTH; array = kwargs[*i];
+            } else
+                lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        } else if (*i == "k0")
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_K0; array = kwargs[*i];
+            } else
+                lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+        else if (*i == "dispersive")
+            dispersive = py::extract<bool>(kwargs[*i]);
+        else if (*i == "m")
+            m = py::extract<int>(kwargs[*i]);
+        else
+            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
+    }
+    if (lambda) self->setWavelength(*lambda, dispersive);
+
+    BesselSolverCyl::ParamGuard guard(self);
+
+    self->setM(m);
+    
+    switch (what) {
+        case WHAT_NOTHING:
+            return py::object(self->getDeterminant());
+        case WHAT_WAVELENGTH:
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+        case WHAT_K0:
+            return UFUNC<dcomplex>(
+                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                array
+            );
+    }
+    return py::object();
+}
 
 py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, const std::string name) {
     auto axes = getCurrentAxes();
@@ -716,7 +793,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     bool dispersive = true;
     boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength") {
+        if (*i == "lam") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
@@ -745,37 +822,35 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
+    
+    FourierSolver3D::ParamGuard guard(self);
+            
     if (wavelength) self->setWavelength(*wavelength, dispersive);
     if (k0) self->setK0(*k0, dispersive);
 
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
-        case WHAT_WAVELENGTH: {
-            FourierSolver3D::ParamGuard guard(self);
+        case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
                 [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_K0: {
-            FourierSolver3D::ParamGuard guard(self);
+        case WHAT_K0:
             return UFUNC<dcomplex>(
                 [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_KLONG: {
-            FourierSolver3D::ParamGuard guard(self);
+        case WHAT_KLONG:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->setKlong(x); return self->getDeterminant(); },
                 array
             );
-        } case WHAT_KTRAN: {
-            FourierSolver3D::ParamGuard guard(self);
+        case WHAT_KTRAN:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
                 array
             );
-        }
     }
     return py::object();
 }
@@ -792,7 +867,7 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     AxisNames* axes = getCurrentAxes();
     FourierSolver3D::What what;
 
-    if (key == "lam" || key == "wavelength")
+    if (key == "lam")
         what = FourierSolver3D::WHAT_WAVELENGTH;
     else if (key == "k0")
         what = FourierSolver3D::WHAT_K0;
@@ -864,6 +939,10 @@ BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();
 
+    py::class_<CMatrix_Python>("_cmatrix", py::no_init);
+    py::delattr(py::scope(), "_cmatrix");
+    py::to_python_converter<cmatrix, CMatrix_Python>();
+    
     py::to_python_converter<Expansion::Component, PythonComponentConventer>();
     py::converter::registry::push_back(&PythonComponentConventer::convertible, &PythonComponentConventer::construct,
                                        py::type_id<Expansion::Component>());
@@ -1196,26 +1275,26 @@ BOOST_PYTHON_MODULE(slab)
 //         solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
-//         solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
-//                    "Compute the mode near the specified effective index.\n\n"
-//                    "Only one of the following arguments can be given through a keyword.\n"
-//                    "It is the starting point for search of the specified parameter.\n\n"
-//                    "Args:\n"
-//                    "    lam (complex): Wavelength.\n"
-//                    "    k0 (complex): Normalized frequency.\n"
-//                    "    neff (complex): Longitudinal effective index.\n"
-//                    "    ktran (complex): Transverse wavevector.\n");
-//         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
-//         solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
-//                    "Compute discontinuity matrix determinant.\n\n"
-//                    "Arguments can be given through keywords only.\n\n"
-//                    "Args:\n"
-//                    "    lam (complex): Wavelength.\n"
-//                    "    k0 (complex): Normalized frequency.\n"
-//                    "    neff (complex): Longitudinal effective index.\n"
-//                    "    ktran (complex): Transverse wavevector.\n"
-//                    "    dispersive (bool): If ``False`` then material coefficients are not\n"
-//                    "                       recomputed even if the wavelength is changed.\n");
+        METHOD(find_mode, findMode, 
+               "Compute the mode near the specified effective index.\n\n"
+               "Only one of the following arguments can be given through a keyword.\n"
+               "It is the starting point for search of the specified parameter.\n\n"
+               "Args:\n"
+               "    lam (complex): Wavelength.\n"
+               "    k0 (complex): Normalized frequency.\n"
+               "    neff (complex): Longitudinal effective index.\n"
+               "    ktran (complex): Transverse wavevector.\n",
+               "lam", arg("m")=1
+              );
+        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+        solver.def("get_determinant", py::raw_function(BesselSolverCyl_getDeterminant),
+                   "Compute discontinuity matrix determinant.\n\n"
+                   "Arguments can be given through keywords only.\n\n"
+                   "Args:\n"
+                   "    lam (complex): Wavelength.\n"
+                   "    k0 (complex): Normalized frequency.\n"
+                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
+                   "                       recomputed even if the wavelength is changed.\n");
 //         solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
 //                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                    "Args:\n"
@@ -1268,7 +1347,7 @@ BOOST_PYTHON_MODULE(slab)
 //                             "Side Perfectly Matched Layers boundary conditions.\n\n"
 //                             PML_ATTRS_DOC
 //                            );
-//         RO_FIELD(modes, "Computed modes.");
+        RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
 //                    "Access to the reflected field.\n\n"
 //                    "Args:\n"
@@ -1280,6 +1359,18 @@ BOOST_PYTHON_MODULE(slab)
 //                    "        present.\n\n"
 //                    ":rtype: Fourier2D.Reflected\n"
 //                    , (py::arg("lam"), "polarization", "side"));
+
+#ifndef NDEBUG
+        solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
+        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
+        METHOD(ieps_minus, ieps_minus, "J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr", "layer");
+        METHOD(ieps_plus, ieps_plus, "J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr", "layer");
+        METHOD(eps_minus, eps_minus, "J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr", "layer");
+        METHOD(eps_plus, eps_plus, "J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr", "layer");
+        METHOD(deps_minus, deps_minus, "J_{m-1}(gr) deps/dr J_{m}(kr) r dr", "layer");
+        METHOD(deps_plus, deps_plus, "_{m+1}(gr) deps/dr J_{m}(kr) r dr", "layer");
+#endif
+
         py::scope scope = solver;
 
         register_vector_of<BesselSolverCyl::Mode>("Modes");
@@ -1293,5 +1384,6 @@ BOOST_PYTHON_MODULE(slab)
             .def("__repr__", &BesselSolverCyl_Mode_repr)
         ;
     }
+    
 }
 

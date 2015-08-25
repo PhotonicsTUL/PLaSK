@@ -71,6 +71,7 @@ class VCSEL(unittest.TestCase):
             <solvers>
               <optical name="bessel" lib="slab" solver="BesselCyl">
                 <geometry ref="vcsel"/>
+                <interface object="QW"/>
               </optical>
             </solvers>
           </plask>''')
@@ -79,8 +80,8 @@ class VCSEL(unittest.TestCase):
         self.solver.inGain = self.profile.outGain
         self.solver.size = 7
 
-    #def testComputations(self):
-        #m = self.solver.find_mode(980.1)
-        #self.assertEqual( m, 0 )
-        #self.assertEqual( len(self.solver.modes), 1 )
-        #self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
+    def testComputations(self):
+        m = self.solver.find_mode(980.1)
+        self.assertEqual( m, 0 )
+        self.assertEqual( len(self.solver.modes), 1 )
+        self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )

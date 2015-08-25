@@ -168,9 +168,8 @@ class GeometryController(Controller):
         self.plot_element(tree_element, set_limits=True)
 
     def reconfig(self):
-        root = self.current_root()
-        if root is not None and self.get_widget().isVisible():
-            self.plot(root)
+        if self.plotted_tree_element is not None and self.get_widget().isVisible():
+            self.plot_element(self.plotted_tree_element, set_limits=False)
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None and self.plot_auto_refresh:

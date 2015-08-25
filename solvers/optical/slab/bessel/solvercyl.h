@@ -40,7 +40,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
         ParamGuard(BesselSolverCyl* solver, bool recomp=false): solver(solver),
             k0(solver->k0), m(solver->m), recomp(recomp) {}
         ~ParamGuard() {
-            solver->m = m;
+            solver->setM(m);
             solver->setK0(k0, recomp);
         }
     };
@@ -173,6 +173,17 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
      * \param method interpolation method
      */
     const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+
+#ifndef NDEBUG
+  public:
+    cmatrix ieps_minus(size_t layer);
+    cmatrix ieps_plus(size_t layer);
+    cmatrix eps_minus(size_t layer);
+    cmatrix eps_plus(size_t layer);
+    cmatrix deps_minus(size_t layer);
+    cmatrix deps_plus(size_t layer);
+#endif
+                                              
 };
 
 

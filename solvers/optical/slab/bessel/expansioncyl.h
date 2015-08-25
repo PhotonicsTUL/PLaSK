@@ -13,7 +13,6 @@ struct BesselSolverCyl;
 
 struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
-    size_t N;                           ///< Number of expansion coefficients
     bool initialized;                   ///< Expansion is initialized
 
 //     size_t pil,                         ///< Index of the beginning of the left PML
@@ -61,9 +60,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         return diagonals[l];
     }
 
-    size_t matrixSize() const override { return 2*N; } // TODO should be N for m = 0?
+    size_t matrixSize() const override;
 
-    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
+    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 
@@ -159,7 +158,28 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     void layerIntegrals(size_t l);
 
   public:
+      
+    /// Get \f$ E_s \f$ index
+    size_t iEs(size_t i) { return i << 1; }
 
+    /// Get \f$ E_p \f$ index
+    size_t iEp(size_t i) { return (i << 1) | 1; }
+
+    /// Get \f$ H_s \f$ index
+    size_t iHs(size_t i) { return i << 1; }
+
+    /// Get \f$ H_p \f$ index
+    size_t iHp(size_t i) { return (i << 1) | 1; }
+
+#ifndef NDEBUG
+    cmatrix ieps_minus(size_t layer);
+    cmatrix ieps_plus(size_t layer);
+    cmatrix eps_minus(size_t layer);
+    cmatrix eps_plus(size_t layer);
+    cmatrix deps_minus(size_t layer);
+    cmatrix deps_plus(size_t layer);
+#endif
+                                              
 };
 
 }}} // # namespace plask::solvers::slab

@@ -76,6 +76,7 @@ add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/re
 add_python_test(solvers/optical/slab/refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection3d.py)
 add_python_test(solvers/optical/slab/grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/grating.py)
 add_python_test(solvers/optical/slab/fresnel ${CMAKE_CURRENT_SOURCE_DIR}/tests/fresnel.py)
+# add_python_test(solvers/optical/slab/vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
 
 
 # Uncomment and edit the line below if you need to link some external libraries
