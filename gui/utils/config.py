@@ -277,7 +277,7 @@ class ConfigDialog(QtGui.QDialog):
                                                                 help="Line width of the local origin mark.")),
                 ("Info lines color", ConfigDialog.Color('geometry/extra_color', self,
                                                         "Color of info lines for the selected object.")),
-                ("Info lines opacity", ConfigDialog.FloatSpinBox('geometry/origin_alpha', self,
+                ("Info lines opacity", ConfigDialog.FloatSpinBox('geometry/extra_alpha', self,
                                                                   step=0.1, min=0.0, max=1.0,
                                                                   help="Opacity of info lines for the selected object.")),
                 ("Info lines width", ConfigDialog.FloatSpinBox('geometry/extra_width', self,
