@@ -40,19 +40,19 @@ class Disk(unittest.TestCase):
         self.solver.wavelength = 1500
         self.solver.m = 1
         set_printoptions(precision=6, linewidth=180, suppress=True)
-        print real(self.solver.ieps_minus(0))
+        l = 0
+        print real(self.solver.ieps_minus(l))
         print
-        print real(self.solver.ieps_plus(0))
+        print real(self.solver.ieps_plus(l))
         print
-        print real(self.solver.eps_minus(0))
+        print real(self.solver.eps_minus(l))
         print
-        print real(self.solver.eps_plus(0))
+        print real(self.solver.eps_plus(l))
         print
-        print real(self.solver.deps_minus(0))
+        print real(self.solver.deps_minus(l))
         print
-        print real(self.solver.deps_plus(0))
+        print real(self.solver.deps_plus(l))
         print
-        #print self.solver.ieps_minus(1)
 
     #def testComputations(self):
         
@@ -62,7 +62,7 @@ class Disk(unittest.TestCase):
         #yscale('log')
         #show()
         
-        ##m = self.solver.find_mode(1550)
-        ##self.assertEqual( m, 0 )
-        ##self.assertEqual( len(self.solver.modes), 1 )
-        ##self.assertAlmostEqual( self.solver.modes[m].lam, 1561.1-123.0j, 0 )
+        #m = self.solver.find_mode(1550)
+        #self.assertEqual( m, 0 )
+        #self.assertEqual( len(self.solver.modes), 1 )
+        #self.assertAlmostEqual( self.solver.modes[m].lam, 1561.1-123.0j, 0 )

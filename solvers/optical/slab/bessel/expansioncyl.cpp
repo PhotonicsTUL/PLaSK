@@ -190,11 +190,11 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         
         for (int i = 0; i < N; ++i) {
             double g = factors[i] * ib; double gr = g*r;
+            double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
+                   Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
+                    
             for (int j = i; j < N; ++j) {
                 double k = factors[j] * ib; double kr = k*r;
-                
-                double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, kr),
-                       Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                 
                 integrals.ieps_minus(i,j) += r * Jmg * ieps * Jmk;
@@ -202,7 +202,6 @@ void ExpansionBessel::layerIntegrals(size_t layer)
                 integrals.eps_minus(i,j)  += r * Jmg * eps * Jmk;
                 integrals.eps_plus(i,j)   += r * Jpg * eps * Jpk;
                 
-//                integrals.deps_minus(i,j) += 0.5 * (Jmk-Jpk);
                 integrals.deps_minus(i,j) -= ieps * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
                 integrals.deps_plus(i,j)  -= ieps * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
 
