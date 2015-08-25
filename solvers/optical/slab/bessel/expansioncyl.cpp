@@ -41,6 +41,15 @@ void ExpansionBessel::computeBesselZeros()
         SOLVER->writelog(LOG_DEBUG, "Computing Bessel function J_(%d) zeros %d to %d", m, n+1, N);
         cyl_bessel_j_zero(double(m), n+1, N-n, factors.begin()+n);
     }
+    // #ifndef NDEBUG
+    //     for (size_t i = 0; i != N; ++i) { 
+    //         auto report = [i,m,this]()->bool{
+    //             std::cerr << "J(" << m << ", " << factors[i] << ") = " << cyl_bessel_j(m, factors[i]) << "\n";
+    //             return false;
+    //         };
+    //         assert(is_zero(cyl_bessel_j(m, factors[i]), 1e-9) || report());
+    //     }
+    // #endif
 }
 
 void ExpansionBessel::init()
@@ -176,6 +185,9 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         if (ri == 0) eps0 = eps;
         else if (!is_zero(eps - eps0)) diagonals[layer] = false;
         
+        ieps *= w;
+        eps *= w;
+        
         for (int i = 0; i < N; ++i) {
             double g = factors[i] * ib; double gr = g*r;
             for (int j = i; j < N; ++j) {
@@ -185,11 +197,12 @@ void ExpansionBessel::layerIntegrals(size_t layer)
                        Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                 
-                integrals.ieps_minus(i,j) += w * r * Jmg * ieps * Jmk;
-                integrals.ieps_plus(i,j)  += w * r * Jpg * ieps * Jpk;
-                integrals.eps_minus(i,j)  += w * r * Jmg * eps * Jmk;
-                integrals.eps_plus(i,j)   += w * r * Jpg * eps * Jpk;
+                integrals.ieps_minus(i,j) += r * Jmg * ieps * Jmk;
+                integrals.ieps_plus(i,j)  += r * Jpg * ieps * Jpk;
+                integrals.eps_minus(i,j)  += r * Jmg * eps * Jmk;
+                integrals.eps_plus(i,j)   += r * Jpg * eps * Jpk;
                 
+//                integrals.deps_minus(i,j) += 0.5 * (Jmk-Jpk);
                 integrals.deps_minus(i,j) -= ieps * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
                 integrals.deps_plus(i,j)  -= ieps * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
 

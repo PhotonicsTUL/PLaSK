@@ -38,9 +38,20 @@ class Disk(unittest.TestCase):
 
     def testIntegrals(self):
         self.solver.wavelength = 1500
-        set_printoptions(precision=3, linewidth=180, suppress=True)
+        self.solver.m = 1
+        set_printoptions(precision=6, linewidth=180, suppress=True)
         print real(self.solver.ieps_minus(0))
+        print
+        print real(self.solver.ieps_plus(0))
+        print
+        print real(self.solver.eps_minus(0))
+        print
+        print real(self.solver.eps_plus(0))
+        print
         print real(self.solver.deps_minus(0))
+        print
+        print real(self.solver.deps_plus(0))
+        print
         #print self.solver.ieps_minus(1)
 
     #def testComputations(self):

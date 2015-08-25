@@ -190,6 +190,7 @@ void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
     self->invalidate();
 }
 
+#ifndef NDEBUG
 struct CMatrix_Python {
     cmatrix data;
     CMatrix_Python(const cmatrix& data): data(data) {}
@@ -209,6 +210,7 @@ struct CMatrix_Python {
         return arr;
     }
 };
+#endif
 
 
 py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
@@ -939,9 +941,11 @@ BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();
 
+#ifndef NDEBUG
     py::class_<CMatrix_Python>("_cmatrix", py::no_init);
     py::delattr(py::scope(), "_cmatrix");
     py::to_python_converter<cmatrix, CMatrix_Python>();
+#endif
     
     py::to_python_converter<Expansion::Component, PythonComponentConventer>();
     py::converter::registry::push_back(&PythonComponentConventer::convertible, &PythonComponentConventer::construct,
@@ -1363,6 +1367,7 @@ BOOST_PYTHON_MODULE(slab)
 #ifndef NDEBUG
         solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
         solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
+        solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
         METHOD(ieps_minus, ieps_minus, "J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr", "layer");
         METHOD(ieps_plus, ieps_plus, "J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr", "layer");
         METHOD(eps_minus, eps_minus, "J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr", "layer");

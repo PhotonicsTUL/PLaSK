@@ -4,6 +4,7 @@ namespace plask { namespace solvers { namespace slab {
 
     
 BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<Geometry2DCylindrical>(name),
+    m(1),
     size(12),
     expansion(this),
     integral_error(1e-9),
