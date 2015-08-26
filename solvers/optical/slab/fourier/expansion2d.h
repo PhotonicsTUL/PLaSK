@@ -60,8 +60,18 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void computeMaterialCoefficients() {
         size_t nlayers = lcount();
         assert(coeffs.size() == nlayers);
-        for (size_t l = 0; l < nlayers; ++l)
-            layerMaterialCoefficients(l);
+        std::exception_ptr error;
+        #pragma omp parallel for
+        for (size_t l = 0; l < nlayers; ++l) {
+            if (error) continue;
+            try {
+                layerMaterialCoefficients(l);
+            } catch(...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
+        }
+        if (error) std::rethrow_exception(error);
     }
 
     virtual size_t lcount() const override;

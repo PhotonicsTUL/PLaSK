@@ -883,6 +883,14 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     return self->findMode(what, value);
 }
 
+#ifndef NDEBUG
+template <typename Solver>
+py::tuple Solver_getMatrices(Solver& self, size_t layer) {
+    cmatrix RE, RH;
+    self.getMatrices(layer, RE, RH);
+    return py::make_tuple(py::object(RE), py::object(RH));
+}
+#endif
 
 
 template <typename Class>
@@ -935,6 +943,9 @@ inline void export_base(Class solver) {
                         "*admittance* Admittance Transfer Method\n"
                         "============ ====================================\n"
                        );
+#ifndef NDEBUG
+    solver.def("get_matrices", Solver_getMatrices<Solver>);
+#endif
 }
 
 BOOST_PYTHON_MODULE(slab)

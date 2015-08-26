@@ -49,9 +49,18 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     void computeIntegrals() {
         size_t nlayers = lcount();
         assert(layers_integrals.size() == nlayers);
+        std::exception_ptr error;
         #pragma omp parallel for
-        for (size_t l = 0; l < nlayers; ++l)
-            layerIntegrals(l);
+        for (size_t l = 0; l < nlayers; ++l) {
+            if (error) continue;
+            try {
+                layerIntegrals(l);
+            } catch (...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
+        }
+        if (error) std::rethrow_exception(error);
     }
 
     size_t lcount() const override;
@@ -159,17 +168,11 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
   public:
       
-    /// Get \f$ E_s \f$ index
-    size_t iEs(size_t i) { return i << 1; }
+    /// Get \f$ X_s \f$ index
+    size_t idxs(size_t i) { return i << 1; }
 
-    /// Get \f$ E_p \f$ index
-    size_t iEp(size_t i) { return (i << 1) | 1; }
-
-    /// Get \f$ H_s \f$ index
-    size_t iHs(size_t i) { return i << 1; }
-
-    /// Get \f$ H_p \f$ index
-    size_t iHp(size_t i) { return (i << 1) | 1; }
+    /// Get \f$ X_p \f$ index
+    size_t idxp(size_t i) { return (i << 1) | 1; }
 
 #ifndef NDEBUG
     cmatrix ieps_minus(size_t layer);

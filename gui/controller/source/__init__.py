@@ -149,12 +149,15 @@ class SourceWidget(QtGui.QWidget):
         self.find_wholewords.setCheckable(True)
         self.find_regex = QtGui.QAction('&Regular Expression', self.find_edit)
         self.find_regex.setCheckable(True)
+        self.find_selection = QtGui.QAction('&Selection Only', self.find_edit)
+        self.find_selection.setCheckable(True)
         self.find_edit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.find_edit.customContextMenuRequested.connect(self._find_context_menu)
         self.find_options = QtGui.QMenu()
         self.find_options.addAction(self.find_matchcase)
         self.find_options.addAction(self.find_wholewords)
         self.find_options.addAction(self.find_regex)
+        self.find_options.addAction(self.find_selection)
         options_button = QtGui.QPushButton(self)
         options_button.setText("Op&tions")
         options_button.setMenu(self.find_options)
@@ -162,22 +165,23 @@ class SourceWidget(QtGui.QWidget):
 
         next_button = QtGui.QPushButton(self)
         next_button.setText("&Next")
-        next_button.setFixedWidth(150)  # TODO from maximum text+icon width
         next_button.pressed.connect(self.find_next)
         prev_button = QtGui.QPushButton(self)
-        prev_button.setText("&Previous")  # TODO from maximum text+icon width
-        prev_button.setFixedWidth(150)
+        prev_button.setText("&Previous")
         prev_button.pressed.connect(self.find_prev)
         self.find_toolbar.addWidget(next_button)
         self.find_toolbar.addWidget(prev_button)
         replace_button = QtGui.QPushButton(self)
         replace_button.setText("Rep&lace one")
-        replace_button.setFixedWidth(150)  # TODO from maximum text+icon width
         replace_button.pressed.connect(self.replace_next)
         replace_all_button = QtGui.QPushButton(self)
-        replace_all_button.setText("Replace &all")  # TODO from maximum text+icon width
-        replace_all_button.setFixedWidth(150)
+        replace_all_button.setText("Replace &all")
         replace_all_button.pressed.connect(self.replace_all)
+        width = int(replace_button.fontMetrics().width(replace_button.text()) * 1.2)
+        next_button.setFixedWidth(width)
+        prev_button.setFixedWidth(width)
+        replace_button.setFixedWidth(width)
+        replace_all_button.setFixedWidth(width)
         self.replace_toolbar.addWidget(replace_button)
         self.replace_toolbar.addWidget(replace_all_button)
         self.find_toolbar.hide()
@@ -221,7 +225,12 @@ class SourceWidget(QtGui.QWidget):
     def show_find(self):
         cursor = self.editor.textCursor()
         if cursor.hasSelection():
-            self.find_edit.setText(cursor.selectedText())
+            text = cursor.selectedText()
+            if u'\u2029' in text:
+                self.find_selection.setChecked(True)
+            else:
+                self.find_selection.setChecked(False)
+                self.find_edit.setText(text)
         self.find_edit.selectAll()
         self.find_edit.setPalette(self.editor.palette())
         self.find_toolbar.show()
@@ -230,7 +239,12 @@ class SourceWidget(QtGui.QWidget):
     def show_replace(self):
         cursor = self.editor.textCursor()
         if cursor.hasSelection():
-            self.find_edit.setText(cursor.selectedText())
+            text = cursor.selectedText()
+            if u'\u2029' in text:
+                self.find_selection.setChecked(True)
+            else:
+                self.find_selection.setChecked(False)
+                self.find_edit.setText(text)
         self.find_edit.selectAll()
         self.find_edit.setPalette(self.editor.palette())
         self.find_toolbar.show()
@@ -242,37 +256,6 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.hide()
         self.clear_matches()
         self.editor.setFocus()
-
-    def _find(self, cont=False, backward=False, rewind=True):
-        cursor = self.editor.textCursor()
-        if cont:
-            cursor.setPosition(cursor.selectionStart())
-        pal = self.editor.palette()
-        if self.find_regex.isChecked():
-            self._findtext = QtCore.QRegExp(self.find_edit.text())
-        else:
-            self._findtext = self.find_edit.text()
-        if self._findtext:
-            document = self.editor.document()
-            findflags = self._find_flags() | (QtGui.QTextDocument.FindBackward if backward else 0)
-            found = document.find(self._findtext, cursor, findflags)
-            if found.isNull() and rewind:
-                cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
-                found = document.find(self._findtext, cursor, findflags)
-            if found.isNull():
-                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
-                self.find_edit.setPalette(pal)
-                return False
-            else:
-                self.editor.setTextCursor(found)
-                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#dfd"))
-                self.find_edit.setPalette(pal)
-                self._highlight_matches()
-                return True
-        else:
-            self.find_edit.setPalette(pal)
-            cursor.setPosition(cursor.position())
-            self.editor.setTextCursor(cursor)
 
     def _highlight_matches(self):
         cursor = self.editor.textCursor()
@@ -299,6 +282,41 @@ class SourceWidget(QtGui.QWidget):
         self._replaced_selections = []
         self.editor.update_selections([])
 
+    def _find(self, cont=False, backward=False, rewind=True, theend=None):
+        cursor = self.editor.textCursor()
+        if cont:
+            cursor.setPosition(cursor.selectionStart())
+        pal = self.editor.palette()
+        if self.find_regex.isChecked():
+            self._findtext = QtCore.QRegExp(self.find_edit.text())
+        else:
+            self._findtext = self.find_edit.text()
+        if self._findtext:
+            document = self.editor.document()
+            findflags = self._find_flags() | (QtGui.QTextDocument.FindBackward if backward else 0)
+            found = document.find(self._findtext, cursor, findflags)
+            if found.isNull() and rewind:
+                cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
+                found = document.find(self._findtext, cursor, findflags)
+            if found.isNull():
+                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
+                self.find_edit.setPalette(pal)
+                return False
+            elif theend is not None and found.selectionEnd() > theend:
+                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
+                self.find_edit.setPalette(pal)
+                return False
+            else:
+                self.editor.setTextCursor(found)
+                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#dfd"))
+                self.find_edit.setPalette(pal)
+                self._highlight_matches()
+                return True
+        else:
+            self.find_edit.setPalette(pal)
+            cursor.setPosition(cursor.position())
+            self.editor.setTextCursor(cursor)
+
     def find_next(self):
         self._find()
         #self.editor.setFocus()
@@ -308,12 +326,17 @@ class SourceWidget(QtGui.QWidget):
         #self.editor.setFocus()
 
     def find_type(self):
-        self._find(cont=True)
+        if not self.find_selection.isChecked():
+            self._find(cont=True)
 
-    def replace_next(self, rewind=True):
+    def replace_next(self, rewind=True, theend=None):
+        if theend is None and self.find_selection.isChecked():
+            cursor = self.editor.textCursor()
+            if cursor.hasSelection():
+                theend = cursor.selectionEnd()
         if rewind:
             self._replaced_selections = []
-        if not self._find(cont=True, rewind=rewind):
+        if not self._find(cont=True, rewind=rewind, theend=theend):
             return False
         pal = self.editor.palette()
         self.find_edit.setPalette(pal)
@@ -330,7 +353,7 @@ class SourceWidget(QtGui.QWidget):
         selection.cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
         selection.format.setBackground(REPLACE_COLOR)
         self._replaced_selections.append(selection)
-        if not self._find(cont=False, rewind=rewind):
+        if not self._find(cont=False, rewind=rewind, theend=theend):
             self.editor.update_selections(self._replaced_selections)
             cursor.setPosition(start)
             cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
@@ -342,11 +365,26 @@ class SourceWidget(QtGui.QWidget):
     def replace_all(self):
         self._replaced_selections = []
         cursor = self.editor.textCursor()
+        if self.find_selection.isChecked() and cursor.hasSelection():
+            start = cursor.selectionStart()
+            end = cursor.selectionEnd()
+        else:
+            start = end = None
         cursor.beginEditBlock()
         try:
-            cursor.movePosition(QtGui.QTextCursor.Start)
+            if end is None:
+                cursor.movePosition(QtGui.QTextCursor.Start)
             self.editor.setTextCursor(cursor)
-            while self.replace_next(rewind=False): pass
+            doclen = self.editor.document().characterCount()
+            while self.replace_next(rewind=False, theend=end):
+                if end is not None:
+                    newlen = self.editor.document().characterCount()
+                    end += newlen - doclen
+                    doclen = newlen
+            if start is not None:
+                cursor.setPosition(start)
+                cursor.setPosition(end + self.editor.document().characterCount() - doclen, QtGui.QTextCursor.KeepAnchor)
+                self.editor.setTextCursor(cursor)
         finally:
             cursor.endEditBlock()
 

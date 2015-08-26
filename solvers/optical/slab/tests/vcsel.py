@@ -19,6 +19,10 @@ class VCSEL(unittest.TestCase):
         self.manager = plask.Manager()
         self.manager.load('''
           <plask loglevel="debug">
+            <defines>
+              <define name="R" value="10."/>
+              <define name="aprt" value="4."/>
+            </defines>
             <materials>
               <material name="GaAs" base="semiconductor">
                 <nr>3.53</nr>
@@ -44,27 +48,27 @@ class VCSEL(unittest.TestCase):
             <geometry>
               <cylindrical axes="rz" name="vcsel" outer="extend" bottom="GaAs">
                 <stack name="layers">
-                <block dr="10" dz="0.06949" material="GaAs"/>
+                <block dr="{R}" dz="0.06949" material="GaAs"/>
                 <stack name="top-dbr" repeat="24">
-                  <block dr="10" dz="0.07955" material="AlGaAs"/>
-                  <block dr="10" dz="0.06949" material="GaAs"/>
+                  <block dr="{R}" dz="0.07955" material="AlGaAs"/>
+                  <block dr="{R}" dz="0.06949" material="GaAs"/>
                 </stack>
-                <block name="x1" dr="10" dz="0.06371" material="AlGaAs"/>
+                <block name="x1" dr="{R}" dz="0.06371" material="AlGaAs"/>
                 <shelf name="oxide-layer">
-                  <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlOx"/>
+                  <block dr="{aprt}" dz="0.01593" material="AlAs"/><block dr="{R-aprt}" dz="0.01593" material="AlOx"/>
                 </shelf>
-                <block name="x" dr="10" dz="0.00000" material="AlGaAs"/>
-                <block dr="10" dz="0.13649" material="GaAs"/>
+                <block name="x" dr="{R}" dz="0.00000" material="AlGaAs"/>
+                <block dr="{R}" dz="0.13649" material="GaAs"/>
                 <shelf name="QW">
-                  <block name="active" role="gain" dr="4" dz="0.00500" material="InGaAs"/><block dr="6" dz="0.00500" material="InGaAs"/>
+                  <block name="active" role="gain" dr="{aprt}" dz="0.00500" material="InGaAs"/><block dr="{R-aprt}" dz="0.00500" material="InGaAs"/>
                 </shelf>
                 <zero/>
-                <block dr="10" dz="0.13649" material="GaAs"/>
+                <block dr="{R}" dz="0.13649" material="GaAs"/>
                 <stack name="bottom-dbr" repeat="29">
-                  <block dr="10" dz="0.07955" material="AlGaAs"/>
-                  <block dr="10" dz="0.06949" material="GaAs"/>
+                  <block dr="{R}" dz="0.07955" material="AlGaAs"/>
+                  <block dr="{R}" dz="0.06949" material="GaAs"/>
                 </stack>
-                <block dr="10" dz="0.07955" material="AlGaAs"/>
+                <block dr="{R}" dz="0.07955" material="AlGaAs"/>
                 </stack>
               </cylindrical>
             </geometry>

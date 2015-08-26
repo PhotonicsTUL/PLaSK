@@ -267,6 +267,20 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
     return result;
 }
 
+#ifndef NDEBUG
+template <typename GeometryT>
+void SlabSolver<GeometryT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
+    this->initCalculation();
+    if (recompute_integrals) {
+        computeIntegrals();
+        recompute_integrals = false;
+    }
+    size_t N = this->getExpansion().matrixSize();
+    if (RE.cols() != N || RE.rows() != N) RE = cmatrix(N, N);
+    if (RH.cols() != N || RH.rows() != N) RH = cmatrix(N, N);
+    this->getExpansion().getMatrices(layer, RE, RH);
+}
+#endif
 
 template class PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
 template class PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;

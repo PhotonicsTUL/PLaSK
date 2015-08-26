@@ -50,12 +50,10 @@ struct PLASK_SOLVER_API Expansion {
 
     /**
      * Get RE anf RH matrices
-     * \param l layer number
-     * \param k0 normalized frequency [1/µm]
-     * \param klong,ktran horizontal wavevector components [1/µm]
+     * \param layer layer number
      * \param[out] RE,RH resulting matrix
      */
-    virtual void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) = 0;
+    virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
      * Get refractive index back from expansion

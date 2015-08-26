@@ -11,15 +11,26 @@ from optical.slab import BesselCyl
 from optical.effective import EffectiveFrequencyCyl
 
 
+@material.simple()
+class Core(material.Material):
+    @staticmethod
+    def Nr():
+        return 3.5
+
+
 class Disk(unittest.TestCase):
 
     def setUp(self):
-        disk = geometry.Rectangle(5., 0.5, 'GaAs')
-        side = geometry.Rectangle(15., 0.5, 'air')
+        
+        R = 20.
+        N = 7
+        
+        disk = geometry.Rectangle(5., 0.5, 'Core')
+        side = geometry.Rectangle(R-5., 0.5, 'air')
         layer = geometry.Shelf()
         layer.append(disk)
         layer.append(side)
-        above = geometry.Rectangle(20., 2.0, 'air')
+        above = geometry.Rectangle(R, 2.0, 'air')
         stack = geometry.Stack2D()
         stack.prepend(above)
         stack.prepend(layer)
@@ -34,33 +45,49 @@ class Disk(unittest.TestCase):
         self.solver = BesselCyl('Bessel')
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
-        self.solver.size = 7
+        self.solver.size = N
+        
+        self.layer = 0
 
     def testIntegrals(self):
         self.solver.wavelength = 1500
         self.solver.m = 1
         set_printoptions(precision=6, linewidth=180, suppress=True)
-        l = 0
-        print real(self.solver.ieps_minus(l))
-        print
-        print real(self.solver.ieps_plus(l))
-        print
-        print real(self.solver.eps_minus(l))
-        print
-        print real(self.solver.eps_plus(l))
-        print
-        print real(self.solver.deps_minus(l))
-        print
-        print real(self.solver.deps_plus(l))
+        ieps_minus = self.solver.ieps_minus(self.layer)
+        print "\nieps minus ="
+        print real(ieps_minus)
+        print "\nieps plus ="
+        print real(self.solver.ieps_plus(self.layer))
+        print "\neps minus ="
+        print real(self.solver.eps_minus(self.layer))
+        print "\neps plus ="
+        print real(self.solver.eps_plus(self.layer))
+        print "\ndeps minus ="
+        print real(self.solver.deps_minus(self.layer))
+        print "\ndeps plus ="
+        print real(self.solver.deps_plus(self.layer))
         print
 
-    #def testComputations(self):
+    def testMatrices(self):
+        self.solver.wavelength = 1500
+        self.solver.m = 1
+        RE, RH = self.solver.get_matrices(self.layer)
+        set_printoptions(precision=1, linewidth=240, suppress=True)
+        print "\nRE = "
+        print abs(RE)
+        print "\nRH = "
+        print abs(RH)
+        print "\nQE = "
+        print abs(dot(RH,RE))
+        print
         
-        #lams = linspace(1000, 5000, 700)
-        #dets = self.solver.get_determinant(lam=lams, dispersive=False)
-        #plot(lams, abs(dets))
-        #yscale('log')
-        #show()
+    def testComputations(self):
+        
+        lams = linspace(1000, 5000, 700)
+        dets = self.solver.get_determinant(lam=lams, dispersive=False)
+        plot(lams, abs(dets))
+        yscale('log')
+        show()
         
         #m = self.solver.find_mode(1550)
         #self.assertEqual( m, 0 )

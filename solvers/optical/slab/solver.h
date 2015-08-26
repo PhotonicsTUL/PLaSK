@@ -316,6 +316,10 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     /// Get solver expansion
     virtual Expansion& getExpansion() = 0;
 
+#ifndef NDEBUG
+    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH);
+#endif
+    
   protected:
 
     /**
