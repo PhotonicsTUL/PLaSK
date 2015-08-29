@@ -102,18 +102,45 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m)
 }
 
 
-const DataVector<const Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    assert(num < modes.size());
+    assert(transfer);
+    ParamGuard guard(this);
+    if (modes[num].k0 != k0 || modes[num].m != m) {
+        k0 = modes[num].k0;
+        m = modes[num].m;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldE(dst_mesh, method);
 }
 
 
-const DataVector<const Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    assert(num < modes.size());
+    assert(transfer);
+    ParamGuard guard(this);
+    if (modes[num].k0 != k0 || modes[num].m != m) {
+        k0 = modes[num].k0;
+        m = modes[num].m;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldH(dst_mesh, method);
 }
 
 
-const DataVector<const double> BesselSolverCyl::getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    assert(num < modes.size());
+    assert(transfer);
+    ParamGuard guard(this);
+    if (modes[num].k0 != k0 || modes[num].m != m) {
+        k0 = modes[num].k0;
+        m = modes[num].m;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
 #ifndef NDEBUG

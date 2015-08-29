@@ -308,7 +308,7 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);
@@ -323,7 +323,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);
@@ -338,7 +338,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared
 }
 
 
-const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
+LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);

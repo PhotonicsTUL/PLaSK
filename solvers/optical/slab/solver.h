@@ -341,7 +341,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute magnetic field
@@ -349,7 +349,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
@@ -357,7 +357,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
 };
 

@@ -59,11 +59,11 @@ if __name__ == '__main__':
     errors = 0
 
     for m in tests:
-            suite = unittest.TestLoader().loadTestsFromTestCase(m)
-            runner = unittest.TextTestRunner()
-            runner.resultclass = PlaskTestResult
-            result = runner.run(suite)
-            errors += len(result.errors) + len(result.failures)
+        suite = unittest.TestLoader().loadTestsFromTestCase(m)
+        runner = unittest.TextTestRunner()
+        runner.resultclass = PlaskTestResult
+        result = runner.run(suite)
+        errors += len(result.errors) + len(result.failures)
 
     sys.exit(errors)
 

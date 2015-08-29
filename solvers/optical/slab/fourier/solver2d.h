@@ -297,10 +297,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
-                                                   Transfer::IncidentDirection incident,
-                                                   shared_ptr<const MeshD<2>> dst_mesh,
-                                                   InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incident,
+                                                 shared_ptr<const MeshD<2>> dst_mesh,
+                                                 InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
@@ -314,10 +314,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
-                                                   Transfer::IncidentDirection incident,
-                                                   shared_ptr<const MeshD<2>> dst_mesh,
-                                                   InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incident,
+                                                 shared_ptr<const MeshD<2>> dst_mesh,
+                                                 InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
@@ -331,10 +331,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldMagnitude(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection incident,
-                                                  shared_ptr<const MeshD<2>> dst_mesh,
-                                                  InterpolationMethod method) {
+    LazyData<double> getReflectedFieldMagnitude(Expansion::Component polarization,
+                                                Transfer::IncidentDirection incident,
+                                                shared_ptr<const MeshD<2>> dst_mesh,
+                                                InterpolationMethod method) {
         if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
@@ -390,7 +390,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute magnetic field
@@ -398,7 +398,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute light intensity
@@ -406,7 +406,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
   public:
 

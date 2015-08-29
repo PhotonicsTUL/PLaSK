@@ -131,7 +131,7 @@ const_cvector Transfer::getInterfaceVector()
 }
 
 
-DataVector<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool reflected)
+LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool reflected)
 {
     double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
@@ -155,7 +155,7 @@ DataVector<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh>
     return destination;
 }
 
-DataVector<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
+LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
 {
     double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());

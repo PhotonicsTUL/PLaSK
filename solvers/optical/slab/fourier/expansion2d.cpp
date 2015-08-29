@@ -483,7 +483,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
 void ExpansionPW2D::prepareField()
 {
-    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_SPLINE;
+    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_FOURIER;
     if (symmetric()) {
         field.reset(N);
         if (field_interpolation != INTERPOLATION_FOURIER) {
@@ -508,7 +508,7 @@ void ExpansionPW2D::cleanupField()
 
 // TODO fields must be carefully verified
 
-DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
+LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
     Component sym = (which_field == FIELD_E)? symmetry : Component(2-symmetry);
 

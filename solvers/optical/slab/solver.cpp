@@ -34,7 +34,7 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     outdist(0.1),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<GeometryT>::getRefractiveIndexProfile),
-    outLightMagnitude(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
+    outLightMagnitude(this, &SlabSolver<GeometryT>::getMagnitude, &SlabSolver<GeometryT>::nummodes),
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
 {
@@ -244,7 +244,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
     DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
 
-    //std::map<size_t, LazyData<const Tensor3<dcomplex>>> cache;
+    //std::map<size_t,LazyData<Tensor3<dcomplex>>> cache;
     //while (auto level = levels->yield()) {
     //    double h = level->vpos();
     //    size_t n = getLayerFor(h);

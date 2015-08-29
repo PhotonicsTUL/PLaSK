@@ -610,7 +610,7 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 
 void ExpansionPW3D::prepareField()
 {
-    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_SPLINE;
+    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_FOURIER;
     if (symmetric_long() || symmetric_tran()) {
         Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long),
                   symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);
@@ -645,7 +645,7 @@ void ExpansionPW3D::cleanupField()
 
 // TODO fields must be carefully verified
 
-DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
+LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
     Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long);
     Component symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);

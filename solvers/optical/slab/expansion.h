@@ -89,17 +89,17 @@ struct PLASK_SOLVER_API Expansion {
     virtual void cleanupField() {}
 
     /**
-     * Compute electric og magnetic field on \c dst_mesh at certain level
+     * Compute electric or magnetic field on \c dst_mesh at certain level
      * \param l layer number
      * \param level destination level
      * \param E,H electric and magnetic field coefficientscients
      * \return field distribution at \c dst_mesh
      * \return field distribution at \c dst_mesh
      */
-    virtual DataVector<const Vec<3,dcomplex>> getField(size_t l,
-                                                       const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                                       const cvector& E,
-                                                       const cvector& H) = 0;
+    virtual LazyData<Vec<3,dcomplex>> getField(size_t l,
+                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                               const cvector& E,
+                                               const cvector& H) = 0;
 };
 
 

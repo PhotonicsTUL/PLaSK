@@ -103,6 +103,9 @@ void ExpansionBessel::init()
     // Allocate memory for integrals
     size_t nlayers = lcount();
     layers_integrals.resize(nlayers);
+    iepsilons.resize(nlayers);
+    for (size_t l = 0, nr = raxis->size(); l != nlayers; ++l)
+        iepsilons[l].reset(nr);
     diagonals.assign(nlayers, false);
     
     initialized = true;
@@ -113,6 +116,7 @@ void ExpansionBessel::reset()
 {
     segments.clear();
     layers_integrals.clear();
+    iepsilons.clear();
     factors.clear();
     initialized = false;
     raxis.reset();
@@ -181,6 +185,7 @@ void ExpansionBessel::layerIntegrals(size_t layer)
         }
         eps = eps * eps;
         dcomplex ieps = 1. / eps;
+        iepsilons[layer][ri] = ieps;
         
         if (ri == 0) eps0 = eps;
         else if (!is_zero(eps - eps0)) diagonals[layer] = false;
@@ -325,16 +330,68 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
 void ExpansionBessel::prepareField()
 {
+    if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_NEAREST;
 }
 
 void ExpansionBessel::cleanupField()
 {
 }
 
-DataVector<const Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
+LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                                     const shared_ptr<const typename LevelsAdapter::Level>& level,
                                     const cvector& E, const cvector& H)
 {
+    size_t N = SOLVER->size;
+    int m = SOLVER->m;
+
+    assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
+    double b = rbounds->at(rbounds->size()-1);
+
+    auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+    auto ieps = interpolate(src_mesh, iepsilons[l], dest_mesh, field_interpolation,
+                            InterpolationFlags(SOLVER->getGeometry(),
+                                               InterpolationFlags::Symmetry::POSITIVE,
+                                               InterpolationFlags::Symmetry::NO));
+    
+    if (which_field == FIELD_E) {
+        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(), 
+            [=](size_t i) -> Vec<3,dcomplex> {
+                double r = dest_mesh->at(i)[0];
+                Vec<3,dcomplex> result {0., 0., 0.};
+                for (size_t j = 0; j != N; ++j) {
+                    double kr = r * factors[j] / b;
+                    double Jm = cyl_bessel_j(m-1, kr),
+                           Jp = cyl_bessel_j(m+1, kr),
+                           J = cyl_bessel_j(m, kr);
+                    double A = Jm + Jp, B = Jm - Jp;
+                    result.c0 += A * E[idxs(j)] + B * E[idxp(j)];
+                    result.c1 -= A * E[idxp(j)] + B * E[idxs(j)];
+                    double k = factors[j] / b;
+                    result.c2 += 2. * k * ieps[j] * J * H[idxp(j)];
+                }
+                return result;
+            });
+    } else { // which_field == FIELD_H
+        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(), 
+            [=](size_t i) -> Vec<3,dcomplex> {
+                double r = dest_mesh->at(i)[0];
+                Vec<3,dcomplex> result {0., 0., 0.};
+                for (size_t j = 0; j != N; ++j) {
+                    double kr = r * factors[j] / b;
+                    double Jm = cyl_bessel_j(m-1, kr),
+                           Jp = cyl_bessel_j(m+1, kr),
+                           J = cyl_bessel_j(m, kr);
+                    double A = Jm + Jp, B = Jm - Jp;
+                    result.c0 += A * H[idxp(j)] + B * H[idxs(j)];
+                    result.c1 += A * H[idxs(j)] + B * H[idxp(j)];
+                    double k = factors[j] / b;
+                    result.c2 += 2. * k * J * E[idxs(j)];
+                }
+                return result;
+            });
+    }
+    
 }
 
 LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
@@ -344,44 +401,16 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
 
-    auto geometry = SOLVER->getGeometry();
-    auto zaxis = SOLVER->getLayerPoints(layer);
-
-    auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
-    double lambda = real(2e3*M_PI/SOLVER->k0);
-
-    LazyData<double> gain;
-    auto temperature = SOLVER->inTemperature(mesh);
-    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
-
-    double matz = zaxis->at(0); // at each point along any vertical axis material is the same
-
-    DataVector<Tensor3<dcomplex>> result(raxis->size());
-    
-    for (size_t ri = 0; ri != raxis->size(); ++ri) {
-        double r = raxis->at(ri);
-        auto material = geometry->getMaterial(vec(r, matz));
-        double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
-        dcomplex nr = material->Nr(lambda, T);
-        if (gain_connected) {
-            auto roles = geometry->getRolesAt(vec(r, matz));
-            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                if (!gain_computed) {
-                    gain = SOLVER->inGain(mesh, lambda);
-                    gain_computed = true;
-                }
-                double g = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) g += gain[v];
-                double ni = lambda * g/zaxis->size() * (0.25e-7/M_PI);
-                nr.imag(ni);
-            }
-        }
-        result[ri] = nr;
+    DataVector<Tensor3<dcomplex>> nrs(iepsilons[layer].size());
+    for (size_t i = 0; i != nrs.size(); ++i) {
+        nrs[i] = Tensor3<dcomplex>(1. / sqrt(iepsilons[layer][i]));
     }
     
     auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
-    return interpolate(src_mesh, result, dest_mesh, interp,
-                        InterpolationFlags(geometry, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::NO)
-                        );
+    return interpolate(src_mesh, nrs, dest_mesh, interp,
+                       InterpolationFlags(SOLVER->getGeometry(), 
+                                          InterpolationFlags::Symmetry::POSITIVE,
+                                          InterpolationFlags::Symmetry::NO));
 }
 
 

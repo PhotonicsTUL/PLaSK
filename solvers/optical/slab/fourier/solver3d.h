@@ -288,10 +288,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
-                                                   Transfer::IncidentDirection incident,
-                                                   const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                   InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incident,
+                                                 const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                 InterpolationMethod method) {
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
@@ -304,10 +304,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
-                                                   Transfer::IncidentDirection incident,
-                                                   const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                   InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incident,
+                                                 const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                 InterpolationMethod method) {
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
@@ -320,10 +320,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldMagnitude(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection incident,
-                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                  InterpolationMethod method) {
+    LazyData<double> getReflectedFieldMagnitude(Expansion::Component polarization,
+                                                Transfer::IncidentDirection incident,
+                                                const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                InterpolationMethod method) {
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
@@ -357,11 +357,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
          return modes[n].klong / modes[n].k0;
      }
 
-    const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
+    LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-    const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
+    LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-    const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
+    LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
    public:
 

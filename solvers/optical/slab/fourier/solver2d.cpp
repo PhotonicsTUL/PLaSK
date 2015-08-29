@@ -292,7 +292,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);
@@ -307,7 +307,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);
@@ -322,7 +322,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared
 }
 
 
-const DataVector<const double> FourierSolver2D::getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     assert(num < modes.size());
     assert(transfer);

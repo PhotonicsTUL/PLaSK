@@ -90,7 +90,14 @@ class VCSEL(unittest.TestCase):
         #self.assertEqual( m, 0 )
         #self.assertEqual( len(self.solver.modes), 1 )
         #self.assertAlmostEqual( self.solver.modes[m].lam, 979.702, 3 )
-        lams = linspace(978., 981., 101)
-        dets = [abs(self.solver.get_determinant(lam=lam, dispersive=False)) for lam in lams]
-        plot(lams, dets)
-        show()
+        pass
+
+if __name__ == "__main__":
+    vcsel = VCSEL('testComputations')
+    vcsel.setUp()
+
+    lams = linspace(979., 981., 201)
+    dets = vcsel.solver.get_determinant(lam=lams, dispersive=False)
+    plot(lams, abs(dets))
+    yscale('log')
+    show()

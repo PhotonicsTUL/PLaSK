@@ -77,9 +77,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     void cleanupField() override;
 
-    DataVector<const Vec<3,dcomplex>> getField(size_t layer,
-                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                               const cvector& E, const cvector& H) override;
+    LazyData<Vec<3,dcomplex>> getField(size_t layer,
+                                       const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                       const cvector& E, const cvector& H) override;
 
     LazyData<Tensor3<dcomplex>> getMaterialNR(size_t layer,
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
@@ -99,6 +99,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     
     /// Axis for obtaining material parameters
     shared_ptr<OrderedAxis> raxis;
+    
+    /// Cached eps^(-1)
+    std::vector<DataVector<dcomplex>> iepsilons;
     
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integrals {
