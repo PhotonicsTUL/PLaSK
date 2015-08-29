@@ -169,10 +169,10 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
   public:
       
     /// Get \f$ X_s \f$ index
-    size_t idxs(size_t i) { return i << 1; }
+    size_t idxs(size_t i) { return 2 * i; }
 
     /// Get \f$ X_p \f$ index
-    size_t idxp(size_t i) { return (i << 1) | 1; }
+    size_t idxp(size_t i) { return 2 * i + 1; }
 
 #ifndef NDEBUG
     cmatrix ieps_minus(size_t layer);

@@ -216,12 +216,12 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     
     if (diagonals[layer]) {
         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
-        integrals.zero();
-        for (int i = 0; i < N; ++i) {
-            double val = cyl_bessel_j(m+1, factors[i]) * rbounds->at(rbounds->size()-1); val = 0.5 * val*val;;
-            integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
-            integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
-        }
+//         integrals.zero();
+//         for (int i = 0; i < N; ++i) {
+//             double val = cyl_bessel_j(m+1, factors[i]) * rbounds->at(rbounds->size()-1); val = 0.5 * val*val;;
+//             integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
+//             integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
+//         }
     }
 }
 
@@ -297,10 +297,10 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
-        double f = 1. / cyl_bessel_j(m+1, factors[i]); f *= f;
+        double f = 1. / (cyl_bessel_j(m+1, factors[i]) * b); f *= f;
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
-            double k = factors[j] * b;
+            double k = factors[j] / b;
             RH(is, js) = 0.;
             RH(ip, js) = 0.;
             RH(is, jp) = - f * f0 * k * (k * (braket.ieps_minus(i,j) - braket.ieps_plus(i,j)) + (braket.deps_minus(i,j) + braket.deps_plus(i,j)));
@@ -312,8 +312,8 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
-        double f = 1. / cyl_bessel_j(m+1, factors[i]); f *= f;
-        double gg = factors[i] * b; gg *= gg;
+        double f = 1. / (cyl_bessel_j(m+1, factors[i]) * b); f *= f;
+        double gg = factors[i] / b; gg *= gg;
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
             RE(is, js) = RE(ip, jp) = f * k0 * (braket.eps_minus(i,j) + braket.eps_plus(i,j));

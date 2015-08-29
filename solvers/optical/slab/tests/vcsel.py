@@ -20,7 +20,7 @@ class VCSEL(unittest.TestCase):
         self.manager.load('''
           <plask loglevel="debug">
             <defines>
-              <define name="R" value="10."/>
+              <define name="R" value="20."/>
               <define name="aprt" value="4."/>
             </defines>
             <materials>
@@ -82,15 +82,15 @@ class VCSEL(unittest.TestCase):
         self.solver = self.manager.solver.bessel
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
-        self.solver.size = 7
+        self.solver.size = 12
 
     def testComputations(self):
-        #m = self.solver.find_mode(980.1)
-        #self.assertEqual( m, 0 )
-        #self.assertEqual( len(self.solver.modes), 1 )
+        m = self.solver.find_mode(980.1)
+        self.assertEqual( m, 0 )
+        self.assertEqual( len(self.solver.modes), 1 )
         #self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
-        lams = linspace(979., 981., 201)
-        dets = self.solver.get_determinant(lam=lams, dispersive=False)
-        plot(lams, abs(dets))
-        yscale('log')
-        show()
+        #lams = linspace(979., 981., 201)
+        #dets = self.solver.get_determinant(lam=lams, dispersive=False)
+        #plot(lams, abs(dets))
+        #yscale('log')
+        #show()
