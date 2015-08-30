@@ -1,4 +1,4 @@
-@CPACK_DEBIAN_PACKAGE_NAME@ (@VERSION@) @LSB_CODENAME@; urgency=low
+@CPACK_PACKAGE_NAME@ (@VERSION@) @LSB_CODENAME@; urgency=low
 
   Automatically created PLaSK deb package.
 

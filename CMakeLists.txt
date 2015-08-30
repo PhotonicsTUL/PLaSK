@@ -794,7 +794,6 @@ if(UNIX)
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
                     OUTPUT_VARIABLE boostver)
 
-    set(CPACK_DEBIAN_PACKAGE_NAME "plask")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
@@ -815,7 +814,7 @@ if(UNIX)
     set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpreun")
     set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostun")
 
-    install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "share/doc/${CPACK_DEBIAN_PACKAGE_NAME}" RENAME copyright
+    install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}" RENAME copyright
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
 
     find_program(LSB_RELEASE_EXECUTABLE lsb_release)
@@ -831,10 +830,14 @@ if(UNIX)
 
     EXECUTE_PROCESS(COMMAND date -R OUTPUT_VARIABLE CURRENT_DATE)
 
+    if(NOT DEFINED CPACK_PACKAGE_NAME)
+        set(CPACK_PACKAGE_NAME plask)
+    endif()
+
     configure_file(${CMAKE_SOURCE_DIR}/changelog.Debian.in ${CMAKE_BINARY_DIR}/changelog.Debian)
     execute_process(COMMAND gzip -c -9 ${CMAKE_BINARY_DIR}/changelog.Debian WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                     OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.Debian.gz")
-    install(FILES "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_DEBIAN_PACKAGE_NAME}")
+    install(FILES "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
 endif()
 
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "plask-${VERSION}" CACHE INTERNAL "tarball basename")
