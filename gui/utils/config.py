@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import os
+from collections import OrderedDict
 from ..qt import QtCore, QtGui
 
 from numpy import log10, ceil
@@ -61,6 +62,117 @@ DEFAULTS = {
     'geometry/extra_alpha': 0.9,
     'geometry/extra_width': 1.0,
 }
+
+
+def CheckBox(entry, help=None):
+    return lambda parent: ConfigDialog.CheckBox(entry, help=help, parent=parent)
+
+def Combo(entry, options, help=None):
+    return lambda parent: ConfigDialog.Combo(entry, options, help=help, parent=parent)
+
+def SpinBox(entry, min=None, max=None, help=None):
+    return lambda parent: ConfigDialog.SpinBox(entry, min=min, max=max, help=help, parent=parent)
+
+def FloatSpinBox(entry, step=None, min=None, max=None, help=None):
+    return lambda parent: ConfigDialog.FloatSpinBox(entry, step=step, min=min, max=max, help=help, parent=parent)
+
+def Color(entry, help=None):
+    return lambda parent: ConfigDialog.Color(entry, help=help, parent=parent)
+
+def Syntax(entry, help=None):
+    return lambda parent: ConfigDialog.Syntax(entry, help=help, parent=parent)
+
+
+CONFIG_WIDGETS = OrderedDict([
+    ("General Settings", (
+        ("Create backup files on save",
+         CheckBox('main_window/make_backup',
+                  "Create backup files on save. "
+                  "It is recommended to keep this option on, to keep the backup of the "
+                  "edited files in case the new one becomes corrupt or you accidentally "
+                  "remove some important parts.")),
+        ("Icons theme (requires restart)",
+         Combo('main_window/icons_theme',
+               ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
+               "Main window icons theme.")),
+    )),
+    ("Window Display", (
+        "Geometry View",
+        ("Selection frame color", Color('geometry/selected_color',
+                                        "Color of a frame around the selected object.")),
+        ("Selection frame opacity", FloatSpinBox('geometry/selected_alpha',
+                                                 step=0.1, min=0.0, max=1.0,
+                                                 help="Opacity of a frame around "
+                                                      "the selected object.")),
+        ("Selection frame width", FloatSpinBox('geometry/selected_width',
+                                               step=0.1, min=0.1,
+                                               help="Width of a frame around "
+                                                    "the selected object.")),
+        ("Show local origin", CheckBox('geometry/show_origin',
+                                       "Show local origin of the selected object")),
+        ("Origin mark color", Color('geometry/origin_color',
+                                    "Color of a local origin mark.")),
+        ("Origin mark opacity", FloatSpinBox('geometry/origin_alpha',
+                                             step=0.1, min=0.0, max=1.0,
+                                             help="Opacity of a local origin mark.")),
+        ("Origin mark size", FloatSpinBox('geometry/origin_size',
+                                          step=0.1, min=0.1,
+                                          help="Size of a local origin mark.")),
+        ("Origin mark width", FloatSpinBox('geometry/origin_width',
+                                           step=0.1, min=0.1,
+                                           help="Line width of the local origin mark.")),
+        ("Info lines color", Color('geometry/extra_color',
+                                   "Color of info lines for the selected object.")),
+        ("Info lines opacity", FloatSpinBox('geometry/extra_alpha',
+                                            step=0.1, min=0.0, max=1.0,
+                                            help="Opacity of info lines for the selected object.")),
+        ("Info lines width", FloatSpinBox('geometry/extra_width',
+                                          step=0.1, min=0.1,
+                                          help="Width of info lines for the selected object.")),
+
+        "Text Editor",
+        ("Font size",
+         SpinBox('editor/font_size', min=1,
+                 help="Font size in text editors.")),
+        ("Current line color", Color('editor/current_line_color',
+                                     "Background color of the current line.")),
+        ("Find result color", Color('editor/match_color',
+                                    "Background color of strings matching current search.")),
+        ("Replaced result color", Color('editor/replace_color',
+                                        "Background color of strings right after replace.")),
+        ("Word highlight color", Color('editor/selection_color',
+                                       "Highlight color for the current word.")),
+        ("Matching bracket color", Color('editor/matching_bracket_color',
+                                         "Highlight color for matching brackets "
+                                         "in script editor.")),
+        ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
+                                          "Highlight color for unmatched brackets "
+                                          "in script editor.")),
+    )),
+    ("Syntax Highlighting", (
+        "Python Syntax",
+        ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
+        ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
+        ("Builtin", Syntax('syntax/python_builtin', "Python syntax highlighting.")),
+        ("Keyword", Syntax('syntax/python_keyword', "Python syntax highlighting.")),
+        ("Number", Syntax('syntax/python_number', "Python syntax highlighting.")),
+        ("Class member", Syntax('syntax/python_member', "Python syntax highlighting.")),
+        ("PLaSK function", Syntax('syntax/python_plask', "Python syntax highlighting.")),
+        ("PLaSK provider", Syntax('syntax/python_provider', "Python syntax highlighting.")),
+        ("PLaSK receiver", Syntax('syntax/python_receiver', "Python syntax highlighting.")),
+        ("Log level", Syntax('syntax/python_log', "Python syntax highlighting.")),
+        ("Solver", Syntax('syntax/python_solver', "Python syntax highlighting.")),
+        ("XPL Definition", Syntax('syntax/python_define', "Python syntax highlighting.")),
+        ("PLaSK dictionary", Syntax('syntax/python_loaded', "Python syntax highlighting.")),
+        ("Pylab identifier", Syntax('syntax/python_pylab', "Python syntax highlighting.")),
+        "XML Syntax",
+        ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
+        ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
+        ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
+        ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
+        ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
+    )),
+])
 
 
 def parse_highlight(string):
@@ -236,99 +348,7 @@ class ConfigDialog(QtGui.QDialog):
 
         # current_layout = QtGui.QFormLayout()
 
-        self.items = [
-            ("General Settings", (
-                ("Create backup files on save",
-                 ConfigDialog.CheckBox('main_window/make_backup', self,
-                                       "Create backup files on save. "
-                                       "It is recommended to keep this option on, to keep the backup of the "
-                                       "edited files in case the new one becomes corrupt or you accidentally "
-                                       "remove some important parts.")),
-                ("Icons theme (requires restart)",
-                 ConfigDialog.Combo('main_window/icons_theme',
-                                    ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
-                                    self,
-                                    "Main window icons theme.")),
-            )),
-            ("Window Display", (
-                "Geometry View",
-                ("Selection frame color", ConfigDialog.Color('geometry/selected_color', self,
-                                                             "Color of a frame around the selected object.")),
-                ("Selection frame opacity", ConfigDialog.FloatSpinBox('geometry/selected_alpha', self,
-                                                                      step=0.1, min=0.0, max=1.0,
-                                                                      help="Opacity of a frame around "
-                                                                           "the selected object.")),
-                ("Selection frame width", ConfigDialog.FloatSpinBox('geometry/selected_width', self,
-                                                                     step=0.1, min=0.1,
-                                                                     help="Width of a frame around "
-                                                                          "the selected object.")),
-                ("Show local origin", ConfigDialog.CheckBox('geometry/show_origin', self,
-                                                            "Show local origin of the selected object")),
-                ("Origin mark color", ConfigDialog.Color('geometry/origin_color', self,
-                                                         "Color of a local origin mark.")),
-                ("Origin mark opacity", ConfigDialog.FloatSpinBox('geometry/origin_alpha', self,
-                                                                  step=0.1, min=0.0, max=1.0,
-                                                                  help="Opacity of a local origin mark.")),
-                ("Origin mark size", ConfigDialog.FloatSpinBox('geometry/origin_size', self,
-                                                                step=0.1, min=0.1,
-                                                                help="Size of a local origin mark.")),
-                ("Origin mark width", ConfigDialog.FloatSpinBox('geometry/origin_width', self,
-                                                                step=0.1, min=0.1,
-                                                                help="Line width of the local origin mark.")),
-                ("Info lines color", ConfigDialog.Color('geometry/extra_color', self,
-                                                        "Color of info lines for the selected object.")),
-                ("Info lines opacity", ConfigDialog.FloatSpinBox('geometry/extra_alpha', self,
-                                                                  step=0.1, min=0.0, max=1.0,
-                                                                  help="Opacity of info lines for the selected object.")),
-                ("Info lines width", ConfigDialog.FloatSpinBox('geometry/extra_width', self,
-                                                               step=0.1, min=0.1,
-                                                               help="Width of info lines for the selected object.")),
-
-                "Text Editor",
-                ("Font size",
-                 ConfigDialog.SpinBox('editor/font_size', self, min=1,
-                                      help="Font size in text editors.")),
-                ("Current line color", ConfigDialog.Color('editor/current_line_color', self,
-                                                          "Background color of the current line.")),
-                ("Find result color", ConfigDialog.Color('editor/match_color', self,
-                                                         "Background color of strings matching current search.")),
-                ("Replaced result color", ConfigDialog.Color('editor/replace_color', self,
-                                                             "Background color of strings right after replace.")),
-                ("Word highlight color", ConfigDialog.Color('editor/selection_color', self,
-                                                            "Highlight color for the current word.")),
-                ("Matching bracket color", ConfigDialog.Color('editor/matching_bracket_color', self,
-                                                              "Highlight color for matching brackets "
-                                                              "in script editor.")),
-                ("Unmatched bracket color", ConfigDialog.Color('editor/not_matching_bracket_color', self,
-                                                               "Highlight color for unmatched brackets "
-                                                               "in script editor.")),
-            )),
-            ("Syntax Highlighting", (
-                "Python Syntax",
-                ("Comment", ConfigDialog.Syntax('syntax/python_comment', self, "Python syntax highlighting.")),
-                ("String", ConfigDialog.Syntax('syntax/python_string', self, "Python syntax highlighting.")),
-                ("Builtin", ConfigDialog.Syntax('syntax/python_builtin', self, "Python syntax highlighting.")),
-                ("Keyword", ConfigDialog.Syntax('syntax/python_keyword', self, "Python syntax highlighting.")),
-                ("Number", ConfigDialog.Syntax('syntax/python_number', self, "Python syntax highlighting.")),
-                ("Class member", ConfigDialog.Syntax('syntax/python_member', self, "Python syntax highlighting.")),
-                ("PLaSK function", ConfigDialog.Syntax('syntax/python_plask', self, "Python syntax highlighting.")),
-                ("PLaSK provider", ConfigDialog.Syntax('syntax/python_provider', self, "Python syntax highlighting.")),
-                ("PLaSK receiver", ConfigDialog.Syntax('syntax/python_receiver', self, "Python syntax highlighting.")),
-                ("Log level", ConfigDialog.Syntax('syntax/python_log', self, "Python syntax highlighting.")),
-                ("Solver", ConfigDialog.Syntax('syntax/python_solver', self, "Python syntax highlighting.")),
-                ("XPL Definition", ConfigDialog.Syntax('syntax/python_define', self, "Python syntax highlighting.")),
-                ("PLaSK dictionary", ConfigDialog.Syntax('syntax/python_loaded', self, "Python syntax highlighting.")),
-                ("Pylab identifier", ConfigDialog.Syntax('syntax/python_pylab', self, "Python syntax highlighting.")),
-                "XML Syntax",
-                ("XML Tag", ConfigDialog.Syntax('syntax/xml_tag', self, "XML syntax highlighting.")),
-                ("XML Attribute", ConfigDialog.Syntax('syntax/xml_attr', self, "XML syntax highlighting.")),
-                ("XML Value", ConfigDialog.Syntax('syntax/xml_value', self, "XML syntax highlighting.")),
-                ("XML Text", ConfigDialog.Syntax('syntax/xml_text', self, "XML syntax highlighting.")),
-                ("XML Comment", ConfigDialog.Syntax('syntax/xml_comment', self, "XML syntax highlighting.")),
-            )),
-        ]
-
-        for cat, items in self.items:
+        for cat, items in CONFIG_WIDGETS.items():
             tab = QtGui.QGroupBox(self)
             tab_layout = QtGui.QFormLayout()
             tab.setLayout(tab_layout)
@@ -340,7 +360,7 @@ class ConfigDialog(QtGui.QDialog):
                     tab_layout.addRow(QtGui.QLabel(hr+"<b>"+item+"</b>", self))
                     hr = "<hr/>"
                 else:
-                    tab_layout.addRow(*item)
+                    tab_layout.addRow(item[0], item[1](self))
 
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
