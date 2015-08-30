@@ -84,7 +84,7 @@ def Syntax(entry, help=None):
 
 
 CONFIG_WIDGETS = OrderedDict([
-    ("General Settings", (
+    ("General Settings", [
         ("Create backup files on save",
          CheckBox('main_window/make_backup',
                   "Create backup files on save. "
@@ -95,8 +95,8 @@ CONFIG_WIDGETS = OrderedDict([
          Combo('main_window/icons_theme',
                ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
                "Main window icons theme.")),
-    )),
-    ("Window Display", (
+    ]),
+    ("Window Display", [
         "Geometry View",
         ("Selection frame color", Color('geometry/selected_color',
                                         "Color of a frame around the selected object.")),
@@ -131,9 +131,8 @@ CONFIG_WIDGETS = OrderedDict([
                                           help="Width of info lines for the selected object.")),
 
         "Text Editor",
-        ("Font size",
-         SpinBox('editor/font_size', min=1,
-                 help="Font size in text editors.")),
+        ("Font size", SpinBox('editor/font_size', min=1,
+                              help="Font size in text editors.")),
         ("Current line color", Color('editor/current_line_color',
                                      "Background color of the current line.")),
         ("Find result color", Color('editor/match_color',
@@ -148,8 +147,11 @@ CONFIG_WIDGETS = OrderedDict([
         ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
                                           "Highlight color for unmatched brackets "
                                           "in script editor.")),
-    )),
-    ("Syntax Highlighting", (
+        "Launcher",
+        ("Font size", SpinBox('launcher_local/font_size', min=1,
+                              help="Font size in local launcher window.")),
+    ]),
+    ("Syntax Highlighting", [
         "Python Syntax",
         ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
         ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
@@ -171,7 +173,7 @@ CONFIG_WIDGETS = OrderedDict([
         ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
         ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
         ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
-    )),
+    ]),
 ])
 
 
@@ -348,6 +350,8 @@ class ConfigDialog(QtGui.QDialog):
 
         # current_layout = QtGui.QFormLayout()
 
+        self.items = []
+
         for cat, items in CONFIG_WIDGETS.items():
             tab = QtGui.QGroupBox(self)
             tab_layout = QtGui.QFormLayout()
@@ -360,7 +364,9 @@ class ConfigDialog(QtGui.QDialog):
                     tab_layout.addRow(QtGui.QLabel(hr+"<b>"+item+"</b>", self))
                     hr = "<hr/>"
                 else:
-                    tab_layout.addRow(item[0], item[1](self))
+                    widget = item[1](self)
+                    self.items.append(widget)
+                    tab_layout.addRow(item[0], widget)
 
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
@@ -376,10 +382,8 @@ class ConfigDialog(QtGui.QDialog):
         self.resize(600, 0)
 
     def apply(self):
-        for _, items in self.items:
-            for item in items:
-                if isinstance(item, tuple):
-                    item[1].save()
+        for item in self.items:
+            item.save()
         CONFIG.sync()
         from .widgets import DEFAULT_FONT
         DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))

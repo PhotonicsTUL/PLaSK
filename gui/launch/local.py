@@ -57,7 +57,7 @@ class OutputWindow(QtGui.QDockWidget):
                 font_family = "Monaco"
             else:
                 font_family = "Monospace"
-            CONFIG['launcher_local/font_fpycodeamily'] = font_family
+            CONFIG['launcher_local/font_family'] = font_family
             font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setFamily(font_family)
         font.setPointSize(int(CONFIG['launcher_local/font_size']))
@@ -182,6 +182,16 @@ class OutputWindow(QtGui.QDockWidget):
 
         self.visibilityChanged.connect(self.on_visibility_changed)
         self.messages.setFocus()
+
+        try:
+            parent.config_changed.connect(self.reconfig)
+        except AttributeError:
+            pass
+
+    def reconfig(self):
+        font = self.messages.font()
+        font.setPointSize(int(CONFIG['launcher_local/font_size']))
+        self.messages.setFont(font)
 
     def url_clicked(self, url):
         parent = self.parent()
