@@ -109,7 +109,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const Mes
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].m != m) {
         k0 = modes[num].k0;
-        m = modes[num].m;
+        setM(modes[num].m);
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldE(dst_mesh, method);
@@ -123,7 +123,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const Mes
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].m != m) {
         k0 = modes[num].k0;
-        m = modes[num].m;
+        setM(modes[num].m);
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldH(dst_mesh, method);
@@ -137,7 +137,7 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].m != m) {
         k0 = modes[num].k0;
-        m = modes[num].m;
+        setM(modes[num].m);
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
