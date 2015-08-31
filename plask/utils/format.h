@@ -11,7 +11,7 @@ This file contains utils to format strings.
 
 namespace plask {
 
-///Recursion end of format_add_args. Do nothing.
+/// Recursion end of format_add_args. Do nothing.
 inline void format_add_args(boost::format&) {}
 
 /**
@@ -23,6 +23,15 @@ template <typename firstT, typename... restT>
 inline void format_add_args(boost::format& format, firstT&& first_arg, restT&&... rest_args) {
     format % std::forward<firstT>(first_arg);
     format_add_args(format, std::forward<restT>(rest_args)...);
+}
+
+/**
+ * String pass-through.
+ * @param msg template string which have %1%, %2%, ...
+ * @return formated string
+ */
+inline std::string format(const std::string& msg) {
+    return msg;
 }
 
 /**
