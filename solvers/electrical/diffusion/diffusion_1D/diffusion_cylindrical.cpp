@@ -269,10 +269,13 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     PM = DataVector<double>(mesh2->size(), 0.);
                     overthreshold_dgdn = DataVector<double>(mesh2->size(), 0.);
                     // overthreshold_g = DataVector<double>(mesh2->size(), 0.);
+                    modesP.assign(inWavelength.size(), 0.);
 
+                    double D; if (current_mesh().size() > 1) D = current_mesh()[1] - current_mesh()[0]; // only ok for regular mesh
+                    
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
-                        wavelength = real(inWavelength(n));
+                        double wavelength = real(inWavelength(n));
                         write_debug("wavelength: %1% nm", wavelength);
 
                         auto mesh_Li = make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
@@ -290,19 +293,23 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         {
                             if (n <= 0.) ile++;
                         }
-                        write_debug("n < 0: %1% times", ile);
+                        // write_debug("n < 0: %1% times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
-                        write_debug("g[0]: %1% cm(-1)", g[0]);
+                        // write_debug("g[0]: %1% cm(-1)", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
-                        write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
+                        // write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
                         auto factor = inv_hc * wavelength; // inverse one photon energy
                         for (size_t i = 0; i != mesh2->size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
-                            PM[i] += common * g[i];
+                            double pm = common * g[i];
+                            PM[i] += pm;
                             overthreshold_dgdn[i] += common * dgdn[i];
                             // overthreshold_g[i] += common * g[i];
+                            modesP[n] += pm * D * jacobian(current_mesh()[i]);
                         }
+                        modesP[n] *= 1.0e-5 * global_QW_width * (plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9));
+                        // 1.0e-5 from µm to cm conversion and conversion to mW (r*dr), (...) - photon energy
                     }
                 }
 
@@ -752,16 +759,11 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::burning_integral()
 {
-    if (PM.size() == 0)
+    if (modesP.size() == 0)
         throw Exception("%1%: You must run over-threshold computations first before getting burring integral.", this->getId());
     double int_val = 0.0;
-    for (int i = 0; i < (current_mesh().size() - 1)/2; i++)
-    {
-        int_val += (PM[2*i + 1] * current_mesh()[2*i + 1] * (current_mesh()[2*i + 2] - current_mesh()[2*i]));
-    }
-
-    return 2*M_PI * int_val * 1.0e-5 * global_QW_width * (plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9));
-    // 1.0e-5 from um to cm conversion and conversion to mW (r*dr), 2*M_PI from integral over full angle, (...) - photon energy
+    for (double p: modesP) int_val += p;
+    return int_val;
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)

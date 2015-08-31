@@ -548,8 +548,9 @@ template <typename GeometryType>
 QW::Gain FermiNewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n,
                                                          const ActiveRegionInfo& region, const Levels& levels, bool iShowSpecLogs)
 {
-    if (isnan(n) || n < 0.) throw ComputationError(this->getId(), "Wrong carrier concentration (%1%/cm3)", n);
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", T);
+    if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
+    n = max(n, 1e-6); // To avoid hangs
 
     if ((!levels.mEc)&&((!levels.mEvhh)||(!levels.mEvlh)))
     {
@@ -667,8 +668,9 @@ struct FermiNewGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             double val = 0.;
             for (size_t j = 0; j != mesh->axis1->size(); ++j) {
                 auto v = data[mesh->index(i,j)];
-                if (isnan(v) || v < 0)
+                if (isnan(v))
                     throw ComputationError(solver->getId(), "Wrong %1% (%2%) at %3%", name, v, mesh->at(i,j));
+                v = max(v, 1e-6); // To avoid hangs
                 val += v;
             }
             return val * factor;

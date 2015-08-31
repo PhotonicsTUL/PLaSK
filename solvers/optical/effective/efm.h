@@ -87,7 +87,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
     /// Details of the computed mode
     struct Mode {
-        EffectiveFrequencyCyl* solver;///< Solver this mode belongs to
+        EffectiveFrequencyCyl* solver;      ///< Solver this mode belongs to
         int m;                              ///< Number of the LP_mn mode describing angular dependence
         bool have_fields;                   ///< Did we compute fields for current state?
         std::vector<FieldR,aligned_allocator<FieldR>> rfields; ///< Computed horizontal fields

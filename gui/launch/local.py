@@ -60,6 +60,7 @@ class OutputWindow(QtGui.QDockWidget):
             CONFIG['launcher_local/font_family'] = font_family
             font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setFamily(font_family)
+        font.setBold(False)
         font.setPointSize(int(CONFIG['launcher_local/font_size']))
         self.messages = QtGui.QTextBrowser()
         self.messages.setWordWrapMode(QtGui.QTextOption.NoWrap)

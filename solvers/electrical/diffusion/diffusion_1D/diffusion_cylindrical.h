@@ -87,12 +87,11 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         bool threshold_computation;
         bool overthreshold_computation;
 
-        double wavelength;
-        // double factor;
-
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [cm];
         int iterations;
 
+        double jacobian(double r);
+        
         std::vector<Box2D> detected_QW;
 
         plask::LazyData<Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
@@ -100,6 +99,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
         plask::DataVector<double> PM;                   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
+        std::vector<double> modesP;                     // Integral for overthreshold computations summed for each mode
 
         plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;            // concentration computed in n -th step vector
@@ -158,7 +158,14 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
 }; // class FiniteElementMethodDiffusion2DSolver
 
-//PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>)
-//PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>)
+template <>
+double FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::jacobian(double) {
+    return 1;
+}
+
+template <>
+double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(double r) {
+    return 2*M_PI * r;
+} // 2*M_PI from integral over full angle, 
 
 }}} //namespace plask::solvers::diffusion_cylindrical

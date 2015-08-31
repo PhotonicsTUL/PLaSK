@@ -265,9 +265,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 {
     QW::gain gainModule;
 
-    if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
-
-    if (n == 0) n = 1e-6; // To avoid hangs
+    if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
+    n = max(n, 1e-6); // To avoid hangs
 
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
@@ -583,9 +582,10 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         double operator[](size_t i) const {
             double val = 0.;
             for (size_t j = 0; j != mesh->axis1->size(); ++j) {
-                auto v = data[mesh->index(i,j)];
-                if (isnan(v) || v < 0)
+                double v = data[mesh->index(i,j)];
+                if (isnan(v))
                     throw ComputationError(solver->getId(), "Wrong %1% (%2%) at %3%", name, v, mesh->at(i,j));
+                v = max(v, 1e-6); // To avoid hangs
                 val += v;
             }
             return val * factor;
@@ -667,7 +667,7 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             }
             if (error) std::rethrow_exception(error);
             data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
-                                    values, dest_mesh, interp);
+                                    values, dest_mesh, interp, solver->geometry);
         }
     }
 

@@ -30,6 +30,7 @@ if _font_family is None:
     CONFIG['editor/font_family'] = _font_family
     DEFAULT_FONT.setStyleHint(QtGui.QFont.TypeWriter)
 DEFAULT_FONT.setFamily(_font_family)
+DEFAULT_FONT.setBold(False)
 del _font_family
 DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))
 
