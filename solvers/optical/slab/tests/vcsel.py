@@ -97,7 +97,7 @@ class VCSEL(unittest.TestCase):
         yscale('log')
         
     def plot_field(self):
-        self.solver.find_mode(980.1)
+        self.solver.find_mode(980.1, m=1)
         print self.solver.modes[0]
         box = self.solver.geometry.bbox
         msh = mesh.Rectangular2D(linspace(-box.right, box.right, 101),
@@ -106,22 +106,44 @@ class VCSEL(unittest.TestCase):
         mag = max(abs(field.array.ravel()))
         scale = linspace(-mag, mag, 255)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
         plot_field(field, scale, comp='r', cmap='bwr')
         gcf().canvas.set_window_title("Er")
         colorbar(use_gridspec=True)
         tight_layout(0.1)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
         plot_field(field, scale, comp='p', cmap='bwr')
-        gcf().canvas.set_window_title("Ep")
         colorbar(use_gridspec=True)
+        gcf().canvas.set_window_title("Ep")
         tight_layout(0.1)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
         plot_field(field, scale, comp='z', cmap='bwr')
-        gcf().canvas.set_window_title("Ez")
         colorbar(use_gridspec=True)
+        gcf().canvas.set_window_title("Ez")
+        tight_layout(0.1)
+
+        figure()
+        plot_geometry(self.solver.geometry, mirror=True, color='w', alpha=0.15)
+        light = self.solver.outLightMagnitude(msh)
+        plot_field(light)
+        colorbar(use_gridspec=True)
+        gcf().canvas.set_window_title("Mag")
+        tight_layout(0.1)
+
+        z = self.solver.geometry.get_object_bboxes(self.manager.geometry.QW)[0].center.z
+        arr = light.array
+        r = msh.axis0[unravel_index(argmax(arr), arr.shape)[0]]
+        rmsh = mesh.Rectangular2D(linspace(-box.right, box.right, 2001), [z])
+        zmsh = mesh.Rectangular2D([r], linspace(box.bottom, box.top, 10001))
+        figure()
+        plot_profile(self.solver.outLightMagnitude(rmsh))
+        gcf().canvas.set_window_title(u"Horizontal (z = {:.1f} µm".format(z))
+        tight_layout(0.1)
+        figure()
+        plot_profile(self.solver.outLightMagnitude(zmsh))
+        gcf().canvas.set_window_title(u"Vertical (r = {:.1f} µm".format(r))
         tight_layout(0.1)
 
 

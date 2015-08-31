@@ -486,7 +486,8 @@ std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
 
 
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
-    return format("<m: %d, lam: %.2fnm, power: %.2g mW>", self.m, str(2e3*M_PI / self.k0), self.power);
+    dcomplex lam = 2e3*M_PI / self.k0;
+    return format("<m: %d, lam: (%.3f%+.3gj) nm, power: %.2g mW>", self.m, lam.real(), lam.imag(), self.power);
 }
 std::string BesselSolverCyl_Mode_repr(const BesselSolverCyl::Mode& self) {
     return format("BesselCyl.Mode(m=%d, lam=%g, power=%g)", self.m, str(2e3*M_PI / self.k0), self.power);
@@ -579,7 +580,7 @@ std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
 
 std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
     dcomplex lam = 2e3*M_PI / self.k0;
-    return format("<lam: (%.3f%+.3gj)nm, klong: %s/um, ktran: %s/um, symmetry: (%s), power: %.2gmW>",
+    return format("<lam: (%.3f%+.3gj) nm, klong: %s/um, ktran: %s/um, symmetry: (%s), power: %.2gmW>",
                   real(lam), imag(lam),
                   (imag(self.klong) == 0.)? format("%.3g",real(self.klong)) : format("%.3g%+.3g",real(self.klong),imag(self.klong)),
                   (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
