@@ -90,9 +90,8 @@ class Disk(unittest.TestCase):
             print "\nQE = "
             print abs(dot(RH,RE))
             print
-        
-    def testComputations(self):
-        
+
+    def plot_determinant(self):
         lams = linspace(1000/self.f, 5000/self.f, 700)
         try:
             dets = self.solver.get_determinant(lam=lams, m=1, dispersive=False)
@@ -100,9 +99,19 @@ class Disk(unittest.TestCase):
             dets = self.solver.get_determinant(lam=lams)
         plot(lams, abs(dets))
         yscale('log')
-        show()
         
-        #m = self.solver.find_mode(1550/self.f)
-        #self.assertEqual( m, 0 )
-        #self.assertEqual( len(self.solver.modes), 1 )
+    def testComputations(self):
+        m = self.solver.find_mode(1550/self.f)
+        self.assertEqual( m, 0 )
+        self.assertEqual( len(self.solver.modes), 1 )
         #self.assertAlmostEqual( self.solver.modes[m].lam, 1561.1-123.0j, 0 )
+
+
+if __name__ == "__main__":
+    disk = Disk('plot_determinant')
+    disk.setUp()
+
+    disk.plot_determinant()
+    #disk.plot_field()
+    show()
+    

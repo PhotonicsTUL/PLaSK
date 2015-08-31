@@ -119,6 +119,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical
     size_t insertMode() {
         Mode mode(this);
         mode.k0 = k0;
+        mode.m = m;
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);

@@ -98,10 +98,31 @@ class VCSEL(unittest.TestCase):
         
     def plot_field(self):
         self.solver.find_mode(980.1)
+        print self.solver.modes[0]
         box = self.solver.geometry.bbox
-        msh = mesh.Rectangular2D(linspace(0., box.right, 101),
+        msh = mesh.Rectangular2D(linspace(-box.right, box.right, 101),
                                  linspace(box.bottom, box.top, 1001))
-        plot_field(self.solver.outLightMagnitude(msh))
+        field = self.solver.outElectricField(msh)
+        mag = max(abs(field.array.ravel()))
+        scale = linspace(-mag, mag, 255)
+        figure()
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_field(field, scale, comp='r', cmap='bwr')
+        gcf().canvas.set_window_title("Er")
+        colorbar(use_gridspec=True)
+        tight_layout(0.1)
+        figure()
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_field(field, scale, comp='p', cmap='bwr')
+        gcf().canvas.set_window_title("Ep")
+        colorbar(use_gridspec=True)
+        tight_layout(0.1)
+        figure()
+        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.25)
+        plot_field(field, scale, comp='z', cmap='bwr')
+        gcf().canvas.set_window_title("Ez")
+        colorbar(use_gridspec=True)
+        tight_layout(0.1)
 
 
 if __name__ == "__main__":

@@ -353,7 +353,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                             InterpolationFlags(SOLVER->getGeometry(),
                                                InterpolationFlags::Symmetry::POSITIVE,
                                                InterpolationFlags::Symmetry::NO));
-    
+
     if (which_field == FIELD_E) {
         return LazyData<Vec<3,dcomplex>>(dest_mesh->size(), 
             [=](size_t i) -> Vec<3,dcomplex> {
@@ -365,10 +365,10 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
-                    result.c0 += A * E[idxs(j)] + B * E[idxp(j)];
-                    result.c1 -= A * E[idxp(j)] + B * E[idxs(j)];
+                    result.c0 -= A * E[idxp(j)] + B * E[idxs(j)];   // E_p
+                    result.c1 += A * E[idxs(j)] + B * E[idxp(j)];   // E_r
                     double k = factors[j] / b;
-                    result.c2 += 2. * k * ieps[j] * J * H[idxp(j)];
+                    result.c2 += 2. * k * ieps[j] * J * H[idxp(j)]; // E_z
                 }
                 return result;
             });
@@ -383,10 +383,10 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
-                    result.c0 += A * H[idxp(j)] + B * H[idxs(j)];
-                    result.c1 += A * H[idxs(j)] + B * H[idxp(j)];
+                    result.c0 += A * H[idxs(j)] + B * H[idxp(j)];   // H_p
+                    result.c1 += A * H[idxp(j)] + B * H[idxs(j)];   // H_r
                     double k = factors[j] / b;
-                    result.c2 += 2. * k * J * E[idxs(j)];
+                    result.c2 += 2. * k * J * E[idxs(j)];           // H_z
                 }
                 return result;
             });
