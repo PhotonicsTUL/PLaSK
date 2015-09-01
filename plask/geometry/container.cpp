@@ -65,14 +65,16 @@ void GeometryObjectContainer<dim>::getBoundingBoxesToVec(const GeometryObject::P
         dest.push_back(this->getBoundingBox());
         return;
     }
-    if (path) {
+    forEachChild([&](const Translation<dim> &child) { child.getBoundingBoxesToVec(predicate, dest, path); }, path);
+
+    /*if (path) {
         auto c = path->getTranslationChildren<dim>(*this);
         if (!c.empty()) {
             for (auto child: c) child->getBoundingBoxesToVec(predicate, dest, path);
             return;
         }
     }
-    for (auto child: children) child->getBoundingBoxesToVec(predicate, dest, path);
+    for (auto child: children) child->getBoundingBoxesToVec(predicate, dest, path);*/
 }
 
 template <int dim>
@@ -81,14 +83,16 @@ void GeometryObjectContainer<dim>::getObjectsToVec(const GeometryObject::Predica
         dest.push_back(this->shared_from_this());
         return;
     }
-    if (path) {
+    forEachChild([&](const Translation<dim> &child) { child.getObjectsToVec(predicate, dest, path); }, path);
+
+    /*if (path) {
         auto c = path->getTranslationChildren<dim>(*this);
         if (!c.empty()) {
             for (auto child: c) child->getObjectsToVec(predicate, dest, path);
             return;
         }
     }
-    for (auto child: children) child->getObjectsToVec(predicate, dest, path);
+    for (auto child: children) child->getObjectsToVec(predicate, dest, path);*/
 }
 
 template <int dim>
@@ -97,14 +101,16 @@ void GeometryObjectContainer<dim>::getPositionsToVec(const GeometryObject::Predi
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
     }
-    if (path) {
+    forEachChild([&](const Translation<dim> &child) { child.getPositionsToVec(predicate, dest, path); }, path);
+
+    /*if (path) {
         auto c = path->getTranslationChildren<dim>(*this);
         if (!c.empty()) {
             for (auto child: c) child->getPositionsToVec(predicate, dest, path);
             return;
         }
     }
-    for (auto child: children) child->getPositionsToVec(predicate, dest, path);
+    for (auto child: children) child->getPositionsToVec(predicate, dest, path);*/
 }
 
 // template <int dim>

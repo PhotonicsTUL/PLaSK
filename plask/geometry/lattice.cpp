@@ -305,7 +305,7 @@ void Lattice::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, 
         dest.push_back(getBoundingBox());
         return;
     }
-    return container->getBoundingBoxesToVec(predicate, dest, path);
+    container->forEachChild([&](const Translation<3> &child) { child.getBoundingBoxesToVec(predicate, dest, path); }, path);
 }
 
 void Lattice::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
@@ -313,7 +313,7 @@ void Lattice::getObjectsToVec(const GeometryObject::Predicate& predicate, std::v
         dest.push_back(this->shared_from_this());
         return;
     }
-    return container->getObjectsToVec(predicate, dest, path);    //TODO skip container ??
+    container->forEachChild([&](const Translation<3> &child) { child.getObjectsToVec(predicate, dest, path); }, path);
 }
 
 void Lattice::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
@@ -321,26 +321,15 @@ void Lattice::getPositionsToVec(const GeometryObject::Predicate& predicate, std:
         dest.push_back(Primitive<3>::ZERO_VEC);
         return;
     }
-    return container->getPositionsToVec(predicate, dest, path);    //TODO skip container ??
+    container->forEachChild([&](const Translation<3> &child) { child.getPositionsToVec(predicate, dest, path); }, path);
 }
 
 GeometryObject::Subtree Lattice::getPathsTo(const GeometryObject& el, const PathHints* path) const {
     if (this == &el) return this->shared_from_this();
-    return container->getPathsTo(el, path);    //TODO skip container in paths
-}
-
-
-
-/*
- * Find all points lied on sides and inside of the poligon described by segments.
- * @param segments in any order, without intersections (boost geometry can produce this)
- * @return coordinates of all (x, y) points inside the poligon in the map: y -> set of x
- */
-/*struct IntPoint { int x, y; };
-typedef std::pair<IntPoint, IntPoint> IntSegment;
-std::map<int, std::set<int>> calcLatticePoints(const std::vector<IntSegment>& segments) {
+    GeometryObject::Subtree result = container->getPathsTo(el, path);
+    if (result.object) result.object = this->shared_from_this();
     return result;
-}*/
+}
 
 void Lattice::refillContainer()
 {

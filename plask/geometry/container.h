@@ -248,6 +248,25 @@ public:
     /// Remove all children from the container.
     void clear() { removeIfT([](const shared_ptr<ChildType>&){ return true; }); }
 
+    /**
+     * Call fun(child) for each real child of this.
+     * Set of children considered is restricted to given path if the path is given and the set is non-empty.
+     * @param fun unction object, to be applied to the each child. The signature of the function should be equivalent to the following:
+     *           <code>void fun(const Translation<dim> &child);</code>
+     * @param path path hints which limits search space
+     */
+    template <typename UnaryFunction>
+    void forEachChild(UnaryFunction fun, const PathHints* path = nullptr) const {
+        if (path) {
+            auto c = path->getTranslationChildren<dim>(*this);
+            if (!c.empty()) {
+                for (auto child: c) fun(*child);
+                return;
+            }
+        }
+        for (auto child: children) fun(*child);
+    }
+
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectContainer<2>)

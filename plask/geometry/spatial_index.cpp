@@ -82,6 +82,25 @@ struct LeafCacheNode: public SpatialIndexNode<DIMS> {
         if (!result.children.empty())
             result.object = caller;
         return result;
+        /*GeometryObject::Subtree result;   //general container version:
+        if (all) {
+            for (auto child = children.begin(); child != children.end(); ++child) {
+                GeometryObject::Subtree child_path = (*child)->getPathsAt(point, true);
+                if (!child_path.empty())
+                    result.children.push_back(std::move(child_path));
+            }
+        } else {
+            for (auto child = children.rbegin(); child != children.rend(); ++child) {
+                GeometryObject::Subtree child_path = (*child)->getPathsAt(point, false);
+                if (!child_path.empty()) {
+                    result.children.push_back(std::move(child_path));
+                    break;
+                }
+            }
+        }
+        if (!result.children.empty())
+            result.object = caller;
+        return result;*/
     }
 };
 

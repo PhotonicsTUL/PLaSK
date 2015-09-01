@@ -164,10 +164,6 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
         return container->contains(p);
     }
 
-    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
-        return container->ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
-    }
-
     //some methods must be overwrite to invalidate cache:
     void onChildChanged(const GeometryObject::Event& evt) override {
         //if (evt.isResize()) invalidateCache();
@@ -198,6 +194,12 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
     void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
+
+    //GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override {
+        return container->ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
+    }
 
     std::size_t getChildrenCount() const override { return container->getChildrenCount(); }
 
