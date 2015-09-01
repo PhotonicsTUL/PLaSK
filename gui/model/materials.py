@@ -19,7 +19,7 @@ from ..qt.QtCore import Qt
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
-from ..utils.widgets import DEFAULT_FONT
+from ..utils.widgets import EDITOR_FONT
 from .table import TableModel, TableModelEditMethods
 from .info import Info
 from ..utils.xml import OrderedTagReader, AttributeReader, require_no_attributes, require_no_children

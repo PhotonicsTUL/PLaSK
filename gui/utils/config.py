@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys
 import os
 from collections import OrderedDict
 from ..qt import QtCore, QtGui
@@ -31,6 +32,7 @@ DEFAULTS = {
     'editor/matching_bracket_color': '#aaffaa',
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher_local/font_size': 10,
+    'launcher_local/font_bold': False,
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
     'syntax/xml_attr': 'color=#888800',
@@ -63,6 +65,12 @@ DEFAULTS = {
     'geometry/extra_width': 1.0,
 }
 
+if sys.platform == 'win32': DEFAULTS['editor/font_family'] = "Consolas"
+elif sys.platform == 'darwin': DEFAULTS['editor/font_family'] = "Monaco"
+else: DEFAULTS['editor/font_family'] = "Monospace"
+
+DEFAULTS['launcher_local/font_family'] = DEFAULTS['editor/font_family']
+
 
 def CheckBox(entry, help=None):
     return lambda parent: ConfigDialog.CheckBox(entry, help=help, parent=parent)
@@ -81,6 +89,10 @@ def Color(entry, help=None):
 
 def Syntax(entry, help=None):
     return lambda parent: ConfigDialog.Syntax(entry, help=help, parent=parent)
+
+def Font(family_entry, size_entry, bold_entry=None, style_entry=None, help=None):
+    return lambda parent: ConfigDialog.Font(family_entry, size_entry, bold_entry, style_entry,
+                                            help=help, parent=parent)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -131,7 +143,7 @@ CONFIG_WIDGETS = OrderedDict([
                                           help="Width of info lines for the selected object.")),
 
         "Text Editor",
-        ("Font size", SpinBox('editor/font_size', min=1,
+        ("Editor font", Font('editor/font_family', 'editor/font_size',
                               help="Font size in text editors.")),
         ("Current line color", Color('editor/current_line_color',
                                      "Background color of the current line.")),
@@ -148,8 +160,11 @@ CONFIG_WIDGETS = OrderedDict([
                                           "Highlight color for unmatched brackets "
                                           "in script editor.")),
         "Launcher",
-        ("Font size", SpinBox('launcher_local/font_size', min=1,
-                              help="Font size in local launcher window.")),
+        # ("Font size", SpinBox('launcher_local/font_size', min=1,
+        #                       help="Font size in local launcher window.")),
+        ("Messages font", Font('launcher_local/font_family', 'launcher_local/font_size', 'launcher_local/font_bold',
+                               help="Font in local launcher window.")),
+
     ]),
     ("Syntax Highlighting", [
         "Python Syntax",
@@ -334,6 +349,48 @@ class ConfigDialog(QtGui.QDialog):
             if self.italic.isChecked(): syntax.append('italic=true')
             CONFIG[self.entry] = ', '.join(syntax)
 
+    class Font(QtGui.QPushButton):
+        def __init__(self, family_entry, size_entry, bold_entry=None, style_entry=None, parent=None, help=None):
+            super(ConfigDialog.Font, self).__init__(parent)
+            self.family_entry = family_entry
+            self.style_entry = style_entry
+            self.bold_entry = bold_entry
+            self.size_entry = size_entry
+            self.current_font = self.font()
+            family = CONFIG[self.family_entry]
+            if family is not None: self.current_font.setFamily(family)
+            else: family = self.current_font.family()
+            self.current_font.setBold(False)
+            if bold_entry is not None:
+                bold = CONFIG[bold_entry]
+                if bold is not None: self.current_font.setBold(bold)
+            self.current_font.setStyle(QtGui.QFont.StyleNormal)
+            if style_entry is not None:
+                style = CONFIG[style_entry]
+                if style is not None: self.current_font.setStyle(style)
+            size = CONFIG[self.size_entry]
+            if size is not None: self.current_font.setPointSize(int(size))
+            else: size = self.current_font.pointSize()
+            # self.setFont(self.current_font)
+            self.setText("{} {}".format(family, size))
+            if help is not None:
+                self.setWhatsThis(help)
+            self.clicked.connect(self.on_press)
+            self.setSizePolicy(QtGui.QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+        def on_press(self):
+            dlg = QtGui.QFontDialog(self.parent())
+            dlg.setCurrentFont(self.current_font)
+            if dlg.exec_():
+                self.current_font = dlg.selectedFont()
+                self.setText("{} {}".format(self.current_font.family(), self.current_font.pointSize()))
+        def save(self):
+            CONFIG[self.family_entry] = self.current_font.family()
+            CONFIG[self.size_entry] = self.current_font.pointSize()
+            if self.bold_entry is not None:
+                CONFIG[self.bold_entry] = self.current_font.bold()
+            if self.style_entry is not None:
+                CONFIG[self.style_entry] = self.current_font.style()
+
     def __init__(self, parent):
         super(ConfigDialog, self).__init__(parent)
         self.setWindowTitle("GUI Settings")
@@ -385,8 +442,9 @@ class ConfigDialog(QtGui.QDialog):
         for item in self.items:
             item.save()
         CONFIG.sync()
-        from .widgets import DEFAULT_FONT
-        DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))
+        from .widgets import EDITOR_FONT
+        EDITOR_FONT.setFamily(CONFIG['editor/font_family'])
+        EDITOR_FONT.setPointSize(int(CONFIG['editor/font_size']))
         self.parent().config_changed.emit()
 
     def accept(self):

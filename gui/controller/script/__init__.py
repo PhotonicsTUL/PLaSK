@@ -29,7 +29,7 @@ from .indenter import indent, unindent, autoindent
 from ..source import SourceEditController, SourceWidget
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
-from ...utils.widgets import DEFAULT_FONT
+from ...utils.widgets import EDITOR_FONT
 from ...utils.textedit import TextEdit
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
@@ -343,13 +343,17 @@ class ScriptController(SourceEditController):
             current_syntax = syntax
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
                                              *load_syntax(current_syntax, scheme),
-                                             default_font=DEFAULT_FONT)
+                                             default_font=EDITOR_FONT)
         self.highlighter.rehighlight()
 
     def reconfig(self):
+        editor = self.source_widget.editor
+        editor.setFont(EDITOR_FONT)
+        if editor.line_numbers is not None:
+            editor.line_numbers.setFont(EDITOR_FONT)
         update_brackets_colors()
         if self.highlighter is not None:
-            with BlockQtSignals(self.source_widget.editor):
+            with BlockQtSignals(editor):
                 update_python_scheme()
                 self.rehighlight()
 
@@ -373,8 +377,8 @@ class HelpDock(QtGui.QDockWidget):
         super(HelpDock, self).__init__(parent)
         self.textarea = QtGui.QTextEdit()
         self.textarea.setReadOnly(True)
-        help_font = QtGui.QFont(DEFAULT_FONT)
-        help_font.setPointSize(DEFAULT_FONT.pointSize()-2)
+        help_font = QtGui.QFont(EDITOR_FONT)
+        help_font.setPointSize(EDITOR_FONT.pointSize()-2)
         pal = self.textarea.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
         self.textarea.setPalette(pal)
@@ -393,6 +397,7 @@ class HelpDock(QtGui.QDockWidget):
 
     def reconfig(self):
         font = self.textarea.font()
+        font.setFamily(CONFIG['editor/font_family'])
         font.setPointSize(int(CONFIG['editor/font_size'])-2)
         self.textarea.setFont(font)
 

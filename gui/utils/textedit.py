@@ -14,7 +14,7 @@ import math
 
 from ..qt import QtCore, QtGui
 
-from .widgets import DEFAULT_FONT
+from .widgets import EDITOR_FONT
 from .config import CONFIG
 
 
@@ -30,7 +30,7 @@ class TextEdit(QtGui.QPlainTextEdit):
 
     def __init__(self, parent=None, line_numbers=True):
         super(TextEdit, self).__init__(parent)
-        self.setFont(DEFAULT_FONT)
+        self.setFont(EDITOR_FONT)
         self.setLineWrapMode(QtGui.QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)

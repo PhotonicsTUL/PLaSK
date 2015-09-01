@@ -18,7 +18,7 @@ from ..model.connects import PROPS
 
 from ..utils.widgets import table_last_col_fill, table_edit_shortcut, VerticalScrollArea
 from ..utils.textedit import TextEdit
-from ..utils.widgets import DEFAULT_FONT
+from ..utils.widgets import EDITOR_FONT
 from ..external.highlighter import SyntaxHighlighter, load_syntax
 from . import Controller, select_index_from_info
 from .table import table_with_manipulators
@@ -112,7 +112,7 @@ class SolverAutoWidget(VerticalScrollArea):
                     layout.addRow(text + ':', edit)
             else:
                 edit = TextEdit(parent, line_numbers=False)
-                font = QtGui.QFont(DEFAULT_FONT)
+                font = QtGui.QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme),
                                                      default_font=font)

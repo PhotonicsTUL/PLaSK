@@ -17,7 +17,7 @@ from .. import Controller
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.qsignals import BlockQtSignals
 from ...utils.textedit import TextEdit
-from ...utils.widgets import DEFAULT_FONT
+from ...utils.widgets import EDITOR_FONT
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
@@ -93,7 +93,7 @@ class SourceWidget(QtGui.QWidget):
         super(SourceWidget, self).__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)
-        self.editor.setFont(DEFAULT_FONT)
+        self.editor.setFont(EDITOR_FONT)
 
         self.toolbar = QtGui.QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -409,7 +409,7 @@ class SourceEditController(Controller):
         source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
         self.highlighter = SyntaxHighlighter(source.editor.document(),
                                              *load_syntax(syntax, scheme),
-                                             default_font=DEFAULT_FONT)
+                                             default_font=EDITOR_FONT)
         source.editor.setReadOnly(self.model.is_read_only())
         return source
 
@@ -423,12 +423,16 @@ class SourceEditController(Controller):
         return self.get_source_widget()
 
     def reconfig(self):
+        editor = self.source_widget.editor
+        editor.setFont(EDITOR_FONT)
+        if editor.line_numbers is not None:
+            editor.line_numbers.setFont(EDITOR_FONT)
         if self.highlighter is not None:
-            with BlockQtSignals(self.source_widget.editor):
+            with BlockQtSignals(editor):
                 update_xml_scheme()
-                self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
+                self.highlighter = SyntaxHighlighter(editor.document(),
                                                      *load_syntax(syntax, scheme),
-                                                     default_font=DEFAULT_FONT)
+                                                     default_font=EDITOR_FONT)
 
     def refresh_editor(self, *args, **kwargs):
         if self.visible:

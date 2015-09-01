@@ -60,8 +60,11 @@ class OutputWindow(QtGui.QDockWidget):
             CONFIG['launcher_local/font_family'] = font_family
             font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setFamily(font_family)
-        font.setBold(False)
+        family = CONFIG['launcher_local/font_family']
+        if family is not None:
+            font.setFamily(family)
         font.setPointSize(int(CONFIG['launcher_local/font_size']))
+        font.setBold(CONFIG['launcher_local/font_bold'])
         self.messages = QtGui.QTextBrowser()
         self.messages.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.messages.setReadOnly(True)
@@ -191,7 +194,11 @@ class OutputWindow(QtGui.QDockWidget):
 
     def reconfig(self):
         font = self.messages.font()
+        family = CONFIG['launcher_local/font_family']
+        if family is not None:
+            font.setFamily(family)
         font.setPointSize(int(CONFIG['launcher_local/font_size']))
+        font.setBold(int(CONFIG['launcher_local/font_bold']))
         self.messages.setFont(font)
 
     def url_clicked(self, url):

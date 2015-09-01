@@ -18,21 +18,10 @@ from ..qt import QtCore, QtGui, QtSignal
 from ..utils.config import CONFIG
 
 
-DEFAULT_FONT = QtGui.QFont()
-_font_family = CONFIG['editor/font_family']
-if _font_family is None:
-    if sys.platform == 'win32':
-        _font_family = "Consolas"
-    elif sys.platform == 'darwin':
-        _font_family = "Monaco"
-    else:
-        _font_family = "Monospace"
-    CONFIG['editor/font_family'] = _font_family
-    DEFAULT_FONT.setStyleHint(QtGui.QFont.TypeWriter)
-DEFAULT_FONT.setFamily(_font_family)
-DEFAULT_FONT.setBold(False)
-del _font_family
-DEFAULT_FONT.setPointSize(int(CONFIG['editor/font_size']))
+EDITOR_FONT = QtGui.QFont()
+EDITOR_FONT.setFamily(CONFIG['editor/font_family'])
+EDITOR_FONT.setPointSize(int(CONFIG['editor/font_size']))
+EDITOR_FONT.setBold(False)
 
 
 def table_edit_shortcut(table, col, key):

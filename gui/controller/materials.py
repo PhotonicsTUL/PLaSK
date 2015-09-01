@@ -21,7 +21,7 @@ from .script import scheme
 from ..model.materials import MaterialsModel, material_html_help, \
     parse_material_components, elements_re
 from ..utils.textedit import TextEdit
-from ..utils.widgets import HTMLDelegate, table_last_col_fill, DEFAULT_FONT, table_edit_shortcut, ComboBox
+from ..utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, ComboBox
 from ..utils.qsignals import BlockQtSignals
 from ..utils.config import CONFIG
 from . import Controller, select_index_from_info
@@ -302,7 +302,7 @@ class MaterialsController(Controller):
         # font.setPointSize(font.pointSize()-1)
         self.propedit = TextEdit(self.prop_splitter, line_numbers=False)
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
-                                                      default_font=DEFAULT_FONT)
+                                                      default_font=EDITOR_FONT)
         self.propedit.hide()
 
         self.document.window.config_changed.connect(self.reconfig)
@@ -323,7 +323,7 @@ class MaterialsController(Controller):
         with BlockQtSignals(self.propedit):
             del self.propedit.highlighter
             self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
-                                                          default_font=DEFAULT_FONT)
+                                                          default_font=EDITOR_FONT)
 
     def add_external(self, what):
         index = self.materials_table.selectionModel().currentIndex()
