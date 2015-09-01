@@ -42,7 +42,8 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
         RECEIVER(inLightMagnitude, "It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, "");
-        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold [mW].");
+        METHOD(get_total_burning, burning_integral, "Compute total power burned over threshold [mW].");
+        solver.def_readonly("modes_burning", &__Class__::modesP, "Power burned over threshold by each mode [mW].");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
@@ -81,7 +82,8 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
         RECEIVER(inLightMagnitude, "It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, "");
-        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold [mW]");
+        METHOD(get_total_burning, burning_integral, "Compute total power burned over threshold [mW].");
+        solver.def_readonly("modes_burning", &__Class__::modesP, "Power burned over threshold by each mode [mW].");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property

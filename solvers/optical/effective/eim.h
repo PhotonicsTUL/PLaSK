@@ -313,6 +313,12 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     
     /**
      * Compute field weights
+     * \param mode mode to consider
+     */
+    double getTotalAbsorption(Mode& mode);
+
+    /**
+     * Compute field weights
      * \param num mode number to consider
      */
     double getTotalAbsorption(size_t num);
@@ -374,12 +380,6 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param kx computed horizontal propagation constants
      */
     void normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
-
-    /**
-     * Compute field weights
-     * \param mode mode to consider
-     */
-    double getTotalAbsorption(const Mode& mode);
 
     /**
      * Compute S matrix determinant for one stripe

@@ -684,8 +684,15 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, plask::solvers::effect
 }
 
 
-double EffectiveFrequencyCyl::getTotalAbsorption(const Mode& mode)
+double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
 {
+    if (!mode.have_fields) {
+        size_t stripe = getMainStripe();
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(mode.lam, mode, true); // compute horizontal part
+        mode.have_fields = true;
+    }
+
     double result = 0.;
     dcomplex lam0 = 2e3*M_PI / k0;
 
@@ -717,19 +724,19 @@ double EffectiveFrequencyCyl::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
-    if (!modes[num].have_fields) {
-        size_t stripe = getMainStripe();
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
-        detS(modes[num].lam, modes[num], true); // compute horizontal part
-        modes[num].have_fields = true;
-    }
-
     return getTotalAbsorption(modes[num]);
 }
 
 
-double EffectiveFrequencyCyl::getGainIntegral(const Mode& mode)
+double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
 {
+    if (!mode.have_fields) {
+        size_t stripe = getMainStripe();
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(mode.lam, mode, true); // compute horizontal part
+        mode.have_fields = true;
+    }
+    
     double result = 0.;
     dcomplex lam0 = 2e3*M_PI / k0;
 
@@ -752,13 +759,6 @@ double EffectiveFrequencyCyl::getGainIntegral(const Mode& mode)
 double EffectiveFrequencyCyl::getGainIntegral(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
-
-    if (!modes[num].have_fields) {
-        size_t stripe = getMainStripe();
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
-        detS(modes[num].lam, modes[num], true); // compute horizontal part
-        modes[num].have_fields = true;
-    }
 
     return getGainIntegral(modes[num]);
 }

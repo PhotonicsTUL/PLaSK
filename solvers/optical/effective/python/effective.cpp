@@ -204,6 +204,20 @@ std::string EffectiveFrequencyCyl_Mode_repr(const EffectiveFrequencyCyl::Mode& s
     return format("EffectiveFrequencyCyl.Mode(m=%1%, lam=%2%, power=%3%)", self.m, str(self.lam), self.power);
 }
 
+template <typename Solver>
+static double Mode_total_absorption(typename Solver::Mode& self) {
+    return self.solver->getTotalAbsorption(self);
+}
+
+static double Mode_gain_integral(EffectiveFrequencyCyl::Mode& self) {
+    return self.solver->getGainIntegral(self);
+}
+
+static double Mode_gain_integral__set(EffectiveFrequencyCyl::Mode& self, double value) {
+    double gain = self.solver->getGainIntegral(self);
+    self.power *= value / gain;
+}
+
 /**
  * Initialization of your solver to Python
  *
@@ -310,6 +324,7 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.power\n"
+                 "   ~optical.effective.EffectiveIndex2D.Mode.total_absorption\n"
                  ":rtype: Mode\n");
 
         py::scope scope = solver;
@@ -321,6 +336,10 @@ BOOST_PYTHON_MODULE(effective)
             .add_property("symmetry", &EffectiveIndex2D_getSymmetry, "Mode symmetry ('positive', 'negative', or None).")
             .def_readwrite("power", &EffectiveIndex2D::Mode::power, "Total power emitted into the mode [mW].")
             .add_property("loss", &EffectiveIndex2D::Mode::loss, "Mode losses [1/cm].")
+            .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
+                          "Cumulated absorption for the mode [mW].\n\n"
+                          "This property combines gain in active region and absorption in the whole\n"
+                          "structure.")
             .def("__str__", &EffectiveIndex2D_Mode_str)
             .def("__repr__", &EffectiveIndex2D_Mode_repr)
         ;
@@ -430,6 +449,8 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.total_absorption\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.gain_integral\n"
                  ":rtype: Mode\n");
         solver.add_property("vat", &EffectiveFrequencyCyl_getStripeR, &EffectiveFrequencyCyl_setStripeR,
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
@@ -446,6 +467,12 @@ BOOST_PYTHON_MODULE(effective)
             .def_readonly("wavelength", &EffectiveFrequencyCyl::Mode::lam, "Mode wavelength [nm].")
             .def_readwrite("power", &EffectiveFrequencyCyl::Mode::power, "Total power emitted into the mode.")
             .add_property("loss", &EffectiveFrequencyCyl::Mode::loss, "Mode losses [1/cm].")
+            .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
+                          "Cumulated absorption for the mode [mW].\n\n"
+                          "This property combines gain in active region and absorption in the whole\n"
+                          "structure.")
+            .add_property("gain_integral", &Mode_gain_integral, &Mode_gain_integral__set,
+                          "Total gain for the mode [mW].")
             .def("__str__", &EffectiveFrequencyCyl_Mode_str)
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr)
         ;

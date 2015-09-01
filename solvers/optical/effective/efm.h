@@ -408,9 +408,21 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     
     /**
      * Return total amount of energy absorbed by the matter in a unit time.
+     * \param mode mode to analyze
+     */
+    double getTotalAbsorption(Mode& mode);
+
+    /**
+     * Return total amount of energy absorbed by the matter in a unit time.
      * \param num mode number
      */
     double getTotalAbsorption(size_t num);
+
+    /**
+     * Return total amount of energy generated in the gain region in a unit time.
+     * \param mode mode to analyze
+     */
+    double getGainIntegral(Mode& mode);
 
     /**
      * Return total amount of energy absorbed by the matter in a unit time.
@@ -463,18 +475,6 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const plask::dcomplex& lam, Mode& mode, bool save=false);
-
-    /**
-     * Return total amount of energy absorbed by the matter in a unit time.
-     * \param mode mode to analyze
-     */
-    double getTotalAbsorption(const Mode& mode);
-
-    /**
-     * Return total amount of energy generated in the gain region in a unit time.
-     * \param mode mode to analyze
-     */
-    double getGainIntegral(const Mode& mode);
 
     /// Obtain main stripe
     size_t getMainStripe() {

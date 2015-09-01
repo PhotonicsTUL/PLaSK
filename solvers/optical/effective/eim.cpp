@@ -621,8 +621,10 @@ void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,al
     for (auto& val: mode.xweights) val *= ff;
 }
 
-double EffectiveIndex2D::getTotalAbsorption(const Mode& mode)
+double EffectiveIndex2D::getTotalAbsorption(Mode& mode)
 {
+    if (!mode.have_fields) detS(mode.neff, mode, true);
+
     double result = 0.;
 
     for (size_t ix = 0; ix < xend; ++ix) {
@@ -640,8 +642,6 @@ double EffectiveIndex2D::getTotalAbsorption(const Mode& mode)
 double EffectiveIndex2D::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num) throw NoValue("absorption");
-
-    if (!modes[num].have_fields) detS(modes[num].neff, modes[num], true);
 
     return getTotalAbsorption(modes[num]);
 }

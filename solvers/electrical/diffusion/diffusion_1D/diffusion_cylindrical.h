@@ -73,6 +73,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
         double burning_integral(void);  // całka strat nadprogu
 
+        std::vector<double> modesP;                     // Integral for overthreshold computations summed for each mode
+        
     protected:
 
         shared_ptr<plask::RectangularMesh<2>> mesh2;         ///< Computational mesh
@@ -99,7 +101,6 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
         plask::DataVector<double> PM;                   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
-        std::vector<double> modesP;                     // Integral for overthreshold computations summed for each mode
 
         plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;            // concentration computed in n -th step vector
