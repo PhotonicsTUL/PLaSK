@@ -230,6 +230,9 @@ class Config(object):
     def __setitem__(self, key, value):
         self.qsettings.setValue(key, value)
 
+    def __delitem__(self, key):
+        self.qsettings.remove(key)
+
     def sync(self):
         """Synchronize settings"""
         self.qsettings.sync()

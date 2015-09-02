@@ -585,6 +585,34 @@ class GotoDialog(QtGui.QDialog):
         self.setLayout(vbox)
 
 
+class PlaskApplication(QtGui.QApplication):
+
+    def saveState(self, session_manager):
+        files = []
+        for window in WINDOWS:
+            if window.document.filename is not None:
+                files.append(window.document.filename)
+        if files:
+            CONFIG['session/saved_' + session_manager.sessionKey()] = files
+            CONFIG.sync()
+
+    def restoreState(self):
+        key = 'session/saved_' + self.sessionKey()
+        files = CONFIG[key]
+        del CONFIG[key]
+        ok = False
+        if files:
+            if type(files) is not list: files = [files]
+            for file in files:
+                try:
+                    WINDOWS.add(MainWindow(file))
+                except:
+                    pass
+                else:
+                    ok = True
+        return ok
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -612,7 +640,7 @@ def main():
         winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
         winsparkle.win_sparkle_init()
 
-    APPLICATION = QtGui.QApplication(sys.argv)
+    APPLICATION = PlaskApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
     sys.argv = APPLICATION.arguments()
 
@@ -647,19 +675,23 @@ def main():
             # 'mathtext.sf': ft.family()
         })
 
-    if len(sys.argv) > 1:
-        filename = os.path.abspath(sys.argv[1])
-        global RECENT
-        try:
-            RECENT.remove(filename)
-        except ValueError:
-            pass
-        RECENT.append(filename)
-        RECENT = RECENT[:10]
-        CONFIG['session/recent_files'] = RECENT
-        WINDOWS.add(MainWindow(sys.argv[1]))
+    if APPLICATION.isSessionRestored():
+        if not APPLICATION.restoreState():
+            WINDOWS.add(MainWindow())
     else:
-        WINDOWS.add(MainWindow())
+        if len(sys.argv) > 1:
+            filename = os.path.abspath(sys.argv[1])
+            global RECENT
+            try:
+                RECENT.remove(filename)
+            except ValueError:
+                pass
+            RECENT.append(filename)
+            RECENT = RECENT[:10]
+            CONFIG['session/recent_files'] = RECENT
+            WINDOWS.add(MainWindow(sys.argv[1]))
+        else:
+            WINDOWS.add(MainWindow())
 
     exit_code = APPLICATION.exec_()
 
