@@ -215,9 +215,15 @@ class ConfSolverController(Controller):
             self.widget.geometry.clear()
             self.widget.geometry.addItems([''] + geometries)
         try:
-            mesh_type = self.model.mesh_type
-            if mesh_type is not None: mesh_type = mesh_type.lower()
-            grids = [m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type]
+            grids = []
+            if self.model.mesh_type is not None:
+                if ',' in self.model.mesh_type:
+                    mesh_types = (m.strip() for m in self.model.mesh_type.split(','))
+                else:
+                    mesh_types = self.model.mesh_type,
+                for mesh_type in mesh_types:
+                    mesh_type = mesh_type.lower()
+                    grids.extend(m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type)
         except AttributeError:
             pass
         else:
