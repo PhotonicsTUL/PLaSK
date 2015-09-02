@@ -247,7 +247,6 @@ if qt:
                         gui.WINDOWS.add(new_window)
                         if remove_self:
                             parent.close()
-                            gui.WINDOWS.remove(parent)
                         else:
                             new_window.move(parent.x() + 24, parent.y() + 24)
                     else:

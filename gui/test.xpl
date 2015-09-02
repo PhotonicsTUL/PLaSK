@@ -201,7 +201,7 @@
 <script><![CDATA[
 from scipy import optimize
 
-print mesaRadius
+print mesaRadius + 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")

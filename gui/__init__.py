@@ -388,7 +388,6 @@ class MainWindow(QtGui.QMainWindow):
                 WINDOWS.add(new_window)
                 if remove_self:
                     self.close()
-                    WINDOWS.remove(self)
                 else:
                     new_window.move(self.x() + 24, self.y() + 24)
             else:
@@ -510,6 +509,11 @@ class MainWindow(QtGui.QMainWindow):
 
         self.closed.emit()
 
+        try:
+            WINDOWS.remove(self)
+        except KeyError:
+            pass
+
         geometry = self.geometry()
         CONFIG['session/geometry'] = geometry
         CONFIG.sync()
@@ -587,9 +591,17 @@ class GotoDialog(QtGui.QDialog):
 
 class PlaskApplication(QtGui.QApplication):
 
+    def __init__(self, argv):
+        self._opened_windows = []
+        super(PlaskApplication, self).__init__(argv)
+
+    def commitData(self, session_manager):
+        self._opened_windows = WINDOWS.copy()
+        super(PlaskApplication, self).commitData(session_manager)
+
     def saveState(self, session_manager):
         files = []
-        for window in WINDOWS:
+        for window in self._opened_windows:
             if window.document.filename is not None:
                 files.append(window.document.filename)
         if files:
