@@ -231,6 +231,8 @@ class SourceWidget(QtGui.QWidget):
             else:
                 self.find_selection.setChecked(False)
                 self.find_edit.setText(text)
+        else:
+            self.find_selection.setChecked(False)
         self.find_edit.selectAll()
         self.find_edit.setPalette(self.editor.palette())
         self.find_toolbar.show()
