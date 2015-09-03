@@ -23,8 +23,8 @@
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name">Name of the geometry object below which the interface is located.</attr>
-      <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
     <tag name="vpml" label="Vertical Pmls">
@@ -155,8 +155,8 @@
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name">Name of the geometry object below which the interface is located.</attr>
-      <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
     <tag name="vpml" label="Vertical Pmls">
@@ -259,8 +259,8 @@
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name">Name of the geometry object below which the interface is located.</attr>
-      <attr name="path" label="Object path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
     <tag name="vpml" label="Vertical Pmls">
