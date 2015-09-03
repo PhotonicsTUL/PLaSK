@@ -87,7 +87,7 @@ class SolverAutoWidget(VerticalScrollArea):
                         edit.textChanged.connect(self.controller.fire_changed)
                         edit.currentIndexChanged.connect(self.controller.fire_changed)
                         edit.setCompleter(defines)
-                    elif isinstance(item, AttrGeometryObject) or isinstance(item, AttrGeometryPath):
+                    elif isinstance(item, (AttrGeometryObject, AttrGeometryPath)):
                         edit = QtGui.QComboBox()
                         edit.setEditable(True)
                         edit.textChanged.connect(self.controller.fire_changed)

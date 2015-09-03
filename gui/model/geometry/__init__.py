@@ -448,14 +448,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def names(self):
         res = set()
-        for r in self.roots:
-            res.update(r.names())
+        for r in self.roots: res |= r.names()
         return res
 
     def paths(self):
         res = set()
-        for r in self.roots:
-            res.update(r.paths())
+        for r in self.roots: res |= r.paths()
         return res
 
     @property
