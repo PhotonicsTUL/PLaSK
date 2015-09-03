@@ -213,7 +213,7 @@ static double Mode_gain_integral(EffectiveFrequencyCyl::Mode& self) {
     return self.solver->getGainIntegral(self);
 }
 
-static double Mode_gain_integral__set(EffectiveFrequencyCyl::Mode& self, double value) {
+static void Mode_gain_integral__set(EffectiveFrequencyCyl::Mode& self, double value) {
     double gain = self.solver->getGainIntegral(self);
     self.power *= value / gain;
 }
