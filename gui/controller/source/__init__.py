@@ -26,8 +26,8 @@ from .indenter import indent, unindent, autoindent
 
 
 def update_xml_scheme():
-    global scheme
-    scheme = {
+    global SCHEME
+    SCHEME = {
         'syntax_comment': parse_highlight(CONFIG['syntax/xml_comment']),
         'syntax_tag': parse_highlight(CONFIG['syntax/xml_tag']),
         'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
@@ -410,7 +410,7 @@ class SourceEditController(Controller):
     def create_source_widget(self, parent):
         source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
         self.highlighter = SyntaxHighlighter(source.editor.document(),
-                                             *load_syntax(syntax, scheme),
+                                             *load_syntax(syntax, SCHEME),
                                              default_font=EDITOR_FONT)
         source.editor.setReadOnly(self.model.is_read_only())
         return source
@@ -433,7 +433,7 @@ class SourceEditController(Controller):
             with BlockQtSignals(editor):
                 update_xml_scheme()
                 self.highlighter = SyntaxHighlighter(editor.document(),
-                                                     *load_syntax(syntax, scheme),
+                                                     *load_syntax(syntax, SCHEME),
                                                      default_font=EDITOR_FONT)
 
     def refresh_editor(self, *args, **kwargs):

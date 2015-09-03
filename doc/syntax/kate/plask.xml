@@ -15,11 +15,11 @@
 
 
 <contexts>
-    <context name="Start" attribute="Normal Text" lineEndContext="#stay">
+    <context name="Start" attribute="Normal AttrText" lineEndContext="#stay">
         <IncludeRules context="FindXML"/>
     </context>
 
-    <context name="FindXML" attribute="Normal Text" lineEndContext="#stay">
+    <context name="FindXML" attribute="Normal AttrText" lineEndContext="#stay">
         <StringDetect attribute="MainElement" context="Script" String="&lt;script&gt;" beginRegion="script"/>
         <RegExpr attribute="MainElement" String="&lt;/?(plask|defines|materials|geometry|grids|solvers|connects)" context="MainElement"/>
         <IncludeRules context="##XML"/>
@@ -33,12 +33,12 @@
         <RegExpr attribute="Error" context="#stay" String="\S" />
     </context>
 
-        <context name="Attribute" attribute="Other Text" lineEndContext="#stay">
+        <context name="Attribute" attribute="Other AttrText" lineEndContext="#stay">
         <DetectChar attribute="Attribute" context="Value" char="=" />
         <RegExpr attribute="Error" context="#stay" String="\S" />
     </context>
 
-    <context name="Value" attribute="Other Text" lineEndContext="#stay">
+    <context name="Value" attribute="Other AttrText" lineEndContext="#stay">
         <DetectChar attribute="Value" context="Value DQ" char="&quot;" />
         <DetectChar attribute="Value" context="Value SQ" char="&apos;" />
         <RegExpr attribute="Error" context="#stay" String="\S" />
@@ -67,7 +67,7 @@
         <IncludeRules context="##Python"/>
     </context>
 
-    <context name="FindEntityRefs" attribute="Other Text" lineEndContext="#stay">
+    <context name="FindEntityRefs" attribute="Other AttrText" lineEndContext="#stay">
         <RegExpr attribute="EntityRef" context="#stay" String="&entref;"/>
         <AnyChar attribute="Error" context="#stay" String="&amp;&lt;"/>
     </context>

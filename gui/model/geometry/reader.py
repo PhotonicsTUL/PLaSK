@@ -78,7 +78,7 @@ class GNAligner(object):
 def axes_as_list(name_or_list):
     """
     Convert a string to axes list.
-    :param str name_or_list: string which describe axes scheme (can also be a list)
+    :param str name_or_list: string which describe axes SCHEME (can also be a list)
     :return: list of 3 axes names, described by name_or_list string or name_or_list if it is a list or
                 neutral axes names if name_or_list is improper string
     """

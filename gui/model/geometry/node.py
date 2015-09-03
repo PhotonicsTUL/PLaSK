@@ -296,8 +296,7 @@ class GNode(object):
 
     def traverse(self):
         """
-        Generator which visit all nodes in sub-tree fast but in undefined order.
-        :return: next calls return next nodes in some order
+        Generator which visits all nodes in sub-tree fast but in undefined order.
         """
         l = [self]
         while l:
@@ -307,8 +306,8 @@ class GNode(object):
 
     def traverse_dfs(self):
         """
-        Generator which visit all nodes in sub-tree in depth-first, pre-order, visiting children of each node from first to last.
-        :return: next calls return next nodes in depth-first, left-to-right, pre-order
+        Generator which visit all nodes in sub-tree in depth-first, pre-order,
+        visiting children of each node from first to last.
         """
         l = [self]
         while l:

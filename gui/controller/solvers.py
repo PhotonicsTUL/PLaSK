@@ -10,10 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore, QtGui
+from ..qt import QtGui
 from ..qt.QtGui import QSplitter, QItemSelectionModel
 from ..qt.QtCore import Qt
 
+from ..model.solvers.config import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..model.connects import PROPS
 
 from ..utils.widgets import table_last_col_fill, table_edit_shortcut, VerticalScrollArea
@@ -22,7 +23,7 @@ from ..utils.widgets import EDITOR_FONT
 from ..external.highlighter import SyntaxHighlighter, load_syntax
 from . import Controller, select_index_from_info
 from .table import table_with_manipulators
-from .source import scheme, syntax
+from .source import SCHEME, syntax
 from .defines import get_defines_completer
 
 
@@ -79,27 +80,21 @@ class SolverAutoWidget(VerticalScrollArea):
             layout.addRow(label)
             if type(items) in (tuple, list):
                 for item in items:
-                    if len(item) == 4:
-                        try:
-                            attr, text, help, choices = item
-                        except ValueError:
-                            import sys
-                            sys.stderr.write(str(item)+'\n')
-                            raise
+                    if isinstance(item, AttrChoice):
                         edit = QtGui.QComboBox()
                         edit.setEditable(True)
-                        edit.addItems([''] + list(choices))
+                        edit.addItems([''] + list(item.choices))
+                        edit.textChanged.connect(self.controller.fire_changed)
+                        edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        edit.setCompleter(defines)
+                    elif isinstance(item, AttrGeometryObject) or isinstance(item, AttrGeometryPath):
+                        edit = QtGui.QComboBox()
+                        edit.setEditable(True)
                         edit.textChanged.connect(self.controller.fire_changed)
                         edit.currentIndexChanged.connect(self.controller.fire_changed)
                         edit.setCompleter(defines)
                     else:
-                        try:
-                            attr, text, help = item
-                        except ValueError:
-                            import sys
-                            sys.stderr.write(str(item)+'\n')
-                            raise
-                        if attr[-1] == '#':
+                        if item.name[-1] == '#':
                             edit = QtGui.QPlainTextEdit()
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             edit.textChanged.connect(self.controller.fire_changed)
@@ -107,14 +102,14 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
                             edit.textEdited.connect(self.controller.fire_changed)
-                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, attr, help))
-                    self.controls[group, attr] = edit
-                    layout.addRow(text + ':', edit)
+                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
+                    self.controls[group, item.name] = edit
+                    layout.addRow(item.label + ':', edit)
             else:
                 edit = TextEdit(parent, line_numbers=False)
                 font = QtGui.QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
-                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme),
+                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, desc))
                 self.controls[group] = edit
@@ -135,9 +130,9 @@ class SolverAutoWidget(VerticalScrollArea):
         for group, _, items in model.config:
             if type(items) in (tuple, list):
                 for item in items:
-                    attr = item[0]
+                    attr = item.name
                     edit = self.controls[group, attr]
-                    if attr[-1] == '#':
+                    if isinstance(item, AttrMulti):
                         attr = attr[:-1]
                         skip = len(attr)
                         data = model.data[group]
@@ -149,6 +144,12 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit.setPlainText('\n'.join(values))
                     else:
                         value = model.data[group][attr]
+                        if isinstance(item, AttrGeometryObject):
+                            edit.clear()
+                            edit.addItems([''] + list(self.controller.document.geometry.model.names()))
+                        if isinstance(item, AttrGeometryPath):
+                            edit.clear()
+                            edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
                         if type(edit) == QtGui.QComboBox:
                             edit.setCurrentIndex(edit.findText(value))
                             edit.setEditText(value)
@@ -166,9 +167,9 @@ class SolverAutoWidget(VerticalScrollArea):
         for group, _, items in model.config:
             if type(items) in (tuple, list):
                 for item in items:
-                    attr = item[0]
+                    attr = item.name
                     edit = self.controls[group, attr]
-                    if attr[-1] == '#':
+                    if isinstance(item, AttrMulti):
                         attr = attr[:-1]
                         values = edit.toPlainText().strip().splitlines()
                         for i,value in enumerate(values):

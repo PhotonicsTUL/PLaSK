@@ -99,6 +99,8 @@
             <xs:enumeration value="int"/>
             <xs:enumeration value="bool"/>
             <xs:enumeration value="choice"/>
+            <xs:enumeration value="geometry object"/>
+            <xs:enumeration value="geometry path"/>
             <xs:enumeration value="list of floats"/>
           </xs:restriction>
         </xs:simpleType>

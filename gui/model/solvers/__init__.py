@@ -16,16 +16,16 @@ import re
 
 from collections import OrderedDict
 
-from ..qt import QtCore
+from ...qt import QtCore
 
 from lxml import etree
 from xml.sax.saxutils import quoteattr
 
-from ..utils.xml import print_interior, XML_parser, AttributeReader
-from ..controller.source import SourceEditController
-from ..controller.solvers import ConfSolverController, FilterController
-from .table import TableModel
-from . import TreeFragmentModel, Info
+from ...utils.xml import print_interior, XML_parser, AttributeReader
+from ...controller.source import SourceEditController
+from ..table import TableModel
+from .. import TreeFragmentModel, Info
+from .config import read_attr
 
 SOLVERS = {}
 
@@ -160,7 +160,7 @@ class ConfSolver(Solver):
 
     def set_fresh_data(self):
         self.data = dict((tag,
-                          dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
+                          dict((a.name, '') for a in attrs) if type(attrs) in (tuple, list) else
                           ''  # TODO add proper support for boundary conditions
                          ) for (tag, _, attrs) in self.config)
 
@@ -230,6 +230,7 @@ class ConfSolver(Solver):
                         self.data[tag] = print_interior(el)
 
     def get_controller(self, document):
+        from ...controller.solvers import ConfSolverController
         return ConfSolverController(document, self)
 
     def stub(self):
@@ -276,6 +277,7 @@ class FilterSolver(Solver):
             self.geometry = attr.get('geometry', None)
 
     def get_controller(self, document):
+        from ...controller.solvers import FilterController
         return FilterController(document, self)
 
     def stub(self):
@@ -420,23 +422,7 @@ def _load_xml(filename):
             tn, tl = tag.attrib['name'], tag.attrib['label']
             attrs = []
             for attr in tag.findall(XNS+'attr'):
-                an = attr.attrib['name']
-                al = attr.attrib['label']
-                ah = attr.text
-                at = attr.attrib.get('type', '')
-                au = attr.attrib.get('unit', None)
-                if au is not None:
-                    al += u' [{}]'.format(au)
-                    at += u' [{}]'.format(au)
-                if at == u'choice':
-                    ac = tuple(ch.text.strip() for ch in attr.findall(XNS+'choice'))
-                    attrs.append((an, al, ah, ac))
-                elif at == u'bool':
-                    attrs.append((an, al, ah, ('yes', 'no')))
-                else:
-                    if at:
-                        ah += u' ({})'.format(at)
-                    attrs.append((an, al, ah))
+                attrs.append(read_attr(attr, XNS))
             config.append((tn, tl, attrs))
 
         #TODO Handle boundary conditions properly
@@ -455,7 +441,8 @@ def _load_xml(filename):
 
         SOLVERS[cat,name] = ConfSolverFactory(cat, lib, name, config, mesh_type, providers, receivers)
 
-for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(__file__))), 'solvers')):
+for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(_d(__file__)))), 'solvers')):
     for _f in _files:
         if _f.endswith('.xml'):
             _load_xml(os.path.join(_dirname, _f))
+

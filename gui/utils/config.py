@@ -142,7 +142,7 @@ CONFIG_WIDGETS = OrderedDict([
                                           step=0.1, min=0.1,
                                           help="Width of info lines for the selected object.")),
 
-        "Text Editor",
+        "AttrText Editor",
         ("Editor font", Font('editor/font_family', 'editor/font_size',
                               help="Font size in text editors.")),
         ("Current line color", Color('editor/current_line_color',
@@ -186,7 +186,7 @@ CONFIG_WIDGETS = OrderedDict([
         ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
         ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
         ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
-        ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
+        ("XML AttrText", Syntax('syntax/xml_text', "XML syntax highlighting.")),
         ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
     ]),
 ])

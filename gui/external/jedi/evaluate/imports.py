@@ -54,7 +54,7 @@ class ImportWrapper(pr.Base):
         :param kill_count: Placement of the import, sometimes we only want to
             resole a part of the import.
         :param nested_resolve: Resolves nested imports fully.
-        :param is_just_from: Bool if the second part is missing.
+        :param is_just_from: AttrBool if the second part is missing.
         """
         self._evaluator = evaluator
         self.import_stmt = import_stmt
