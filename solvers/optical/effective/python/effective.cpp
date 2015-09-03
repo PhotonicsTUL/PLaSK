@@ -213,11 +213,6 @@ static double Mode_gain_integral(EffectiveFrequencyCyl::Mode& self) {
     return self.solver->getGainIntegral(self);
 }
 
-static void Mode_gain_integral__set(EffectiveFrequencyCyl::Mode& self, double value) {
-    double gain = self.solver->getGainIntegral(self);
-    self.power *= value / gain;
-}
-
 /**
  * Initialization of your solver to Python
  *
@@ -471,8 +466,7 @@ BOOST_PYTHON_MODULE(effective)
                           "Cumulated absorption for the mode [mW].\n\n"
                           "This property combines gain in active region and absorption in the whole\n"
                           "structure.")
-            .add_property("gain_integral", &Mode_gain_integral, &Mode_gain_integral__set,
-                          "Total gain for the mode [mW].")
+            .add_property("gain_integral", &Mode_gain_integral, "Total gain for the mode [mW].")
             .def("__str__", &EffectiveFrequencyCyl_Mode_str)
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr)
         ;

@@ -9,7 +9,7 @@
 
     <geometry type="Cartesian2D"/>
 
-    <mesh type="Ordered" optional="yes"/>
+    <mesh type="Ordered, Regular" optional="yes"/>
 
     <tag name="config" label="Gain Parameters">
       Some important gain parameters.
@@ -67,7 +67,7 @@
 
     <geometry type="Cylindrical"/>
 
-    <mesh type="Ordered" optional="yes"/>
+    <mesh type="Ordered, Regular" optional="yes"/>
 
     <tag name="config" label="Gain Parameters">
       Some important gain parameters.
