@@ -252,7 +252,6 @@
     <tag name="expansion" label="Details on Bessel Expansion">
       Details on Bessel expansion used in computations
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
-      <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
       <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
     </tag>
 
