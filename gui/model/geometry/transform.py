@@ -458,7 +458,7 @@ class GNLattice(GNTransform):
 
     def create_info(self, res, names):
         super(GNLattice, self).create_info(res, names)
-        if None in self.vectors[0] or None in self.vectors[1] or None: self._require(res, 'basis vectors')
+        if None in self.vectors[0] or None in self.vectors[1] or None in self.vectors[1]: self._require(res, 'basis vectors')
 
     @staticmethod
     def from_xml_3d(element, conf):

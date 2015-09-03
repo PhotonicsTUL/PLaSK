@@ -438,4 +438,8 @@ class GeometryController(Controller):
                     if n == current_node: after = True
                 if not found:
                     self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
-        #TODO try to set focus on proper widget
+        try:    #try to set focus on proper widget
+            self._current_controller.select_info(info)
+        except AttributeError:
+            pass
+

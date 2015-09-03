@@ -301,6 +301,13 @@ class GNodeController(Controller):
     def get_widget(self):
         return self.form
 
+    def select_info(self, info):
+        if isinstance(getattr(info, "widget"), basestring):
+            getattr(self, info.widget).setFocus()
+        if isinstance(getattr(info, "property"), basestring):
+            getattr(self, info.property).setFocus()
+        #TODO support in models, set special attribute "widget" in info with the name of widget
+
 
 class GNChildController(GNodeController):
 
