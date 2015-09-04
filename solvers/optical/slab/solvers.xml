@@ -249,6 +249,8 @@
 
     <geometry type="Cartesian2D"/>
 
+    <mesh type="Ordered"/>
+    
     <tag name="expansion" label="Details on Bessel Expansion">
       Details on Bessel expansion used in computations
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
@@ -280,13 +282,13 @@
       </attr>
     </tag>
 
-    <!--tag name="pml" label="Horizontal Pmls">
+    <tag name="pml" label="Horizontal Pmls">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
       <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
-    </tag-->
+    </tag>
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.

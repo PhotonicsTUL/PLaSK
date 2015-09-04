@@ -1,10 +1,12 @@
 <plask loglevel="debug">
 
 <defines>
+  <define name="m" value="0"/>
   <define name="mesa" value="40."/>
-  <define name="x" value="0.06371 #1"/>
+  <define name="x" value="0.03185 #3"/>
   <define name="aprt" value="8."/>
-  <define name="start" value="980."/>
+  <define name="estart" value="981.0"/>
+  <define name="bstart" value="981.0"/>
 </defines>
 
 <materials>
@@ -81,7 +83,7 @@ profile[GEO.active] = 0.
 bessel.inGain = profile.outGain
 efm.inGain = profile.outGain
 
-em = efm.find_mode(start)
+em = efm.find_mode(estart, m=m)
 elam = efm.modes[em].lam
 
 box = GEO.vcsel.bbox
@@ -101,7 +103,7 @@ figure()
 for N in NN:
     bessel.size = N
     try:
-        t = timeit(lambda: bessel.find_mode(start), number=1)
+        t = timeit(lambda: bessel.find_mode(bstart, m=m+1), number=1)
     except ComputationError:
         NN = NN[:len(lams)]
         break
@@ -162,8 +164,7 @@ for mesa in mesas:
     GEO.alox.width = mesa - aprt/2
     GEO.inactive.width = mesa - aprt/2
     try:
-        bessel.find_mode(start)
-        print list(bessel.mesh)
+        bessel.find_mode(bstart, m=m+1)
     except ComputationError:
         mesas = mesas[:len(lams)]
         break

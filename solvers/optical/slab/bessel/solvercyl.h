@@ -75,6 +75,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Expected integration estimate error
     double integral_error;
     
+    /// Lateral PMLs
+    PML pml;
+    
     /// Provider for computed resonant wavelength
     typename ProviderFor<Wavelength>::Delegate outWavelength;
 

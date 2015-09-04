@@ -60,6 +60,7 @@ void ExpansionBessel::init()
         SOLVER->setMesh(make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
     rbounds = OrderedAxis(*SOLVER->getMesh());
+    rbounds.addPoint(rbounds[rbounds.size()-1] + SOLVER->pml.shift);
     size_t nseg = rbounds.size() - 1;
     segments.resize(nseg);
     for (size_t i = 0; i != nseg; ++i) {

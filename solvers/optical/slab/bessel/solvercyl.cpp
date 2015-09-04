@@ -55,12 +55,12 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                 .value("admittance", Transfer::METHOD_ADMITTANCE)
                 .get(transfer_method);
             reader.requireTagEnd();
-//         } else if (param == "pml") {
-//             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
-//             pml.size = reader.getAttribute<double>("size", pml.size);
-//             pml.shift = reader.getAttribute<double>("shift", pml.shift);
-//             pml.order = reader.getAttribute<double>("order", pml.order);
-//             reader.requireTagEnd();
+        } else if (param == "pml") {
+            pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
+            pml.size = reader.getAttribute<double>("size", pml.size);
+            pml.shift = reader.getAttribute<double>("shift", pml.shift);
+            pml.order = reader.getAttribute<double>("order", pml.order);
+            reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else if (param == "outer") {

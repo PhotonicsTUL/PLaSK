@@ -406,11 +406,13 @@ py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double l
 }
 
 
-PmlWrapper FourierSolver2D_PML(FourierSolver2D* self) {
+template <typename Solver>
+static PmlWrapper Solver_getPML(Solver* self) {
     return PmlWrapper(self, &self->pml);
 }
 
-void FourierSolver2D_setPML(FourierSolver2D* self, const PmlWrapper& value) {
+template <typename Solver>
+static void Solver_setPML(Solver* self, const PmlWrapper& value) {
     self->pml = *value.pml;
     self->invalidate();
 }
@@ -1089,8 +1091,8 @@ BOOST_PYTHON_MODULE(slab)
         solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
                    "Fresnel equations.");
-        solver.add_property("pml", py::make_function(&FourierSolver2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
-                            &FourierSolver2D_setPML,
+        solver.add_property("pml", py::make_function(&Solver_getPML<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>()),
+                            &Solver_setPML<FourierSolver2D>,
                             "Side Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC
                            );
@@ -1358,11 +1360,11 @@ BOOST_PYTHON_MODULE(slab)
 //         solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
 //                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
 //                    "Fresnel equations.");
-//         solver.add_property("pml", py::make_function(&FourierSolver2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
-//                             &FourierSolver2D_setPML,
-//                             "Side Perfectly Matched Layers boundary conditions.\n\n"
-//                             PML_ATTRS_DOC
-//                            );
+        solver.add_property("pml", py::make_function(&Solver_getPML<BesselSolverCyl>, py::with_custodian_and_ward_postcall<0,1>()),
+                            &Solver_setPML<BesselSolverCyl>,
+                            "Side Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC
+                           );
         RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
 //                    "Access to the reflected field.\n\n"
