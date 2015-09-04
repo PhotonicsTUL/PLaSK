@@ -14,6 +14,7 @@ from ...qt import QtGui
 from ...qt.QtCore import Qt
 
 from ...utils.qthread import BackgroundTask
+from ...utils.config import CONFIG
 
 from ...model.script.completer import CompletionsModel, get_completions
 
@@ -43,6 +44,8 @@ class CompletionsController(QtGui.QCompleter):
         self._edit.setTextCursor(cursor)
 
     def start_completion(self):
+        if CONFIG['workarounds/no_jedi']: return
+
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
@@ -56,11 +59,13 @@ class CompletionsController(QtGui.QCompleter):
             # QtGui.QApplication.restoreOverrideCursor()
 
         # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-        task = BackgroundTask(
-            lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
-            thread_finished)
-        task.start()
-        # thread_finished(get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col))
+        if CONFIG['workarounds/blocking_jedi']:
+            thread_finished(get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col))
+        else:
+            task = BackgroundTask(
+                lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
+                thread_finished)
+            task.start()
 
     def show_completion_popup(self, completion_prefix, completions):
         if completions:

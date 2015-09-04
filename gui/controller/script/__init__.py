@@ -191,13 +191,14 @@ class ScriptEditor(TextEdit):
                 self.setTextCursor(cursor)
                 return
 
-        if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
+        if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier) or CONFIG['workarounds/no_jedi']:
             super(ScriptEditor, self).keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
-        elif (key == Qt.Key_Period or (key == Qt.Key_Space and modifiers == Qt.ControlModifier)) and \
-                not self.completer.popup().isVisible():
+        elif ((key == Qt.Key_Period and not CONFIG['workarounds/jedi_no_dot']) or
+              (key == Qt.Key_Space and modifiers == Qt.ControlModifier)) and \
+                not self.completer.popup().isVisible() and not CONFIG['workarounds/no_jedi']:
             self.completer.start_completion()
 
     def link_definition(self, row, col):
@@ -209,8 +210,7 @@ class ScriptEditor(TextEdit):
         elif cursor and cursor.shape() == Qt.PointingHandCursor and row is None:
             QtGui.QApplication.restoreOverrideCursor()
 
-    def mouseMoveEvent(self, event):
-        super(ScriptEditor, self).mouseMoveEvent(event)
+    def _get_mouse_definitions(self, event):
         if event.modifiers() == Qt.CTRL:
             if self._pointer_blocked: return
             self._pointer_blocked = True
@@ -220,11 +220,16 @@ class ScriptEditor(TextEdit):
             # task = BackgroundTask(lambda: get_definitions(self.controller.document, self.toPlainText(), row, col),
             #                       self.link_definition)
             # task.start()
-            self.link_definition(*get_definitions(self.controller.document, self.toPlainText(), row, col))
+            if not CONFIG['workarounds/no_jedi']:
+                self.link_definition(*get_definitions(self.controller.document, self.toPlainText(), row, col))
         else:
             cursor = QtGui.QApplication.overrideCursor()
             if cursor and cursor.shape() == Qt.PointingHandCursor:
                 QtGui.QApplication.restoreOverrideCursor()
+
+    def mouseMoveEvent(self, event):
+        super(ScriptEditor, self).mouseMoveEvent(event)
+        self._get_mouse_definitions(event)
 
     def mouseReleaseEvent(self, event):
         super(ScriptEditor, self).mouseReleaseEvent(event)
@@ -361,14 +366,19 @@ class ScriptController(SourceEditController):
         return super(ScriptController, self).on_edit_exit()
 
     def show_docstring(self):
+        if CONFIG['workarounds/no_jedi']: return
         cursor = self.source_widget.editor.textCursor()
         cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
         # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-        task = BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col),
-                              self.help_dock.show_help)
-        task.start()
+        if CONFIG['workarounds/blocking_jedi']:
+            self.help_dock.show_help(get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col))
+        else:
+            task = BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(),
+                                                        row, col),
+                                  self.help_dock.show_help)
+            task.start()
 
 
 class HelpDock(QtGui.QDockWidget):

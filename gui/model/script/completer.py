@@ -16,7 +16,7 @@ from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
 from ...utils.qthread import BackgroundTask, Lock
-
+from ...utils.config import CONFIG
 try:
     import jedi
 except ImportError:
@@ -42,14 +42,17 @@ def preload_jedi_modules():
 
 
 def prepare_completions():
-    if jedi:
-        from ... import _DEBUG
+    if jedi and not CONFIG['workarounds/no_jedi']:
+        # from ... import _DEBUG
         # if _DEBUG:
         #     def print_debug(obj, txt):
         #         sys.stderr.write(txt + '\n')
         #     jedi.set_debug_function(print_debug)
-        task = BackgroundTask(preload_jedi_modules)
-        task.start()
+        if CONFIG['workarounds/blocking_jedi']:
+            preload_jedi_modules()
+        else:
+            task = BackgroundTask(preload_jedi_modules)
+            task.start()
 
 
 class CompletionsModel(QtCore.QAbstractTableModel):
@@ -79,7 +82,7 @@ class CompletionsModel(QtCore.QAbstractTableModel):
                             "keyword": code_context,
                             "module": code_block,
                             "import": code_typedef,
-                            "forflow": code_context,
+                            "flow": code_context,
                            })
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -114,7 +117,7 @@ def _try_type(compl):
 
 
 def get_completions(document, text, block, column):
-    if jedi is None: return
+    if jedi is None or CONFIG['workarounds/no_jedi']: return
     from ... import _DEBUG
     with Lock(JEDI_MUTEX) as lck:
         try:

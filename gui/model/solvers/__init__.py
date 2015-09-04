@@ -25,7 +25,7 @@ from ...utils.xml import print_interior, XML_parser, AttributeReader
 from ...controller.source import SourceEditController
 from ..table import TableModel
 from .. import TreeFragmentModel, Info
-from .config import read_attr
+from .confsolver import read_attr
 
 SOLVERS = {}
 

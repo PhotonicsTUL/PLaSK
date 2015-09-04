@@ -63,6 +63,9 @@ DEFAULTS = {
     'geometry/extra_color': '#00aaff',
     'geometry/extra_alpha': 0.9,
     'geometry/extra_width': 1.0,
+    'workarounds/jedi_no_dot': False,
+    'workarounds/no_jedi': False,
+    'workarounds/blocking_jedi': False,
 }
 
 if sys.platform == 'win32': DEFAULTS['editor/font_family'] = "Consolas"
@@ -142,7 +145,7 @@ CONFIG_WIDGETS = OrderedDict([
                                           step=0.1, min=0.1,
                                           help="Width of info lines for the selected object.")),
 
-        "AttrText Editor",
+        "Text Editor",
         ("Editor font", Font('editor/font_family', 'editor/font_size',
                               help="Font size in text editors.")),
         ("Current line color", Color('editor/current_line_color',
@@ -186,9 +189,21 @@ CONFIG_WIDGETS = OrderedDict([
         ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
         ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
         ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
-        ("XML AttrText", Syntax('syntax/xml_text', "XML syntax highlighting.")),
+        ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
         ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
     ]),
+    ("Workarounds", [
+        "Script completion",
+        ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
+                                            "Do not show completion pop-up after you type a dot. This still allows "
+                                            "to show the pop-pu manually by pressing Ctrl+Space.")),
+        ("Run in a single thread", CheckBox('workarounds/blocking_jedi',
+                                            "Do not run script completion in background. This may cause the GUI stop "
+                                            "responding for the couple of seconds when showing completion popup, but "
+                                            "may be helpful if the program often crashes on completion.")),
+        ("Disable completion", CheckBox('workarounds/no_jedi',
+                                        "Disable script completion and on-line help.")),
+    ])
 ])
 
 

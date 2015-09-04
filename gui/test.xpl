@@ -326,7 +326,9 @@ show()
 
 sys.exit()
 
-GEO.geo3d_1
+GEO.junction
+
+pylab.
 
 class A(object):
     def __init__(self):
