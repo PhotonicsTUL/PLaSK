@@ -407,7 +407,7 @@ class HelpDock(QtGui.QDockWidget):
 
     def reconfig(self):
         font = self.textarea.font()
-        font.setFamily(CONFIG['editor/font_family'])
-        font.setPointSize(int(CONFIG['editor/font_size'])-2)
+        font.fromString(','.join(CONFIG['editor/font']))
+        font.setPointSize(EDITOR_FONT.pointSize()-2)
         self.textarea.setFont(font)
 

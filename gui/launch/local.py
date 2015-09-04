@@ -49,22 +49,8 @@ class OutputWindow(QtGui.QDockWidget):
             parent.closing.connect(self.check_close_event)
 
         font = QtGui.QFont()
-        font_family = CONFIG['launcher_local/font_family']
-        if font_family is None:
-            if sys.platform == 'win32':
-                font_family = "Consolas"
-            elif sys.platform == 'darwin':
-                font_family = "Monaco"
-            else:
-                font_family = "Monospace"
-            CONFIG['launcher_local/font_family'] = font_family
-            font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setFamily(font_family)
-        family = CONFIG['launcher_local/font_family']
-        if family is not None:
-            font.setFamily(family)
-        font.setPointSize(int(CONFIG['launcher_local/font_size']))
-        font.setBold(CONFIG['launcher_local/font_bold'])
+        font.setStyleHint(QtGui.QFont.TypeWriter)
+        font.fromString(','.join(CONFIG['launcher_local/font']))
         self.messages = QtGui.QTextBrowser()
         self.messages.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.messages.setReadOnly(True)
@@ -194,12 +180,8 @@ class OutputWindow(QtGui.QDockWidget):
 
     def reconfig(self):
         font = self.messages.font()
-        family = CONFIG['launcher_local/font_family']
-        if family is not None:
-            font.setFamily(family)
-        font.setPointSize(int(CONFIG['launcher_local/font_size']))
-        font.setBold(int(CONFIG['launcher_local/font_bold']))
-        self.messages.setFont(font)
+        if font.fromString(','.join(CONFIG['launcher_local/font'])):
+            self.messages.setFont(font)
 
     def url_clicked(self, url):
         parent = self.parent()

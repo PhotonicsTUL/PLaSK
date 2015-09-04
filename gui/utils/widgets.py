@@ -19,9 +19,8 @@ from ..utils.config import CONFIG
 
 
 EDITOR_FONT = QtGui.QFont()
-EDITOR_FONT.setFamily(CONFIG['editor/font_family'])
-EDITOR_FONT.setPointSize(int(CONFIG['editor/font_size']))
 EDITOR_FONT.setBold(False)
+EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
 
 
 def table_edit_shortcut(table, col, key):
