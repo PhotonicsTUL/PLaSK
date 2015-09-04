@@ -159,7 +159,7 @@ class SourceWidget(QtGui.QWidget):
         self.find_options.addAction(self.find_regex)
         self.find_options.addAction(self.find_selection)
         options_button = QtGui.QPushButton(self)
-        options_button.setText("Op&tions")
+        options_button.setText("&Options")
         options_button.setMenu(self.find_options)
         self.find_toolbar.addWidget(options_button)
 
@@ -344,10 +344,13 @@ class SourceWidget(QtGui.QWidget):
         self.find_edit.setPalette(pal)
         cursor = self.editor.textCursor()
         start = cursor.selectionStart()
+        oldlen = self.editor.document().characterCount()
         if isinstance(self._findtext, QtCore.QRegExp):
             cursor.insertText(self._findtext.replace(cursor.selectedText(), self.replace_edit.text()))
         else:
             cursor.insertText(self.replace_edit.text())
+        if theend is not None:
+            theend += self.editor.document().characterCount() - oldlen
         end = cursor.position()
         selection = QtGui.QTextEdit.ExtraSelection()
         selection.cursor = self.editor.textCursor()

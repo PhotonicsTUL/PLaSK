@@ -339,7 +339,7 @@ class SolversModel(TableModel):
         return flags
 
     def create_default_entry(self):
-        from ..controller.solvers import get_new_solver
+        from ...controller.solvers import get_new_solver
         new_solver = get_new_solver()
         if new_solver is not None:
             if new_solver['category'] == 'filter':

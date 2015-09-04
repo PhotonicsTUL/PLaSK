@@ -230,7 +230,7 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QIcon.fromTheme('document-open-recent'))
         self.update_recent_list()
 
-        self.menu = QtGui.QMenu('&Operations')
+        self.menu = QtGui.QMenu('Operations')
 
         self.menu.addAction(new_action)
         self.menu.addAction(open_action)
@@ -251,7 +251,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(exit_action)
 
         menu_button = QtGui.QPushButton(self)
-        menu_button.setText("&Operations")
+        menu_button.setText("Operations")
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         if sys.platform != 'win32':
@@ -263,7 +263,7 @@ class MainWindow(QtGui.QMainWindow):
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
 
-        tabs_menu = QtGui.QMenu("Sect&ions")
+        tabs_menu = QtGui.QMenu("Sections")
         def add_tab_menu(indx):
             def show_tab():
                 self.tabs.setCurrentIndex(indx)
