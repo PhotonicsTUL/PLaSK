@@ -167,8 +167,8 @@ struct PLASK_SOLVER_API SlabBase {
 /**
  * Base class for all slab solvers
  */
-template <typename GeometryT>
-class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase {
+template <typename BaseT>
+class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Compute layer boundaries
     void setup_vbounds();
@@ -185,7 +185,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     }
 
     void onGeometryChange(const Geometry::Event& evt) {
-        this->invalidate();
+        BaseT::onGeometryChange(evt);
         if (!vbounds.empty()) setup_vbounds(); // update layers
     }
 
@@ -201,22 +201,22 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     double smooth;
 
     /// Receiver for the temperature
-    ReceiverFor<Temperature, GeometryT> inTemperature;
+    ReceiverFor<Temperature, typename BaseT::SpaceType> inTemperature;
 
     /// Receiver for the gain
-    ReceiverFor<Gain, GeometryT> inGain;
+    ReceiverFor<Gain, typename BaseT::SpaceType> inGain;
 
     /// Provider of the refractive index
-    typename ProviderFor<RefractiveIndex, GeometryT>::Delegate outRefractiveIndex;
+    typename ProviderFor<RefractiveIndex, typename BaseT::SpaceType>::Delegate outRefractiveIndex;
 
     /// Provider of the optical field intensity
-    typename ProviderFor<LightMagnitude, GeometryT>::Delegate outLightMagnitude;
+    typename ProviderFor<LightMagnitude, typename BaseT::SpaceType>::Delegate outLightMagnitude;
 
     /// Provider of the optical electric field
-    typename ProviderFor<LightE, GeometryT>::Delegate outElectricField;
+    typename ProviderFor<LightE, typename BaseT::SpaceType>::Delegate outElectricField;
 
     /// Provider of the optical magnetic field
-    typename ProviderFor<LightH, GeometryT>::Delegate outMagneticField;
+    typename ProviderFor<LightH, typename BaseT::SpaceType>::Delegate outMagneticField;
 
     SlabSolver(const std::string& name="");
 
@@ -332,7 +332,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                                                   InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     /**
@@ -341,7 +341,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute magnetic field
@@ -349,7 +349,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
@@ -357,7 +357,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    virtual LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
 };
 

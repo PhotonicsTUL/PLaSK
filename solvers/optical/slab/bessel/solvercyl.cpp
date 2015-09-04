@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace slab {
 
     
-BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<Geometry2DCylindrical>(name),
+BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
     m(1),
     size(12),
     expansion(this),

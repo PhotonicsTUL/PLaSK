@@ -13,7 +13,7 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<Geometry2DCylindrical> {
+struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>> {
 
     friend struct ExpansionBessel;
     

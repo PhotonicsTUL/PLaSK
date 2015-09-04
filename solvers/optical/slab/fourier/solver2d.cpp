@@ -3,7 +3,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
+FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver<Geometry2DCartesian>>(name),
     klong(0.), ktran(0.),
     size(12),
     expansion(this),

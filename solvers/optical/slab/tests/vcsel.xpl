@@ -2,8 +2,9 @@
 
 <defines>
   <define name="mesa" value="40."/>
-  <define name="x" value="0.01593 # 4"/>
+  <define name="x" value="0.06371 #1"/>
   <define name="aprt" value="8."/>
+  <define name="start" value="980."/>
 </defines>
 
 <materials>
@@ -71,6 +72,8 @@
 </solvers>
 
 <script><![CDATA[
+from timeit import timeit
+
 rcParams['axes.color_cycle'] = cc = ['#348ABD', '#A60628', '#7A68A6', '#467821', '#D55E00', '#CC79A7', '#56B4E9', '#009E73', '#F0E442', '#0072B2']
 profile = StepProfile(GEO.vcsel)
 profile[GEO.active] = 0.
@@ -78,7 +81,7 @@ profile[GEO.active] = 0.
 bessel.inGain = profile.outGain
 efm.inGain = profile.outGain
 
-em = efm.find_mode(980.1)
+em = efm.find_mode(start)
 elam = efm.modes[em].lam
 
 box = GEO.vcsel.bbox
@@ -89,20 +92,23 @@ efield = efm.outLightMagnitude(em, rmsh)
 
 N0 = bessel.size
 
+
 NN = range(20, 81, 4)
 lams = []
+times = []
 
 figure()
 for N in NN:
     bessel.size = N
     try:
-        mn = bessel.find_mode(980.1)
+        t = timeit(lambda: bessel.find_mode(start), number=1)
     except ComputationError:
         NN = NN[:len(lams)]
         break
     else:
-        lams.append(bessel.modes[mn].lam)
-        mag = bessel.outLightMagnitude(mn, rmsh)
+        times.append(t)
+        lams.append(bessel.modes[0].lam)
+        mag = bessel.outLightMagnitude(rmsh)
         plot_profile(mag/max(mag), label=str(N))
 
 plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
@@ -119,6 +125,7 @@ plot(NN, real(lams), '-', color=cc[0])
 plot(NN, real(lams), '.', color=cc[0])
 axhline(real(elam), ls='--', color=cc[0])
 gca().ticklabel_format(useOffset=False)
+xlabel("Base size")
 ylabel("Resonant wavelength [nm]", color=cc[0])
 twinx()
 Q = - 0.5 * real(lams) / imag(lams)
@@ -126,9 +133,16 @@ plot(NN, Q, '-', color=cc[1])
 plot(NN, Q, '.', color=cc[1])
 axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
 gca().ticklabel_format(useOffset=False)
-xlabel("Base Size")
 ylabel("Q-factor [-]", color=cc[1])
 gcf().canvas.set_window_title(u"Convergence — base")
+tight_layout(0.2)
+
+figure()
+plot(NN, times, '-', color=cc[2])
+plot(NN, times, '.', color=cc[2])
+xlabel("Base size")
+ylabel("Computation time [s]")
+gcf().canvas.set_window_title(u"Computation time — base")
 tight_layout(0.2)
 
 
@@ -141,19 +155,21 @@ lams = []
 figure()
 for mesa in mesas:
     GEO.dbr_gaas.width = mesa
-    GEO.dbr_algaas = mesa
-    GEO.x1 = mesa
-    GEO.x = mesa
-    GEO.alox = mesa - aprt/2
-    GEO.inactive = mesa - aprt/2
+    GEO.dbr_algaas.width = mesa
+    GEO.x1.width = mesa
+    GEO.x.width = mesa
+    GEO.cavity.width = mesa
+    GEO.alox.width = mesa - aprt/2
+    GEO.inactive.width = mesa - aprt/2
     try:
-        mn = bessel.find_mode(980.1)
+        bessel.find_mode(start)
+        print list(bessel.mesh)
     except ComputationError:
         mesas = mesas[:len(lams)]
         break
     else:
-        lams.append(bessel.modes[mn].lam)
-        mag = bessel.outLightMagnitude(mn, rmsh)
+        lams.append(bessel.modes[0].lam)
+        mag = bessel.outLightMagnitude(rmsh)
         plot_profile(mag/max(mag), label=u"{} µm".format(mesa))
 
 plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
@@ -170,6 +186,7 @@ plot(mesas, real(lams), '-', color=cc[0])
 plot(mesas, real(lams), '.', color=cc[0])
 axhline(real(elam), ls='--', color=cc[0])
 gca().ticklabel_format(useOffset=False)
+xlabel(u"Mesa size [µm]")
 ylabel("Resonant wavelength [nm]", color=cc[0])
 twinx()
 Q = - 0.5 * real(lams) / imag(lams)
@@ -177,7 +194,6 @@ plot(mesas, Q, '-', color=cc[1])
 plot(mesas, Q, '.', color=cc[1])
 axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
 gca().ticklabel_format(useOffset=False)
-xlabel(u"Mesa Size [µm]")
 ylabel("Q-factor [-]", color=cc[1])
 gcf().canvas.set_window_title(u"Convergence — mesa")
 tight_layout(0.2)

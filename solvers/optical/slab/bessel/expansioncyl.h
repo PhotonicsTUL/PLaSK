@@ -20,7 +20,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     /// Horizontal axis with separate integration intervals.
     /// material functions contain discontinuities at these points
-    shared_ptr<OrderedAxis> rbounds;
+    OrderedAxis rbounds;
     
     ///  Argument coefficients for Bessel expansion base
     std::vector<double> factors;

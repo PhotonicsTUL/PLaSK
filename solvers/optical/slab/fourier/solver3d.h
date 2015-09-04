@@ -12,7 +12,7 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 3D geometry.
  */
-struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
+struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D>> {
 
     friend struct ExpansionPW3D;
     

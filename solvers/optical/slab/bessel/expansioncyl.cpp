@@ -55,23 +55,24 @@ void ExpansionBessel::computeBesselZeros()
 void ExpansionBessel::init()
 {
     // Initialize segments
-    if (!rbounds) {
-        auto mesh = RectilinearMesh2DSimpleGenerator(true)(SOLVER->geometry->getChild());
-        rbounds = dynamic_pointer_cast<OrderedAxis>(static_pointer_cast<RectangularMesh<2>>(mesh)->axis0);
+    if (!SOLVER->mesh) {
+        SOLVER->writelog(LOG_INFO, "Creating simple mesh");
+        SOLVER->setMesh(make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
-    size_t nseg = rbounds->size() - 1;
+    rbounds = OrderedAxis(*SOLVER->getMesh());
+    size_t nseg = rbounds.size() - 1;
     segments.resize(nseg);
     for (size_t i = 0; i != nseg; ++i) {
-        segments[i].Z = 0.5 * (rbounds->at(i) + rbounds->at(i+1));
-        segments[i].D = 0.5 * (rbounds->at(i+1) - rbounds->at(i));
+        segments[i].Z = 0.5 * (rbounds[i] + rbounds[i+1]);
+        segments[i].D = 0.5 * (rbounds[i+1] - rbounds[i]);
     }
 
     computeBesselZeros();
-    
+
     // Estimate necessary number of integration points
     unsigned m = SOLVER->m;
     double total = 0.;
-    double b = rbounds->at(rbounds->size()-1);
+    double b = rbounds[rbounds.size()-1];
     double a = factors[factors.size()-1] / b;
     double expected = cyl_bessel_j(m+1, a); expected = 0.5 * expected*expected;
     double err = 2. * SOLVER->integral_error;
@@ -84,7 +85,7 @@ void ExpansionBessel::init()
         for (size_t i = 0; i < nseg; ++i) {
             double e = err * b / segments[i].D;
             auto fun = [m, a](double r) -> double { double j = cyl_bessel_j(m, a*r); return j*j*r; };
-            total += patterson<double,double>(fun, rbounds->at(i), rbounds->at(i+1), e, &segments[i].n);
+            total += patterson<double,double>(fun, rbounds[i], rbounds[i+1], e, &segments[i].n);
             if (segments[i].n < 8) can_refine = true;
         }
     }
@@ -138,7 +139,7 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     #endif
 
     size_t nr = raxis->size(), N = SOLVER->size;
-    double ib = 1. / rbounds->at(rbounds->size()-1);
+    double ib = 1. / rbounds[rbounds.size()-1];
     int m = int(SOLVER->m);
 
     auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
@@ -221,12 +222,12 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     
     if (diagonals[layer]) {
         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
-//         integrals.zero();
-//         for (int i = 0; i < N; ++i) {
-//             double val = cyl_bessel_j(m+1, factors[i]) * rbounds->at(rbounds->size()-1); val = 0.5 * val*val;;
-//             integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
-//             integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
-//         }
+        integrals.zero();
+        for (int i = 0; i < N; ++i) {
+            double val = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; val = 0.5 * val*val;;
+            integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
+            integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
+        }
     }
 }
 
@@ -296,7 +297,7 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     int m = int(SOLVER->m);
     dcomplex k0 = SOLVER->k0;
     dcomplex f0 = 1. / k0;
-    double b = rbounds->at(rbounds->size()-1);
+    double b = rbounds[rbounds.size()-1];
     
     Integrals& braket = layers_integrals[layer];
     
@@ -346,7 +347,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
 
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
-    double b = rbounds->at(rbounds->size()-1);
+    double b = rbounds[rbounds.size()-1];
 
     auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     auto ieps = interpolate(src_mesh, iepsilons[l], dest_mesh, field_interpolation,

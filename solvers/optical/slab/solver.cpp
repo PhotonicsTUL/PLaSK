@@ -29,25 +29,25 @@ void SlabBase::initTransfer(Expansion& expansion, bool emitting) {
 }
 
 
-template <typename GeometryT>
-SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
+template <typename BaseT>
+SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     outdist(0.1),
     smooth(0.),
-    outRefractiveIndex(this, &SlabSolver<GeometryT>::getRefractiveIndexProfile),
-    outLightMagnitude(this, &SlabSolver<GeometryT>::getMagnitude, &SlabSolver<GeometryT>::nummodes),
-    outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
-    outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
+    outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
+    outLightMagnitude(this, &SlabSolver<BaseT>::getMagnitude, &SlabSolver<BaseT>::nummodes),
+    outElectricField(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
+    outMagneticField(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
 {
-    this->inTemperature.changedConnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
-    this->inGain.changedConnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
+    this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
+    this->inGain.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
     inTemperature = 300.; // temperature receiver has some sensible value
 }
 
-template <typename GeometryT>
-SlabSolver<GeometryT>::~SlabSolver()
+template <typename BaseT>
+SlabSolver<BaseT>::~SlabSolver()
 {
-    this->inTemperature.changedDisconnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
-    this->inGain.changedDisconnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
+    this->inTemperature.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
+    this->inGain.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
 }
 
 
@@ -61,8 +61,8 @@ std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_t
 }
 
 
-template <typename GeometryT>
-void SlabSolver<GeometryT>::setup_vbounds()
+template <typename BaseT>
+void SlabSolver<BaseT>::setup_vbounds()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
@@ -75,7 +75,7 @@ void SlabSolver<GeometryT>::setup_vbounds()
 }
 
 template <>
-void SlabSolver<Geometry3D>::setup_vbounds()
+void SlabSolver<SolverOver<Geometry3D>>::setup_vbounds()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->vert();
@@ -87,8 +87,8 @@ void SlabSolver<Geometry3D>::setup_vbounds()
     }
 }
 
-template <typename GeometryT>
-void SlabSolver<GeometryT>::setupLayers()
+template <typename BaseT>
+void SlabSolver<BaseT>::setupLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
@@ -156,7 +156,7 @@ void SlabSolver<GeometryT>::setupLayers()
 }
 
 template <>
-void SlabSolver<Geometry3D>::setupLayers()
+void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
 {
     if (vbounds.empty()) setup_vbounds();
 
@@ -228,10 +228,10 @@ void SlabSolver<Geometry3D>::setupLayers()
 }
 
 
-template <typename GeometryT>
-DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexProfile
-                                  (const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
-                                   InterpolationMethod interp)
+template <typename BaseT>
+DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
+                                        (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+                                        InterpolationMethod interp)
 {
     this->initCalculation();
     initTransfer(getExpansion(), false);
@@ -268,8 +268,8 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
 }
 
 #ifndef NDEBUG
-template <typename GeometryT>
-void SlabSolver<GeometryT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
+template <typename BaseT>
+void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     this->initCalculation();
     if (recompute_integrals) {
         computeIntegrals();
@@ -282,9 +282,10 @@ void SlabSolver<GeometryT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) 
 }
 #endif
 
-template class PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
-template class PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;
-template class PLASK_SOLVER_API SlabSolver<Geometry3D>;
+template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry2DCartesian>>;
+template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCylindrical, OrderedAxis>>;
+template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry3D>>;
+
 
 // FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 

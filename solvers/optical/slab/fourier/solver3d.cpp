@@ -3,7 +3,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D>(name),
+FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver<Geometry3D>>(name),
     size_long(12), size_tran(12),
     klong(0.), ktran(0.),
     expansion(this),
