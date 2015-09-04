@@ -388,13 +388,14 @@ class HelpDock(QtGui.QDockWidget):
         self.textarea = QtGui.QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QtGui.QFont(EDITOR_FONT)
-        help_font.setPointSize(EDITOR_FONT.pointSize()-2)
+        help_font.fromString(','.join(CONFIG['editor/help_font']))
         pal = self.textarea.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
         self.textarea.setPalette(pal)
         self.textarea.setFont(help_font)
-        self.textarea.setMinimumWidth(86 * self.textarea.fontMetrics().width('W'))
-        self.textarea.setMinimumHeight(8 * self.textarea.fontMetrics().height())
+        font_metrics = self.textarea.fontMetrics()
+        self.textarea.setMinimumWidth(86 * font_metrics.width('a'))
+        self.textarea.setMinimumHeight(8 * font_metrics.height())
         self.setWidget(self.textarea)
         self.setObjectName('help')
 
@@ -406,8 +407,9 @@ class HelpDock(QtGui.QDockWidget):
         # QtGui.QApplication.restoreOverrideCursor()
 
     def reconfig(self):
-        font = self.textarea.font()
-        font.fromString(','.join(CONFIG['editor/font']))
-        font.setPointSize(EDITOR_FONT.pointSize()-2)
-        self.textarea.setFont(font)
-
+        help_font = self.textarea.font()
+        help_font.fromString(','.join(CONFIG['editor/help_font']))
+        self.textarea.setFont(help_font)
+        font_metrics = self.textarea.fontMetrics()
+        self.textarea.setMinimumWidth(86 * font_metrics.width('a'))
+        self.textarea.setMinimumHeight(8 * font_metrics.height())
