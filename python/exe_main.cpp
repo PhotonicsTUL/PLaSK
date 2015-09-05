@@ -41,6 +41,8 @@ namespace plask { namespace python {
 
     PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
 
+    PLASK_PYTHON_API std::string getPythonExceptionMessage();
+    
     PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
     PLASK_PYTHON_API void createPythonLogger();
@@ -375,7 +377,16 @@ int main(int argc, const char *argv[])
                 py::dict locals;
                 for (const char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
-                    locals[keyval.first] = plask::python::py_eval(keyval.second, plask::python::xml_globals);
+                    try {
+                        locals[keyval.first] = (plask::python::py_eval(keyval.second, 
+                                                                       plask::python::xml_globals, locals));
+                    } catch (py::error_already_set) {
+                        plask::writelog(plask::LOG_WARNING,
+                                        "Cannot parse command-line definition '%s' (storing it as string): %s",
+                                        keyval.first, plask::python::getPythonExceptionMessage());
+                        PyErr_Clear();
+                        locals[keyval.first] = keyval.second;
+                    }
                     plask::writelog(plask::LOG_DATA, "%s = %s", keyval.first, keyval.second);
                 }
 

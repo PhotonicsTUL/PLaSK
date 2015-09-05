@@ -37,7 +37,7 @@ class PythonXMLFilter {
             return false;
     }
 
-    //move p to nearest unescape str_terminator or end of in, support python long strings
+    // move p to nearest unescaped str_terminator or end of in, support python long strings
     static inline void goto_string_end(const std::string& in, std::string::size_type& p) {
         bool long_string = has_long_str(in, p);
         const char str_terminator = in[p++];    //skip string begin
@@ -182,8 +182,16 @@ void PythonManager::loadDefines(XMLReader& reader)
         if (reader.getNodeName() != "define") throw XMLUnexpectedElementException(reader, "<define>");
         std::string name = reader.requireAttribute("name");
         std::string value = reader.requireAttribute("value");
-        if (!locals.has_key(name))
-            locals[name] = (py_eval(value, xml_globals, locals));
+        if (!locals.has_key(name)) {
+            try {
+                locals[name] = (py_eval(value, xml_globals, locals));
+            } catch (py::error_already_set) {
+                writelog(LOG_WARNING, "Cannot parse XML definition '%s' (storing it as string): %s",
+                         name, getPythonExceptionMessage());
+                PyErr_Clear();
+                locals[name] = value;
+            }
+        }
         else if (parsed.find(name) != parsed.end())
             throw XMLDuplicatedElementException(reader, format("Definition of '%1%'", name));
         parsed.insert(name);
