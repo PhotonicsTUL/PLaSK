@@ -34,7 +34,7 @@ void register_python_log();
 
 void register_standard_properties();
 
-std::string getPythonExceptionMessage() {
+PLASK_PYTHON_API std::string getPythonExceptionMessage() {
     PyObject *value, *type, *original_traceback;
     PyErr_Fetch(&type, &value, &original_traceback);
     PyErr_NormalizeException(&type, &value, &original_traceback);
