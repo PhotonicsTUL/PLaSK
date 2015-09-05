@@ -15,14 +15,11 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     bool initialized;                   ///< Expansion is initialized
 
-//     size_t pil,                         ///< Index of the beginning of the left PML
-//            pir;                         ///< Index of the beginning of the right PML
-
     /// Horizontal axis with separate integration intervals.
     /// material functions contain discontinuities at these points
     OrderedAxis rbounds;
     
-    ///  Argument coefficients for Bessel expansion base
+    ///  Argument coefficients for Bessel expansion base (zeros of Bessel function)
     std::vector<double> factors;
     
     /**

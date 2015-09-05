@@ -5,8 +5,10 @@
 #include "../patterson-data.h"
 
 #include <boost/math/special_functions/bessel.hpp>
+#include <boost/math/special_functions/legendre.hpp>
 using boost::math::cyl_bessel_j;
 using boost::math::cyl_bessel_j_zero;
+using boost::math::legendre_p;
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 
@@ -72,12 +74,25 @@ void ExpansionBessel::init()
 
     // Estimate necessary number of integration points
     unsigned m = SOLVER->m;
-    double total = 0.;
-    double b = rbounds[rbounds.size()-1];
-    double a = factors[factors.size()-1] / b;
-    double expected = cyl_bessel_j(m+1, a); expected = 0.5 * expected*expected;
-    double err = 2. * SOLVER->integral_error;
-    bool can_refine = true;
+    double k = factors[factors.size()-1] / rbounds[rbounds.size()-1];
+    
+    double expected = cyl_bessel_j(m+1, k) * rbounds[rbounds.size()-1];
+    expected = 0.5 * expected*expected;
+
+    double error = SOLVER->integral_error * expected / nseg;
+    
+    double a, b = 0.;
+    for (size_t i = 0; i < nseg; ++i) {
+        a = b; b = rbounds[i+1];
+        // excpected value is the second Lommel's integral
+        double expct = cyl_bessel_j(m, k*b);
+        expct = 0.5 * b*b * (expct*expct - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b));
+        
+        double err = 2*error;
+        while (err > error) {
+            //TODO
+        }
+    }
     
     //TODO maybe this loop can be more effective if done by hand...
     while (abs(1. - total/expected) > SOLVER->integral_error && can_refine) {
@@ -85,7 +100,7 @@ void ExpansionBessel::init()
         can_refine = false;
         for (size_t i = 0; i < nseg; ++i) {
             double e = err * b / segments[i].D;
-            auto fun = [m, a](double r) -> double { double j = cyl_bessel_j(m, a*r); return j*j*r; };
+            auto fun = [m, k](double r) -> double { double j = cyl_bessel_j(m, k*r); return j*j*r; };
             total += patterson<double,double>(fun, rbounds[i], rbounds[i+1], e, &segments[i].n);
             if (segments[i].n < 8) can_refine = true;
         }

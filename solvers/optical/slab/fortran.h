@@ -129,5 +129,10 @@ F77SUB zneupd(const int& rvec, const char& howmny, const int* select, dcomplex* 
               const int& ldv, int* iparam, int* ipntr, dcomplex* workd,
               dcomplex* workl, const int& lworkl, double* rwork, int& info);
 
+// DSTERF computes all eigenvalues of a symmetric tridiagonal matrix
+// using the Pal-Walker-Kahan variant of the QL or QR algorithm.
+#define dsterf F77_GLOBAL(dsterf,DSTERF)
+F77SUB dsterf(const int& n, double* d, double* e, int& info);
+
 
 #endif // PLASK__SOLVER_VSLAB_FORTRAN_H
