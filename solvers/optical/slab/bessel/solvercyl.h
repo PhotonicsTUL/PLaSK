@@ -142,7 +142,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      */
     double getWavelength(size_t n) {
         if (n >= modes.size()) throw NoValue(Wavelength::NAME);
-        return modes[n].k0.real();
+        return (2e3*M_PI / modes[n].k0).real();
     }
 
     /**
