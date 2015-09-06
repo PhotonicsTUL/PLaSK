@@ -65,17 +65,18 @@ dcomplex Transfer::determinant()
     }
 
     // Find the eigenvalues of M using LAPACK
-    dcomplex nth; int info;
-    zgeev('N', 'N', N, M.data(), N, evals, &nth, 1, &nth, 1, work, lwork, rwork, info);
+    int info;
+    zgeev('N', 'N', N, M.data(), N, evals, nullptr, 1, nullptr, 1, work, lwork, rwork, info);
     if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
 
     //TODO add some consideration for degenerate modes
     // Find the smallest eigenvalue
-    dcomplex val, result;
+    dcomplex result;
     double min_mag = 1e32;
     for (int i = 0; i < N; i++) {
-        val = evals[i];
-        if (abs2(val) < min_mag) { min_mag = abs2(val); result = val; }
+        dcomplex val = evals[i];
+        double mag = abs2(val);
+        if (mag < min_mag) { min_mag = mag; result = val; }
     }
     // // Find the determinant
     // dcomplex result = 1.;
@@ -103,19 +104,24 @@ const_cvector Transfer::getInterfaceVector()
     // If the field already found, don't compute again
     if (!interface_field) {
 
+        // We change the matrices M and A so we will have to find the new fields
+        fields_determined = DETERMINED_NOTHING;
+
+        initDiagonalization();
+
         // Obtain admittance
         getFinalMatrix();
 
         // Find the eigenvalues of M using LAPACK
-        dcomplex nth; int info;
-        zgeev('N', 'V', N, M.data(), N, evals, &nth, 1, interface_field_matrix.data(), N, work, lwork, rwork, info);
+        int info;
+        zgeev('N', 'V', N, M.data(), N, evals, nullptr, 1, interface_field_matrix.data(), N, work, lwork, rwork, info);
         if (info != 0) throw ComputationError(solver->getId(), "Interface field: zgeev failed");
 
         // Find the number of the smallest eigenvalue
-        double mag, min_mag = 1e32;
+        double min_mag = 1e32;
         int n;
         for (int i = 0; i < N; i++) {
-            mag = abs2(evals[i]);
+            double mag = abs2(evals[i]);
             if (mag < min_mag) { min_mag = mag; n = i; }
         }
 

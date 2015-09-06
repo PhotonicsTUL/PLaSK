@@ -19,14 +19,15 @@ class Refl(object):
 
     def __init__(self, solver, direction, polarization):
         self.solver = solver
+        self.solver.lam0 = 1000.
         self.direction = direction
         self.polarization = polarization
         solver.klong = solver.ktran = 0.
 
     def __call__(self, a):
         setattr(self.solver, 'k'+self.direction, 2*pi * sin(a*pi/180.))
-        return self.solver.compute_reflectivity(1000., self.polarization, 'top', dispersive=False), \
-               self.solver.compute_transmittivity(1000., self.polarization, 'top', dispersive=False)
+        return self.solver.compute_reflectivity(1000., self.polarization, 'top'), \
+               self.solver.compute_transmittivity(1000., self.polarization, 'top')
 
     def __enter__(self):
         return self

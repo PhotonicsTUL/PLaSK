@@ -104,18 +104,18 @@ class SimpleDiagonalizer : public Diagonalizer
     SimpleDiagonalizer(Expansion* g);
     ~SimpleDiagonalizer();
 
-    virtual int matrixSize() const { return src->matrixSize(); }
+    int matrixSize() const override { return src->matrixSize(); }
 
-    virtual void initDiagonalization();
+    void initDiagonalization() override;
 
-    virtual bool diagonalizeLayer(size_t layer);
+    bool diagonalizeLayer(size_t layer) override;
 
     // Functions returning references to calculated matrices
-    virtual const cdiagonal& Gamma(size_t layer) const { return gamma[layer]; }
-    virtual const cmatrix& TE(size_t layer) const { return Te[layer]; }
-    virtual const cmatrix& TH(size_t layer) const { return Th[layer]; }
-    virtual const cmatrix& invTE(size_t layer) const { return Te1[layer]; }
-    virtual const cmatrix& invTH(size_t layer) const { return Th1[layer]; }
+    const cdiagonal& Gamma(size_t layer) const override { return gamma[layer]; }
+    const cmatrix& TE(size_t layer) const override { return Te[layer]; }
+    const cmatrix& TH(size_t layer) const override { return Th[layer]; }
+    const cmatrix& invTE(size_t layer) const override { return Te1[layer]; }
+    const cmatrix& invTH(size_t layer) const override { return Th1[layer]; }
 };
 
 }}} // namespace plask::solvers::slab

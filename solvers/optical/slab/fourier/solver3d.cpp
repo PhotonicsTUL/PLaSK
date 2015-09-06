@@ -80,6 +80,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
             dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
+            lam0 = reader.getAttribute<double>("lam0");
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
@@ -172,11 +173,11 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_K0:
             detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->setK0(x); return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_KLONG:
             detlog.axis_arg_name = "klong";
@@ -314,7 +315,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
     assert(transfer);
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-        k0 = modes[num].k0;
+        setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -329,7 +330,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
     assert(transfer);
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-        k0 = modes[num].k0;
+        setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -344,7 +345,7 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     assert(transfer);
     ParamGuard guard(this);
     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-        k0 = modes[num].k0;
+        setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;

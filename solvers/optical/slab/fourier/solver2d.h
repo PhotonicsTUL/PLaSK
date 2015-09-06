@@ -27,13 +27,14 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     };
 
     struct Mode {
-        FourierSolver2D* solver;                            ///< Solver this mode belongs to
-        Expansion::Component symmetry;                      ///< Mode horizontal symmetry
-        Expansion::Component polarization;                  ///< Mode polarization
-        dcomplex k0;                                        ///< Stored mode frequency
-        dcomplex beta;                                      ///< Stored mode effective index
-        dcomplex ktran;                                     ///< Stored mode transverse wavevector
-        double power;                                       ///< Mode power [mW]
+        FourierSolver2D* solver;                ///< Solver this mode belongs to
+        Expansion::Component symmetry;          ///< Mode horizontal symmetry
+        Expansion::Component polarization;      ///< Mode polarization
+        boost::optional<double> lam0;           ///< Wavelength for which integrals are computed
+        dcomplex k0;                            ///< Stored mode frequency
+        dcomplex beta;                          ///< Stored mode effective index
+        dcomplex ktran;                         ///< Stored mode transverse wavevector
+        double power;                           ///< Mode power [mW]
 
         Mode(FourierSolver2D* solver): solver(solver), power(1e-9) {}
 
@@ -47,13 +48,14 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     struct ParamGuard {
         FourierSolver2D* solver;
+        boost::optional<double> lam0;
         dcomplex k0, klong, ktran;
-        bool recomp;
         ParamGuard(FourierSolver2D* solver, bool recomp=false): solver(solver),
-            k0(solver->k0), klong(solver->klong), ktran(solver->ktran), recomp(recomp) {}
+            lam0(solver->lam0), k0(solver->k0), klong(solver->klong), ktran(solver->ktran) {}
         ~ParamGuard() {
             solver->klong = klong; solver->ktran = ktran;
-            solver->setK0(k0, recomp);
+            solver->setLam0(lam0);
+            solver->setK0(k0);
         }
     };
 
@@ -346,6 +348,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
         Mode mode(this);
+        mode.lam0 = lam0;
         mode.k0 = k0; mode.beta = klong; mode.ktran = ktran;
         mode.symmetry = expansion.symmetry; mode.polarization = expansion.polarization;
         for (size_t i = 0; i != modes.size(); ++i)

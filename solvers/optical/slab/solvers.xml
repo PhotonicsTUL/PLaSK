@@ -8,6 +8,11 @@
 
     <tag name="expansion" label="Details on Fourier Expansion">
       Details on Fourier expansion used in computations
+      <attr name="lam0" label="Refefence wavelength" type="float">
+        This is a wavelength at which refractive index is retrieved from the structure.
+        If this parameter is None, material parameters are computed each time, the wavelenght
+        changes even slightly (this is most accurate, but can be very inefficient.
+      </attr>
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
       <attr name="oversampling" label="Oversampling" type="float">Factor by which the number of coefficients is increased for FFT.</attr>
@@ -107,6 +112,11 @@
     <geometry type="Cartesian3D"/>
 
     <tag name="expansion" label="Details on Fourier Expansion">
+      <attr name="lam0" label="Refefence wavelength" type="float">
+        This is a wavelength at which refractive index is retrieved from the structure.
+        If this parameter is None, material parameters are computed each time,
+        the wavelenght changes even slightly (this is most accurate, but can be very inefficient.
+      </attr>
       <attr name="size" label="Expansion sizes" type="int">
         Expansion sizes along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal expansion size’ (&lt;tt&gt;size-long&lt;/tt&gt;) and ‘Transverse expansion size’ (&lt;tt&gt;size-tran&lt;/tt&gt;)
@@ -253,8 +263,15 @@
     
     <tag name="expansion" label="Details on Bessel Expansion">
       Details on Bessel expansion used in computations
+      <attr name="lam0" label="Refefence wavelength" type="float">
+        This is a wavelength at which refractive index is retrieved from the structure.
+        If this parameter is None, material parameters are computed each time, the wavelenght
+        changes even slightly (this is most accurate, but can be very inefficient.
+      </attr>
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
-      <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
+      <attr name="group-layers" label="Layers grouping" type="bool">
+        Should similar layers be grouped for better performance.
+      </attr>
     </tag>
 
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">

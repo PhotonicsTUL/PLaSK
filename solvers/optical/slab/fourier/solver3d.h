@@ -27,13 +27,14 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     };
 
     struct Mode {
-        FourierSolver3D* solver;                                ///< Solver this mode belongs to
-        Expansion::Component symmetry_long;                     ///< Mode symmetry in long direction
-        Expansion::Component symmetry_tran;                     ///< Mode symmetry in tran direction
-        dcomplex k0;                                            ///< Stored mode frequency
-        dcomplex klong;                                         ///< Stored mode effective index
-        dcomplex ktran;                                         ///< Stored mode transverse wavevector
-        double power;                                           ///< Mode power [mW]
+        FourierSolver3D* solver;                ///< Solver this mode belongs to
+        Expansion::Component symmetry_long;     ///< Mode symmetry in long direction
+        Expansion::Component symmetry_tran;     ///< Mode symmetry in tran direction
+        boost::optional<double> lam0;           ///< Wavelength for which integrals are computed
+        dcomplex k0;                            ///< Stored mode frequency
+        dcomplex klong;                         ///< Stored mode effective index
+        dcomplex ktran;                         ///< Stored mode transverse wavevector
+        double power;                           ///< Mode power [mW]
 
         Mode(FourierSolver3D* solver): solver(solver), power(1e-9) {}
 
@@ -47,13 +48,15 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     struct ParamGuard {
         FourierSolver3D* solver;
+        boost::optional<double> lam0;
         dcomplex k0, klong, ktran;
         bool recomp;
-        ParamGuard(FourierSolver3D* solver, bool recomp=false): solver(solver),
-            k0(solver->k0), klong(solver->klong), ktran(solver->ktran), recomp(recomp) {}
+        ParamGuard(FourierSolver3D* solver): solver(solver),
+            lam0(solver->lam0), k0(solver->k0), klong(solver->klong), ktran(solver->ktran) {}
         ~ParamGuard() {
+            solver->setLam0(lam0);
             solver->klong = klong; solver->ktran = ktran;
-            solver->setK0(k0, recomp);
+            solver->setK0(k0);
         }
     };
 
@@ -335,6 +338,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
         Mode mode(this);
+        mode.lam0 = lam0;
         mode.k0 = k0; mode.klong = klong; mode.ktran = ktran;
         mode.symmetry_long = expansion.symmetry_long; mode.symmetry_tran = expansion.symmetry_tran;
         for (size_t i = 0; i != modes.size(); ++i)

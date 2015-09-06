@@ -148,7 +148,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
             // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
             int info;
-            zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
+            zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N,  Te[layer].data(), N,
                 Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
             if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute %1%-th eignevalue of QE", info);
 
