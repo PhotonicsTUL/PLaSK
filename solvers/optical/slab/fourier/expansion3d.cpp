@@ -275,10 +275,10 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     const double normlim = min(Ll/nMl, Lt/nMt) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
+        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
                          l, Ml, Mt, omp_get_thread_num());
     #else
-        solver->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
     #endif
 
     auto mesh = make_shared<RectangularMesh<3>>
@@ -288,7 +288,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                             RectangularMesh<3>::ORDER_102);
     double matv = axis2->at(0); // at each point along any vertical axis material is the same
 
-    double lambda = real(SOLVER->getWavelength());
+    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
 
     auto temperature = SOLVER->inTemperature(mesh);
 

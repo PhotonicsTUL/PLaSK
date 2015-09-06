@@ -159,15 +159,15 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     if (refine == 0) refine = 1;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, refine * nM,
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, refine * nM,
                          omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DEBUG, "Getting refractive indices for layer %1% (sampled at %2% points)", l, refine * nM);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, refine * nM);
     #endif
 
     auto mesh = make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 
-    double lambda = real(SOLVER->getWavelength());
+    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
 
     auto temperature = SOLVER->inTemperature(mesh);
 

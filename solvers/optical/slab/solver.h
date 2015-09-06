@@ -61,6 +61,7 @@ struct PLASK_SOLVER_API SlabBase {
 
     void initTransfer(Expansion& expansion, bool emitting);
 
+      
   public:
 
     /// Layer boundaries
@@ -78,8 +79,12 @@ struct PLASK_SOLVER_API SlabBase {
     /// Position of the matching interface
     size_t interface;
 
-    dcomplex k0;                                ///< Normalized frequency [1/µm]
+    /// Reference wavelength used for getting material parameters [nm]
+    boost::optional<double> lam0;
 
+    /// Normalized frequency [1/µm]
+    dcomplex k0;
+    
     /// Parameters for vertical PMLs (if used)
     PML vpml;
 
@@ -104,29 +109,56 @@ struct PLASK_SOLVER_API SlabBase {
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_integrals(true), group_layers(true) {}
 
-    /// Get current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
-
-    /// Set current wavelength
-    void setWavelength(dcomplex lambda, bool recompute=true) {
-        dcomplex k = 2e3*M_PI / lambda;
-        if (k != k0) {
+    /// Get lam0
+    double getLam0() const {
+        if (lam0) return *lam0;
+        else return NAN;
+    }
+    /// Set lam0
+    void setLam0(double lam) {
+        if (!lam0 || lam != *lam0) {
+            lam0 = lam;
+            this->recompute_integrals = true;
             if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            k0 = k;
-            this->recompute_integrals |= recompute;
         }
+    }
+    /// Clear lam0
+    void clearLam0() {
+        if (lam0) {
+            lam0.reset();
+            this->recompute_integrals = true;
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        }
+    }
+    /// Set lam0
+    void setLam0(boost::optional<double> lam) {
+        if (lam) setLam0(*lam);
+        else clearLam0();
     }
 
     /// Get current k0
     dcomplex getK0() const { return k0; }
 
     /// Set current k0
-    void setK0(dcomplex k, bool recompute=true) {
+    void setK0(dcomplex k) {
         if (k != k0) {
             if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
             k0 = k;
             if (k0 == 0.) k0 = 1e-12;
-            this->recompute_integrals |= recompute;
+            if (!lam0) this->recompute_integrals = true;
+        }
+    }
+
+    /// Get current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+
+    /// Set current wavelength
+    void setWavelength(dcomplex lambda) {
+        dcomplex k = 2e3*M_PI / lambda;
+        if (k != k0) {
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+            k0 = k;
+            if (!lam0) this->recompute_integrals = true;
         }
     }
 

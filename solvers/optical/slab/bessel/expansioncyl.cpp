@@ -152,9 +152,9 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     auto zaxis = SOLVER->getLayerPoints(layer);
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DEBUG, "Computing integrals for layer %d in thread %d", layer, omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer %d in thread %d", layer, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DEBUG, "Computing integrals for layer %d", layer);
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer %d", layer);
     #endif
 
     size_t nr = raxis->size(), N = SOLVER->size;
@@ -162,7 +162,7 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     int m = int(SOLVER->m);
 
     auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
-    double lambda = real(2e3*M_PI/SOLVER->k0);
+    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
 
     LazyData<double> gain;
     auto temperature = SOLVER->inTemperature(mesh);
@@ -418,6 +418,8 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
                                     const shared_ptr<const typename LevelsAdapter::Level>& level,
                                     InterpolationMethod interp)
 {
+    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_NEAREST;
+    
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
 

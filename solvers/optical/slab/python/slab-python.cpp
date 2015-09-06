@@ -41,6 +41,18 @@ using namespace plask::solvers::slab;
     ":rtype: PML"
 
 template <typename SolverT>
+static py::object Solver_getLam0(const SolverT& self) {
+    if (self.lam0) return *self.lam0;
+    else return py::object();
+}
+    
+template <typename SolverT>
+static void Solver_setLam0(SolverT& self, py::object value) {
+    if (value == py::object()) self.clearLam0();
+    else self.setLam0(py::extract<double>(value));
+}
+    
+template <typename SolverT>
 static py::tuple SlabSolver_getStack(const SolverT& self) {
     py::list result;
     for (auto i: self.getStack()) {
@@ -255,7 +267,6 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
-    bool dispersive = true;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
@@ -283,14 +294,14 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
             } else
                 ktran.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "dispersive")
-            dispersive = py::extract<bool>(kwargs[*i]);
+            throw TypeError("Dispersive argument has been removes. Set solver.lam0 attribute.");
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
     
     FourierSolver2D::ParamGuard guard(self);
 
-    if (lambda) self->setWavelength(*lambda, dispersive);
+    if (lambda) self->setWavelength(*lambda);
     if (neff) self->setKlong(*neff * self->getK0());
     if (ktran) self->setKtran(*ktran);
 
@@ -299,12 +310,12 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_NEFF:
@@ -352,13 +363,12 @@ template <typename SolverT>
 py::object FourierSolver_computeReflectivity(SolverT* self,
                                              py::object wavelength,
                                              Expansion::Component polarization,
-                                             Transfer::IncidentDirection incidence,
-                                             bool dispersive
+                                             Transfer::IncidentDirection incidence
                                             )
 {
-    typename SolverT::ParamGuard guard(self, dispersive);
+    typename SolverT::ParamGuard guard(self);
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam, dispersive);
+        self->setWavelength(lam);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -367,13 +377,12 @@ template <typename SolverT>
 py::object FourierSolver_computeTransmittivity(SolverT* self,
                                                py::object wavelength,
                                                Expansion::Component polarization,
-                                               Transfer::IncidentDirection incidence,
-                                               bool dispersive
+                                               Transfer::IncidentDirection incidence
                                               )
 {
-    typename SolverT::ParamGuard guard(self, dispersive);
+    typename SolverT::ParamGuard guard(self);
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam, dispersive);
+        self->setWavelength(lam);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }
@@ -510,7 +519,6 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     int m = 1;
 
     boost::optional<dcomplex> lambda;
-    bool dispersive = true;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
@@ -526,13 +534,13 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             } else
                 lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
         else if (*i == "dispersive")
-            dispersive = py::extract<bool>(kwargs[*i]);
+            throw TypeError("Dispersive argument has been removes. Set solver.lam0 attribute.");
         else if (*i == "m")
             m = py::extract<int>(kwargs[*i]);
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
-    if (lambda) self->setWavelength(*lambda, dispersive);
+    if (lambda) self->setWavelength(*lambda);
 
     BesselSolverCyl::ParamGuard guard(self);
 
@@ -543,12 +551,12 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
                 array
             );
     }
@@ -795,7 +803,6 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
-    bool dispersive = true;
     boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam") {
@@ -823,27 +830,27 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             } else
                 self->setKtran(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "dispersive")
-            dispersive = py::extract<bool>(kwargs[*i]);
+            throw TypeError("Dispersive argument has been removes. Set solver.lam0 attribute.");
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
     
     FourierSolver3D::ParamGuard guard(self);
             
-    if (wavelength) self->setWavelength(*wavelength, dispersive);
-    if (k0) self->setK0(*k0, dispersive);
+    if (wavelength) self->setWavelength(*wavelength);
+    if (k0) self->setK0(*k0);
 
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_KLONG:
@@ -946,6 +953,13 @@ inline void export_base(Class solver) {
                         "*admittance* Admittance Transfer Method\n"
                         "============ ====================================\n"
                        );
+    solver.add_property("lam0", Solver_setLam0<Solver>, Solver_setLam0<Solver>,
+                        "Reference wavelength.\n\n"
+                        "This is a wavelength at which refractive index is retrieved from the structure.\n"
+                        "If this parameter is None, material parameters are computed each time,\n"
+                        "the wavelenght changes even slightly (this is most accurate, but can be very\n"
+                        "inefficient.\n"
+                       );
 #ifndef NDEBUG
     solver.def("get_matrices", Solver_getMatrices<Solver>);
 #endif
@@ -1041,9 +1055,7 @@ BOOST_PYTHON_MODULE(slab)
                    "    lam (complex): Wavelength.\n"
                    "    k0 (complex): Normalized frequency.\n"
                    "    neff (complex): Longitudinal effective index.\n"
-                   "    ktran (complex): Transverse wavevector.\n"
-                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
-                   "                       recomputed even if the wavelength is changed.\n");
+                   "    ktran (complex): Transverse wavevector.\n");
         solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
@@ -1053,9 +1065,7 @@ BOOST_PYTHON_MODULE(slab)
                    "        name of the non-vanishing electric field component.\n"
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                    "        present.\n"
-                   "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-                   "        wavelength, as they may change due to the dispersion.\n"
-                   , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+                   , (py::arg("lam"), "polarization", "side"));
         solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
@@ -1065,9 +1075,7 @@ BOOST_PYTHON_MODULE(slab)
                    "        of the non-vanishing electric field component.\n"
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                    "        present.\n"
-                   "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-                   "        wavelength, as they may change due to the dispersion.\n"
-                   , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+                   , (py::arg("lam"), "polarization", "side"));
         solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
                    "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
                    "Args:\n"
@@ -1192,9 +1200,7 @@ BOOST_PYTHON_MODULE(slab)
                    "    lam (complex): Wavelength.\n"
                    "    k0 (complex): Normalized frequency.\n"
                    "    klong (complex): Longitudinal wavevector.\n"
-                   "    ktran (complex): Transverse wavevector.\n"
-                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
-                   "                       recomputed even if the wavelength is changed.\n");
+                   "    ktran (complex): Transverse wavevector.\n");
         solver.def("find_mode", py::raw_function(FourierSolver3D_findMode),
                    "Compute the mode near the specified effective index.\n\n"
                    "Only one of the following arguments can be given through a keyword.\n"
@@ -1213,9 +1219,7 @@ BOOST_PYTHON_MODULE(slab)
                     "        name of the non-vanishing electric field component.\n"
                     "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                     "        present.\n"
-                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-                    "        wavelength, as they may change due to the dispersion.\n"
-                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+                    , (py::arg("lam"), "polarization", "side"));
          solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
                     "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                     "Args:\n"
@@ -1225,9 +1229,7 @@ BOOST_PYTHON_MODULE(slab)
                     "        of the non-vanishing electric field component.\n"
                     "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                     "        present.\n"
-                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-                    "        wavelength, as they may change due to the dispersion.\n"
-                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+                    , (py::arg("lam"), "polarization", "side"));
          solver.def("reflected", &FourierSolver_getReflected<FourierSolver3D>, py::with_custodian_and_ward_postcall<0,1>(),
                     "Access to the reflected field.\n\n"
                     "Args:\n"
@@ -1310,9 +1312,7 @@ BOOST_PYTHON_MODULE(slab)
                    "Arguments can be given through keywords only.\n\n"
                    "Args:\n"
                    "    lam (complex): Wavelength.\n"
-                   "    k0 (complex): Normalized frequency.\n"
-                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
-                   "                       recomputed even if the wavelength is changed.\n");
+                   "    k0 (complex): Normalized frequency.\n");
 //         solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
 //                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                    "Args:\n"
@@ -1322,9 +1322,7 @@ BOOST_PYTHON_MODULE(slab)
 //                    "        name of the non-vanishing electric field component.\n"
 //                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                    "        present.\n"
-//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-//                    "        wavelength, as they may change due to the dispersion.\n"
-//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//                    , (py::arg("lam"), "polarization", "side");
 //         solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
 //                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
 //                    "Args:\n"
@@ -1334,9 +1332,7 @@ BOOST_PYTHON_MODULE(slab)
 //                    "        of the non-vanishing electric field component.\n"
 //                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                    "        present.\n"
-//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-//                    "        wavelength, as they may change due to the dispersion.\n"
-//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//                    , (py::arg("lam"), "polarization", "side"));
 //         solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
 //                    "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
 //                    "Args:\n"

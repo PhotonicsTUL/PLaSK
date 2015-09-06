@@ -23,6 +23,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         if (param == "expansion") {
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
+            lam0 = reader.getAttribute<double>("lam0");
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
@@ -96,7 +97,7 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m)
     setM(m);
     initCalculation();
     initTransfer(expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
     root->find(start);
     return insertMode();
 }
@@ -107,11 +108,9 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].m != m) {
-        k0 = modes[num].k0;
-        setM(modes[num].m);
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
+    setLam0(modes[num].lam0);
+    setK0(modes[num].k0);
+    setM(modes[num].m);
     return transfer->getFieldE(dst_mesh, method);
 }
 
@@ -121,11 +120,9 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].m != m) {
-        k0 = modes[num].k0;
-        setM(modes[num].m);
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
+    setLam0(modes[num].lam0);
+    setK0(modes[num].k0);
+    setM(modes[num].m);
     return transfer->getFieldH(dst_mesh, method);
 }
 
@@ -134,12 +131,10 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].m != m) {
-        k0 = modes[num].k0;
-        setM(modes[num].m);
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
+//     ParamGuard guard(this);
+    setLam0(modes[num].lam0);
+    setK0(modes[num].k0);
+    setM(modes[num].m);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

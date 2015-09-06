@@ -21,8 +21,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     struct Mode {
         BesselSolverCyl* solver;        ///< Solver this mode belongs to
+        boost::optional<double> lam0;   ///< Wavelength for which integrals are computed
         dcomplex k0;                    ///< Stored mode frequency
-        int m;                          ///< 
+        int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
 
         Mode(BesselSolverCyl* solver): solver(solver), power(1e-9) {}
@@ -34,14 +35,15 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     struct ParamGuard {
         BesselSolverCyl* solver;
+        boost::optional<double> lam0;
         dcomplex k0;
         int m;
-        bool recomp;
-        ParamGuard(BesselSolverCyl* solver, bool recomp=false): solver(solver),
-            k0(solver->k0), m(solver->m), recomp(recomp) {}
+        ParamGuard(BesselSolverCyl* solver): solver(solver),
+            lam0(solver->lam0), k0(solver->k0), m(solver->m) {}
         ~ParamGuard() {
+            solver->setLam0(lam0);
             solver->setM(m);
-            solver->setK0(k0, recomp);
+            solver->setK0(k0);
         }
     };
 
@@ -111,6 +113,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         if (n != m) {
             m = n;
             recompute_integrals = true;
+            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         }
     }
 
@@ -123,6 +126,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         Mode mode(this);
         mode.k0 = k0;
         mode.m = m;
+        mode.lam0 = lam0;
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);

@@ -116,7 +116,8 @@ class TableModelEditMethods(object):
     class SetDataCommand(QtGui.QUndoCommand):
 
         def __init__(self, table, col, row, new_value, QUndoCommand_parent = None):
-            super(TableModel.SetDataCommand, self).__init__('change cell value at row {} to "{}"'.format(row+1, new_value), QUndoCommand_parent)
+            super(TableModel.SetDataCommand, self)\
+                .__init__(u'change cell value at row {} to "{}"'.format(row+1, new_value), QUndoCommand_parent)
             self.table = table
             self.col = col
             self.row = row
