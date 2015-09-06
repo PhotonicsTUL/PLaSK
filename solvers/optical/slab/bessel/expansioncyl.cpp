@@ -81,6 +81,9 @@ void ExpansionBessel::init()
 
     double error = SOLVER->integral_error * expected / nseg;
     
+    std::deque<std::vector<double>> abscissae;
+    std::deque<DataVector<double>> weights;
+    
     double a, b = 0.;
     for (size_t i = 0; i < nseg; ++i) {
         a = b; b = rbounds[i+1];

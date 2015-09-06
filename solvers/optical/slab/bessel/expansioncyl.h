@@ -86,9 +86,10 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     /// Integration segment data
     struct Segment {
-        double Z;               ///< Center of the segment
-        double D;               ///< Width of the segment divideb by 2.
-        unsigned n;             ///< Patterson integration order for segment
+        double Z;                       ///< Center of the segment
+        double D;                       ///< Width of the segment divided by 2
+        unsigned n;                     ///< Integration order for segment
+        DataVector<double> weights;     ///< Cached integration weights for segment
     };
     
     /// Integration segments
