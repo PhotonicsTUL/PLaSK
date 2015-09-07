@@ -100,7 +100,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
             for (int i = 0; i < N; i++) Y(i,i) = - y1[i] * y2[i];
 
             // First layer
-            double H = solver->vpml.shift;
+            double H = solver->vpml.dist;
             gamma = diagonalizer->Gamma(solver->stack[start]);
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
@@ -228,7 +228,7 @@ void AdmittanceTransfer::determineFields()
         {
             int curr = solver->stack[n];
 
-            double H = (n == 0 || n == count-1)? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+            double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
             gamma = diagonalizer->Gamma(curr);
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
@@ -307,7 +307,7 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 
@@ -350,7 +350,7 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 

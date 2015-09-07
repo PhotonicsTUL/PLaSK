@@ -78,7 +78,7 @@ opt.dct = dct
 
 opt.set_interface(shelf, p)
 
-opt.pml.shift = 0.
+opt.pml.dist = 0.
 opt.pml.order = 1
 opt.pml.factor = 1-2j
 

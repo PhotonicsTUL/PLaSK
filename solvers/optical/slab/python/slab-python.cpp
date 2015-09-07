@@ -129,8 +129,8 @@ struct PmlWrapper {
 
     ~PmlWrapper() { if (!solver) delete pml; }
 
-    static shared_ptr<PmlWrapper> __init__(dcomplex factor, double size, double shift, double order) {
-        return make_shared<PmlWrapper>(nullptr, new PML(factor, size, shift, order));
+    static shared_ptr<PmlWrapper> __init__(dcomplex factor, double size, double dist, double order) {
+        return make_shared<PmlWrapper>(nullptr, new PML(factor, size, dist, order));
     }
 
     operator PML() const { return *pml; }
@@ -147,9 +147,9 @@ struct PmlWrapper {
         if (solver) solver->invalidate();
     }
 
-    double get_shift() const { return pml->shift; }
-    void set_shift(double val) {
-        pml->shift = val;
+    double get_dist() const { return pml->dist; }
+    void set_dist(double val) {
+        pml->dist = val;
         if (solver) solver->invalidate();
     }
 
@@ -160,11 +160,11 @@ struct PmlWrapper {
     }
 
     std::string __str__() const {
-        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->shift, pml->order);
+        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->dist, pml->order);
     }
 
     std::string __repr__() const {
-        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->shift, pml->order);
+        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->dist, pml->order);
     }
 };
 
@@ -987,7 +987,7 @@ BOOST_PYTHON_MODULE(slab)
                                               (py::arg("factor"), "size", "dist", py::arg("shape")=2)))
         .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
         .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
-        .add_property("dist", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML distance from the structure.")
+        .add_property("dist", &PmlWrapper::get_dist, &PmlWrapper::set_dist, "PML distance from the structure.")
         .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
         .def("__str__", &PmlWrapper::__str__)
         .def("__repr__", &PmlWrapper::__repr__)

@@ -19,7 +19,7 @@ static inline PML readPML(XMLReader& reader) {
     PML pml;
     pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
     pml.size = reader.getAttribute<double>("size", pml.size);
-    pml.shift = reader.getAttribute<double>("shift", pml.shift);
+    pml.dist = reader.getAttribute<double>("dist", pml.dist);
     pml.order = reader.getAttribute<double>("order", pml.order);
     return pml;
 }
@@ -27,7 +27,7 @@ static inline PML readPML(XMLReader& reader) {
 static inline void updatePML(PML& pml, XMLReader& reader) {
     pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
     pml.size = reader.getAttribute<double>("size", pml.size);
-    pml.shift = reader.getAttribute<double>("shift", pml.shift);
+    pml.dist = reader.getAttribute<double>("dist", pml.dist);
     pml.order = reader.getAttribute<double>("order", pml.order);
 }
 
@@ -103,7 +103,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
         } else if (param == "vpml") {
             vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
             vpml.size = reader.getAttribute<double>("size", vpml.size);
-            vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
+            vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
             vpml.order = reader.getAttribute<double>("order", vpml.order);
             reader.requireTagEnd();
         } else if (param == "transfer") {

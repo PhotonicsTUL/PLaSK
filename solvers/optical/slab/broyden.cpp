@@ -122,7 +122,7 @@ dcomplex RootBroyden::Broyden(dcomplex x) const
     bool trueJacobian;                      // did we recently update Jacobian?
 
     dcomplex Br, Bi;                        // Broyden matrix columns
-    dcomplex dF, dx;                        // Computed shift
+    dcomplex dF, dx;                        // Computed dist
 
     dcomplex oldx, oldF;
 

@@ -135,8 +135,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 }
                 assert(!P.isnan());
 
-                // Shift matrix by `pmlshift`
-                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.shift);
+                // Shift matrix by `pmldist`
+                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.dist);
                 assert(!phas.isnan());
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
             }

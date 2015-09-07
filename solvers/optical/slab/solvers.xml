@@ -35,7 +35,7 @@
     <tag name="vpml" label="Vertical Pmls">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
@@ -53,7 +53,7 @@
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
@@ -172,7 +172,7 @@
     <tag name="vpml" label="Vertical Pmls">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
@@ -190,20 +190,20 @@
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       <tag name="long" label="Longitudinal PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
         <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-        <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
       <tag name="tran" label="Transverse PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
         <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-        <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
     </tag>
@@ -272,6 +272,12 @@
       <attr name="group-layers" label="Layers grouping" type="bool">
         Should similar layers be grouped for better performance.
       </attr>
+      <attr name="integrals-error" label="Maximum integrals error" type="float">
+        Maximum error for Bessel functions integrals.
+      </attr>
+      <attr name="integrals-points" label="Maximum integrals points" type="int">
+        Maximum number of points each element is sampled for computing Bessel functions integrals.
+      </attr>
     </tag>
 
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
@@ -285,7 +291,7 @@
     <tag name="vpml" label="Vertical Pmls">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
@@ -303,7 +309,7 @@
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="shift" label="Distance" type="float" unit="µm">PML shift from the structure.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 

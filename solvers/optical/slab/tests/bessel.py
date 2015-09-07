@@ -22,13 +22,13 @@ class Disk(unittest.TestCase):
 
     def setUp(self):
         
-        R = 20.
+        R = 19.
         N = 7
         
         self.f = f = 1
         
         disk = geometry.Rectangle(5./f, 0.5/f, 'Core')
-        side = geometry.Rectangle(1.-5./f, 0.5/f, 'air')
+        side = geometry.Rectangle(R-5./f, 0.5/f, 'air')
         layer = geometry.Shelf()
         layer.append(disk)
         layer.append(side)
@@ -49,8 +49,12 @@ class Disk(unittest.TestCase):
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
         self.solver.size = N
+        self.solver.pml.dist = 20./f - R
+        self.solver.lam0 = 1550/f
         
         self.layer = 0
+        
+        plot_geometry(self.geometry, fill=True, margin=0.1)
 
     def testIntegrals(self):
         try:
@@ -97,6 +101,7 @@ class Disk(unittest.TestCase):
             dets = self.solver.get_determinant(lam=lams, m=1, dispersive=False)
         except TypeError:
             dets = self.solver.get_determinant(lam=lams)
+        figure()
         plot(lams, abs(dets))
         yscale('log')
         

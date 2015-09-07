@@ -139,7 +139,7 @@ const_cvector Transfer::getInterfaceVector()
 
 LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool reflected)
 {
-    double zlim = solver->vpml.shift + solver->vpml.size;
+    double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
     diagonalizer->source()->initField(Expansion::FIELD_E, method);
@@ -163,7 +163,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &
 
 LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
 {
-    double zlim = solver->vpml.shift + solver->vpml.size;
+    double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
     diagonalizer->source()->initField(Expansion::FIELD_H, method);

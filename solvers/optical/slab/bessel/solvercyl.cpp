@@ -7,12 +7,14 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWith
     m(1),
     size(12),
     expansion(this),
-    integral_error(1e-9),
+    integral_error(1e-6),
+    max_itegration_points(1000),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
     detlog.global_prefix = this->getId();
     detlog.axis_arg_name = "lam";
+    pml.dist = 20.;
 }
 
 
@@ -24,6 +26,8 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0");
+            integral_error = reader.getAttribute<double>("integrals-error", integral_error);
+            max_itegration_points = reader.getAttribute<size_t>("integrals-points", max_itegration_points);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
@@ -46,7 +50,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         } else if (param == "vpml") {
             vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
             vpml.size = reader.getAttribute<double>("size", vpml.size);
-            vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
+            vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
             vpml.order = reader.getAttribute<double>("order", vpml.order);
             reader.requireTagEnd();
         } else if (param == "transfer") {
@@ -59,7 +63,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         } else if (param == "pml") {
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
-            pml.shift = reader.getAttribute<double>("shift", pml.shift);
+            pml.dist = reader.getAttribute<double>("dist", pml.dist);
             pml.order = reader.getAttribute<double>("order", pml.order);
             reader.requireTagEnd();
         } else if (param == "root") {
