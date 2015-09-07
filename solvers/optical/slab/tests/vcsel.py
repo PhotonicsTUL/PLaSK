@@ -75,6 +75,7 @@ class VCSEL(unittest.TestCase):
             <solvers>
               <optical name="bessel" lib="slab" solver="BesselCyl">
                 <geometry ref="vcsel"/>
+                <expansion lam0="980."/>
                 <interface object="QW"/>
               </optical>
             </solvers>

@@ -1,8 +1,8 @@
 #include "expansioncyl.h"
 #include "solvercyl.h"
 #include "zeros-data.h"
-#include "../patterson.h"
-#include "../patterson-data.h"
+
+#include "../gauss_legendre.h"
 
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/legendre.hpp>
@@ -65,60 +65,64 @@ void ExpansionBessel::init()
     rbounds.addPoint(rbounds[rbounds.size()-1] + SOLVER->pml.shift);
     size_t nseg = rbounds.size() - 1;
     segments.resize(nseg);
-    for (size_t i = 0; i != nseg; ++i) {
-        segments[i].Z = 0.5 * (rbounds[i] + rbounds[i+1]);
-        segments[i].D = 0.5 * (rbounds[i+1] - rbounds[i]);
-    }
 
     computeBesselZeros();
 
     // Estimate necessary number of integration points
     unsigned m = SOLVER->m;
-    double k = factors[factors.size()-1] / rbounds[rbounds.size()-1];
-    
+    double k = factors[factors.size()-1];
+
     double expected = cyl_bessel_j(m+1, k) * rbounds[rbounds.size()-1];
     expected = 0.5 * expected*expected;
 
+    k /= rbounds[rbounds.size()-1];
+    
     double error = SOLVER->integral_error * expected / nseg;
     
-    std::deque<std::vector<double>> abscissae;
-    std::deque<DataVector<double>> weights;
+    std::deque<std::vector<double>> abscissae_cache;
+    std::deque<DataVector<double>> weights_cache;
+    
+    raxis = make_shared<OrderedAxis>();
     
     double a, b = 0.;
+    double expct = 0;
     for (size_t i = 0; i < nseg; ++i) {
         a = b; b = rbounds[i+1];
-        // excpected value is the second Lommel's integral
-        double expct = cyl_bessel_j(m, k*b);
-        expct = 0.5 * b*b * (expct*expct - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b));
+        segments[i].Z = 0.5 * (a + b);
+        segments[i].D = 0.5 * (b - a);
         
-        double err = 2*error;
-        while (err > error) {
-            //TODO
+        // excpected value is the second Lommel's integral
+        double Jm = cyl_bessel_j(m, k*b);
+        expct = 0.5 * b*b * (Jm*Jm - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b)) - expct;
+
+        double err = 2 * error;
+        std::vector<double> points;
+        unsigned j;
+        for (j = 0; err > error; ++j) {
+            size_t n = 5 * (j+1);
+            if (j == abscissae_cache.size()) {
+                abscissae_cache.push_back(std::vector<double>());
+                weights_cache.push_back(DataVector<double>());
+                gaussData(n, abscissae_cache.back(), weights_cache.back());
+            }
+            assert(j < abscissae_cache.size());
+            const std::vector<double>& abscissae = abscissae_cache[j];
+            points.clear(); points.reserve(abscissae.size());
+            double sum = 0.;
+            for (size_t a = 0; a != abscissae.size(); ++a) {
+                double r = segments[i].Z + segments[i].D * abscissae[a];
+                double Jm = cyl_bessel_j(m, k*r);
+                sum += weights_cache[j][a] * Jm*Jm*r;
+                points.push_back(r);
+            }
+            sum *= segments[i].D;
+            err = abs(sum - expct);
         }
+        raxis->addOrderedPoints(points.begin(), points.end());
+        segments[i].weights = weights_cache[j-1];
     }
     
-    //TODO maybe this loop can be more effective if done by hand...
-    while (abs(1. - total/expected) > SOLVER->integral_error && can_refine) {
-        err *= 0.5;
-        can_refine = false;
-        for (size_t i = 0; i < nseg; ++i) {
-            double e = err * b / segments[i].D;
-            auto fun = [m, k](double r) -> double { double j = cyl_bessel_j(m, k*r); return j*j*r; };
-            total += patterson<double,double>(fun, rbounds[i], rbounds[i+1], e, &segments[i].n);
-            if (segments[i].n < 8) can_refine = true;
-        }
-    }
-    
-    size_t n = 0; for (size_t i = 0; i < nseg; ++i) n += (2 << segments[i].n) - 1;
-    std::vector<double> points;
-    points.reserve(n);
-    
-    for (size_t i = 0; i < nseg; ++i) {
-        const double stp = 256 >> segments[i].n;
-        for (unsigned j = 256 - stp; j > 0; j -= stp) points.push_back(segments[i].Z - segments[i].D * patterson_points[j]);
-        for (unsigned j = 0; j < 256; j += stp) points.push_back(segments[i].Z + segments[i].D * patterson_points[j]);
-    }
-    raxis.reset(new OrderedAxis(std::move(points), 0.));
+    SOLVER->writelog(LOG_DETAIL, "Sampling structure in %d points", raxis->size());
     
     // Allocate memory for integrals
     size_t nlayers = lcount();
@@ -178,15 +182,13 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     diagonals[layer] = true;
     
     // Compute integrals
-    ptrdiff_t wi = - (1 << segments[0].n) + 1;
-    for (size_t ri = 0, seg = 0, nw = 1<<segments[0].n; ri != nr; ++ri, ++wi) {
+    for (size_t ri = 0, wi = 0, seg = 0, nw = segments[0].weights.size(); ri != nr; ++ri, ++wi) {
         if (wi == nw) {
-            wi = - (1 << segments[++seg].n) + 1;
-            nw = 1 << segments[seg].n;
-            assert(seg < segments.size());
+            nw = segments[++seg].weights.size();
+            wi = 0;
         }
         double r = raxis->at(ri);
-        double w = patterson_weights[segments[seg].n][abs(wi)] * segments[seg].D;
+        double w = segments[seg].weights[wi] * segments[seg].D;
 
         auto material = geometry->getMaterial(vec(r, matz));
         double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();

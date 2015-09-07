@@ -49,6 +49,8 @@ class Disk(unittest.TestCase):
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
         self.solver.size = N
+        self.solver.pml.dist = 0.
+        self.solver.lam0 = 1550/f
         
         self.layer = 0
 

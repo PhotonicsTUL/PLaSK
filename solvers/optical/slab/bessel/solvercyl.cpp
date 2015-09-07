@@ -7,12 +7,13 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWith
     m(1),
     size(12),
     expansion(this),
-    integral_error(1e-9),
+    integral_error(1e-6),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
     detlog.global_prefix = this->getId();
     detlog.axis_arg_name = "lam";
+    pml.shift = 20.;
 }
 
 
