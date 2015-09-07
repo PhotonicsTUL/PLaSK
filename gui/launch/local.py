@@ -217,7 +217,9 @@ class OutputWindow(QtGui.QDockWidget):
         finally:
             self.launcher.mutex.unlock()
         if move:
+            hpos = self.messages.horizontalScrollBar().value()
             self.messages.moveCursor(QtGui.QTextCursor.End)
+            self.messages.horizontalScrollBar().setValue(hpos)
 
     def halt_thread(self):
         confirm = QtGui.QMessageBox.question(self, "Halt Process",
