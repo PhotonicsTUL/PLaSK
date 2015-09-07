@@ -146,50 +146,32 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 #ifndef NDEBUG
 cmatrix BesselSolverCyl::ieps_minus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.ieps_minus(layer);
 }
 cmatrix BesselSolverCyl::ieps_plus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.ieps_plus(layer);
 }
 cmatrix BesselSolverCyl::eps_minus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.eps_minus(layer);
 }
 cmatrix BesselSolverCyl::eps_plus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.eps_plus(layer);
 }
 cmatrix BesselSolverCyl::deps_minus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.deps_minus(layer);
 }
 cmatrix BesselSolverCyl::deps_plus(size_t layer) {
     initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     return expansion.deps_plus(layer);
 }
 #endif

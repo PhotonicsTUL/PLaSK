@@ -38,10 +38,7 @@ Transfer::~Transfer()
 
 void Transfer::initDiagonalization() {
     // Get new coefficients if needed
-    if (solver->recompute_integrals) {
-        solver->computeIntegrals();
-        solver->recompute_integrals = false;
-    }
+    solver->computeIntegrals();
     this->diagonalizer->initDiagonalization();
 }
 

@@ -236,10 +236,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
 {
     this->initCalculation();
     initTransfer(getExpansion(), false);
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
 
     //TODO maybe there is a more efficient way to implement this
     DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
