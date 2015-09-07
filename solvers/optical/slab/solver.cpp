@@ -1,4 +1,5 @@
 #include "solver.h"
+#include "expansion.h"
 #include "meshadapter.h"
 #include "muller.h"
 #include "broyden.h"

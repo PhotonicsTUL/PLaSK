@@ -147,7 +147,7 @@ void ExpansionPW2D::reset() {
     initialized = false;
 }
 
-void ExpansionPW2D::layerMaterialCoefficients(size_t l)
+void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
@@ -167,8 +167,6 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     auto mesh = make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 
-    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
-
     auto temperature = SOLVER->inTemperature(mesh);
 
     LazyData<double> gain;
@@ -181,8 +179,8 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     if (!periodic) {
         double Tl = 0.; for (size_t v = pil * axis1->size(), end = (pil+1) * axis1->size(); v != end; ++v) Tl += temperature[v]; Tl /= axis1->size();
         double Tr = 0.; for (size_t v = pir * axis1->size(), end = (pir+1) * axis1->size(); v != end; ++v) Tr += temperature[v]; Tr /= axis1->size();
-        refl = geometry->getMaterial(vec(pl,maty))->NR(lambda, Tl).sqr();
-        refr = geometry->getMaterial(vec(pr,maty))->NR(lambda, Tr).sqr();
+        refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
+        refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
     }
 
     // Make space for the result
@@ -200,20 +198,20 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
             auto material = geometry->getMaterial(vec(xmesh->at(j),maty));
             double T = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) T += temperature[v]; T /= axis1->size();
-            Tensor3<dcomplex> nr = material->NR(lambda, T);
+            Tensor3<dcomplex> nr = material->NR(lam, T);
             if (nr.c01 != 0.) {
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
-            if (gain_connected) {
+            if (gain_connected && SOLVER->lgained[l]) {
                 auto roles = geometry->getRolesAt(vec(xmesh->at(j),maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     if (!gain_computed) {
-                        gain = SOLVER->inGain(mesh, lambda);
+                        gain = SOLVER->inGain(mesh, glam);
                         gain_computed = true;
                     }
                     double g = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) g += gain[v];
-                    double ni = lambda * g/axis1->size() * (0.25e-7/M_PI);
+                    double ni = glam * g/axis1->size() * (0.25e-7/M_PI);
                     nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
                 }
             }
@@ -256,7 +254,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         diagonals[l] = false;
 
     if (diagonals[l]) {
-        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
+        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
         if (nN != nM) coeffs[l][0] = work[0];
         std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
     } else {

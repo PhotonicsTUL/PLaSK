@@ -94,6 +94,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Force re-computation of material coefficients/integrals
     bool recompute_integrals;
 
+    /// Always compute material coefficients/integtals for gained layers
+    bool always_recompute_gain;
+
   protected:
 
     /// Can layers be automatically grouped
@@ -107,7 +110,7 @@ struct PLASK_SOLVER_API SlabBase {
         interface(size_t(-1)),
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_integrals(true), group_layers(true) {}
+        recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
 
     /// Get lam0
     double getLam0() const {

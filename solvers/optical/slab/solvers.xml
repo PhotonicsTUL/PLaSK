@@ -13,6 +13,10 @@
         If this parameter is None, material parameters are computed each time, the wavelenght
         changes even slightly (this is most accurate, but can be very inefficient.
       </attr>
+      <attr name="update-gain" label="Always update gain" type="bool">
+        If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
+        This allows to set lam0`for better efficiency and still update gain for slight changes of wavelength.
+      </attr>
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
       <attr name="oversampling" label="Oversampling" type="float">Factor by which the number of coefficients is increased for FFT.</attr>
@@ -116,6 +120,10 @@
         This is a wavelength at which refractive index is retrieved from the structure.
         If this parameter is None, material parameters are computed each time,
         the wavelenght changes even slightly (this is most accurate, but can be very inefficient.
+      </attr>
+      <attr name="update-gain" label="Always update gain" type="bool">
+        If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
+        This allows to set lam0`for better efficiency and still update gain for slight changes of wavelength.
       </attr>
       <attr name="size" label="Expansion sizes" type="int">
         Expansion sizes along longitudinal and transverse directions.
@@ -267,6 +275,10 @@
         This is a wavelength at which refractive index is retrieved from the structure.
         If this parameter is None, material parameters are computed each time, the wavelenght
         changes even slightly (this is most accurate, but can be very inefficient.
+      </attr>
+      <attr name="update-gain" label="Always update gain" type="bool">
+        If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
+        This allows to set lam0`for better efficiency and still update gain for slight changes of wavelength.
       </attr>
       <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
       <attr name="group-layers" label="Layers grouping" type="bool">

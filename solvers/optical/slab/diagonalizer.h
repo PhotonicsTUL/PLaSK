@@ -13,10 +13,11 @@
 #include <plask/plask.hpp>
 
 #include "matrices.h"
-#include "expansion.h"
 
 namespace plask { namespace  solvers { namespace slab {
 
+struct Expansion;
+    
 /**
  * Base for the class determining and holding the necessary matrices
  * This is the abstract base class for all diagonalizers (multi-threaded,
@@ -35,9 +36,7 @@ class Diagonalizer
   public:
     const int lcount;                   // number of layers
 
-    Diagonalizer(Expansion* src) :
-        src(src), diagonalized(src->lcount(), false), lcount(src->lcount())
-        {}
+    Diagonalizer(Expansion* src);
 
     virtual ~Diagonalizer() {}
 
@@ -104,7 +103,7 @@ class SimpleDiagonalizer : public Diagonalizer
     SimpleDiagonalizer(Expansion* g);
     ~SimpleDiagonalizer();
 
-    int matrixSize() const override { return src->matrixSize(); }
+    int matrixSize() const override;
 
     void initDiagonalization() override;
 

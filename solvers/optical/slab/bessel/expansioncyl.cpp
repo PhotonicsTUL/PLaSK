@@ -152,7 +152,7 @@ void ExpansionBessel::reset()
 }
 
 
-void ExpansionBessel::layerIntegrals(size_t layer)
+void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
 {
     if (isnan(real(SOLVER->k0)) || isnan(imag(SOLVER->k0)))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
@@ -171,7 +171,6 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     int m = int(SOLVER->m);
 
     auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
-    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
 
     LazyData<double> gain;
     auto temperature = SOLVER->inTemperature(mesh);
@@ -197,16 +196,16 @@ void ExpansionBessel::layerIntegrals(size_t layer)
 
         auto material = geometry->getMaterial(vec(r, matz));
         double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
-        dcomplex eps = material->Nr(lambda, T);
-        if (gain_connected) {
+        dcomplex eps = material->Nr(lam, T);
+        if (gain_connected &&  SOLVER->lgained[layer]) {
             auto roles = geometry->getRolesAt(vec(r, matz));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                 if (!gain_computed) {
-                    gain = SOLVER->inGain(mesh, lambda);
+                    gain = SOLVER->inGain(mesh, glam);
                     gain_computed = true;
                 }
                 double g = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) g += gain[v];
-                double ni = lambda * g/zaxis->size() * (0.25e-7/M_PI);
+                double ni = glam * g/zaxis->size() * (0.25e-7/M_PI);
                 eps.imag(ni);
             }
         }
@@ -247,7 +246,7 @@ void ExpansionBessel::layerIntegrals(size_t layer)
     }
     
     if (diagonals[layer]) {
-        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
         integrals.zero();
         for (int i = 0; i < N; ++i) {
             double val = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; val = 0.5 * val*val;;

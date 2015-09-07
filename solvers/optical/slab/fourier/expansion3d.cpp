@@ -112,7 +112,7 @@ void ExpansionPW3D::init()
 
     if (nMl < nNl || nMt < nNt) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
 
-    solver->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
+    SOLVER->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
                      (!symmetric_long() && !symmetric_tran())? "" :
                      (symmetric_long() && symmetric_tran())? " symmetric in longitudinal and transverse directions" :
                      (!symmetric_long() && symmetric_tran())? " symmetric in transverse direction" : " symmetric in longitudinal direction"
@@ -127,7 +127,7 @@ void ExpansionPW3D::init()
     // Compute permeability coefficients
     DataVector<Tensor2<dcomplex>> work;
     if (!periodic_long || !periodic_tran) {
-        solver->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
         size_t ml = (!periodic_long && nNl != nMl)? nMl : 0,
                mt = (!periodic_tran && nNt != nMt)? nMt : 0;
         size_t lenwork = max(ml, mt);
@@ -259,7 +259,7 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
     );
 }
 
-void ExpansionPW3D::layerMaterialCoefficients(size_t l)
+void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
@@ -275,7 +275,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     const double normlim = min(Ll/nMl, Lt/nMt) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
                          l, Ml, Mt, omp_get_thread_num());
     #else
         solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
@@ -287,8 +287,6 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                             axis2,
                             RectangularMesh<3>::ORDER_102);
     double matv = axis2->at(0); // at each point along any vertical axis material is the same
-
-    double lambda = (SOLVER->lam0)? *SOLVER->lam0 : real(2e3*M_PI/SOLVER->k0);
 
     auto temperature = SOLVER->inTemperature(mesh);
 
@@ -330,20 +328,20 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     double T = 0.; // average temperature in all vertical points
                     for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v != end; ++v) T += temperature[v];
                     T /= axis2->size();
-                    cell[j] = material->NR(lambda, T);
+                    cell[j] = material->NR(lam, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
-                    if (gain_connected) {
+                    if (gain_connected && SOLVER->lgained[l]) {
                         auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             if (!gain_computed) {
-                                gain = SOLVER->inGain(mesh, lambda);
+                                gain = SOLVER->inGain(mesh, glam);
                                 gain_computed = true;
                             }
                             double g = 0.; // average gain in all vertical points
                             for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v < end; ++v) g += gain[v];
-                            double ni = lambda * g/axis2->size() * (0.25e-7/M_PI);
+                            double ni = glam * g/axis2->size() * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
                             cell[j].c22.imag(ni);
@@ -428,7 +426,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         diagonals[l] = false;
 
     if (diagonals[l]) {
-        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
+        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
         if (oversampled) coeffs[l][0] = work[0];
         std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
     } else {

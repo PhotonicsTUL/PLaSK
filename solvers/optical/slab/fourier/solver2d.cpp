@@ -32,6 +32,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0");
+            always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

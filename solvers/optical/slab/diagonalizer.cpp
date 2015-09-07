@@ -1,4 +1,5 @@
 #include "diagonalizer.h"
+#include "expansion.h"
 
 #include <plask/plask.hpp>
 
@@ -9,8 +10,12 @@
 #include <omp.h>
 #endif
 
+#define SOLVER dynamic_cast<Solver*>(src->solver)
 
 namespace plask { namespace  solvers { namespace slab {
+
+Diagonalizer::Diagonalizer(Expansion* src) :
+    src(src), diagonalized(src->lcount(), false), lcount(src->lcount()) {}
 
 
 SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
@@ -29,13 +34,13 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         int nthr = min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
-        src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr==1)?"x":"ces");
+        SOLVER->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr==1)?"x":"ces");
         for (size_t i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);
         }
     #else
-        src->solver->writelog(LOG_DEBUG, "Creating temporary matrix for diagonalizer");
+        SOLVER->writelog(LOG_DEBUG, "Creating temporary matrix for diagonalizer");
         tmpmx = new cmatrix(N, N);
     #endif
 }
@@ -55,6 +60,10 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
     #endif
 }
 
+int SimpleDiagonalizer::matrixSize() const
+{
+    return src->matrixSize();
+}
 
 void SimpleDiagonalizer::initDiagonalization()
 {
@@ -77,10 +86,10 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);
         cmatrix QE = tmpmx[mn];
-        src->solver->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1% in thread %2% [%3%]", layer, omp_get_thread_num(), mn);
+        SOLVER->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1% in thread %2% [%3%]", layer, omp_get_thread_num(), mn);
     #else
         cmatrix QE = *tmpmx;
-        src->solver->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1%", layer);
+        SOLVER->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1%", layer);
     #endif
 
     try {

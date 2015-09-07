@@ -3,6 +3,7 @@
 
 #include <plask/plask.hpp>
 
+#include "solver.h"
 #include "matrices.h"
 #include "meshadapter.h"
 
@@ -25,9 +26,70 @@ struct PLASK_SOLVER_API Expansion {
     InterpolationMethod field_interpolation;
 
     /// Solver which performs calculations (and is the interface to the outside world)
-    Solver* solver;
+    SlabBase* solver;
 
-    Expansion(Solver* solver): solver(solver) {}
+    Expansion(SlabBase* solver): solver(solver) {}
+
+  private:
+      double glambda;
+    
+  protected:
+
+    /**
+     * Compute itegrals for RE and RH matrices
+     * \param layer layer number
+     * \param lam wavelength
+     * \param glam wavelength for gain
+     */
+    virtual void layerIntegrals(size_t layer, double lam, double glam) = 0;
+    
+  public:
+  
+    /// Compute all expansion coefficients
+    void computeIntegrals() {
+        double lambda = real(2e3*M_PI/solver->k0);
+        if (solver->recompute_integrals) {
+            double lam;
+            if (solver->lam0) {
+                lam = *solver->lam0;
+                glambda = (solver->always_recompute_gain)? lambda : *solver->lam0;
+            } else{
+                lam = glambda = lambda;
+            }
+            size_t nlayers = lcount();
+            std::exception_ptr error;
+            #pragma omp parallel for
+            for (size_t l = 0; l < nlayers; ++l) {
+                if (error) continue;
+                try {
+                    layerIntegrals(l, lam, glambda);
+                } catch(...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
+            }
+            if (error) std::rethrow_exception(error);
+            solver->recompute_integrals = false;
+        } else if (solver->always_recompute_gain && !is_zero(lambda - glambda)) {
+            double lam = (solver->lam0)? *solver->lam0 : lambda;
+            glambda = lambda;
+            std::vector<size_t> glayers;
+            size_t nlayers = lcount();
+            glayers.reserve(nlayers);
+            for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
+            std::exception_ptr error;
+            #pragma omp parallel for
+            for (size_t l = 0; l < glayers.size(); ++l) {
+                if (error) continue;
+                try {
+                    layerIntegrals(glayers[l], lam, glambda);
+                } catch(...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
+            }
+        }
+    }
 
     /**
      * Return number of distinct layers
@@ -75,8 +137,9 @@ struct PLASK_SOLVER_API Expansion {
         field_interpolation = method;
         prepareField();
     }
-
+    
   protected:
+
     /**
      * Prepare for computatiations of the fields
      */

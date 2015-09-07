@@ -56,24 +56,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     /// Free allocated memory
     void reset();
 
-    /// Compute all expansion coefficients
-    void computeMaterialCoefficients() {
-        size_t nlayers = lcount();
-        assert(coeffs.size() == nlayers);
-        std::exception_ptr error;
-        #pragma omp parallel for
-        for (size_t l = 0; l < nlayers; ++l) {
-            if (error) continue;
-            try {
-                layerMaterialCoefficients(l);
-            } catch(...) {
-                #pragma omp critical
-                error = std::current_exception();
-            }
-        }
-        if (error) std::rethrow_exception(error);
-    }
-
     virtual size_t lcount() const override;
 
     virtual bool diagonalQE(size_t l) const override {
@@ -107,11 +89,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
-    /**
-     * Compute expansion coefficients for material parameters
-     * \param l layer number
-     */
-    void layerMaterialCoefficients(size_t l);
+    void layerIntegrals(size_t l, double lam, double glam) override;
 
   public:
 

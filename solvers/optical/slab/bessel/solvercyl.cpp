@@ -26,6 +26,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0");
+            always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
             max_itegration_points = reader.getAttribute<size_t>("integrals-points", max_itegration_points);
             reader.requireTagEnd();

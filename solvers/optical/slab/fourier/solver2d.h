@@ -75,7 +75,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void onInvalidate() override;
 
     void computeIntegrals() override {
-        expansion.computeMaterialCoefficients();
+        expansion.computeIntegrals();
     }
 
     /// Type of discrete cosine transform. Can be only 1 or two

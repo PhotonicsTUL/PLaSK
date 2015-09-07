@@ -960,6 +960,12 @@ inline void export_base(Class solver) {
                         "the wavelenght changes even slightly (this is most accurate, but can be very\n"
                         "inefficient.\n"
                        );
+    solver.def_readwrite("update_gain", &Solver::always_recompute_gain,
+                        "Always update gain.\n\n"
+                        "If this attribute is set to True, material parameters are always recomputed for\n"
+                        "layers with gains. This allows to set py:attr:`lam0` for better efficiency and\n"
+                        "still update gain for slight changes of wavelength.\n"
+                       );
 #ifndef NDEBUG
     solver.def("get_matrices", Solver_getMatrices<Solver>);
 #endif

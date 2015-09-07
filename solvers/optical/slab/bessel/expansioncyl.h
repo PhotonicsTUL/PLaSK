@@ -42,24 +42,6 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     /// Free allocated memory
     void reset();
 
-    /// Compute itegrals for RE and RH matrices
-    void computeIntegrals() {
-        size_t nlayers = lcount();
-        assert(layers_integrals.size() == nlayers);
-        std::exception_ptr error;
-        #pragma omp parallel for
-        for (size_t l = 0; l < nlayers; ++l) {
-            if (error) continue;
-            try {
-                layerIntegrals(l);
-            } catch (...) {
-                #pragma omp critical
-                error = std::current_exception();
-            }
-        }
-        if (error) std::rethrow_exception(error);
-    }
-
     size_t lcount() const override;
 
     bool diagonalQE(size_t l) const override {
@@ -162,9 +144,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     /**
      * Compute itegrals for RE and RH matrices
-     * \param l layer number
+     * \param layer layer number
      */
-    void layerIntegrals(size_t l);
+    void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
       

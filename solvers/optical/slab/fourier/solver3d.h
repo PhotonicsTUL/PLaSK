@@ -78,7 +78,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     void onInvalidate() override;
 
     void computeIntegrals() override {
-        expansion.computeMaterialCoefficients();
+        expansion.computeIntegrals();
     }
 
     /// Type of discrete cosine transform. Can be only 1 or two
