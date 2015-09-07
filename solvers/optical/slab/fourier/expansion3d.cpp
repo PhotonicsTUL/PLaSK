@@ -52,13 +52,13 @@ void ExpansionPW3D::init()
 
     if (!periodic_long) {
         // Add PMLs
-        if (!symmetric_long()) back -= SOLVER->pml_long.size + SOLVER->pml_long.shift;
-        front += SOLVER->pml_long.size + SOLVER->pml_long.shift;
+        if (!symmetric_long()) back -= SOLVER->pml_long.size + SOLVER->pml_long.dist;
+        front += SOLVER->pml_long.size + SOLVER->pml_long.dist;
     }
     if (!periodic_tran) {
         // Add PMLs
-        if (!symmetric_tran()) left -= SOLVER->pml_tran.size + SOLVER->pml_tran.shift;
-        right += SOLVER->pml_tran.size + SOLVER->pml_tran.shift;
+        if (!symmetric_tran()) left -= SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
+        right += SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
     }
 
     double Ll, Lt;
@@ -511,7 +511,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             }
         } else {
             lcmesh->reset(back, front, nl);
-            for (size_t t = 0, end = nl*nt, shift = nl-1; t != end; t += nl) params[shift+t] = params[t];
+            for (size_t t = 0, end = nl*nt, dist = nl-1; t != end; t += nl) params[dist+t] = params[t];
         }
         if (symmetric_tran()) {
             if (SOLVER->dct2()) {

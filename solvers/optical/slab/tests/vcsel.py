@@ -20,7 +20,7 @@ class VCSEL(unittest.TestCase):
         self.manager.load('''
           <plask loglevel="debug">
             <defines>
-              <define name="R" value="20."/>
+              <define name="R" value="5."/>
               <define name="aprt" value="4."/>
             </defines>
             <materials>
@@ -76,14 +76,16 @@ class VCSEL(unittest.TestCase):
               <optical name="bessel" lib="slab" solver="BesselCyl">
                 <geometry ref="vcsel"/>
                 <expansion lam0="980."/>
+                <pml dist="20."/>
                 <interface object="QW"/>
               </optical>
             </solvers>
           </plask>''')
         self.solver = self.manager.solver.bessel
+        self.solver.initialize()
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
-        self.solver.size = 12
+        self.solver.size = 30
 
     def testComputations(self):
         m = self.solver.find_mode(980.1)

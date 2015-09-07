@@ -39,8 +39,8 @@ void ExpansionPW2D::init()
 
     if (!periodic) {
         // Add PMLs
-        if (!symmetric()) left -= SOLVER->pml.size + SOLVER->pml.shift;
-        right += SOLVER->pml.size + SOLVER->pml.shift;
+        if (!symmetric()) left -= SOLVER->pml.size + SOLVER->pml.dist;
+        right += SOLVER->pml.size + SOLVER->pml.dist;
     }
 
     double L;

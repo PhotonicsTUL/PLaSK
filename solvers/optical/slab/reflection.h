@@ -27,7 +27,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
   private:
 
-    cdiagonal phas;                             ///< Current phase shift matrix
+    cdiagonal phas;                             ///< Current phase dist matrix
     int* ipiv;                                  ///< Pivot vector
     std::vector<cmatrix> memP;                  ///< Reflection matrices for each layer
 

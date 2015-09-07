@@ -55,7 +55,7 @@ solver.root.method = 'broyden'
 rect_top = geometry.Cuboid(depth, 0.25 if sym else 0.5, h_top, 'Glass')
 rect_bottom = geometry.Cuboid(depth, 0.25 if sym else 0.5, 1.5-h_top, 'Glass')
 
-stack = geometry.Stack3D(shift=-rect_bottom.height, back=0, **({'left':0} if sym else {'xcenter':0}))
+stack = geometry.Stack3D(dist=-rect_bottom.height, back=0, **({'left':0} if sym else {'xcenter':0}))
 stack.prepend(rect_top)
 stack.prepend(rect_bottom)
 

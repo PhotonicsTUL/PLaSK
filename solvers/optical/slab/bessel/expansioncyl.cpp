@@ -62,7 +62,7 @@ void ExpansionBessel::init()
         SOLVER->setMesh(make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
     rbounds = OrderedAxis(*SOLVER->getMesh());
-    rbounds.addPoint(rbounds[rbounds.size()-1] + SOLVER->pml.shift);
+    if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[rbounds.size()-1] + SOLVER->pml.dist);
     size_t nseg = rbounds.size() - 1;
     segments.resize(nseg);
 
@@ -76,8 +76,9 @@ void ExpansionBessel::init()
     expected = 0.5 * expected*expected;
 
     k /= rbounds[rbounds.size()-1];
-    
-    double error = SOLVER->integral_error * expected / nseg;
+
+    double max_error = SOLVER->integral_error * expected / nseg;
+    double error = 0.;
     
     std::deque<std::vector<double>> abscissae_cache;
     std::deque<DataVector<double>> weights_cache;
@@ -85,30 +86,33 @@ void ExpansionBessel::init()
     raxis = make_shared<OrderedAxis>();
     
     double a, b = 0.;
-    double expct = 0;
+    double expcts = 0.;
     for (size_t i = 0; i < nseg; ++i) {
         a = b; b = rbounds[i+1];
         segments[i].Z = 0.5 * (a + b);
         segments[i].D = 0.5 * (b - a);
         
         // excpected value is the second Lommel's integral
-        double Jm = cyl_bessel_j(m, k*b);
-        expct = 0.5 * b*b * (Jm*Jm - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b)) - expct;
-
-        double err = 2 * error;
+        double expct = expcts;
+        expcts = cyl_bessel_j(m, k*b); expcts = 0.5 * b*b * (expcts*expcts - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b));
+        expct = expcts - expct;
+        
+        double err = 2 * max_error;
         std::vector<double> points;
-        unsigned j;
-        for (j = 0; err > error; ++j) {
-            size_t n = 5 * (j+1);
+        size_t j, n = 0;
+        double sum;
+        for (j = 0; err > max_error && n <= SOLVER->max_itegration_points; ++j) {
+            n = 4 * (j+1) - 1;
             if (j == abscissae_cache.size()) {
                 abscissae_cache.push_back(std::vector<double>());
                 weights_cache.push_back(DataVector<double>());
                 gaussData(n, abscissae_cache.back(), weights_cache.back());
             }
             assert(j < abscissae_cache.size());
+            assert(j < weights_cache.size());
             const std::vector<double>& abscissae = abscissae_cache[j];
             points.clear(); points.reserve(abscissae.size());
-            double sum = 0.;
+            sum = 0.;
             for (size_t a = 0; a != abscissae.size(); ++a) {
                 double r = segments[i].Z + segments[i].D * abscissae[a];
                 double Jm = cyl_bessel_j(m, k*r);
@@ -118,11 +122,12 @@ void ExpansionBessel::init()
             sum *= segments[i].D;
             err = abs(sum - expct);
         }
+        error += err;
         raxis->addOrderedPoints(points.begin(), points.end());
         segments[i].weights = weights_cache[j-1];
     }
-    
-    SOLVER->writelog(LOG_DETAIL, "Sampling structure in %d points", raxis->size());
+
+    SOLVER->writelog(LOG_DETAIL, "Sampling structure in %d points (error: %g/%g)", raxis->size(), error/expected, SOLVER->integral_error);
     
     // Allocate memory for integrals
     size_t nlayers = lcount();

@@ -223,17 +223,17 @@ void Forward2D::execute(dcomplex* data) {
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n2; ++i) {
                     cosqmb_(2*lot, 1, n1, 2*strid1, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
-                    for (int j = 0, shift = strid2*i, end = strid1*n1; j < end; j += strid1)
+                    for (int j = 0, dist = strid2*i, end = strid1*n1; j < end; j += strid1)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= factor1;
+                            data[dist+j+l] *= factor1;
                 }
                 break;
             case (SYMMETRY_EVEN_1):
                 for (int i = 0; i != n2; ++i) {
                     costmf_(2*lot, 1, n1, 2*strid1, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*(n1+1), ier);
-                    for (int j = strid1, shift = strid2*i, end = strid1*n1; j < end; j += strid1)
+                    for (int j = strid1, dist = strid2*i, end = strid1*n1; j < end; j += strid1)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= 0.5;
+                            data[dist+j+l] *= 0.5;
                 }
                 break;
             default: {} // silence the warning
@@ -247,17 +247,17 @@ void Forward2D::execute(dcomplex* data) {
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n1; ++i) {
                     cosqmb_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
-                    for (int j = 0, shift = strid1*i, end = n2*strid2; j < end; j += strid2)
+                    for (int j = 0, dist = strid1*i, end = n2*strid2; j < end; j += strid2)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= factor2;
+                            data[dist+j+l] *= factor2;
                 }
                 break;
             case (SYMMETRY_EVEN_1):
                 for (int i = 0; i != n1; ++i) {
                     costmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*(n2+1), ier);
-                    for (int j = strid2, shift = strid1*i, end = strid2*n2; j < end; j += strid2)
+                    for (int j = strid2, dist = strid1*i, end = strid2*n2; j < end; j += strid2)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= 0.5;
+                            data[dist+j+l] *= 0.5;
                 }
                 break;
             default: {} // silence the warning
@@ -347,24 +347,24 @@ void Backward2D::execute(dcomplex* data) {
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n2; ++i) {
                     cosqmf_(2*lot, 1, n1, 2*strid1, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
-                    for (int j = 0, shift = strid2*i, end = strid1*n1; j < end; j += strid1)
+                    for (int j = 0, dist = strid2*i, end = strid1*n1; j < end; j += strid1)
                         for (int l = 0; l < lot; ++l)
-                            data[j+l+shift] *= factor1;
+                            data[j+l+dist] *= factor1;
                 }
                 break;
             case (SYMMETRY_ODD_2):
                 for (int i = 0; i != n2; ++i) {
                     sinqmf_(2*lot, 1, n1, 2*strid1, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
-                    for (int j = 0, shift = strid2*i, end = strid1*n1; j < end; j += strid1)
+                    for (int j = 0, dist = strid2*i, end = strid1*n1; j < end; j += strid1)
                         for (int l = 0; l < lot; ++l)
-                            data[j+l+shift] *= factor1;
+                            data[j+l+dist] *= factor1;
                 }
                 break;
             case (SYMMETRY_EVEN_1):
                 for (int i = 0; i != n2; ++i) {
-                    for (int j = strid1, shift = strid2*i, end = strid1*n1; j < end; j += strid1)
+                    for (int j = strid1, dist = strid2*i, end = strid1*n1; j < end; j += strid1)
                         for (int l = 0; l < lot; ++l)
-                            data[j+l+shift] *= 2.;
+                            data[j+l+dist] *= 2.;
                     costmb_(2*lot, 1, n1, 2*strid1, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*(n1+1), ier);
                 }
                 break;
@@ -379,24 +379,24 @@ void Backward2D::execute(dcomplex* data) {
             case (SYMMETRY_EVEN_2):
                 for (int i = 0; i != n1; ++i) {
                     cosqmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
-                    for (int j = 0, shift = strid1*i, N = n2*strid2; j < N; j += strid2)
+                    for (int j = 0, dist = strid1*i, N = n2*strid2; j < N; j += strid2)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= factor2;
+                            data[dist+j+l] *= factor2;
                 }
                 break;
             case (SYMMETRY_ODD_2):
                 for (int i = 0; i != n1; ++i) {
                     sinqmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
-                    for (int j = 0, shift = strid1*i, N = n2*strid2; j < N; j += strid2)
+                    for (int j = 0, dist = strid1*i, N = n2*strid2; j < N; j += strid2)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= factor2;
+                            data[dist+j+l] *= factor2;
                 }
                 break;
             case (SYMMETRY_EVEN_1):
                 for (int i = 0; i != n1; ++i) {
-                    for (int j = strid2, shift = strid1*i, end = n2*strid2; j < end; j += strid2)
+                    for (int j = strid2, dist = strid1*i, end = n2*strid2; j < end; j += strid2)
                         for (int l = 0; l < lot; ++l)
-                            data[shift+j+l] *= 2.;
+                            data[dist+j+l] *= 2.;
                     costmb_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid1*i, 2*(strid1+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*(n2+1), ier);
                 }
                 break;

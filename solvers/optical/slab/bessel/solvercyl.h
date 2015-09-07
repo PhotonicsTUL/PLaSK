@@ -77,6 +77,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Expected integration estimate error
     double integral_error;
     
+    /// Maximum number of integration points in a single segemnt
+    size_t max_itegration_points;
+    
     /// Lateral PMLs
     PML pml;
     
