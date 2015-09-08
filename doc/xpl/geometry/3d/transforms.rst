@@ -151,7 +151,7 @@ Transforms always contain a single geometry object (possibly container) as their
       :scale: 100%
       :align: center
 
-      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x, y)`` point described in the  :xml:tag:`segments  [in <lattice>]` tag (and showed in ref:`the previous figure <fig-lattice-polygons>`) is combined with basis vectors ``a`` and ``b`` to obtain the location of the lattice contents instance.
+      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x, y)`` point described in the  :xml:tag:`segments  [in <lattice>]` tag (and showed in :ref:`the previous figure <fig-lattice-polygons>`) is combined with basis vectors ``a`` and ``b`` to obtain the location of the lattice contents instance.
 
 
 .. xml:tag:: <revolution>
