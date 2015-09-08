@@ -10,8 +10,6 @@
 #include <omp.h>
 #endif
 
-#define SOLVER dynamic_cast<Solver*>(src->solver)
-
 namespace plask { namespace  solvers { namespace slab {
 
 Diagonalizer::Diagonalizer(Expansion* src) :
@@ -34,13 +32,13 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         int nthr = min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
-        SOLVER->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr==1)?"x":"ces");
+        writelog(LOG_DEBUG, "%s: Creating %d temporary matri%s for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
         for (size_t i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);
         }
     #else
-        SOLVER->writelog(LOG_DEBUG, "Creating temporary matrix for diagonalizer");
+        SOLVER->writelog(LOG_DEBUG, "%s: Creating temporary matrix for diagonalizer", src->solver->getId());
         tmpmx = new cmatrix(N, N);
     #endif
 }
@@ -86,10 +84,10 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);
         cmatrix QE = tmpmx[mn];
-        SOLVER->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1% in thread %2% [%3%]", layer, omp_get_thread_num(), mn);
+        writelog(LOG_DEBUG, "%s: Diagonalizing matrix for layer %d in thread %d [%d]", src->solver->getId(), layer, omp_get_thread_num(), mn);
     #else
         cmatrix QE = *tmpmx;
-        SOLVER->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1%", layer);
+        writelog(LOG_DEBUG, "%s: Diagonalizing matrix for layer %d", src->solver->getId(), layer);
     #endif
 
     try {

@@ -86,6 +86,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     /// Computed modes
     std::vector<Mode> modes;
 
+    void clear_modes() override {
+        modes.clear();
+    }
+    
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 

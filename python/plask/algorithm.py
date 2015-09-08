@@ -430,7 +430,7 @@ class ThresholdSearch(ThermoElectric):
 
     def __init__(self, thermal, electrical, diffusion, gain, optical,
                  ivolt, vstart, optstart, optname=None, optargs=None, loss='auto', tfreq=6,
-                 vtol=1e-6, invalidate=False, quick=False, connect=False):
+                 vtol=1e-4, invalidate=False, quick=False, connect=False):
         ThermoElectric.__init__(self, thermal, electrical, tfreq, connect)
         if diffusion is not None:
             self.diffusion = diffusion

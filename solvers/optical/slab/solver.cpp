@@ -39,9 +39,9 @@ SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     outElectricField(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
     outMagneticField(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
 {
+    inTemperature = 300.; // temperature receiver has some sensible value
     this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
     this->inGain.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
-    inTemperature = 300.; // temperature receiver has some sensible value
 }
 
 template <typename BaseT>

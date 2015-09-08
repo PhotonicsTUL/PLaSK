@@ -61,7 +61,6 @@ struct PLASK_SOLVER_API SlabBase {
 
     void initTransfer(Expansion& expansion, bool emitting);
 
-      
   public:
 
     /// Layer boundaries
@@ -197,6 +196,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Recompute integrals used in RE and RH matrices
     virtual void computeIntegrals() = 0;
 
+    /// Clear computed modes
+    virtual void clear_modes() = 0;
+
 };
 
 /**
@@ -210,6 +212,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+        this->clear_modes();
         this->recompute_integrals = true;
     }
 
@@ -276,7 +279,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         if (changed) this->invalidate();
     }
 
-    virtual std::string getId() const { return Solver::getId(); }
+    std::string getId() const override { return Solver::getId(); }
 
     /**
      * Get the position of the matching interface.

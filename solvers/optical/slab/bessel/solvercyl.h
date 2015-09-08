@@ -74,6 +74,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Computed modes
     std::vector<Mode> modes;
 
+    void clear_modes() {
+        modes.clear();
+    }
+    
     /// Expected integration estimate error
     double integral_error;
     
