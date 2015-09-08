@@ -4,7 +4,23 @@ Transforms
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
 
+.. xml:tag:: <arrange3d> (or <arrange>)
 
+   Corresponding Python class: :py:class:`plask.geometry.Arrange3D`.
+
+   Container in which replicates a single item in an equally-spaced row of its repetitions.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+   :attr d{X}: where **{X}** is the transverse axis name: Longitudinal component of the spacing vector, by which the adjacent repetitions are shifted. (float [µm])
+   :attr d{Y}: where **{Y}** is the vertical axis name: Transverse dimension of the spacing vector, by which the adjacent repetitions are shifted. (float [µm])
+   :attr d{Z}: where **{Z}** is the vertical axis name: Vertical dimension of the spacing vector, by which the adjacent repetitions are shifted. (float [µm])
+   :attr required count: Number of repetitions of the container item.
+
+   .. xml:contents::
+
+      A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`. Object to arrange in a row.
 
 
 .. xml:tag:: <clip3d> (or <clip>)
@@ -108,8 +124,8 @@ Transforms always contain a single geometry object (possibly container) as their
    .. _lis-lattice:
    .. code-block:: xml
 
-      <cartesian3d name="lattice" axes="xy">
-        <lattice az="0.8" ax="0.2" ay="0" bz="0" bx="1" by="0">
+      <cartesian3d name="lattice" axes="xyz">
+        <lattice ax="{sqrt(3)/2}" ay="0.5" az="0" bx="0" by="1" bz="0">
           <segments>
             -2 -2; -2 3; 2 3; 2 -2 ^
             -1 -1; -1 1; 1 1; 1 -1 ^
