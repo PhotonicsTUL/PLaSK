@@ -116,8 +116,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
           .. xml:contents::
 
-          One or more polygons separated by ``^`` characters. Each polygon is formed by a two or more vertices, separated by ``;`` characters. Each vertex consists with two, space-separated integers.
-          Sides of polygons cannot cross each other. 
+          One or more polygons separated by ``^`` characters. Each polygon is formed by two or more vertices, separated by ``;`` characters. Each vertex consists of two space-separated integers.
 
    Example:
 
@@ -137,12 +136,14 @@ Transforms always contain a single geometry object (possibly container) as their
 
 
 
-   .. _fig-lattice-poligons:
+   .. _fig-lattice-polygons:
    .. figure:: lattice_helper.*
       :scale: 100%
       :align: center
 
-      Points described by the :xml:tag:`segments  [in <lattice>]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. First polygon (``-2 -2; -2 3; 2 3; 2 -2``) consists the red rectangle. Second (``-1 -1; -1 1; 1 1; 1 -1``) the green one. Since it (green) is included in the first (red) one, it is subtracted from them (xor operation). But points which lies on any sides (also on green rectangle) are always included in final figure. The last segment (``1 4``) is constituted by only one point. Being outside (and also "on side"), it is added to final figure (xor operation).
+      Points described by the :xml:tag:`segments  [in <lattice>]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. The first polygon (``-2 -2; -2 3; 2 3; 2 -2``) is the red rectangle. The second one (``-1 -1; -1 1; 1 1; 1 -1``) is green. Since the green polygin lies inside the red one, it is subtracted from it (XOR operation). Points lying at polygoin edges (both red and green rectangles) are always included in the final lattice.
+      
+      The last segment (``1 4``) comprises of only one point. It is also added to final figure (XOR operation).
 
 
    .. _fig-lattice-finall:
@@ -150,7 +151,7 @@ Transforms always contain a single geometry object (possibly container) as their
       :scale: 100%
       :align: center
 
-      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x, y)`` point described by :xml:tag:`segments  [in <lattice>]` tag (and showed on ref:`the previous figure <fig-lattice-poligons>`) is combained with basis vectors ``a`` and ``b`` to obtain origin of a child instance: ``ax+by``.
+      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x, y)`` point described in the  :xml:tag:`segments  [in <lattice>]` tag (and showed in ref:`the previous figure <fig-lattice-polygons>`) is combined with basis vectors ``a`` and ``b`` to obtain the location of the lattice contents instance.
 
 
 .. xml:tag:: <revolution>
