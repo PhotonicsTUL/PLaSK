@@ -1033,7 +1033,8 @@ BOOST_PYTHON_MODULE(slab)
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
-        solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
+        solver.add_property("material_mesh", &__Class__::getMesh, 
+                   "Regular mesh with points in which material is sampled.");
         PROVIDER(outNeff, "Effective index of the last computed mode.");
         solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
                    "Compute the mode near the specified effective index.\n\n"
@@ -1047,13 +1048,26 @@ BOOST_PYTHON_MODULE(slab)
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
-        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
-        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
-        RW_PROPERTY(klong, getKlong, setKlong, "Longitudinal propagation constant of the light [1/µm].");
-        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light [1/µm].");
+        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+                   "Wavelength of the light [nm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the wavelength, e.g. the effective index of lateral wavevector.\n");
+        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+                   "Normalized frequency of the light [1/µm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the wavelength,e.g. the effective index of lateral wavevector.\n");
+        RW_PROPERTY(klong, getKlong, setKlong,
+                   "Longitudinal propagation constant of the light [1/µm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the longitudinal component of the propagation vector and the effective index.\n");
+        RW_PROPERTY(ktran, getKtran, setKtran,
+                   "Transverse propagation constant of the light [1/µm].\n\n"
+                   "Use this property only  if you are looking for anything else than\n"
+                   "the transverse component of the propagation vector.\n");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
         RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
-        solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
+        solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, 
+                   "Type of discrete cosine transform for symmetric expansion.");
         solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
@@ -1195,10 +1209,22 @@ BOOST_PYTHON_MODULE(slab)
                             &FourierSolver3D_SymmetryLongTranWrapper::setter,
                             "Longitudinal and transverse mode symmetries.\n");
         solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
-        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
-        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
-        solver.add_property("klong", &__Class__::getKlong, &__Class__::setKlong, "Longitudinal propagation constant of the light [1/µm].");
-        solver.add_property("ktran", &__Class__::getKtran, &__Class__::setKtran, "Transverse propagation constant of the light [1/µm].");
+        solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+                   "Wavelength of the light [nm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the wavelength, e.g. the effective index of lateral wavevector.\n");
+        solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+                   "Normalized frequency of the light [1/µm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the wavelength,e.g. the effective index of lateral wavevector.\n");
+        RW_PROPERTY(klong, getKlong, setKlong,
+                   "Longitudinal propagation constant of the light [1/µm].\n\n"
+                   "Use this property only if you are looking for anything else than\n"
+                   "the longitudinal component of the propagation vector and the effective index.\n");
+        RW_PROPERTY(ktran, getKtran, setKtran,
+                   "Transverse propagation constant of the light [1/µm].\n\n"
+                   "Use this property only  if you are looking for anything else than\n"
+                   "the transverse component of the propagation vector.\n");
         solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
