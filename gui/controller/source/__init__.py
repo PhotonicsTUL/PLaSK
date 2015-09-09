@@ -203,9 +203,10 @@ class SourceWidget(QtGui.QWidget):
         menu.exec_(self.find_toolbar.mapToGlobal(pos))
 
     def _find_flags(self):
-        return \
-            (QtGui.QTextDocument.FindCaseSensitively if self.find_matchcase.isChecked() else 0) | \
-            (QtGui.QTextDocument.FindWholeWords if self.find_wholewords.isChecked() else 0)
+        flags = QtGui.QTextDocument.FindFlags()
+        if self.find_matchcase.isChecked(): flags |= QtGui.QTextDocument.FindCaseSensitively
+        if self.find_wholewords.isChecked(): flags |= QtGui.QTextDocument.FindWholeWords
+        return flags
 
     def add_action(self, name, icon, shortcut, slot):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), name, self)
@@ -295,7 +296,8 @@ class SourceWidget(QtGui.QWidget):
             self._findtext = self.find_edit.text()
         if self._findtext:
             document = self.editor.document()
-            findflags = self._find_flags() | (QtGui.QTextDocument.FindBackward if backward else 0)
+            findflags = self._find_flags()
+            if backward: findflags |= QtGui.QTextDocument.FindBackward
             found = document.find(self._findtext, cursor, findflags)
             if found.isNull() and rewind:
                 cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
