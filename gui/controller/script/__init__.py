@@ -234,7 +234,7 @@ class ScriptEditor(TextEdit):
     def mouseReleaseEvent(self, event):
         super(ScriptEditor, self).mouseReleaseEvent(event)
         row, col = self._pointer_definition
-        if event.modifiers() == Qt.CTRL and not self._pointer_blocked and row:
+        if event.modifiers() == Qt.ControlModifier and not self._pointer_blocked and row:
             cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(row))
             cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, col)
             self.setTextCursor(cursor)
