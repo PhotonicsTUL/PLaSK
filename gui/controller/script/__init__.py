@@ -211,7 +211,7 @@ class ScriptEditor(TextEdit):
             QtGui.QApplication.restoreOverrideCursor()
 
     def _get_mouse_definitions(self, event):
-        if event.modifiers() == Qt.CTRL:
+        if event.modifiers() == Qt.ControlModifier:
             if self._pointer_blocked: return
             self._pointer_blocked = True
             cursor = self.cursorForPosition(event.pos())
