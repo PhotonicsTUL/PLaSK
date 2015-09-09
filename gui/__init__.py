@@ -27,7 +27,7 @@ except KeyError:
     _DEBUG = False
 
 
-from .qt import QtGui, QtCore, qt4, QtSignal
+from .qt import QtGui, QtCore, QtSignal
 from .qt.QtCore import Qt
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
@@ -38,8 +38,6 @@ try:
     import matplotlib
 except ImportError:
     matplotlib = None
-else:
-    matplotlib.rcParams['backend.qt4'] = qt4
 
 
 from .xpldocument import XPLDocument

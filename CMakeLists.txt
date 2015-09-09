@@ -385,21 +385,13 @@ if(BUILD_PYTHON)
         if(WIN32)
             file(GLOB_RECURSE gui_files RELATIVE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/gui/*.py)
             foreach(gui_file ${gui_files})
-                if (NOT ${gui_file} MATCHES "gui/qt.*")
-                    add_custom_command(OUTPUT ${PLASK_PATH}/${gui_file}
-                                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
-                                       DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
-                    list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
-                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
-                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
-                endif()
+                add_custom_command(OUTPUT ${PLASK_PATH}/${gui_file}
+                                    COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
+                                    DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
+                list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
+                list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
+                list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
             endforeach()
-            add_custom_command(OUTPUT ${PLASK_PATH}/gui/qt.py
-                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/gui/qt.pyside.py ${PLASK_PATH}/gui/qt.py
-                               DEPENDS ${CMAKE_SOURCE_DIR}/gui/qt.pyside.py)
-            list(APPEND gui_files_copied ${PLASK_PATH}/gui/qt.py)
-            list(APPEND gui_files_pyc ${PLASK_PATH}/gui/qt.pyc)
-            list(APPEND gui_files_pyo ${PLASK_PATH}/gui/qt.pyo)
             add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_command(OUTPUT ${gui_files_pyo}  COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
             add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
@@ -417,9 +409,7 @@ if(BUILD_PYTHON)
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
-                    PATTERN gui/qt.py* EXCLUDE
             )
-            install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
         endif()
 
         install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
@@ -800,7 +790,7 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3, python (>= 2.7.0), python-numpy")
     if(BUILD_GUI)
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python-pyside")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python-pyside | python-qt4 | python-pyqt5")
     endif()
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython (>= 0.13), python-matplotlib, python-h5py")
     set(CPACK_DEBIAN_PACKAGE_SUGGESTS "ipython-qtconsole (>= 0.13)")

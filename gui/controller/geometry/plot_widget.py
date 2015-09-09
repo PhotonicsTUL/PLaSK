@@ -11,10 +11,11 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.ticker import MultipleLocator, MaxNLocator
 from matplotlib.colors import ColorConverter
-to_rgba = ColorConverter().to_rgba
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG
+
+to_rgba = ColorConverter().to_rgba
 
 
 class Cursors(object):

@@ -11,22 +11,33 @@
 # GNU General Public License for more details.
 
 import sys
+import os
 
 try:
-    qt4 = sys.qt4
-except (ImportError, AttributeError):
-    qt4 = 'PySide'
+    import matplotlib
+except ImportError:
+    QT_API = 'PySide'
+else:
+    matplotlib.use('Qt4Agg')
+    QT_API = os.environ.get('QT_API')
+    if QT_API is not None:
+        QT_API = dict(pyqt='PyQt4', pyside='PySide', pyqt5='PyQt5').get(QT_API, 'PySide')
+    else:
+        QT_API = matplotlib.rcParams['backend.qt4']
 
-if qt4 == 'PySide':
+if QT_API == 'PySide':
     from PySide import QtCore, QtGui
     QtSignal = QtCore.Signal
 else:
     import sip
-    for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"):
-        sip.setapi(n, 2)
+    for n in ("QString", "QVariant"):
+        try:
+            sip.setapi(n, 2)
+        except:
+            pass
     from PyQt4 import QtCore, QtGui
     QtSignal = QtCore.pyqtSignal
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtGui', 'qt', 'QtSignal']
+__all__ = ['QtCore', 'QtGui', 'QT_API', 'QtSignal']
