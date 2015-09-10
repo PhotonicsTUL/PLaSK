@@ -120,7 +120,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         if (n != m) {
             m = n;
             recompute_integrals = true;
-            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         }
     }
 
