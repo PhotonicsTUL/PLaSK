@@ -336,7 +336,40 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
 
-
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param num mode number
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getFieldVectorE(size_t num, double z) {
+        ParamGuard guard(this);
+        if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+            setK0(modes[num].k0);
+            klong = modes[num].klong;
+            ktran = modes[num].ktran;
+            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        }
+        return transfer->getFieldVectorE(z);
+    }
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param num mode number
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getFieldVectorH(size_t num, double z) {
+        ParamGuard guard(this);
+        if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+            setK0(modes[num].k0);
+            klong = modes[num].klong;
+            ktran = modes[num].ktran;
+            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        }
+        return transfer->getFieldVectorH(z);
+    }
+    
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

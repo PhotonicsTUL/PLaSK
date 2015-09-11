@@ -227,6 +227,38 @@ struct PLASK_SOLVER_API Transfer {
         determineReflectedFields(incident, side);
         return computeFieldMagnitude(1., dst_mesh, method, true);
     }
+    
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getFieldVectorE(double z);
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getFieldVectorH(double z);
+    
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getReflectedFieldVectorE(const cvector& incident, IncidentDirection side,double z);
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getReflectedFieldVectorH(const cvector& incident, IncidentDirection side,double z);
 };
 
 

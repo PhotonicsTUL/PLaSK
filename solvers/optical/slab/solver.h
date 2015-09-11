@@ -357,7 +357,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 #ifndef NDEBUG
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH);
 #endif
-    
+
   protected:
 
     /**

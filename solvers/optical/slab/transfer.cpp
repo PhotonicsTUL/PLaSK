@@ -183,4 +183,24 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& 
     return destination;
 }
 
+cvector Transfer::getFieldVectorE(double z) {
+    determineFields();
+    return getFieldVectorE(z, solver->getLayerFor(z));
+}
+    
+cvector Transfer::getFieldVectorH(double z) {
+    determineFields();
+    return getFieldVectorH(z, solver->getLayerFor(z));
+}
+
+cvector Transfer::getReflectedFieldVectorE(const cvector& incident, IncidentDirection side,double z) {
+    determineReflectedFields(incident, side);
+    return getFieldVectorE(z, solver->getLayerFor(z));
+}
+
+cvector Transfer::getReflectedFieldVectorH(const cvector& incident, IncidentDirection side,double z) {
+    determineReflectedFields(incident, side);
+    return getFieldVectorH(z, solver->getLayerFor(z));
+}
+
 }}} // namespace plask::solvers::slab

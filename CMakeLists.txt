@@ -120,21 +120,6 @@ if(BUILD_PYTHON)
     endif()
 endif(BUILD_PYTHON)
 
-if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
-    find_package(OpenMP 3.0)
-    if(OPENMP_FOUND)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-        if(USE_GLIBCXX_PARALLEL)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-            add_definitions("-D_GLIBCXX_PARALLEL")
-        endif(USE_GLIBCXX_PARALLEL)
-    endif()
-endif()
-
 find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIR})
 
@@ -167,6 +152,22 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes") # get rid of annoying warnings in Boost
+endif()
+
+## ---------- OpenMP -----------------------------------------------------------
+if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
+    find_package(OpenMP 3.0)
+    if(OPENMP_FOUND)
+        if(USE_GLIBCXX_PARALLEL)
+            set(OpenMP_C_FLAGS "${OpenMP_C_FLAGS} -march=native -D_GLIBCXX_PARALLEL")
+            set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS} -march=native -D_GLIBCXX_PARALLEL")
+        endif(USE_GLIBCXX_PARALLEL)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------

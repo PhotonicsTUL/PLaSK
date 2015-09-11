@@ -36,7 +36,9 @@ namespace py = boost::python;
 py::dict globals;
 
 //******************************************************************************
+
 // static PyThreadState* mainTS;   // state of the main thread
+
 namespace plask { namespace python {
 
     PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
