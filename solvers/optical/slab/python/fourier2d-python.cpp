@@ -5,12 +5,13 @@
 namespace plask { namespace solvers { namespace slab { namespace python {
 
 
-py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
+static py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
     return py::make_tuple(self.mirrors->first, self.mirrors->second);
 }
 
-void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
+
+static void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
     if (value == py::object())
         self.mirrors.reset();
     else {
@@ -30,7 +31,7 @@ void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
 }
 
 
-py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
+static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
@@ -112,7 +113,7 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     return py::object();
 }
 
-size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
+static size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("find_mode() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
@@ -139,25 +140,11 @@ size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
 }
 
 
-py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver2D::ParamGuard guard(&self);
-    self.setWavelength(lam);
-    auto data = self.getReflectedAmplitudes(polarization, incidence);
-    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
-}
-
-py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver2D::ParamGuard guard(&self);
-    self.setWavelength(lam);
-    auto data = self.getTransmittedAmplitudes(polarization, incidence);
-    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
-}
-
-dcomplex FourierSolver2D_Mode_Neff(const FourierSolver2D::Mode& mode) {
+static dcomplex FourierSolver2D_Mode_Neff(const FourierSolver2D::Mode& mode) {
     return mode.beta / mode.k0;
 }
 
-py::object FourierSolver2D_Mode__getattr__(const FourierSolver2D::Mode& mode, const std::string name) {
+static py::object FourierSolver2D_Mode__getattr__(const FourierSolver2D::Mode& mode, const std::string name) {
     auto axes = getCurrentAxes();
     if (name == "k"+axes->getNameForLong()) return py::object(mode.beta);
     if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
@@ -166,7 +153,7 @@ py::object FourierSolver2D_Mode__getattr__(const FourierSolver2D::Mode& mode, co
 }
 
 
-std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
+static std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
     AxisNames* axes = getCurrentAxes();
     std::string pol;
     switch (self.polarization) {
@@ -190,7 +177,7 @@ std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
                   self.power
                  );
 }
-std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
+static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
     AxisNames* axes = getCurrentAxes();
     std::string pol;
     switch (self.polarization) {
@@ -206,6 +193,20 @@ std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
     }
     return format("Fourier2D.Mode(lam=%1%, neff=%2%, ktran=%3%, polarization=%4%, symmetry=%5%, power=%6%)",
                   str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
+}
+
+static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    FourierSolver2D::ParamGuard guard(&self);
+    self.setWavelength(lam);
+    auto data = self.getReflectedAmplitudes(polarization, incidence);
+    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
+}
+
+static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    FourierSolver2D::ParamGuard guard(&self);
+    self.setWavelength(lam);
+    auto data = self.getTransmittedAmplitudes(polarization, incidence);
+    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
 static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {

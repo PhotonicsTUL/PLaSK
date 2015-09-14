@@ -488,6 +488,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         
         Transfer::IncidentDirection side;
         
+        double wavelength;
+        
         /// Provider of the optical electric field
         typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
 
@@ -500,6 +502,24 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         /// Return one as the number of the modes
         static size_t size() { return 1; }
 
+        LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
+            FourierSolver2D::ParamGuard guard(parent);
+            parent->setWavelength(wavelength);
+            return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
+        }
+        
+        LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
+            FourierSolver2D::ParamGuard guard(parent);
+            parent->setWavelength(wavelength);
+            return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
+        }
+        
+        LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
+            FourierSolver2D::ParamGuard guard(parent);
+            parent->setWavelength(wavelength);
+            return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
+        }
+        
         /**
          * Construct proxy.
          * \param wavelength incident light wavelength
@@ -507,19 +527,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
          * \param side incidence side
          */
         Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
-            parent(parent), polarization(polarization), side(side),
-            outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-                FourierSolver2D::ParamGuard guard(parent);
-                parent->setWavelength(wavelength);
-                return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
-            outMagneticField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-                FourierSolver2D::ParamGuard guard(parent);
-                parent->setWavelength(wavelength);
-                return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-            outLightMagnitude([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
-                FourierSolver2D::ParamGuard guard(parent);
-                parent->setWavelength(wavelength);
-                return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
+            parent(parent), polarization(polarization), side(side), wavelength(wavelength),
+            outElectricField(this, &FourierSolver2D::Reflected::getElectricField, size),
+            outMagneticField(this, &FourierSolver2D::Reflected::getMagneticField, size),
+            outLightMagnitude(this, &FourierSolver2D::Reflected::getLightMagnitude, size)
         {}
     };
 };
