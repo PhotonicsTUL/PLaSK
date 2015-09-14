@@ -4,7 +4,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../ddm2d.h"
-using namespace plask::solvers::electrical;
+using namespace plask::solvers::drift_diffusion;
 
 // template <typename Cls>
 // static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
@@ -91,18 +91,18 @@ template <typename Class> void Shockley__setattr__(const py::object& oself, cons
 
 
 template <typename GeometryT>
-inline static void register_electrical_solver(const char* name, const char* geoname)
+inline static void register_drift_diffusion_solver(const char* name, const char* geoname)
 {
     typedef DriftDiffusionModel2DSolver<GeometryT>  __Class__;
     ExportSolver<DriftDiffusionModel2DSolver<GeometryT>> solver(name, format(
 
         "%1%(name=\"\")\n\n"
 
-        "Finite element thermal solver for 2D %2% geometry."
+        "Finite element drift-diffusion electrical solver for 2D %2% geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
-    //METHOD(compute, compute, "Run electrical calculations", py::arg("loops")=0);
-    METHOD(compute, compute, "Run electrical calculations"/*, py::arg("loops")=0*/);
+    //METHOD(compute, compute, "Run namespace drift_diffusion calculations", py::arg("loops")=0);
+    METHOD(compute, compute, "Run namespace drift_diffusion calculations"/*, py::arg("loops")=0*/);
     /*METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
@@ -186,8 +186,8 @@ BOOST_PYTHON_MODULE(ddm2d)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;*/
 
-    register_electrical_solver<Geometry2DCartesian>("DriftDiffusion2D", "Cartesian");
+    register_drift_diffusion_solver<Geometry2DCartesian>("DriftDiffusion2D", "Cartesian");
 
-    //register_electrical_solver<Geometry2DCylindrical>("ShockleyCyl", "cylindrical");
+    //register_namespace drift_diffusion_solver<Geometry2DCylindrical>("ShockleyCyl", "cylindrical");
 }
 
