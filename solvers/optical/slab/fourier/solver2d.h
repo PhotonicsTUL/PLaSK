@@ -298,7 +298,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /**
      * Get electric field at the given mesh for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
@@ -315,7 +315,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /**
      * Get magnetic field at the given mesh for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
@@ -332,7 +332,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /**
      * Get light intensity for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh destination mesh
      * \param method interpolation method
@@ -379,6 +379,32 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         }
         return transfer->getFieldVectorH(z);
+    }
+
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param polarization incident field polarization
+     * \param incident incidence direction
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
+        initCalculation();
+        initTransfer(expansion, true);
+        return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
+    }
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param polarization incident field polarization
+     * \param incident incidence direction
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getReflectedFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
+        initCalculation();
+        initTransfer(expansion, true);
+        return transfer->getReflectedFieldVectorH(incidentVector(polarization), incident, z);
     }
 
   protected:
@@ -456,6 +482,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     struct Reflected {
 
+        FourierSolver2D* parent;
+        
+        Expansion::Component polarization;
+        
+        Transfer::IncidentDirection side;
+        
         /// Provider of the optical electric field
         typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
 
@@ -475,6 +507,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
          * \param side incidence side
          */
         Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
+            parent(parent), polarization(polarization), side(side),
             outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 FourierSolver2D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);

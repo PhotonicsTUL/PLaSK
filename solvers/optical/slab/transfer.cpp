@@ -193,12 +193,12 @@ cvector Transfer::getFieldVectorH(double z) {
     return getFieldVectorH(z, solver->getLayerFor(z));
 }
 
-cvector Transfer::getReflectedFieldVectorE(const cvector& incident, IncidentDirection side,double z) {
+cvector Transfer::getReflectedFieldVectorE(const cvector& incident, IncidentDirection side, double z) {
     determineReflectedFields(incident, side);
     return getFieldVectorE(z, solver->getLayerFor(z));
 }
 
-cvector Transfer::getReflectedFieldVectorH(const cvector& incident, IncidentDirection side,double z) {
+cvector Transfer::getReflectedFieldVectorH(const cvector& incident, IncidentDirection side, double z) {
     determineReflectedFields(incident, side);
     return getFieldVectorH(z, solver->getLayerFor(z));
 }

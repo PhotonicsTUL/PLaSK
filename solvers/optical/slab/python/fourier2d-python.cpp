@@ -220,8 +220,13 @@ static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
 }
 
+static py::object FourierSolver2D_getReflectedFieldVectorE(FourierSolver2D::Reflected& self, double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(self.parent->getReflectedFieldVectorE(self.polarization, self.side, z), self.parent->separated(), 2);
+}
 
-
+static py::object FourierSolver2D_getReflectedFieldVectorH(FourierSolver2D::Reflected& self, double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(self.parent->getReflectedFieldVectorH(self.polarization, self.side, z), self.parent->separated(), 2);
+}
 
 
 
@@ -339,23 +344,23 @@ void export_FourierSolver2D()
                , (py::arg("lam"), "polarization", "side")
               );
     solver.def("get_electric_coefficients", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
-               "Get Fourier expansion coefficients for electric field.\n\n"
+               "Get Fourier expansion coefficients for the electric field.\n\n"
                "This is a low-level function returning $E_l$ and/or $E_t$ Fourier expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
-               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               "    level (float): Vertical level at which the coefficients are computed.\n\n"
                ":rtype: numpy.ndarray\n"
               );
     solver.def("get_magnetic_coefficients", FourierSolver2D_getFieldVectorH, (py::arg("num"), "level"),
-               "Get Fourier expansion coefficients for magnetic field.\n\n"
+               "Get Fourier expansion coefficients for the magnetic field.\n\n"
                "This is a low-level function returning $H_l$ and/or $H_t$ Fourier expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
-               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               "    level (float): Vertical level at which the coefficients are computed.\n\n"
                ":rtype: numpy.ndarray\n"
               );
     py::scope scope = solver;
@@ -393,6 +398,24 @@ void export_FourierSolver2D()
                                             (&FourierSolver2D::Reflected::outLightMagnitude),
             format(docstring_attr_provider<FIELD_PROPERTY>(), "LightMagnitude", "2D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()
         )
+        .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
+             "Get Fourier expansion coefficients for the electric field.\n\n"
+             "This is a low-level function returning $E_l$ and/or $E_t$ Fourier expansion\n"
+             "coefficients. Please refer to the detailed solver description for their\n"
+             "interpretation.\n\n"
+             "Args:\n"
+             "    level (float): Vertical level at which the coefficients are computed.\n\n"
+             ":rtype: numpy.ndarray\n"
+            )
+        .def("get_magnetic_coefficients", FourierSolver2D_getReflectedFieldVectorH, py::arg("level"),
+             "Get Fourier expansion coefficients for the magnegtic field.\n\n"
+             "This is a low-level function returning $H_l$ and/or $H_t$ Fourier expansion\n"
+             "coefficients. Please refer to the detailed solver description for their\n"
+             "interpretation.\n\n"
+             "Args:\n"
+             "    level (float): Vertical level at which the coefficients are computed.\n\n"
+             ":rtype: numpy.ndarray\n"
+            )
     ;
 }
 

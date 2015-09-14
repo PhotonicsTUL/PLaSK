@@ -290,7 +290,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /**
      * Get electric field at the given mesh for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
@@ -306,7 +306,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /**
      * Get magnetic field at the given mesh for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
@@ -322,7 +322,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /**
      * Get light intensity for reflected light.
-     * \param Ei incident field vector
+     * \param polarization incident field polarization
      * \param incident incidence direction
      * \param dst_mesh destination mesh
      * \param method interpolation method
@@ -370,6 +370,32 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         return transfer->getFieldVectorH(z);
     }
     
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param polarization incident field polarization
+     * \param incident incidence direction
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
+        initCalculation();
+        initTransfer(expansion, true);
+        return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
+    }
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param polarization incident field polarization
+     * \param incident incidence direction
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getReflectedFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection incident, size_t num, double z) {
+        initCalculation();
+        initTransfer(expansion, true);
+        return transfer->getReflectedFieldVectorH(incidentVector(polarization), incident, z);
+    }
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -404,45 +430,52 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-   public:
+  public:
 
      /**
       * Proxy class for accessing reflected fields
       */
-     struct Reflected {
+    struct Reflected {
 
-         /// Provider of the optical electric field
-         typename ProviderFor<LightE,Geometry3D>::Delegate outElectricField;
+        FourierSolver3D* parent;
+         
+        Expansion::Component polarization;
+        
+        Transfer::IncidentDirection side;
+        
+        /// Provider of the optical electric field
+        typename ProviderFor<LightE,Geometry3D>::Delegate outElectricField;
 
-         /// Provider of the optical magnetic field
-         typename ProviderFor<LightH,Geometry3D>::Delegate outMagneticField;
+        /// Provider of the optical magnetic field
+        typename ProviderFor<LightH,Geometry3D>::Delegate outMagneticField;
 
-         /// Provider of the optical field intensity
-         typename ProviderFor<LightMagnitude,Geometry3D>::Delegate outLightMagnitude;
+        /// Provider of the optical field intensity
+        typename ProviderFor<LightMagnitude,Geometry3D>::Delegate outLightMagnitude;
 
-         /// Return one as the number of the modes
-         static size_t size() { return 1; }
+        /// Return one as the number of the modes
+        static size_t size() { return 1; }
 
-         /**
-          * Construct proxy.
-          * \param wavelength incident light wavelength
-          * \param polarization polarization of the perpendicularly incident light
-          * \param side incidence side
-          */
-         Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
-             outElectricField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+        /**
+         * Construct proxy.
+         * \param wavelength incident light wavelength
+         * \param polarization polarization of the perpendicularly incident light
+         * \param side incidence side
+         */
+        Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
+            parent(parent), polarization(polarization), side(side),
+            outElectricField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 FourierSolver3D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
-             outMagneticField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+            outMagneticField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 FourierSolver3D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-             outLightMagnitude([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+            outLightMagnitude([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
                 FourierSolver3D::ParamGuard guard(parent);
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
-         {}
+        {}
      };
 };
 

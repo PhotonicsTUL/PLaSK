@@ -117,7 +117,7 @@ void export_BesselSolverCyl()
                "    lam (complex): Wavelength.\n"
                "    k0 (complex): Normalized frequency.\n");
     solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
-               "Get Bessel expansion coefficients for electric field.\n\n"
+               "Get Bessel expansion coefficients for the electric field.\n\n"
                "This is a low-level function returning $E_s$ and $E_p$ Bessel expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
@@ -127,7 +127,7 @@ void export_BesselSolverCyl()
                ":rtype: numpy.ndarray\n"
               );
     solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
-               "Get Bessel expansion coefficients for magnetic field.\n\n"
+               "Get Bessel expansion coefficients for the magnetic field.\n\n"
                "This is a low-level function returning $H_s$ and $H_p$ Bessel expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"

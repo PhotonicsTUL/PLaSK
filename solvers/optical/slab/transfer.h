@@ -249,7 +249,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z position within the layer
      * \return electric field coefficients
      */
-    cvector getReflectedFieldVectorE(const cvector& incident, IncidentDirection side,double z);
+    cvector getReflectedFieldVectorE(const cvector& incident, IncidentDirection side, double z);
     
     /**
      * Compute magnetic field coefficients for given \a z
@@ -258,7 +258,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z position within the layer
      * \return magnetic field coefficients
      */
-    cvector getReflectedFieldVectorH(const cvector& incident, IncidentDirection side,double z);
+    cvector getReflectedFieldVectorH(const cvector& incident, IncidentDirection side, double z);
 };
 
 
