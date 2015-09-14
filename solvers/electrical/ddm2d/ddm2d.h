@@ -50,24 +50,63 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     int size;                   ///< Number of columns in the main matrix
 
-    std::vector<double> js;     ///< p-n junction parameter [A/m^2]
-    std::vector<double> beta;   ///< p-n junction parameter [1/V]
-    double pcond;               ///< p-contact namespace drift_diffusion conductivity [S/m]
-    double ncond;               ///< n-contact namespace drift_diffusion conductivity [S/m]
+    //std::vector<double> js;     ///< p-n junction parameter [A/m^2] //LP_09.2015
+    //std::vector<double> beta;   ///< p-n junction parameter [1/V] //LP_09.2015
+    //double pcond;               ///< p-contact namespace drift_diffusion conductivity [S/m] //LP_09.2015
+    //double ncond;               ///< n-contact namespace drift_diffusion conductivity [S/m] //LP_09.2015
+
+    bool mRsrh;    ///< SRH recombination is taken into account //LP_09.2015
+    bool mRrad;    ///< radiative recombination is taken into account //LP_09.2015
+    bool mRaug;    ///< Auger recombination is taken into account //LP_09.2015
+    bool mPol;     ///< polarization (GaN is the substrate) //LP_09.2015
+    bool mFullIon; ///< dopant ionization = 100% //LP_09.2015
+
+    // scalling parameters
+    double mTx;    ///< ambient temperature (K) //LP_09.2015
+    double mEx;    ///< energy (eV) //LP_09.2015
+    double mNx;    ///< maximal doping concentration (1/cm^3) //LP_09.2015
+    double mEpsRx; ///< maximal dielectric constant (-) //LP_09.2015
+    double mXx;    ///< sometimes denoted as LD (um) //LP_09.2015
+    double mKx;    ///< thermal conductivity (W/(m*K)) //LP_09.2015
+    double mMix;   ///< maximal mobility (cm^2/Vs) //LP_09.2015
+    double mRx;    ///< recombination parameter (1/(cm^3*s)) //LP_09.2015
+    double mJx;    ///< current density parameter (kA/cm2) //LP_09.2015
+    double mtx;    ///< SRH recombination lifetime (s) //LP_09.2015
+    double mBx;    ///< radiative recombination coefficient (cm^3/s) //LP_09.2015
+    double mCx;    ///< Auger recombination coefficient (cm^6/s) //LP_09.2015
+    double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
+    double mPx;    ///< polarization (C/m^2) //LP_09.2015
+
+    double mAccPsiI;
+    double mLoopPsiI;
+    std::string mStat;
+
 
     int loopno;                 ///< Number of completed loops
     double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
     Vec<2,double> maxcur;       ///< Maximum current in the structure
 
-    DataVector<double> junction_conductivity;   ///< namespace drift_diffusion conductivity for p-n junction in y-direction [S/m]
-    double default_junction_conductivity;       ///< default namespace drift_diffusion conductivity for p-n junction in y-direction [S/m]
+    //DataVector<double> junction_conductivity;   ///< namespace drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
+    //double default_junction_conductivity;       ///< default namespace drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
 
     DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
-    DataVector<double> potentials;              ///< Computed potentials
+    DataVector<double> dvN;                     ///< Cached element electron concentrations //LP_09.2015
+    DataVector<double> dvP;                     ///< Cached element hole concentrations //LP_09.2015
+    //DataVector<double> potentials;            ///< Computed potentials //LP_09.2015
+    DataVector<double> dvPsiI;                  ///< Computed initial potentials //LP_09.2015
+    DataVector<double> dvPsi;                   ///< Computed potentials //LP_09.2015
+    DataVector<double> dvFn;                    ///< Computed quasi-Fermi levels for electrons //LP_09.2015
+    DataVector<double> dvFp;                    ///< Computed quasi-Fermi levels for holes //LP_09.2015
     DataVector<Vec<2,double>> currents;         ///< Computed current densities
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
     std::vector<Active> active;                 ///< Active regions information
+
+    void setScaleParam(); ///< set scalling parameters //LP_09.2015
+    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT); ///< find initial potential //LP_09.2015
+    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT); ///< calculate electron concentration //LP_09.2015
+    double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT); ///< calculate hole concentration //LP_09.2015
+    double calcFD12(double iEta); ///< Fermi-Dirac integral of grade 1/2 //LP_09.2015
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
@@ -178,7 +217,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     size_t logfreq;         ///< Frequency of iteration progress reporting
 
     /**
-     * Run namespace drift_diffusion calculations
+     * Calculate initial potential
+     * \return max correction of potential against the last call
+     **/
+    double computePsiI(unsigned loops=1); //LP_09.2015
+
+    /**
+     * Run drift_diffusion calculations
      * \return max correction of potential against the last call
      **/
     double compute(unsigned loops=1);
@@ -189,50 +234,50 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * \param onlyactive if true only current in the active region is considered
      * \return computed total current
      */
-    double integrateCurrent(size_t vindex, bool onlyactive=false);
+    //double integrateCurrent(size_t vindex, bool onlyactive=false);// LP_09.2015
 
     /**
      * Integrate vertical total current flowing vertically through active region.
      * \param nact number of the active region
      * \return computed total current
      */
-    double getTotalCurrent(size_t nact=0);
+    //double getTotalCurrent(size_t nact=0);// LP_09.2015
 
     /**
      * Compute total electrostatic energy stored in the structure.
      * \return total electrostatic energy [J]
      */
-    double getTotalEnergy();
+    //double getTotalEnergy();// LP_09.2015
 
     /**
      * Estimate structure capacitance.
      * \return static structure capacitance [pF]
      */
-    double getCapacitance();
+    //double getCapacitance();// LP_09.2015
 
     /**
      * Compute total heat generated by the structure in unit time
      * \return total generated heat [mW]
      */
-    double getTotalHeat();
+    //double getTotalHeat();// LP_09.2015
 
     /// Return the maximum estimated error.
     double getErr() const { return toterr; }
 
     /// Return beta.
-    double getBeta(size_t n) const {
+    /*double getBeta(size_t n) const { // LP_09.2015
         if (beta.size() <= n) throw Exception("%1%: no beta given for junction %2%", this->getId(), n);
         return beta[n];
-    }
+    }*/
     /// Set new beta and invalidate the solver.
-    void setBeta(size_t n, double beta)  {
+    /*void setBeta(size_t n, double beta)  { // LP_09.2015
         if (this->beta.size() <= n) {
             this->beta.reserve(n+1); for (size_t s = this->beta.size(); s <= n; ++s) this->beta.push_back(NAN);
         }
         this->beta[n] = beta;
         this->invalidate();
-    }
-
+    }*/
+/*  // LP_09.2015
     /// Get junction thermal voltage.
     double getVt(size_t n) const {
         if (beta.size() <= n) throw Exception("%1%: no Vt given for junction %2%", this->getId(), n);
@@ -287,7 +332,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }
-
+*/
     virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     DriftDiffusionModel2DSolver(const std::string& name="");
