@@ -72,6 +72,19 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     return py::object();
 }
 
+static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
+    if (num < 0) num = self.modes.size() + num;
+    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
+}
+
+static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
+    if (num < 0) num = self.modes.size() + num;
+    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
+}
+
+
 
 void export_BesselSolverCyl()
 {
@@ -103,6 +116,26 @@ void export_BesselSolverCyl()
                "Args:\n"
                "    lam (complex): Wavelength.\n"
                "    k0 (complex): Normalized frequency.\n");
+    solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
+               "Get Bessel expansion coefficients for electric field.\n\n"
+               "This is a low-level function returning $E_s$ and $E_p$ Bessel expansion\n"
+               "coefficients. Please refer to the detailed solver description for their\n"
+               "interpretation.\n\n"
+               "Args:\n"
+               "    num (int): Computed mode number.\n"
+               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               ":rtype: numpy.ndarray\n"
+              );
+    solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
+               "Get Bessel expansion coefficients for magnetic field.\n\n"
+               "This is a low-level function returning $H_s$ and $H_p$ Bessel expansion\n"
+               "coefficients. Please refer to the detailed solver description for their\n"
+               "interpretation.\n\n"
+               "Args:\n"
+               "    num (int): Computed mode number.\n"
+               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               ":rtype: numpy.ndarray\n"
+              );
 //     solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
 //                "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                "Args:\n"

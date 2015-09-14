@@ -62,8 +62,9 @@ void ExpansionBessel::init()
         SOLVER->setMesh(make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
     rbounds = OrderedAxis(*SOLVER->getMesh());
-    if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[rbounds.size()-1] + SOLVER->pml.dist);
     size_t nseg = rbounds.size() - 1;
+    if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
+    if (SOLVER->pml.size > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.size);
     segments.resize(nseg);
 
     computeBesselZeros();

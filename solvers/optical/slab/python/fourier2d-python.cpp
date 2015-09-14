@@ -208,6 +208,23 @@ std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
                   str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
 }
 
+static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {
+    if (num < 0) num = self.modes.size() + num;
+    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.separated(), 2);
+}
+
+static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num, double z) {
+    if (num < 0) num = self.modes.size() + num;
+    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
+}
+
+
+
+
+
+
 void export_FourierSolver2D()
 {
     plask_import_array();
@@ -309,17 +326,38 @@ void export_FourierSolver2D()
                         PML_ATTRS_DOC
                         );
     RO_FIELD(modes, "Computed modes.");
-    solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
-                "Access to the reflected field.\n\n"
-                "Args:\n"
-                "    lam (float): Incident light wavelength.\n"
-                "    polarization: Specification of the incident light polarization.\n"
-                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-                "        of the non-vanishing electric field component.\n"
-                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                "        present.\n\n"
-                ":rtype: Fourier2D.Reflected\n"
-                , (py::arg("lam"), "polarization", "side"));
+    solver.def("reflected", FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
+               "Access to the reflected field.\n\n"
+               "Args:\n"
+               "    lam (float): Incident light wavelength.\n"
+               "    polarization: Specification of the incident light polarization.\n"
+               "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               "        of the non-vanishing electric field component.\n"
+               "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               "        present.\n\n"
+               ":rtype: Fourier2D.Reflected\n"
+               , (py::arg("lam"), "polarization", "side")
+              );
+    solver.def("get_electric_coefficients", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
+               "Get Fourier expansion coefficients for electric field.\n\n"
+               "This is a low-level function returning $E_l$ and/or $E_t$ Fourier expansion\n"
+               "coefficients. Please refer to the detailed solver description for their\n"
+               "interpretation.\n\n"
+               "Args:\n"
+               "    num (int): Computed mode number.\n"
+               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               ":rtype: numpy.ndarray\n"
+              );
+    solver.def("get_magnetic_coefficients", FourierSolver2D_getFieldVectorH, (py::arg("num"), "level"),
+               "Get Fourier expansion coefficients for magnetic field.\n\n"
+               "This is a low-level function returning $H_l$ and/or $H_t$ Fourier expansion\n"
+               "coefficients. Please refer to the detailed solver description for their\n"
+               "interpretation.\n\n"
+               "Args:\n"
+               "    num (int): Computed mode number.\n"
+               "    level (float): Vertical lever at which the coefficients are computed.\n\n"
+               ":rtype: numpy.ndarray\n"
+              );
     py::scope scope = solver;
 
     register_vector_of<FourierSolver2D::Mode>("Modes");

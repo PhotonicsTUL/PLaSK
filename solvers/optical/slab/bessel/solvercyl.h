@@ -126,6 +126,34 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     Expansion& getExpansion() override { return expansion; }
 
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param num mode number
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getFieldVectorE(size_t num, double z) {
+        ParamGuard guard(this);
+        setLam0(modes[num].lam0);
+        setK0(modes[num].k0);
+        setM(modes[num].m);
+        return transfer->getFieldVectorE(z);
+    }
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param num mode number
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getFieldVectorH(size_t num, double z) {
+        ParamGuard guard(this);
+        setLam0(modes[num].lam0);
+        setK0(modes[num].k0);
+        setM(modes[num].m);
+        return transfer->getFieldVectorH(z);
+    }
+    
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

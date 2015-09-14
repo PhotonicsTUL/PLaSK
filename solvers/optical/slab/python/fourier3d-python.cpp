@@ -406,37 +406,38 @@ void export_FourierSolver3D()
                 "    k0 (complex): Normalized frequency.\n"
                 "    klong (complex): Longitudinal wavevector.\n"
                 "    ktran (complex): Transverse wavevector.\n");
-        solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver3D>,
-                "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
-                "Args:\n"
-                "    lam (float or array of floats): Incident light wavelength.\n"
-                "    polarization: Specification of the incident light polarization.\n"
-                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                "        name of the non-vanishing electric field component.\n"
-                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                "        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-        solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
-                "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
-                "Args:\n"
-                "    lam (float or array of floats): Incident light wavelength.\n"
-                "    polarization: Specification of the incident light polarization.\n"
-                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-                "        of the non-vanishing electric field component.\n"
-                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                "        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-        solver.def("reflected", &FourierSolver_getReflected<FourierSolver3D>, py::with_custodian_and_ward_postcall<0,1>(),
-                "Access to the reflected field.\n\n"
-                "Args:\n"
-                "    lam (float): Incident light wavelength.\n"
-                "    polarization: Specification of the incident light polarization.\n"
-                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-                "        of the non-vanishing electric field component.\n"
-                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                "        present.\n\n"
-                ":rtype: Fourier3D.Reflected\n"
-                , (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver3D>,
+            "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+            "Args:\n"
+            "    lam (float or array of floats): Incident light wavelength.\n"
+            "    polarization: Specification of the incident light polarization.\n"
+            "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+            "        name of the non-vanishing electric field component.\n"
+            "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+            "        present.\n"
+            , (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
+            "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+            "Args:\n"
+            "    lam (float or array of floats): Incident light wavelength.\n"
+            "    polarization: Specification of the incident light polarization.\n"
+            "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+            "        of the non-vanishing electric field component.\n"
+            "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+            "        present.\n"
+            , (py::arg("lam"), "polarization", "side"));
+    solver.def("reflected", FourierSolver_getReflected<FourierSolver3D>, py::with_custodian_and_ward_postcall<0,1>(),
+               "Access to the reflected field.\n\n"
+               "Args:\n"
+               "    lam (float): Incident light wavelength.\n"
+               "    polarization: Specification of the incident light polarization.\n"
+               "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               "        of the non-vanishing electric field component.\n"
+               "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               "        present.\n\n"
+               ":rtype: Fourier3D.Reflected\n"
+               , (py::arg("lam"), "polarization", "side")
+              );
     solver.add_property("material_mesh_long", &__Class__::getLongMesh,
                         "Regular mesh with points in which material is sampled along longitudinal direction.");
     solver.add_property("material_mesh_tran", &__Class__::getTranMesh,

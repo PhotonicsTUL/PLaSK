@@ -380,7 +380,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         }
         return transfer->getFieldVectorH(z);
     }
-    
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

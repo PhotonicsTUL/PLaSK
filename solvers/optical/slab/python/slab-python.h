@@ -42,11 +42,12 @@ namespace plask { namespace solvers { namespace slab { namespace python {
 
 
 template <NPY_TYPES type>
-static inline py::object arrayFromVec2D(cvector data, bool sep) {
-    int strid = sep? 1 : 2;
-    npy_intp dims[] = { data.size() / strid };
-    npy_intp strides[] = { strid * sizeof(dcomplex) };
-    PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, type, strides, (void*)data.data(), 0, 0, NULL);
+static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
+    int strid = 2;
+    if (sep) strid = dim = 1;
+    npy_intp dims[] = { data.size() / strid, strid };
+    npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
     DataVectorWrap<const dcomplex,2> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
@@ -201,18 +202,18 @@ struct WrappedType<PML> {
 
 
 template <typename SolverT>
-void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
+static void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
 
 template <typename SolverT>
-void Solver_setK0(SolverT& self, dcomplex k0) { self.setWavelength(k0); }
+static void Solver_setK0(SolverT& self, dcomplex k0) { self.setWavelength(k0); }
 
 template <typename SolverT>
-PmlWrapper Solver_vPML(SolverT* self) {
+static PmlWrapper Solver_vPML(SolverT* self) {
     return PmlWrapper(self, &self->vpml);
 }
 
 template <typename SolverT>
-void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
+static void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
     self->vpml = *value.pml;
     self->invalidate();
 }
@@ -229,7 +230,7 @@ static void Solver_setPML(Solver* self, const PmlWrapper& value) {
 }
 
 template <typename Mode>
-dcomplex getModeWavelength(const Mode& mode) {
+static dcomplex getModeWavelength(const Mode& mode) {
     return 2e3 * M_PI / mode.k0;
 }
 
@@ -241,6 +242,7 @@ py::tuple Solver_getMatrices(Solver& self, size_t layer) {
     return py::make_tuple(py::object(RE), py::object(RH));
 }
 #endif
+
 
 
 
