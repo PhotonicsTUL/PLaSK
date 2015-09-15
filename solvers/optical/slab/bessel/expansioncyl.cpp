@@ -130,6 +130,72 @@ void ExpansionBessel::init()
 
     SOLVER->writelog(LOG_DETAIL, "Sampling structure in %d points (error: %g/%g)", raxis->size(), error/expected, SOLVER->integral_error);
     
+    // Compute integrals for permeability
+    size_t N = SOLVER->size;
+    mu_integrals.reset(N);
+    if (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.) {
+        double ib = 1. / rbounds[rbounds.size()-1];
+        size_t pmlseg = segments.size()-1;
+        
+        // Compute analytically for constant section using first and second Lommel's integrals
+        double r0 = rbounds[pmlseg];
+        double rr = r0*r0;
+        for (int i = 0; i < N; ++i) {
+            double g = factors[i] * ib; double gr = g*r0; double gg = g*g;
+            double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
+                   Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
+            mu_integrals.Vmm(i,i) = mu_integrals.Tmm(i,i) = 0.5 * rr * (Jmg*Jmg - Jg*Jm2g);
+            mu_integrals.Vpp(i,i) = mu_integrals.Tpp(i,i) = 0.5 * rr * (Jpg*Jpg - Jg*Jp2g);
+            mu_integrals.Dm(i,i) = mu_integrals.Dp(i,i)  = 0.;
+            for (int j = i+1; j < N; ++j) {
+                double k = factors[j] * ib; double kr = k*r0; double kk = k*k;
+                double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
+                    mu_integrals.Vmm(i,j) = mu_integrals.Tmm(i,j) = r0*r0 / (gg - kk) * (g * Jg * Jmk - k * Jk * Jmg);
+                    mu_integrals.Vpp(i,j) = mu_integrals.Tpp(i,j) = r0*r0 / (gg - kk) * (k * Jk * Jpg - g * Jg * Jpk);
+                    mu_integrals.Dm(i,j) = mu_integrals.Dp(i,j)  = 0.;
+            }
+        }
+
+        for (size_t ri = raxis->size()-segments[pmlseg].weights.size(), wi = 0, nr = raxis->size(); ri != nr; ++ri, ++wi) {
+            double r = raxis->at(ri);
+            assert(wi || is_zero(r-r0));
+            double w = segments[pmlseg].weights[wi] * segments[pmlseg].D;
+
+            dcomplex fac = 1. + (SOLVER->pml.factor - 1.) * pow((r-r0)/SOLVER->pml.size, SOLVER->pml.order);
+            dcomplex fac1 = 1./ fac;
+            dcomplex mu0 = 0.5 * (1./fac + fac), mu1 = 0.5 * (1./fac - fac);
+            
+            for (int i = 0; i < N; ++i) {
+                double g = factors[i] * ib; double gr = g*r;
+                double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
+                       Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
+                for (int j = i; j < N; ++j) {
+                    double k = factors[j] * ib; double kr = k*r;
+                    double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
+                    mu_integrals.Vmm(i,j) += r * Jmg * fac1 * Jmk;
+                    mu_integrals.Vpp(i,j) += r * Jpg * fac1 * Jpk;
+                    mu_integrals.Tmm(i,j) += r * Jmg * mu0 * Jmk;
+                    mu_integrals.Tpp(i,j) += r * Jpg * mu0 * Jpk;
+                    mu_integrals.Tmp(i,j) += r * Jmg * mu1 * Jpk;
+                    mu_integrals.Tpm(i,j) += r * Jpg * mu1 * Jmk;
+                    mu_integrals.Dm(i,j) -= fac1 * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
+                    mu_integrals.Dp(i,j)  -= fac1 * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
+                    if (j != i) {
+                        double Jm2k = cyl_bessel_j(m-2, kr), Jp2k = cyl_bessel_j(m+2, kr);
+                        mu_integrals.Dm(j,i) -= fac1 * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
+                        mu_integrals.Dp(j,i)  -= fac1 * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
+                    }
+                }
+            }
+        }
+    } else {
+        mu_integrals.zero();
+        for (int i = 0; i < N; ++i) {
+            double val = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; val = 0.5 * val*val;;
+            mu_integrals.Vmm(i,i) = mu_integrals.Vpp(i,i) = mu_integrals.Tmm(i,i) = mu_integrals.Tpp(i,i) = val;
+        }
+    }
+    
     // Allocate memory for integrals
     size_t nlayers = lcount();
     layers_integrals.resize(nlayers);
@@ -146,6 +212,7 @@ void ExpansionBessel::reset()
 {
     segments.clear();
     layers_integrals.clear();
+    mu_integrals.reset();
     iepsilons.clear();
     factors.clear();
     initialized = false;
