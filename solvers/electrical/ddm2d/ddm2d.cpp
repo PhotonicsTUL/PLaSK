@@ -32,10 +32,10 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.), // LP_09.2015
     maxerr(0.05),
     heatmet(HEAT_JOULES),
-    outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
-    outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
-    outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
-    outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
+//     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
+//     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
+//     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
+//     outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
@@ -553,13 +553,13 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
-    */ // LP_09.2015
 
     saveConductivities();
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
+*/ // LP_09.2015
 
     return toterr;
 }

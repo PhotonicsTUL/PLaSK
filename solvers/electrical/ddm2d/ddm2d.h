@@ -115,13 +115,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Load conductivities
     void loadConductivities();
-
+/*
     /// Save conductivities of active region
     void saveConductivities();
 
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
-
+*/
     /// Matrix solver
     void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Invalidate the data
     virtual void onInvalidate() override;
-
+/*
     /// Get info on active region
     void setActiveRegions();
 
@@ -149,7 +149,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
         setActiveRegions();
     }
-
+*/
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
@@ -197,7 +197,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Boundary condition
     BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
-
+/*
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
@@ -205,7 +205,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
 
     typename ProviderFor<Conductivity, Geometry2DType>::Delegate outConductivity;
-
+*/
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 
     ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
@@ -342,7 +342,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     ~DriftDiffusionModel2DSolver();
 
   protected:
-
+/*
     const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
     const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
@@ -350,6 +350,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     const LazyData<Vec<2>> getCurrentDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
     const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+*/
 };
 
 }} //namespaces
