@@ -201,12 +201,24 @@ void export_BesselSolverCyl()
     solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
-    METHOD(ieps_minus, ieps_minus, "J_{m-1}(gr) eps^{-1}(r) J_{m-1}(kr) r dr", "layer");
-    METHOD(ieps_plus, ieps_plus, "J_{m+1}(gr) eps^{-1}(r) J_{m+1}(kr) r dr", "layer");
-    METHOD(eps_minus, eps_minus, "J_{m-1}(gr) eps(r) J_{m-1}(kr) r dr", "layer");
-    METHOD(eps_plus, eps_plus, "J_{m+1}(gr) eps(r) J_{m+1}(kr) r dr", "layer");
-    METHOD(deps_minus, deps_minus, "J_{m-1}(gr) deps/dr J_{m}(kr) r dr", "layer");
-    METHOD(deps_plus, deps_plus, "_{m+1}(gr) deps/dr J_{m}(kr) r dr", "layer");
+    
+    METHOD(epsVmm, epsVmm, "J_{m-1}(gr) \\varepsilon^{-1} J_{m-1}(kr) r dr", "layer");
+    METHOD(epsVpp, epsVpp, "J_{m+1}(gr) \\varepsilon^{-1} J_{m+1}(kr) r dr", "layer");
+    METHOD(epsTmm, epsTmm, "J_{m-1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr", "layer");
+    METHOD(epsTpp, epsTpp, "J_{m+1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr", "layer");
+    METHOD(epsTmp, epsTmp, "J_{m-1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr", "layer");
+    METHOD(epsTpm, epsTpm, "J_{m+1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr", "layer");
+    METHOD(epsDm, epsDm, "J_{m-1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
+    METHOD(epsDp, epsDp, "J_{m+1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
+
+    METHOD(muVmm, muVmm, "J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr");
+    METHOD(muVpp, muVpp, "J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr");
+    METHOD(muTmm, muTmm, "J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
+    METHOD(muTpp, muTpp, "J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
+    METHOD(muTmp, muTmp, "J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
+    METHOD(muTpm, muTpm, "J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
+    METHOD(muDm, muDm, "J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
+    METHOD(muDp, muDp, "J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
 #endif
 
     py::scope scope = solver;

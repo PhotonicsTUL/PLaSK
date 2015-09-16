@@ -202,12 +202,23 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     size_t idxp(size_t i) { return 2 * i + 1; }
 
 #ifndef NDEBUG
-    cmatrix itmm(size_t layer);
-    cmatrix itpp(size_t layer);
-    cmatrix tmm(size_t layer);
-    cmatrix tpp(size_t layer);
-    cmatrix dtmm(size_t layer);
-    cmatrix dtpp(size_t layer);
+    cmatrix epsVmm(size_t layer);
+    cmatrix epsVpp(size_t layer);
+    cmatrix epsTmm(size_t layer);
+    cmatrix epsTpp(size_t layer);
+    cmatrix epsTmp(size_t layer);
+    cmatrix epsTpm(size_t layer);
+    cmatrix epsDm(size_t layer);
+    cmatrix epsDp(size_t layer);
+
+    cmatrix muVmm();
+    cmatrix muVpp();
+    cmatrix muTmm();
+    cmatrix muTpp();
+    cmatrix muTmp();
+    cmatrix muTpm();
+    cmatrix muDm();
+    cmatrix muDp();
 #endif
                                               
 };

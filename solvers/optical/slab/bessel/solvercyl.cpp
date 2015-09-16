@@ -144,35 +144,86 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 }
 
 #ifndef NDEBUG
-cmatrix BesselSolverCyl::ieps_minus(size_t layer) {
+cmatrix BesselSolverCyl::epsVmm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.ieps_minus(layer);
+    return expansion.epsVmm(layer);
 }
-cmatrix BesselSolverCyl::ieps_plus(size_t layer) {
+cmatrix BesselSolverCyl::epsVpp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.ieps_plus(layer);
+    return expansion.epsVpp(layer);
 }
-cmatrix BesselSolverCyl::eps_minus(size_t layer) {
+cmatrix BesselSolverCyl::epsTmm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.eps_minus(layer);
+    return expansion.epsTmm(layer);
 }
-cmatrix BesselSolverCyl::eps_plus(size_t layer) {
+cmatrix BesselSolverCyl::epsTpp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.eps_plus(layer);
+    return expansion.epsTpp(layer);
 }
-cmatrix BesselSolverCyl::deps_minus(size_t layer) {
+cmatrix BesselSolverCyl::epsTmp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.deps_minus(layer);
+    return expansion.epsTmp(layer);
 }
-cmatrix BesselSolverCyl::deps_plus(size_t layer) {
+cmatrix BesselSolverCyl::epsTpm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.deps_plus(layer);
+    return expansion.epsTpm(layer);
+}
+cmatrix BesselSolverCyl::epsDm(size_t layer) {
+    initCalculation();
+    computeIntegrals();
+    return expansion.epsDm(layer);
+}
+cmatrix BesselSolverCyl::epsDp(size_t layer) {
+    initCalculation();
+    computeIntegrals();
+    return expansion.epsDp(layer);
+}
+
+cmatrix BesselSolverCyl::muVmm() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muVmm();
+}
+cmatrix BesselSolverCyl::muVpp() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muVpp();
+}
+cmatrix BesselSolverCyl::muTmm() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muTmm();
+}
+cmatrix BesselSolverCyl::muTpp() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muTpp();
+}
+cmatrix BesselSolverCyl::muTmp() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muTmp();
+}
+cmatrix BesselSolverCyl::muTpm() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muTpm();
+}
+cmatrix BesselSolverCyl::muDm() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muDm();
+}
+cmatrix BesselSolverCyl::muDp() {
+    initCalculation();
+    computeIntegrals();
+    return expansion.muDp();
 }
 #endif
 
