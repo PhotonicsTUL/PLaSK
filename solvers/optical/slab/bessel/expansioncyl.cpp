@@ -192,11 +192,11 @@ void ExpansionBessel::init()
     } else {
         mu_integrals.zero();
         for (int i = 0; i < N; ++i) {
-            double val = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; val = 0.5 * val*val;;
-            mu_integrals.Vmm(i,i) = mu_integrals.Vpp(i,i) = mu_integrals.Tmm(i,i) = mu_integrals.Tpp(i,i) = val;
+            double eta = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
+            mu_integrals.Vmm(i,i) = mu_integrals.Vpp(i,i) = mu_integrals.Tmm(i,i) = mu_integrals.Tpp(i,i) = eta;
         }
     }
-    
+
     // Allocate memory for integrals
     size_t nlayers = lcount();
     layers_integrals.resize(nlayers);
@@ -262,7 +262,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         pmli -= segments[pmlseg].weights.size();
         pmlr = rbounds[pmlseg];
     }
-    
+
     // Compute integrals
     for (size_t ri = 0, wi = 0, seg = 0, nw = segments[0].weights.size(); ri != nr; ++ri, ++wi) {
         if (wi == nw) {
@@ -300,10 +300,11 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         dcomplex epsa = 0.5 * (eps.c11 + eps.c00), deps = 0.5 * (eps.c11 - eps.c00);
         iepsilons[layer][ri] = ieps;
         
-        if (ri == 0) EPS = eps;
+        if (ri == 0)
+            EPS = eps;
         else {
             auto delta = eps - EPS;
-            if (!is_zero(delta.c00) || !is_zero(delta.c11) || !is_zero(delta.c22)) diagonals[layer] = false;
+            if (!is_zero(delta.c00) || !is_zero(delta.c11) || !is_zero(delta.c22) || !is_zero(deps)) diagonals[layer] = false;
         }
         
         epsa *= w; deps *= w; ieps *= w;
@@ -331,15 +332,16 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
             }
         }
     }
-    
+
     if (diagonals[layer]) {
         SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
-        // integrals.zero();
-        // for (int i = 0; i < N; ++i) {
-        //     double val = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; val = 0.5 * val*val;;
-        //     integrals.ieps_minus(i,i) = integrals.ieps_plus(i,i) = val / eps0;
-        //     integrals.eps_minus(i,i) = integrals.eps_plus(i,i) = val * eps0;
-        // }
+        integrals.zero();
+        dcomplex epst = 0.5 * (EPS.c00 + EPS.c11), iepsv = 1. / EPS.c22;
+        for (int i = 0; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
+            integrals.Vmm(i,i) = integrals.Vpp(i,i) = eta * iepsv;
+            integrals.Tmm(i,i) = integrals.Tpp(i,i) = eta * epst;
+        }
     }
 }
 
@@ -497,11 +499,11 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
             double k = factors[j] / b;
-            RH(is, js) = i2eta * k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) - mu.Tpp(i,j) + mu.Tpm(i,j));
-            RH(ip, js) = i2eta * k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) + mu.Tpp(i,j) - mu.Tpm(i,j));
-            RH(is, jp) = - i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) - mu.Tpp(i,j) + mu.Tpm(i,j))
-                                  - ik0 * k* (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j)));
-            RH(ip, jp) = - i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) + mu.Tpp(i,j) - mu.Tpm(i,j))
+            RH(is, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) + mu.Tpp(i,j) - mu.Tpm(i,j));
+            RH(ip, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) - mu.Tpp(i,j) + mu.Tpm(i,j));
+            RH(is, jp) = i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) - mu.Tpp(i,j) - mu.Tpm(i,j))
+                                - ik0 * k* (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j)));
+            RH(ip, jp) = i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) + mu.Tpp(i,j) + mu.Tpm(i,j))
                                   - ik0 * k* (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j)));
         }
     }
@@ -509,16 +511,15 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
         double i2eta = 1. / (cyl_bessel_j(m+1, factors[i]) * b); i2eta *= i2eta;
-        double gg = factors[i] / b; gg *= gg;
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
             double k = factors[j] / b;
-            RE(is, js) = i2eta * k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
-            RE(ip, js) = i2eta * k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
-            RE(is, jp) = - i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j))
-                                  - ik0 * k* (k * (mu.Vmm(i,j) - mu.Vpp(i,j)) + mu.Dm(i,j) + mu.Dp(i,j)));
-            RE(ip, jp) = - i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j))
-                                  - ik0 * k* (k * (mu.Vmm(i,j) + mu.Vpp(i,j)) + mu.Dm(i,j) - mu.Dp(i,j)));
+            RE(is, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j))
+                                - ik0 * k* (k * (mu.Vmm(i,j) + mu.Vpp(i,j)) + mu.Dm(i,j) - mu.Dp(i,j)));
+            RE(ip, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j))
+                                - ik0 * k* (k * (mu.Vmm(i,j) - mu.Vpp(i,j)) + mu.Dm(i,j) + mu.Dp(i,j)));
+            RE(is, jp) = i2eta *  k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
+            RE(ip, jp) = i2eta *  k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
         }
     }
     #undef mu
