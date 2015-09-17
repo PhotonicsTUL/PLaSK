@@ -2,11 +2,11 @@
 
 <defines>
   <define name="m" value="0"/>
-  <define name="mesa" value="40."/>
+  <define name="mesa" value="20."/>
   <define name="x" value="0.03185 #3"/>
   <define name="aprt" value="8."/>
-  <define name="estart" value="981.0"/>
-  <define name="bstart" value="981.0"/>
+  <define name="estart" value="980.5"/>
+  <define name="bstart" value="980.5"/>
 </defines>
 
 <materials>
@@ -64,8 +64,9 @@
 <solvers>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion size="40"/>
+    <expansion lam0="980." size="40"/>
     <interface object="QW"/>
+    <pml dist="0." factor="1-2j" size="4"/>
   </optical>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="vcsel"/>

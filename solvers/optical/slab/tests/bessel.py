@@ -23,7 +23,7 @@ class Disk(unittest.TestCase):
 
     def setUp(self):
         
-        R = 19.
+        R = 9.
         N = 7
         
         self.f = f = 1
@@ -50,7 +50,13 @@ class Disk(unittest.TestCase):
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
         self.solver.size = N
-        self.solver.pml.dist = 20./f - R
+        
+        self.solver.pml.dist = 10./f - R
+        
+        self.solver.pml.size = 2.
+        self.solver.pml.factor = 1.-2.j
+        self.solver.pml.shape = 0
+
         self.solver.lam0 = 1550/f
         
         self.layer = 0
@@ -64,39 +70,39 @@ class Disk(unittest.TestCase):
             self.solver.m = 1
             set_printoptions(precision=6, linewidth=180, suppress=True)
             epsVmm = self.solver.epsVmm(self.layer)
-            print "\nepsVmm ="
-            print real(epsVmm)
-            print "\nepsVpp ="
-            print real(self.solver.epsVpp(self.layer))
-            print "\nepsTmm ="
-            print real(self.solver.epsTmm(self.layer))
-            print "\nepsTpp ="
-            print real(self.solver.epsTpp(self.layer))
-            print "\nepsTmp ="
-            print real(self.solver.epsTmp(self.layer))
-            print "\nepsTpm ="
-            print real(self.solver.epsTpm(self.layer))
-            print "\nepsDm ="
-            print real(self.solver.epsDm(self.layer))
-            print "\nepsDp ="
-            print real(self.solver.epsDp(self.layer))
+            print("\nepsVmm =")
+            print(real(epsVmm))
+            print("\nepsVpp =")
+            print(real(self.solver.epsVpp(self.layer)))
+            print("\nepsTmm =")
+            print(real(self.solver.epsTmm(self.layer)))
+            print("\nepsTpp =")
+            print(real(self.solver.epsTpp(self.layer)))
+            print("\nepsTmp =")
+            print(real(self.solver.epsTmp(self.layer)))
+            print("\nepsTpm =")
+            print(real(self.solver.epsTpm(self.layer)))
+            print("\nepsDm =")
+            print(real(self.solver.epsDm(self.layer)))
+            print("\nepsDp =")
+            print(real(self.solver.epsDp(self.layer)))
             print
-            print "\nmuVmm ="
-            print real(self.solver.muVmm())
-            print "\nmuVpp ="
-            print real(self.solver.muVpp())
-            print "\nmuTmm ="
-            print real(self.solver.muTmm())
-            print "\nmuTpp ="
-            print real(self.solver.muTpp())
-            print "\nmuTmp ="
-            print real(self.solver.muTmp())
-            print "\nmuTpm ="
-            print real(self.solver.muTpm())
-            print "\nmuDm ="
-            print real(self.solver.muDm())
-            print "\nmuDp ="
-            print real(self.solver.muDp())
+            print("\nmuVmm =")
+            print(real(self.solver.muVmm()))
+            print("\nmuVpp =")
+            print(real(self.solver.muVpp()))
+            print("\nmuTmm =")
+            print(real(self.solver.muTmm()))
+            print("\nmuTpp =")
+            print(real(self.solver.muTpp()))
+            print("\nmuTmp =")
+            print(real(self.solver.muTmp()))
+            print("\nmuTpm =")
+            print(real(self.solver.muTpm()))
+            print("\nmuDm =")
+            print(real(self.solver.muDm()))
+            print("\nmuDp =")
+            print(real(self.solver.muDp()))
             print
         except AttributeError:
             import traceback
@@ -111,12 +117,12 @@ class Disk(unittest.TestCase):
             pass
         else:
             set_printoptions(precision=2, linewidth=240, suppress=True)
-            print "\nRH = "
-            print abs(RH)
-            print "\nRE = "
-            print abs(RE)
-            print "\nQE = "
-            print abs(dot(RH,RE))
+            print("\nRH = ")
+            print(abs(RH))
+            print("\nRE = ")
+            print(abs(RE))
+            print("\nQE = ")
+            print(abs(dot(RH,RE)))
             print
 
     def plot_determinant(self):

@@ -146,13 +146,13 @@ void ExpansionBessel::init()
                    Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
             mu_integrals.Vmm(i,i) = mu_integrals.Tmm(i,i) = 0.5 * rr * (Jmg*Jmg - Jg*Jm2g);
             mu_integrals.Vpp(i,i) = mu_integrals.Tpp(i,i) = 0.5 * rr * (Jpg*Jpg - Jg*Jp2g);
-            mu_integrals.Dm(i,i) = mu_integrals.Dp(i,i)  = 0.;
+            mu_integrals.Tmp(i,i) = mu_integrals.Tpm(i,i) = mu_integrals.Dm(i,i) = mu_integrals.Dp(i,i) = 0.;
             for (int j = i+1; j < N; ++j) {
                 double k = factors[j] * ib; double kr = k*r0; double kk = k*k;
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
-                    mu_integrals.Vmm(i,j) = mu_integrals.Tmm(i,j) = r0*r0 / (gg - kk) * (g * Jg * Jmk - k * Jk * Jmg);
-                    mu_integrals.Vpp(i,j) = mu_integrals.Tpp(i,j) = r0*r0 / (gg - kk) * (k * Jk * Jpg - g * Jg * Jpk);
-                    mu_integrals.Dm(i,j) = mu_integrals.Dp(i,j)  = 0.;
+                    mu_integrals.Vmm(i,j) = mu_integrals.Tmm(i,j) = r0 / (gg - kk) * (g * Jg * Jmk - k * Jk * Jmg);
+                    mu_integrals.Vpp(i,j) = mu_integrals.Tpp(i,j) = r0 / (gg - kk) * (k * Jk * Jpg - g * Jg * Jpk);
+                    mu_integrals.Tmp(i,j) = mu_integrals.Tpm(i,j) = mu_integrals.Dm(i,j) = mu_integrals.Dp(i,j) = 0.;
             }
         }
 
@@ -161,10 +161,11 @@ void ExpansionBessel::init()
             double w = segments[pmlseg].weights[wi] * segments[pmlseg].D;
 
             dcomplex mu = 1. + (SOLVER->pml.factor - 1.) * pow((r-r0)/SOLVER->pml.size, SOLVER->pml.order);
-            dcomplex imu = 1./ mu;
+            dcomplex imu = 1. / mu;
             dcomplex mua = 0.5 * (imu + mu), dmu = 0.5 * (imu - mu);
+            dcomplex imu1 = imu - 1.;
             
-            mu *= w; imu *= w; mua = w; dmu *= w;
+            imu *= w; mua *= w; dmu *= w; imu1 *= w;
             
             for (int i = 0; i < N; ++i) {
                 double g = factors[i] * ib; double gr = g*r;
@@ -179,12 +180,12 @@ void ExpansionBessel::init()
                     mu_integrals.Tpp(i,j) += r * Jpg * mua * Jpk;
                     mu_integrals.Tmp(i,j) += r * Jmg * dmu * Jpk;
                     mu_integrals.Tpm(i,j) += r * Jpg * dmu * Jmk;
-                    mu_integrals.Dm(i,j) -= imu * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
-                    mu_integrals.Dp(i,j)  -= imu * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
+                    mu_integrals.Dm(i,j) -= imu1 * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
+                    mu_integrals.Dp(i,j) -= imu1 * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
                     if (j != i) {
                         double Jm2k = cyl_bessel_j(m-2, kr), Jp2k = cyl_bessel_j(m+2, kr);
-                        mu_integrals.Dm(j,i) -= imu * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
-                        mu_integrals.Dp(j,i)  -= imu * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
+                        mu_integrals.Dm(j,i) -= imu1 * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
+                        mu_integrals.Dp(j,i) -= imu1 * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
                     }
                 }
             }
@@ -476,10 +477,7 @@ cmatrix ExpansionBessel::muDp() {
             result(i,j) = mu_integrals.Dp(i,j);
     return result;
 }
-
-
 #endif
-                                              
 
 
 void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
