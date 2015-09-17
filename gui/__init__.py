@@ -408,7 +408,7 @@ class MainWindow(QtGui.QMainWindow):
             msgbox.exec_()
             return False
         else:
-            update_recent_files(filename)
+            update_recent_files(os.path.abspath(filename))
             return True
 
     def save(self):
@@ -691,15 +691,7 @@ def main():
     else:
         if len(sys.argv) > 1:
             filename = os.path.abspath(sys.argv[1])
-            global RECENT
-            try:
-                RECENT.remove(filename)
-            except ValueError:
-                pass
-            RECENT.append(filename)
-            RECENT = RECENT[:10]
-            CONFIG['session/recent_files'] = RECENT
-            WINDOWS.add(MainWindow(sys.argv[1]))
+            WINDOWS.add(MainWindow(filename))
         else:
             WINDOWS.add(MainWindow())
 

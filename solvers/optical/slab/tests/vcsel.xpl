@@ -4,9 +4,10 @@
   <define name="m" value="0"/>
   <define name="mesa" value="40."/>
   <define name="x" value="0.03185 #3"/>
-  <define name="aprt" value="8."/>
-  <define name="estart" value="981.0"/>
-  <define name="bstart" value="981.0"/>
+  <define name="aprt" value="2."/>
+  <define name="estart" value="978.5"/>
+  <define name="bstart" value="{estart}"/>
+  <define name="pml" value="1."/>
 </defines>
 
 <materials>
@@ -66,6 +67,7 @@
     <geometry ref="vcsel"/>
     <expansion size="40"/>
     <interface object="QW"/>
+    <pml factor="1-3j" size="2."/>
   </optical>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="vcsel"/>

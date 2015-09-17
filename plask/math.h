@@ -213,18 +213,22 @@ struct PLASK_API IllFormatedComplex: public Exception {
  * @throw IllFormatedComplex when @p str_to_parse is in bad format
  */
 template <typename T>
-std::complex<T> parse_complex(const std::string& str_to_parse) {
+std::complex<T> parse_complex(std::string str_to_parse) {
+    boost::trim(str_to_parse);
+    if (str_to_parse.length() && str_to_parse[0] == '(' && str_to_parse[str_to_parse.length()-1] == ')' &&
+        str_to_parse.find(',') == std::string::npos)
+        str_to_parse = str_to_parse.substr(1, str_to_parse.length()-2);
     std::istringstream to_parse(str_to_parse);
     auto check_eof = [&] () {
-        if (!to_parse.eof()) {  //we require end-of stream here
+        if (!to_parse.eof()) {  // we require end-of stream here
             char c;
-            to_parse >> c;  //we chack if there is non-white character, this operation should fail
+            to_parse >> c;  // we check if there is non-white character, this operation should fail
             if (to_parse) throw IllFormatedComplex(str_to_parse);
         }
     };
     T real, imag;
     to_parse >> real;
-    if (to_parse.fail()) {  //we will try standard >> operator
+    if (to_parse.fail()) {  // we will try standard >> operator
         to_parse.clear(); to_parse.str(str_to_parse);
         std::complex<T> res;
         to_parse >> res;
@@ -237,7 +241,7 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
     to_parse >> c;
     if (to_parse.fail()) throw IllFormatedComplex(str_to_parse);
     if (to_parse.eof()) return std::complex<T>(real);
-    if (c == 'i' || c == 'j') { //only imag. part is given
+    if (c == 'i' || c == 'j') { // only imaginary part is given
         imag = real;
         real = 0.0;
     } else if (c == '+' || c == '-') {
@@ -251,7 +255,7 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
     return std::complex<T>(real, imag);
 }
 
-extern template PLASK_API std::complex<double> parse_complex<double>(const std::string& str_to_parse);
+extern template PLASK_API std::complex<double> parse_complex<double>(std::string str_to_parse);
 
 
 /**

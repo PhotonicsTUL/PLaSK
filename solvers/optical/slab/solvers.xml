@@ -317,7 +317,7 @@
       </attr>
     </tag>
 
-    <tag name="pml" label="Horizontal Pmls">
+    <tag name="pml" label="Radial Pmls">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
