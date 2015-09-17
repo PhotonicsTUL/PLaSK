@@ -2,7 +2,7 @@
 
 namespace plask {
 
-template std::complex<double> parse_complex<double>(const std::string& str_to_parse);
+template std::complex<double> parse_complex<double>(std::string str_to_parse);
 
 AccurateSum &AccurateSum::operator=(double v) {
     s = v;
