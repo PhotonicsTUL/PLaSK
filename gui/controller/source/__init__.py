@@ -333,6 +333,27 @@ class SourceWidget(QtGui.QWidget):
         if not self.find_selection.isChecked():
             self._find(cont=True)
 
+    def _replace_regexp(self, cursor):
+        self._findtext.indexIn(self.editor.toPlainText(), cursor.selectionStart())  # guaranteed to succeed
+        text = self.replace_edit.text()
+        result = ""
+        s = 0
+        ignore = False
+        for i, c in enumerate(text):
+            if text[i] in '0123456789\\' and i != 0 and text[i-1] == '\\' and not ignore:
+                result += text[s:i-1]
+                s = i + 1
+                if text[i] == '\\':
+                    result += '\\'
+                    ignore = True
+                else:
+                    g = int(text[i])
+                    result += self._findtext.cap(g)
+            elif ignore:
+                ignore = False
+        result += text[s:]
+        return result
+
     def replace_next(self, rewind=True, theend=None):
         if theend is None and self.find_selection.isChecked():
             cursor = self.editor.textCursor()
@@ -348,7 +369,7 @@ class SourceWidget(QtGui.QWidget):
         start = cursor.selectionStart()
         oldlen = self.editor.document().characterCount()
         if isinstance(self._findtext, QtCore.QRegExp):
-            cursor.insertText(self._findtext.replace(cursor.selectedText(), self.replace_edit.text()))
+            cursor.insertText(self._replace_regexp(cursor))
         else:
             cursor.insertText(self.replace_edit.text())
         if theend is not None:
