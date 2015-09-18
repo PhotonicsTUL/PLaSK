@@ -334,7 +334,8 @@ class SourceWidget(QtGui.QWidget):
             self._find(cont=True)
 
     def _replace_regexp(self, cursor):
-        self._findtext.indexIn(self.editor.toPlainText(), cursor.selectionStart())  # guaranteed to succeed
+        block = cursor.block()
+        self._findtext.indexIn(block.text(), cursor.selectionStart()-block.position())  # guaranteed to succeed
         text = self.replace_edit.text()
         result = ""
         s = 0
