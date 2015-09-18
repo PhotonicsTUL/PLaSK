@@ -92,7 +92,7 @@ box = GEO.vcsel.bbox
 z = GEO.vcsel.get_object_bboxes(GEO.QW)[0].center.z
 rmsh = mesh.Rectangular2D(linspace(-10., 10., 2001), [z])
 
-desc = u"aprt:{:.1f}µm PML:{}".format(aprt, pml)
+desc = u" (aprt:{:.1f}µm PML:{}").format(aprt, pml)
 
 efield = efm.outLightMagnitude(em, rmsh)
 
