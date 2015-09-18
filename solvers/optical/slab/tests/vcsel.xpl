@@ -2,7 +2,7 @@
 
 <defines>
   <define name="m" value="0"/>
-  <define name="mesa" value="40."/>
+  <define name="mesa" value="10."/>
   <define name="x" value="0.03185 #3"/>
   <define name="aprt" value="2."/>
   <define name="estart" value="978.5"/>
@@ -63,15 +63,15 @@
 </geometry>
 
 <solvers>
-  <optical name="bessel" solver="BesselCyl" lib="slab">
-    <geometry ref="vcsel"/>
-    <expansion size="40"/>
-    <interface object="QW"/>
-    <pml factor="1-3j" size="2."/>
-  </optical>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="vcsel"/>
     <mode emission="top" lam0="980." vat="0" vlam="981."/>
+  </optical>
+  <optical name="bessel" solver="BesselCyl" lib="slab">
+    <geometry ref="vcsel"/>
+    <expansion lam0="980." size="100"/>
+    <interface object="QW"/>
+    <pml dist="30." factor="{pml}" size="2."/>
   </optical>
 </solvers>
 
@@ -92,12 +92,13 @@ box = GEO.vcsel.bbox
 z = GEO.vcsel.get_object_bboxes(GEO.QW)[0].center.z
 rmsh = mesh.Rectangular2D(linspace(-10., 10., 2001), [z])
 
+desc = u" (aprt:{:.1f}µm PML:{}").format(aprt, pml)
+
 efield = efm.outLightMagnitude(em, rmsh)
 
 N0 = bessel.size
 
-
-NN = range(20, 81, 4)
+NN = range(20, 151, 10)
 lams = []
 times = []
 
@@ -119,7 +120,7 @@ plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
 legend(loc='best')
 ylabel("Light magnitude [a.u.]")
-gcf().canvas.set_window_title(u"Mode profiles — base")
+gcf().canvas.set_window_title(u"Mode profiles — base" + desc)
 tight_layout(0.2)
 
 lams = array(lams)
@@ -138,7 +139,7 @@ plot(NN, Q, '.', color=cc[1])
 axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
 gca().ticklabel_format(useOffset=False)
 ylabel("Q-factor [-]", color=cc[1])
-gcf().canvas.set_window_title(u"Convergence — base")
+gcf().canvas.set_window_title(u"Convergence — base" + desc)
 tight_layout(0.2)
 
 figure()
@@ -146,7 +147,7 @@ plot(NN, times, '-', color=cc[2])
 plot(NN, times, '.', color=cc[2])
 xlabel("Base size")
 ylabel("Computation time [s]")
-gcf().canvas.set_window_title(u"Computation time — base")
+gcf().canvas.set_window_title(u"Computation time — base" + desc)
 tight_layout(0.2)
 
 
@@ -179,7 +180,7 @@ plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
 legend(loc='best')
 ylabel("Light magnitude [a.u.]")
-gcf().canvas.set_window_title(u"Mode profiles — mesa")
+gcf().canvas.set_window_title(u"Mode profiles — mesa" + desc)
 tight_layout(0.2)
 
 lams = array(lams)
@@ -198,7 +199,7 @@ plot(mesas, Q, '.', color=cc[1])
 axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
 gca().ticklabel_format(useOffset=False)
 ylabel("Q-factor [-]", color=cc[1])
-gcf().canvas.set_window_title(u"Convergence — mesa")
+gcf().canvas.set_window_title(u"Convergence — mesa" + desc)
 tight_layout(0.2)
 
 

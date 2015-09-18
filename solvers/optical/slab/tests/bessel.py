@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 
 from numpy import *
@@ -22,7 +23,7 @@ class Disk(unittest.TestCase):
 
     def setUp(self):
         
-        R = 19.
+        R = 9.
         N = 7
         
         self.f = f = 1
@@ -49,36 +50,65 @@ class Disk(unittest.TestCase):
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
         self.solver.size = N
-        self.solver.pml.dist = 20./f - R
+        
+        self.solver.pml.dist = 10./f - R
+        
+        self.solver.pml.size = 2.
+        self.solver.pml.factor = 1.-2.j
+        self.solver.pml.shape = 0
+
         self.solver.lam0 = 1550/f
         
         self.layer = 0
         
+    def plot_geometry(self):
         plot_geometry(self.geometry, fill=True, margin=0.1)
 
-    def testIntegrals(self):
+    def print_integrals(self):
         try:
             self.solver.wavelength = 1500/self.f
             self.solver.m = 1
             set_printoptions(precision=6, linewidth=180, suppress=True)
-            ieps_minus = self.solver.ieps_minus(self.layer)
-            print "\nieps minus ="
-            print real(ieps_minus)
-            print "\nieps plus ="
-            print real(self.solver.ieps_plus(self.layer))
-            print "\neps minus ="
-            print real(self.solver.eps_minus(self.layer))
-            print "\neps plus ="
-            print real(self.solver.eps_plus(self.layer))
-            print "\ndeps minus ="
-            print real(self.solver.deps_minus(self.layer))
-            print "\ndeps plus ="
-            print real(self.solver.deps_pluself.Rs(self.layer))
+            epsVmm = self.solver.epsVmm(self.layer)
+            print("\nepsVmm =")
+            print(real(epsVmm))
+            print("\nepsVpp =")
+            print(real(self.solver.epsVpp(self.layer)))
+            print("\nepsTmm =")
+            print(real(self.solver.epsTmm(self.layer)))
+            print("\nepsTpp =")
+            print(real(self.solver.epsTpp(self.layer)))
+            print("\nepsTmp =")
+            print(real(self.solver.epsTmp(self.layer)))
+            print("\nepsTpm =")
+            print(real(self.solver.epsTpm(self.layer)))
+            print("\nepsDm =")
+            print(real(self.solver.epsDm(self.layer)))
+            print("\nepsDp =")
+            print(real(self.solver.epsDp(self.layer)))
+            print
+            print("\nmuVmm =")
+            print(real(self.solver.muVmm()))
+            print("\nmuVpp =")
+            print(real(self.solver.muVpp()))
+            print("\nmuTmm =")
+            print(real(self.solver.muTmm()))
+            print("\nmuTpp =")
+            print(real(self.solver.muTpp()))
+            print("\nmuTmp =")
+            print(real(self.solver.muTmp()))
+            print("\nmuTpm =")
+            print(real(self.solver.muTpm()))
+            print("\nmuDm =")
+            print(real(self.solver.muDm()))
+            print("\nmuDp =")
+            print(real(self.solver.muDp()))
             print
         except AttributeError:
-            pass
+            import traceback
+            traceback.print_exc()
 
-    def testMatrices(self):
+    def print_matrices(self):
         try:
             self.solver.wavelength = 1500/self.f
             self.solver.m = 1
@@ -86,13 +116,13 @@ class Disk(unittest.TestCase):
         except AttributeError:
             pass
         else:
-            set_printoptions(precision=1, linewidth=240, suppress=True)
-            print "\nRE = "
-            print abs(RE)
-            print "\nRH = "
-            print abs(RH)
-            print "\nQE = "
-            print abs(dot(RH,RE))
+            set_printoptions(precision=2, linewidth=240, suppress=True)
+            print("\nRH = ")
+            print(abs(RH))
+            print("\nRE = ")
+            print(abs(RE))
+            print("\nQE = ")
+            print(abs(dot(RH,RE)))
             print
 
     def plot_determinant(self):
@@ -104,7 +134,7 @@ class Disk(unittest.TestCase):
         figure()
         plot(lams, abs(dets))
         yscale('log')
-        
+
     def testComputations(self):
         m = self.solver.find_mode(1550/self.f)
         self.assertEqual( m, 0 )
@@ -113,10 +143,22 @@ class Disk(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    disk = Disk('plot_determinant')
+    
+    try:
+        function = sys.argv[1]
+    except IndexError:
+        function = 'setUp'
+    
+    disk = Disk(function)
     disk.setUp()
 
-    disk.plot_determinant()
-    #disk.plot_field()
+    if function != 'setUp':
+        getattr(disk, function)()
+    else:
+        disk.print_integrals()
+        disk.print_matrices()
+        disk.plot_geometry()
+        disk.plot_determinant()
+        disk.plot_field()
     show()
     

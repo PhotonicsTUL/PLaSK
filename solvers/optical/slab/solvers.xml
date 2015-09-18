@@ -36,7 +36,15 @@
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical Pmls">
+    <tag name="pml" label="Horizontal PMLs">
+      Side absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
+      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+    </tag>
+
+    <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
@@ -51,14 +59,6 @@
         <choice>reflection</choice>
         <choice>admittance</choice>
       </attr>
-    </tag>
-
-    <tag name="pml" label="Horizontal Pmls">
-      Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
     <tag name="mode" label="Mode Properties">
@@ -177,24 +177,7 @@
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical Pmls">
-      Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
-    </tag>
-
-    <tag name="transfer" label="Transfer Algorithm Settings">
-      Vertical field transfer settings.
-      <attr name="method" label="Transfer method" type="choice">
-        Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
-        <choice>auto</choice>
-        <choice>reflection</choice>
-        <choice>admittance</choice>
-      </attr>
-    </tag>
-
-    <tag name="pmls" label="Longitudinal and Transverse Pmls">
+    <tag name="pmls" label="Longitudinal and Transverse PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
@@ -214,6 +197,23 @@
         <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
+    </tag>
+
+    <tag name="vpml" label="Vertical PMLs">
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+    </tag>
+
+    <tag name="transfer" label="Transfer Algorithm Settings">
+      Vertical field transfer settings.
+      <attr name="method" label="Transfer method" type="choice">
+        Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
+        <choice>auto</choice>
+        <choice>reflection</choice>
+        <choice>admittance</choice>
+      </attr>
     </tag>
 
     <tag name="mode" label="Mode Properties">
@@ -300,7 +300,15 @@
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical Pmls">
+    <tag name="pml" label="Radial PMLs">
+      Side absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
+      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+    </tag>
+
+    <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
       <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
@@ -315,14 +323,6 @@
         <choice>reflection</choice>
         <choice>admittance</choice>
       </attr>
-    </tag>
-
-    <tag name="pml" label="Radial Pmls">
-      Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
