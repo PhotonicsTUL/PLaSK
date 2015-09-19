@@ -32,6 +32,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.), // LP_09.2015
     maxerr(0.05),
     heatmet(HEAT_JOULES),
+    outEnergy(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies),
 //     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
 //     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
@@ -196,12 +197,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     loopno = 0;
     size = this->mesh->size();
     //potentials.reset(size, 0.); //LP_09.2015
-    dvPsiI.reset(size, 0.); //LP_09.2015
+    dvNodeInfo.reset(size,0.); // LP 09.2015
+    dvPsiI.reset(this->mesh->elements.size(), 0.); //LP_09.2015
     dvPsi.reset(size, 0.); //LP_09.2015
     dvFn.reset(size, 0.); //LP_09.2015
     dvFp.reset(size, 0.); //LP_09.2015
-    dvN.reset(this->mesh->elements.size()); //LP_09.2015
-    dvP.reset(this->mesh->elements.size()); //LP_09.2015
+    dvN.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+    dvP.reset(this->mesh->elements.size(), 0.); //LP_09.2015
     currents.reset(this->mesh->elements.size(), vec(0.,0.));
     //conds.reset(this->mesh->elements.size()); //LP_09.2015
     /*if (junction_conductivity.size() == 1) {
@@ -440,11 +442,11 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
 }
 
 template<typename Geometry2DType> //LP_09.2015
-double DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
-    double err = 0.;
+int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
+    this->initCalculation();
     for (auto el: this->mesh->elements) {
-        /*size_t i = el.getIndex();
-        size_t loleftno = el.getLoLoIndex();
+        size_t i = el.getIndex();
+        /*size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();*/ //LP_09.2015
@@ -463,24 +465,58 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) 
         double tsNv = material->Nv(tT, 0., 'G')/mNx; // TODO
         double tsNd = material->Nd()/mNx; // TODO
         double tsNa = material->Na()/mNx; // TODO
-        double tsEd = 0./mEx; // TODO
-        double tsEa = 0./mEx; // TODO
+        double tsEd = 0.050/mEx; // TODO
+        double tsEa = 0.150/mEx; // TODO
         double tsT = 300./mTx; // TODO
 
         //std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
-
-
         double tPsiI = findPsiI(tsEc0, tsEv0, tsNc, tsNv, tsNd, tsNa, tsEd, tsEa, 1., 1., tsT);
-        this->writelog(LOG_DETAIL, "Calculated initial potential PsiI = %1%eV", tPsiI); // LP_09.2015
+        this->writelog(LOG_DETAIL, "Calculated initial potential PsiI = %1% eV for element %2%", tPsiI*mEx, i); // LP_09.2015 // TEST
+        dvPsiI[i] = tPsiI;
 
-        int zzz;
-        std::cin >> zzz;
+        //int zzz;
+        //std::cin >> zzz;
     }
+
+    setPsiI();
+
     //this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
     //               loop, loopno, noactive?"":"@junc", mcur, err);
 
-    return err;
+    return 0;
+}
+
+
+template<typename Geometry2DType> //LP_09.2015
+void DriftDiffusionModel2DSolver<Geometry2DType>::setPsiI() {
+    this->writelog(LOG_INFO, "Setting initial potential in nodes");
+
+    for (auto el: this->mesh->elements) {
+        size_t i = el.getIndex();
+        size_t loleftno = el.getLoLoIndex();
+        size_t lorghtno = el.getUpLoIndex();
+        size_t upleftno = el.getLoUpIndex();
+        size_t uprghtno = el.getUpUpIndex(); //LP_09.2015
+
+        dvNodeInfo[loleftno] += 1;
+        dvNodeInfo[lorghtno] += 1;
+        dvNodeInfo[upleftno] += 1;
+        dvNodeInfo[uprghtno] += 1;
+
+        dvPsi[loleftno] += dvPsiI[i];
+        dvPsi[lorghtno] += dvPsiI[i];
+        dvPsi[upleftno] += dvPsiI[i];
+        dvPsi[uprghtno] += dvPsiI[i];
+    }
+
+    //this->writelog(LOG_INFO, "Number of nodes: %1%", (this->mesh->axis0->size())*(this->mesh->axis1->size()));
+
+    for (int i=0; i<(this->mesh->axis0->size())*(this->mesh->axis1->size()); ++i) {
+        dvPsi[i] /= dvNodeInfo[i];
+    }
+
+    outEnergy.fireChanged();
 }
 
 
@@ -495,7 +531,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
 
-    this->writelog(LOG_INFO, "Running namespace drift_diffusion calculations");
+    this->writelog(LOG_INFO, "Running drift_diffusion calculations");
 
     //unsigned loop = 0;LP_09.2015
 
@@ -723,8 +759,18 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
     size_t level = (act.bottom + act.top) / 2;
     return integrateCurrent(level, true);
 }
+*/
 
+template<typename Geometry2DType>
+const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+{
+    if (!dvPsi) throw NoValue("Energy");
+    this->writelog(LOG_DEBUG, "Getting energies");
+    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
+    return interpolate(this->mesh, dvPsi, dst_mesh, method, this->geometry);
+}
 
+/*
 template<typename Geometry2DType>
 const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
@@ -959,16 +1005,22 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
                 tPsi0a = tPsi0;
             }
             else { // found initial normalized potential
-                std::cout << "\n" << tL << " loops done. Calculated energy level corresponding to the initial potential: " << (tPsi0)*mEx << ".\n"; // TEST
+                this->writelog(LOG_INFO, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
+
                 return tPsi0;
             }
 
             tPsiUpd = tPsi0b-tPsi0a;
+            //TODO 2015
+            if (!tL)
+                this->writelog(LOG_DETAIL, "Initial potential correction: %1% eV", (tPsiUpd)*mEx); // TEST
+            else
+                this->writelog(LOG_DETAIL, " %1% eV", (tPsiUpd)*mEx); // TEST
             std::cout << (tPsiUpd)*mEx << " ";
-               ++tL;
+                ++tL;
         }
 
-        std::cout << "\n" << tL << " loops done. Calculated energy level corresponding to the initial potential: " << (tPsi0)*mEx << ".\n"; // TEST
+        this->writelog(LOG_INFO, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
 
         return tPsi0;
 }
@@ -998,8 +1050,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::calcFD12(double iEta)
     return ( 0.5*sqrt(M_PI) / (0.75*sqrt(M_PI)*pow(tKsi,-0.375)+exp(-iEta)) );
 }
 
-template<> std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "namespace drift_diffusion.Shockley2D"; }
-template<> std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "namespace drift_diffusion.ShockleyCyl"; }
+template<> std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "drift_diffusion.Shockley2D"; }
+template<> std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "drift_diffusion.ShockleyCyl"; }
 
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;

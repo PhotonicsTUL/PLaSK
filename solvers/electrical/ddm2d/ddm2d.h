@@ -52,8 +52,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     //std::vector<double> js;     ///< p-n junction parameter [A/m^2] //LP_09.2015
     //std::vector<double> beta;   ///< p-n junction parameter [1/V] //LP_09.2015
-    //double pcond;               ///< p-contact namespace drift_diffusion conductivity [S/m] //LP_09.2015
-    //double ncond;               ///< n-contact namespace drift_diffusion conductivity [S/m] //LP_09.2015
+    //double pcond;               ///< p-contact drift_diffusion conductivity [S/m] //LP_09.2015
+    //double ncond;               ///< n-contact drift_diffusion conductivity [S/m] //LP_09.2015
 
     bool mRsrh;    ///< SRH recombination is taken into account //LP_09.2015
     bool mRrad;    ///< radiative recombination is taken into account //LP_09.2015
@@ -77,26 +77,27 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
     double mPx;    ///< polarization (C/m^2) //LP_09.2015
 
-    double mAccPsiI;
-    double mLoopPsiI;
-    std::string mStat;
+    double mAccPsiI; ///< correction limit in initial potential calculations
+    double mLoopPsiI; ///< loops limit for initial potential calculations
+    std::string mStat; ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
 
 
     int loopno;                 ///< Number of completed loops
     double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
     Vec<2,double> maxcur;       ///< Maximum current in the structure
 
-    //DataVector<double> junction_conductivity;   ///< namespace drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
-    //double default_junction_conductivity;       ///< default namespace drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
+    //DataVector<double> junction_conductivity;   ///< drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
+    //double default_junction_conductivity;       ///< default drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
 
     DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
-    DataVector<double> dvN;                     ///< Cached element electron concentrations //LP_09.2015
-    DataVector<double> dvP;                     ///< Cached element hole concentrations //LP_09.2015
+    DataVector<double> dvN;                     ///< Cached electron concentrations (size: elements) //LP_09.2015
+    DataVector<double> dvP;                     ///< Cached hole concentrations (size: elements) //LP_09.2015
     //DataVector<double> potentials;            ///< Computed potentials //LP_09.2015
-    DataVector<double> dvPsiI;                  ///< Computed initial potentials //LP_09.2015
-    DataVector<double> dvPsi;                   ///< Computed potentials //LP_09.2015
-    DataVector<double> dvFn;                    ///< Computed quasi-Fermi levels for electrons //LP_09.2015
-    DataVector<double> dvFp;                    ///< Computed quasi-Fermi levels for holes //LP_09.2015
+    DataVector<double> dvPsiI;                  ///< Computed initial potentials (size: elements) //LP_09.2015
+    DataVector<int> dvNodeInfo;                 ///< Number of elements which have this node (size: nodes) //LP_09.2015
+    DataVector<double> dvPsi;                   ///< Computed potentials (size: nodes) //LP_09.2015
+    DataVector<double> dvFn;                    ///< Computed quasi-Fermi levels for electrons (size: nodes) //LP_09.2015
+    DataVector<double> dvFp;                    ///< Computed quasi-Fermi levels for holes (size: nodes) //LP_09.2015
     DataVector<Vec<2,double>> currents;         ///< Computed current densities
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
@@ -197,6 +198,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Boundary condition
     BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
+
+    typename ProviderFor<Energy, Geometry2DType>::Delegate outEnergy;
+
+    typename ProviderFor<QuasiFermiElectronLevel, Geometry2DType>::Delegate outQuasiFermiElectronLevel;
+
+    typename ProviderFor<QuasiFermiHoleLevel, Geometry2DType>::Delegate outQuasiFermiHoleLevel;
+
 /*
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
@@ -217,10 +225,16 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     size_t logfreq;         ///< Frequency of iteration progress reporting
 
     /**
-     * Calculate initial potential
-     * \return max correction of potential against the last call
+     * Calculate initial energy for all elements
+     * \return max correction of potential against the last call // TODO
      **/
-    double computePsiI(unsigned loops=1); //LP_09.2015
+    int computePsiI(unsigned loops=1); //LP_09.2015
+
+    /**
+     * Set initial potential for all nodes
+     * \return max correction of potential against the last call // TODO
+     **/
+    void setPsiI(); //LP_09.2015
 
     /**
      * Run drift_diffusion calculations
@@ -342,7 +356,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     ~DriftDiffusionModel2DSolver();
 
   protected:
-/*
+    const LazyData<double> getEnergies(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+
+    const LazyData<double> getQuasiFermiElectronLevels(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+
+    const LazyData<double> getQuasiFermiHoleLevels(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+
+
+    /*
     const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
     const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);

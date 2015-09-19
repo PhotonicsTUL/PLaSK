@@ -101,13 +101,17 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
         "Finite element drift-diffusion electrical solver for 2D %2% geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
-    //METHOD(compute, compute, "Run namespace drift_diffusion calculations", py::arg("loops")=0);
-    METHOD(compute, compute, "Run namespace drift_diffusion calculations"/*, py::arg("loops")=0*/);
+    //METHOD(compute, compute, "Run drift_diffusion calculations", py::arg("loops")=0);
+    METHOD(compute, compute, "Run drift_diffusion calculations"/*, py::arg("loops")=0*/);
+    METHOD(compute_initial_energy, computePsiI, "Run drift_diffusion calculations"/*, py::arg("loops")=0*/);
     /*METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
-    RECEIVER(inTemperature, "");
-    PROVIDER(outPotential, "");
+    RECEIVER(inTemperature, "");*/
+    PROVIDER(outEnergy, "");
+    PROVIDER(outQuasiFermiElectronLevel, "");
+    PROVIDER(outQuasiFermiHoleLevel, "");
+    /*PROVIDER(outPotential, "");
     PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");
     PROVIDER(outConductivity, "");
@@ -140,8 +144,9 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def("__setattr__",  &Shockley__setattr__<__Class__>);
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");
-    solver.setattr("outVoltage", solver.attr("outPotential"));
+    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");*/
+    solver.setattr("outWhat?", solver.attr("outEnergy"));
+    /*solver.setattr("outVoltage", solver.attr("outPotential"));
     RW_FIELD(itererr, "Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
     RW_FIELD(logfreq, "Frequency of iteration progress reporting");
