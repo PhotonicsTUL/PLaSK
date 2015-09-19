@@ -149,6 +149,7 @@ class SourceWidget(QtGui.QWidget):
         self.find_wholewords.setCheckable(True)
         self.find_regex = QtGui.QAction('&Regular Expression', self.find_edit)
         self.find_regex.setCheckable(True)
+        self.find_regex.triggered.connect(self.trigger_regex)
         self.find_selection = QtGui.QAction('&Selection Only', self.find_edit)
         self.find_selection.setCheckable(True)
         self.find_edit.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -332,6 +333,10 @@ class SourceWidget(QtGui.QWidget):
     def find_type(self):
         if not self.find_selection.isChecked():
             self._find(cont=True)
+
+    def trigger_regex(self):
+        if self.find_toolbar.isVisible():
+            self. find_type()
 
     def _replace_regexp(self, cursor):
         block = cursor.block()
