@@ -228,7 +228,7 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QIcon.fromTheme('document-open-recent'))
         self.update_recent_list()
 
-        self.menu = QtGui.QMenu('Operations')
+        self.menu = QtGui.QMenu('&File')
 
         self.menu.addAction(new_action)
         self.menu.addAction(open_action)
@@ -249,11 +249,10 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(exit_action)
 
         menu_button = QtGui.QPushButton(self)
-        menu_button.setText("Operations")
+        menu_button.setText("File")
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
-        if sys.platform != 'win32':
-            menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
+        menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
@@ -261,7 +260,7 @@ class MainWindow(QtGui.QMainWindow):
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
 
-        tabs_menu = QtGui.QMenu("Sections")
+        tabs_menu = QtGui.QMenu("Sections", menu_bar)
         def add_tab_menu(indx):
             def show_tab():
                 self.tabs.setCurrentIndex(indx)
@@ -308,7 +307,7 @@ class MainWindow(QtGui.QMainWindow):
 
         fs = int(1.3 * QtGui.QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
-        menu_button.setStyleSheet("font-size: {}pt;".format(fs))
+        menu_button.setStyleSheet("QPushButton {{ font-size: {}pt; font-weight: bold; }}".format(fs))
 
         self.config_changed.connect(update_textedit_colors)
 
