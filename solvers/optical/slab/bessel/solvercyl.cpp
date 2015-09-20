@@ -52,6 +52,10 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
             vpml.size = reader.getAttribute<double>("size", vpml.size);
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
+            if (reader.hasAttribute("order")) { //TODO Remove in the future
+                writelog(LOG_WARNING, "XML line %d in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                vpml.order = reader.requireAttribute<double>("order");
+            }
             vpml.order = reader.getAttribute<double>("shape", vpml.order);
             reader.requireTagEnd();
         } else if (param == "transfer") {
@@ -65,6 +69,10 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
             pml.dist = reader.getAttribute<double>("dist", pml.dist);
+            if (reader.hasAttribute("order")) { //TODO Remove in the future
+                writelog(LOG_WARNING, "XML line %d in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                pml.order = reader.requireAttribute<double>("order");
+            }
             pml.order = reader.getAttribute<double>("shape", pml.order);
             reader.requireTagEnd();
         } else if (param == "root") {
