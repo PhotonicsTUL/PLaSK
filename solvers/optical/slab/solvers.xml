@@ -39,7 +39,7 @@
     <tag name="pml" label="Horizontal PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
       <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>
@@ -180,20 +180,20 @@
     <tag name="pmls" label="Longitudinal and Transverse PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
       <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       <tag name="long" label="Longitudinal PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-        <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
         <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
       <tag name="tran" label="Transverse PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-        <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
         <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
@@ -303,7 +303,7 @@
     <tag name="pml" label="Radial PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="order" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
       <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
       <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
     </tag>

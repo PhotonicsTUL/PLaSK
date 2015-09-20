@@ -56,7 +56,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
             vpml.size = reader.getAttribute<double>("size", vpml.size);
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
-            vpml.order = reader.getAttribute<double>("order", vpml.order);
+            vpml.order = reader.getAttribute<double>("shape", vpml.order);
             reader.requireTagEnd();
         } else if (param == "transfer") {
             transfer_method = reader.enumAttribute<Transfer::Method>("method")
@@ -69,7 +69,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
             pml.dist = reader.getAttribute<double>("dist", pml.dist);
-            pml.order = reader.getAttribute<double>("order", pml.order);
+            pml.order = reader.getAttribute<double>("shape", pml.order);
             reader.requireTagEnd();
         } else if (param == "mode") {
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
