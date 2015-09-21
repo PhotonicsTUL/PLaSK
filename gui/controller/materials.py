@@ -361,14 +361,14 @@ class MaterialsController(Controller):
         indexes = new_selection.indexes()
         if indexes:
             try: self.propedit.textChanged.disconnect()
-            except RuntimeError: pass
+            except (RuntimeError, TypeError): pass
             row = indexes[0].row()
             self.propedit.setPlainText(self.selected_material.properties[row][1])
             self.propedit.show()
             self.propedit.textChanged.connect(lambda: self.propedit_changed(row))
         else:
             try: self.propedit.textChanged.disconnect()
-            except RuntimeError: pass
+            except (RuntimeError, TypeError): pass
             self.propedit.hide()
 
     def propedit_changed(self, row):
