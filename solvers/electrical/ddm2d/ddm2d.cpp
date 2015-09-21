@@ -32,7 +32,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.), // LP_09.2015
     maxerr(0.05),
     heatmet(HEAT_JOULES),
-    outEnergy(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies),
+    outBuiltinPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies),
 //     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
 //     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
@@ -280,7 +280,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector
 
 template<typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
+                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -512,11 +512,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setPsiI() {
 
     //this->writelog(LOG_INFO, "Number of nodes: %1%", (this->mesh->axis0->size())*(this->mesh->axis1->size()));
 
-    for (int i=0; i<(this->mesh->axis0->size())*(this->mesh->axis1->size()); ++i) {
+    for (int i = 0; i < this->mesh->size(); ++i) {
         dvPsi[i] /= dvNodeInfo[i];
     }
 
-    outEnergy.fireChanged();
+    outBuiltinPotential.fireChanged();
 }
 
 
@@ -1012,12 +1012,13 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
 
             tPsiUpd = tPsi0b-tPsi0a;
             //TODO 2015
-            if (!tL)
-                this->writelog(LOG_DETAIL, "Initial potential correction: %1% eV", (tPsiUpd)*mEx); // TEST
-            else
-                this->writelog(LOG_DETAIL, " %1% eV", (tPsiUpd)*mEx); // TEST
-            std::cout << (tPsiUpd)*mEx << " ";
-                ++tL;
+            #ifndef NDEBUG
+                if (!tL)
+                    this->writelog(LOG_DEBUG, "Initial potential correction: %1% eV", (tPsiUpd)*mEx); // TEST
+                else
+                    this->writelog(LOG_DEBUG, " %1% eV", (tPsiUpd)*mEx); // TEST
+            #endif
+            ++tL;
         }
 
         this->writelog(LOG_INFO, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST

@@ -7,6 +7,7 @@
   <define name="aprt" value="2."/>
   <define name="estart" value="978.5"/>
   <define name="bstart" value="{estart}"/>
+  <define name="N0" value="100"/>
   <define name="pml" value="1."/>
 </defines>
 
@@ -69,7 +70,7 @@
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion lam0="980." size="100"/>
+    <expansion lam0="980." size="{N0}"/>
     <interface object="QW"/>
     <pml dist="30." factor="{pml}" size="2."/>
   </optical>
@@ -92,13 +93,11 @@ box = GEO.vcsel.bbox
 z = GEO.vcsel.get_object_bboxes(GEO.QW)[0].center.z
 rmsh = mesh.Rectangular2D(linspace(-10., 10., 2001), [z])
 
-desc = u" (aprt:{:.1f}µm PML:{}").format(aprt, pml)
+desc = u" (aprt:{:.1f}µm PML:{})".format(aprt, pml)
 
 efield = efm.outLightMagnitude(em, rmsh)
 
-N0 = bessel.size
-
-NN = range(20, 151, 10)
+NN = range(20, max(151,N0+1), 10)
 lams = []
 times = []
 

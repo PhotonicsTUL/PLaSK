@@ -24,6 +24,8 @@ void register_standard_properties_concentration_carriers();
 void register_standard_properties_concentration_electrons();
 void register_standard_properties_concentration_holes();
 
+void register_standard_properties_builtin_potential();
+
 const char* docstring_receiver =
     "%1%Receiver%2%()\n\n"
 
@@ -372,6 +374,8 @@ void register_standard_properties()
     register_standard_properties_concentration_electrons();
     register_standard_properties_concentration_holes();
 
+    register_standard_properties_builtin_potential();
+    
     register_standard_properties_gain();
     register_standard_properties_GainOverCarriersConcentration();
 

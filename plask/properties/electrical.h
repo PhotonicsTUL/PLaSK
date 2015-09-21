@@ -56,11 +56,11 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
 };
 
 /**
- * Energy [eV]
+ * Built-in potential [V]
  */
-struct PLASK_API Energy: public ScalarFieldProperty {
-    static constexpr const char* NAME = "energy";
-    static constexpr const char* UNIT = "eV";
+struct PLASK_API BuiltinPotential: public ScalarFieldProperty {
+    static constexpr const char* NAME = "built-in potential";
+    static constexpr const char* UNIT = "V";
 };
 
 /**

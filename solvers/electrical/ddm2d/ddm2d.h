@@ -196,10 +196,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     HeatMethod heatmet;         ///< Method of heat computation
 
-    /// Boundary condition
-    BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
+    /// Boundary condition      
+    BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
 
-    typename ProviderFor<Energy, Geometry2DType>::Delegate outEnergy;
+    typename ProviderFor<BuiltinPotential, Geometry2DType>::Delegate outBuiltinPotential;
 
     typename ProviderFor<QuasiFermiElectronLevel, Geometry2DType>::Delegate outQuasiFermiElectronLevel;
 

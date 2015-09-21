@@ -108,7 +108,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
     RECEIVER(inTemperature, "");*/
-    PROVIDER(outEnergy, "");
+    PROVIDER(outBuiltinPotential, "");
     PROVIDER(outQuasiFermiElectronLevel, "");
     PROVIDER(outQuasiFermiHoleLevel, "");
     /*PROVIDER(outPotential, "");
@@ -145,7 +145,6 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
     solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");*/
-    solver.setattr("outWhat?", solver.attr("outEnergy"));
     /*solver.setattr("outVoltage", solver.attr("outPotential"));
     RW_FIELD(itererr, "Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, "Maximum number of iterations for iterative method");

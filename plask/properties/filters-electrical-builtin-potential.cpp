@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<Energy> registerEnergyFilters;
+FiltersFactory::RegisterStandard<BuiltinPotential> registerEnergyFilters;
 
 }   // namespace plask
