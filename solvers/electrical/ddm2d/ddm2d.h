@@ -77,6 +77,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
     double mPx;    ///< polarization (C/m^2) //LP_09.2015
 
+    double dU;         ///< default voltage step (V)
+    double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
+    double maxDelPsi;  ///< maximal correction for potential calculations (V)
+
     double mAccPsiI; ///< correction limit in initial potential calculations
     double mLoopPsiI; ///< loops limit for initial potential calculations
     std::string mStat; ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
@@ -97,6 +101,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<int> dvnNodeInfo;                ///< Number of elements which have this node (size: nodes) //LP_09.2015
     DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes) //LP_09.2015
     DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes) //LP_09.2015
+    DataVector<double> dvnDeltaPsi;             ///< Computed potentials corrections (size: nodes) //LP_09.2015
     DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes) //LP_09.2015
     DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes) //LP_09.2015
     DataVector<double> dvePsi;                  ///< Computed potentials (size: elements) //LP_09.2015
@@ -125,6 +130,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void savePsi(); ///< save potentials for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
+    double addCorr(std::string calctype); ///< add corrections to datavectors
 /*
     /// Save conductivities of active region
     void saveConductivities();

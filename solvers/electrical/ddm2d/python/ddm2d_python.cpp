@@ -114,9 +114,9 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     /*PROVIDER(outPotential, "");
     PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");
-    PROVIDER(outConductivity, "");
+    PROVIDER(outConductivity, "");*/
     BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-    RW_FIELD(maxerr, "Limit for the potential updates");
+    /*RW_FIELD(maxerr, "Limit for the potential updates");
     RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
     solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
     solver.add_property("beta", &Shockley_getBeta<__Class__>, &Shockley_setBeta<__Class__>,
