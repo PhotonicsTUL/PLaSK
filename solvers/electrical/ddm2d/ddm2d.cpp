@@ -15,7 +15,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     mTx(300.), //LP_09.2015
     mEx(phys::kB_eV*mTx), //LP_09.2015
     mNx(1e18), //LP_09.2015
-    mEpsRx(10.), //LP_09.2015
+    mEpsRx(12.9), //LP_09.2015
     mXx(sqrt((phys::epsilon0*phys::kB_J*mTx*mEpsRx)/(phys::qe*phys::qe*mNx))*1e3), //LP_09.2015
     mKx(100.), //LP_09.2015
     mMix(1000.), //LP_09.2015
@@ -26,10 +26,12 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     mCx(mRx/(mNx*mNx*mNx)), //LP_09.2015
     mHx(((mKx*mTx)/(mXx*mXx))*1e12), //LP_09.2015
     dU(0.002),
-    maxDelPsi0(10.*dU/mEx), // normalised
-    maxDelPsi(0.1*dU/mEx), // normalised
+    maxDelPsi0(10.*dU/mEx),
+    maxDelPsi(0.1*dU/mEx),
     mAccPsiI(1e-12), //LP_09.2015
-    mLoopPsiI(20), //LP_09.2015
+    mLoopPsiI(10000), //LP_09.2015
+    mAccPsi0(1e-12), //LP_09.2015
+    mLoopPsi0(2000), //LP_09.2015
     mStat("MB"), //LP_09.2015
     loopno(0),
     //default_junction_conductivity(5.), // LP_09.2015
@@ -400,7 +402,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(std::string calctype
 
         if (calctype == "Psi") {
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            ky = eps * (hy*0.5) * (hy*0.5);
+            kx = eps * (hy*0.5) * (hy*0.5);
             ky = eps * (hx*0.5) * (hx*0.5);
             gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
             double iNdIon = Nd;
@@ -613,16 +615,23 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 template<typename Geometry2DType> // LP_09.2015
 double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype)
 {
-    double maxRelDel(0.);
-    if (calctype == "Psi") {
+    double maxRelUpd(0.);
+    double mcPsi0 = maxDelPsi0/mEx;
+    if (calctype == "Psi") { //should be Psi0 TODO
         for (int i = 0; i < this->mesh->size(); ++i) {
-            if (dvnDeltaPsi[i] > maxDelPsi0) dvnDeltaPsi[i] = maxDelPsi0;
-            else if (dvnDeltaPsi[i] < -maxDelPsi0) dvnDeltaPsi[i] = -maxDelPsi0;
-            if (std::abs(dvnDeltaPsi[i]/dvnPsi[i]) > maxRelDel) maxRelDel = std::abs(dvnDeltaPsi[i]/dvnPsi[i]);
-            dvnPsi[i] += dvnDeltaPsi[i];
+            // dodac by tego co nizej nie robilo na kontaktach!! TODO
+            //if (dvnDeltaPsi[i] > maxDelPsi0) dvnDeltaPsi[i] = maxDelPsi0;
+            //else if (dvnDeltaPsi[i] < -maxDelPsi0) dvnDeltaPsi[i] = -maxDelPsi0;
+            //if (std::abs(dvnDeltaPsi[i]/dvnPsi[i]) > maxRelDel) maxRelDel = std::abs(dvnDeltaPsi[i]/dvnPsi[i]);
+            //dvnPsi[i] += dvnDeltaPsi[i];
+
+            if (dvnDeltaPsi[i] > mcPsi0) dvnDeltaPsi[i] = mcPsi0;
+            else if (dvnDeltaPsi[i] < -mcPsi0) dvnDeltaPsi[i] = -mcPsi0;
+            if (std::abs(dvnDeltaPsi[i]/dvnPsi[i]) > maxRelUpd) maxRelUpd = std::abs(dvnDeltaPsi[i]/dvnPsi[i]);
+            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i];
         }
     }
-    return maxRelDel;
+    return maxRelUpd;
 }
 
 
@@ -816,10 +825,10 @@ std::swap(v_new, v_old);
     outHeat.fireChanged();
 */ // LP_09.2015
 
-    for (int i(0); i<20; ++i) {
+    for (int i(0); i<10; ++i) {
         setMatrix("Psi", A, dvnDeltaPsi, vconst);    // corr holds RHS now
         solveMatrix(A, dvnDeltaPsi);
-        std::cout << "deltaPsi w zerze" << dvnDeltaPsi[0] << "\n";
+        //std::cout << "deltaPsi w zerze" << dvnDeltaPsi[0] << "\n";
         double maxRelDel = addCorr(calctype);
         this->writelog(LOG_RESULT, "maximal relative update: %1% V", maxRelDel);
         savePsi();

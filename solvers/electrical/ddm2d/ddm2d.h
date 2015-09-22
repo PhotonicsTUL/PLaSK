@@ -81,8 +81,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
     double maxDelPsi;  ///< maximal correction for potential calculations (V)
 
-    double mAccPsiI; ///< correction limit in initial potential calculations
-    double mLoopPsiI; ///< loops limit for initial potential calculations
+    double mAccPsiI;  ///< correction limit in initial potential calculations
+    double mLoopPsiI; ///< loop limit for initial potential calculations
+    double mAccPsi0;  ///< correction limit in initial potential calculations
+    double mLoopPsi0; ///< loop limit for initial potential calculations
     std::string mStat; ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
 
 
