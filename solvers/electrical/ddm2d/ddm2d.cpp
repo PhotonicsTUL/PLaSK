@@ -32,7 +32,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.), // LP_09.2015
     maxerr(0.05),
     heatmet(HEAT_JOULES),
-    outBuiltinPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies),
+    outBuiltinPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
 //     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
@@ -197,13 +197,20 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     loopno = 0;
     size = this->mesh->size();
     //potentials.reset(size, 0.); //LP_09.2015
-    dvNodeInfo.reset(size,0.); // LP 09.2015
-    dvPsiI.reset(this->mesh->elements.size(), 0.); //LP_09.2015
-    dvPsi.reset(size, 0.); //LP_09.2015
-    dvFn.reset(size, 0.); //LP_09.2015
-    dvFp.reset(size, 0.); //LP_09.2015
-    dvN.reset(this->mesh->elements.size(), 0.); //LP_09.2015
-    dvP.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+
+    dvnNodeInfo.reset(size,0.); // LP 09.2015
+    dvnPsi0.reset(size, 0.); //LP_09.2015
+    dvnPsi.reset(size, 0.); //LP_09.2015
+    dvnFn.reset(size, 0.); //LP_09.2015
+    dvnFp.reset(size, 0.); //LP_09.2015
+
+    dvePsiI.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+    dvePsi.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+    dveFnEta.reset(this->mesh->elements.size(), 1.); //LP_09.2015
+    dveFpKsi.reset(this->mesh->elements.size(), 1.); //LP_09.2015
+    dveN.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+    dveP.reset(this->mesh->elements.size(), 0.); //LP_09.2015
+
     currents.reset(this->mesh->elements.size(), vec(0.,0.));
     //conds.reset(this->mesh->elements.size()); //LP_09.2015
     /*if (junction_conductivity.size() == 1) {
@@ -218,12 +225,17 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
 template<typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     //conds.reset(); //LP_09.2015
-    dvPsiI.reset(); //LP_09.2015
-    dvPsi.reset(); //LP_09.2015
-    dvFn.reset(); //LP_09.2015
-    dvFp.reset(); //LP_09.2015
-    dvN.reset(); //LP_09.2015
-    dvP.reset(); //LP_09.2015
+    dvnNodeInfo.reset();
+    dvnPsi0.reset(); //LP_09.2015
+    dvnPsi.reset(); //LP_09.2015
+    dvnFn.reset(); //LP_09.2015
+    dvnFp.reset(); //LP_09.2015
+    dvePsiI.reset(); //LP_09.2015
+    dvePsi.reset(); //LP_09.2015
+    dveFnEta.reset(); //LP_09.2015
+    dveFpKsi.reset(); //LP_09.2015
+    dveN.reset(); //LP_09.2015
+    dveP.reset(); //LP_09.2015
     //potentials.reset(); //LP_09.2015
     currents.reset();
     heats.reset();
@@ -256,7 +268,7 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::setLocalMatrix(d
 }
 
 template<typename Geometry2DType>
-template <typename MatrixT>
+template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
                                                                     const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
     // boundary conditions of the first kind
@@ -278,7 +290,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector
     }
 }
 
-template<typename Geometry2DType>
+template<typename Geometry2DType> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
                                                           const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
     // boundary conditions of the first kind
@@ -310,7 +322,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 /// Set stiffness matrix + load vector
 template<typename Geometry2DType>
 template <typename MatrixT>
-void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
+void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(std::string calctype, MatrixT& A, DataVector<double>& B,
                                                                       const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
@@ -351,8 +363,94 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         double elemheight = e.getUpper1() - e.getLower1();
 
         Vec<2,double> midpoint = e.getMidpoint();
+        auto material = this->geometry->getMaterial(midpoint);
 
-        double kx = conds[i].c00;
+        double hx = elemwidth/mXx; // normalised value
+        double hy = elemheight/mXx; // normalised value
+        double n = dveN[i]; // normalised value
+        double p = dveP[i]; // normalised value
+        double T(300.);
+        //double Ec0 = material->CB(T, 0., 'G')/mEx; // normalised value
+        //double Ev0 = material->VB(T, 0., 'G')/mEx; // normalised value
+        double Nc = material->Nc(T, 0., 'G')/mNx; // normalised value
+        double Nv = material->Nv(T, 0., 'G')/mNx; // normalised value
+        //double Ni = material->Ni(T)/mNx; // normalised value
+        //double Ne = Nc * exp(dvePsi[i]-Ec0); // normalised value
+        //double Nh = Nv * exp(-dvePsi[i]+Ev0); // normalised value
+        double eps = material->eps(T)/mEpsRx; // normalised value
+        double Nd = material->Nd()/mNx; // normalised value
+        double Na = material->Na()/mNx; // normalised value
+        double Ed = 0.050/mEx; // normalised value
+        double Ea = 0.150/mEx; // normalised value
+
+        /*double yn(0.);
+        if (mStat == "MB") yn = 1.;
+        else if (mStat == "FD") yn = calcFD12(log(dveFnEta[i])+dvePsi[i]-Ec0)/(dveFnEta[i]*exp(dvePsi[i]-Ec0));
+
+        double yp(0.);
+        if (mStat == "MB") yp = 1.;
+        else if (mStat == "FD") yp = calcFD12(log(dveFpKsi[i])-dvePsi[i]+Ev0)/(dveFpKsi[i]*exp(-dvePsi[i]+Ev0));*/
+
+        double kk(0.), kx(0.), ky(0.), gg(0.), ff(0.);
+
+        if (calctype == "Psi") {
+            kk = 1. / (3.*(hx*0.5)*(hy*0.5));
+            ky = eps * (hy*0.5) * (hy*0.5);
+            ky = eps * (hx*0.5) * (hx*0.5);
+            gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
+            double iNdIon = Nd;
+            double iNaIon = Na;
+            if (!mFullIon)
+            {
+                double gD(2.), gA(4.);
+                double iNdTmp = (Nc/gD)*exp(-Ed);
+                double iNaTmp = (Nv/gA)*exp(-Ea);
+                iNdIon = Nd * (iNdTmp/(iNdTmp+n));
+                iNaIon = Na * (iNaTmp/(iNaTmp+p));
+            }
+            ff = - (hx*0.5) * (hy*0.5) * (p - n + iNdIon - iNaIon);
+        }
+
+        // set symmetric matrix components
+        double k44, k33, k22, k11, k43, k21, k42, k31, k32, k41;
+        double g44, g33, g22, g11, g43, g21, g42, g31, g32, g41;
+        double f1, f2, f3, f4;
+
+        // local K
+        k44 = k33 = k22 = k11 = (kx+ky)*kk;
+        k43 = k21 = 0.5*(-2.*kx+ky)*kk;
+        k42 = k31 = 0.5*(-kx-ky)*kk;
+        k32 = k41 = 0.5*(kx-2.*ky)*kk;
+
+        // local G
+        g44 = g33 = g22 = g11 = 4.*gg;
+        g21 = g41 = g32 = g43 = 2.*gg;
+        g31 = g42 = 1.*gg;
+
+        // local F
+        f4 = f3 = f2 = f1 = ff;
+
+        // set stiffness matrix
+        //setLocalMatrix(k44, k33, k22, k11, k43, k21, k42, k31, k32, k41, ky, elemwidth, midpoint); // TODO uncomment and correct after takng cylindrical structures into account
+
+        A(loleftno, loleftno) += (k11+g11);
+        A(lorghtno, lorghtno) += (k22+g22);
+        A(uprghtno, uprghtno) += (k33+g33);
+        A(upleftno, upleftno) += (k44+g44);
+
+        A(lorghtno, loleftno) += (k21+g21);
+        A(uprghtno, loleftno) += (k31+g31);
+        A(upleftno, loleftno) += (k41+g41);
+        A(uprghtno, lorghtno) += (k32+g32);
+        A(upleftno, lorghtno) += (k42+g42);
+        A(upleftno, uprghtno) += (k43+g43);
+
+        B[loleftno] += -(k11*dvnPsi[loleftno] + k21*dvnPsi[lorghtno] + k31*dvnPsi[uprghtno] + k41*dvnPsi[upleftno] + f1);
+        B[lorghtno] += -(k21*dvnPsi[loleftno] + k22*dvnPsi[lorghtno] + k32*dvnPsi[uprghtno] + k42*dvnPsi[upleftno] + f2);
+        B[uprghtno] += -(k31*dvnPsi[loleftno] + k32*dvnPsi[lorghtno] + k33*dvnPsi[uprghtno] + k43*dvnPsi[upleftno] + f3);
+        B[upleftno] += -(k41*dvnPsi[loleftno] + k42*dvnPsi[lorghtno] + k43*dvnPsi[uprghtno] + k44*dvnPsi[upleftno] + f4);
+
+        /*double kx = conds[i].c00;
         double ky = conds[i].c11;
 
         kx *= elemheight; kx /= elemwidth;
@@ -379,7 +477,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         A(upleftno, loleftno) += k41;
         A(uprghtno, lorghtno) += k32;
         A(upleftno, lorghtno) += k42;
-        A(upleftno, uprghtno) += k43;
+        A(upleftno, uprghtno) += k43;*/
     }
 
     // boundary conditions of the first kind
@@ -431,12 +529,93 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveConductivities()
 }*/
 
 
+
+template<typename Geometry2DType> // LP_09.2015
+void DriftDiffusionModel2DSolver<Geometry2DType>::savePsi()
+{
+    for (auto el: this->mesh->elements) {
+        size_t i = el.getIndex();
+        size_t loleftno = el.getLoLoIndex();
+        size_t lorghtno = el.getUpLoIndex();
+        size_t upleftno = el.getLoUpIndex();
+        size_t uprghtno = el.getUpUpIndex(); //LP_09.2015
+
+        dvePsi[i] = 0.25 * (dvnPsi[loleftno] + dvnPsi[lorghtno] + dvnPsi[upleftno] + dvnPsi[uprghtno]);
+    }
+}
+
+
+template<typename Geometry2DType> // LP_09.2015
+void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
+{
+    for (auto e: this->mesh->elements)
+    {
+        size_t i = e.getIndex();
+        Vec<2,double> midpoint = e.getMidpoint();
+        auto material = this->geometry->getMaterial(midpoint);
+
+        double T(300.); // TODO
+        double normNc = material->Nc(T, 0., 'G')/mNx;
+        double normEc0 = material->CB(T, 0., 'G')/mEx;
+        double normT = T/mTx;
+
+        dveN[i] = calcN(normNc, dveFnEta[i], dvePsi[i], normEc0, normT);
+
+        /*auto roles = this->geometry->getRolesAt(midpoint);
+        if (size_t actn = isActive(midpoint)) { // LP_09.2015
+            const auto& act = active[actn-1];
+            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + e.getIndex0()]);
+        } else if (roles.find("p-contact") != roles.end()) {
+            conds[i] = Tensor2<double>(pcond, pcond);
+        } else if (roles.find("n-contact") != roles.end()) {
+            conds[i] = Tensor2<double>(ncond, ncond);
+        } else
+            conds[i] = this->geometry->getMaterial(midpoint)->cond(temperature[i]);*/
+    }
+}
+
+
+template<typename Geometry2DType> // LP_09.2015
+void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
+{
+    for (auto e: this->mesh->elements)
+    {
+        size_t i = e.getIndex();
+        Vec<2,double> midpoint = e.getMidpoint();
+        auto material = this->geometry->getMaterial(midpoint);
+
+        double T(300.); // TODO
+        double normNv = material->Nv(T, 0., 'G')/mNx;
+        double normEv0 = material->VB(T, 0., 'G')/mEx;
+        double normT = T/mTx;
+
+        dveP[i] = calcP(normNv, dveFpKsi[i], dvePsi[i], normEv0, normT);
+
+        /*auto roles = this->geometry->getRolesAt(midpoint);
+        if (size_t actn = isActive(midpoint)) { // LP_09.2015
+            const auto& act = active[actn-1];
+            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + e.getIndex0()]);
+        } else if (roles.find("p-contact") != roles.end()) {
+            conds[i] = Tensor2<double>(pcond, pcond);
+        } else if (roles.find("n-contact") != roles.end()) {
+            conds[i] = Tensor2<double>(ncond, ncond);
+        } else
+            conds[i] = this->geometry->getMaterial(midpoint)->cond(temperature[i]);*/
+    }
+}
+
+
 template<typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype, unsigned loops) {
+    if (calctype=="PsiI") {
+        computePsiI(loops);
+    }
+    else {
+        switch (algorithm) {
+            case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(calctype, loops);
+            case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(calctype, loops);
+            case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(calctype, loops);
+        }
     }
     return 0.;
 }
@@ -458,31 +637,36 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
         // average temperature on the element
         // double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // LP_09.2015
 
-        double tT = 300.; // TODO
-        double tsEc0 = material->CB(tT, 0., 'G')/mEx; // TODO
-        double tsEv0 = material->VB(tT, 0., 'G', 'h')/mEx; // TODO
-        double tsNc = material->Nc(tT, 0., 'G')/mNx; // TODO
-        double tsNv = material->Nv(tT, 0., 'G')/mNx; // TODO
-        double tsNd = material->Nd()/mNx; // TODO
-        double tsNa = material->Na()/mNx; // TODO
-        double tsEd = 0.050/mEx; // TODO
-        double tsEa = 0.150/mEx; // TODO
-        double tsT = 300./mTx; // TODO
+        double T(300.); // TODO
+        double normEc0 = material->CB(T, 0., 'G')/mEx; // TODO
+        double normEv0 = material->VB(T, 0., 'G', 'h')/mEx; // TODO
+        double normNc = material->Nc(T, 0., 'G')/mNx; // TODO
+        double normNv = material->Nv(T, 0., 'G')/mNx; // TODO
+        double normNd = material->Nd()/mNx; // TODO
+        double normNa = material->Na()/mNx; // TODO
+        double normEd = 0.050/mEx; // TODO
+        double normEa = 0.150/mEx; // TODO
+        double normT = T/mTx; // TODO
 
         //std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
-        double tPsiI = findPsiI(tsEc0, tsEv0, tsNc, tsNv, tsNd, tsNa, tsEd, tsEa, 1., 1., tsT);
+        double tPsiI = findPsiI(normEc0, normEv0, normNc, normNv, normNd, normNa, normEd, normEa, 1., 1., normT);
         this->writelog(LOG_DETAIL, "Calculated initial potential PsiI = %1% eV for element %2%", tPsiI*mEx, i); // LP_09.2015 // TEST
-        dvPsiI[i] = tPsiI;
+        dvePsiI[i] = tPsiI;
 
         //int zzz;
         //std::cin >> zzz;
     }
 
     setPsiI();
+    savePsi();
+    saveN();
+    saveP();
 
     //this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
     //               loop, loopno, noactive?"":"@junc", mcur, err);
+
+    outBuiltinPotential.fireChanged();
 
     return 0;
 }
@@ -499,34 +683,30 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setPsiI() {
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex(); //LP_09.2015
 
-        dvNodeInfo[loleftno] += 1;
-        dvNodeInfo[lorghtno] += 1;
-        dvNodeInfo[upleftno] += 1;
-        dvNodeInfo[uprghtno] += 1;
+        dvnNodeInfo[loleftno] += 1;
+        dvnNodeInfo[lorghtno] += 1;
+        dvnNodeInfo[upleftno] += 1;
+        dvnNodeInfo[uprghtno] += 1;
 
-        dvPsi[loleftno] += dvPsiI[i];
-        dvPsi[lorghtno] += dvPsiI[i];
-        dvPsi[upleftno] += dvPsiI[i];
-        dvPsi[uprghtno] += dvPsiI[i];
+        dvnPsi[loleftno] += dvePsiI[i];
+        dvnPsi[lorghtno] += dvePsiI[i];
+        dvnPsi[upleftno] += dvePsiI[i];
+        dvnPsi[uprghtno] += dvePsiI[i];
     }
-
-    //this->writelog(LOG_INFO, "Number of nodes: %1%", (this->mesh->axis0->size())*(this->mesh->axis1->size()));
 
     for (int i = 0; i < this->mesh->size(); ++i) {
-        dvPsi[i] /= dvNodeInfo[i];
+        dvnPsi[i] /= dvnNodeInfo[i];
     }
-
-    outBuiltinPotential.fireChanged();
 }
 
 
 template<typename Geometry2DType>
 template <typename MatrixT>
-double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
+double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calctype, unsigned loops)
 {
-    this->initCalculation();
+    //this->initCalculation(); // LP_09.2015
 
-    heats.reset();
+    //heats.reset(); // LP_09.2015
 
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
@@ -541,11 +721,11 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     toterr = 0.;
 
 #   ifndef NDEBUG
-        //if (!potentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");// LP_09.2015
+        //if (!dvPsi.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");// LP_09.2015
 #   endif
     //potentials = potentials.claim();// LP_09.2015
 
-    loadConductivities();
+    //loadConductivities();
 
     //bool noactive = (active.size() == 0);LP_09.2015
     /*double minj = js[0]; // assume no significant heating below this current// LP_09.2015
@@ -596,6 +776,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
 */ // LP_09.2015
+
+    setMatrix("Psi", A, dvnPsi, vconst);    // corr holds RHS now
+    solveMatrix(A, dvnPsi);
 
     return toterr;
 }
@@ -653,7 +836,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
 
     PrecondJacobi precond(ioA);
 
-    DataVector<double> x = dvPsi.copy(); // We use previous potentials as initial solution // LP_09.2015
+    DataVector<double> x = dvnPsi.copy(); // We use previous potentials as initial solution // LP_09.2015
     double err;
     try {
         int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
@@ -762,12 +945,12 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 */
 
 template<typename Geometry2DType>
-const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getEnergies(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!dvPsi) throw NoValue("Energy");
-    this->writelog(LOG_DEBUG, "Getting energies");
+    if (!dvnPsi) throw NoValue("Potential");
+    this->writelog(LOG_DEBUG, "Getting potentials");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvPsi, dst_mesh, method, this->geometry);
+    return interpolate(this->mesh, dvnPsi*mEx, dst_mesh, method, this->geometry); // here the potential is rescalled (*mEx)
 }
 
 /*
@@ -1050,6 +1233,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::calcFD12(double iEta)
     double tKsi = pow(iEta,4.) + 33.6*iEta*(1.-0.68*exp(-0.17*(iEta+1.)*(iEta+1.))) + 50.;
     return ( 0.5*sqrt(M_PI) / (0.75*sqrt(M_PI)*pow(tKsi,-0.375)+exp(-iEta)) );
 }
+
 
 template<> std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "drift_diffusion.Shockley2D"; }
 template<> std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "drift_diffusion.ShockleyCyl"; }

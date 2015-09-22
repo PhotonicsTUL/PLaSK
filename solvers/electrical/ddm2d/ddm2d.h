@@ -90,14 +90,18 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     //double default_junction_conductivity;       ///< default drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
 
     DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
-    DataVector<double> dvN;                     ///< Cached electron concentrations (size: elements) //LP_09.2015
-    DataVector<double> dvP;                     ///< Cached hole concentrations (size: elements) //LP_09.2015
+    DataVector<double> dveN;                    ///< Cached electron concentrations (size: elements) //LP_09.2015
+    DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements) //LP_09.2015
     //DataVector<double> potentials;            ///< Computed potentials //LP_09.2015
-    DataVector<double> dvPsiI;                  ///< Computed initial potentials (size: elements) //LP_09.2015
-    DataVector<int> dvNodeInfo;                 ///< Number of elements which have this node (size: nodes) //LP_09.2015
-    DataVector<double> dvPsi;                   ///< Computed potentials (size: nodes) //LP_09.2015
-    DataVector<double> dvFn;                    ///< Computed quasi-Fermi levels for electrons (size: nodes) //LP_09.2015
-    DataVector<double> dvFp;                    ///< Computed quasi-Fermi levels for holes (size: nodes) //LP_09.2015
+    DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements) //LP_09.2015
+    DataVector<int> dvnNodeInfo;                ///< Number of elements which have this node (size: nodes) //LP_09.2015
+    DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes) //LP_09.2015
+    DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes) //LP_09.2015
+    DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes) //LP_09.2015
+    DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes) //LP_09.2015
+    DataVector<double> dvePsi;                  ///< Computed potentials (size: elements) //LP_09.2015
+    DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements) //LP_09.2015
+    DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements) //LP_09.2015
     DataVector<Vec<2,double>> currents;         ///< Computed current densities
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
@@ -108,6 +112,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT); ///< calculate electron concentration //LP_09.2015
     double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT); ///< calculate hole concentration //LP_09.2015
     double calcFD12(double iEta); ///< Fermi-Dirac integral of grade 1/2 //LP_09.2015
+    double updateNP(); ///< save electron/hole concentrations for all elements to datavectors
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
@@ -116,9 +121,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Load conductivities
     void loadConductivities();
+
+    void savePsi(); ///< save potentials for all elements to datavector
+    void saveN(); ///< save electron concentrations for all elements to datavector
+    void saveP(); ///< save hole concentrations for all elements to datavector
 /*
     /// Save conductivities of active region
     void saveConductivities();
+
 
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
@@ -158,11 +168,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void setMatrix(std::string calctype, MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(unsigned loops=1);
+    double doCompute(std::string calctype, unsigned loops=1);
 
     /** Return \c true if the specified point is at junction
      * \param point point to test
@@ -225,7 +235,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     size_t logfreq;         ///< Frequency of iteration progress reporting
 
     /**
-     * Calculate initial energy for all elements
+     * Calculate initial potential for all elements
      * \return max correction of potential against the last call // TODO
      **/
     int computePsiI(unsigned loops=1); //LP_09.2015
@@ -237,10 +247,16 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void setPsiI(); //LP_09.2015
 
     /**
+     * Calculate potential at U=0V for all nodes
+     * \return max correction of potential against the last call // TODO
+     **/
+    int computePsi0(unsigned loops=1); //LP_09.2015
+
+    /**
      * Run drift_diffusion calculations
      * \return max correction of potential against the last call
      **/
-    double compute(unsigned loops=1);
+    double compute(std::string calctype, unsigned loops=1);
 
     /**
      * Integrate vertical total current at certain level.
@@ -356,7 +372,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     ~DriftDiffusionModel2DSolver();
 
   protected:
-    const LazyData<double> getEnergies(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
     const LazyData<double> getQuasiFermiElectronLevels(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 

@@ -103,7 +103,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     //METHOD(compute, compute, "Run drift_diffusion calculations", py::arg("loops")=0);
     METHOD(compute, compute, "Run drift_diffusion calculations"/*, py::arg("loops")=0*/);
-    METHOD(compute_initial_energy, computePsiI, "Run drift_diffusion calculations"/*, py::arg("loops")=0*/);
+    METHOD(compute_initial_potential, computePsiI, "Run drift_diffusion calculations"/*, py::arg("loops")=0*/);
     /*METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
