@@ -32,7 +32,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //default_junction_conductivity(5.), // LP_09.2015
     maxerr(0.05),
     heatmet(HEAT_JOULES),
-    outBuiltinPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
+    outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
 //     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
 //     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
@@ -666,7 +666,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
     //this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
     //               loop, loopno, noactive?"":"@junc", mcur, err);
 
-    outBuiltinPotential.fireChanged();
+    outPotential.fireChanged();
 
     return 0;
 }
@@ -732,10 +732,17 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
     for (auto j: js) if (j < minj) minj = j;
     minj *= 100e-7;
 
+if (v_new.size() == 0) {
+    v_new = DataVector<double>(N, 0.);
+    v_old = DataVector<double>(N);
+}
+    
     do {
-        setMatrix(A, potentials, vconst);    // corr holds RHS now
+        setMatrix(A, potentials, vconst);    // potentials holds RHS now
         solveMatrix(A, potentials);
 
+std::swap(v_new, v_old);
+        
         err = 0.;
         double mcur = 0.;
         for (auto el: this->mesh->elements) {

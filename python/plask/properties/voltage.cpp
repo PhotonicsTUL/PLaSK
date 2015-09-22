@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_voltage()
 {
-    registerProperty<Potential>();
+    registerProperty<Voltage>();
 }
 
 }} // namespace plask::python

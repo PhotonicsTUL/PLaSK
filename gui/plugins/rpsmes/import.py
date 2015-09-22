@@ -269,7 +269,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('\ntemperature = THERMAL.outTemperature(THERMAL.mesh)')
             out('heats = THERMAL.inHeat(THERMAL.mesh)')
         if electr:
-            out('voltage = ELECTRICAL.outPotential(ELECTRICAL.mesh)')
+            out('voltage = ELECTRICAL.outVoltage(ELECTRICAL.mesh)')
             out('current = ELECTRICAL.outCurrentDensity(ELECTRICAL.mesh)')
             if actlevel is not False:
                 out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "SPLINE")')

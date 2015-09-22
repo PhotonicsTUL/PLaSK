@@ -108,7 +108,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
     RECEIVER(inTemperature, "");*/
-    PROVIDER(outBuiltinPotential, "");
+    PROVIDER(outPotential, "");
     PROVIDER(outQuasiFermiElectronLevel, "");
     PROVIDER(outQuasiFermiHoleLevel, "");
     /*PROVIDER(outPotential, "");

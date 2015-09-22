@@ -11,7 +11,7 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectr
     default_junction_conductivity(5.),
     maxerr(0.05),
     heatmet(HEAT_JOULES),
-    outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
+    outVoltage(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
     outHeat(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),
     outConductivity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity),
@@ -34,7 +34,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
     {
         std::string param = source.getNodeName();
 
-        if (param == "voltage" || param == "potential")
+        if (param == "potential")
+            source.throwException("<potential> boundary conditions have been permanently renamed to <voltage>");
+        
+        if (param == "voltage")
             this->readBoundaryConditions(manager, source, voltage_boundary);
 
         else if (param == "loop") {
@@ -427,7 +430,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
     toterr = 0.;
 
 #   ifndef NDEBUG
-        if (!potentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
+        if (!potentials.unique()) this->writelog(LOG_DEBUG, "Voltage data held by something else...");
 #   endif
     potentials = potentials.claim();
 
@@ -478,7 +481,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
     saveConductivities();
 
-    outPotential.fireChanged();
+    outVoltage.fireChanged();
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
 
@@ -647,10 +650,10 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(si
 
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!potentials) throw NoValue("Potential");
-    this->writelog(LOG_DEBUG, "Getting potentials");
+    if (!potentials) throw NoValue("Voltage");
+    this->writelog(LOG_DEBUG, "Getting voltage");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
 }

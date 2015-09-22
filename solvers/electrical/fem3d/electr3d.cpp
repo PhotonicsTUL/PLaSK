@@ -14,7 +14,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
-    outPotential(this, &FiniteElementMethodElectrical3DSolver::getPotential),
+    outVoltage(this, &FiniteElementMethodElectrical3DSolver::getVoltage),
     outCurrentDensity(this, &FiniteElementMethodElectrical3DSolver::getCurrentDensity),
     outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity),
     outConductivity(this, &FiniteElementMethodElectrical3DSolver::getConductivity)
@@ -455,7 +455,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 
     saveConductivity();
 
-    outPotential.fireChanged();
+    outVoltage.fireChanged();
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
 
@@ -636,8 +636,8 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 }
 
 
-const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
-    if (!potential) throw NoValue("Potential");
+const LazyData<double> FiniteElementMethodElectrical3DSolver::getVoltage(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
+    if (!potential) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(mesh, potential, dest_mesh, method, geometry);

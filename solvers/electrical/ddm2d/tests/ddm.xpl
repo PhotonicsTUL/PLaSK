@@ -42,7 +42,7 @@ DDM2D.invalidate()
 
 T = 300
 
-DDM2D.compute_initial_energy(1);
+DDM2D.compute_initial_potential(1);
 
 print_log(LOG_INFO, "Calculations done!")
 
@@ -60,8 +60,8 @@ r = linspace(left, right, 1000)
 z = linspace(bottom, top, 2000)
 
 # to bedzie rysowane
-energy_rz = DDM2D.outBuiltinPotential(DDM2D.mesh)
-energy_z = DDM2D.outBuiltinPotential(mesh.Rectangular2D([0.], z), 'nearest')
+energy_rz = DDM2D.outPotential(DDM2D.mesh)
+energy_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
 
 # wykres E(r,z)
 figure()

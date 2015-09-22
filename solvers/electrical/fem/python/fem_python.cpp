@@ -6,6 +6,12 @@ using namespace plask::python;
 #include "../femV.h"
 using namespace plask::solvers::electrical;
 
+static py::object outPotential(const py::object& self) {
+    throw TypeError("%s: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
+                    std::string(py::extract<std::string>(self.attr("id"))));
+    return py::object();
+}
+
 // template <typename Cls>
 // static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
 //     if (self->getMesh() && self->getGeometry()) {
@@ -106,7 +112,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
     RO_PROPERTY(err, getErr, "Maximum estimated error");
     RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
     RECEIVER(inTemperature, "");
-    PROVIDER(outPotential, "");
+    PROVIDER(outVoltage, "");
     PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");
     PROVIDER(outConductivity, "");
@@ -140,7 +146,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
     solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");
-    solver.setattr("outVoltage", solver.attr("outPotential"));
+    solver.add_property("outPotential", outPotential, "Removed: use :attr:`outVoltage` instead.");
     RW_FIELD(itererr, "Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
     RW_FIELD(logfreq, "Frequency of iteration progress reporting");

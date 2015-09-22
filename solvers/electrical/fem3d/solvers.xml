@@ -45,7 +45,7 @@
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>
     </tag>
 
-    <bcond name="voltage" label="Electric Potential"/>
+    <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inTemperature"/>

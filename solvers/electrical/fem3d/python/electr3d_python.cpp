@@ -6,6 +6,12 @@ using namespace plask::python;
 #include "../electr3d.h"
 using namespace plask::solvers::electrical3d;
 
+static py::object outPotential(const py::object& self) {
+    throw TypeError("%s: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
+                    std::string(py::extract<std::string>(self.attr("id"))));
+    return py::object();
+}
+
 static DataVectorWrap<const double,3> getCondJunc(const FiniteElementMethodElectrical3DSolver* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
@@ -80,7 +86,7 @@ BOOST_PYTHON_MODULE(fem3d)
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inWavelength, "It is required only if :attr:`heat` is eual to *wavelength*.");
         RECEIVER(inTemperature, "");
-        PROVIDER(outPotential, "");
+        PROVIDER(outVoltage, "");
         PROVIDER(outCurrentDensity, "");
         PROVIDER(outHeat, "");
         PROVIDER(outConductivity, "");
@@ -94,7 +100,7 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_PROPERTY(pcond, getPcond, setPcond, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getNcond, setNcond, "Conductivity of the n-contact");
         solver.add_property("pnjcond", &getCondJunc, &setCondJunc, "Effective conductivity of the p-n junction");
-        solver.setattr("outVoltage", solver.attr("outPotential"));
+        solver.add_property("outPotential", outPotential, "Removed: use :attr:`outVoltage` instead.");
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");

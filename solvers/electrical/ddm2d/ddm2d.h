@@ -209,7 +209,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// Boundary condition      
     BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
 
-    typename ProviderFor<BuiltinPotential, Geometry2DType>::Delegate outBuiltinPotential;
+    typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
     typename ProviderFor<QuasiFermiElectronLevel, Geometry2DType>::Delegate outQuasiFermiElectronLevel;
 

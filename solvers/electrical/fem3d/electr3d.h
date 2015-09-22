@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     // Boundary conditions
     BoundaryConditions<RectangularMesh<3>, double> voltage_boundary;      ///< Boundary condition of constant voltage [K]
 
-    typename ProviderFor<Potential,Geometry3D>::Delegate outPotential;
+    typename ProviderFor<Voltage,Geometry3D>::Delegate outVoltage;
 
     typename ProviderFor<CurrentDensity,Geometry3D>::Delegate outCurrentDensity;
 
@@ -267,7 +267,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
   protected:
 
-    const LazyData<double> getPotential(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getVoltage(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const;
 
     const LazyData<Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method);
 

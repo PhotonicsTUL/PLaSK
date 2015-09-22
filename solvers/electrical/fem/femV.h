@@ -159,7 +159,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     /// Boundary condition
     BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
 
-    typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
+    typename ProviderFor<Voltage, Geometry2DType>::Delegate outVoltage;
 
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
 
@@ -298,7 +298,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
   protected:
 
-    const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getVoltage(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
     const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 

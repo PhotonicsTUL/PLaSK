@@ -329,6 +329,35 @@ py::docstring_options doc_options(
 //     }
 // };
 
+// struct DoubleFromComplex {
+// 
+//     static PyObject* ComplexWarning;
+// 
+//     DoubleFromComplex() {
+//         ComplexWarning = PyErr_NewExceptionWithDoc((char*)"plask.ComplexWarning",
+//                                                    (char*)"The warning raised when casting a complex dtype to a real dtype.\n\n"
+//                                                           "As implemented, casting a complex number to a real discards its imaginary\n"
+//                                                           "part, but this behavior may not be what the user actually wants.\n",
+//                                                    PyExc_Warning, NULL);
+//         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<double>());
+//     }
+// 
+//     // Determine if obj can be converted into an Aligner
+//     static void* convertible(PyObject* obj) {
+//         if (!PyComplex_Check(obj)) return NULL;
+//         return obj;
+//     }
+// 
+//     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+//         void* storage = ((boost::python::converter::rvalue_from_python_storage<double>*)data)->storage.bytes;
+//         plask::dcomplex cplx = py::extract<plask::dcomplex>(obj);
+//         new(storage) double(real(cplx));
+//         data->convertible = storage;
+//         PyErr_Warn(ComplexWarning, "Casting complex values to real discards the imaginary part");
+//     }
+// };
+// PyObject* DoubleFromComplex::ComplexWarning;
+
 
 BOOST_PYTHON_MODULE(_plask)
 {
@@ -436,6 +465,9 @@ BOOST_PYTHON_MODULE(_plask)
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION
         py::def("_print_stack", &printStack, "Print C stack (for debug purposes_");
 #   endif
+
+    // Converters
+    // DoubleFromComplex();
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_builtin_potential()
 {
-    registerProperty<BuiltinPotential>();
+    registerProperty<Potential>();
 }
 
 }} // namespace plask::python

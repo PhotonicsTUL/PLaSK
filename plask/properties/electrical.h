@@ -6,10 +6,18 @@
 namespace plask {
 
 /**
- * Electric potential/voltage [V]
+ * Electric potential [V]
  */
 struct PLASK_API Potential: public ScalarFieldProperty {
     static constexpr const char* NAME = "potential";
+    static constexpr const char* UNIT = "V";
+};
+
+/**
+ * Electric voltage [V]
+ */
+struct PLASK_API Voltage: public ScalarFieldProperty {
+    static constexpr const char* NAME = "voltage";
     static constexpr const char* UNIT = "V";
 };
 
@@ -53,14 +61,6 @@ struct PLASK_API HolesConcentration: public ScalarFieldProperty {
 struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
     static constexpr const char* NAME = "electrical conductivity";
     static constexpr const char* UNIT = "S/m";
-};
-
-/**
- * Built-in potential [V]
- */
-struct PLASK_API BuiltinPotential: public ScalarFieldProperty {
-    static constexpr const char* NAME = "built-in potential";
-    static constexpr const char* UNIT = "V";
 };
 
 /**
