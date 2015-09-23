@@ -81,9 +81,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
     double maxDelPsi;  ///< maximal correction for potential calculations (V)
 
-    double mAccPsiI;  ///< correction limit in initial potential calculations
+    //double mAccPsiI;  ///< correction limit in initial potential calculations
     double mLoopPsiI; ///< loop limit for initial potential calculations
-    double mAccPsi0;  ///< correction limit in initial potential calculations
+    //double mAccPsi0;  ///< correction limit in initial potential calculations
     double mLoopPsi0; ///< loop limit for initial potential calculations
     std::string mStat; ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
 
@@ -115,7 +115,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     std::vector<Active> active;                 ///< Active regions information
 
     void setScaleParam(); ///< set scalling parameters //LP_09.2015
-    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT); ///< find initial potential //LP_09.2015
+    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop); ///< find initial potential //LP_09.2015
     double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT); ///< calculate electron concentration //LP_09.2015
     double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT); ///< calculate hole concentration //LP_09.2015
     double calcFD12(double iEta); ///< Fermi-Dirac integral of grade 1/2 //LP_09.2015
@@ -238,8 +238,18 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     Algorithm algorithm;    ///< Factorization algorithm to use
 
+    double maxerrPsiI;  ///< Maximum estimated error for initial potential during all iterations (useful for single calculations managed by external python script)
+    double maxerrPsi0;  ///< Maximum estimated error for potential at U = 0 V during all iterations (useful for single calculations managed by external python script)
+    double maxerrPsi;   ///< Maximum estimated error for potential during all iterations (useful for single calculations managed by external python script)
+    double maxerrFn;    ///< Maximum estimated error for quasi-Fermi energy level for electrons during all iterations (useful for single calculations managed by external python script)
+    double maxerrFp;    ///< Maximum estimated error for quasi-Fermi energy level for holes during all iterations (useful for single calculations managed by external python script)
+    size_t iterlimPsiI; ///< Maximum number of iterations for iterative method for initial potential
+    size_t iterlimPsi0; ///< Maximum number of iterations for iterative method for potential at U = 0 V
+    size_t iterlimPsi;  ///< Maximum number of iterations for iterative method for potential
+    size_t iterlimFn;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for electrons
+    size_t iterlimFp;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for holes
     double itererr;         ///< Allowed residual iteration for iterative method
-    size_t iterlim;         ///< Maximum nunber of iterations for iterative method
+    size_t iterlim;         ///< Maximum number of iterations for iterative method
     size_t logfreq;         ///< Frequency of iteration progress reporting
 
     /**
