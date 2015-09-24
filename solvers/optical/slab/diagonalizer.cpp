@@ -38,7 +38,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
             omp_init_lock(tmplx+i);
         }
     #else
-        SOLVER->writelog(LOG_DEBUG, "%s: Creating temporary matrix for diagonalizer", src->solver->getId());
+        writelog(LOG_DEBUG, "%s: Creating temporary matrix for diagonalizer", src->solver->getId());
         tmpmx = new cmatrix(N, N);
     #endif
 }

@@ -278,7 +278,7 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
                          l, Ml, Mt, omp_get_thread_num());
     #else
-        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
     #endif
 
     auto mesh = make_shared<RectangularMesh<3>>
