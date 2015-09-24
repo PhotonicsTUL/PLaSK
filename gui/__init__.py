@@ -252,7 +252,10 @@ class MainWindow(QtGui.QMainWindow):
         menu_button.setText("File")
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
-        menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
+        if os.name == 'nt':
+            menu_button.setIcon(QtGui.QIcon(QtGui.QIcon.fromTheme('plask').pixmap(16,16)))
+        else:
+            menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")

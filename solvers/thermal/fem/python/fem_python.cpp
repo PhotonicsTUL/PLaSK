@@ -78,7 +78,7 @@ BOOST_PYTHON_MODULE(fem)
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
-        "Finite element thermal solver for 2D Cylindrical Geometry.")
+        "Finite element thermal solver for 2D cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");

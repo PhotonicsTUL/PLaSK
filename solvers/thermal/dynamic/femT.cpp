@@ -263,6 +263,159 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 
 }
 
+template<> template<typename MatrixT>
+void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix(
+        MatrixT& A, MatrixT& B, DataVector<double>& F,
+        const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature)
+{
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto heatdensities = inHeat(iMesh);
+
+    // zero the matrices A, B and the load vector F
+    std::fill_n(A.data, A.size*(A.ld+1), 0.);
+    std::fill_n(B.data, B.size*(B.ld+1), 0.);
+    F.fill(0.);
+
+    // Set stiffness matrix and load vector
+    for (auto elem: this->mesh->elements)
+    {
+        // nodes numbers for the current element
+        size_t loleftno = elem.getLoLoIndex();
+        size_t lorghtno = elem.getUpLoIndex();
+        size_t upleftno = elem.getLoUpIndex();
+        size_t uprghtno = elem.getUpUpIndex();
+
+        // element size
+        double elemwidth = elem.getUpper0() - elem.getLower0();
+        double elemheight = elem.getUpper1() - elem.getLower1();
+
+        // point and material in the middle of the element
+        Vec<2,double> midpoint = elem.getMidpoint();
+        double r = midpoint.rad_r();
+        auto material = this->geometry->getMaterial(midpoint);
+
+        // average temperature on the element
+        double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]);
+
+        // thermal conductivity
+        double kx, ky;
+        double top = elem.getUpper1(), bottom = elem.getLower1();
+        for (size_t r = elem.getIndex1(); r > 0; r--) {
+            auto e = this->mesh->elements(elem.getIndex0(), r-1);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
+            else break;
+        }
+        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
+            auto e = this->mesh->elements(elem.getIndex0(), r);
+            auto m = this->geometry->getMaterial(e.getMidpoint());
+            if (m == material) top = e.getUpper1();                     //TODO ignore doping
+            else break;
+        }
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+
+        // element of heat capacity matrix
+        double c = material->cp(temp) * material->dens(temp) * 0.25 * 1E-12 * r * elemheight * elemwidth / timestep / 1E-9;
+
+        kx *= elemheight; kx /= elemwidth; kx *= r;
+        ky *= elemwidth; ky /= elemheight; ky *= r;
+
+        // load vector: heat densities
+        double f = 0.25e-12 * r * elemwidth * elemheight * heatdensities[elem.getIndex()]; // 1e-12 -> to transform µm² into m²
+
+        // set symmetric matrix components in thermal conductivity matrix
+        double k44, k33, k22, k11, k43, k21, k42, k31, k32, k41;
+
+        k44 = k33 = k22 = k11 = (kx + ky) / 3.;
+        k43 = k21 = (-2. * kx + ky) / 6.;
+        k42 = k31 = - (kx + ky) / 6.;
+        k32 = k41 = (kx - 2. * ky) / 6.;
+
+        double f1 = f, f2 = f, f3 = f, f4 = f;
+
+        //Wheter lumping the mass matrces A, B?
+        if (lumping)
+        {
+            A(loleftno, loleftno) += methodparam*k11 + c;
+            A(lorghtno, lorghtno) += methodparam*k22 + c;
+            A(uprghtno, uprghtno) += methodparam*k33 + c;
+            A(upleftno, upleftno) += methodparam*k44 + c;
+
+            A(lorghtno, loleftno) += methodparam*k21;
+            A(uprghtno, loleftno) += methodparam*k31;
+            A(upleftno, loleftno) += methodparam*k41;
+            A(uprghtno, lorghtno) += methodparam*k32;
+            A(upleftno, lorghtno) += methodparam*k42;
+            A(upleftno, uprghtno) += methodparam*k43;
+
+            B(loleftno, loleftno) += -(1-methodparam)*k11 + c;
+            B(lorghtno, lorghtno) += -(1-methodparam)*k22 + c;
+            B(uprghtno, uprghtno) += -(1-methodparam)*k33 + c;
+            B(upleftno, upleftno) += -(1-methodparam)*k44 + c;
+
+            B(lorghtno, loleftno) += -(1-methodparam)*k21;
+            B(uprghtno, loleftno) += -(1-methodparam)*k31;
+            B(upleftno, loleftno) += -(1-methodparam)*k41;
+            B(uprghtno, lorghtno) += -(1-methodparam)*k32;
+            B(upleftno, lorghtno) += -(1-methodparam)*k42;
+            B(upleftno, uprghtno) += -(1-methodparam)*k43;
+        }
+        else
+        {
+            A(loleftno, loleftno) += methodparam*k11 + 4./9.*c;
+            A(lorghtno, lorghtno) += methodparam*k22 + 4./9.*c;
+            A(uprghtno, uprghtno) += methodparam*k33 + 4./9.*c;
+            A(upleftno, upleftno) += methodparam*k44 + 4./9.*c;
+
+            A(lorghtno, loleftno) += methodparam*k21 + 2./9.*c;
+            A(uprghtno, loleftno) += methodparam*k31 + 1./9.*c;
+            A(upleftno, loleftno) += methodparam*k41 + 2./9.*c;
+            A(uprghtno, lorghtno) += methodparam*k32 + 2./9.*c;
+            A(upleftno, lorghtno) += methodparam*k42 + 1./9.*c;
+            A(upleftno, uprghtno) += methodparam*k43 + 2./9.*c;
+
+            B(loleftno, loleftno) += -(1-methodparam)*k11 + 4./9.*c;
+            B(lorghtno, lorghtno) += -(1-methodparam)*k22 + 4./9.*c;
+            B(uprghtno, uprghtno) += -(1-methodparam)*k33 + 4./9.*c;
+            B(upleftno, upleftno) += -(1-methodparam)*k44 + 4./9.*c;
+
+            B(lorghtno, loleftno) += -(1-methodparam)*k21 + 2./9.*c;
+            B(uprghtno, loleftno) += -(1-methodparam)*k31 + 1./9.*c;
+            B(upleftno, loleftno) += -(1-methodparam)*k41 + 2./9.*c;
+            B(uprghtno, lorghtno) += -(1-methodparam)*k32 + 2./9.*c;
+            B(upleftno, lorghtno) += -(1-methodparam)*k42 + 1./9.*c;
+            B(upleftno, uprghtno) += -(1-methodparam)*k43 + 2./9.*c;
+        }
+        // set load vector
+        F[loleftno] += f1;
+        F[lorghtno] += f2;
+        F[uprghtno] += f3;
+        F[upleftno] += f4;
+    }
+
+    //boundary conditions of the first kind
+    for (auto cond: btemperature) {
+        for (auto r: cond.place) {
+            A(r,r) += BIG;
+            F[r] += BIG * cond.value;
+        }
+    }
+
+    // macierz A -> L L^T
+    prepareMatrix(A);
+
+#ifndef NDEBUG
+    double* aend = A.data + A.size * A.kd;
+    for (double* pa = A.data; pa != aend; ++pa) {
+        if (isnan(*pa) || isinf(*pa))
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-A.data);
+    }
+#endif
+
+}
+
 
 template<typename Geometry2DType>
 double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::compute(double time) {
@@ -376,7 +529,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::prepareMatrix(Dg
     if (info < 0) {
         throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singular (at %1%)", info);
     }
 
     // now A contains factorized matrix
@@ -490,7 +643,9 @@ const LazyData<Tensor2<double>> FiniteElementMethodDynamicThermal2DSolver<Geomet
 
 
 template<> std::string FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Dynamic2D"; }
+template<> std::string FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.DynamicCyl"; }
 
 template struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::solvers::thermal
