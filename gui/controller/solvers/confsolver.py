@@ -17,6 +17,7 @@ from ...external.highlighter.xml import syntax
 from ...utils.textedit import TextEdit
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ..source import SCHEME
 
 
 class SolverAutoWidget(VerticalScrollArea):
