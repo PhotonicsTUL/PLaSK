@@ -50,11 +50,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     int size;                   ///< Number of columns in the main matrix
 
-    //std::vector<double> js;     ///< p-n junction parameter [A/m^2] //LP_09.2015
-    //std::vector<double> beta;   ///< p-n junction parameter [1/V] //LP_09.2015
-    //double pcond;               ///< p-contact drift_diffusion conductivity [S/m] //LP_09.2015
-    //double ncond;               ///< n-contact drift_diffusion conductivity [S/m] //LP_09.2015
-
     bool mRsrh;    ///< SRH recombination is taken into account //LP_09.2015
     bool mRrad;    ///< radiative recombination is taken into account //LP_09.2015
     bool mRaug;    ///< Auger recombination is taken into account //LP_09.2015
@@ -67,77 +62,70 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double mNx;    ///< maximal doping concentration (1/cm^3) //LP_09.2015
     double mEpsRx; ///< maximal dielectric constant (-) //LP_09.2015
     double mXx;    ///< sometimes denoted as LD (um) //LP_09.2015
-    double mKx;    ///< thermal conductivity (W/(m*K)) //LP_09.2015
+    //double mKx;    ///< thermal conductivity (W/(m*K)) //LP_09.2015
     double mMix;   ///< maximal mobility (cm^2/Vs) //LP_09.2015
     double mRx;    ///< recombination parameter (1/(cm^3*s)) //LP_09.2015
     double mJx;    ///< current density parameter (kA/cm2) //LP_09.2015
     double mtx;    ///< SRH recombination lifetime (s) //LP_09.2015
     double mBx;    ///< radiative recombination coefficient (cm^3/s) //LP_09.2015
     double mCx;    ///< Auger recombination coefficient (cm^6/s) //LP_09.2015
-    double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
+    //double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
     double mPx;    ///< polarization (C/m^2) //LP_09.2015
 
     double dU;         ///< default voltage step (V)
     double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
     double maxDelPsi;  ///< maximal correction for potential calculations (V)
+    double maxDelFn;   ///< maximal correction for quasi-Fermi levels for electrons calculations (eV)
+    double maxDelFp;   ///< maximal correction for quasi-Fermi levels for holes calculations (eV)
 
-    //double mAccPsiI;  ///< correction limit in initial potential calculations
-    double mLoopPsiI; ///< loop limit for initial potential calculations
-    //double mAccPsi0;  ///< correction limit in initial potential calculations
-    double mLoopPsi0; ///< loop limit for initial potential calculations
-    std::string mStat; ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
+    std::string stat;  ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
 
+    //int loopno;                 ///< Number of completed loops
+    //double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
+    //Vec<2,double> maxcur;       ///< Maximum current in the structure
 
-    int loopno;                 ///< Number of completed loops
-    double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
-    Vec<2,double> maxcur;       ///< Maximum current in the structure
+    DataVector<double> dveN;                    ///< Cached electron concentrations (size: elements)
+    DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements)
+    DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements)
+    DataVector<double> dvePsi;                  ///< Computed potentials (size: elements)
+    DataVector<double> dveFn;                  ///< Computed potentials (size: elements)
+    DataVector<double> dveFp;                  ///< Computed potentials (size: elements)
+    DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
+    DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
 
-    //DataVector<double> junction_conductivity;   ///< drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
-    //double default_junction_conductivity;       ///< default drift_diffusion conductivity for p-n junction in y-direction [S/m] //LP_09.2015
-
-    DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
-    DataVector<double> dveN;                    ///< Cached electron concentrations (size: elements) //LP_09.2015
-    DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements) //LP_09.2015
-    //DataVector<double> potentials;            ///< Computed potentials //LP_09.2015
-    DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements) //LP_09.2015
-    DataVector<int> dvnNodeInfo;                ///< Number of elements which have this node (size: nodes) //LP_09.2015
-    DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes) //LP_09.2015
-    DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes) //LP_09.2015
-    DataVector<double> dvnDeltaPsi;             ///< Computed potentials corrections (size: nodes) //LP_09.2015
-    DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes) //LP_09.2015
-    DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes) //LP_09.2015
-    DataVector<double> dvePsi;                  ///< Computed potentials (size: elements) //LP_09.2015
-    DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements) //LP_09.2015
-    DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements) //LP_09.2015
-    DataVector<Vec<2,double>> currents;         ///< Computed current densities
-    DataVector<double> heats;                   ///< Computed and cached heat source densities
-
-    std::vector<Active> active;                 ///< Active regions information
+    DataVector<int> dvnNodeInfo;                ///< Number of elements which have this node (size: nodes)
+    DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes)
+    DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes)
+    DataVector<double> dvnDeltaPsi;             ///< Computed potentials corrections (size: nodes)
+    DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes)
+    DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes)
+    DataVector<double> dvnFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: nodes)
+    DataVector<double> dvnFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: nodes)
+    DataVector<double> dvnDeltaFn;              ///< Computed quasi-Fermi levels for electrons corrections (size: nodes)
+    DataVector<double> dvnDeltaFp;              ///< Computed quasi-Fermi levels for holes corrections (size: nodes)
+    //DataVector<Vec<2,double>> currents;         ///< Computed current densities
+    //DataVector<double> heats;                   ///< Computed and cached heat source densities
 
     void setScaleParam(); ///< set scalling parameters //LP_09.2015
     double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop); ///< find initial potential //LP_09.2015
     double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT); ///< calculate electron concentration //LP_09.2015
     double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT); ///< calculate hole concentration //LP_09.2015
     double calcFD12(double iEta); ///< Fermi-Dirac integral of grade 1/2 //LP_09.2015
-    double updateNP(); ///< save electron/hole concentrations for all elements to datavectors
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
                                double ky, double width, const Vec<2,double>& midpoint);
 
-    /// Load conductivities
-    void loadConductivities();
-
     void savePsi(); ///< save potentials for all elements to datavector
+    void saveFn();  ///< save quasi-Fermi electron level for all elements to datavector
+    void saveFp();  ///< save quasi-Fermi electron level for all elements to datavector
+    void saveFnEta();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
+    void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
     double addCorr(std::string calctype); ///< add corrections to datavectors
 /*
-    /// Save conductivities of active region
-    void saveConductivities();
-
-
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
 */
@@ -224,8 +212,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     typename ProviderFor<QuasiFermiHoleLevel, Geometry2DType>::Delegate outQuasiFermiHoleLevel;
 
 /*
-    typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
-
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
 
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
@@ -256,19 +242,19 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * Calculate initial potential for all elements
      * \return max correction of potential against the last call // TODO
      **/
-    int computePsiI(unsigned loops=1); //LP_09.2015
+    int computePsiI(unsigned loops=1);
 
     /**
      * Set initial potential for all nodes
      * \return max correction of potential against the last call // TODO
      **/
-    void setPsiI(); //LP_09.2015
+    void setPsiI();
 
     /**
      * Calculate potential at U=0V for all nodes
      * \return max correction of potential against the last call // TODO
      **/
-    int computePsi0(unsigned loops=1); //LP_09.2015
+    int computePsi0(unsigned loops=1);
 
     /**
      * Run drift_diffusion calculations
@@ -310,77 +296,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     //double getTotalHeat();// LP_09.2015
 
     /// Return the maximum estimated error.
-    double getErr() const { return toterr; }
+    //double getErr() const { return toterr; }
 
-    /// Return beta.
-    /*double getBeta(size_t n) const { // LP_09.2015
-        if (beta.size() <= n) throw Exception("%1%: no beta given for junction %2%", this->getId(), n);
-        return beta[n];
-    }*/
-    /// Set new beta and invalidate the solver.
-    /*void setBeta(size_t n, double beta)  { // LP_09.2015
-        if (this->beta.size() <= n) {
-            this->beta.reserve(n+1); for (size_t s = this->beta.size(); s <= n; ++s) this->beta.push_back(NAN);
-        }
-        this->beta[n] = beta;
-        this->invalidate();
-    }*/
-/*  // LP_09.2015
-    /// Get junction thermal voltage.
-    double getVt(size_t n) const {
-        if (beta.size() <= n) throw Exception("%1%: no Vt given for junction %2%", this->getId(), n);
-        return 1. / beta[n];
-    }
-    /// Set new junction thermal voltage and invalidate the solver.
-    void setVt(size_t n, double Vt) {
-        if (beta.size() <= n) {
-            beta.reserve(n+1); for (size_t s = beta.size(); s <= n; ++s) beta.push_back(NAN);
-        }
-        this->beta[n] = 1. / Vt;
-        this->invalidate();
-    }
-
-    /// Return js
-    double getJs(size_t n) const {
-        if (js.size() <= n) throw Exception("%1%: no js given for junction %2%", this->getId(), n);
-        return js[n];
-    }
-    /// Set new js and invalidate the solver
-    void setJs(size_t n, double js)  {
-        if (this->js.size() <= n) {
-            this->js.reserve(n+1); for (size_t s = this->js.size(); s <= n; ++s) this->js.push_back(1.);
-        }
-        this->js[n] = js;
-        this->invalidate();
-    }
-
-    double getCondPcontact() const { return pcond; }
-    void setCondPcontact(double cond)  {
-        pcond = cond;
-        this->invalidate();
-    }
-
-    double getCondNcontact() const { return ncond; }
-    void setCondNcontact(double cond)  {
-        ncond = cond;
-        this->invalidate();
-    }
-
-    double getDefaultCondJunc() const { return junction_conductivity; }
-    void setCondJunc(double cond) {
-        junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
-        default_junction_conductivity = cond;
-    }
-    DataVector<const double> getCondJunc() const { return junction_conductivity; }
-    void setCondJunc(const DataVector<const double>& cond)  {
-        size_t condsize = 0;
-        for (const auto& act: active) condsize += act.right - act.left;
-        condsize = max(condsize, size_t(1));
-        if (!this->mesh || cond.size() != condsize)
-            throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
-        junction_conductivity = cond.claim();
-    }
-*/
     virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     DriftDiffusionModel2DSolver(const std::string& name="");
@@ -398,8 +315,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
 
     /*
-    const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
-
     const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
     const LazyData<Vec<2>> getCurrentDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
