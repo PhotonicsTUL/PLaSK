@@ -193,10 +193,10 @@ CONFIG_WIDGETS = OrderedDict([
         "Script completion",
         ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
                                             "Do not show completion pop-up after you type a dot. This still allows "
-                                            "to show the pop-pu manually by pressing Ctrl+Space.")),
+                                            "to show the pop-up manually by pressing Ctrl+Space.")),
         ("Run in a single thread", CheckBox('workarounds/blocking_jedi',
                                             "Do not run script completion in background. This may cause the GUI stop "
-                                            "responding for the couple of seconds when showing completion popup, but "
+                                            "responding for the couple of seconds when showing completion pop-up, but "
                                             "may be helpful if the program often crashes on completion.")),
         ("Disable completion", CheckBox('workarounds/no_jedi',
                                         "Disable script completion and on-line help.")),

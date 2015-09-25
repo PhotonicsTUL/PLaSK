@@ -89,7 +89,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
-    void layerIntegrals(size_t l, double lam, double glam) override;
+    void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
 

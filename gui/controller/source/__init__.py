@@ -387,6 +387,7 @@ class SourceWidget(QtGui.QWidget):
         selection.cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
         selection.format.setBackground(REPLACE_COLOR)
         self._replaced_selections.append(selection)
+        self._replace_count += 1
         if not self._find(cont=False, rewind=rewind, theend=theend):
             self.editor.update_selections(self._replaced_selections)
             cursor.setPosition(start)
@@ -405,6 +406,7 @@ class SourceWidget(QtGui.QWidget):
         else:
             start = end = None
         cursor.beginEditBlock()
+        self._replace_count = 0
         try:
             if end is None:
                 cursor.movePosition(QtGui.QTextCursor.Start)
@@ -421,6 +423,9 @@ class SourceWidget(QtGui.QWidget):
                 self.editor.setTextCursor(cursor)
         finally:
             cursor.endEditBlock()
+            QtGui.QToolTip.showText(self.replace_edit.mapToGlobal(QtCore.QPoint(0, -32)),
+                                    "{} replacement{} made".format(self._replace_count,
+                                                                   's' if self._replace_count != 1 else ''))
 
 
 class SourceEditController(Controller):

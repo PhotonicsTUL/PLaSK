@@ -52,7 +52,7 @@ struct PLASK_SOLVER_API Expansion {
             double lam;
             if (solver->lam0) {
                 lam = *solver->lam0;
-                glambda = (solver->always_recompute_gain)? lambda : *solver->lam0;
+                glambda = (solver->always_recompute_gain)? lambda : lam;
             } else{
                 lam = glambda = lambda;
             }

@@ -269,10 +269,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
 template <typename BaseT>
 void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     this->initCalculation();
-    if (recompute_integrals) {
-        computeIntegrals();
-        recompute_integrals = false;
-    }
+    computeIntegrals();
     size_t N = this->getExpansion().matrixSize();
     if (RE.cols() != N || RE.rows() != N) RE = cmatrix(N, N);
     if (RH.cols() != N || RH.rows() != N) RH = cmatrix(N, N);

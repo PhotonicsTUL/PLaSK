@@ -111,6 +111,8 @@ struct PLASK_SOLVER_API SlabBase {
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
 
+    virtual ~SlabBase() {}
+        
     /// Get lam0
     double getLam0() const {
         if (lam0) return *lam0;

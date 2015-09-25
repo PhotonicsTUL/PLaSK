@@ -278,7 +278,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         Tensor3<dcomplex> eps = material->NR(lam, T);
         if (eps.c01 != 0.)
             throw BadInput(solver->getId(), "Non-diagonal anisotropy not allowed for this solver");
-        if (gain_connected &&  SOLVER->lgained[layer]) {
+        if (gain_connected &&  solver->lgained[layer]) {
             auto roles = geometry->getRolesAt(vec(r, matz));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                 if (!gain_computed) {

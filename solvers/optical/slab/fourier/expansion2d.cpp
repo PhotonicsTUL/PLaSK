@@ -147,19 +147,19 @@ void ExpansionPW2D::reset() {
     initialized = false;
 }
 
-void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
+void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    auto axis1 = SOLVER->getLayerPoints(l);
+    auto axis1 = SOLVER->getLayerPoints(layer);
 
     size_t refine = SOLVER->refine;
     if (refine == 0) refine = 1;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", l, refine * nM,
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", layer, refine * nM,
                          omp_get_thread_num());
     #else
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, refine * nM);
@@ -186,11 +186,11 @@ void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
     // Make space for the result
     DataVector<Tensor3<dcomplex>> work;
     if (nN != nM) {
-        coeffs[l].reset(nN);
+        coeffs[layer].reset(nN);
         work.reset(nM, Tensor3<dcomplex>(0.));
     } else {
-        coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
-        work = coeffs[l];
+        coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
+        work = coeffs[layer];
     }
 
     // Average material parameters
@@ -203,7 +203,7 @@ void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
-            if (gain_connected && SOLVER->lgained[l]) {
+            if (gain_connected && solver->lgained[layer]) {
                 auto roles = geometry->getRolesAt(vec(xmesh->at(j),maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     if (!gain_computed) {
@@ -242,32 +242,32 @@ void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
 
     // Check if the layer is uniform
     if (periodic) {
-        diagonals[l] = true;
+        diagonals[layer] = true;
         for (size_t i = 1; i != nM; ++i) {
             Tensor3<dcomplex> diff = work[i] - work[0];
             if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
-                diagonals[l] = false;
+                diagonals[layer] = false;
                 break;
             }
         }
     } else
-        diagonals[l] = false;
+        diagonals[layer] = false;
 
-    if (diagonals[l]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-        if (nN != nM) coeffs[l][0] = work[0];
-        std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
+    if (diagonals[layer]) {
+        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        if (nN != nM) coeffs[layer][0] = work[0];
+        std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
     } else {
         // Perform FFT
         matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
         // Copy result
         if (nN != nM) {
             if (symmetric()) {
-                std::copy_n(work.begin(), nN, coeffs[l].begin());
+                std::copy_n(work.begin(), nN, coeffs[layer].begin());
             } else {
                 size_t nn = nN/2;
-                std::copy_n(work.begin(), nn+1, coeffs[l].begin());
-                std::copy_n(work.end()-nn, nn, coeffs[l].begin()+nn+1);
+                std::copy_n(work.begin(), nn+1, coeffs[layer].begin());
+                std::copy_n(work.end()-nn, nn, coeffs[layer].begin()+nn+1);
             }
         }
         // Smooth coefficients
@@ -275,7 +275,7 @@ void ExpansionPW2D::layerIntegrals(size_t l, double lam, double glam)
             double bb4 = M_PI / ((right-left) * (symmetric()? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
                 int k = i; if (k > nN/2) k -= nN;
-                coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
+                coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
     }

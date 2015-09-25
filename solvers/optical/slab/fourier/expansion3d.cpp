@@ -259,13 +259,13 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
     );
 }
 
-void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
+void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    auto axis2 = SOLVER->getLayerPoints(l);
+    auto axis2 = SOLVER->getLayerPoints(layer);
 
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
@@ -276,9 +276,9 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
-                         l, Ml, Mt, omp_get_thread_num());
+                         layer, Ml, Mt, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", layer, Ml, Mt);
     #endif
 
     auto mesh = make_shared<RectangularMesh<3>>
@@ -293,19 +293,22 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
     LazyData<double> gain;
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
+    if (gain_connected && solver->lgained[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer %d has gain", layer);
+    }
+
     // Make space for the result
     bool oversampled = nNl != nMl || nNt != nMt;
     DataVector<Tensor3<dcomplex>> work;
     if (oversampled) {
-        coeffs[l].reset(nN);
+        coeffs[layer].reset(nN);
         work.reset(nM, Tensor3<dcomplex>(0.));
     } else {
-        coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
-        work = coeffs[l];
+        coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
+        work = coeffs[layer];
     }
 
     // Average material parameters
-
     DataVector<Tensor3<dcomplex>> cell(refl*reft);
     double nfact = 1. / cell.size();
 
@@ -332,7 +335,7 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
-                    if (gain_connected && SOLVER->lgained[l]) {
+                    if (gain_connected && solver->lgained[layer]) {
                         auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             if (!gain_computed) {
@@ -348,8 +351,7 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
                             cell[j].c01.imag(0.);
                         }
                     }
-                    auto& eps = cell[j];
-                    eps.sqr_inplace();  // make epsilon from NR
+                    cell[j].sqr_inplace();  // make epsilon from NR
 
                     // Add PMLs
                     if (!periodic_long) {
@@ -379,7 +381,7 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
                         cell[j].c22 *= s;
                     }
 
-                    norm += (real(eps.c00) + real(eps.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
+                    norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
                 }
             }
 
@@ -414,32 +416,32 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
 
     // Check if the layer is uniform
     if (periodic_tran && periodic_long) {
-        diagonals[l] = true;
+        diagonals[layer] = true;
         for (size_t i = 1; i != nM; ++i) {
             Tensor3<dcomplex> diff = work[i] - work[0];
             if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
-                diagonals[l] = false;
+                diagonals[layer] = false;
                 break;
             }
         }
     } else
-        diagonals[l] = false;
+        diagonals[layer] = false;
 
-    if (diagonals[l]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-        if (oversampled) coeffs[l][0] = work[0];
-        std::fill(coeffs[l].begin()+1, coeffs[l].end(), Tensor3<dcomplex>(0.));
+    if (diagonals[layer]) {
+        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        if (oversampled) coeffs[layer][0] = work[0];
+        std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
     } else {
         // Perform FFT
         matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
         // Copy result
         if (oversampled) {
             if (symmetric_tran()) {
-                for (size_t t = 0; t != nNt; ++t) copy_coeffs_long(l, work, t, t);
+                for (size_t t = 0; t != nNt; ++t) copy_coeffs_long(layer, work, t, t);
             } else {
                 size_t nn = nNt/2;
-                for (size_t t = 0; t != nn+1; ++t) copy_coeffs_long(l, work, t, t);
-                for (size_t tw = nMt-nn, tc = nn+1; tw != nMt; ++tw, ++tc) copy_coeffs_long(l, work, tw, tc);
+                for (size_t t = 0; t != nn+1; ++t) copy_coeffs_long(layer, work, t, t);
+                for (size_t tw = nMt-nn, tc = nn+1; tw != nMt; ++tw, ++tc) copy_coeffs_long(layer, work, tw, tc);
             }
         }
         // Smooth coefficients
@@ -450,7 +452,7 @@ void ExpansionPW3D::layerIntegrals(size_t l, double lam, double glam)
                 int kt = it; if (!symmetric_tran() && kt > nNt/2) kt -= nNt;
                 for (size_t il = 0; il != nNl; ++il) {
                     int kl = il; if (!symmetric_long() && kl > nNl/2) kl -= nNl;
-                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
+                    coeffs[layer][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
                 }
             }
         }
