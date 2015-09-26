@@ -156,7 +156,8 @@ class ScriptEditor(TextEdit):
                              Qt.Key_Meta, Qt.Key_Super_L, Qt.Key_Super_R):
                 self.completer.popup().hide()
 
-        if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
+        if key in (Qt.Key_Tab, Qt.Key_Backtab) or \
+                                key == Qt.Key_Backspace and modifiers != (Qt.ControlModifier | Qt.ShiftModifier):
             cursor = self.textCursor()
             if cursor.hasSelection():
                 if key == Qt.Key_Tab:

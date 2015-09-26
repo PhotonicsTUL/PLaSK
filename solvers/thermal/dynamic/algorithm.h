@@ -2,7 +2,7 @@
 #define ALGORITHM_H
 
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace dynamic {
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {

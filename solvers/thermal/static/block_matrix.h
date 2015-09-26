@@ -19,7 +19,7 @@ F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const i
 F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
 
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace tstatic {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -40,6 +40,17 @@ struct DpbMatrix {
     DpbMatrix(size_t rank, size_t major):
         size(rank), ld(((major+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
         kd(major+1), data(aligned_malloc<double>(rank*(ld+1))) {}
+
+    /**
+     * Create matrix
+     * \param rank size of the matrix
+     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
+     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
+     */
+    DpbMatrix(size_t rank, size_t major, size_t minor):
+        size(rank), ld(((major+minor+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(major+minor+1), data(aligned_malloc<double>(rank*(ld+1))) {}
+
 
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
 
@@ -92,6 +103,15 @@ struct DpbMatrix {
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
         dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
+    }
+
+    /**
+     * Multiply matrix by vector adding theresult
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
+        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 

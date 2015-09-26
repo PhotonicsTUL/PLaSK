@@ -1,6 +1,6 @@
 #include "femT.h"
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace dynamic {
 
 const double BIG = 1e16;
 

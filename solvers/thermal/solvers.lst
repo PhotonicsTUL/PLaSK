@@ -1,7 +1,7 @@
-fem.Static2D
-fem.StaticCyl
-
-fem3d.Static3D
+static.Static2D
+static.StaticCyl
+static.Static3D
 
 dynamic.Dynamic2D
+dynamic.DynamicCyl
 dynamic.Dynamic3D

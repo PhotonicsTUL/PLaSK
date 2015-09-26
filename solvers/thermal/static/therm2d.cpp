@@ -1,6 +1,7 @@
-#include "femT.h"
+#include "therm2d.h"
+#include "conjugate_gradient.h"
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace tstatic {
 
 template<typename Geometry2DType>
 FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
@@ -440,7 +441,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix2D>(loops);
     }
     return 0.;
 }
@@ -543,11 +544,11 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& 
 }
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
+void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& ioA, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
-    PrecondJacobi precond(ioA);
+    PrecondJacobi2D precond(ioA);
 
     DataVector<double> x = temperatures.copy(); // We use previous potentials as initial solution
     double err;
@@ -681,4 +682,4 @@ template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>
 template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::thermal::tstatic

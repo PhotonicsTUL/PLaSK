@@ -3,37 +3,12 @@
 
 #include <plask/plask.hpp>
 
+#include "common.h"
 #include "block_matrix.h"
 #include "gauss_matrix.h"
-#include "iterative_matrix.h"
+#include "iterative_matrix3d.h"
 
-namespace plask { namespace solvers { namespace thermal3d {
-
-/// Boundary condition: convection
-struct Convection
-{
-    double coeff;       ///< convection coefficient [W/(m^2*K)]
-    double ambient;     ///< ambient temperature [K]
-    Convection(double coeff, double amb): coeff(coeff), ambient(amb) {}
-    Convection() = default;
-};
-
-/// Boundary condition: radiation
-struct Radiation
-{
-    double emissivity;  ///< surface emissivity [-]
-    double ambient;     ///< ambient temperature [K]
-    Radiation(double emiss, double amb): emissivity(emiss), ambient(amb) {}
-    Radiation() = default;
-};
-
-
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< block algorithm (thrice faster, however a little prone to failures)
-    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-    ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
-};
+namespace plask { namespace thermal { namespace tstatic {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
@@ -90,7 +65,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver for the iterative algorithm
-    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
+    void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -172,19 +147,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
     const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 };
 
-}} //namespaces
-
-template <> inline solvers::thermal3d::Convection parseBoundaryValue<solvers::thermal3d::Convection>(const XMLReader& tag_with_value)
-{
-    return solvers::thermal3d::Convection(tag_with_value.requireAttribute<double>("coeff"), tag_with_value.requireAttribute<double>("ambient"));
-}
-
-template <> inline solvers::thermal3d::Radiation parseBoundaryValue<solvers::thermal3d::Radiation>(const XMLReader& tag_with_value)
-{
-    return solvers::thermal3d::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("ambient"));
-}
-
-} // namespace plask
+}}} //namespaces
 
 #endif
 

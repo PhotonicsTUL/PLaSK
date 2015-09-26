@@ -19,7 +19,7 @@ F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const i
 F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
 
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace dynamic {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.

@@ -1,8 +1,10 @@
 #include <type_traits>
 
 #include "therm3d.h"
+#include "conjugate_gradient.h"
 
-namespace plask { namespace solvers { namespace thermal3d {
+namespace plask { namespace thermal { namespace tstatic
+    {
 
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
@@ -294,7 +296,7 @@ void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>&
 }
 
 template <>
-void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix>(SparseBandMatrix& A, DataVector<double>& B,
+void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
                                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
@@ -378,7 +380,7 @@ double FiniteElementMethodThermal3DSolver::compute(int loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
     }
     return 0.;
 }
@@ -430,11 +432,11 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DgbMatrix& A, DataVector<do
 }
 
 
-void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVector<double>& B)
+void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
-    PrecondJacobi precond(A);
+    PrecondJacobi3D precond(A);
 
     DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
     double err;
@@ -559,4 +561,4 @@ const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalCo
 }
 
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::thermal::tstatic

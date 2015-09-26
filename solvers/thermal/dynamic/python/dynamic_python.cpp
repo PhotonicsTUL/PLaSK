@@ -5,7 +5,7 @@ using namespace plask::python;
 
 #include "../femT.h"
 #include "../femT3d.h"
-using namespace plask::solvers::thermal;
+using namespace plask::thermal::dynamic;
 
 /**
  * Initialization of your solver class to Python

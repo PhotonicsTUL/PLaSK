@@ -13,6 +13,7 @@
 import math
 
 from ..qt import QtCore, QtGui
+from ..qt.QtCore import Qt
 
 from .widgets import EDITOR_FONT
 from .config import CONFIG
@@ -43,12 +44,29 @@ class TextEdit(QtGui.QPlainTextEdit):
         self.selectionChanged.connect(self.update_selections)
         self.selections = []
 
+        self._changed_pos = 0
+        self.textChanged.connect(self.on_text_change)
+
     def resizeEvent(self, e):
         super(TextEdit, self).resizeEvent(e)
         if self.line_numbers is not None:
             cr = self.contentsRect()
             self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
                                                        self.line_numbers.get_width(), cr.height()))
+
+    def on_text_change(self):
+        self._changed_pos = self.textCursor().position()
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        modifiers = event.modifiers()
+        if key == Qt.Key_Backspace and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+            cursor = self.textCursor()
+            cursor.setPosition(self._changed_pos)
+            self.setTextCursor(cursor)
+            event.ignore()
+            return
+        super(TextEdit, self).keyPressEvent(event)
 
     def focusInEvent(self, event):
         super(TextEdit, self).focusInEvent(event)
