@@ -3,10 +3,11 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../femT.h"
-using namespace plask::solvers::thermal;
+#include "../therm2d.h"
+#include "../therm3d.h"
+using namespace plask::thermal::tstatic;
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace tstatic {
 
     std::string Convection__repr__(const Convection& self) {
         return "Convection(" + str(self.coeff) + "," + str(self.ambient) + ")";
@@ -19,25 +20,13 @@ namespace plask { namespace solvers { namespace thermal {
 }}}
 
 
-//TODO remove after 1.06.2014
-py::object inHeatDensity_get(py::object self) {
-    writelog(LOG_WARNING, "'inHeatDensity' is obsolete. Use 'inHeat' instead!");
-    return self.attr("inHeat");
-}
-//TODO remove after 1.06.2014
-void inHeatDensity_set(py::object self, py::object value) {
-    writelog(LOG_WARNING, "'inHeatDensity' is obsolete. Use 'inHeat' instead!");
-    self.attr("__setattr__")("inHeat", value);
-}
-
-
 /**
  * Initialization of your solver class to Python
  *
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(fem)
+BOOST_PYTHON_MODULE(static)
 {
     py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
@@ -82,7 +71,6 @@ BOOST_PYTHON_MODULE(fem)
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");
-        solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
@@ -98,7 +86,23 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
     }
 
-//     // Add methods to create classes using depreciate names
-//     py::def("Fem2D", Fem2D, py::arg("name")="");
-//     py::def("FemCyl", FemCyl, py::arg("name")="");
+    {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", "Finite element thermal solver for 3D Geometry.")
+        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        RECEIVER(inHeat, "");
+        solver.setattr("inHeatDensity", solver.attr("inHeat"));
+        PROVIDER(outTemperature, "");
+        PROVIDER(outHeatFlux, "");
+        PROVIDER(outThermalConductivity, "");
+        BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
+        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
+        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
+        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
+        RW_FIELD(inittemp, "Initial temperature");
+        RW_FIELD(maxerr, "Limit for the temperature updates");
+        RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
+        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+    }
 }

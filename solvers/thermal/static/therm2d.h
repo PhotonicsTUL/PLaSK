@@ -1,38 +1,14 @@
-#ifndef PLASK__MODULE_THERMAL_FEMT_H
-#define PLASK__MODULE_THERMAL_FEMT_H
+#ifndef PLASK__MODULE_THERMAL_THERM2D_H
+#define PLASK__MODULE_THERMAL_THERM2D_H
 
 #include <plask/plask.hpp>
 
+#include "common.h"
 #include "block_matrix.h"
-#include "iterative_matrix.h"
+#include "iterative_matrix2d.h"
 #include "gauss_matrix.h"
 
-namespace plask { namespace solvers { namespace thermal {
-
-/// Boundary condition: convection
-struct Convection
-{
-    double coeff;   ///< convection coefficient [W/(m^2*K)]
-    double ambient; ///< ambient temperature [K]
-    Convection(double coeff, double amb): coeff(coeff), ambient(amb) {}
-    Convection() = default;
-};
-
-/// Boundary condition: radiation
-struct Radiation
-{
-    double emissivity;  ///< surface emissivity [-]
-    double ambient;     ///< ambient temperature [K]
-    Radiation(double emiss, double amb): emissivity(emiss), ambient(amb) {}
-    Radiation() = default;
-};
-
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< Cholesky factorization
-    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
-};
+namespace plask { namespace thermal { namespace tstatic {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
@@ -76,7 +52,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
+    void solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -165,7 +141,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
         }
     }
 
-    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {
+    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {
         // boundary conditions of the first kind
         for (auto cond: bvoltage) {
             for (auto r: cond.place) {
@@ -198,19 +174,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 
 };
 
-}} //namespaces
-
-template <> inline solvers::thermal::Convection parseBoundaryValue<solvers::thermal::Convection>(const XMLReader& tag_with_value)
-{
-    return solvers::thermal::Convection(tag_with_value.requireAttribute<double>("coeff"), tag_with_value.requireAttribute<double>("ambient"));
-}
-
-template <> inline solvers::thermal::Radiation parseBoundaryValue<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
-{
-    return solvers::thermal::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("ambient"));
-}
-
-} // namespace plask
+}}} // namespaces
 
 #endif
 

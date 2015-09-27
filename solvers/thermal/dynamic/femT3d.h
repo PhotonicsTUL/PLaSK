@@ -8,7 +8,7 @@
 #include "algorithm.h"
 #include "iterative_matrix.h"
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace dynamic {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method

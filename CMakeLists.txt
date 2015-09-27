@@ -483,9 +483,11 @@ foreach(solv ${solver_lists})
     endif()
 endforeach()
 
-# Scan solver categories for solvers.lst and process them
-file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR}/solvers solvers/*solvers.lst)
-foreach(lst ${lst_lists})
+# Scan solver categories and copy Python files
+if(BUILD_PYTHON)
+    file(GLOB solvers_cats RELATIVE ${CMAKE_SOURCE_DIR}/solvers *)
+    foreach(cat ${solvers_cats})
+endif()
     add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${lst}
                        COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/solvers/${lst} ${PLASK_PATH}/solvers/${lst}
                        DEPENDS ${CMAKE_SOURCE_DIR}/solvers/${lst})
@@ -506,6 +508,8 @@ foreach(lst ${lst_lists})
                                DEPENDS ${PLASK_PATH}/solvers/${lst_dir}/__init__.py)
             install(FILES ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py DESTINATION share/plask/stubs/${lst_dir} COMPONENT gui)
         endif()
+        file(GLOB python_solvers_${lst_dir} ${CMAKE_SOURCE_DIR}/solvers/${lst_dir}/*.py)
+        install(FILES ${python_solvers_${lst_dir}} DESTINATION lib/plask/solvers/${lst_dir} COMPONENT solvers)
     endif()
 endforeach()
 add_custom_target(solvers-lst ALL DEPENDS ${solvers_lst_files})

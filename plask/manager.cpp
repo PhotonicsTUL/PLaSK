@@ -224,20 +224,27 @@ void Manager::loadSolvers(XMLReader& reader) {
         if (!lib) {
             auto libs = global_solver_names[reader.getNodeName()];
             if (libs.empty()) { // read lib index from file
-                std::string file_name = plaskSolversPath(reader.getNodeName()) + "solvers.lst";
-                try {
-                    std::ifstream list_file(file_name);
-                    if (list_file.is_open())
-                        while (!list_file.eof()) {
-                            std::string line, lib, cls;
-                            list_file >> line;
-                            boost::algorithm::trim(line);
-                            if (line == "") continue;
-                            std::tie(lib, cls) = splitString2(line, '.');
-                            if (cls == "") writelog(LOG_ERROR, "Wrong format of '%1%' file", file_name);
-                            else libs[cls] = lib;
+                boost::filesystem::directory_iterator iter(plaskSolversPath(reader.getNodeName()));
+                boost::filesystem::directory_iterator end;
+                while (iter != end) {
+                    boost::filesystem::path p = iter->path();
+                    if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".xml") {
+                        XMLReader xml(p.c_str());
+                        xml.requireTag();
+                        while(xml.requireTagOrEnd()) {
+                            std::string tag = xml.getTagName();
+                            if (tag != "solver" && tag.substr(max(tag.length(),size_t(7))-7) != " solver")
+                                continue;
+                            auto cls = xml.requireAttribute("name");
+                            auto lib = xml.getAttribute("lib");
+                            if (!lib) lib.reset(); //TODO should we do this?
+                            libs[cls] = *lib;
+                            xml.ignoreAllAttributes();
+                            xml.gotoEndOfCurrentTag();
                         }
-                } catch (...) {}
+                    }
+                    ++iter;
+                }
             }
             lib.reset(libs[solver_name]);
         }

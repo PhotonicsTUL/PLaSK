@@ -28,7 +28,7 @@
         </stack>
       </arrange>
       <shelf flat="no">
-        <rectangle material="Test" dtran="1" dvert="0.2"/>
+        <rectangle material="GaAs" dtran="1" dvert="0.2"/>
         <gap total="2"/>
         <triangle material="AlOx" atran="-1" avert="0" btran="0" bvert="0.2"/>
       </shelf>
@@ -144,7 +144,7 @@
     <condition value="300." place="bottom"/>
   </temperature>
   </thermal>
-  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
+  <electrical name="ELECTRICAL" solver="ShockleyCyl">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <junction beta0="{beta_def}" beta1="{beta_def - 1.2}" js0="{js_def}" js1="{js_def + 0.1}"/>
@@ -327,8 +327,6 @@ show()
 sys.exit()
 
 GEO.junction
-
-pylab.
 
 class A(object):
     def __init__(self):

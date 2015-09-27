@@ -1,8 +1,14 @@
-#ifndef PLASK__SOLVER__THERMAL_GAUSS_MATRIX_H
-#define PLASK__SOLVER__THERMAL_GAUSS_MATRIX_H
+#ifndef PLASK__MODULE_THERMAL_GAUSS_MATRIX_H
+#define PLASK__MODULE_THERMAL_GAUSS_MATRIX_H
 
 #include <cstddef>
 #include <plask/plask.hpp>
+
+// BLAS routine to multiply matrix by vector
+#define dgbmv F77_GLOBAL(dgbmv,DGBMV)
+F77SUB dgbmv(const char& trans, const int& m, const int& n, const int& kl, const int& ku, const double& alpha, double* a, const int& lda,
+             const double* x, int incx, const double& beta, double* y, int incy);
+
 
 // LAPACK routines to solve set of linear equations
 #define dgbtrf F77_GLOBAL(dgbtrf,DGBTRF)
@@ -12,7 +18,7 @@ F77SUB dgbtrf(const int& m, const int& n, const int& kl, const int& ku, double* 
 F77SUB dgbtrs(const char& trans, const int& n, const int& kl, const int& ku, const int& nrhs, double* ab, const int& ldab, int* ipiv, double* b, const int& ldb, int& info);
 
 
-namespace plask { namespace solvers { namespace thermal3d {
+namespace plask { namespace thermal { namespace tstatic {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -25,6 +31,17 @@ struct DgbMatrix {
     const size_t kd;    ///< Size of the band reduced by one
     const size_t shift; ///< Shift of the diagonal
     double* data;       ///< Pointer to data
+
+    aligned_unique_ptr<int> ipiv;
+
+    /**
+     * Create matrix
+     * \param rank size of the matrix
+     * \param major shift of nodes to the next major row (mesh[x,y+1])
+     */
+    DgbMatrix(size_t rank, size_t major):
+        size(rank), ld(((3*major+4+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(major+1), shift(2*major+2), data(aligned_malloc<double>(rank*(ld+1))) {}
 
     /**
      * Create matrix
@@ -80,8 +97,28 @@ struct DgbMatrix {
                 data[ldi + j] = data[ldi + ld * j];
         }
     }
+    
+    /**
+     * Multiply matrix by vector
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+        mirror();
+        dgbmv('N', size, size, kd, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
+    }
+
+    /**
+     * Multiply matrix by vector adding the result
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
+        mirror();
+        dgbmv('N', size, size, kd, kd, 1.0, data, ld+1, vector.data(), 1, 1.0, result.data(), 1);
+    }
 };
 
-}}} // namespace plask::solver::electrical
+}}} // namespace plask::solver::thermal
 
-#endif // PLASK__SOLVER__THERMAL_GAUSS_MATRIX_H
+#endif // PLASK__MODULE_THERMAL_GAUSS_MATRIX_H

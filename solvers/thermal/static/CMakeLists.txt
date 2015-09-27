@@ -1,6 +1,6 @@
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/thermal/fem)
+project(plask/thermal/static)
 
 
 # Do not change thew following two lines
@@ -51,10 +51,10 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
 # below.
 #
-#enable_testing()
+enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #add_solver_test(solvers/foo/bar mytest)
-#add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+add_python_test(solvers/thermal/static ${CMAKE_CURRENT_SOURCE_DIR}/tests/therm.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
 #add_executable(femtest ${femtest_src})

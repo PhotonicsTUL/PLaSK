@@ -11,7 +11,7 @@ F77FUN(double) ddot(const int& n, const double* dx, const int& incx, const doubl
 #define daxpy F77_GLOBAL(daxpy,DAXPY)
 F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, double* sy, const int& incy); // sy = sy + sa*sx
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace thermal { namespace dynamic {
 
 /// Error code of solveDCG
 struct DCGError: public std::exception {
