@@ -28,7 +28,7 @@
         </stack>
       </arrange>
       <shelf flat="no">
-        <rectangle material="Test" dtran="1" dvert="0.2"/>
+        <rectangle material="GaAs" dtran="1" dvert="0.2"/>
         <gap total="2"/>
         <triangle material="AlOx" atran="-1" avert="0" btran="0" bvert="0.2"/>
       </shelf>
@@ -327,8 +327,6 @@ show()
 sys.exit()
 
 GEO.junction
-
-pylab.
 
 class A(object):
     def __init__(self):
