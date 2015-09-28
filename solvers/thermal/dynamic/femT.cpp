@@ -180,8 +180,6 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         k42 = k31 = - (kx + ky) / 6.;
         k32 = k41 = (kx - 2. * ky) / 6.;
 
-        double f1 = f, f2 = f, f3 = f, f4 = f;
-
         //Wheter lumping the mass matrces A, B?
         if (lumping)
         {
@@ -236,10 +234,10 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
             B(upleftno, uprghtno) += -(1-methodparam)*k43 + 2./9.*c;
         }
         // set load vector
-        F[loleftno] += f1;
-        F[lorghtno] += f2;
-        F[uprghtno] += f3;
-        F[upleftno] += f4;
+        F[loleftno] += f;
+        F[lorghtno] += f;
+        F[uprghtno] += f;
+        F[upleftno] += f;
     }
 
     //boundary conditions of the first kind
@@ -333,8 +331,6 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
         k42 = k31 = - (kx + ky) / 6.;
         k32 = k41 = (kx - 2. * ky) / 6.;
 
-        double f1 = f, f2 = f, f3 = f, f4 = f;
-
         //Wheter lumping the mass matrces A, B?
         if (lumping)
         {
@@ -389,10 +385,10 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
             B(upleftno, uprghtno) += -(1-methodparam)*k43 + 2./9.*c;
         }
         // set load vector
-        F[loleftno] += f1;
-        F[lorghtno] += f2;
-        F[uprghtno] += f3;
-        F[upleftno] += f4;
+        F[loleftno] += f;
+        F[lorghtno] += f;
+        F[uprghtno] += f;
+        F[upleftno] += f;
     }
 
     //boundary conditions of the first kind

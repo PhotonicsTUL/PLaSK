@@ -296,6 +296,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
                          + potentials[this->mesh->index(left, act.top)] + potentials[this->mesh->index(right, act.top)]
                     ) / act.height; // [j] = A/m²
                 conds[i] = Tensor2<double>(0., 1e-6 * getBeta(nact-1) * jy * act.height / log(jy / getJs(nact-1) + 1.));
+                if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
             }
         }
     }
@@ -379,6 +380,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
         if (size_t actn = isActive(midpoint)) {
             const auto& act = active[actn-1];
             conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + e.getIndex0()]);
+            if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
         } else if (roles.find("n-contact") != roles.end()) {
@@ -467,8 +469,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
             currents[i] = cur;
         }
         mcur = sqrt(mcur);
-        err = 100. * sqrt(err) / mcur;
-
+        err = 100. * sqrt(err) / max(mcur, minj);
         if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;

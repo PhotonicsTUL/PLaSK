@@ -205,6 +205,7 @@ void FiniteElementMethodElectrical3DSolver::loadConductivity()
             size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex2()) - acthi.begin();
             assert(n < acthi.size());
             conds[i] = Tensor2<double>(0., junction_conductivity[(n * (mesh->axis1->size()-1) + e.getIndex1()) * (mesh->axis0->size()-1) + e.getIndex0()]);
+            if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
         } else if (roles.find("n-contact") != roles.end()) {
@@ -249,6 +250,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
                      + potential[mesh->index(back,right,acthi[nact])] + potential[mesh->index(front,right,acthi[nact])])
                     / actd[nact]; // [j] = A/m²
                 conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+                if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) conds[index].c11 = 1e-16;
             }
         }
     }
@@ -441,8 +443,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
             current[i] = cur;
         }
         mcur = sqrt(mcur);
-        err = 100. * sqrt(err) / mcur;
-
+        err = 100. * sqrt(err) / max(mcur, minj);
         if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;
