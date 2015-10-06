@@ -263,6 +263,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double compute(std::string calctype, unsigned loops=1);
 
     /**
+     * Increase voltage for p-contact
+     * \return nothing
+     **/
+    void increaseVoltage(double dU);
+
+    /**
      * Integrate vertical total current at certain level.
      * \param vindex vertical index of the element mesh to perform integration at
      * \param onlyactive if true only current in the active region is considered

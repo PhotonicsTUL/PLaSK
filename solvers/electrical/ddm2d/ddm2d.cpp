@@ -142,13 +142,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     dvnDeltaPsi.reset(size, 0.);
     dvnFn.reset(size, 0.);
     dvnFp.reset(size, 0.);
-    dvnFnEta.reset(size, 0.);
-    dvnFpKsi.reset(size, 0.);
+    dvnFnEta.reset(size, 1.);
+    dvnFpKsi.reset(size, 1.);
     dvnDeltaFn.reset(size, 0.);
     dvnDeltaFp.reset(size, 0.);
 
     dvePsiI.reset(this->mesh->elements.size(), 0.);
     dvePsi.reset(this->mesh->elements.size(), 0.);
+    dveFn.reset(this->mesh->elements.size(), 0.);
+    dveFp.reset(this->mesh->elements.size(), 0.);
     dveFnEta.reset(this->mesh->elements.size(), 1.);
     dveFpKsi.reset(this->mesh->elements.size(), 1.);
     dveN.reset(this->mesh->elements.size(), 0.);
@@ -174,6 +176,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     dvnDeltaFp.reset();
     dvePsiI.reset();
     dvePsi.reset();
+    dveFn.reset();
+    dveFp.reset();
     dveFnEta.reset();
     dveFpKsi.reset();
     dveN.reset();
@@ -587,7 +591,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(dvnDeltaPsi[i]);
             if (corr > err) err = corr;
             //update datavector with potentials
-            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i];
+            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i]; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential at U=0V: %1%V", err*mEx);
     }
@@ -602,7 +606,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(dvnDeltaPsi[i]);
             if (corr > err) err = corr;
             //update datavector with potentials
-            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i];
+            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i]; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential: %1%V", err*mEx);
     }
@@ -621,8 +625,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(deltaFn);
             if (corr > err) err = corr;
             //update datavector with quasi-Fermi energy level for electrons
-            dvnFn[i] = dvnFn[i] + deltaFn;
-            dvnFnEta[i] = exp(dvnFn[i]);
+            dvnFn[i] = dvnFn[i] + deltaFn; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
+            dvnFnEta[i] = exp(dvnFn[i]); // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the quasi-Fermi energy level for electrons: %1%eV", err*mEx);
     }
@@ -641,8 +645,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(deltaFp);
             if (corr > err) err = corr;
             //update datavector with quasi-Fermi energy level for electrons
-            dvnFp[i] = dvnFp[i] + deltaFp;
-            dvnFpKsi[i] = exp(-dvnFp[i]);
+            dvnFp[i] = dvnFp[i] + deltaFp; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
+            dvnFpKsi[i] = exp(-dvnFp[i]); // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the quasi-Fermi energy level for holes: %1%eV", err*mEx);
     }
@@ -685,6 +689,32 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype
         }
     }
     return 0.;
+}
+
+template<typename Geometry2DType>
+void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage(double dU) {
+    // boundary conditions of the first kind
+    //for (auto cond: bvoltage) {
+    //    for (auto r: cond.place) {
+
+            // KRAKOW - W WEZLACH W KTORYCH MAM WARUNEK BRZEGOWY NA POTENCJAL (ALE TYLKO TAM GDZIE PRZYLOZONE NAPIECIE JEST POWYZEJ 0) CHCE USTAWIC WARTOSCI TAK JAK PONIZEJ
+            int i = 0; // CO ZAMIAST 0?
+            dvnPsi[i] = (dvnPsi0[i] + dU)/mEx;
+            dvnFn[i] = -dU/mEx;
+            dvnFp[i] = -dU/mEx;
+            dvnFnEta[i] = exp(dvnFn[i]);
+            dvnFpKsi[i] = exp(-dvnFp[i]);
+
+    //    }
+   // }
+
+    savePsi();
+    saveFn();
+    saveFp();
+    saveFnEta();
+    saveFpKsi();
+    saveN();
+    saveP();
 }
 
 template<typename Geometry2DType>
