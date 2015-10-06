@@ -692,21 +692,21 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype
 }
 
 template<typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage(double dU) {
+void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage(double dU, const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
     // boundary conditions of the first kind
-    //for (auto cond: bvoltage) {
-    //    for (auto r: cond.place) {
+    for (auto cond: bvoltage) {
+        for (auto r: cond.place) {
 
             // KRAKOW - W WEZLACH W KTORYCH MAM WARUNEK BRZEGOWY NA POTENCJAL (ALE TYLKO TAM GDZIE PRZYLOZONE NAPIECIE JEST POWYZEJ 0) CHCE USTAWIC WARTOSCI TAK JAK PONIZEJ
-            int i = 0; // CO ZAMIAST 0?
-            dvnPsi[i] = (dvnPsi0[i] + dU)/mEx;
-            dvnFn[i] = -dU/mEx;
-            dvnFp[i] = -dU/mEx;
-            dvnFnEta[i] = exp(dvnFn[i]);
-            dvnFpKsi[i] = exp(-dvnFp[i]);
+            //int i = 0; // CO ZAMIAST 0?
+            dvnPsi[r] = (dvnPsi0[r] + dU)/mEx;
+            dvnFn[r] = -dU/mEx;
+            dvnFp[r] = -dU/mEx;
+            dvnFnEta[r] = exp(dvnFn[r]);
+            dvnFpKsi[r] = exp(-dvnFp[r]);
 
-    //    }
-   // }
+        }
+    }
 
     savePsi();
     saveFn();
