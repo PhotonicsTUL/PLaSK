@@ -27,9 +27,7 @@ for dirname, _, files in os.walk(source):
         xns = root.nsmap.get(None, '')
         if xns: xns = '{'+xns+'}'
 
-        for solver in root:
-            if solver.tag != xns+'solver':
-                raise ValueError(u'expected <solver>, got <{}> instead'.format(solver.tag))
+        for solver in root.findall(xns+'solver'):
             cat = solver.attrib.get('category', category)
             dat = solver.attrib.get('lib', library), solver.attrib['name']
             data.append(dat)
