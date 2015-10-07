@@ -46,9 +46,7 @@ def make_rst(dirname):
     xns = root.nsmap.get(None, '')
     if xns: xns = '{'+xns+'}'
 
-    for solver in root:
-        if solver.tag != xns+'solver':
-            raise ValueError(u'expected <solver>, got <{}> instead'.format(solver.tag))
+    for solver in root.findall(xns+'solver'):
 
         name = solver.attrib['name']
         cat = solver.attrib.get('category', category)
