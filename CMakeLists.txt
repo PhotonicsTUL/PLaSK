@@ -2,6 +2,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
+cmake_policy(SET CMP0058 OLD)   # for Ninja
 
 project(plask)
 
@@ -483,34 +484,23 @@ foreach(solv ${solver_lists})
     endif()
 endforeach()
 
-# Scan solver categories for solvers.lst and process them
-file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR}/solvers solvers/*solvers.lst)
-foreach(lst ${lst_lists})
-    add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${lst}
-                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/solvers/${lst} ${PLASK_PATH}/solvers/${lst}
-                       DEPENDS ${CMAKE_SOURCE_DIR}/solvers/${lst})
-    list(APPEND solvers_lst_files ${PLASK_PATH}/solvers/${lst})
-    get_filename_component(lst_dir ${lst} PATH)
-    install(FILES ${PLASK_PATH}/solvers/${lst} DESTINATION lib/plask/solvers/${lst_dir} COMPONENT solvers)
-    if(BUILD_PYTHON)
-        add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${lst_dir}/__init__.py
-                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/solvers_lst.py ${PLASK_PATH} solvers/${lst_dir}
-                           DEPENDS ${PLASK_PATH}/solvers/${lst})
-        list(APPEND solvers_lst_files ${PLASK_PATH}/solvers/${lst_dir}/__init__.py)
-        if (BUILD_GUI)
-            list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py)
-            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir})
-            add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py
-                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${PLASK_PATH}/solvers/${lst_dir}/__init__.py
-                                                                     ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py
-                               DEPENDS ${PLASK_PATH}/solvers/${lst_dir}/__init__.py)
-            install(FILES ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py DESTINATION share/plask/stubs/${lst_dir} COMPONENT gui)
-        endif()
-        file(GLOB python_solvers_${lst_dir} ${CMAKE_SOURCE_DIR}/solvers/${lst_dir}/*.py)
-        install(FILES ${python_solvers_${lst_dir}} DESTINATION lib/plask/solvers/${lst_dir} COMPONENT solvers)
-    endif()
-endforeach()
-add_custom_target(solvers-lst ALL DEPENDS ${solvers_lst_files})
+# Scan solver categories and copy Python files
+if(BUILD_PYTHON)
+    file(GLOB solvers_cats RELATIVE ${CMAKE_SOURCE_DIR}/solvers ${CMAKE_SOURCE_DIR}/solvers/*)
+    list(REMOVE_ITEM solvers_cats skel)
+    foreach(cat ${solvers_cats})
+        file(GLOB lst ${CMAKE_SOURCE_DIR}/solvers/${cat}/*/solvers.xml)
+        add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${cat}/__init__.py
+                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/make_category_package.py ${CMAKE_SOURCE_DIR}/solvers/${cat} ${PLASK_PATH}/solvers/${cat}
+                           DEPENDS ${lst})
+        install(FILES ${PLASK_PATH}/solvers/${cat}/__init__.py DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
+        list(APPEND solvers_packages ${PLASK_PATH}/solvers/${cat}/__init__.py)
+
+        file(GLOB python_solvers_${cat} ${CMAKE_SOURCE_DIR}/solvers/${cat}/*.py)
+        install(FILES ${python_solvers_${cat}} DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
+    endforeach()
+    add_custom_target(solvers-packages ALL DEPENDS ${solvers_packages})
+endif()
 
 # Build solvers
 set(solvers_test_targets "")
@@ -533,7 +523,7 @@ endif()
 # ----------===== Unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
-    set(plask_test_depends ${material_targets} solvers-lst) # we need materials for testing
+    set(plask_test_depends ${material_targets} solvers-packages) # we need materials for testing
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)

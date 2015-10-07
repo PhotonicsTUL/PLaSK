@@ -361,13 +361,14 @@ class MaterialPlot(QtGui.QWidget):
         else:
             self.error.clear()
             self.error.hide()
-            axes.set_xlabel(html_to_tex("{} [{}]".format(self.arg_button.descr, self.arg_button.unit)))
             self.xn = self.arg_button.text()[:-1]
             self.yn = param
             self.xu = self.arg_button.unit
             self.yu = MATERIALS_PROPERTES[param][1]
             self.label.show()
             self.label.setText(' ')
+            axes.set_xlabel(html_to_tex("{}{} [{}]".format(self.arg_button.descr[0].upper(), self.arg_button.descr[1:],
+                                                           self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         axes.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)
