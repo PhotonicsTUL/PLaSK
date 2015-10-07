@@ -12,13 +12,14 @@
 # GNU General Public License for more details.
 
 from gui.qt import QtGui, QtCore
+from gui.qt.QtCore import Qt
 
 import itertools
 
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from  matplotlib.widgets import Cursor
 
 import gui
 
@@ -86,8 +87,6 @@ class MaterialPlot(QtGui.QWidget):
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
         self.canvas.updateGeometry()
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
-
         self.error = QtGui.QTextEdit(self)
         self.error.setVisible(False)
         self.error.setReadOnly(True)
@@ -112,13 +111,17 @@ class MaterialPlot(QtGui.QWidget):
         layout.addLayout(hbox1)
         layout.addLayout(hbox2)
 
+        self.label = QtGui.QLabel(self)
+        self.label.setText(' ')
+
         plotbox = QtGui.QVBoxLayout()
         plotbox.addWidget(self.error)
-        plotbox.addWidget(self.toolbar)
+        plotbox.addWidget(self.label)
+        plotbox.setAlignment(self.label, Qt.AlignRight)
         plotbox.addWidget(self.canvas)
 
         splitter = QtGui.QSplitter(self)
-        splitter.setOrientation(QtCore.Qt.Vertical)
+        splitter.setOrientation(Qt.Vertical)
         plotbox_widget = QtGui.QWidget()
         plotbox_widget.setLayout(plotbox)
         splitter.addWidget(plotbox_widget)
@@ -139,7 +142,6 @@ class MaterialPlot(QtGui.QWidget):
         self.property_changed()
 
         if init_material is not None: self.set_material(init_material)
-
 
     def resizeEvent(self, event):
         if self.error.isVisible():
@@ -169,7 +171,7 @@ class MaterialPlot(QtGui.QWidget):
         :param what: 0: component, 1: doping, 2: property argument
         """
         first = None
-        for name,descr in values:
+        for name, descr, unit in values:
             if name is None:
                 toolbar.addSeparator()
                 continue
@@ -180,6 +182,7 @@ class MaterialPlot(QtGui.QWidget):
             toolbar.addWidget(select)
             select.setText("{}:".format(name))
             select.descr = descr
+            select.unit = unit
             val1 = QtGui.QLineEdit()
             val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
             val1.returnPressed.connect(self.update_plot)
@@ -216,7 +219,7 @@ class MaterialPlot(QtGui.QWidget):
                 if type(value) == dict:
                     value = ", ".join("<i>{}</i>: {}".format(*i) for i in value.items())
                 elif type(value) == list or type(value) == tuple:
-                    value = ", ".join(value)
+                    value = ", ".join(str(v) for v in value)
                 text += "<tr><td><b>{}: </b></td><td>{}</td></tr>".format(key, value)
             self.info.setText(text + "</table>")
             self.info.resize(self.info.document().idealWidth(), self.info.document().size().height())
@@ -239,7 +242,7 @@ class MaterialPlot(QtGui.QWidget):
 
         if groups:
             elements = tuple(itertools.chain(*(g + [None] for g in groups if len(g) > 1)))[:-1]
-            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), self.mat_params, 0)
+            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e), "-") for e in elements), self.mat_params, 0)
         else:
             elements = None
 
@@ -247,11 +250,10 @@ class MaterialPlot(QtGui.QWidget):
             if elements:
                 self.mat_toolbar.addSeparator()
             self.set_toolbar(self.mat_toolbar,
-                             [("["+dope+"]", dope + " doping concentration [1/cm<sup>3</sup>]")],
+                             [("["+dope+"]", dope + " doping concentration",  "cm<sup>-3</sup>")],
                              self.mat_params, 1)
 
         self.update_info()
-
 
     def material_changed(self):
         self.set_material(self.material.currentText())
@@ -334,8 +336,7 @@ class MaterialPlot(QtGui.QWidget):
                     if mprop:
                         expr = mprop[0][1]
                         code = compile(expr, '', 'eval')
-                        vals = [eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
-                                for a in plot_range]
+                        self.vals = lambda a: eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
                         break
                     else:
                         material_name = material.base  # and we repeat the loop
@@ -345,26 +346,35 @@ class MaterialPlot(QtGui.QWidget):
             if not material:
                 if plot_cat == 2:
                     material = plask.material.db.get(material_name, **other_elements)
-                    vals = [material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
-                            for a in plot_range]
+                    self.vals = lambda a: material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
                 else:
-                    vals = [plask.material.db.get(material_name, **dict(((arg_name, a),), **other_elements)).
-                            __getattribute__(param)(**other_args) for a in plot_range]
-            axes.plot(plot_range, vals)
+                    self.vals = lambda a: plask.material.db.get(material_name, **dict(((arg_name, a),),
+                                                                                      **other_elements)).\
+                        __getattribute__(param)(**other_args)
+            axes.plot(plot_range, [self.vals(a) for a in plot_range])
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
+            self.label.hide()
             self.error.setFixedHeight(self.error.document().size().height())
         else:
             self.error.clear()
             self.error.hide()
-            axes.set_xlabel(html_to_tex(self.arg_button.descr))
+            axes.set_xlabel(html_to_tex("{} [{}]".format(self.arg_button.descr, self.arg_button.unit)))
+            self.xn = self.arg_button.text()[:-1]
+            self.yn = param
+            self.xu = self.arg_button.unit
+            self.yu = MATERIALS_PROPERTES[param][1]
+            self.label.show()
+            self.label.setText(' ')
+            self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         axes.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)
         axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
+        self._cursor = Cursor(axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
         self.canvas.draw()
         warnings.showwarning = old_showwarning
         if warns:
@@ -373,13 +383,28 @@ class MaterialPlot(QtGui.QWidget):
             self.error.show()
             self.error.setFixedHeight(self.error.document().size().height())
 
+    def on_mouse_move(self, event):
+        if not self.label.isVisible(): return
+        if not event.inaxes:
+            self.label.setText(' ')
+            return
+        x = event.xdata
+        y = self.vals(x)
+        if isinstance(y, tuple):
+            y = '(' + ', '.join("{:.5g}".format(i) for i in y) + ')'
+        else:
+            y = "{:.5g}".format(y)
+        xu = '' if self.xu == '-' else ' ' + self.xu
+        yu = '' if self.yu == '-' else ' ' + self.yu
+        self.label.setText("{self.xn} = {x:.5g}{xu}    {self.yn} = {y}{yu}".format(**locals()))
+
 
 def show_material_plot(parent, model, init_material = None):
     # plot_window = QtGui.QDockWidget("Parameter Plot", self.document.window)
     # plot_window.setFeatures(QtGui.QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
     # plot_window.setWidget(MaterialPlot())
-    # self.document.window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, plot_window)
+    # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
     plot_window = QtGui.QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
     plot_window.setCentralWidget(MaterialPlot(model, init_material))
@@ -389,7 +414,7 @@ def show_material_plot(parent, model, init_material = None):
 def material_plot_operation(parent):
     action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
                            'Examine &Material Parameters...', parent)
-    action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_M)
+    action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
     action.triggered.connect(lambda: show_material_plot(parent, parent.document.materials.model))
     return action
 

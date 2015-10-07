@@ -21,22 +21,33 @@ else:
     matplotlib.use('Qt4Agg')
     QT_API = os.environ.get('QT_API')
     if QT_API is not None:
-        QT_API = dict(pyqt='PyQt4', pyside='PySide', pyqt5='PyQt5').get(QT_API, 'PySide')
+        QT_API = dict(pyqt='PyQt4', pyside='PySide').get(QT_API, 'PySide')
     else:
         QT_API = matplotlib.rcParams['backend.qt4']
 
-if QT_API == 'PySide':
-    from PySide import QtCore, QtGui
-    QtSignal = QtCore.Signal
-else:
-    import sip
-    for n in ("QString", "QVariant"):
+for QT_API in (QT_API, 'PySide', 'PyQt4'):
+    if QT_API == 'PySide':
         try:
-            sip.setapi(n, 2)
-        except:
+            from PySide import QtCore, QtGui
+        except ImportError:
             pass
-    from PyQt4 import QtCore, QtGui
-    QtSignal = QtCore.pyqtSignal
+        else:
+            QtSignal = QtCore.Signal
+            break
+    else:
+        try:
+            import sip
+            for n in ("QString", "QVariant"):
+                try:
+                    sip.setapi(n, 2)
+                except:
+                    pass
+            from PyQt4 import QtCore, QtGui
+        except ImportError:
+            pass
+        else:
+            QtSignal = QtCore.pyqtSignal
+            break
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtGui'] = QtGui

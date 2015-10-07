@@ -677,7 +677,7 @@ def main():
         pd = APPLICATION.desktop()
         matplotlib.rcParams.update({
             'figure.dpi': pd.logicalDpiY(),
-            'font.size': ft.pointSize() + 1,
+            'font.size': ft.pointSize(),
             'font.family': ft.family(),
             'mathtext.fontset': 'stixsans',
             # 'mathtext.cal': ft.family(),
