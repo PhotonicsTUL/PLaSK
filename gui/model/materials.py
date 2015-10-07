@@ -142,15 +142,15 @@ MATERIALS_PROPERTES = OrderedDict((
     ('Nr', (u'Complex refractive index <i>n<sub>R</sub></i>', u'-',
             [(u'wl', u'wavelength', 'nm'),
              (u'T', u'temperature', 'K'),
-             (u'n', u'injected carriers concentration', '1/cm')])),
+             (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('nr', (u'Real refractive index <i>n<sub>R</sub></i>', u'-',
             [(u'wl', u'wavelength', 'nm'), (u'T', u'temperature', 'K'),
-             (u'n', u'injected carriers concentration', '1/cm')])),
+             (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('NR', (u'Anisotropic complex refractive index tensor <i>n<sub>R</sub></i>. '
             u'Tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, '
             u'<i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>10</sub>]', u'-',
             [(u'wl', u'wavelength', 'nm'), (u'T', u'temperature', 'K'),
-             (u'n', u'injected carriers concentration', '1/cm')])),
+             (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('Nv', (u'Effective density of states in the valance band <i>N<sub>v</sub></i>', u'cm<sup>-3</sup>',
             [(u'T', u'temperature', 'K'), (u'e', u'lateral strain', '-'),
              (u'point', u'point in the Brillouin zone', '-')])),
