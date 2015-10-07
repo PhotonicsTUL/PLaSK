@@ -1,8 +1,10 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
-cmake_policy(SET CMP0058 OLD)   # for Ninja
+cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
+if(POLICY CMP0058)
+    cmake_policy(SET CMP0058 OLD)   # for Ninja
+endif()
 
 project(plask)
 
