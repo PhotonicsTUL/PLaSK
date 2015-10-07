@@ -142,13 +142,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     dvnDeltaPsi.reset(size, 0.);
     dvnFn.reset(size, 0.);
     dvnFp.reset(size, 0.);
-    dvnFnEta.reset(size, 0.);
-    dvnFpKsi.reset(size, 0.);
+    dvnFnEta.reset(size, 1.);
+    dvnFpKsi.reset(size, 1.);
     dvnDeltaFn.reset(size, 0.);
     dvnDeltaFp.reset(size, 0.);
 
     dvePsiI.reset(this->mesh->elements.size(), 0.);
     dvePsi.reset(this->mesh->elements.size(), 0.);
+    dveFn.reset(this->mesh->elements.size(), 0.);
+    dveFp.reset(this->mesh->elements.size(), 0.);
     dveFnEta.reset(this->mesh->elements.size(), 1.);
     dveFpKsi.reset(this->mesh->elements.size(), 1.);
     dveN.reset(this->mesh->elements.size(), 0.);
@@ -174,6 +176,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     dvnDeltaFp.reset();
     dvePsiI.reset();
     dvePsi.reset();
+    dveFn.reset();
+    dveFp.reset();
     dveFnEta.reset();
     dveFpKsi.reset();
     dveN.reset();
@@ -211,7 +215,7 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::setLocalMatrix(d
 template<typename Geometry2DType>
 template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
+                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -264,7 +268,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 template<typename Geometry2DType>
 template <typename MatrixT>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(std::string calctype, MatrixT& A, DataVector<double>& B,
-                                                                      const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
+                                                            const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
@@ -576,6 +580,12 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
 {
     double err = -1.;
 
+//TODO Przekazać: const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage
+//     for (auto cond: bvoltage) {
+//         for (auto i: cond.place)
+//             dvnDeltaPsi[i] = 0.;
+//     }
+    
     if (calctype =="Psi0") {
         err = 0.;
         double normDel = maxDelPsi0/mEx;
@@ -587,7 +597,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(dvnDeltaPsi[i]);
             if (corr > err) err = corr;
             //update datavector with potentials
-            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i];
+            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i]; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential at U=0V: %1%V", err*mEx);
     }
@@ -602,7 +612,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(dvnDeltaPsi[i]);
             if (corr > err) err = corr;
             //update datavector with potentials
-            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i];
+            dvnPsi[i] = dvnPsi[i] + dvnDeltaPsi[i]; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential: %1%V", err*mEx);
     }
@@ -621,8 +631,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(deltaFn);
             if (corr > err) err = corr;
             //update datavector with quasi-Fermi energy level for electrons
-            dvnFn[i] = dvnFn[i] + deltaFn;
-            dvnFnEta[i] = exp(dvnFn[i]);
+            dvnFn[i] = dvnFn[i] + deltaFn; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
+            dvnFnEta[i] = exp(dvnFn[i]); // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the quasi-Fermi energy level for electrons: %1%eV", err*mEx);
     }
@@ -641,8 +651,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
             double corr = std::abs(deltaFp);
             if (corr > err) err = corr;
             //update datavector with quasi-Fermi energy level for electrons
-            dvnFp[i] = dvnFp[i] + deltaFp;
-            dvnFpKsi[i] = exp(-dvnFp[i]);
+            dvnFp[i] = dvnFp[i] + deltaFp; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
+            dvnFpKsi[i] = exp(-dvnFp[i]); // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
         this->writelog(LOG_DETAIL, "Maximal update for the quasi-Fermi energy level for holes: %1%eV", err*mEx);
     }
@@ -685,6 +695,32 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype
         }
     }
     return 0.;
+}
+
+template<typename Geometry2DType>
+void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage(double dU, const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
+    // boundary conditions of the first kind
+    for (auto cond: bvoltage) {
+        for (auto r: cond.place) {
+
+            // KRAKOW - W WEZLACH W KTORYCH MAM WARUNEK BRZEGOWY NA POTENCJAL (ALE TYLKO TAM GDZIE PRZYLOZONE NAPIECIE JEST POWYZEJ 0) CHCE USTAWIC WARTOSCI TAK JAK PONIZEJ
+            //int i = 0; // CO ZAMIAST 0?
+            dvnPsi[r] = (dvnPsi0[r] + dU)/mEx;
+            dvnFn[r] = -dU/mEx;
+            dvnFp[r] = -dU/mEx;
+            dvnFnEta[r] = exp(dvnFn[r]);
+            dvnFpKsi[r] = exp(-dvnFp[r]);
+
+        }
+    }
+
+    savePsi();
+    saveFn();
+    saveFp();
+    saveFnEta();
+    saveFpKsi();
+    saveN();
+    saveP();
 }
 
 template<typename Geometry2DType>

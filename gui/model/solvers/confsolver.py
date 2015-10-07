@@ -9,10 +9,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from lxml import etree
 import os
+from lxml import etree
+
+from ...utils.xml import AttributeReader, print_interior
 from . import Solver, SOLVERS
-from utils.xml import AttributeReader, print_interior
 
 
 class Attr(object):

@@ -10,7 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from lxml import etree
-from utils.xml import AttributeReader
+
+from ...utils.xml import AttributeReader
 from . import Solver
 
 

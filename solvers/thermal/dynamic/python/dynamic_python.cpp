@@ -35,7 +35,8 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(rebuildfreq, "Frequency of rebuild mass");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-        RO_PROPERTY(elapsed_time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(elapsed_time, getElapsTime, "Alias for :attr:`time` (obsolete).");
     }
 
     {CLASS(FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>, "DynamicCyl",
@@ -53,7 +54,8 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(rebuildfreq, "Frequency of rebuild mass");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-        RO_PROPERTY(elapsed_time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(elapsed_time, getElapsTime, "Alias for :attr:`time` (obsolete).");
     }
 
     {CLASS(FiniteElementMethodDynamicThermal3DSolver, "Dynamic3D",
@@ -71,7 +73,8 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(rebuildfreq, "Frequency of rebuild mass");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-        RO_PROPERTY(elapsed_time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(time, getElapsTime, "Time of calculations performed so far since the last solver invalidation.");
+        RO_PROPERTY(elapsed_time, getElapsTime, "Alias for :attr:`time` (obsolete).");
     }
 
 }

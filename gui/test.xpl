@@ -8,6 +8,9 @@
 </defines>
 
 <materials>
+  <material name="test" base="semiconductor">
+    <A>0.1 * T + 0.02 * (T-300)**2</A>
+  </material>
   <material name="InGaAsQW:Si" base="In(0.2)GaAs:Si">
     <nr>3.621</nr>
     <absp>0</absp>
@@ -137,7 +140,7 @@
 </grids>
 
 <solvers>
-  <thermal name="THERMAL" solver="StaticCyl" lib="fem">
+  <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <temperature>

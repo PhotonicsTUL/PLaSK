@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from thermal.fem import Static2D
+from thermal.static import Static2D
 
 plask.config.axes = 'xy'
 

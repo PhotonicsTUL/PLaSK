@@ -303,15 +303,14 @@ py::docstring_options doc_options(
 //     IntFromInt64() {
 //         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<int>());
 //     }
-//
-//     // Determine if obj can be converted into an Aligner
+// 
 //     static void* convertible(PyObject* obj) {
-//         if (!) return NULL;
-//         return obj;
+//         return (PyArray_Check(obj) PyArray_IsIntegerScalar(obj) && PyObject_TypeCheck(obj, &PyInt64ArrType_Type))? obj : NULL;
+//         // return PyObject_TypeCheck(obj, &PyInt64ArrType_Type)? obj : NULL;
 //     }
-//
+// 
 //     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-//         void* storage = ((boost::python::converter::rvalue_from_python_storage<Vec<dim,T>>*)data)->storage.bytes;
+//         void* storage = ((boost::python::converter::rvalue_from_python_storage<int>*)data)->storage.bytes;
 //         try {
 //             if (PyArray_Check(obj)) {
 //                 if (PyArray_NDIM((PyArrayObject*)obj) != 1 || PyArray_DIMS((PyArrayObject*)obj)[0] != dim) throw py::error_already_set();
