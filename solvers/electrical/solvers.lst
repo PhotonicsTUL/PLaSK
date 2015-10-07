@@ -1,8 +1,0 @@
-fem.Shockley2D
-fem.ShockleyCyl
-fem3d.Shockley3D
-
-diffusion.Diffusion2D
-diffusion.DiffusionCyl
-
-ddm2d.DriftDiffusion2D

@@ -1,12 +1,10 @@
 #!/usr/bin/python
 from __future__ import print_function
 
-XNS = '{http://phys.p.lodz.pl/solvers.xsd}'
-
 import sys
 import os
 
-from xml.etree import cElementTree as et
+from lxml import etree as et
 
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 docdir = os.path.join(plaskdir, 'doc')
@@ -40,17 +38,21 @@ def html2rst(text):
 
 def make_rst(dirname):
     """Create documentation from solvers.rst"""
-    cat = os.path.basename(os.path.dirname(os.path.dirname(dirname)))
-    lib = os.path.basename(os.path.dirname(dirname))
+    category = os.path.basename(os.path.dirname(dirname))
+    library = os.path.basename(dirname)
     dom = et.parse(os.path.join(dirname, 'solvers.xml'))
 
-    for solver in dom.getroot():
-        if solver.tag != XNS+'solver':
-            raise ValueError(u'excpected <solver>, got <{}> instead'.format(solver.tag))
+    root = dom.getroot()
+    xns = root.nsmap.get(None, '')
+    if xns: xns = '{'+xns+'}'
+
+    for solver in root:
+        if solver.tag != xns+'solver':
+            raise ValueError(u'expected <solver>, got <{}> instead'.format(solver.tag))
 
         name = solver.attrib['name']
-        cat = solver.attrib.get('category', cat)
-        lib = solver.attrib.get('lib', lib)
+        cat = solver.attrib.get('category', category)
+        lib = solver.attrib.get('lib', library)
 
         try:
             os.makedirs(os.path.join(outdir, cat))
@@ -81,13 +83,13 @@ def make_rst(dirname):
 
         out(u'\n   .. xml:contents::')
 
-        geom = solver.find(XNS+'geometry').attrib['type']
+        geom = solver.find(xns+'geometry').attrib['type']
         out(u'\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
         out(u'\n         Geometry for use by this solver.')
         out(u'\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
             .format(geom))
 
-        mesh = solver.find(XNS+'mesh')
+        mesh = solver.find(xns+'mesh')
         if mesh is not None:
             out(u'\n      .. xml:tag:: <mesh> [in {}.{}]'.format(cat, name))
             out(u'\n         {} mesh used by this solver.'.format(mesh.attrib['type']))
@@ -95,13 +97,13 @@ def make_rst(dirname):
                 .format(mesh.attrib['type']))
 
         def write_tags(outer, level=2):
-            tags = outer.findall(XNS+'tag') or []
-            bconds = outer.findall(XNS+'bcond') or []
+            tags = outer.findall(xns+'tag') or []
+            bconds = outer.findall(xns+'bcond') or []
 
             for tag in tags:
                 out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
                 out_text(tag, level+1)
-                attrs = tag.findall(XNS+'attr')
+                attrs = tag.findall(xns+'attr')
                 if attrs:
                     out()
                     for attr in attrs:
@@ -110,7 +112,7 @@ def make_rst(dirname):
                         typ = attr.attrib.get('type', None)
                         unit = attr.attrib.get('unit', None)
                         if typ == 'choice':
-                            choices = [ch.text.strip() for ch in attr.findall(XNS+'choice')]
+                            choices = [ch.text.strip() for ch in attr.findall(xns+'choice')]
                             if len(choices) == 0:
                                 typ = u'(choice)'
                             if len(choices) == 1:

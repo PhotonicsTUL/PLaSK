@@ -186,11 +186,8 @@ class ConfSolverFactory(object):
         return result
 
 
-XNS = '{http://phys.p.lodz.pl/solvers.xsd}'
-
-
-def _iter_tags(parent):
-    for tag in parent.findall(XNS+'tag'):
+def _iter_tags(parent, xns):
+    for tag in parent.findall(xns+'tag'):
         yield tag
         for t in _iter_tags(tag):
             t.attrib['name'] = tag.attrib['name'] + '/' + t.attrib['name']
@@ -205,10 +202,13 @@ def _load_xml(filename):
     dom = etree.parse(filename)
     root = dom.getroot()
 
-    if root.tag != XNS+'solvers': return
+    xns = root.nsmap.get(None, '')
+    if xns: xns = '{'+xns+'}'
+
+    if root.tag != xns+'solvers': return
 
     for solver in root:
-        if solver.tag != XNS+'solver': return
+        if solver.tag != xns+'solver': return
 
         name = solver.attrib.get('name')
         if name is None: return
@@ -216,7 +216,7 @@ def _load_xml(filename):
         cat = solver.attrib.get('category', cat)
         lib = solver.attrib.get('lib', os.path.basename(filename)[:-4])
 
-        m = solver.find(XNS+'mesh')
+        m = solver.find(xns+'mesh')
         if m is not None:
             try:
                 mesh_type = m.attrib['type']
@@ -230,20 +230,20 @@ def _load_xml(filename):
         for tag in _iter_tags(solver):
             tn, tl = tag.attrib['name'], tag.attrib['label']
             attrs = []
-            for attr in tag.findall(XNS+'attr'):
-                attrs.append(read_attr(attr, XNS))
+            for attr in tag.findall(xns+'attr'):
+                attrs.append(read_attr(attr, xns))
             config.append((tn, tl, attrs))
 
         #TODO Handle boundary conditions properly
-        for bcond in solver.findall(XNS+'bcond'):
+        for bcond in solver.findall(xns+'bcond'):
             config.append((bcond.attrib['name'], bcond.attrib['label'] + ' boundary conditions', None))
 
-        flow = solver.find(XNS+'flow')
+        flow = solver.find(xns+'flow')
         if flow is not None:
             providers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][3:]))
-                         for e in flow.findall(XNS+'provider')]
+                         for e in flow.findall(xns+'provider')]
             receivers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][2:]))
-                         for e in flow.findall(XNS+'receiver')]
+                         for e in flow.findall(xns+'receiver')]
         else:
             providers = []
             receivers = []
