@@ -215,7 +215,7 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::setLocalMatrix(d
 template<typename Geometry2DType>
 template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
+                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -268,7 +268,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 template<typename Geometry2DType>
 template <typename MatrixT>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(std::string calctype, MatrixT& A, DataVector<double>& B,
-                                                                      const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
+                                                            const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
@@ -580,6 +580,12 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
 {
     double err = -1.;
 
+//TODO Przekazać: const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage
+//     for (auto cond: bvoltage) {
+//         for (auto i: cond.place)
+//             dvnDeltaPsi[i] = 0.;
+//     }
+    
     if (calctype =="Psi0") {
         err = 0.;
         double normDel = maxDelPsi0/mEx;
