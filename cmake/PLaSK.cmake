@@ -22,9 +22,6 @@ set(SOLVER_LIB_NAME "${SOLVER_CATEGORY_NAME}_${SOLVER_NAME}")
 
 # Obtain intermediate path list and to create necessary __init__.py files to mark packages
 get_filename_component(SOLVER_PATH ${SOLVER_DIR} PATH)
-if(NOT SOLVER_PATH STREQUAL "")
-    string(REPLACE "/" ";" SOLVER_DIRECTORIES ${SOLVER_PATH})
-endif()
 set(PLASK_SOLVER_PATH "${PLASK_PATH}/solvers/${SOLVER_PATH}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
@@ -74,13 +71,6 @@ macro(make_default)
         # Make package hierarchy
         set(curr_path "${PLASK_PATH}/solvers")
         set(install_path "lib/plask/solvers")
-        foreach(dir ${SOLVER_DIRECTORIES})
-            set(curr_path "${curr_path}/${dir}")
-            set(install_path "${install_path}/${dir}")
-            file(MAKE_DIRECTORY ${curr_path})
-            file(APPEND "${curr_path}/__init__.py" "")
-            install(FILES "${curr_path}/__init__.py" DESTINATION ${install_path} COMPONENT solvers)
-        endforeach()
         if(WIN32)
             add_library(${SOLVER_PYTHON_MODULE} SHARED ${interface_src})
         else()
