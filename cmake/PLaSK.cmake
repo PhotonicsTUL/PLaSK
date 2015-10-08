@@ -104,17 +104,17 @@ macro(make_default)
                               )
             install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
             add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
-            if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml)
-                add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
-                                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
-                                   COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
-                                  )
-                string(REPLACE "/" "_" SOLVER_MODULE ${SOLVER_DIR})
-                add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
-                install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT GUI)
-            endif()
         endif()
-
+    endif()
+    
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml)
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
+                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
+                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
+                            )
+        string(REPLACE "/" "_" SOLVER_MODULE ${SOLVER_DIR})
+        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT GUI)
     endif()
 
     if(BUILD_TESTING)

@@ -229,7 +229,7 @@ void Manager::loadSolvers(XMLReader& reader) {
                 while (iter != end) {
                     boost::filesystem::path p = iter->path();
                     if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".xml") {
-                        XMLReader xml(p.c_str());
+                        XMLReader xml(p.string().c_str());
                         xml.requireTag();
                         while(xml.requireTagOrEnd()) {
                             std::string tag = xml.getTagName();
