@@ -12,7 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-
 OPERATIONS = []
 
 import sys
@@ -42,8 +41,9 @@ except ImportError:
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .model.info import InfoListModel, Info, infoLevelIcon
+from .model.info import InfoListModel, Info
 from .launch import launch_plask
+from .controller.materials.plot import show_material_plot
 
 from .utils.config import CONFIG, ConfigDialog
 from .utils.textedit import update_textedit_colors
@@ -212,6 +212,11 @@ class MainWindow(QtGui.QMainWindow):
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.goto_line)
 
+        plot_material_action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
+                               'Examine &Material Parameters...', self)
+        plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
+        plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
+
         settings_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-properties'),
                                     'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')
@@ -239,6 +244,8 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(goto_action)
         self.menu.addAction(self.showsource_action)
         self.menu.addAction(launch_action)
+        self.menu.addSeparator()
+        self.menu.addAction(plot_material_action)
         if OPERATIONS:
             self.menu.addSeparator()
             for op in OPERATIONS:   # for plugins use

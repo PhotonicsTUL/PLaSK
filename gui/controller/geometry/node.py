@@ -140,7 +140,7 @@ class GNodeController(Controller):
             res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
         return res
 
-    def construct_combo_box(self, row_name=None, items=[], editable=True, node_property_name=None,
+    def construct_combo_box(self, row_name=None, items=(), editable=True, node_property_name=None,
                             display_property_name=None, node=None, change_cb=None):
         res = ComboBox()
         res.setEditable(editable)
@@ -150,14 +150,17 @@ class GNodeController(Controller):
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is not None:
-            res.editingFinished.connect(lambda :
-                self._set_node_property_undoable(node_property_name, res.currentText(), display_property_name, node=node)
-            )
+            res.editingFinished.connect(lambda:
+                                        self._set_node_property_undoable(node_property_name, res.currentText(),
+                                                                         display_property_name, node=node))
         return res
 
     def construct_material_combo_box(self, row_name=None, items=None, node_property_name=None,
                                      display_property_name=None, node=None, change_cb=None):
-        res = MaterialsComboBox()
+        if change_cb is None and node_property_name is not None:
+            change_cb = lambda: self._set_node_property_undoable(
+                node_property_name, res.currentText(), display_property_name, node=node)
+        res = MaterialsComboBox(materials_model=self.document.materials.model, popup_select_cb=lambda m: change_cb())
         res.setEditable(True)
         res.append_list(items)
         res.append_materials_from_model(self.document.materials.model)
@@ -166,13 +169,10 @@ class GNodeController(Controller):
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
-        elif node_property_name is not None:
-            res.editingFinished.connect(
-                lambda: self._set_node_property_undoable(
-                    node_property_name, res.currentText(), display_property_name, node=node))
         return res
 
-    def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None, display_property_name=None, change_cb=None):
+    def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None,
+                                              display_property_name=None, change_cb=None):
         return self.construct_combo_box(row_name,
                                         items=[''] +
                                         sorted(self.model.names_before(self.node), key=lambda s: s.lower()),

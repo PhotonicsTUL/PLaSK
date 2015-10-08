@@ -167,20 +167,24 @@ MATERIALS_PROPERTES = OrderedDict((
 ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 
 
-elements_re = re.compile("[A-Z][a-z]*")
+elements_re = re.compile(r"([A-Z][a-z]*)(?:\((\d*\.?\d*)\))?")
 
 
 def parse_material_components(material):
     """ Parse info on materials.
         :return: name, label, groups, doping
     """
+    material = str(material)
     if plask:
         try:
-            simple = plask.material.db.is_simple(str(material))
-        except ValueError:
-            simple = True
-        except RuntimeError:
-            simple = True
+            mat = plask.material.db.get(material)
+        except (ValueError, RuntimeError):
+            try:
+                simple = plask.material.db.is_simple(material)
+            except (ValueError, RuntimeError):
+                simple = True
+        else:
+            simple = mat.simple
     else:
         simple = True
     if ':' in material:
@@ -194,7 +198,7 @@ def parse_material_components(material):
         label = ''
     if not simple:
         elements = elements_re.findall(name)
-        groups = [[e for e in elements if e in g] for g in ELEMENT_GROUPS]
+        groups = [[e for e in elements if e[0] in g] for g in ELEMENT_GROUPS]
     else:
         groups = []
     return name, label, groups, doping

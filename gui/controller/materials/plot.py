@@ -11,20 +11,19 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from gui.qt import QtGui, QtCore
-from gui.qt.QtCore import Qt
+from ...qt import QtGui
+from ...qt.QtCore import Qt
 
 import itertools
 
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from  matplotlib.widgets import Cursor
+from matplotlib.widgets import Cursor
 
-import gui
-
-from gui.model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
-from gui.utils.str import html_to_tex
+from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
+from ...utils.qsignals import BlockQtSignals
+from ...utils.str import html_to_tex
 
 try:
     import plask
@@ -48,6 +47,7 @@ class MaterialPlot(QtGui.QWidget):
         self.material.currentIndexChanged.connect(self.material_changed)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
+        self.param.setCurrentIndex(self.param.findText('thermk'))
         self.param.currentIndexChanged.connect(self.property_changed)
         self.param.setMaxVisibleItems(len(MATERIALS_PROPERTES))
         self.param.highlighted.connect(lambda i:
@@ -70,7 +70,7 @@ class MaterialPlot(QtGui.QWidget):
 
         self.arguments = {}
         self.mat_params = {}
-        self.prop_params = {}
+        self.prop_params = {'T': ('300', '400')}
 
         # self.model.changed.connect(self.update_materials)
 
@@ -141,7 +141,8 @@ class MaterialPlot(QtGui.QWidget):
         self.update_materials()
         self.property_changed()
 
-        if init_material is not None: self.set_material(init_material)
+        if init_material is not None:
+            self.set_material(init_material, True)
 
     def resizeEvent(self, event):
         if self.error.isVisible():
@@ -228,7 +229,7 @@ class MaterialPlot(QtGui.QWidget):
         else:
             self.info.hide()
 
-    def set_material(self, material):
+    def set_material(self, material, update_toolbar=False):
         for child in self.mat_toolbar.children():
             if child in self.arguments:
                 key = child.text()[:-1]
@@ -240,18 +241,40 @@ class MaterialPlot(QtGui.QWidget):
 
         name, label, groups, dope = parse_material_components(material)
 
+        if dope is not None:
+            dopes = dope.split('=')
+            dope = dopes[0]
+            if ' ' in dope: dope = dope.split()[0]
+
         if groups:
-            elements = tuple(itertools.chain(*(g + [None] for g in groups if len(g) > 1)))[:-1]
+            elements = tuple(itertools.chain(*([e[0] for e in g] + [None] for g in groups if len(g) > 1)))[:-1]
+            if update_toolbar:
+                self.mat_params.update(
+                    dict(itertools.chain(*([(e[0], (e[1],'')) for e in g if e[1]] for g in groups if len(g) > 1))))
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e), "-") for e in elements), self.mat_params, 0)
+            name = ''.join(itertools.chain(*([e[0] for e in g] for g in groups)))
+            if label: name += '_' + label
+            if dope is not None: name += ':' + dope
         else:
             elements = None
 
         if dope is not None:
             if elements:
                 self.mat_toolbar.addSeparator()
+            if len(dopes) > 1 and update_toolbar:
+                self.mat_params['dc'] = dopes[1], ''
             self.set_toolbar(self.mat_toolbar,
-                             [("["+dope+"]", dope + " doping concentration",  "cm<sup>-3</sup>")],
+                             [(("[" + dope + "]"), dope + " doping concentration", "cm<sup>-3</sup>")],
                              self.mat_params, 1)
+
+        if update_toolbar:
+            i = self.material.findText(name)
+            if i == -1:
+                i = self.material.count() + 1
+                self.material.insertSeparator(i-1)
+                self.material.addItem(name)
+            with BlockQtSignals(self.material):
+                self.material.setCurrentIndex(i)
 
         self.update_info()
 
@@ -400,7 +423,7 @@ class MaterialPlot(QtGui.QWidget):
         self.label.setText("{self.xn} = {x:.5g}{xu}    {self.yn} = {y}{yu}".format(**locals()))
 
 
-def show_material_plot(parent, model, init_material = None):
+def show_material_plot(parent, model, init_material=None):
     # plot_window = QtGui.QDockWidget("Parameter Plot", self.document.window)
     # plot_window.setFeatures(QtGui.QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
@@ -408,16 +431,5 @@ def show_material_plot(parent, model, init_material = None):
     # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
     plot_window = QtGui.QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
-    plot_window.setCentralWidget(MaterialPlot(model, init_material))
+    plot_window.setCentralWidget(MaterialPlot(model, init_material=init_material))
     plot_window.show()
-
-
-def material_plot_operation(parent):
-    action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
-                           'Examine &Material Parameters...', parent)
-    action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
-    action.triggered.connect(lambda: show_material_plot(parent, parent.document.materials.model))
-    return action
-
-
-gui.OPERATIONS.append(material_plot_operation)
