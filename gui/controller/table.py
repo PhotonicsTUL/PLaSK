@@ -125,6 +125,7 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
 def table_with_manipulators(table, parent=None, model=None, title=None, add_undo_action=None):
     return table_and_manipulators(table, parent, model, title, add_undo_action)[0]
 
+
 class TableController(Controller):
 
     def __init__(self, document, model):

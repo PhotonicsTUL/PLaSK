@@ -191,8 +191,18 @@ class MaterialsComboBox(ComboBox):
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 
-class MaterialBaseDelegate(DefinesCompletionDelegate):
+class MaterialNameDelegate(QtGui.QStyledItemDelegate):
 
+    def __init__(self, model, parent):
+        QtGui.QStyledItemDelegate.__init__(self, parent)
+        self.model = model
+
+    def createEditor(self, parent, option, index):
+        ed = MaterialLineEdit(parent, self.model)
+        return ed
+
+
+class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     @staticmethod
     def _format_material(mat):
@@ -289,6 +299,8 @@ class MaterialsController(Controller):
         self.materials_table = QtGui.QTableView()
         self.materials_table.setModel(self.model)
         #self.model.modelReset.connect(lambda : self.materials_table.clearSelection())  #TODO why does not work?
+        self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model,
+                                                                              self.materials_table))
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
                                                                               self.model,
                                                                               self.materials_table))

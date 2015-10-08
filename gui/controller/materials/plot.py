@@ -241,11 +241,6 @@ class MaterialPlot(QtGui.QWidget):
 
         name, label, groups, dope = parse_material_components(material)
 
-        if dope is not None:
-            dopes = dope.split('=')
-            dope = dopes[0]
-            if ' ' in dope: dope = dope.split()[0]
-
         if groups:
             elements = tuple(itertools.chain(*([e[0] for e in g] + [None] for g in groups if len(g) > 1)))[:-1]
             if update_toolbar:
@@ -253,12 +248,13 @@ class MaterialPlot(QtGui.QWidget):
                     dict(itertools.chain(*([(e[0], (e[1],'')) for e in g if e[1]] for g in groups if len(g) > 1))))
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e), "-") for e in elements), self.mat_params, 0)
             name = ''.join(itertools.chain(*([e[0] for e in g] for g in groups)))
-            if label: name += '_' + label
-            if dope is not None: name += ':' + dope
         else:
             elements = None
 
         if dope is not None:
+            dopes = dope.split('=')
+            dope = dopes[0]
+            if ' ' in dope: dope = dope.split()[0]
             if elements:
                 self.mat_toolbar.addSeparator()
             if len(dopes) > 1 and update_toolbar:
@@ -268,6 +264,8 @@ class MaterialPlot(QtGui.QWidget):
                              self.mat_params, 1)
 
         if update_toolbar:
+            if label: name += '_' + label
+            if dope is not None: name += ':' + dope
             i = self.material.findText(name)
             if i == -1:
                 i = self.material.count() + 1
