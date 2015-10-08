@@ -31,7 +31,7 @@
         </stack>
       </arrange>
       <shelf flat="no">
-        <rectangle material="Al(0.05)GaAs" dtran="1" dvert="0.2"/>
+        <rectangle material="Al(0.02)GaAs" dtran="1" dvert="0.2"/>
         <gap total="2"/>
         <triangle material="AlOx" atran="-1" avert="0" btran="0" bvert="0.2"/>
       </shelf>

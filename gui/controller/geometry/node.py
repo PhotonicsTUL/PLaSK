@@ -158,8 +158,9 @@ class GNodeController(Controller):
     def construct_material_combo_box(self, row_name=None, items=None, node_property_name=None,
                                      display_property_name=None, node=None, change_cb=None):
         if change_cb is None and node_property_name is not None:
-            change_cb = lambda: self._set_node_property_undoable(
-                node_property_name, res.currentText(), display_property_name, node=node)
+            def change_cb():
+                return self._set_node_property_undoable(
+                    node_property_name, res.currentText(), display_property_name, node=node)
         res = MaterialsComboBox(materials_model=self.document.materials.model, popup_select_cb=lambda m: change_cb())
         res.setEditable(True)
         res.append_list(items)

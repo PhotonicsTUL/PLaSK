@@ -39,6 +39,9 @@ else:
     import plask.material
 
 
+BASE_MATERIALS = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
+
+
 class ComponentsPopup(QtGui.QFrame):
 
     def __init__(self, close_cb, name, label, groups, doping, pos=None):
@@ -151,7 +154,7 @@ class MaterialsComboBox(ComboBox):
             self.setMaxVisibleItems(len(material_list))
         self.currentIndexChanged[str].connect(self.show_components_popup)
 
-    def append_list(self, list_to_append, insert_separator = True):
+    def append_list(self, list_to_append, insert_separator=True):
         """
         Append list to combo-box.
         :param list list_to_append: list to append
@@ -162,11 +165,13 @@ class MaterialsComboBox(ComboBox):
             if insert_separator and self.count() > 0: self.insertSeparator(self.count())
             self.addItems(list_to_append)
 
-    def append_materials_from_model(self, material_model, insert_separator = True):
+    def append_materials_from_model(self, material_model, insert_separator=True):
         self.append_list([e.name for e in material_model.entries], insert_separator)
 
-    def append_materials_from_db(self, db = None, insert_separator = True):
-        self.append_list(sorted(db if db is not None else plask.material.db, key=lambda x: x.lower()), insert_separator)
+    def append_materials_from_db(self, db=None, insert_separator=True):
+        self.append_list([m for m in sorted(db if db is not None else plask.material.db, key=lambda x: x.lower())
+                          if m not in BASE_MATERIALS], True)
+        self.append_list(BASE_MATERIALS, insert_separator)
 
     def show_components_popup(self, text):
         pos = self.mapToGlobal(QtCore.QPoint(0, self.height()))
@@ -188,6 +193,7 @@ class MaterialsComboBox(ComboBox):
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
 
+
     @staticmethod
     def _format_material(mat):
         return mat
@@ -198,7 +204,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     def createEditor(self, parent, option, index):
 
-        material_list = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
+        material_list = BASE_MATERIALS[:]
 
         if plask:
             material_list.extend(
