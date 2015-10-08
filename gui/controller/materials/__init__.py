@@ -194,12 +194,17 @@ class MaterialsComboBox(ComboBox):
 class MaterialNameDelegate(QtGui.QStyledItemDelegate):
 
     def __init__(self, model, parent):
-        QtGui.QStyledItemDelegate.__init__(self, parent)
+        super(MaterialNameDelegate, self).__init__(parent)
         self.model = model
 
     def createEditor(self, parent, option, index):
         ed = MaterialLineEdit(parent, self.model)
         return ed
+
+    def sizeHint(self, item, index):
+        hint = super(MaterialNameDelegate, self).sizeHint(item, index)
+        hint.setWidth(hint.width() + 24)
+        return hint
 
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
