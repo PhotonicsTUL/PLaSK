@@ -139,10 +139,15 @@ class MaterialPlot(QtGui.QWidget):
         self.setLayout(layout)
 
         self.update_materials()
-        self.property_changed()
-
         if init_material is not None:
             self.set_material(init_material, True)
+            self.material.setDisabled(True)
+
+        self.property_changed()
+        for arg in self.arguments:
+            if arg.text() == 'T:':
+                arg.setChecked(True)
+                break
 
     def resizeEvent(self, event):
         if self.error.isVisible():
@@ -375,6 +380,7 @@ class MaterialPlot(QtGui.QWidget):
             axes.plot(plot_range, [self.vals(a) for a in plot_range])
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
+
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
             self.label.hide()

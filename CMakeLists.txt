@@ -436,6 +436,10 @@ if(BUILD_PYTHON)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/mimetypes/application-x-plask.svg
                     DESTINATION share/icons/hicolor/scalable/mimetypes COMPONENT GUI)
         endif()
+
+        file(GLOB_RECURSE gui_pyc ${CMAKE_SOURCE_DIR}/gui/*.pyc)
+        file(REMOVE ${gui_pyc})
+
     endif()
 
 endif(BUILD_PYTHON)
