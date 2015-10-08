@@ -438,7 +438,9 @@ if(BUILD_PYTHON)
         endif()
 
         file(GLOB_RECURSE gui_pyc ${CMAKE_SOURCE_DIR}/gui/*.pyc)
-        file(REMOVE ${gui_pyc})
+        if(gui_pyc)
+            file(REMOVE ${gui_pyc})
+        endif()
 
     endif()
 
