@@ -124,7 +124,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
-    double addCorr(std::string calctype); ///< add corrections to datavectors
+    double addCorr(std::string calctype, const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst); ///< add corrections to datavectors
 /*
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();

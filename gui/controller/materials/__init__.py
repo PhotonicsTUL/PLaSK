@@ -198,12 +198,16 @@ class MaterialNameDelegate(QtGui.QStyledItemDelegate):
         self.model = model
 
     def createEditor(self, parent, option, index):
-        ed = MaterialLineEdit(parent, self.model)
+        if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
+            ed = MaterialLineEdit(parent, self.model)
+        else:
+            ed = QtGui.QLineEdit(parent)
         return ed
 
     def sizeHint(self, item, index):
         hint = super(MaterialNameDelegate, self).sizeHint(item, index)
-        hint.setWidth(hint.width() + 24)
+        if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
+            hint.setWidth(hint.width() + 24)
         return hint
 
 

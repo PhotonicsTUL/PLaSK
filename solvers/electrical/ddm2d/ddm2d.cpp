@@ -576,17 +576,21 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 
 
 template<typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype)
+double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype, const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst)
 {
     double err = -1.;
 
-//TODO Przekazać: const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage
-//     for (auto cond: bvoltage) {
-//         for (auto i: cond.place)
-//             dvnDeltaPsi[i] = 0.;
-//     }
+    for (auto cond: vconst)
+        for (auto i: cond.place)
+            dvnDeltaPsi[i] = 0.;
+    // TODO dla innych calctype
+    // Może tak:
+    // std::vector<bool> isconst(mesh->size(), false);
+    // for (auto cond: vconst)
+    //     for (auto i: cond.place)
+    //         isconst[i] = true;
     
-    if (calctype =="Psi0") {
+    if (calctype == "Psi0") {
         err = 0.;
         double normDel = maxDelPsi0/mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
@@ -601,7 +605,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential at U=0V: %1%V", err*mEx);
     }
-    else if (calctype =="Psi") {
+    else if (calctype == "Psi") {
         err = 0.;
         double normDel = maxDelPsi/mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
@@ -616,7 +620,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
         }
         this->writelog(LOG_DETAIL, "Maximal update for the potential: %1%V", err*mEx);
     }
-    else if (calctype =="Fn") {
+    else if (calctype == "Fn") {
         err = 0.;
         double normDel = maxDelFn/mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
@@ -636,7 +640,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
         }
         this->writelog(LOG_DETAIL, "Maximal update for the quasi-Fermi energy level for electrons: %1%eV", err*mEx);
     }
-    else if (calctype =="Fp") {
+    else if (calctype == "Fp") {
         err = 0.;
         double normDel = maxDelFp/mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
@@ -844,7 +848,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             setMatrix(calctype, A, dvnDeltaPsi, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
 
-            totDel = addCorr(calctype); // max. update
+            totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
             saveN();
@@ -857,7 +861,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             setMatrix(calctype, A, dvnDeltaPsi, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
 
-            totDel = addCorr(calctype); // max. update
+            totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
             saveN();
@@ -870,7 +874,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             setMatrix(calctype, A, dvnDeltaFn, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFn);
 
-            totDel = addCorr(calctype); // max. update
+            totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFn();
             saveFnEta();
@@ -883,7 +887,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             setMatrix(calctype, A, dvnDeltaFp, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFp);
 
-            totDel = addCorr(calctype); // max. update
+            totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFp();
             saveFpKsi();
