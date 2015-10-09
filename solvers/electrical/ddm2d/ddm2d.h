@@ -263,10 +263,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double compute(std::string calctype, unsigned loops=1);
 
     /**
-     * Increase voltage for p-contact
+     * Increase voltage for p-contacts
      * \return nothing
      **/
-    void increaseVoltage(double dU, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void increaseVoltage();
 
     /**
      * Integrate vertical total current at certain level.
