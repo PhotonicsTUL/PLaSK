@@ -1,57 +1,108 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <!-- If your library has more than one solver, make separate <solver> tag for each one of them -->
-  <solver name="YourSolver" category="skel" lib="your_solver">
+  <solver name="DriftDiffusion2D" category="electrical" lib="ddm2d">
+    Finite element drift-diffusion electrical solver for 2D Cartesian geometry using finite-element method.
 
-    <!-- This is a desctription of your solver that will appear in the user manual -->
-    Example skeleton file for &lt;b&gt;solvers.xml&lt;/b&gt;.
+    <geometry type="Cartesian2D"/>
 
-    <!-- Specify geometry type of your solver here -->
-    <geometry type="YourGeometry"/>
+    <mesh type="Rectangular2D"/>
 
-    <!-- Specify mesh type of your solver. If the mesh is optional, add ‘optional="yes"’ attribute.
-    If the solves has no mesh, remove this tag. -->
-    <mesh type="YourMesh" optional="yes|no"/>
+<!--    <tag name="loop" label="Configuration of the Self-Consistent Loop">-->
+<!--      Configuration of the self-consistent loop.-->
+<!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
+<!--    </tag>-->
 
-    <!-- Specify each configuration tag here -->
-    <tag name="configuration-tag" label="Configuration Tag">
-      <!-- Description of your tag that will show up in the user manual -->
-      Configuration tag of your solver.
-      <!-- Configuration attribute. Label will be displayed in GUI (make it short)
-           and the text content in the user manual (make it comprehensive). -->
-      <attr name="tag-attr" label="Tag attribute" type="attribute type" unit="unit">Pull all the configuration attributes like this.</attr>
-      <!-- This is a choice attribute. GUI will create an drop-down list with all the options.
-           Make sure you set ‘type="choice"’ here. -->
-      <attr name="other-attr" label="Other attribute" type="choice">
-        Another configuration attribute.
-        <choice>First choice</choice>
-        <choice>Second choice</choice>
-        <choice>Third choice</choice>
-      </attr>
-    </tag>
+<!--    <tag name="matrix" label="Matrix Solver">-->
+<!--      Configuration of the matrix solver.-->
+<!--      <attr name="algorithm" label="Solution algorithm" type="choice">-->
+<!--        Algorithm used for solving set of linear positive-definite equations.-->
+<!--        <choice>cholesky</choice>-->
+<!--        <choice>gauss</choice>-->
+<!--        <choice>iterative</choice>-->
+<!--      </attr>-->
+<!--      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>-->
+<!--      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>-->
+<!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
+<!--    </tag>-->
 
-    <tag name="another-configuration-tag" label="Different Configuration Tag">
-      <attr name="attribute" label="Some attribute" type="attribute type" unit="unit">Pull all the configuration attributes like this.</attr>
-    </tag>
+<!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
+<!--      Configuration of the effective model of p-n junction.-->
+<!--      <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>-->
+<!--      <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>-->
+<!--      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>-->
+<!--      <attr name="heat" label="Heat generation method" type="choice">-->
+<!--        Method of determination of the heat generated in the junction.-->
+<!--        <choice>joules</choice>-->
+<!--        <choice>wavelength</choice>-->
+<!--      </attr>-->
+<!--      <attr name="wavelength" label="Emitted wavelength" type="float" unit="nm">Emitted wavelength if heat generation method is set to ‘&lt;i&gt;wavelength&lt;/i&gt;’.</attr>-->
+<!--    </tag>-->
 
-    <!-- Specify boundary conditions read by your solver here. -->
-    <bcond name="boundary_condtion" label="Boundary Condition"/>
+<!--    <tag name="contacts" label="Properties of the Contacts">-->
+<!--      Properties of the contact layers.-->
+<!--      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>-->
+<!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
+<!--    </tag>-->
 
-    <!-- Some documentation of boundary conditions is generated automatically.
-         If it is not sufficient add additional description inside this tag. -->
-    <bcond name="other_boundary_condtion" label="Another Boundary Condition">
-      Additional description of boundary condition in help.
-    </bcond>
+<!--    <bcond name="voltage" label="Voltage"/>-->
 
-    <!-- Here you specify all the receivers and providers. -->
-    <flow>
-      <receiver name="inReceiver"/>
-      <!-- Standard name of receiver/provider is inQuantity/outQuantity. Sometimes it can be different.
-           In such case add ‘for’ attribute with the quantity name, so GUI can offer proper connection options. -->
-      <provider name="outProvider" for="QuantityIfNameDifferent"/>
-    </flow>
+<!--    <flow>-->
+<!--      <receiver name="inTemperature"/>-->
+<!--      <provider name="outCurrentDensity"/>-->
+<!--    </flow>-->
+  </solver>
 
+  <solver name="DriftDiffusionCyl" category="electrical" lib="ddm2d">
+    Finite element drift-diffusion electrical solver for 2D cylindrical geometry using finite-element method.
+
+    <geometry type="Cylindrical2D"/>
+
+    <mesh type="Rectangular2D"/>
+
+<!--    <tag name="loop" label="Configuration of the Self-Consistent Loop">-->
+<!--      Configuration of the self-consistent loop.-->
+<!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
+<!--    </tag>-->
+
+<!--    <tag name="matrix" label="Matrix Solver">-->
+<!--      Configuration of the matrix solver.-->
+<!--      <attr name="algorithm" label="Solution algorithm" type="choice">-->
+<!--        Algorithm used for solving set of linear positive-definite equations.-->
+<!--        <choice>cholesky</choice>-->
+<!--        <choice>gauss</choice>-->
+<!--        <choice>iterative</choice>-->
+<!--      </attr>-->
+<!--      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>-->
+<!--      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>-->
+<!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
+<!--    </tag>-->
+
+<!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
+<!--      Configuration of the effective model of p-n junction.-->
+<!--      <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>-->
+<!--      <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>-->
+<!--      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>-->
+<!--      <attr name="heat" label="Heat generation method" type="choice">-->
+<!--        Method of determination of the heat generated in the junction.-->
+<!--        <choice>joules</choice>-->
+<!--        <choice>wavelength</choice>-->
+<!--      </attr>-->
+<!--      <attr name="wavelength" label="Emitted wavelength" type="float" unit="nm">Emitted wavelength if heat generation method is set to ‘&lt;i&gt;wavelength&lt;/i&gt;’.</attr>-->
+<!--    </tag>-->
+
+<!--    <tag name="contacts" label="Properties of the Contacts">-->
+<!--      Properties of the contact layers.-->
+<!--      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>-->
+<!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
+<!--    </tag>-->
+
+<!--    <bcond name="voltage" label="Voltage"/>-->
+
+<!--    <flow>-->
+<!--      <receiver name="inTemperature"/>-->
+<!--      <provider name="outCurrentDensity"/>-->
+<!--    </flow>-->
   </solver>
 
 </solvers>
