@@ -873,7 +873,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
 #   endif
     //potentials = potentials.claim();// LP_09.2015
 
-    if (calctype == "Psi0")
+    if (calctype == "Psi0") {
         do {
             setMatrix(calctype, A, dvnDeltaPsi, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
@@ -886,7 +886,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
 
             ++loopno;
         } while ((totDel > maxerrPsi0) && (loopno < loops));
-    else if (calctype == "Psi")
+        outPotential.fireChanged();
+    }
+    else if (calctype == "Psi") {
         do {
             setMatrix(calctype, A, dvnDeltaPsi, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
@@ -899,7 +901,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
 
             ++loopno;
         } while ((totDel > maxerrPsi) && (loopno < loops));
-    else if (calctype == "Fn")
+        outPotential.fireChanged();
+    }
+    else if (calctype == "Fn") {
         do {
             setMatrix(calctype, A, dvnDeltaFn, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFn);
@@ -912,7 +916,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
 
             ++loopno;
         } while ((totDel > maxerrFn) && (loopno < loops));
-    else if (calctype == "Fp")
+        outQuasiFermiElectronLevel.fireChanged();
+    }
+    else if (calctype == "Fp") {
         do {
             setMatrix(calctype, A, dvnDeltaFp, vconst);    // corr holds RHS now czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFp);
@@ -925,6 +931,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
 
             ++loopno;
         } while ((totDel > maxerrFp) && (loopno < loops));
+        outQuasiFermiHoleLevel.fireChanged();
+    }
+
   //if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
     //this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
     //               loop, loopno, noactive?"":"@junc", mcur, err);
@@ -963,7 +972,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
     outHeat.fireChanged();
 */ // LP_09.2015
 
-    outPotential.fireChanged();
+//outPotential.fireChanged();
 
     return totDel;
 }
