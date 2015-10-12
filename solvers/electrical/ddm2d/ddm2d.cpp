@@ -1155,7 +1155,7 @@ const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFerm
     if (!dvnPsi) throw NoValue("Quasi-Fermi electron level");
     this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnPsi*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
+    return interpolate(this->mesh, dvnFn*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
 }
 
 
@@ -1165,7 +1165,7 @@ const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFerm
     if (!dvnPsi) throw NoValue("Quasi-Fermi hole level");
     this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnPsi*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
+    return interpolate(this->mesh, dvnFp*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
 }
 
 /*

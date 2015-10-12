@@ -25,6 +25,8 @@ void register_standard_properties_concentration_electrons();
 void register_standard_properties_concentration_holes();
 
 void register_standard_properties_builtin_potential();
+void register_standard_properties_quasi_Fermi_electron_level();
+void register_standard_properties_quasi_Fermi_hole_level();
 
 const char* docstring_receiver =
     "%1%Receiver%2%()\n\n"
@@ -375,6 +377,8 @@ void register_standard_properties()
     register_standard_properties_concentration_holes();
 
     register_standard_properties_builtin_potential();
+    register_standard_properties_quasi_Fermi_electron_level();
+    register_standard_properties_quasi_Fermi_hole_level();
     
     register_standard_properties_gain();
     register_standard_properties_GainOverCarriersConcentration();
