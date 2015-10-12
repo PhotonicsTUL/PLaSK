@@ -88,8 +88,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements)
     DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements)
     DataVector<double> dvePsi;                  ///< Computed potentials (size: elements)
-    DataVector<double> dveFn;                  ///< Computed potentials (size: elements)
-    DataVector<double> dveFp;                  ///< Computed potentials (size: elements)
+    DataVector<double> dveFn;                   ///< Computed potentials (size: elements)
+    DataVector<double> dveFp;                   ///< Computed potentials (size: elements)
     DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
     DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
 
@@ -103,6 +103,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dvnFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: nodes)
     DataVector<double> dvnDeltaFn;              ///< Computed quasi-Fermi levels for electrons corrections (size: nodes)
     DataVector<double> dvnDeltaFp;              ///< Computed quasi-Fermi levels for holes corrections (size: nodes)
+    DataVector<double> dvnEc;                   ///< Computed conduction band edge (size: points)
+    DataVector<double> dvnEv;                   ///< Computed valence band edge (size: points)
     //DataVector<Vec<2,double>> currents;         ///< Computed current densities
     //DataVector<double> heats;                   ///< Computed and cached heat source densities
 
@@ -124,6 +126,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
+    void saveEc(); ///< save conduction band edge for all elements to datavector
+    void saveEv(); ///< save valence band edge for all elements to datavector
     double addCorr(std::string calctype, const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst); ///< add corrections to datavectors
 /*
     /// Create 2D-vector with calculated heat densities
@@ -207,9 +211,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
-    typename ProviderFor<QuasiFermiElectronLevel, Geometry2DType>::Delegate outQuasiFermiElectronLevel;
+    typename ProviderFor<QuasiFermiEnergyLevelForElectrons, Geometry2DType>::Delegate outQuasiFermiEnergyLevelForElectrons;
 
-    typename ProviderFor<QuasiFermiHoleLevel, Geometry2DType>::Delegate outQuasiFermiHoleLevel;
+    typename ProviderFor<QuasiFermiEnergyLevelForHoles, Geometry2DType>::Delegate outQuasiFermiEnergyLevelForHoles;
+
+    typename ProviderFor<ConductionBandEdge, Geometry2DType>::Delegate outConductionBandEdge;
+
+    typename ProviderFor<ValenceBandEdge, Geometry2DType>::Delegate outValenceBandEdge;
 
 /*
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
@@ -315,9 +323,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
   protected:
     const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getQuasiFermiElectronLevels(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getQuasiFermiEnergyLevelsForElectrons(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getQuasiFermiHoleLevels(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+
+    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const; // KKRAKOW
+
+    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const; // KKRAKOW
 
 
     /*

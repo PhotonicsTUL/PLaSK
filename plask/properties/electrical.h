@@ -66,7 +66,7 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
 /**
  * Quasi-Fermi energy level for electrons [eV]
  */
-struct PLASK_API QuasiFermiElectronLevel: public ScalarFieldProperty {
+struct PLASK_API QuasiFermiEnergyLevelForElectrons: public ScalarFieldProperty {
     static constexpr const char* NAME = "quasi-Fermi energy level for electrons";
     static constexpr const char* UNIT = "eV";
 };
@@ -74,8 +74,24 @@ struct PLASK_API QuasiFermiElectronLevel: public ScalarFieldProperty {
 /**
  * Quasi-Fermi energy level for holes [eV]
  */
-struct PLASK_API QuasiFermiHoleLevel: public ScalarFieldProperty {
+struct PLASK_API QuasiFermiEnergyLevelForHoles: public ScalarFieldProperty {
     static constexpr const char* NAME = "quasi-Fermi energy level for holes";
+    static constexpr const char* UNIT = "eV";
+};
+
+/**
+ * Conduction band edge [eV]
+ */
+struct PLASK_API ConductionBandEdge: public ScalarFieldProperty {
+    static constexpr const char* NAME = "conduction band edge";
+    static constexpr const char* UNIT = "eV";
+};
+
+/**
+ * Valence band edge [eV]
+ */
+struct PLASK_API ValenceBandEdge: public ScalarFieldProperty {
+    static constexpr const char* NAME = "valence band edge";
     static constexpr const char* UNIT = "eV";
 };
 

@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<QuasiFermiHoleLevel> registerQuasiFermiHoleLevelFilters;
+FiltersFactory::RegisterStandard<QuasiFermiEnergyLevelForHoles> registerQuasiFermiEnergyLevelForHolesFilters;
 
 }   // namespace plask

@@ -65,8 +65,10 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     /*RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
     RECEIVER(inTemperature, "");*/
     PROVIDER(outPotential, "");
-    PROVIDER(outQuasiFermiElectronLevel, "");
-    PROVIDER(outQuasiFermiHoleLevel, "");
+    PROVIDER(outQuasiFermiEnergyLevelForElectrons, "");
+    PROVIDER(outQuasiFermiEnergyLevelForHoles, "");
+    PROVIDER(outConductionBandEdge, "");
+    PROVIDER(outValenceBandEdge, "");
     /*PROVIDER(outPotential, "");
     PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");

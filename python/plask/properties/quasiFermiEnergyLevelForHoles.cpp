@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_quasi_Fermi_hole_level()
 {
-    registerProperty<QuasiFermiHoleLevel>();
+    registerProperty<QuasiFermiEnergyLevelForHoles>();
 }
 
 }} // namespace plask::python

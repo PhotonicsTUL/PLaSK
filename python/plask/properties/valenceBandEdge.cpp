@@ -5,9 +5,9 @@
 
 namespace plask { namespace python {
 
-void register_standard_properties_quasi_Fermi_electron_level()
+void register_standard_properties_valence_band_edge()
 {
-    registerProperty<QuasiFermiElectronLevel>();
+    registerProperty<ValenceBandEdge>();
 }
 
 }} // namespace plask::python
