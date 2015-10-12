@@ -223,6 +223,10 @@ struct MeshTest {
     }
 };
 
+py::tuple mesh2d_at(const plask::MeshD<2>& msh, size_t i) {
+    auto p = msh[i];
+    return py::make_tuple(p[0], p[1]);
+}    
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -287,4 +291,6 @@ BOOST_PYTHON_MODULE(plasktest)
         .def_readonly("regular3d", &MeshTest::regular3d)
         .add_property("regular3d_changed", &MeshTest::regular3d_changed)
     ;
+    
+    py::def("mesh2d_at", mesh2d_at);
 }

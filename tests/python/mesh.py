@@ -220,6 +220,20 @@ class OrderedMeshes(unittest.TestCase):
         test.regular2d.axis0.resize(20)
 
 
+class CustomMesh(unittest.TestCase):
+
+    def testPythonMesh2D(self):
+        class M(mesh.Mesh2D):
+            def __len__(self):
+                return 2
+            def __getitem__(self, i):
+                return [[1., 2.], [3., 4.]][i]
+
+        m = M()
+        self.assertEqual( plasktest.mesh2d_at(m, 0), (1., 2.) )
+        self.assertEqual( plasktest.mesh2d_at(m, 1), (3., 4.) )
+
+
 class Aspect(unittest.TestCase):
 
     def testAspect(self):

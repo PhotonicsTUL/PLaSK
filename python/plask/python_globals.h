@@ -302,6 +302,51 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
 
 extern PLASK_PYTHON_API OmpNestLock python_omp_lock;
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Virtual functions overriding
+
+/**
+ * Base class for methods that can be overriden form Python
+ */
+struct Overriden
+{
+    PyObject* self;
+
+    Overriden() {}
+    
+    Overriden(PyObject* self): self(self) {}
+    
+    bool overriden(char const* name) const {
+        py::converter::registration const& r = py::converter::registered<Material>::converters;
+        PyTypeObject* class_object = r.get_class_object();
+        if (self) {
+            py::handle<> mh(PyObject_GetAttrString(self, const_cast<char*>(name)));
+            if (mh && PyMethod_Check(mh.get())) {
+                PyMethodObject* mo = (PyMethodObject*)mh.get();
+                PyObject* borrowed_f = nullptr;
+                if(mo->im_self == self && class_object->tp_dict != 0)
+                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
+                if (borrowed_f != mo->im_func) return true;
+            }
+        }
+        return false;
+    }
+
+    template <typename R, typename... Args>
+    inline R call_python(const char* name, Args... args) const {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden(name)) {
+            return py::call_method<R>(self, name, args...);
+        }
+        py::handle<> __class__(PyObject_GetAttrString(self, "__class__"));
+        py::handle<> __name__(PyObject_GetAttrString(__class__.get(), "__name__"));
+        throw AttributeError("'%s' object has not attribute '%s'",
+                             std::string(py::extract<std::string>(py::object(__name__))),
+                             name);
+    }
+
+};
+
 }} // namespace python::plask
 
 

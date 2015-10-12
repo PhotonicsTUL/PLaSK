@@ -6,12 +6,40 @@
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/ordered1d.h>
 
+#include "../util/raw_constructor.h"
+
 namespace plask { namespace python {
 
 void register_mesh_rectangular();
 
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
+
+template <int dim>
+struct MeshWrap: public MeshD<dim>, Overriden {
+  
+    MeshWrap(PyObject* self): Overriden(self) {}
+    
+    typename MeshD<dim>::LocalCoords at(std::size_t index) const override {
+        return call_python<typename MeshD<dim>::LocalCoords>("__getitem__", index);
+    }
+
+    size_t size() const override {
+        return call_python<size_t>("__len__");
+    }
+
+    static shared_ptr<MeshD<dim>> __init__(py::tuple args, py::dict kwargs) {
+        if (py::len(args) > 1)
+            throw TypeError("__init__() takes exactly 1 non-keyword arguments (%d given)", py::len(args));
+        if (py::len(kwargs) > 0)
+            throw TypeError("__init__() got an unexpected keyword argument '%s'",
+                            py::extract<std::string>(kwargs.keys()[0])());
+
+        py::object self(args[0]);
+        return make_shared<MeshWrap<dim>>(self.ptr());
+    }
+};
+
 
 template <int dim>
 static shared_ptr<MeshD<dim>> MeshGenerator_generate(MeshGeneratorD<dim>& self, shared_ptr<const GeometryD<(dim==1)?2:dim>> geometry) {
@@ -73,6 +101,7 @@ void register_mesh()
 
     py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable> mesh1d("Mesh1D",
         "Base class for every one-dimensional transverse mesh in two-dimensional geometry", py::no_init); mesh1d
+        .def("__init__", raw_constructor(&MeshWrap<1>::__init__))
         .def("__iter__", py::range(&MeshD<1>::begin, &MeshD<1>::end))
     ;
     mesh1d.attr("dim") = 1;
@@ -80,6 +109,7 @@ void register_mesh()
 
     py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable> mesh2d("Mesh2D",
         "Base class for every two-dimensional mesh", py::no_init); mesh2d
+        .def("__init__", raw_constructor(&MeshWrap<2>::__init__))
         .def("__iter__", py::range(&MeshD<2>::begin, &MeshD<2>::end))
     ;
     mesh2d.attr("dim") = 2;
@@ -87,6 +117,7 @@ void register_mesh()
 
     py::class_<MeshD<3>, shared_ptr<MeshD<3>>, py::bases<Mesh>, boost::noncopyable> mesh3d("Mesh3D",
         "Base class for every two-dimensional mesh", py::no_init); mesh3d
+        .def("__init__", raw_constructor(&MeshWrap<3>::__init__))
         .def("__iter__", py::range(&MeshD<3>::begin, &MeshD<3>::end))
     ;
     mesh3d.attr("dim") = 3;

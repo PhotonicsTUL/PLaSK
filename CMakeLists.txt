@@ -274,7 +274,7 @@ file(GLOB_RECURSE license_sign_src FOLLOW_SYMLINKS license_sign/*.cpp license_si
 add_executable(plask-license-sign ${license_sign_src})
 target_link_libraries(plask-license-sign libplask)
 
-#copy example license file for easiest development
+# Copy example license file for easier development
 configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/plask_license.xml COPYONLY)
 
 # ---------- Python --------------------------------------------

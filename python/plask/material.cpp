@@ -149,29 +149,12 @@ struct MaterialFromPythonString {
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-class PythonMaterial : public Material
+class PythonMaterial: public Material, Overriden
 {
     shared_ptr<Material> base;
-    PyObject* self;
 
     static std::map<PyObject*, std::unique_ptr<MaterialCache>> cacheMap;
     MaterialCache* cache;
-
-    bool overriden(char const* name) const {
-        py::converter::registration const& r = py::converter::registered<Material>::converters;
-        PyTypeObject* class_object = r.get_class_object();
-        if (self) {
-            py::handle<> mh(PyObject_GetAttrString(self, const_cast<char*>(name)));
-            if (mh && PyMethod_Check(mh.get())) {
-                PyMethodObject* mo = (PyMethodObject*)mh.get();
-                PyObject* borrowed_f = nullptr;
-                if(mo->im_self == self && class_object->tp_dict != 0)
-                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
-                if (borrowed_f != mo->im_func) return true;
-            }
-        }
-        return false;
-    }
 
     template <typename R, typename F, typename... Args>
     inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
@@ -265,7 +248,7 @@ class PythonMaterial : public Material
         try { return call<double>("CB", &Material::CB, cache->CB, T, e, point); }
         catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }  // D = µ kB T / e
     }
-    double VB(double T, double e, char point, char hole) const  override{ return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
+    double VB(double T, double e, char point, char hole) const override { return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
     double Dso(double T, double e) const override { return call<double>("Dso", &Material::Dso, cache->Dso, T, e); }
     double Mso(double T, double e) const override { return call<double>("Mso", &Material::Mso, cache->Mso, T, e); }
     Tensor2<double> Me(double T, double e, char point) const override { return call<Tensor2<double>>("Me", &Material::Me, cache->Me, T, e, point); }
