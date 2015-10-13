@@ -23,12 +23,12 @@ class ReceiverTest(unittest.TestCase):
 
 
     def testReceiverWithData(self):
-        data = self.solver.outLightMagnitude(0,self.mesh1)
+        data = self.solver.outLightMagnitude(0, self.mesh1)
         self.solver.inTemperature = data
         self.assertEqual( list(self.solver.inTemperature(self.mesh2)), [200., 200., 400., 400.] )
 
         self.mesh1.ordering = '10'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             print(list(self.solver.inTemperature(self.mesh2)))
 
 
@@ -80,6 +80,8 @@ class PythonProviderTest(unittest.TestCase):
     def setUp(self):
         self.solver = PythonProviderTest.CustomSolver(self)
         self.solver.inGain = self.solver.outGain
+        self.binary_solver = plasktest.SimpleSolver()
+        self.binary_solver.inTemperature = plask.Data(numpy.array([1., 2., 3., 4.]), plask.mesh.Rectangular2D([0., 4.], [0., 2.]))
 
     def testAll(self):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
@@ -88,7 +90,7 @@ class PythonProviderTest(unittest.TestCase):
         self.assertEqual( list(res), [0., 10., 20., 30., 40., 50.] )
         msh = plask.mesh.Rectangular2D([2.], [1.])
         self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
-
+        self.assertEqual( list(self.binary_solver.inTemperature(msh, 'linear')), [2.5] )
 
 
 class DataTest(unittest.TestCase):

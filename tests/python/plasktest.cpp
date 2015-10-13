@@ -125,12 +125,16 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
 
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct SimpleSolver : plask::Solver {
-    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {
-        static constexpr const char* NAME = "vectorial field";
-        static constexpr const char* UNIT = "-";
-    };
+struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {
+    static constexpr const char* NAME = "vectorial field";
+    static constexpr const char* UNIT = "-";
+};
 
+constexpr const char* VectorialField::NAME;
+constexpr const char* VectorialField::UNIT;
+
+
+struct SimpleSolver : plask::Solver {
     virtual std::string getClassName() const { return "SimpleSolver"; }
 
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
@@ -161,11 +165,8 @@ struct SimpleSolver : plask::Solver {
         outLightMagnitude.push_back(data);
     }
 };
-constexpr const char* SimpleSolver::VectorialField::NAME;
-constexpr const char* SimpleSolver::VectorialField::UNIT;
 
 struct InOutSolver : plask::Solver {
-    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};
 
     virtual std::string getClassName() const { return "InOut"; }
 
@@ -232,6 +233,8 @@ py::tuple mesh2d_at(const plask::MeshD<2>& msh, size_t i) {
 
 BOOST_PYTHON_MODULE(plasktest)
 {
+    plask::python::registerProperty<VectorialField>();
+    
     py::def("get_vecs", &getVecs);
 
     py::def("add_my_material", &addMyMaterial);

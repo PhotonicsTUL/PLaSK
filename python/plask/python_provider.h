@@ -85,6 +85,13 @@ extern const char* docstring_receiver;
 extern const char* docstring_receiver_connect;
 extern const char* docstring_receiver_assign;
 
+template <typename ProviderT, PropertyType propertyType, typename ParamsT>
+struct PythonProviderFor;
+
+template <typename ProviderT>
+shared_ptr<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
+PythonProviderFor__init__(const py::object& function);
+
 namespace detail {
 
     template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
@@ -241,14 +248,10 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            try {
-                DataT data = py::extract<DataT>(obj);
-                ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data.mesh, data);
-            } catch (py::error_already_set) {
-                throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
-                                type_name<typename ReceiverT::PropertyTag>(),
-                                std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
-            }
+            if (assignProvider(self, py::object(PythonProviderFor__init__<ProviderFor<PropertyT, typename ReceiverT::SpaceType>>(obj)))) return;
+            throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
+                            type_name<typename ReceiverT::PropertyTag>(),
+                            std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
 
         static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
@@ -283,28 +286,10 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            try {
-                if (!PySequence_Check(obj.ptr())) throw py::error_already_set();
-                try {
-                    py::extract<DataT> extr(obj);
-                    DataT data = py::extract<DataT>(obj);
-                    ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data.mesh, data);
-                    return;
-                } catch (py::error_already_set) { PyErr_Clear(); }
-                py::stl_input_iterator<DataT> begin(obj), end;
-                if (begin != end) {
-                    std::vector<DataVector<const typename ReceiverT::ValueType>> datas;
-                    for (auto it = begin; it != end; ++it) {
-                        if (it->mesh != begin->mesh) throw ValueError("All data in the sequence must have the same mesh");
-                        datas.push_back(*it);
-                    }
-                    ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, begin->mesh, datas);
-                }
-            } catch (py::error_already_set) {
-                throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
-                                type_name<typename ReceiverT::PropertyTag>(),
-                                std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
-            }
+            if (assignProvider(self, py::object(PythonProviderFor__init__<ProviderFor<PropertyT, typename ReceiverT::SpaceType>>(obj)))) return;
+            throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
+                            type_name<typename ReceiverT::PropertyTag>(),
+                            std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
 
         static DataT __call__n(ReceiverT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
@@ -351,9 +336,6 @@ namespace detail {
 }
 
 // ---------- Provider ------------
-
-template <typename ProviderT, PropertyType propertyType, typename ParamsT>
-struct PythonProviderFor;
 
 template <typename ProviderT, typename... _ExtraParams>
 struct PythonProviderFor<ProviderT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
@@ -431,8 +413,9 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                     PyErr_Clear();
                     return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
                 }
-            } else { 
+            } else {
                 ReturnedType data = py::extract<ReturnedType>(this->function);
+                if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                 return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
             }
         }
@@ -465,18 +448,32 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                     PyErr_Clear();
                     return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
                 }
-            } else if (py::extract<ReturnedType>(this->function[n]).check()) {
-                OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+            } else {
                 ReturnedType data = py::extract<ReturnedType>(this->function[n]);
+                if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                 return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
-            } else
-                throw TypeError("'data' in custom Python provider must be a callable or a sequence of Data objects");
+            }
         },
         [this]() -> size_t {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
             return py::extract<size_t>(this->function.attr("__len__")());
         }
-    ), function(function) {}
+    ), function(function) {
+        if (PyCallable_Check(function.ptr())) return;
+        if (!PySequence_Check(function.ptr())) {
+            throw TypeError("'data' in custom Python provider must be a callable or a sequence of Data objects");
+        }
+        size_t len = py::len(function);
+        if (!len) return;
+        ReturnedType data0(py::extract<ReturnedType>(this->function[0]));
+        for (size_t n = 0; n != len; ++n) {
+            py::extract<ReturnedType> data(this->function[n]);
+            if (!data.check())
+                throw TypeError("'data' in custom Python provider must be a callable or a sequence of Data objects");
+            if (ReturnedType(data).mesh != data0.mesh)
+                throw ValueError("Mesh in each element of 'data' sequence must be the same");
+        }
+    }
 };
 
 template <typename ProviderT>
@@ -730,34 +727,6 @@ namespace detail {
             this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the provider.");
             this->provider_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the provider.");
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
-        }
-    };
-
-    // Here add new mesh types that should be able to be provided in DataVector to receivers:
-
-    // 2D meshes:
-    template <typename ReceiverT, typename... ExtraParams>
-    struct ReceiverSetValueForMeshes<2, ReceiverT, ExtraParams...> {
-        typedef RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
-        template <typename DataT>
-        static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
-
-            if (RegisterT::template setValueForMesh< RectangularMesh<2> >(self, mesh, data)) return;
-
-            throw TypeError("Data on wrong mesh type for this operation");
-        }
-    };
-
-    // 3D meshes:
-    template <typename ReceiverT, typename... ExtraParams>
-    struct ReceiverSetValueForMeshes<3, ReceiverT, ExtraParams...> {
-        typedef RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
-        template <typename DataT>
-        static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
-
-            if (RegisterT::template setValueForMesh< RectangularMesh<3> >(self, mesh, data)) return;
-
-            throw TypeError("Data on wrong mesh type for this operation");
         }
     };
 

@@ -603,6 +603,8 @@ template <typename T, int dim>
 PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(
     const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
 
+    if (self.mesh_changed) throw Exception("Cannot interpolate, mesh changed since data retrieval");
+
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
         return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
     else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
