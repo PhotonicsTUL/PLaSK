@@ -1,6 +1,7 @@
 #include "python_globals.h"
 #include "python_provider.h"
 #include "python_numpy.h"
+#include "python_mesh.h"
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/rectangular.h>
@@ -8,7 +9,6 @@
 #include <plask/vec.h>
 
 namespace plask { namespace python {
-
 
 /*
  * Some helper functions for getting information on rectangular meshes
@@ -125,7 +125,7 @@ py::handle<> DataVector_dtype() {
 
 
 template <typename T, int dim>
-static py::object DataVectorWrap__array__(py::object oself, py::object dtype) {
+static py::object DataVectorWrap__array__(py::object oself, py::object dtype=py::object()) {
 
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
@@ -572,11 +572,40 @@ void register_data_vectors() {
            );
 }
 
+
+} // namespace python
+
+template <int dim, typename SrcT, typename DstT>
+struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
+{
+    inline static LazyData<typename std::remove_const<DstT>::type> interpolate(
+            const shared_ptr<const python::MeshWrap<dim>>& src_mesh, const DataVector<const SrcT>& src_vec,
+            const shared_ptr<const MeshD<dim>>& dst_mesh, InterpolationMethod method, const InterpolationFlags& flags) {
+        OmpLockGuard<OmpNestLock> lock(python::python_omp_lock);
+        typedef python::DataVectorWrap<const DstT, dim> ReturnedType;
+        boost::python::object omesh(const_pointer_cast<MeshD<dim>>(dst_mesh));
+        auto source = make_shared<python::DataVectorWrap<const SrcT, dim>>(
+            src_vec, const_pointer_cast<python::MeshWrap<dim>>(src_mesh));
+        boost::python::object result = 
+            src_mesh->template call_python<boost::python::object>("interpolate", source, omesh, method);
+        try {
+            return boost::python::extract<ReturnedType>(result)();
+        } catch (boost::python::error_already_set) {
+            PyErr_Clear();
+            return boost::python::extract<ReturnedType>(python::Data(result.ptr(), omesh))();
+        }
+    }
+};
+
+namespace python {
+
 template <typename T, int dim> DataVectorWrap<T,dim>
 dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
 
     // TODO add new mesh types here
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
+        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
+    else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
         return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
 
     throw NotImplemented(format("interpolate(source mesh type: %s, interpolation method: %s)",

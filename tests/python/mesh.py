@@ -222,17 +222,30 @@ class OrderedMeshes(unittest.TestCase):
 
 class CustomMesh(unittest.TestCase):
 
+    def _test(self, m):
+        self.assertEqual( plasktest.mesh2d_at(m, 0), (2., 1.) )
+        self.assertEqual( plasktest.mesh2d_at(m, 1), (4., 2.) )
+
+        source = Data(array([1., 2., 3., 4.]), mesh.Rectangular2D([0., 4.], [0., 2.]))
+        self.assertEqual( list(source.interpolate(m, 'linear')), [2.5, 4.0] )
+        
     def testPythonMesh2D(self):
         class M(mesh.Mesh2D):
             def __len__(self):
                 return 2
             def __getitem__(self, i):
-                return [[1., 2.], [3., 4.]][i]
-
+                return [[2., 1.], [4., 2.]][i]
+            def interpolate(self, data, dest, method):
+                return array([(100. + 10*data[0] + data[1])] * len(dest))
         m = M()
-        self.assertEqual( plasktest.mesh2d_at(m, 0), (1., 2.) )
-        self.assertEqual( plasktest.mesh2d_at(m, 1), (3., 4.) )
+        self._test(m)
+        data = Data(array([2., 3.]), m)
+        dest = mesh.Rectangular2D([0.], [0.])
+        self.assertEqual( list(data.interpolate(dest, 'linear')), [123.] )
 
+    def testUnstructuredMesh2D(self):
+        m = mesh.Unstructured2D([[2., 1.], [4., 2.]])
+        self._test(m)
 
 class Aspect(unittest.TestCase):
 

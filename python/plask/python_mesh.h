@@ -12,6 +12,19 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
+/// Custom Python mesh
+template <int dim>
+struct MeshWrap: public MeshD<dim>, Overriden {
+  
+    MeshWrap(PyObject* self): Overriden(self) {}
+    
+    typename MeshD<dim>::LocalCoords at(std::size_t index) const override;
+
+    size_t size() const override;
+
+    static shared_ptr<MeshD<dim>> __init__(py::tuple args, py::dict kwargs);
+};
+
 /// Generic declaration of boundary class for a specific mesh type
 template <typename MeshType>
 struct ExportBoundary {

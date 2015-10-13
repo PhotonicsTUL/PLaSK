@@ -24,11 +24,11 @@
 </materials>
 
 <geometry>
-  <cartesian2d axes="xy" name="grating" bottom="Subs" left="periodic" right="periodic">
+  <cartesian2d name="grating" axes="xy" left="periodic" right="periodic" bottom="Subs">
     <clip left="{-L/2}" right="{L/2}">
       <stack trancenter="0">
-        <block dx="{fill*L}" dy="{tg}" material="Hi" name="bar"/>
-        <block dx="{2*L}" dy="{tl}" material="Lo"/>
+        <rectangle name="bar" material="Hi" dx="{fill*L}" dy="{tg}"/>
+        <rectangle material="Lo" dx="{2*L}" dy="{tl}"/>
       </stack>
     </clip>
   </cartesian2d>
@@ -36,25 +36,24 @@
 
 <grids>
   <mesh name="plot" type="rectangular2d">
-    <axis0 start="{-1.5*L}" stop="{1.5*L}" num="501"/>
-    <axis1 start="-0.5" stop="{tl+tg+2.0}" num="501"/>
+    <axis0 start="{-1.5*L}" stop="{1.5*L}" num="501"></axis0>
+    <axis1 start="-0.5" stop="{tl+tg+2.0}" num="501"></axis1>
   </mesh>
 </grids>
 
 <solvers>
-  <optical name="solver" solver="Fourier2D">
+  <optical name="solver" solver="Fourier2D" lib="slab">
     <geometry ref="grating"/>
+    <expansion lam0="1000." size="{N}" smooth="0"/>
     <interface object="bar"/>
-    <expansion size="{N}" smooth="0"/>
   </optical>
 </solvers>
-
 
 <script><![CDATA[
 lams = linspace(1000., 2200., 1201)
 
-R_TE = solver.compute_reflectivity(lams, 'El', 'top', dispersive=False)
-R_TM = solver.compute_reflectivity(lams, 'Et', 'top', dispersive=False)
+R_TE = solver.compute_reflectivity(lams, 'El', 'top')
+R_TM = solver.compute_reflectivity(lams, 'Et', 'top')
 
 plot(lams, R_TE/100., 'r', label='TE')
 plot(lams, R_TM/100., 'b', label='TM')

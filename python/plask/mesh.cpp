@@ -6,6 +6,7 @@
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/ordered1d.h>
 
+#include "python_mesh.h"
 #include "../util/raw_constructor.h"
 
 namespace plask { namespace python {
@@ -15,30 +16,72 @@ void register_mesh_rectangular();
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
+template <int dim> typename MeshD<dim>::LocalCoords MeshWrap<dim>::at(std::size_t index) const {
+    return call_python<typename MeshD<dim>::LocalCoords>("__getitem__", index);
+}
+
+template <int dim> size_t MeshWrap<dim>::size() const {
+    return call_python<size_t>("__len__");
+}
+
+template <int dim> shared_ptr<MeshD<dim>> MeshWrap<dim>::__init__(py::tuple args, py::dict kwargs) {
+    if (py::len(args) > 1)
+        throw TypeError("__init__() takes exactly 1 non-keyword arguments (%d given)", py::len(args));
+    if (py::len(kwargs) > 0)
+        throw TypeError("__init__() got an unexpected keyword argument '%s'",
+                        py::extract<std::string>(kwargs.keys()[0])());
+
+    py::object self(args[0]);
+    return make_shared<MeshWrap<dim>>(self.ptr());
+}
+
+
 template <int dim>
-struct MeshWrap: public MeshD<dim>, Overriden {
+struct UnstructuredMesh: public MeshD<dim> {
   
-    MeshWrap(PyObject* self): Overriden(self) {}
+    py::object points;
+    
+    UnstructuredMesh(const py::object& points): points(points) {}
     
     typename MeshD<dim>::LocalCoords at(std::size_t index) const override {
-        return call_python<typename MeshD<dim>::LocalCoords>("__getitem__", index);
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        return py::extract<typename MeshD<dim>::LocalCoords>(points[index]);
     }
 
     size_t size() const override {
-        return call_python<size_t>("__len__");
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        return py::len(points);
     }
 
-    static shared_ptr<MeshD<dim>> __init__(py::tuple args, py::dict kwargs) {
-        if (py::len(args) > 1)
-            throw TypeError("__init__() takes exactly 1 non-keyword arguments (%d given)", py::len(args));
-        if (py::len(kwargs) > 0)
-            throw TypeError("__init__() got an unexpected keyword argument '%s'",
-                            py::extract<std::string>(kwargs.keys()[0])());
-
-        py::object self(args[0]);
-        return make_shared<MeshWrap<dim>>(self.ptr());
+    static void register_class() {
+        py::class_<UnstructuredMesh<dim>, shared_ptr<UnstructuredMesh<dim>>,
+                   py::bases<MeshD<dim>>>(NAME, DOCSTRING, py::init<const py::object&>());
     }
+    
+    static const char* const NAME;
+
+    static const char* const DOCSTRING;
 };
+
+template<> const char* const UnstructuredMesh<2>::NAME = "Unstructured2D";
+
+template<> const char* const UnstructuredMesh<3>::NAME = "Unstructured3D";
+
+template<> const char* const UnstructuredMesh<2>::DOCSTRING =
+    "Unstructured2D(points)\n\n"
+    "Two-dimensional unstructured mesh.\n\n"
+    "Args:\n"
+    "    points: List of mesh points. Each element in this list should be\n"
+    "            a two-dimensional vector or sequence of floats with point\n"
+    "            coordinates.\n";
+
+template<> const char* const UnstructuredMesh<3>::DOCSTRING =
+    "Unstructured3D(points)\n\n"
+    "Three-dimensional unstructured mesh.\n\n"
+    "Args:\n"
+    "    points: List of mesh points. Each element in this list should be\n"
+    "            a three-dimensional vector or sequence of floats with point\n"
+    "            coordinates.\n";
 
 
 template <int dim>
@@ -132,6 +175,9 @@ void register_mesh()
     ExportMeshGenerator<2>("Generator2D");
     ExportMeshGenerator<3>("Generator3D");
 
+    UnstructuredMesh<2>::register_class();
+    UnstructuredMesh<3>::register_class();
+    
     register_mesh_rectangular();
 
     register_vector_of<OrderedAxis>("Ordered");
