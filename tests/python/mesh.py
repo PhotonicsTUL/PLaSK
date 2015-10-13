@@ -228,7 +228,7 @@ class CustomMesh(unittest.TestCase):
 
         source = Data(array([1., 2., 3., 4.]), mesh.Rectangular2D([0., 4.], [0., 2.]))
         self.assertEqual( list(source.interpolate(m, 'linear')), [2.5, 4.0] )
-        
+
     def testPythonMesh2D(self):
         class M(mesh.Mesh2D):
             def __len__(self):

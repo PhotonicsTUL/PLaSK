@@ -70,6 +70,8 @@ class PythonProviderTest(unittest.TestCase):
             self.parent = parent
             self.outGain = plask.flow.GainProvider2D(lambda *args: self.get_gain(*args))
             self._receiver = plask.flow.GainReceiver2D()
+            data = plask.Data(numpy.array([1., 2., 3., 4.]), plask.mesh.Rectangular2D([0., 4.], [0., 2.]))
+            self.outTemperature = plask.flow.TemperatureProvider2D(data)
         inGain = property(lambda self: self._receiver, lambda self,provider: self._receiver.connect(provider))
         def get_gain(self, mesh, wavelength, interp):
             self.parent.assertEqual(interp, 'SPLINE')
@@ -83,7 +85,10 @@ class PythonProviderTest(unittest.TestCase):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
         msh = plask.mesh.Rectangular2D(plask.mesh.Regular(0.,1., 2), plask.mesh.Regular(0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
-        self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])
+        self.assertEqual( list(res), [0., 10., 20., 30., 40., 50.] )
+        msh = plask.mesh.Rectangular2D([2.], [1.])
+        self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
+
 
 
 class DataTest(unittest.TestCase):

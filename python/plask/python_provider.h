@@ -367,8 +367,11 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
         [this](_ExtraParams... params) -> ProvidedType {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
-            return py::extract<ProvidedType>(this->function(params...));
-        }
+            if (PyCallable_Check(this->function.ptr())) 
+                return py::extract<ProvidedType>(this->function(params...));
+            else
+                return py::extract<ProvidedType>(this->function);
+        }        
     ), function(function) {}
 
 };
@@ -385,7 +388,10 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
         [this](size_t n, _ExtraParams... params) -> ProvidedType {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
-            return py::extract<ProvidedType>(this->function(n, params...));
+            if (PyCallable_Check(this->function.ptr()))
+                return py::extract<ProvidedType>(this->function(n, params...));
+            else
+                return py::extract<ProvidedType>(this->function[n]);
         },
         [this]() -> size_t {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
@@ -397,11 +403,17 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
 py::object Data(PyObject* obj, py::object omesh);
 
+template <typename T, int dim>
+DataVectorWrap<T,dim> PLASK_PYTHON_API dataInterpolate(
+    const DataVectorWrap<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method);
+
+
 template <typename ProviderT, typename... _ExtraParams>
 struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
+    typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
 
     py::object function;
     OmpLock provider_omp_lock;
@@ -410,17 +422,24 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
         [this](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
-            typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
-            py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
-            py::object result = this->function(omesh, params..., method);
-            try {
-                return py::extract<ReturnedType>(result)();
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
+            if (PyCallable_Check(this->function.ptr())) {
+                py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
+                py::object result = this->function(omesh, params..., method);
+                try {
+                    return py::extract<ReturnedType>(result)();
+                } catch (py::error_already_set) {
+                    PyErr_Clear();
+                    return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
+                }
+            } else { 
+                ReturnedType data = py::extract<ReturnedType>(this->function);
+                return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
             }
         }
-    ), function(function) {}
+    ), function(function) {
+        if (!PyCallable_Check(function.ptr()) && !py::extract<ReturnedType>(function).check())
+            throw TypeError("'data' in custom Python provider must be a callable or a Data object");
+    }
 };
 
 template <typename ProviderT, typename... _ExtraParams>
@@ -428,6 +447,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
+    typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
 
     py::object function;
     OmpLock provider_omp_lock;
@@ -436,15 +456,21 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
         [this](size_t n, const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
-            typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
-            py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
-            py::object result = this->function(n, omesh, params..., method);
-            try {
-                return py::extract<ReturnedType>(result)();
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
-            }
+            if (PyCallable_Check(this->function.ptr())) {
+                py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
+                py::object result = this->function(n, omesh, params..., method);
+                try {
+                    return py::extract<ReturnedType>(result)();
+                } catch (py::error_already_set) {
+                    PyErr_Clear();
+                    return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
+                }
+            } else if (py::extract<ReturnedType>(this->function[n]).check()) {
+                OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
+                ReturnedType data = py::extract<ReturnedType>(this->function[n]);
+                return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
+            } else
+                throw TypeError("'data' in custom Python provider must be a callable or a sequence of Data objects");
         },
         [this]() -> size_t {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
@@ -610,7 +636,7 @@ namespace detail {
                         ProviderT::PropertyTag::UNIT
                         ).c_str(),
                 py::no_init)
-                .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(), py::args("func")))
+                .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(), py::args("data")))
                 .def("__get__", &RegisterProviderBase<ProviderT>::__get__)
                 .def("set_changed", &ProviderT::fireChanged,
                     "Inform all connected receivers that the provided value has changed.\n\n"
@@ -620,7 +646,7 @@ namespace detail {
         }
         static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject* owner) {
             PyObject* func = self->function.ptr();
-            if (PyMethod_Check(func) && PyMethod_Self(func)) return self;
+            if (!PyCallable_Check(func) || (PyMethod_Check(func) && PyMethod_Self(func))) return self;
 #           if PY_VERSION_HEX >= 0x03000000
                 PyObject* bound_method = PyMethod_New(func, instance);
 #           else

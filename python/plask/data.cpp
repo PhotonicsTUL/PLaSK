@@ -599,14 +599,15 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
 
 namespace python {
 
-template <typename T, int dim> DataVectorWrap<T,dim>
-dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
+template <typename T, int dim>
+PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(
+    const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
 
-    // TODO add new mesh types here
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
         return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
     else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
         return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
+    // TODO add new mesh types here
 
     throw NotImplemented(format("interpolate(source mesh type: %s, interpolation method: %s)",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));

@@ -84,7 +84,7 @@ const char* docstring_receiver_assign =
 template <PropertyType propertyType> const char* docstring_provider();
 
 template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
-    "%1%Provider%2%(func)\n\n"
+    "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
@@ -92,7 +92,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "   func (callable): function returning provided value on request.\n"
+    "   data: provided value or callable returning it on request.\n"
     "       The callable must accept the same arguments as the provider\n"
     "       ``__call__`` method (see below).\n\n"
 
@@ -120,7 +120,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
 }
 
 template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
-    "%1%Provider%2%(func)\n\n"
+    "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
@@ -128,7 +128,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "   func (callable): function returning provided value on request.\n"
+    "   data: provided value or callable returning it on request.\n"
     "       The callable must accept the same arguments as the provider\n"
     "       ``__call__`` method (see below). It must also be able to give its\n"
     "       length (i.e. have the ``__len__`` method defined) that gives the\n"
@@ -167,7 +167,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
 }
 
 template <> const char* docstring_provider<FIELD_PROPERTY>() { return
-    "%1%Provider%2%(func)\n\n"
+    "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
@@ -175,7 +175,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "   func (callable): function returning provided value on request.\n"
+    "   data: ``Data`` object to interpolate or callable returning it for given mesh.\n"
     "       The callable must accept the same arguments as the provider\n"
     "       ``__call__`` method (see below).\n\n"
 
@@ -206,7 +206,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
 }
 
 template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
-    "%1%Provider%2%(func)\n\n"
+    "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
@@ -214,7 +214,7 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "   func (callable): function returning provided value on request.\n"
+    "   data: ``Data`` object to interpolate or callable returning it for given mesh.\n"
     "       The callable must accept the same arguments as the provider\n"
     "       ``__call__`` method (see below). It must also be able to give its\n"
     "       length (i.e. have the ``__len__`` method defined) that gives the\n"
