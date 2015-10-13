@@ -81,6 +81,8 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 option(USE_OMP "Use OpenMP" ON)
 
+option(USE_PROFILER "Use profiler" OFF)
+
 option(LICENSE_CHECKING "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
@@ -94,6 +96,15 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
+
+# ---------- Profiler --------------------------------------------
+if(USE_PROFILER)
+    set(CMAKE_C_FLAGS "-pg ${CMAKE_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-pg ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "-pg ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-pg ${CMAKE_SHARED_LINKER_FLAGS}")
+    set(CMAKE_MODULE_LINKER_FLAGS "-pg ${CMAKE_MODULE_LINKER_FLAGS}")
+endif()
 
 # ---------- External libraries --------------------------------------------
 if(WIN32)
