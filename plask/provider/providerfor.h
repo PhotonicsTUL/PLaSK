@@ -897,6 +897,8 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
     typedef PropertyT PropertyTag;
 
+    typedef SpaceT SpaceType;
+    
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
 
@@ -1099,6 +1101,8 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
 
     typedef PropertyT PropertyTag;
 
+    typedef SpaceT SpaceType;
+    
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
 

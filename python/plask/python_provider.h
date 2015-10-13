@@ -239,12 +239,13 @@ namespace detail {
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
+        typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            auto data = make_shared<PythonProviderFor<typename ReceiverT::ProviderType, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
@@ -277,12 +278,13 @@ namespace detail {
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
-
+        typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
+        
         static void assign(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            auto data = make_shared<PythonProviderFor<typename ReceiverT::ProviderType, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
