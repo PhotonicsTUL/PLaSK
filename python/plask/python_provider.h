@@ -245,7 +245,7 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
@@ -284,7 +284,7 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            auto data = make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
