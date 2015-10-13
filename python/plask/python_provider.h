@@ -88,10 +88,6 @@ extern const char* docstring_receiver_assign;
 template <typename ProviderT, PropertyType propertyType, typename ParamsT>
 struct PythonProviderFor;
 
-template <typename ProviderT>
-shared_ptr<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
-PythonProviderFor__init__(const py::object& function);
-
 namespace detail {
 
     template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
@@ -248,7 +244,8 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            if (assignProvider(self, py::object(PythonProviderFor__init__<ProviderFor<PropertyT, typename ReceiverT::SpaceType>>(obj)))) return;
+            auto data = make_shared<PythonProviderFor<typename ReceiverT::ProviderType, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
@@ -270,7 +267,6 @@ namespace detail {
             if (mesh) { self.setValue(data, mesh); return true; }
             return false;
         }
-        friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, ExtraParams...>;
     };
 
     template <typename ReceiverT, typename... ExtraParams>
@@ -286,7 +282,8 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            if (assignProvider(self, py::object(PythonProviderFor__init__<ProviderFor<PropertyT, typename ReceiverT::SpaceType>>(obj)))) return;
+            auto data = make_shared<PythonProviderFor<typename ReceiverT::ProviderType, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
+            if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
@@ -314,7 +311,6 @@ namespace detail {
             if (mesh) { self.setValue(data, mesh); return true; }
             return false;
         }
-        friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, ExtraParams...>;
     };
 
 
