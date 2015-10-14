@@ -476,56 +476,56 @@ namespace detail {
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_addRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
+void RectilinearMeshRefinedGenerator_addRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_addRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
+void RectilinearMeshRefinedGenerator_addRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_addRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
+void RectilinearMeshRefinedGenerator_addRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_addRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
+void RectilinearMeshRefinedGenerator_addRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
+void RectilinearMeshRefinedGenerator_removeRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
+void RectilinearMeshRefinedGenerator_removeRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
+void RectilinearMeshRefinedGenerator_removeRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
+void RectilinearMeshRefinedGenerator_removeRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
@@ -533,22 +533,22 @@ void RectilinearMeshDivideGenerator_removeRefinement4(RectilinearMeshDivideGener
 
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinements1(RectilinearMeshDivideGenerator<dim>& self, GeometryObjectD<DIM>& object, const PathHints& path) {
+void RectilinearMeshRefinedGenerator_removeRefinements1(RectilinearMeshDivideGenerator<dim>& self, GeometryObjectD<DIM>& object, const PathHints& path) {
     self.removeRefinements(dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinements2(RectilinearMeshDivideGenerator<dim>& self, const Path& path) {
+void RectilinearMeshRefinedGenerator_removeRefinements2(RectilinearMeshDivideGenerator<dim>& self, const Path& path) {
     self.removeRefinements(path);
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator_removeRefinements3(RectilinearMeshDivideGenerator<dim>& self, const GeometryObject::Subtree& subtree) {
+void RectilinearMeshRefinedGenerator_removeRefinements3(RectilinearMeshDivideGenerator<dim>& self, const GeometryObject::Subtree& subtree) {
     self.removeRefinements(subtree);
 }
 
 template <int dim>
-py::dict RectilinearMeshDivideGenerator_listRefinements(const RectilinearMeshDivideGenerator<dim>& self, const std::string& axis) {
+py::dict RectilinearMeshRefinedGenerator_listRefinements(const RectilinearMeshDivideGenerator<dim>& self, const std::string& axis) {
     int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     py::dict refinements;
@@ -580,6 +580,43 @@ shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__
     return result;
 };
 
+template <int dim, typename RegisterT>
+static void register_refined_generator_base(RegisterT& cls) {
+        cls
+        .add_property("aspect", &RectilinearMeshDivideGenerator<dim>::getAspect, &RectilinearMeshDivideGenerator<dim>::setAspect, "Maximum aspect ratio for the elements generated by this generator.")
+        .def_readwrite("warn_multiple", &RectilinearMeshDivideGenerator<dim>::warn_multiple, "Warn if refining path points to more than one object")
+        .def_readwrite("warn_missing", &RectilinearMeshDivideGenerator<dim>::warn_missing, "Warn if refining path does not point to any object")
+        .def_readwrite("warn_ouside", &RectilinearMeshDivideGenerator<dim>::warn_outside, "Warn if refining line is outside of its object")
+        .def("add_refinement", &RectilinearMeshRefinedGenerator_addRefinement1<dim>, "Add a refining line inside the object",
+            (py::arg("axis"), "object", "path", "at"))
+        .def("add_refinement", &RectilinearMeshRefinedGenerator_addRefinement2<dim>, "Add a refining line inside the object",
+            (py::arg("axis"), "object", "at"))
+        .def("add_refinement", &RectilinearMeshRefinedGenerator_addRefinement3<dim>, "Add a refining line inside the object",
+            (py::arg("axis"), "subtree", "at"))
+        .def("add_refinement", &RectilinearMeshRefinedGenerator_addRefinement4<dim>, "Add a refining line inside the object",
+            (py::arg("axis"), "path", "at"))
+        .def("remove_refinement", &RectilinearMeshRefinedGenerator_removeRefinement1<dim>, "Remove the refining line from the object",
+            (py::arg("axis"), "object", "path", "at"))
+        .def("remove_refinement", &RectilinearMeshRefinedGenerator_removeRefinement2<dim>, "Remove the refining line from the object",
+            (py::arg("axis"), "object", "at"))
+        .def("remove_refinement", &RectilinearMeshRefinedGenerator_removeRefinement3<dim>, "Remove the refining line from the object",
+            (py::arg("axis"), "subtree", "at"))
+        .def("remove_refinement", &RectilinearMeshRefinedGenerator_removeRefinement4<dim>, "Remove the refining line from the object",
+            (py::arg("axis"), "path", "at"))
+        .def("remove_refinements", &RectilinearMeshRefinedGenerator_removeRefinements1<dim>, "Remove the all refining lines from the object",
+            (py::arg("object"), py::arg("path")=py::object()))
+        .def("remove_refinements", &RectilinearMeshRefinedGenerator_removeRefinements2<dim>, "Remove the all refining lines from the object",
+            py::arg("path"))
+        .def("remove_refinements", &RectilinearMeshRefinedGenerator_removeRefinements3<dim>, "Remove the all refining lines from the object",
+            py::arg("subtree"))
+        .def("clear_refinements", &RectilinearMeshDivideGenerator<dim>::clearRefinements, "Clear all refining lines",
+            py::arg("subtree"))
+        .def("get_refinements", &RectilinearMeshRefinedGenerator_listRefinements<dim>, py::arg("axis"),
+            "Get list of all the refinements defined for this generator for specified axis"
+        )
+    ;
+}
+
 template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
@@ -587,42 +624,12 @@ void register_divide_generator() {
             dividecls("DivideGenerator",
             format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"
-            "    create generator without initial division of geometry objects", dim).c_str(), py::no_init); dividecls
+            "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
+            register_refined_generator_base<dim>(dividecls); dividecls
             .def("__init__", py::make_constructor(&RectilinearMeshDivideGenerator__init__<dim>, py::default_call_policies(),
                  (py::arg("prediv")=py::object(), py::arg("postdiv")=py::object(), py::arg("aspect")=0, py::arg("gradual")=true,
                   py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))
             .add_property("gradual", &RectilinearMeshDivideGenerator<dim>::getGradual, &RectilinearMeshDivideGenerator<dim>::setGradual, "Limit maximum adjacent objects size change to the factor of two.")
-            .add_property("aspect", &RectilinearMeshDivideGenerator<dim>::getAspect, &RectilinearMeshDivideGenerator<dim>::setAspect, "Maximum aspect ratio for the elements generated by this generator.")
-            .def_readwrite("warn_multiple", &RectilinearMeshDivideGenerator<dim>::warn_multiple, "Warn if refining path points to more than one object")
-            .def_readwrite("warn_missing", &RectilinearMeshDivideGenerator<dim>::warn_missing, "Warn if refining path does not point to any object")
-            .def_readwrite("warn_ouside", &RectilinearMeshDivideGenerator<dim>::warn_outside, "Warn if refining line is outside of its object")
-            .def("add_refinement", &RectilinearMeshDivideGenerator_addRefinement1<dim>, "Add a refining line inside the object",
-                (py::arg("axis"), "object", "path", "at"))
-            .def("add_refinement", &RectilinearMeshDivideGenerator_addRefinement2<dim>, "Add a refining line inside the object",
-                (py::arg("axis"), "object", "at"))
-            .def("add_refinement", &RectilinearMeshDivideGenerator_addRefinement3<dim>, "Add a refining line inside the object",
-                (py::arg("axis"), "subtree", "at"))
-            .def("add_refinement", &RectilinearMeshDivideGenerator_addRefinement4<dim>, "Add a refining line inside the object",
-                (py::arg("axis"), "path", "at"))
-            .def("remove_refinement", &RectilinearMeshDivideGenerator_removeRefinement1<dim>, "Remove the refining line from the object",
-                (py::arg("axis"), "object", "path", "at"))
-            .def("remove_refinement", &RectilinearMeshDivideGenerator_removeRefinement2<dim>, "Remove the refining line from the object",
-                (py::arg("axis"), "object", "at"))
-            .def("remove_refinement", &RectilinearMeshDivideGenerator_removeRefinement3<dim>, "Remove the refining line from the object",
-                (py::arg("axis"), "subtree", "at"))
-            .def("remove_refinement", &RectilinearMeshDivideGenerator_removeRefinement4<dim>, "Remove the refining line from the object",
-                (py::arg("axis"), "path", "at"))
-            .def("remove_refinements", &RectilinearMeshDivideGenerator_removeRefinements1<dim>, "Remove the all refining lines from the object",
-                (py::arg("object"), py::arg("path")=py::object()))
-            .def("remove_refinements", &RectilinearMeshDivideGenerator_removeRefinements2<dim>, "Remove the all refining lines from the object",
-                py::arg("path"))
-            .def("remove_refinements", &RectilinearMeshDivideGenerator_removeRefinements3<dim>, "Remove the all refining lines from the object",
-                py::arg("subtree"))
-            .def("clear_refinements", &RectilinearMeshDivideGenerator<dim>::clearRefinements, "Clear all refining lines",
-                py::arg("subtree"))
-            .def("get_refinements", &RectilinearMeshDivideGenerator_listRefinements<dim>, py::arg("axis"),
-                "Get list of all the refinements defined for this generator for specified axis"
-            )
         ;
     py::implicitly_convertible<shared_ptr<RectilinearMeshDivideGenerator<dim>>, shared_ptr<const RectilinearMeshDivideGenerator<dim>>>();
 

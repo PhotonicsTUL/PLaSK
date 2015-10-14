@@ -198,7 +198,7 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
 }
 
 template <int dim>
-std::pair<double, double> RectilinearMeshAdvancedGeneratorBase<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
+std::pair<double, double> RectilinearMeshRefinedGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
 {
     double min = INFINITY, max = 0;
     for (size_t i = 1; i != axis->size(); ++i) {
@@ -210,7 +210,7 @@ std::pair<double, double> RectilinearMeshAdvancedGeneratorBase<dim>::getMinMax(c
 }
 
 template <int dim>
-void RectilinearMeshAdvancedGeneratorBase<dim>::divideLargestSegment(shared_ptr<OrderedAxis> axis)
+void RectilinearMeshRefinedGenerator<dim>::divideLargestSegment(shared_ptr<OrderedAxis> axis)
 {
     double max = 0;
     double newpoint;
@@ -222,7 +222,7 @@ void RectilinearMeshAdvancedGeneratorBase<dim>::divideLargestSegment(shared_ptr<
 }
 
 template <> shared_ptr<MeshD<1>>
-RectilinearMeshAdvancedGeneratorBase<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
+RectilinearMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     shared_ptr<OrderedAxis> mesh = makeGeometryGrid1D(geometry);
     getAxis(mesh, geometry, 0);
@@ -231,7 +231,7 @@ RectilinearMeshAdvancedGeneratorBase<1>::generate(const boost::shared_ptr<plask:
 }
 
 template <> shared_ptr<MeshD<2>>
-RectilinearMeshAdvancedGeneratorBase<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
+RectilinearMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
     auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
@@ -256,7 +256,7 @@ RectilinearMeshAdvancedGeneratorBase<2>::generate(const boost::shared_ptr<plask:
 }
 
 template <> shared_ptr<MeshD<3>>
-RectilinearMeshAdvancedGeneratorBase<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
+RectilinearMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
     auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
@@ -288,7 +288,7 @@ RectilinearMeshAdvancedGeneratorBase<3>::generate(const boost::shared_ptr<plask:
 }
 
 template <int dim>
-void RectilinearMeshAdvancedGeneratorBase<dim>::fromXML(XMLReader& reader, const Manager& manager)
+void RectilinearMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, const Manager& manager)
 {
     if (reader.getNodeName() == "warnings") {
         warn_missing = reader.getAttribute<bool>("missing", true);
@@ -302,11 +302,11 @@ void RectilinearMeshAdvancedGeneratorBase<dim>::fromXML(XMLReader& reader, const
                 if (dim == 2) throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
                 if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
             }
-            auto direction = (reader.getNodeName() == "axis0")? typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(0) :
-                                (reader.getNodeName() == "axis1")? typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(1) :
-                                                                typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(2);
-            weak_ptr<GeometryObjectD<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>> object
-                = manager.requireGeometryObject<GeometryObjectD<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>>(reader.requireAttribute("object"));
+            auto direction = (reader.getNodeName() == "axis0")? typename Primitive<RectilinearMeshRefinedGenerator<dim>::DIM>::Direction(0) :
+                             (reader.getNodeName() == "axis1")? typename Primitive<RectilinearMeshRefinedGenerator<dim>::DIM>::Direction(1) :
+                                                                typename Primitive<RectilinearMeshRefinedGenerator<dim>::DIM>::Direction(2);
+            weak_ptr<GeometryObjectD<RectilinearMeshRefinedGenerator<dim>::DIM>> object
+                = manager.requireGeometryObject<GeometryObjectD<RectilinearMeshRefinedGenerator<dim>::DIM>>(reader.requireAttribute("object"));
             PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
             if (auto by = reader.getAttribute<unsigned>("by")) {
                 double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
