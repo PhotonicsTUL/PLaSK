@@ -66,7 +66,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
     {
         std::string param = source.getNodeName();
 
-        if (param == "voltage" || param == "potential")
+        if (param == "voltage")
             this->readBoundaryConditions(manager, source, voltage_boundary);
         /*else if (param == "loop") {
             maxerr = source.getAttribute<double>("maxerr", maxerr);

@@ -81,7 +81,7 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 option(USE_OMP "Use OpenMP" ON)
 
-option(USE_PROFILER "Use profiler" OFF)
+set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for no profiling. Set to 'GNU' if you want to use gprof or to 'Google' for google perftools.")
 
 option(LICENSE_CHECKING "Perform license check" OFF)
 
@@ -98,12 +98,19 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
 # ---------- Profiler --------------------------------------------
-if(USE_PROFILER)
+string(TOLOWER "${USE_PROFILER}" USE_PROFILER)
+if(USE_PROFILER STREQUAL "gnu")
     set(CMAKE_C_FLAGS "-pg ${CMAKE_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "-pg ${CMAKE_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-pg ${CMAKE_EXE_LINKER_FLAGS}")
     set(CMAKE_SHARED_LINKER_FLAGS "-pg ${CMAKE_SHARED_LINKER_FLAGS}")
     set(CMAKE_MODULE_LINKER_FLAGS "-pg ${CMAKE_MODULE_LINKER_FLAGS}")
+    message(STATUS "Using GNU profiler")
+elseif(USE_PROFILER STREQUAL "google")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lprofiler")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lprofiler")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -lprofiler")
+    message(STATUS "Using Google perftools profiler")
 endif()
 
 # ---------- External libraries --------------------------------------------
