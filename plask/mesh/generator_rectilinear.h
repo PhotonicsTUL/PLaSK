@@ -107,29 +107,26 @@ public:
  * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
+struct PLASK_API RectilinearMeshAdvancedGeneratorBase: public MeshGeneratorD<dim> {
 
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
 
-    size_t pre_divisions[dim];
-    size_t post_divisions[dim];
-
-    bool gradual;
     float aspect;
 
     Refinements refinements[dim];
 
-    shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
+    virtual shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) = 0;
+
+    virtual const char* name() = 0;
+    
+    void fromXML(XMLReader&, const Manager&);
 
     std::pair<double, double> getMinMax(const shared_ptr<OrderedAxis>& axis);
 
     void divideLargestSegment(shared_ptr<OrderedAxis> axis);
-
-    template <int fd>
-    friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
 
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_missing,  ///< Warn if a defined refinement points to object absent from provided geometry.
@@ -138,51 +135,10 @@ struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
     /**
      * Create new generator
      */
-    RectilinearMeshDivideGenerator() :
-        gradual(true), aspect(0), warn_multiple(true), warn_missing(true), warn_outside(true)
-    {
-        for (int i = 0; i != dim; ++i) {
-            pre_divisions[i] = 1;
-            post_divisions[i] = 1;
-        }
-    }
+    RectilinearMeshAdvancedGeneratorBase() :
+        aspect(0), warn_multiple(true), warn_missing(true), warn_outside(true) {}
 
     shared_ptr<MeshD<dim>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
-
-    /// Get initial division of the smallest object in the mesh
-    inline size_t getPreDivision(typename Primitive<DIM>::Direction direction) const {
-        assert(size_t(direction) <= dim);
-        return pre_divisions[size_t(direction)];
-    }
-
-    /// Set initial division of the smallest object in the mesh
-    inline void setPreDivision(typename Primitive<DIM>::Direction direction, size_t div) {
-        assert(size_t(direction) <= dim);
-        pre_divisions[size_t(direction)] = div;
-        this->fireChanged();
-    }
-
-    /// Get final division of the smallest object in the mesh
-    inline size_t getPostDivision(typename Primitive<DIM>::Direction direction) const {
-        assert(size_t(direction) <= dim);
-        return post_divisions[size_t(direction)];
-    }
-
-    /// Set final division of the smallest object in the mesh
-    inline void setPostDivision(typename Primitive<DIM>::Direction direction, size_t div) {
-        assert(size_t(direction) <= dim);
-        post_divisions[size_t(direction)] = div;
-        this->fireChanged();
-    }
-
-    /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
-    bool getGradual() const { return gradual; }
-
-    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
-    void setGradual(bool value) {
-        gradual = value;
-        this->fireChanged();
-    }
 
     /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
     double getAspect() const { return aspect; }
@@ -342,6 +298,74 @@ struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
         removeRefinements(dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path));
     }
 
+};
+
+/**
+ * Dividing generator ensuring no rapid change of element size
+ */
+template <int dim>
+struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshAdvancedGeneratorBase<dim> {
+
+    typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
+    using MeshGeneratorD<dim>::DIM;
+
+    size_t pre_divisions[dim];
+    size_t post_divisions[dim];
+
+    bool gradual;
+
+    shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
+
+    virtual const char* name() { return "DivideGenerator"; }   
+    
+    template <int fd>
+    friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
+
+    /**
+     * Create new generator
+     */
+    RectilinearMeshDivideGenerator(): gradual(true)
+    {
+        for (int i = 0; i != dim; ++i) {
+            pre_divisions[i] = 1;
+            post_divisions[i] = 1;
+        }
+    }
+
+    /// Get initial division of the smallest object in the mesh
+    inline size_t getPreDivision(typename Primitive<DIM>::Direction direction) const {
+        assert(size_t(direction) <= dim);
+        return pre_divisions[size_t(direction)];
+    }
+
+    /// Set initial division of the smallest object in the mesh
+    inline void setPreDivision(typename Primitive<DIM>::Direction direction, size_t div) {
+        assert(size_t(direction) <= dim);
+        pre_divisions[size_t(direction)] = div;
+        this->fireChanged();
+    }
+
+    /// Get final division of the smallest object in the mesh
+    inline size_t getPostDivision(typename Primitive<DIM>::Direction direction) const {
+        assert(size_t(direction) <= dim);
+        return post_divisions[size_t(direction)];
+    }
+
+    /// Set final division of the smallest object in the mesh
+    inline void setPostDivision(typename Primitive<DIM>::Direction direction, size_t div) {
+        assert(size_t(direction) <= dim);
+        post_divisions[size_t(direction)] = div;
+        this->fireChanged();
+    }
+
+    /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    bool getGradual() const { return gradual; }
+
+    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    void setGradual(bool value) {
+        gradual = value;
+        this->fireChanged();
+    }
 };
 
 } // namespace plask

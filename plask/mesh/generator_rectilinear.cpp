@@ -113,16 +113,16 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
     OrderedAxis& result = *initial_and_result.get();
 
     // First add refinement points
-    for (auto ref: refinements[dir]) {
+    for (auto ref: this->refinements[dir]) {
         auto object = ref.first.first.lock();
         if (!object) {
-             if (warn_missing) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object not existing any more");
+             if (this->warn_missing) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object not existing any more");
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getObjectBoundingBoxes(*object, path);
             auto origins = geometry->getObjectPositions(*object, path);
-            if (warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
-            else if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
+            if (this->warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
+            else if (this->warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
             auto box = boxes.begin();
             auto origin = origins.begin();
             for (; box != boxes.end(); ++box, ++origin) {
@@ -130,7 +130,7 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
                     double zero = (*origin)[dir];
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
-                    if (warn_outside && (x < lower || x > upper))
+                    if (this->warn_outside && (x < lower || x > upper))
                         writelog(LOG_WARNING, "DivideGenerator: Refinement at specified at %1% lying at %2% in global coords. is outside of the object (%3% to %4%)",
                                             x, x+zero, lower+zero, upper+zero);
                     result.addPoint(zero + x);
@@ -198,7 +198,7 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
 }
 
 template <int dim>
-std::pair<double, double> RectilinearMeshDivideGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
+std::pair<double, double> RectilinearMeshAdvancedGeneratorBase<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
 {
     double min = INFINITY, max = 0;
     for (size_t i = 1; i != axis->size(); ++i) {
@@ -210,7 +210,7 @@ std::pair<double, double> RectilinearMeshDivideGenerator<dim>::getMinMax(const s
 }
 
 template <int dim>
-void RectilinearMeshDivideGenerator<dim>::divideLargestSegment(shared_ptr<OrderedAxis> axis)
+void RectilinearMeshAdvancedGeneratorBase<dim>::divideLargestSegment(shared_ptr<OrderedAxis> axis)
 {
     double max = 0;
     double newpoint;
@@ -222,16 +222,16 @@ void RectilinearMeshDivideGenerator<dim>::divideLargestSegment(shared_ptr<Ordere
 }
 
 template <> shared_ptr<MeshD<1>>
-RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
+RectilinearMeshAdvancedGeneratorBase<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     shared_ptr<OrderedAxis> mesh = makeGeometryGrid1D(geometry);
     getAxis(mesh, geometry, 0);
-    writelog(LOG_DETAIL, "mesh.Rectilinear1D::DivideGenerator: Generating new mesh (%1%)", mesh->size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::%s: Generating new mesh (%d)", name(), mesh->size());
     return mesh;
 }
 
 template <> shared_ptr<MeshD<2>>
-RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
+RectilinearMeshAdvancedGeneratorBase<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
     auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
@@ -250,13 +250,13 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
     }
 
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::DivideGenerator: Generating new mesh (%dx%d, max. aspect %.0f:1)",
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::%s: Generating new mesh (%dx%d, max. aspect %.0f:1)", name(), 
              mesh->axis0->size(), mesh->axis1->size(), max(asp0, asp1));
     return mesh;
 }
 
 template <> shared_ptr<MeshD<3>>
-RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
+RectilinearMeshAdvancedGeneratorBase<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
     auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
@@ -282,12 +282,50 @@ RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::Geome
     }
 
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular3D::DivideGenerator: Generating new mesh (%dx%dx%d, max. aspect %.0f:1)",
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::%s: Generating new mesh (%dx%dx%d, max. aspect %.0f:1)", name(),
                           mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size(), max(asp0, max(asp1, asp2)));
     return mesh;
 }
 
-
+template <int dim>
+void RectilinearMeshAdvancedGeneratorBase<dim>::fromXML(XMLReader& reader, const Manager& manager)
+{
+    if (reader.getNodeName() == "warnings") {
+        warn_missing = reader.getAttribute<bool>("missing", true);
+        warn_multiple = reader.getAttribute<bool>("multiple", true);
+        warn_outside = reader.getAttribute<bool>("outside", true);
+        reader.requireTagEnd();
+    } else if (reader.getNodeName() == "refinements") {
+        while (reader.requireTagOrEnd()) {
+            if (reader.getNodeName() != "axis0" && (dim == 1 || (reader.getNodeName() != "axis1" && (dim == 2 || reader.getNodeName() != "axis2")))) {
+                if (dim == 1) throw XMLUnexpectedElementException(reader, "<axis0>");
+                if (dim == 2) throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
+                if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
+            }
+            auto direction = (reader.getNodeName() == "axis0")? typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(0) :
+                                (reader.getNodeName() == "axis1")? typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(1) :
+                                                                typename Primitive<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>::Direction(2);
+            weak_ptr<GeometryObjectD<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>> object
+                = manager.requireGeometryObject<GeometryObjectD<RectilinearMeshAdvancedGeneratorBase<dim>::DIM>>(reader.requireAttribute("object"));
+            PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
+            if (auto by = reader.getAttribute<unsigned>("by")) {
+                double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                for (unsigned i = 1; i < *by; ++i) {
+                    double pos = objsize * i / *by;
+                    addRefinement(direction, object, path, pos);
+                }
+            } else if (auto every = reader.getAttribute<double>("every")) {
+                double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                for (double pos = *every; pos < objsize; pos += *every)
+                    addRefinement(direction, object, path, pos);
+            } else if (auto pos = reader.getAttribute<double>("at")) {
+                addRefinement(direction, object, path, *pos);
+            } else
+                throw XMLNoAttrException(reader, "at', 'every', or 'by");
+            reader.requireTagEnd();
+        }
+    } else throw XMLUnexpectedElementException(reader, "proper generator configuration tag");
+}
 
 
 template <typename GeneratorT>
@@ -331,41 +369,8 @@ shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, cons
             result->setGradual(reader.getAttribute<bool>("gradual", result->getGradual()));
             result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));
             reader.requireTagEnd();
-        } else if (reader.getNodeName() == "warnings") {
-            result->warn_missing = reader.getAttribute<bool>("missing", true);
-            result->warn_multiple = reader.getAttribute<bool>("multiple", true);
-            result->warn_outside = reader.getAttribute<bool>("outside", true);
-            reader.requireTagEnd();
-        } else if (reader.getNodeName() == "refinements") {
-            while (reader.requireTagOrEnd()) {
-                if (reader.getNodeName() != "axis0" && (dim == 1 || (reader.getNodeName() != "axis1" && (dim == 2 || reader.getNodeName() != "axis2")))) {
-                    if (dim == 1) throw XMLUnexpectedElementException(reader, "<axis0>");
-                    if (dim == 2) throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
-                    if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
-                }
-                auto direction = (reader.getNodeName() == "axis0")? typename Primitive<RectilinearMeshDivideGenerator<dim>::DIM>::Direction(0) :
-                                 (reader.getNodeName() == "axis1")? typename Primitive<RectilinearMeshDivideGenerator<dim>::DIM>::Direction(1) :
-                                                                    typename Primitive<RectilinearMeshDivideGenerator<dim>::DIM>::Direction(2);
-                weak_ptr<GeometryObjectD<RectilinearMeshDivideGenerator<dim>::DIM>> object
-                    = manager.requireGeometryObject<GeometryObjectD<RectilinearMeshDivideGenerator<dim>::DIM>>(reader.requireAttribute("object"));
-                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
-                if (auto by = reader.getAttribute<unsigned>("by")) {
-                    double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
-                    for (unsigned i = 1; i < *by; ++i) {
-                        double pos = objsize * i / *by;
-                        result->addRefinement(direction, object, path, pos);
-                    }
-                } else if (auto every = reader.getAttribute<double>("every")) {
-                    double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
-                    for (double pos = *every; pos < objsize; pos += *every)
-                        result->addRefinement(direction, object, path, pos);
-                } else if (auto pos = reader.getAttribute<double>("at")) {
-                    result->addRefinement(direction, object, path, *pos);
-                } else
-                    throw XMLNoAttrException(reader, "at', 'every', or 'by");
-                reader.requireTagEnd();
-            }
-        } else throw XMLUnexpectedElementException(reader, "proper 'divide' generator configuration tag");
+        } else
+            result->fromXML(reader, manager);
     }
     return result;
 }
