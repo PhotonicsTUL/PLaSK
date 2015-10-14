@@ -33,6 +33,10 @@ else:
     import plask.material
 
 
+PARAMS = {'T': ['300', '400']}
+CURRENT_PROP = 'thermk'
+CURRENT_ARG = 'T'
+
 class MaterialPlot(QtGui.QWidget):
 
     def __init__(self, model=None, parent=None, init_material=None):
@@ -47,7 +51,7 @@ class MaterialPlot(QtGui.QWidget):
         self.material.currentIndexChanged.connect(self.material_changed)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
-        self.param.setCurrentIndex(self.param.findText('thermk'))
+        self.param.setCurrentIndex(self.param.findText(CURRENT_PROP))
         self.param.currentIndexChanged.connect(self.property_changed)
         self.param.setMaxVisibleItems(len(MATERIALS_PROPERTES))
         self.param.highlighted.connect(lambda i:
@@ -69,8 +73,6 @@ class MaterialPlot(QtGui.QWidget):
         self.mat_toolbar.setStyleSheet("QToolBar { border: 0px }")
 
         self.arguments = {}
-        self.mat_params = {}
-        self.prop_params = {'T': ('300', '400')}
 
         # self.model.changed.connect(self.update_materials)
 
@@ -145,9 +147,12 @@ class MaterialPlot(QtGui.QWidget):
 
         self.property_changed()
         for arg in self.arguments:
-            if arg.text() == 'T:':
+            arg_text = arg.text()[:-1]
+            if arg_text == CURRENT_ARG:
                 arg.setChecked(True)
                 break
+            elif arg_text == 'T':
+                arg.setChecked(True)
 
     def resizeEvent(self, event):
         if self.error.isVisible():
@@ -172,11 +177,15 @@ class MaterialPlot(QtGui.QWidget):
             self.material.setEditText(text)
         self.material.setMaxVisibleItems(len(material_list) - (-1 if plask is None else 1))
 
-    def set_toolbar(self, toolbar, values, old, what):
+    def param_changed(self, value):
+        name = self.sender().objectName()
+        name, i = name[:-1], int(name[-1])
+        PARAMS.setdefault(name, ['', ''])[i] = value
+
+    def set_toolbar(self, toolbar, values, what):
         """
         :param what: 0: component, 1: doping, 2: property argument
         """
-        first = None
         for name, descr, unit in values:
             if name is None:
                 toolbar.addSeparator()
@@ -184,30 +193,36 @@ class MaterialPlot(QtGui.QWidget):
             select = QtGui.QRadioButton()
             select.toggled.connect(self.selected_argument)
             select.setAutoExclusive(False)
-            if first is None: first = select
             toolbar.addWidget(select)
             select.setText("{}:".format(name))
             select.descr = descr
             select.unit = unit
+            val0 = QtGui.QLineEdit()
+            val0.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            val0.returnPressed.connect(self.update_plot)
+            val0.setObjectName(name+'0')
+            val0.textChanged.connect(self.param_changed)
+            toolbar.addWidget(val0)
+            sep = toolbar.addWidget(QtGui.QLabel("-"))
+            sep.setVisible(False)
             val1 = QtGui.QLineEdit()
             val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
             val1.returnPressed.connect(self.update_plot)
-            toolbar.addWidget(val1)
-            sep = toolbar.addWidget(QtGui.QLabel("-"))
-            sep.setVisible(False)
-            val2 = QtGui.QLineEdit()
-            val2.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
-            val2.returnPressed.connect(self.update_plot)
-            select_text = 'dc' if what == 1 else select.text()[:-1]
-            if select_text in old:
-                val1.setText(old[select_text][0])
-                val2.setText(old[select_text][1])
-            act2 = toolbar.addWidget(val2)
+            val1.setObjectName(name+'1')
+            val1.textChanged.connect(self.param_changed)
+            select_text = 'dc' if what == 1 else name
+            if select_text in PARAMS:
+                val0.setText(PARAMS[select_text][0])
+                val1.setText(PARAMS[select_text][1])
+            act2 = toolbar.addWidget(val1)
             act2.setVisible(False)
-            self.arguments[select] = val1, val2, (sep, act2), what
+            self.arguments[select] = val0, val1, (sep, act2), what
         for arg in self.arguments:
             if arg.isChecked(): return
-        if first is not None: first.setChecked(True)
+            arg_text = arg.text()[:-1]
+            if arg_text == CURRENT_ARG:
+                arg.setChecked(True)
+                return
 
     def update_info(self):
         """Update info area"""
@@ -237,10 +252,6 @@ class MaterialPlot(QtGui.QWidget):
     def set_material(self, material, update_toolbar=False):
         for child in self.mat_toolbar.children():
             if child in self.arguments:
-                key = child.text()[:-1]
-                if key.startswith('['): key = 'dc'
-                val = self.arguments[child]
-                self.mat_params[key] = val[0].text(), val[1].text()
                 del self.arguments[child]
         self.mat_toolbar.clear()
 
@@ -249,9 +260,9 @@ class MaterialPlot(QtGui.QWidget):
         if groups:
             elements = tuple(itertools.chain(*([e[0] for e in g] + [None] for g in groups if len(g) > 1)))[:-1]
             if update_toolbar:
-                self.mat_params.update(
-                    dict(itertools.chain(*([(e[0], (e[1],'')) for e in g if e[1]] for g in groups if len(g) > 1))))
-            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e), "-") for e in elements), self.mat_params, 0)
+                PARAMS.update(
+                    dict(itertools.chain(*([(e[0], [e[1],'']) for e in g if e[1]] for g in groups if len(g) > 1))))
+            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e), "-") for e in elements), 0)
             name = ''.join(itertools.chain(*([e[0] for e in g] for g in groups)))
         else:
             elements = None
@@ -263,10 +274,9 @@ class MaterialPlot(QtGui.QWidget):
             if elements:
                 self.mat_toolbar.addSeparator()
             if len(dopes) > 1 and update_toolbar:
-                self.mat_params['dc'] = dopes[1], ''
+                PARAMS['dc'] = dopes[1], ''
             self.set_toolbar(self.mat_toolbar,
-                             [(("[" + dope + "]"), dope + " doping concentration", "cm<sup>-3</sup>")],
-                             self.mat_params, 1)
+                             [(("[" + dope + "]"), dope + " doping concentration", "cm<sup>-3</sup>")], 1)
 
         if update_toolbar:
             if label: name += '_' + label
@@ -287,13 +297,11 @@ class MaterialPlot(QtGui.QWidget):
     def property_changed(self):
         for child in self.par_toolbar.children():
             if child in self.arguments:
-                key = child.text()[:-1]
-                val = self.arguments[child]
-                self.prop_params[key] = val[0].text(), val[1].text()
                 del self.arguments[child]
         self.par_toolbar.clear()
-        self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], self.prop_params, 2)
-
+        self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], 2)
+        global CURRENT_PROP
+        CURRENT_PROP = self.param.currentText()
         self.update_info()
 
     def selected_argument(self):
@@ -302,6 +310,8 @@ class MaterialPlot(QtGui.QWidget):
         for act in self.arguments[button][2]:
             act.setVisible(checked)
         if checked:
+            global CURRENT_ARG
+            CURRENT_ARG = button.text()[:-1]
             self.arg_button = button
             for other in self.arguments:
                 if other != button:

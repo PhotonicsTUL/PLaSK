@@ -6,7 +6,7 @@ Optical Analysis of a Step-Profile VCSEL
 Analyzed structure
 ^^^^^^^^^^^^^^^^^^
 
-In this section we will perform a simple purely optical analysis of an arsenide oxide confined Vertical-Cavity Surface-Emitting Laser (VCSEL) with an arbitrary step-profile gain. We will look for its resonant wavelength and the threshold gain using the popular effective frequency method. The schematic diagram of the VCSEL is shown in Figure :ref:`Geometry of the VCSEL <fig-tutorial2-geometry>`. It consists of 24.5 pair of the top GaAs/AlGaAs Distributed Bragg Reflectors (DBRs), a resonant cavity with a single qantum well, and 29.5 pais of the bottom GaAs/AlGaAs DBRs located on a GaAs substrate. As this the optical mode size is much slower than typical VCSEL mesa etching, we do consider the laser geometry as an infinite multi-stack of semiconductor layers. The only laterally limited features are the gain region and the oxide aperture necessary to confine the light.
+In this section we will perform a simple purely optical analysis of an arsenide oxide confined Vertical-Cavity Surface-Emitting Laser (VCSEL) with an arbitrary step-profile gain. We will look for its resonant wavelength and the threshold gain using the popular effective frequency method. The schematic diagram of the VCSEL is shown in Figure :ref:`Geometry of the VCSEL <fig-tutorial2-geometry>`. It consists of 24.5 pair of the top GaAs/AlGaAs Distributed Bragg Reflectors (DBRs), a resonant cavity with a single qantum well, and 29.5 pais of the bottom GaAs/AlGaAs DBRs located on a GaAs substrate. As this the optical mode size is much lower than typical VCSEL mesa etching, we do consider the laser geometry as an infinite multi-stack of semiconductor layers. The only laterally limited features are the gain region and the oxide aperture necessary to confine the light.
 
 .. _fig-tutorial2-geometry:
 .. figure:: tutorial2-geometry.*
@@ -22,11 +22,9 @@ In this section we will perform a simple purely optical analysis of an arsenide 
    |        |              |                |                                                |
    |        | 24.5 pairs   | 79.5           | Al\ :sub:`0.73`\ GaAs                          |
    +--------+--------------+----------------+------------------------------------------------+
-   |        |              | 31.8           | Al\ :sub:`0.73`\ GaAs                          |
-   +--------+--------------+----------------+------------------------------------------------+
    |        | Oxide        | 16.0           | AlAs (*r* ≤ 4 µm) / AlOx (*r* > 4 µm)          |
    +        +--------------+----------------+------------------------------------------------+
-   |        |              | 31.8           | Al\ :sub:`0.73`\ GaAs                          |
+   |        |              | 63.5           | Al\ :sub:`0.73`\ GaAs                          |
    +        +--------------+----------------+------------------------------------------------+
    | Cavity |              | 137.6          | GaAs                                           |
    +        +--------------+----------------+------------------------------------------------+
@@ -92,7 +90,7 @@ As we will need to put some gain into the rectangle with the *active* material, 
 After the above edits, your geometry XML should look as follows:
 
 .. code-block:: xml
-
+aperture
    <cylindrical2d name="main" axes="r,z" outer="extend" bottom="GaAs">
        <shelf>
          <rectangle material="active" dr="4" dz="0.0050"
@@ -123,7 +121,7 @@ Now, you can complete the other VCSEL layers according to Fig. :ref:`fig-tutoria
          <rectangle material="AlAs" dr="4" dz="0.0160"/>
          <rectangle material="AlOx" dr="6" dz="0.0160"/>
        </shelf>
-       <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0318"/>
+       <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0635"/>
        <rectangle material="GaAs" dr="10" dz="0.1376"/>
        <shelf>
          <rectangle material="active" dr="4" dz="0.0050"
@@ -159,10 +157,10 @@ Effective frequency solver does not need to have a mesh defined, as it will come
 
 The first line of the above snippet creates the ``profile`` object. The ``StepProfile`` class — conveniently provided by PLaSK — takes a geometry in which the profile is defined as an argument. It is also possible to set the default value for every object in the geometry by providing a value to the ``default`` parameter. In the next line, we specify that there is a step gain of 500 cm\ :sup:`-1` (default units for the gain in PLaSK) at the object named ‘gain-region’ in the XPL file (``-`` in names is replaced with ``_`` when using the attribute access to geometry objects) [#object-names]_. Finally, we connect the gain receiver of the ``efm`` solver with the profile's gain provider. This way, all future changes to the ``profile`` be visible from the connected solver.
 
-Now we can perform the computations. We have already set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) in the solver configuration. Then we look for the mode with the wavelength closest to 980.5nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function is called ``efm.find_mode``. It takes a starting wavelength approximation as its argument (we set it to 980.5 nm to make sure it will converge to the funcamental mode) and returns an index of a found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use it to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
+Now we can perform the computations. We have already set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) in the solver configuration. Then we look for the mode with the wavelength closest to 981.nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute ``efm.modes``, which is a read-only list. The mode searching function is called ``efm.find_mode``. It takes a starting wavelength approximation as its argument (we set it to 981. nm to make sure it will converge to the funcamental mode) and returns an index of a found mode in the ``efm.modes`` list. In the code below we assign this number to the variable ``mode_number``. We can then use it to obtain the mode's resonant wavelength and its modal losses [cm\ :sup:`-1`] either by accessing the relevant ``efm.modes`` element, or by using providers ``efm.outWavelength`` and ``efm.outLoss``, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows::
 
    efm.lam0 = 980.
-   mode_number = efm.find_mode(980.5)
+   mode_number = efm.find_mode(981.)
    mode_wavelength = efm.outWavelength(mode_number)
    mode_loss = efm.outLoss(mode_number)
    print_log(LOG_INFO,
@@ -182,7 +180,7 @@ In order to perform the root search, we have to import the ``scipy.optimize`` mo
 
    def loss_on_gain(gain):
        profile[GEO.gain_region] = gain
-       mode_number = efm.find_mode(980.5)
+       mode_number = efm.find_mode(981.)
        return efm.outLoss(mode_number)
 
 You notice that first, we modify the gain profile in the *gain-region* geometry object and then recompute the resonant mode. Because of the gain modification, all the modes computed earlier are lost as they become obsolete with the new gain. However, the ``mode_number`` variable in the above function will always be set to the current, recently computed, mode number we are interested in. We use this information to retrieve the computed modal loss and return it as the result of the function.
@@ -191,14 +189,14 @@ Now we can provide ``loss_on_gain`` to the ``fsolve`` function, together with th
 
    efm.lam0 = 980.
 
-   threshold_gain = scipy.optimize.fs   olve(loss_on_gain, 2000., xtol=0.1)[0]
+   threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
 The ``xtol`` argument allows us to set the desired solution's tolerance.
 
 When the ``fsolve`` function completes it returns a Python list with the found solutions (which in this case hase only one element), so the ``threshold_gain`` variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log::
 
    profile[GEO.gain_region] = threshold_gain
-   mode_number = efm.find_mode(980.5)
+   mode_number = efm.find_mode(981.)
    mode_wavelength = efm.outWavelength(mode_number)
    print_log(LOG_INFO,
        "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
@@ -218,13 +216,13 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
 
       def loss_on_gain(gain):
           profile[GEO.gain_region] = gain
-          mode_number = efm.find_mode(980.5)
+          mode_number = efm.find_mode(981.)
           return efm.outLoss(mode_number)
 
       threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
       profile[GEO.gain_region] = threshold_gain
-      mode_number = efm.find_mode(980.5)
+      mode_number = efm.find_mode(981.)
       mode_wavelength = efm.outWavelength(mode_number)
       print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"

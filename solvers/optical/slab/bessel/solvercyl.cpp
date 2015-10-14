@@ -144,7 +144,7 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 {
     assert(num < modes.size());
     assert(transfer);
-//     ParamGuard guard(this);
+    ParamGuard guard(this);
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);

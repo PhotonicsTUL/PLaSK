@@ -42,8 +42,6 @@ Next, in the XML view, we can define the whole VCSEL structure:
                                 dr="{mesa}" dz="0.0795"/>
            <rectangle material="GaAs:Si=2e+18" dr="{mesa}" dz="0.0700"/>
          </stack>
-         <rectangle material="Al(0.73)GaAs:Si=2e+18"
-                    dr="{mesa}" dz="0.0318"/>
          <shelf>
            <rectangle name="aperture" material="AlAs:Si=2e+18"
                       dr="{aperture}" dz="0.0160"/>
@@ -51,8 +49,8 @@ Next, in the XML view, we can define the whole VCSEL structure:
                       dr="{mesa-aperture}" dz="0.0160"/>
          </shelf>
          <rectangle material="Al(0.73)GaAs:Si=2e+18"
-                    dr="{mesa}" dz="0.0318"/>
-         <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1176"/>
+                    dr="{mesa}" dz="0.0635"/>
+         <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1160"/>
          <stack name="junction" role="active">
            <stack repeat="4">
              <rectangle name="QW" role="QW" material="InGaAsQW"
@@ -61,7 +59,7 @@ Next, in the XML view, we can define the whole VCSEL structure:
            </stack>
            <again ref="QW"/>
          </stack>
-         <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1176"/>
+         <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1160"/>
          <stack name="bottom-DBR" repeat="30">
            <rectangle material="Al(0.73)GaAs:C=2e+18"
                       dr="{mesa}" dz="0.0795"/>
@@ -156,12 +154,13 @@ It's now time to define the solvers. Switch to the *Solvers* tab and type:
 
    <gain solver="FermiCyl" name="GAIN">
      <geometry ref="GeoO"/>
-     <config lifetime="0.5" matrix-elem="8"/>
+     <config lifetime="0.5" matrix-elem="10"/>
    </gain>
 
    <optical solver="EffectiveFrequencyCyl" name="OPTICAL">
      <geometry ref="GeoO"/>
      <mesh ref="optical"/>
+     <mode lam0="980."/>
    </optical>
 
 ``THERMAL`` and ``ELECTRICAL`` solvers are analogous to these used in :ref:`the first tutorial <sec-Thermo-electrical-modeling-of-simple-ee-laser>`, but designed for cylindrical symmetries (i.e. ``StaticCyl`` instead of ``Static2D``). The ``OPTICAL`` solver is similar to that from :ref:`the previous tutorial <sec-Optical-analysis-of-VCSEL>`, but here we also specify a mesh for it, so it does not perform calculations on it's default simplified mesh. It is important to note, that this solver is assigned to a different geometry than ``THERMAL`` and ``ELECTRICAL`` solvers. This is the geometry that we adjusted for optical simulations. ``DIFFUSION`` and ``GAIN`` could be assigned to either full, or optical geometry, but in the second case we limit the calculations range to the mesa radius (instead of calculating in the air outside the mesa for the range of the full geometry, which is the heatsink radius equal to 2500 microns), therefore saving some time and memory.
@@ -238,7 +237,7 @@ With having the geometries and meshes prepared, we can move on to scripting the 
 .. code-block:: python
 
    task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
-                                    GAIN, OPTICAL, 0, 1.4, 981.5)
+                                    GAIN, OPTICAL, 0, 1.5, 981.)
    threshold_voltage = task.run()
    threshold_current = task.threshold_current
    print("Vth = {:.3f}V, Ith = {:.3f}mA"
@@ -249,7 +248,7 @@ With having the geometries and meshes prepared, we can move on to scripting the 
    axvline(x=GEO.aperture.dr, color='0.75', ls=":", linewidth=1, alpha=0.35)
 
 :py:class:`~plask.algorithm.ThresholdSearch` is a PLaSK algorithm class that will do the threshold search loop for you. It needs to be initialized with configured solvers (thermal, electrical, diffusion, gain, optical).
-The other constructor parameters are: ``0``\ : the index of the voltage boundary condition to vary while changing voltage, ``1.4``\ : the initial voltage to start from, ``981.5``\ : the initial wavelength to start looking for the optical mode.
+The other constructor parameters are: ``0``\ : the index of the voltage boundary condition to vary while changing the voltage, ``1.5``\ : the initial voltage to start from, ``981.``\ : the initial wavelength to start looking for the optical mode.
 
 After initializing the algorithm you simply run it using the method :py:meth:`~plask.algorithm.ThresholdSearch.run()`. If succeeded, it will return the threshold voltage. Furthermore, it saves the results of thermal and electrical calculations to disk in a HDF5 file, which can be later loaded and reused (this is, however, out of scope of this tutorial). The following lines in the above script, print the threshold voltage and current and and plot the found optical mode at the threshold. In the last line, we add a vertical bar to the plot to mark the oprical aperture.
 

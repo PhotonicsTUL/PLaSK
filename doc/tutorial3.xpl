@@ -1,4 +1,4 @@
-<plask>
+<plask loglevel="detail">
 
 <defines>
   <define name="mesa" value="10."/>
@@ -29,13 +29,12 @@
           <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0795"/>
           <rectangle material="GaAs:Si=2e+18" dr="{mesa}" dz="0.0700"/>
         </stack>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0318"/>
         <shelf>
           <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.0160"/>
           <rectangle name="oxide" material="AlOx" dr="{mesa-aperture}" dz="0.0160"/>
         </shelf>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0318"/>
-        <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1176"/>
+        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0635"/>
+        <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1160"/>
         <stack name="junction" role="active">
           <stack repeat="4">
             <rectangle name="QW" role="QW" material="InGaAsQW" dr="{mesa}" dz="0.0050"/>
@@ -43,7 +42,7 @@
           </stack>
           <again ref="QW"/>
         </stack>
-        <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1176"/>
+        <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1160"/>
         <stack name="bottom-DBR" repeat="30">
           <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesa}" dz="0.0795"/>
           <rectangle material="GaAs:C=2e+18" dr="{mesa}" dz="0.0700"/>
@@ -82,7 +81,7 @@
 </grids>
 
 <solvers>
-  <thermal name="THERMAL" solver="StaticCyl" lib="fem">
+  <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <temperature>
@@ -109,12 +108,12 @@
   </electrical>
   <gain name="GAIN" solver="FermiCyl" lib="simple">
     <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="8"/>
+    <config lifetime="0.5" matrix-elem="10"/>
   </gain>
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
-    <mode lam0="981." vat="0."/>
+    <mode lam0="980."/>
   </optical>
 </solvers>
 
@@ -140,7 +139,7 @@ plot_boundary(THERMAL.temperature_boundary, defmesh,
 gcf().canvas.set_window_title("Default mesh")
 
 task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
-                                 GAIN, OPTICAL, 0, 1.4, 981.5)
+                                 GAIN, OPTICAL, 0, 1.5, 981.)
 threshold_voltage = task.run()
 threshold_current = task.threshold_current
 print("Vth = {:.3f}V, Ith = {:.3f}mA"
