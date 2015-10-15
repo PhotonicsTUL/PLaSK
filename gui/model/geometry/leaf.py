@@ -127,7 +127,7 @@ class GNBlock(GNLeaf):
 
     def create_info(self, res, names):
         super(GNBlock, self).create_info(res, names)
-        if None in self.size: self._require(res, None, 'size')
+        if None in self.size: self._require(res, 'size', index=self.size.index(None))
 
     @staticmethod
     def from_xml_2d(element, conf):
