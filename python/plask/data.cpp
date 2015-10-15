@@ -264,7 +264,7 @@ namespace detail {
 
 } // namespace  detail
 
-py::object Data(PyObject* obj, py::object omesh) {
+PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
     if (!PyArray_Check(obj)) throw TypeError("data needs to be array object");
     PyArrayObject* arr = (PyArrayObject*)obj;
 

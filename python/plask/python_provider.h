@@ -381,7 +381,7 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
 };
 
-py::object Data(PyObject* obj, py::object omesh);
+PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh);
 
 template <typename T, int dim>
 DataVectorWrap<T,dim> PLASK_PYTHON_API dataInterpolate(
