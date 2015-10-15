@@ -81,9 +81,9 @@ const char* docstring_receiver_assign =
 
     "   >>> solver.in%1% = 300.";
 
-template <PropertyType propertyType> const char* docstring_provider();
+PLASK_PYTHON_API template <PropertyType propertyType> const char* docstring_provider();
 
-template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
+PLASK_PYTHON_API template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
@@ -119,7 +119,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
+PLASK_PYTHON_API template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
@@ -166,7 +166,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> const char* docstring_provider<FIELD_PROPERTY>() { return
+PLASK_PYTHON_API template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
@@ -205,7 +205,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
-template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
+PLASK_PYTHON_API template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
@@ -255,10 +255,10 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
-template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
-template const char* docstring_provider<MULTI_VALUE_PROPERTY>();
-template const char* docstring_provider<FIELD_PROPERTY>();
-template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
+PLASK_PYTHON_API template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
+PLASK_PYTHON_API template const char* docstring_provider<MULTI_VALUE_PROPERTY>();
+PLASK_PYTHON_API template const char* docstring_provider<FIELD_PROPERTY>();
+PLASK_PYTHON_API template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
 
 
 py::object flow_module;
