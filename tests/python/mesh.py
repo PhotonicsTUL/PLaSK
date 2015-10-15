@@ -269,3 +269,29 @@ class Interpolation(unittest.TestCase):
         dst = plask.mesh.Rectangular2D([1], [1])
         data = plask.Data(array([[1., 2.], [3., 4.]]), src)
         self.assertAlmostEqual( data.interpolate(dst, 'linear')[0], 2.5 )
+
+
+class SmoothGenerator(unittest.TestCase):
+
+    def setUp(self):
+        self.rect = plask.geometry.Rectangle(28., 1., None)
+        self.geometry = plask.geometry.Cartesian2D(self.rect)
+        self.generator = plask.mesh.Rectangular2D.SmoothGenerator()
+        self.generator.factor = 2., 2.
+        self.generator.edge = 2., 2.
+
+    def testExact(self):
+        self.generator.edge[0] = 2.
+        msh = self.generator(self.geometry)
+        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
+
+    def testEven(self):
+        self.generator.edge[0] = 2.5
+        msh = self.generator(self.geometry)
+        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
+
+    def testOdd(self):
+        self.rect.width = 44.
+        self.generator.edge[0] = 2.1
+        msh = self.generator(self.geometry)
+        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 30., 38., 42., 44.] )

@@ -113,6 +113,9 @@ while (U <= 0.02):
 
 print_log(LOG_INFO, "Calculations done!")
 
+import sys
+sys.exit(0)
+
 # to bedzie rysowane
 potential_rz = DDM2D.outPotential(DDM2D.mesh)
 potential_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')

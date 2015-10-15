@@ -14,7 +14,7 @@
 #   define NEXT "next"
 #endif
 
-#define DIM RectilinearMeshDivideGenerator<dim>::DIM
+#define DIM RectilinearMeshRefinedGenerator<dim>::DIM
 
 namespace plask { namespace python {
 
@@ -322,38 +322,38 @@ shared_ptr<RectangularMesh<3>> RectilinearMesh3D__init__geometry(const shared_pt
 
 namespace detail {
 
-    template <int dim>
-    struct DivideGeneratorDivProxy {
+    template <typename T, int dim, typename GT>
+    struct AxisParamProxy {
 
-        typedef DivideGeneratorDivProxy<dim> ThisT;
+        typedef AxisParamProxy<T,dim,GT> ThisT;
 
-        typedef size_t (RectilinearMeshDivideGenerator<dim>::*GetF)(typename Primitive<DIM>::Direction)const;
-        typedef void (RectilinearMeshDivideGenerator<dim>::*SetF)(typename Primitive<DIM>::Direction,size_t);
+        typedef T(GT::*GetF)(typename Primitive<DIM>::Direction)const;
+        typedef void(GT::*SetF)(typename Primitive<DIM>::Direction,T);
 
-        RectilinearMeshDivideGenerator<dim>& obj;
+        GT& obj;
         GetF getter;
         SetF setter;
 
-        DivideGeneratorDivProxy(RectilinearMeshDivideGenerator<dim>& obj, GetF get, SetF set):
+        AxisParamProxy(GT& obj, GetF get, SetF set):
             obj(obj), getter(get), setter(set) {}
 
-        size_t get(int i) const { return (obj.*getter)(typename Primitive<DIM>::Direction(i)); }
+        T get(int i) const { return (obj.*getter)(typename Primitive<DIM>::Direction(i)); }
 
-        size_t __getitem__(int i) const {
+        T __getitem__(int i) const {
             if (i < 0) i += dim; if (i > dim || i < 0) throw IndexError("tuple index out of range");
             return get(i);
         }
 
-        void set(int i, size_t v) { (obj.*setter)(typename Primitive<DIM>::Direction(i), v); }
+        void set(int i, T v) { (obj.*setter)(typename Primitive<DIM>::Direction(i), v); }
 
-        void __setitem__(int i, size_t v) {
+        void __setitem__(int i, T v) {
             if (i < 0) i += dim; if (i > dim || i < 0) throw IndexError("tuple index out of range");
             set(i, v);
         }
 
-        py::tuple __mul__(int f) const;
+        py::tuple __mul__(T f) const;
 
-        py::tuple __div__(int f) const;
+        py::tuple __div__(T f) const;
 
         std::string __str__() const;
 
@@ -361,7 +361,7 @@ namespace detail {
             const ThisT& obj;
             int i;
             Iter(const ThisT& obj): obj(obj), i(-1) {}
-            size_t next() {
+            T next() {
                 ++i; if (i == dim) throw StopIteration(""); return obj.get(i);
             }
         };
@@ -370,14 +370,83 @@ namespace detail {
             return make_shared<Iter>(*this);
         }
 
-        static shared_ptr<ThisT> getPre(RectilinearMeshDivideGenerator<dim>& self) {
-            return make_shared<ThisT>(self,
-                &RectilinearMeshDivideGenerator<dim>::getPreDivision, &RectilinearMeshDivideGenerator<dim>::setPreDivision);
+        static void register_proxy(py::scope scope) {
+            py::class_<ThisT, shared_ptr<ThisT>, boost::noncopyable> cls("_Proxy", py::no_init); cls
+                .def("__getitem__", &ThisT::__getitem__)
+                .def("__setitem__", &ThisT::__setitem__)
+                .def("__mul__", &ThisT::__mul__)
+                .def("__div__", &ThisT::__div__)
+                .def("__truediv__", &ThisT::__div__)
+                .def("__floordiv__", &ThisT::__div__)
+                .def("__iter__", &ThisT::__iter__, py::with_custodian_and_ward_postcall<0,1>())
+                .def("__str__", &ThisT::__str__)
+            ;
+            py::delattr(py::scope(), "_Proxy");
+
+            py::scope scope2 = cls;
+            py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
+                .def(NEXT, &Iter::next)
+                .def("__iter__", pass_through)
+            ;
+        }
+    };
+
+    template <> py::tuple AxisParamProxy<size_t,2,RectilinearMeshDivideGenerator<2>>::__mul__(size_t f) const {
+        return py::make_tuple(get(0) * f, get(1) * f);
+    }
+    template <> py::tuple AxisParamProxy<size_t,3,RectilinearMeshDivideGenerator<3>>::__mul__(size_t f) const {
+        return py::make_tuple(get(0) * f, get(1) * f, get(2) * f);
+    }
+
+    template <> py::tuple AxisParamProxy<size_t,2,RectilinearMeshDivideGenerator<2>>::__div__(size_t f) const {
+        if (get(0) < f || get(1) < f) throw ValueError("Refinement already too small.");
+        return py::make_tuple(get(0) / f, get(1) / f);
+    }
+    template <> py::tuple AxisParamProxy<size_t,3,RectilinearMeshDivideGenerator<3>>::__div__(size_t f) const {
+        if (get(0) < f || get(1) < f || get(2) < f) throw ValueError("Refinement already too small.");
+        return py::make_tuple(get(0) / f, get(1) / f, get(2) / f);
+    }
+
+    template <> std::string AxisParamProxy<size_t,2,RectilinearMeshDivideGenerator<2>>::__str__() const {
+        return format("(%1%, %2%)", get(0), get(1));
+    }
+    template <> std::string AxisParamProxy<size_t,3,RectilinearMeshDivideGenerator<3>>::__str__() const {
+        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
+    }
+
+    template <> py::tuple AxisParamProxy<double,2,RectilinearMeshSmoothGenerator<2>>::__mul__(double f) const {
+        return py::make_tuple(get(0) * f, get(1) * f);
+    }
+    template <> py::tuple AxisParamProxy<double,3,RectilinearMeshSmoothGenerator<3>>::__mul__(double f) const {
+        return py::make_tuple(get(0) * f, get(1) * f, get(2) * f);
+    }
+
+    template <> py::tuple AxisParamProxy<double,2,RectilinearMeshSmoothGenerator<2>>::__div__(double f) const {
+        return py::make_tuple(get(0) / f, get(1) / f);
+    }
+    template <> py::tuple AxisParamProxy<double,3,RectilinearMeshSmoothGenerator<3>>::__div__(double f) const {
+        return py::make_tuple(get(0) / f, get(1) / f, get(2) / f);
+    }
+
+    template <> std::string AxisParamProxy<double,2,RectilinearMeshSmoothGenerator<2>>::__str__() const {
+        return format("(%1%, %2%)", get(0), get(1));
+    }
+    template <> std::string AxisParamProxy<double,3,RectilinearMeshSmoothGenerator<3>>::__str__() const {
+        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
+    }
+
+
+    template <int dim>
+    struct DivideGeneratorDivMethods {
+
+        typedef AxisParamProxy<size_t,dim,RectilinearMeshDivideGenerator<dim>> ProxyT;
+
+        static shared_ptr<ProxyT> getPre(RectilinearMeshDivideGenerator<dim>& self) {
+            return make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPreDivision, &RectilinearMeshDivideGenerator<dim>::setPreDivision);
         }
 
-        static shared_ptr<ThisT> getPost(RectilinearMeshDivideGenerator<dim>& self) {
-            return make_shared<ThisT>(self,
-                &RectilinearMeshDivideGenerator<dim>::getPostDivision, &RectilinearMeshDivideGenerator<dim>::setPostDivision);
+        static shared_ptr<ProxyT> getPost(RectilinearMeshDivideGenerator<dim>& self) {
+            return make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPostDivision, &RectilinearMeshDivideGenerator<dim>::setPostDivision);
         }
 
         static void setPre(RectilinearMeshDivideGenerator<dim>& self, py::object val) {
@@ -387,7 +456,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'prediv' (%1% items provided and %2% required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.pre_divisions[i] = py::extract<size_t>(val[i]);
             // }
             self.fireChanged();
@@ -400,35 +469,17 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'postdiv' (%1% items provided and %2% required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.post_divisions[i] = py::extract<size_t>(val[i]);
             // }
             self.fireChanged();
         }
 
-        static void register_proxy(py::scope scope) {
-            py::class_<ThisT, shared_ptr<ThisT>, boost::noncopyable> cls("Div", py::no_init); cls
-                .def("__getitem__", &ThisT::__getitem__)
-                .def("__setitem__", &ThisT::__setitem__)
-                .def("__mul__", &ThisT::__mul__)
-                .def("__div__", &ThisT::__div__)
-                .def("__truediv__", &ThisT::__div__)
-                .def("__floordiv__", &ThisT::__div__)
-                .def("__iter__", &ThisT::__iter__, py::with_custodian_and_ward_postcall<0,1>())
-                .def("__str__", &ThisT::__str__)
-            ;
-            py::delattr(py::scope(), "Div");
-
-            py::scope scope2 = cls;
-            py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
-                .def(NEXT, &Iter::next)
-                .def("__iter__", pass_through)
-            ;
-        }
+        static void register_proxy(py::object scope) { AxisParamProxy<size_t,dim,RectilinearMeshDivideGenerator<dim>>::register_proxy(scope); }
     };
 
     template <>
-    struct DivideGeneratorDivProxy<1> {
+    struct DivideGeneratorDivMethods<1> {
 
         static size_t getPre(RectilinearMeshDivideGenerator<1>& self) {
             return self.getPreDivision(Primitive<2>::DIRECTION_TRAN);
@@ -450,29 +501,69 @@ namespace detail {
     };
 
 
+    template <int dim>
+    struct SmoothGeneratorDivMethods {
 
-    template <> py::tuple DivideGeneratorDivProxy<2>::__mul__(int f) const {
-        return py::make_tuple(get(0) * f, get(1) * f);
-    }
-    template <> py::tuple DivideGeneratorDivProxy<3>::__mul__(int f) const {
-        return py::make_tuple(get(0) * f, get(1) * f, get(2) * f);
-    }
+        typedef AxisParamProxy<double,dim,RectilinearMeshSmoothGenerator<dim>> ProxyT;
 
-    template <> py::tuple DivideGeneratorDivProxy<2>::__div__(int f) const {
-        if (get(0) < f || get(1) < f) throw ValueError("Refinement already too small.");
-        return py::make_tuple(get(0) / f, get(1) / f);
-    }
-    template <> py::tuple DivideGeneratorDivProxy<3>::__div__(int f) const {
-        if (get(0) < f || get(1) < f || get(2) < f) throw ValueError("Refinement already too small.");
-        return py::make_tuple(get(0) / f, get(1) / f, get(2) / f);
-    }
+        static shared_ptr<ProxyT> getEdge(RectilinearMeshSmoothGenerator<dim>& self) {
+            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFineStep, &RectilinearMeshSmoothGenerator<dim>::setFineStep);
+        }
 
-    template <> std::string DivideGeneratorDivProxy<2>::__str__() const {
-        return format("(%1%, %2%)", get(0), get(1));
-    }
-    template <> std::string DivideGeneratorDivProxy<3>::__str__() const {
-        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
-    }
+        static shared_ptr<ProxyT> getFactor(RectilinearMeshSmoothGenerator<dim>& self) {
+            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFactor, &RectilinearMeshSmoothGenerator<dim>::setFactor);
+        }
+
+        static void setEdge(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
+            // try {
+            //     double v = py::extract<double>(val);
+            //     for (int i = 0; i < dim; ++i) self.finestep[i] = v;
+            // } catch (py::error_already_set) {
+            //     PyErr_Clear();
+                if (py::len(val) != dim)
+                    throw ValueError("Wrong size of 'edge' (%1% items provided and %2% required)", py::len(val), dim);
+                for (int i = 0; i < dim; ++i) self.finestep[i] = py::extract<double>(val[i]);
+            // }
+            self.fireChanged();
+        }
+
+        static void setFactor(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
+            // try {
+            //     double v = py::extract<double>(val);
+            //     for (int i = 0; i < dim; ++i) self.factor[i] = v;
+            // } catch (py::error_already_set) {
+            //     PyErr_Clear();
+                if (py::len(val) != dim)
+                    throw ValueError("Wrong size of 'factor' (%1% items provided and %2% required)", py::len(val), dim);
+                for (int i = 0; i < dim; ++i) self.factor[i] = py::extract<double>(val[i]);
+            // }
+            self.fireChanged();
+        }
+
+        static void register_proxy(py::object scope) { AxisParamProxy<double,dim,RectilinearMeshSmoothGenerator<dim>>::register_proxy(scope); }
+    };
+
+    template <>
+    struct SmoothGeneratorDivMethods<1> {
+
+        static double getEdge(RectilinearMeshSmoothGenerator<1>& self) {
+            return self.getFineStep(Primitive<2>::DIRECTION_TRAN);
+        }
+
+        static double getFactor(RectilinearMeshSmoothGenerator<1>& self) {
+            return self.getFactor(Primitive<2>::DIRECTION_TRAN);
+        }
+
+        static void setEdge(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
+            self.setFineStep(Primitive<2>::DIRECTION_TRAN, py::extract<double>(val));
+        }
+
+        static void setFactor(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
+            self.setFactor(Primitive<2>::DIRECTION_TRAN, py::extract<double>(val));
+        }
+
+        static void register_proxy(py::object) {}
+    };
 }
 
 template <int dim>
@@ -566,20 +657,6 @@ py::dict RectilinearMeshRefinedGenerator_listRefinements(const RectilinearMeshDi
     return refinements;
 }
 
-template <int dim>
-shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__init__(py::object prediv, py::object postdiv, double aspect, bool gradual,
-                                                                                       bool warn_multiple, bool warn_missing, bool warn_outside) {
-    auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
-    if (prediv != py::object()) detail::DivideGeneratorDivProxy<dim>::setPre(*result, prediv);
-    if (postdiv != py::object()) detail::DivideGeneratorDivProxy<dim>::setPost(*result, postdiv);
-    result->gradual = gradual;
-    result->aspect = aspect;
-    result->warn_multiple = warn_multiple;
-    result->warn_missing = warn_missing;
-    result->warn_outside = warn_outside;
-    return result;
-};
-
 template <int dim, typename RegisterT>
 static void register_refined_generator_base(RegisterT& cls) {
         cls
@@ -618,6 +695,20 @@ static void register_refined_generator_base(RegisterT& cls) {
 }
 
 template <int dim>
+shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__init__(py::object prediv, py::object postdiv, double aspect, bool gradual,
+                                                                                       bool warn_multiple, bool warn_missing, bool warn_outside) {
+    auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
+    if (prediv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPre(*result, prediv);
+    if (postdiv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPost(*result, postdiv);
+    result->gradual = gradual;
+    result->aspect = aspect;
+    result->warn_multiple = warn_multiple;
+    result->warn_missing = warn_missing;
+    result->warn_outside = warn_outside;
+    return result;
+};
+
+template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
                    py::bases<MeshGeneratorD<dim>>, boost::noncopyable>
@@ -635,25 +726,77 @@ void register_divide_generator() {
 
         if (dim != 1) dividecls
             .add_property("prediv",
-                        py::make_function(&detail::DivideGeneratorDivProxy<dim>::getPre, py::with_custodian_and_ward_postcall<0,1>()),
-                        &detail::DivideGeneratorDivProxy<dim>::setPre,
+                        py::make_function(&detail::DivideGeneratorDivMethods<dim>::getPre, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::DivideGeneratorDivMethods<dim>::setPre,
                         "initial division of all geometry objects")
             .add_property("postdiv",
-                        py::make_function(&detail::DivideGeneratorDivProxy<dim>::getPost, py::with_custodian_and_ward_postcall<0,1>()),
-                        &detail::DivideGeneratorDivProxy<dim>::setPost,
+                        py::make_function(&detail::DivideGeneratorDivMethods<dim>::getPost, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::DivideGeneratorDivMethods<dim>::setPost,
                         "final division of all geometry objects")
         ; else dividecls
             .add_property("prediv",
-                        &detail::DivideGeneratorDivProxy<dim>::getPre,
-                        &detail::DivideGeneratorDivProxy<dim>::setPre,
+                        &detail::DivideGeneratorDivMethods<dim>::getPre,
+                        &detail::DivideGeneratorDivMethods<dim>::setPre,
                         "initial division of all geometry objects")
             .add_property("postdiv",
-                        &detail::DivideGeneratorDivProxy<dim>::getPost,
-                        &detail::DivideGeneratorDivProxy<dim>::setPost,
+                        &detail::DivideGeneratorDivMethods<dim>::getPost,
+                        &detail::DivideGeneratorDivMethods<dim>::setPost,
                         "final division of all geometry objects")
         ;
 
-        detail::DivideGeneratorDivProxy<dim>::register_proxy(dividecls);
+        detail::DivideGeneratorDivMethods<dim>::register_proxy(dividecls);
+}
+
+
+template <int dim>
+shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object edge, py::object factor, double aspect,
+                                                                                       bool warn_multiple, bool warn_missing, bool warn_outside) {
+    auto result = make_shared<RectilinearMeshSmoothGenerator<dim>>();
+    if (edge != py::object()) detail::SmoothGeneratorDivMethods<dim>::setEdge(*result, edge);
+    if (factor != py::object()) detail::SmoothGeneratorDivMethods<dim>::setFactor(*result, factor);
+    result->aspect = aspect;
+    result->warn_multiple = warn_multiple;
+    result->warn_missing = warn_missing;
+    result->warn_outside = warn_outside;
+    return result;
+};
+
+template <int dim>
+void register_smooth_generator() {
+     py::class_<RectilinearMeshSmoothGenerator<dim>, shared_ptr<RectilinearMeshSmoothGenerator<dim>>,
+                   py::bases<MeshGeneratorD<dim>>, boost::noncopyable>
+            dividecls("SmoothGenerator",
+            format("Generator of Rectilinear%1%D mesh with dense sampling at edges and smooth change of element size.\n\n"
+            "SmoothGenerator()\n"
+            "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
+            register_refined_generator_base<dim>(dividecls); dividecls
+            .def("__init__", py::make_constructor(&RectilinearMeshSmoothGenerator__init__<dim>, py::default_call_policies(),
+                 (py::arg("edge")=py::object(), py::arg("factor")=py::object(), py::arg("aspect")=0,
+                  py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))
+        ;
+    py::implicitly_convertible<shared_ptr<RectilinearMeshSmoothGenerator<dim>>, shared_ptr<const RectilinearMeshSmoothGenerator<dim>>>();
+
+        if (dim != 1) dividecls
+            .add_property("edge",
+                        py::make_function(&detail::SmoothGeneratorDivMethods<dim>::getEdge, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::SmoothGeneratorDivMethods<dim>::setEdge,
+                        "initial division of all geometry objects")
+            .add_property("factor",
+                        py::make_function(&detail::SmoothGeneratorDivMethods<dim>::getFactor, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::SmoothGeneratorDivMethods<dim>::setFactor,
+                        "final division of all geometry objects")
+        ; else dividecls
+            .add_property("edge",
+                        &detail::SmoothGeneratorDivMethods<dim>::getEdge,
+                        &detail::SmoothGeneratorDivMethods<dim>::setEdge,
+                        "initial division of all geometry objects")
+            .add_property("factor",
+                        &detail::SmoothGeneratorDivMethods<dim>::getFactor,
+                        &detail::SmoothGeneratorDivMethods<dim>::setFactor,
+                        "final division of all geometry objects")
+        ;
+
+        detail::SmoothGeneratorDivMethods<dim>::register_proxy(dividecls);
 }
 
 
@@ -698,6 +841,7 @@ void register_mesh_rectangular()
         py::implicitly_convertible<shared_ptr<OrderedMesh1DSimpleGenerator>, shared_ptr<const OrderedMesh1DSimpleGenerator>>();
 
         register_divide_generator<1>();
+        register_smooth_generator<1>();
     }
 
 
@@ -791,6 +935,7 @@ void register_mesh_rectangular()
         py::implicitly_convertible<shared_ptr<RectilinearMesh2DSimpleGenerator>, shared_ptr<const RectilinearMesh2DSimpleGenerator>>();
 
         register_divide_generator<2>();
+        register_smooth_generator<2>();
     }
 
 
@@ -867,6 +1012,7 @@ void register_mesh_rectangular()
         py::implicitly_convertible<shared_ptr<RectilinearMesh3DSimpleGenerator>, shared_ptr<const RectilinearMesh3DSimpleGenerator>>();
 
         register_divide_generator<3>();
+        register_smooth_generator<3>();
     }
 
 }

@@ -118,10 +118,12 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     Refinements refinements[dim];
 
-    virtual shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) = 0;
+    shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
+
+    virtual shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) = 0;
 
     virtual const char* name() = 0;
-    
+
     void fromXML(XMLReader&, const Manager&);
 
     std::pair<double, double> getMinMax(const shared_ptr<OrderedAxis>& axis);
@@ -314,7 +316,7 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
 
     bool gradual;
 
-    shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
+    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
 
     virtual const char* name() { return "DivideGenerator"; }   
     
@@ -369,66 +371,55 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
 };
 
 
-// /**
-//  * Dense-edge genereator that has very dense sampling near edges and gradually gets wider towards the center.
-//  */
-// template <int dim>
-// struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGenerator<dim> {
-// 
-//     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
-//     using MeshGeneratorD<dim>::DIM;
-// 
-//     double finestep[dim];
-//     double factor[dim];
-//     
-//     shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
-// 
-//     virtual const char* name() { return "SmoothGenerator"; }   
-//     
-//     template <int fd>
-//     friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
-// 
-//     /**
-//      * Create new generator
-//      */
-//     RectilinearMeshSmoothGenerator(): gradual(true)
-//     {}
-// 
-//     /// Get initial division of the smallest object in the mesh
-//     inline size_t getPreDivision(typename Primitive<DIM>::Direction direction) const {
-//         assert(size_t(direction) <= dim);
-//         return pre_divisions[size_t(direction)];
-//     }
-// 
-//     /// Set initial division of the smallest object in the mesh
-//     inline void setPreDivision(typename Primitive<DIM>::Direction direction, size_t div) {
-//         assert(size_t(direction) <= dim);
-//         pre_divisions[size_t(direction)] = div;
-//         this->fireChanged();
-//     }
-// 
-//     /// Get final division of the smallest object in the mesh
-//     inline size_t getPostDivision(typename Primitive<DIM>::Direction direction) const {
-//         assert(size_t(direction) <= dim);
-//         return post_divisions[size_t(direction)];
-//     }
-// 
-//     /// Set final division of the smallest object in the mesh
-//     inline void setPostDivision(typename Primitive<DIM>::Direction direction, size_t div) {
-//         assert(size_t(direction) <= dim);
-//         post_divisions[size_t(direction)] = div;
-//         this->fireChanged();
-//     }
-// 
-//     /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
-//     bool getGradual() const { return gradual; }
-// 
-//     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
-//     void setGradual(bool value) {
-//         gradual = value;
-//         this->fireChanged();
-//     }
-// };
+/**
+ * Dense-edge genereator that has very dense sampling near edges and gradually gets wider towards the center.
+ */
+template <int dim>
+struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGenerator<dim> {
+
+    typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
+    using MeshGeneratorD<dim>::DIM;
+
+    double finestep[dim];   ///< Small step next to the boundary
+    double factor[dim];     ///< Maximum element increase factor
+
+    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
+
+    virtual const char* name() { return "SmoothGenerator"; }   
+
+    template <int fd>
+    friend shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader&, const Manager&);
+
+    /// Create new generator
+    RectilinearMeshSmoothGenerator();
+
+    /// Get small step next to the boundary
+    inline double getFineStep(typename Primitive<DIM>::Direction direction) const {
+        assert(size_t(direction) <= dim);
+        return finestep[size_t(direction)];
+    }
+
+    /// Set small step next to the boundary
+    inline void setFineStep(typename Primitive<DIM>::Direction direction, double value) {
+        assert(size_t(direction) <= dim);
+        finestep[size_t(direction)] = value;
+        this->fireChanged();
+    }
+
+    /// Get maximum element increase factor
+    inline double getFactor(typename Primitive<DIM>::Direction direction) const {
+        assert(size_t(direction) <= dim);
+        return factor[size_t(direction)];
+    }
+
+    /// Set maximum element increase factor
+    inline void setFactor(typename Primitive<DIM>::Direction direction, double value) {
+        assert(size_t(direction) <= dim);
+        if (value < 1.) throw BadInput("SmoothGenerator", "Increase factor for axis %d cannot be smaller than 1", size_t(direction));
+        factor[size_t(direction)] = value;
+        this->fireChanged();
+    }
+};
 
 } // namespace plask
 

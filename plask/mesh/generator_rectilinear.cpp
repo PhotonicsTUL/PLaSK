@@ -101,102 +101,6 @@ shared_ptr<MeshD<3> > RectilinearMesh3DSimpleGenerator::generate(const shared_pt
     return mesh;
 }
 
-
-template <int dim>
-shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
-{
-    assert(bool(initial_and_result));
-
-    if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
-    if (post_divisions[dir] == 0) post_divisions[dir] = 1;
-
-    OrderedAxis& result = *initial_and_result.get();
-
-    // First add refinement points
-    for (auto ref: this->refinements[dir]) {
-        auto object = ref.first.first.lock();
-        if (!object) {
-             if (this->warn_missing) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object not existing any more");
-        } else {
-            auto path = ref.first.second;
-            auto boxes = geometry->getObjectBoundingBoxes(*object, path);
-            auto origins = geometry->getObjectPositions(*object, path);
-            if (this->warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
-            else if (this->warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
-            auto box = boxes.begin();
-            auto origin = origins.begin();
-            for (; box != boxes.end(); ++box, ++origin) {
-                for (auto x: ref.second) {
-                    double zero = (*origin)[dir];
-                    double lower = box->lower[dir] - zero;
-                    double upper = box->upper[dir] - zero;
-                    if (this->warn_outside && (x < lower || x > upper))
-                        writelog(LOG_WARNING, "DivideGenerator: Refinement at specified at %1% lying at %2% in global coords. is outside of the object (%3% to %4%)",
-                                            x, x+zero, lower+zero, upper+zero);
-                    result.addPoint(zero + x);
-                }
-            }
-        }
-    }
-
-    // Next divide each object
-    double x = *result.begin();
-    std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
-    for (auto i = result.begin()+1; i!= result.end(); ++i) {
-        double w = *i - x;
-        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w*j/pre_divisions[dir]);
-        x = *i;
-    }
-    result.addOrderedPoints(points.begin(), points.end());
-
-    // Now ensure, that the grids do not change to quickly
-    if (result.size() > 2 && gradual) {
-        size_t end = result.size()-2;
-        double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
-        for (size_t i = 0; i <= end;) {
-            bool goon = true;
-            if (w > 2.001*w_prev) { // .0001 is for border case w == 2*w_prev, to avoid division even in presence of numerical error
-                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
-                    ++end;
-                    w = w_next = result[i+1] - result[i];
-                    goon = false;
-                }
-            } else if (w > 2.001*w_next) {
-                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
-                    ++end;
-                    w_next = result[i+1] - result[i];
-                    if (i) {
-                        --i;
-                        w = w_prev;
-                        w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
-                    } else
-                        w = w_next;
-                    goon = false;
-                }
-            }
-            if (goon) {
-                ++i;
-                w_prev = w;
-                w = w_next;
-                w_next = (i == end)? INFINITY : result[i+2] - result[i+1];
-            }
-        }
-    }
-
-    // Finally divide each object in post- division
-    x = *result.begin();
-    points.clear(); points.reserve((post_divisions[dir]-1)*(result.size()-1));
-    for (auto i = result.begin()+1; i!= result.end(); ++i) {
-        double w = *i - x;
-        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w*j/post_divisions[dir]);
-        x = *i;
-    }
-
-    result.addOrderedPoints(points.begin(), points.end());
-
-    return initial_and_result;
-}
-
 template <int dim>
 std::pair<double, double> RectilinearMeshRefinedGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
 {
@@ -219,6 +123,42 @@ void RectilinearMeshRefinedGenerator<dim>::divideLargestSegment(shared_ptr<Order
         if (L > max) { max = L; newpoint = 0.5 * (axis->at(i-1) + axis->at(i)); }
     }
     axis->addPoint(newpoint);
+}
+
+template <int dim>
+shared_ptr<OrderedAxis> RectilinearMeshRefinedGenerator<dim>::getAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+{
+    assert(bool(axis));
+
+    // Add refinement points
+    for (auto ref: this->refinements[dir]) {
+        auto object = ref.first.first.lock();
+        if (!object) {
+             if (this->warn_missing) writelog(LOG_WARNING, "%s: Refinement defined for object not existing any more", name());
+        } else {
+            auto path = ref.first.second;
+            auto boxes = geometry->getObjectBoundingBoxes(*object, path);
+            auto origins = geometry->getObjectPositions(*object, path);
+            if (this->warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
+            else if (this->warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
+            auto box = boxes.begin();
+            auto origin = origins.begin();
+            for (; box != boxes.end(); ++box, ++origin) {
+                for (auto x: ref.second) {
+                    double zero = (*origin)[dir];
+                    double lower = box->lower[dir] - zero;
+                    double upper = box->upper[dir] - zero;
+                    if (this->warn_outside && (x < lower || x > upper))
+                        writelog(LOG_WARNING, "%5%: Refinement at specified at %1% lying at %2% in global coords. is outside of the object (%3% to %4%)",
+                                            x, x+zero, lower+zero, upper+zero, name());
+                    axis->addPoint(zero + x);
+                }
+            }
+        }
+    }
+
+    // Have specialization make further axis processing
+    return processAxis(axis, geometry, dir);
 }
 
 template <> shared_ptr<MeshD<1>>
@@ -287,6 +227,131 @@ RectilinearMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::Geom
     return mesh;
 }
 
+
+template <int dim>
+shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+{
+    assert(bool(axis));
+
+    if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
+    if (post_divisions[dir] == 0) post_divisions[dir] = 1;
+
+    OrderedAxis& result = *axis.get();
+
+    // Pre-divide each object
+    double x = *result.begin();
+    std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
+    for (auto i = result.begin()+1; i!= result.end(); ++i) {
+        double w = *i - x;
+        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w*j/pre_divisions[dir]);
+        x = *i;
+    }
+    result.addOrderedPoints(points.begin(), points.end());
+
+    // Now ensure, that the grids do not change to quickly
+    if (result.size() > 2 && gradual) {
+        size_t end = result.size()-2;
+        double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
+        for (size_t i = 0; i <= end;) {
+            bool goon = true;
+            if (w > 2.001*w_prev) { // .0001 is for border case w == 2*w_prev, to avoid division even in presence of numerical error
+                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
+                    ++end;
+                    w = w_next = result[i+1] - result[i];
+                    goon = false;
+                }
+            } else if (w > 2.001*w_next) {
+                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
+                    ++end;
+                    w_next = result[i+1] - result[i];
+                    if (i) {
+                        --i;
+                        w = w_prev;
+                        w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
+                    } else
+                        w = w_next;
+                    goon = false;
+                }
+            }
+            if (goon) {
+                ++i;
+                w_prev = w;
+                w = w_next;
+                w_next = (i == end)? INFINITY : result[i+2] - result[i+1];
+            }
+        }
+    }
+
+    // Finally divide each object in post- division
+    x = *result.begin();
+    points.clear(); points.reserve((post_divisions[dir]-1)*(result.size()-1));
+    for (auto i = result.begin()+1; i!= result.end(); ++i) {
+        double w = *i - x;
+        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w*j/post_divisions[dir]);
+        x = *i;
+    }
+
+    result.addOrderedPoints(points.begin(), points.end());
+
+    return axis;
+}
+
+
+template<>
+RectilinearMeshSmoothGenerator<1>::RectilinearMeshSmoothGenerator(): finestep {0.005}, factor {1.2} {}
+
+template<>
+RectilinearMeshSmoothGenerator<2>::RectilinearMeshSmoothGenerator(): finestep {0.005, 0.005}, factor {1.2, 1.2} {}
+
+template<>
+RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator(): finestep {0.005, 0.005, 0.005}, factor {1.2, 1.2, 1.2} {}
+
+
+template <int dim>
+shared_ptr<OrderedAxis> RectilinearMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+{
+    // Next divide each object
+    double x = *axis->begin();
+    std::vector<double> points; //points.reserve(...);
+    for (auto i = axis->begin()+1; i!= axis->end(); ++i) {
+        double w = *i - x;
+        if (w+OrderedAxis::MIN_DISTANCE <= finestep[dir])
+            continue;
+        if (factor[dir] == 1.) {
+            double m = ceil(w / finestep[dir]);
+            double d = w / m;
+            for (size_t i = 1, n = size_t(m); i < n; ++i) points.push_back(x + i*d);
+            continue;
+        }
+        double m = ceil(log(0.5*(w-OrderedAxis::MIN_DISTANCE)/finestep[dir]*(factor[dir]-1)+1) / log(factor[dir])); // number of points in one half
+        double end = finestep[dir] * (pow(factor[dir],m)-1) / (factor[dir]-1);
+        double last = finestep[dir] * pow(factor[dir],m-1);
+        bool odd = 2.*end - w >= last;
+        double s;
+        if (odd) {
+            s = finestep[dir] * 0.5*w / (end-0.5*last);
+            m -= 1.;
+        } else {
+            s = finestep[dir] * 0.5*w / end;
+        }
+        double dx = 0.;
+        for (size_t i = 0, n = size_t(m); i < n; ++i) {
+            dx += s; s *= factor[dir];
+            points.push_back(x + dx);
+        }
+        if (odd) { dx += s; points.push_back(x + dx); }
+        for (size_t i = 1, n = size_t(m); i < n; ++i) {
+            s /= factor[dir]; dx += s;
+            points.push_back(x + dx);
+        }
+        x = *i;
+    }
+    axis->addOrderedPoints(points.begin(), points.end());
+
+    return axis;
+}
+
+
 template <int dim>
 void RectilinearMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, const Manager& manager)
 {
@@ -335,6 +400,11 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const M
     return make_shared<GeneratorT>();
 }
 
+static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
+
+
 template <int dim>
 shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, const Manager& manager)
 {
@@ -375,14 +445,55 @@ shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, cons
     return result;
 }
 
-
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
-
 static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("ordered.divide",   readRectilinearDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearDivideGenerator<3>);
+
+
+template <int dim>
+shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, const Manager& manager)
+{
+    auto result = make_shared<RectilinearMeshSmoothGenerator<dim>>();
+
+    std::set<std::string> read;
+    while (reader.requireTagOrEnd()) {
+        if (read.find(reader.getNodeName()) != read.end())
+            throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
+        read.insert(reader.getNodeName());
+        if (reader.getNodeName() == "steps") {
+            boost::optional<double> edge = reader.getAttribute<double>("egde");
+            if (edge) {
+                if (reader.hasAttribute("egde0")) throw XMLConflictingAttributesException(reader, "egde", "egde0");
+                if (reader.hasAttribute("egde1")) throw XMLConflictingAttributesException(reader, "egde", "egde1");
+                if (reader.hasAttribute("egde2")) throw XMLConflictingAttributesException(reader, "egde", "egde2");
+                for (int i = 0; i < dim; ++i) result->finestep[i] = *edge;
+            } else
+                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<size_t>(format("egde%d", i), result->finestep[i]);
+            boost::optional<double> factor = reader.getAttribute<double>("factor");
+            if (factor) {
+                if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
+                if (reader.hasAttribute("factor1")) throw XMLConflictingAttributesException(reader, "factor", "factor1");
+                if (reader.hasAttribute("factor2")) throw XMLConflictingAttributesException(reader, "factor", "factor2");
+                for (int i = 0; i < dim; ++i) result->factor[i] = *factor;
+            } else
+                for (int i = 0; i < dim; ++i) result->factor[i] = reader.getAttribute<size_t>(format("factor%d", i), result->factor[i]);
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "options") {
+            result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));
+            reader.requireTagEnd();
+        } else
+            result->fromXML(reader, manager);
+    }
+    return result;
+}
+
+static RegisterMeshGeneratorReader rectilinear_smoothgenerator_reader  ("ordered.smooth",   readRectilinearSmoothGenerator<1>);
+static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth", readRectilinearSmoothGenerator<2>);
+static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth", readRectilinearSmoothGenerator<3>);
+
+
+
+
 
 
 // OBSOLETE
