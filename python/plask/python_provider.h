@@ -609,7 +609,7 @@ struct RegisterScaledProvider {
 };
 
 
-PLASK_PYTHON_API template <PropertyType propertyType> const char* docstring_provider();
+template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_provider();
 
 namespace detail {
 
