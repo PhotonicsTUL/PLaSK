@@ -30,7 +30,7 @@ void register_standard_properties_builtin_potential();
 void register_standard_properties_quasi_Fermi_electron_level();
 void register_standard_properties_quasi_Fermi_hole_level();
 
-const char* docstring_receiver =
+PLASK_PYTHON_API const char* docstring_receiver =
     "%1%Receiver%2%()\n\n"
 
     "Receiver of the %3%%4% [%5%].\n\n"
@@ -49,7 +49,7 @@ const char* docstring_receiver =
     "   Provider of %3%: :class:`plask.flow.%1%Provider%2%`\n\n"
     "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 
-const char* docstring_receiver_connect =
+PLASK_PYTHON_API const char* docstring_receiver_connect =
     "Connect some provider to the receiver.\n\n"
 
     "Example:\n"
@@ -61,7 +61,7 @@ const char* docstring_receiver_connect =
 
     "   >>> solver.in%1% = other_solver.out%1%\n";
 
-const char* docstring_receiver_assign =
+PLASK_PYTHON_API const char* docstring_receiver_assign =
     "Assign constant value to the receiver.\n\n"
 
     "The receiver will always serve this value to the solver regardless of the\n"

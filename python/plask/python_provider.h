@@ -81,9 +81,9 @@ struct DataVectorWrap : public DataVector<T> {
 
 // ---------- Receiver ------------
 
-extern const char* docstring_receiver;
-extern const char* docstring_receiver_connect;
-extern const char* docstring_receiver_assign;
+extern PLASK_PYTHON_API const char* docstring_receiver;
+extern PLASK_PYTHON_API const char* docstring_receiver_connect;
+extern PLASK_PYTHON_API const char* docstring_receiver_assign;
 
 template <typename ProviderT, PropertyType propertyType, typename ParamsT>
 struct PythonProviderFor;
