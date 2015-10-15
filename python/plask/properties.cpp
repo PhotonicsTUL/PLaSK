@@ -261,7 +261,7 @@ template PLASK_PYTHON_API const char* docstring_provider<FIELD_PROPERTY>();
 template PLASK_PYTHON_API const char* docstring_provider<MULTI_FIELD_PROPERTY>();
 
 
-py::object flow_module;
+PLASK_PYTHON_API py::object flow_module;
 
 /**
  * Register standard properties to Python.

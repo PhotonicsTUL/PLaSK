@@ -9,7 +9,7 @@
 
 namespace plask { namespace python {
 
-extern py::object flow_module;
+extern PLASK_PYTHON_API py::object flow_module;
 
 namespace detail {
 

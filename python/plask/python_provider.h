@@ -43,7 +43,7 @@ namespace plask { namespace python {
 
 namespace plask { namespace python {
 
-extern py::object flow_module;
+extern PLASK_PYTHON_API py::object flow_module;
 
 template <typename T, int dim>
 struct DataVectorWrap : public DataVector<T> {
