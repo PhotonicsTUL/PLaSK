@@ -304,11 +304,11 @@ class GNodeController(Controller):
     def select_info(self, info):
         prop = getattr(info, "property")
         if isinstance(prop, basestring):
-            idx = getattr(info, "index")
-            if idx is None:
-                getattr(self, prop).setFocus()
-            else:
-                getattr(self, prop)[idx].setFocus()
+            widget = getattr(self, prop)
+            indexes = getattr(info, "indexes")
+            if indexes is not None:
+                for i in indexes: widget = widget[i]
+            widget.setFocus()
 
 
 class GNChildController(GNodeController):

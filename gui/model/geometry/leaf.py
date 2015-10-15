@@ -127,7 +127,7 @@ class GNBlock(GNLeaf):
 
     def create_info(self, res, names):
         super(GNBlock, self).create_info(res, names)
-        if None in self.size: self._require(res, 'size', index=self.size.index(None))
+        if None in self.size: self._require(res, 'size', indexes=(self.size.index(None),))
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -270,7 +270,8 @@ class GNTriangle(GNLeaf):
 
     def create_info(self, res, names):
         super(GNTriangle, self).create_info(res, names)
-        if None in self.points[0] or None in self.points[1]: self._require(res, 'points')
+        if None in self.points[0]: self._require(res, 'points', 'coordinate of first point', indexes=(0, self.points[0].index(None)))
+        if None in self.points[1]: self._require(res, 'points', 'coordinate of second point', indexes=(1, self.points[1].index(None)))
 
     @staticmethod
     def from_xml_2d(element, conf):
