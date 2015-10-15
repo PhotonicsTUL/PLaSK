@@ -76,7 +76,7 @@ class GNTranslation(GNTransform):
 
     def create_info(self, res, names):
         super(GNTranslation, self).create_info(res, names)
-        if None in self.vector: self._require(res, 'vector')
+        if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -184,7 +184,7 @@ class GNAxisBaseTransform(GNTransform):
 
     def create_info(self, res, names):
         super(GNAxisBaseTransform, self).create_info(res, names)
-        if None in self.vector: self._require(res, 'axis')
+        if not self.axis: self._require(res, 'axis')
 
     def major_properties(self):
         res = super(GNAxisBaseTransform, self).major_properties()
@@ -458,7 +458,10 @@ class GNLattice(GNTransform):
 
     def create_info(self, res, names):
         super(GNLattice, self).create_info(res, names)
-        if None in self.vectors[0] or None in self.vectors[1] or None in self.vectors[1]: self._require(res, 'basis vectors')
+        for vec_idx in range(0, 2):
+            if None in self.vectors[vec_idx]:
+                self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
+                              indexes=(vec_idx, self.vectors[vec_idx].index(None)))
 
     @staticmethod
     def from_xml_3d(element, conf):

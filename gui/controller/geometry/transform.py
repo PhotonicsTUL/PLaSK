@@ -161,13 +161,13 @@ class GNLatticeController(GNObjectController):
                                  u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
                                  u'Each vertex consists of two space-separated integers.')
         self.construct_group('Lattice vectors')
-        self.v0 = self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec))
-        self.v1 = self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec))
+        self.vectors = (self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec)),
+                        self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec)))
         super(GNLatticeController, self).construct_form()
 
     def fill_form(self):
         super(GNLatticeController, self).fill_form()
         for i in range(0, self.node.dim):
-            self.v0[i].setText(none_to_empty(self.node.vectors[0][i]))
-            self.v1[i].setText(none_to_empty(self.node.vectors[1][i]))
+            self.vectors[0][i].setText(none_to_empty(self.node.vectors[0][i]))
+            self.vectors[1][i].setText(none_to_empty(self.node.vectors[1][i]))
         self.segments.setPlainText(none_to_empty(self.node.segments))

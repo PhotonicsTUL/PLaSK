@@ -45,6 +45,13 @@ class GNGapController(GNodeController):
         with BlockQtSignals(self.gap_type):
             self.gap_type.setCurrentIndex(1 if self.node.size_is_total else 0)
             self.gap_value.setText(none_to_empty(self.node.size))
+
+    def select_info(self, info):
+        prop = getattr(info, 'property')
+        if prop == 'size':
+            self.gap_value.setFocus()
+        else:
+            super(GNGapController, self).select_info(info)
             
 
 class GNShelfController(GNObjectController):
