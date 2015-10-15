@@ -134,7 +134,7 @@ class GNCReplace(GNCopyChild):
         super(GNCReplace, self).create_info(res, names)
         if (1 if self.replacer else 0) + len(self.children) != 1:
             self._append_info(res, 'Exactly one: "with" attribute or child must be given in {}.'.format(self.tag_name()),
-                              Info.ERROR)
+                              Info.ERROR, property='replacer')
 
     def major_properties(self):
         res = super(GNCReplace, self).major_properties()
