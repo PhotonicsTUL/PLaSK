@@ -72,6 +72,16 @@ class GNLeafController(GNObjectController):
                                   u'Minimum step size if the object is non-uniform.'
                                   .format(self.node.tag_name(False)))
 
+    def select_info(self, info):
+        prop = getattr(info, 'property')
+        if prop == 'material':
+            self.material_selection_type.setFocus()
+        elif prop in ('material_shape', 'material_bottom', 'material_top'):
+            self.material_selection_type.setCurrentIndex(1)
+            getattr(self, prop).setFocus()
+        else:
+            super(GNLeafController, self).select_info(info)
+
     def _material_type_changed(self):
         if self.material_selection_type.currentIndex() == 1:
             with BlockQtSignals(self.material_bottom, self.material_top):

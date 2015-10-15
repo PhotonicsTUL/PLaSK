@@ -78,7 +78,11 @@ class GNLeaf(GNObject):
     def create_info(self, res, names):
         super(GNLeaf, self).create_info(res, names)
         if not self.material_bottom or not self.material_top:
-            self._require(res, 'material_bottom' if not self.material_bottom else 'material_top', 'material')
+            if not self.material_bottom and not self.material_top:
+                self._require(res, 'material')
+            else:
+                what = 'material_bottom' if not self.material_bottom else 'material_top'
+                self._require(res, what, what.replace('_', ' '))
 
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNLeafController

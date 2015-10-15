@@ -136,7 +136,7 @@ class GeometryController(Controller):
         except Exception as e:
             self.status_bar.showMessage(str(e))
             palette = self.status_bar.palette()
-            palette.setColor(QtGui.QPalette.Background, '#ff8888')
+            palette.setColor(QtGui.QPalette.Background, QtGui.QColor('#ff8888'))
             self.status_bar.setPalette(palette)
             self.status_bar.setAutoFillBackground(True)
             from ... import _DEBUG

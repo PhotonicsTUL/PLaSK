@@ -236,13 +236,12 @@ class GNodeController(Controller):
         return hbox, group
 
     def construct_point_controllers(self, row_name=None, dim=None, change_cb=None):
-        '''
-
+        """
         :param row_name:
         :param int dim: number of dims. (self.node.dim by default)
         :param change_cb: callable to which point as tuple will be given as argument
         :return:
-        '''
+        """
         if dim is None: dim = self.node.dim
         hbox, group = self._construct_hbox(row_name)
         res = tuple(self.construct_line_edit() for _ in range(0, dim))
@@ -305,7 +304,7 @@ class GNodeController(Controller):
     def select_info(self, info):
         if isinstance(getattr(info, "widget"), basestring):
             getattr(self, info.widget).setFocus()
-        if isinstance(getattr(info, "property"), basestring):
+        elif isinstance(getattr(info, "property"), basestring):
             getattr(self, info.property).setFocus()
         #TODO support in models, set special attribute "widget" in info with the name of widget
 
