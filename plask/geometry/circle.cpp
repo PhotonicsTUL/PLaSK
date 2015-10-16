@@ -1,5 +1,6 @@
 #include "circle.h"
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -42,7 +43,8 @@ bool Circle<dim>::isUniform(plask::Primitive<3>::Direction direction) const {
 
 template <int dim>
 shared_ptr<GeometryObject> read_circle(GeometryReader& reader) {
-    shared_ptr< Circle<dim> > circle = make_shared<Circle<dim>>(reader.source.requireAttribute<double>("radius"));
+    shared_ptr< Circle<dim> > circle = make_shared<Circle<dim>>(
+        reader.manager.draft ? reader.source.getAttribute("radius", 0.0) : reader.source.requireAttribute<double>("radius"));
     circle->readMaterial(reader);
     reader.source.requireTagEnd();
     return circle;

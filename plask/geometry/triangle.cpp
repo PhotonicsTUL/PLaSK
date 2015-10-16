@@ -1,6 +1,8 @@
 #include "triangle.h"
 #include "reader.h"
 
+#include "../manager.h"
+
 namespace plask {
 
 std::string Triangle::getTypeName() const {
@@ -58,10 +60,17 @@ bool Triangle::isUniform(Primitive<3>::Direction direction) const {
 
 shared_ptr<GeometryObject> read_triangle(GeometryReader& reader) {
     shared_ptr< Triangle > triangle(new Triangle());
-    triangle->p0.tran() = reader.source.requireAttribute<double>("a" + reader.getAxisTranName());
-    triangle->p0.vert() = reader.source.requireAttribute<double>("a" + reader.getAxisVertName());
-    triangle->p1.tran() = reader.source.requireAttribute<double>("b" + reader.getAxisTranName());
-    triangle->p1.vert() = reader.source.requireAttribute<double>("b" + reader.getAxisVertName());
+    if (reader.manager.draft) {
+        triangle->p0.tran() = reader.source.getAttribute("a" + reader.getAxisTranName(), 0.0);
+        triangle->p0.vert() = reader.source.getAttribute("a" + reader.getAxisVertName(), 0.0);
+        triangle->p1.tran() = reader.source.getAttribute("b" + reader.getAxisTranName(), 0.0);
+        triangle->p1.vert() = reader.source.getAttribute("b" + reader.getAxisVertName(), 0.0);
+    } else {
+        triangle->p0.tran() = reader.source.requireAttribute<double>("a" + reader.getAxisTranName());
+        triangle->p0.vert() = reader.source.requireAttribute<double>("a" + reader.getAxisVertName());
+        triangle->p1.tran() = reader.source.requireAttribute<double>("b" + reader.getAxisTranName());
+        triangle->p1.vert() = reader.source.requireAttribute<double>("b" + reader.getAxisVertName());
+    }
     triangle->readMaterial(reader);
     reader.source.requireTagEnd();
     return triangle;

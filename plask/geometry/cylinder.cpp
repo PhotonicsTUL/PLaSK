@@ -1,5 +1,6 @@
 #include "cylinder.h"
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -37,8 +38,8 @@ bool Cylinder::isUniform(Primitive<3>::Direction direction) const {
 
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
     shared_ptr<Cylinder> result(new Cylinder(
-                                    reader.source.requireAttribute<double>("radius"),
-                                    reader.source.requireAttribute<double>("height")
+                                    reader.manager.draft ? reader.source.getAttribute("radius", 0.0) : reader.source.requireAttribute<double>("radius"),
+                                    reader.manager.draft ? reader.source.getAttribute("height", 0.0) : reader.source.requireAttribute<double>("height")
                          ));
     result->readMaterial(reader);
     reader.source.requireTagEnd();

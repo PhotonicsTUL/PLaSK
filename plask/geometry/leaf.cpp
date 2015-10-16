@@ -1,5 +1,6 @@
 #include "leaf.h"
 #include "reader.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -108,7 +109,12 @@ inline static double readAlternativeAttrs(GeometryReader& reader, const std::str
         if (*value1 < 0.) throw XMLBadAttrException(reader.source, attr1, boost::lexical_cast<std::string>(*value1));
         return *value1;
     } else {
-        if (!value2) throw XMLNoAttrException(reader.source, format("%1%' or '%2%", attr1, attr2));
+        if (!value2) {
+            if (reader.manager.draft)
+                return 0.0;
+            else
+                throw XMLNoAttrException(reader.source, format("%1%' or '%2%", attr1, attr2));
+        }
         if (*value2 < 0.) throw XMLBadAttrException(reader.source, attr2, boost::lexical_cast<std::string>(*value2));
         return *value2;
     }

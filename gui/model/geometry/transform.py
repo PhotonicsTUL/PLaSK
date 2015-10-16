@@ -437,7 +437,7 @@ class GNLattice(GNTransform):
         for vector_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
                 v = self.vectors[vector_nr][axis_nr]
-                element.attrib[('a', 'b')[vector_nr] + axis_names[axis_nr]] = v if v is not None else '00'
+                if v is not None: element.attrib[('a', 'b')[vector_nr] + axis_names[axis_nr]] = v
 
     def tag_name(self, full_name=True):
         return "lattice"
