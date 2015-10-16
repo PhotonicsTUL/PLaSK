@@ -14,10 +14,9 @@ from lxml.etree import Element, SubElement
 
 from ...qt import QtCore
 from ..table import TableModelEditMethods
-from ...utils.xml import require_no_children, UnorderedTagReader
+from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
 from .mesh_rectilinear import AXIS_NAMES
-from utils.xml import AttributeReader
 
 
 class RefinementConf(object):
