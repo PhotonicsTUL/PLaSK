@@ -27,6 +27,9 @@
     <axis0 start="0" stop="{dxLay}" num="{nx}"></axis0>
     <axis1 start="0" stop="{2.*dyLay}" num="{ny}"></axis1>
   </mesh>
+  <generator method="smooth" name="generator" type="rectangular2d">
+    <steps small1="0.0002" factor1="1.2"/>
+  </generator>
 </grids>
 
 <script><![CDATA[
@@ -67,6 +70,10 @@ bottom = 0.
 # linie do wykresow 1D
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 2000)
+
+plot_geometry(GEO.main, margin=0.01)
+plot_mesh(MSG.generator(GEO.main))
+show()
 
 DDM2D.compute_initial_potential(1);
 
@@ -113,9 +120,6 @@ while (U <= 0.02):
 
 print_log(LOG_INFO, "Calculations done!")
 
-import sys
-sys.exit(0)
-
 # to bedzie rysowane
 potential_rz = DDM2D.outPotential(DDM2D.mesh)
 potential_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
@@ -142,11 +146,11 @@ ylabel("energy (eV)")
 xlim(z[0], z[-1])
 gcf().canvas.set_window_title("Energy along the laser axis")
 
-# zapis do pliku
-out_txt = open("Vz.txt", 'w')
-for i in range(len(z)):
-         out_txt.write("%.6f     %.6f\n" % (z[i], potential_z[i]))
-out_txt.close()
+# # zapis do pliku
+# out_txt = open("Vz.txt", 'w')
+# for i in range(len(z)):
+#          out_txt.write("%.6f     %.6f\n" % (z[i], potential_z[i]))
+# out_txt.close()
 
 show()
 

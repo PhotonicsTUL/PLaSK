@@ -468,7 +468,7 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("small2")) throw XMLConflictingAttributesException(reader, "small", "small2");
                 for (int i = 0; i < dim; ++i) result->finestep[i] = *edge;
             } else
-                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<size_t>(format("small%d", i), result->finestep[i]);
+                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small%d", i), result->finestep[i]);
             boost::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
@@ -476,7 +476,7 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("factor2")) throw XMLConflictingAttributesException(reader, "factor", "factor2");
                 for (int i = 0; i < dim; ++i) result->factor[i] = *factor;
             } else
-                for (int i = 0; i < dim; ++i) result->factor[i] = reader.getAttribute<size_t>(format("factor%d", i), result->factor[i]);
+                for (int i = 0; i < dim; ++i) result->factor[i] = reader.getAttribute<double>(format("factor%d", i), result->factor[i]);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "options") {
             result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));
