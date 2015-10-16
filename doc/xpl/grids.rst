@@ -228,7 +228,7 @@ Possible <generator> contents for different types and methods
 
          Parametrs specifying element size.
 
-         :attr edge: Maximum size of the elements near objects edges.
+         :attr small: Maximum size of the smallest elements near objects edges.
 
          :attr factor: Factor by which sizes of elements increase towards objects centers.
 
@@ -353,7 +353,7 @@ Possible <generator> contents for different types and methods
 
          Parameters specifying element size.
 
-         :attr edge: Maximum size of the elements near objects edges.
+         :attr small: Maximum size of the smallest elements near objects edges.
 
          :attr factor: Factor by which sizes of elements increase towards objects centers.
 
@@ -480,7 +480,7 @@ Possible <generator> contents for different types and methods
 
          Parameters specifying element size.
 
-         :attr edge: Maximum size of the elements near objects edges.
+         :attr small: Maximum size of the smallest elements near objects edges.
 
          :attr factor: Factor by which sizes of elements increase towards objects centers.
 
@@ -531,7 +531,7 @@ Possible <generator> contents for different types and methods
 
          Parameters specifying element size.
 
-         :attr edge: Maximum size of the elements near objects edges.
+         :attr small: Maximum size of the smallest elements near objects edges.
 
          :attr factor: Factor by which sizes of elements increase towards objects centers.
 

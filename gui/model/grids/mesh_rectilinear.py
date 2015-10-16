@@ -71,8 +71,8 @@ class RectangularMesh1D(Grid):
         with OrderedTagReader(element) as r: self.axis.set_from_xml(r.get('axis'))
 
     def get_controller(self, document):
-        from ...controller.grids.mesh_rectilinear import RectangularMesh1DConroller
-        return RectangularMesh1DConroller(document=document, model=self)
+        from ...controller.grids.mesh_rectilinear import RectangularMesh1DController
+        return RectangularMesh1DController(document=document, model=self)
 
 
 class RectangularMesh(Grid):
@@ -106,5 +106,5 @@ class RectangularMesh(Grid):
                 self.axis[i].set_from_xml(r.get(RectangularMesh.axis_tag_name(i)))
 
     def get_controller(self, document):
-        from ...controller.grids.mesh_rectilinear import RectangularMeshConroller
-        return RectangularMeshConroller(document=document, model=self)
+        from ...controller.grids.mesh_rectilinear import RectangularMeshController
+        return RectangularMeshController(document=document, model=self)

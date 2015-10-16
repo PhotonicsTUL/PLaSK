@@ -100,10 +100,10 @@ class AxisEdit(QtGui.QGroupBox):
             if widget: widget.setText('' if a is None else a)
 
 
-class RectangularMesh1DConroller(Controller):
+class RectangularMesh1DController(Controller):
     """1D rectangular mesh (ordered or regular) script"""
     def __init__(self, document, model):
-        super(RectangularMesh1DConroller, self).__init__(document=document, model=model)
+        super(RectangularMesh1DController, self).__init__(document=document, model=model)
         self.editor = AxisEdit(None, self, allow_type_select=False, accept_non_regular=not model.is_regular)
 
     def save_data_in_model(self):
@@ -119,11 +119,11 @@ class RectangularMesh1DConroller(Controller):
         return self.editor
 
 
-class RectangularMeshConroller(Controller):
+class RectangularMeshController(Controller):
     """2D and 3D rectangular mesh script"""
 
     def __init__(self, document, model):
-        super(RectangularMeshConroller, self).__init__(document=document, model=model)
+        super(RectangularMeshController, self).__init__(document=document, model=model)
         self.form = QtGui.QGroupBox()
         vbox = QtGui.QVBoxLayout()
         self.axis_edit = []

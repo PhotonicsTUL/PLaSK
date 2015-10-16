@@ -461,14 +461,14 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
-            boost::optional<double> edge = reader.getAttribute<double>("egde");
+            boost::optional<double> edge = reader.getAttribute<double>("small");
             if (edge) {
-                if (reader.hasAttribute("egde0")) throw XMLConflictingAttributesException(reader, "egde", "egde0");
-                if (reader.hasAttribute("egde1")) throw XMLConflictingAttributesException(reader, "egde", "egde1");
-                if (reader.hasAttribute("egde2")) throw XMLConflictingAttributesException(reader, "egde", "egde2");
+                if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
+                if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");
+                if (reader.hasAttribute("small2")) throw XMLConflictingAttributesException(reader, "small", "small2");
                 for (int i = 0; i < dim; ++i) result->finestep[i] = *edge;
             } else
-                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<size_t>(format("egde%d", i), result->finestep[i]);
+                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<size_t>(format("small%d", i), result->finestep[i]);
             boost::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");

@@ -11,12 +11,14 @@
 # GNU General Public License for more details.
 
 from lxml.etree import Element, SubElement
+
 from ...qt import QtCore
 from ..table import TableModelEditMethods
-
-from ...utils.xml import AttributeReader, require_no_children, UnorderedTagReader
+from ...utils.xml import require_no_children, UnorderedTagReader
 from . import Grid
 from .mesh_rectilinear import AXIS_NAMES
+from utils.xml import AttributeReader
+
 
 class RefinementConf(object):
     """Store refinement configuration of rectilinear generator"""
@@ -131,10 +133,71 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
         return self.generator.undo_stack
 
 
-class RectilinearDivideGenerator(Grid):
-    """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
+class RectilinearRefinedGenerator(Grid):
 
     warnings = ('missing', 'multiple', 'outside')
+
+    def __init__(self, grids_model, name, type, method, aspect=None, refinements=None,
+                 warn_missing=None, warn_multiple=None, warn_outside=None):
+
+        super(RectilinearRefinedGenerator, self).__init__(grids_model, name, type, method)
+        self.aspect = aspect
+        self.refinements = Refinements(self, refinements)
+        self.warn_missing = warn_missing
+        self.warn_multiple = warn_multiple
+        self.warn_outside = warn_outside
+
+    @property
+    def dim(self):
+        return 1 if self.type == 'ordered' else int(self.type[-2])
+
+    def get_xml_common(self, res, options=None):
+        if options is None:
+            options = {}
+        if self.aspect:
+            options['aspect'] = self.aspect
+        if options:
+            SubElement(res, "options", attrib=options)
+        if len(self.refinements.entries) > 0:
+            refinements_element = SubElement(res, 'refinements')
+            for r in self.refinements.entries:
+                refinements_element.append(r.get_xml_element())
+        warnings_el = Element('warnings')
+        for w in RectilinearDivideGenerator.warnings:
+            v = getattr(self, 'warn_' + w, None)
+            if v is not None and v != '': warnings_el.attrib[w] = v
+        if warnings_el.attrib: res.append(warnings_el)
+
+    def set_xml_common(self, res, *opts):
+        options = res.find('options')
+        if options is not None:
+            with AttributeReader(options) as a:
+                self.aspect = a.get('aspect', None)
+                for opt in opts:
+                    setattr(self, opt, a.get(opt, None))
+        else:
+            self.aspect = None
+            for opt in opts:
+                setattr(self, opt, None)
+        self.refinements.entries = []
+        refinements_element = res.find('refinements')
+        if refinements_element is not None:
+            for ref_el in refinements_element:
+                to_append = RefinementConf()
+                to_append.set_from_xml(ref_el)
+                self.refinements.entries.append(to_append)
+        warnings_element = res.find('warnings')
+        if warnings_element is None:
+            for w in RectilinearDivideGenerator.warnings:
+                setattr(self, 'warn_' + w, None)
+        else:
+            with AttributeReader(warnings_element) as a:
+                for w in RectilinearDivideGenerator.warnings:
+                    setattr(self, 'warn_' + w, a.get(w, None))
+
+
+class RectilinearDivideGenerator(RectilinearRefinedGenerator):
+    """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
 
     @staticmethod
     def from_xml(grids_model, element):
@@ -143,33 +206,13 @@ class RectilinearDivideGenerator(Grid):
         return e
 
     def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
-                 warning_missing=None, warning_multiple=None, warning_outside=None):
-        '''
-        :param GridsModel grids_model: grids model
-        :param str name:
-        :param type:
-        :param gradual:
-        :param aspect:
-        :param prediv:
-        :param postdiv:
-        :param refinements:
-        :param warning_missing:
-        :param warning_multiple:
-        :param warning_outside:
-        '''
-        super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide')
+                 warn_missing=None, warn_multiple=None, warn_outside=None):
+
+        super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
+                                                         refinements, warn_missing, warn_multiple, warn_outside)
         self.gradual = gradual
-        self.aspect = aspect
         self.prediv = prediv
         self.postdiv = postdiv
-        self.refinements = Refinements(self, refinements)
-        self.warning_missing = warning_missing
-        self.warning_multiple = warning_multiple
-        self.warning_outside = warning_outside
-
-    @property
-    def dim(self):
-        return 1 if self.type == 'ordered' else int(self.type[-2])
 
     def _append_div_xml_element(self, div_name, dst):
         div = getattr(self, div_name)
@@ -189,21 +232,9 @@ class RectilinearDivideGenerator(Grid):
         options = {}
         if self.gradual is not None:
             options['gradual'] = self.gradual
-        if self.aspect:
-            options['aspect'] = self.aspect
-        if options:
-            SubElement(res, "options", attrib=options)
         self._append_div_xml_element('prediv', res)
         self._append_div_xml_element('postdiv', res)
-        if len(self.refinements.entries) > 0:
-            refinements_element = SubElement(res, 'refinements')
-            for r in self.refinements.entries:
-                refinements_element.append(r.get_xml_element())
-        warnings_el = Element('warnings')
-        for w in RectilinearDivideGenerator.warnings:
-            v = getattr(self, 'warning_'+w, None)
-            if v is not None and v != '': warnings_el.attrib[w] = v
-        if warnings_el.attrib: res.append(warnings_el)
+        self.get_xml_common(res, options)
         return res
 
     def _div_from_xml(self, div_name, src):
@@ -220,31 +251,10 @@ class RectilinearDivideGenerator(Grid):
 
     def set_xml_element(self, element):
         super(RectilinearDivideGenerator, self).set_xml_element(element)
-        with UnorderedTagReader(element) as r:
-            options = r.find('options')
-            if options is not None:
-                with AttributeReader(options) as a:
-                    self.gradual = a.get('gradual', None)
-                    self.aspect = a.get('aspect', None)
-            else:
-                self.gradual = self.aspect = None
-            self._div_from_xml('prediv', r)
-            self._div_from_xml('postdiv', r)
-            self.refinements.entries = []
-            refinements_element = r.find('refinements')
-            if refinements_element is not None:
-                for ref_el in refinements_element:
-                    to_append = RefinementConf()
-                    to_append.set_from_xml(ref_el)
-                    self.refinements.entries.append(to_append)
-            warnings_element = r.find('warnings')
-            if warnings_element is None:
-                for w in RectilinearDivideGenerator.warnings:
-                    setattr(self, 'warning_' + w, None)
-            else:
-                with AttributeReader(warnings_element) as a:
-                    for w in RectilinearDivideGenerator.warnings:
-                        setattr(self, 'warning_' + w, a.get(w, None))
+        with UnorderedTagReader(element) as res:
+            self._div_from_xml('prediv', res)
+            self._div_from_xml('postdiv', res)
+            self.set_xml_common(res, 'gradual')
 
     def _set_div(self, attr_name, div_tab):
         if div_tab is None or div_tab.count(None) == self.dim:
@@ -265,5 +275,89 @@ class RectilinearDivideGenerator(Grid):
         self._set_div('postdiv', postdiv_tab)
 
     def get_controller(self, document):
-        from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorConroller
-        return RectilinearDivideGeneratorConroller(document=document, model=self)
+        from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorController
+        return RectilinearDivideGeneratorController(document=document, model=self)
+
+
+class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
+    """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
+
+    @staticmethod
+    def from_xml(grids_model, element):
+        e = RectilinearSmoothGenerator(grids_model, element.attrib['name'], element.attrib['type'])
+        e.set_xml_element(element)
+        return e
+
+    def __init__(self, grids_model, name, type, aspect=None, small=None, factor=None, refinements=None,
+                 warn_missing=None, warn_multiple=None, warn_outside=None):
+
+        super(RectilinearSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
+                                                         refinements, warn_missing, warn_multiple, warn_outside)
+        self.small = small
+        self.factor = factor
+
+    @property
+    def dim(self):
+        return 1 if self.type == 'ordered' else int(self.type[-2])
+
+    def _set_steps_attribute(self, attr, element):
+        value = getattr(self, attr)
+        if value is None: return
+        if value[0] is not None and value.count(value[0]) == self.dim:
+            element.attrib[attr] = value[0]
+        else:
+            for i in range(0, self.dim):
+                if value[i] is not None:
+                    element.attrib[attr + str(i)] = value[i]
+
+    def get_xml_element(self):
+        res = super(RectilinearSmoothGenerator, self).get_xml_element()
+        if self.small is not None or self.factor is not None:
+            steps = SubElement(res, 'steps')
+            self._set_steps_attribute('small', steps)
+            self._set_steps_attribute('factor', steps)
+        self.get_xml_common(res)
+        return res
+
+    def _steps_from_xml(self, name, reader):
+        val = reader.get(name)
+        if val is not None:
+            setattr(self, name, self.dim * (val,))
+        else:
+            value = tuple(reader.get(name + str(i)) for i in range(0, self.dim))
+            if value == self.dim * (None,): value = None
+            setattr(self, name, value)
+
+    def set_xml_element(self, element):
+        super(RectilinearSmoothGenerator, self).set_xml_element(element)
+        with UnorderedTagReader(element) as res:
+            self.set_xml_common(res, 'gradual')
+            steps = res.find('steps')
+            if steps is None:
+                self.small = self.factor = None
+            else:
+                with AttributeReader(steps) as a:
+                    self._steps_from_xml('small', a)
+                    self._steps_from_xml('factor', a)
+
+    def _set_step(self, name, tab):
+        if tab is None or tab.count(None) == self.dim:
+            setattr(self, name, None)
+        else:
+            setattr(self, name, tab)
+
+    def get_small(self, index):
+        return None if self.small is None else self.small[index]
+
+    def set_small(self, small):
+        self._set_step('small', small)
+
+    def get_factor(self, index):
+        return None if self.factor is None else self.factor[index]
+
+    def set_factor(self, factor):
+        self._set_step('factor', factor)
+
+    def get_controller(self, document):
+        from ...controller.grids.generator_rectilinear import RectilinearSmoothGeneratorController
+        return RectilinearSmoothGeneratorController(document=document, model=self)

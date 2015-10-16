@@ -278,20 +278,20 @@ class SmoothGenerator(unittest.TestCase):
         self.geometry = plask.geometry.Cartesian2D(self.rect)
         self.generator = plask.mesh.Rectangular2D.SmoothGenerator()
         self.generator.factor = 2., 2.
-        self.generator.edge = 2., 2.
+        self.generator.small = 2., 2.
 
     def testExact(self):
-        self.generator.edge[0] = 2.
+        self.generator.small[0] = 2.
         msh = self.generator(self.geometry)
         self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
 
     def testEven(self):
-        self.generator.edge[0] = 2.5
+        self.generator.small[0] = 2.5
         msh = self.generator(self.geometry)
         self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
 
     def testOdd(self):
         self.rect.width = 44.
-        self.generator.edge[0] = 2.1
+        self.generator.small[0] = 2.1
         msh = self.generator(self.geometry)
         self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 30., 38., 42., 44.] )

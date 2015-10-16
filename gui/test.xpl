@@ -131,13 +131,16 @@
     <axis start="0" stop="{mesaRadius}" num="2000"></axis>
   </mesh>
   <generator method="divide" name="optical" type="rectangular2d">
-    <options aspect="100" gradual="no"/>
     <prediv by0="10" by1="3"/>
+    <options aspect="100" gradual="no"/>
   </generator>
   <mesh name="plots" type="rectangular2d">
     <axis0></axis0>
     <axis1></axis1>
   </mesh>
+  <generator method="smooth" name="sss" type="rectangular3d">
+    <steps small="0.005" factor="1.2"/>
+  </generator>
 </grids>
 
 <solvers>

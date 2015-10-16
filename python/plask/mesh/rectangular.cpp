@@ -771,13 +771,13 @@ void register_smooth_generator() {
             "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
             register_refined_generator_base<dim>(dividecls); dividecls
             .def("__init__", py::make_constructor(&RectilinearMeshSmoothGenerator__init__<dim>, py::default_call_policies(),
-                 (py::arg("edge")=py::object(), py::arg("factor")=py::object(), py::arg("aspect")=0,
+                 (py::arg("small")=py::object(), py::arg("factor")=py::object(), py::arg("aspect")=0,
                   py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))
         ;
     py::implicitly_convertible<shared_ptr<RectilinearMeshSmoothGenerator<dim>>, shared_ptr<const RectilinearMeshSmoothGenerator<dim>>>();
 
         if (dim != 1) dividecls
-            .add_property("edge",
+            .add_property("small",
                         py::make_function(&detail::SmoothGeneratorDivMethods<dim>::getEdge, py::with_custodian_and_ward_postcall<0,1>()),
                         &detail::SmoothGeneratorDivMethods<dim>::setEdge,
                         "initial division of all geometry objects")
@@ -786,7 +786,7 @@ void register_smooth_generator() {
                         &detail::SmoothGeneratorDivMethods<dim>::setFactor,
                         "final division of all geometry objects")
         ; else dividecls
-            .add_property("edge",
+            .add_property("small",
                         &detail::SmoothGeneratorDivMethods<dim>::getEdge,
                         &detail::SmoothGeneratorDivMethods<dim>::setEdge,
                         "initial division of all geometry objects")
