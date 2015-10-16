@@ -460,15 +460,20 @@ struct PositionValidator {
     template <typename VectorType>
     bool compare_vec(std::vector<VectorType> v1, std::vector<VectorType> v2) {
         if (v1.empty() || v2.empty()) return true;
+        std::sort(v1.begin(), v1.end());
         std::sort(v2.begin(), v2.end());
         if (v1.size() == v2.size()) {
-            std::sort(v1.begin(), v1.end());
             return std::equal(v1.begin(), v1.end(), v2.begin(),
-                              [](const VectorType& x1, const VectorType& x2) { return x1.equal(x2, 1e-11); });
+                              [](const VectorType& x1, const VectorType& x2) { return x1.equal(x2, 1e-10); });
+        }   //different sizes:
+        auto v2_last_match_it = v2.begin();
+        for (VectorType point: v1) {
+            while (v2_last_match_it < v2.end()) {
+                if (point.equal(*v2_last_match_it, 1e-10)) return true; //common point
+                if (point < *v2_last_match_it) break;   //point is not included in v2, we are going to check next point from v1
+                ++v2_last_match_it;
+            }
         }
-        for (VectorType point: v1)  //TODO porównywać w sposób przybliżony, używając equal: posortować oba, wyszukiwać liniowo kolejnych poczynając od pozycju poprzednio znalezionego
-            if (std::binary_search(v2.begin(), v2.end(), point))
-                return true;
         return false;
     }
 
