@@ -19,7 +19,6 @@
     <C>1e-029+1.4764e-33*(T-300)</C>
     <D>10+0.016670*(T-300)</D>
   </material>
-  <library name="rpsmes"/>
 </materials>
 
 <geometry>
@@ -128,15 +127,15 @@
     </refinements>
   </generator>
   <mesh name="diffusion" type="regular">
-    <axis start="0" stop="{mesaRadius}" num="2000"></axis>
+    <axis start="0" stop="{mesaRadius}" num="200"></axis>
   </mesh>
   <generator method="divide" name="optical" type="rectangular2d">
     <prediv by0="10" by1="3"/>
     <options aspect="100" gradual="no"/>
   </generator>
   <mesh name="plots" type="rectangular2d">
-    <axis0></axis0>
-    <axis1></axis1>
+    <axis0 start="0" stop="10" num="20"></axis0>
+    <axis1 start="0" stop="1" num="10"></axis1>
   </mesh>
   <generator method="smooth" name="sss" type="rectangular3d">
     <steps small="0.005" factor="1.2"/>

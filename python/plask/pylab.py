@@ -420,11 +420,16 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, zorder=1.5, set_limits=None):
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, zorder=1.5, set_limits=None):
     """Plot two-dimensional rectilinear mesh."""
     #TODO documentation
 
-    axes = matplotlib.pylab.gca()
+    if axes is None:
+        if figure is None:
+            axes = matplotlib.pylab.gca()
+        else:
+            axes = figure.add_subplot(111)
+
     lines = []
 
     if not isinstance(mesh, plask.mesh.Mesh):
@@ -450,6 +455,13 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, zorder=1.5, s
         for y in axis[1]:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
 
+    elif isinstance(mesh, (plask.mesh.Regular, plask.mesh.Ordered)):
+        ix, iy = 0, 1
+        for x in mesh:
+            lines.append(axes.axvline(x, color=color, lw=lw, zorder=zorder))
+        x_min = mesh[0]; x_max = mesh[-1]
+        y_max = y_min = None
+
     else:
         raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
 
@@ -461,14 +473,16 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, zorder=1.5, s
         axes.add_line(line)
     if margin:
         m0 = (x_max - x_min) * margin
-        m1 = (y_max - y_min) * margin
         axes.set_xlim(x_min - m0, x_max + m0)
-        axes.set_ylim(y_min - m1, y_max + m1)
+        if y_max is not None:
+            m1 = (y_max - y_min) * margin
+            axes.set_ylim(y_min - m1, y_max + m1)
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ix]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + iy]))
+    dim = max(2, mesh.dim)
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + ix]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + iy]))
 
 
     return lines

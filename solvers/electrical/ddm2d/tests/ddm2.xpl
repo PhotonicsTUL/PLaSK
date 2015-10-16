@@ -71,8 +71,10 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 2000)
 
+msh = MSG.generator(GEO.main)
 plot_geometry(GEO.main, margin=0.01)
-plot_mesh(MSG.generator(GEO.main))
+plot_mesh(msh)
+print msh.axis1
 show()
 
 DDM2D.compute_initial_potential(1);
@@ -123,8 +125,8 @@ print_log(LOG_INFO, "Calculations done!")
 # to bedzie rysowane
 potential_rz = DDM2D.outPotential(DDM2D.mesh)
 potential_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
-Fn_z = DDM2D.outQuasiFermiElectronLevel(mesh.Rectangular2D([0.], z), 'nearest')
-Fp_z = DDM2D.outQuasiFermiHoleLevel(mesh.Rectangular2D([0.], z), 'nearest')
+Fn_z = DDM2D.outQuasiFermiEnergyLevelForElectrons(mesh.Rectangular2D([0.], z), 'nearest')
+Fp_z = DDM2D.outQuasiFermiEnergyLevelForHoles(mesh.Rectangular2D([0.], z), 'nearest')
 # zapis do pliku
 out_txt = open("ResultsZ.txt", 'w')
 for i in range(len(z)):

@@ -99,7 +99,8 @@ class RectilinearRefinedGeneratorController(Controller):
         # self.refinements.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.refinements.setColumnWidth(1, 140)
         self.refinements.setColumnWidth(2, 120)
-        vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements:', add_undo_action=False))
+        self.refinements.setMinimumHeight(100)
+        vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements', add_undo_action=False))
 
         #vbox.addStretch()
         self.form.setLayout(vbox)

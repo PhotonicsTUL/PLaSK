@@ -29,6 +29,9 @@ class MultiEditorController(Controller):
         for c in controllers:
             self.editorWidget.addWidget(c.get_widget())
 
+    def __getitem__(self, i):
+        return self.controllers[i]
+
     @property
     def model(self):
         return self.controllers[0].model

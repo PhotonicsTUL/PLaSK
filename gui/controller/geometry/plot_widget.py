@@ -9,7 +9,7 @@ import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-from matplotlib.ticker import MultipleLocator, MaxNLocator
+from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import ColorConverter
 
 from ...utils.qsignals import BlockQtSignals
@@ -190,7 +190,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 class PlotWidget(QtGui.QGroupBox):
 
-    def __init__(self, controller=None, parent=None, picker=None):
+    def __init__(self, controller=None, parent=None, picker=None, NavBar=NavigationToolbar):
         super(PlotWidget, self).__init__(parent)
         self.setContentsMargins(0, 0, 0, 0)
 

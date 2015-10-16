@@ -12,14 +12,21 @@
 
 from ...qt import QtGui
 from ...qt.QtCore import Qt
-from ...qt.QtGui import QSplitter, QItemSelectionModel
+from ...qt.QtGui import QSplitter
 
 from .. import Controller, select_index_from_info
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
-# TODO use ControllerWithSubController (?)
+try:
+    import plask
+except ImportError:
+    plask = None
+else:
+    from .plot_widget import PlotWidget
+
+
 class GridsController(Controller):
 
     def __init__(self, document, model=None):
@@ -45,8 +52,21 @@ class GridsController(Controller):
         self.grids_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.grids_table.setVisible(True)
 
+        self.vertical_splitter = QtGui.QSplitter()
+        self.vertical_splitter.setOrientation(Qt.Vertical)
+
+        from ... import _DEBUG
+
+        if plask is not None and _DEBUG: #TODO remove 'and _DEBUG' when ready
+            self.preview = PlotWidget(self, self.vertical_splitter)
+            self.vertical_splitter.addWidget(self.preview)
+        else:
+            self.preview = None
+
         self.parent_for_editor_widget = QtGui.QStackedWidget()
-        self.splitter.addWidget(self.parent_for_editor_widget)
+        self.vertical_splitter.addWidget(self.parent_for_editor_widget)
+
+        self.splitter.addWidget(self.vertical_splitter)
 
         focus_action = QtGui.QAction(self.grids_table)
         focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
@@ -59,15 +79,18 @@ class GridsController(Controller):
         selection_model = self.grids_table.selectionModel()
         selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
+        self.plotted_model = self.plotted_mesh = None
+
     def set_current_index(self, new_index):
         """
-            Try to change current script.
+            Try to change current index.
             :param int new_index: index of new current script
             :return: False only when script should restore old selection
         """
         if self._current_index == new_index: return True
         if self._current_controller is not None:
             if not self._current_controller.on_edit_exit():
+                self.vertical_splitter.setSizes([100000,0])
                 return False
         self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -78,6 +101,7 @@ class GridsController(Controller):
             self._current_controller = self.model.entries[new_index].get_controller(self.document)
             self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
             self._current_controller.on_edit_enter()
+        self.vertical_splitter.setSizes([100000,1])
         return True
 
     def grid_selected(self, new_selection, old_selection):
@@ -112,3 +136,48 @@ class GridsController(Controller):
         if select_index_from_info(info, self.model, self.grids_table):
             #TODO try to select property
             pass
+
+    def plot_mesh(self, model, set_limits):
+        if plask is None:
+            return
+        manager = plask.Manager(draft=True)
+        try:
+            manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+            if model.is_mesh:
+                toplot = manager.mesh[model.name]
+            else:
+                toplot = None
+            if model != self.plotted_model:
+                self.preview.toolbar._views.clear()
+            self.preview.update_plot(toplot, set_limits=set_limits)
+        except Exception as e:
+            # self.status_bar.showMessage(str(e))
+            # palette = self.status_bar.palette()
+            # palette.setColor(QtGui.QPalette.Background, QtGui.QColor('#ff8888'))
+            # self.status_bar.setPalette(palette)
+            # self.status_bar.setAutoFillBackground(True)
+            from ... import _DEBUG
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
+            return False
+        else:
+            self.manager = manager
+            self.plotted_model = model
+            self.plotted_mesh = toplot
+            # if mesh.dim == 3:
+            #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
+            # else:
+            #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
+            # self.status_bar.showMessage('')
+            # palette = self.status_bar.palette()
+            # palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
+            # self.status_bar.setPalette(palette)
+            # self.status_bar.setAutoFillBackground(False)
+            return True
+
+    def plot(self):
+        if self._current_controller is not None:
+            model = self._current_controller.model
+            self.plot_mesh(model, set_limits=True)
+
