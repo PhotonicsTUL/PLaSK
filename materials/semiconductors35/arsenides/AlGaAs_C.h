@@ -22,8 +22,12 @@ struct AlGaAs_C: public AlGaAs {
     AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val);
     virtual std::string name() const override;
     virtual std::string str() const override;
+    virtual double EactA(double T) const override;
+    virtual double EactD(double T) const override;
     virtual Tensor2<double> mob(double T) const override;
     virtual double Nf(double T) const override; //TODO make sure the result is in cm^(-3)
+    virtual double Na() const override;
+    virtual double Nd() const override;
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
     virtual ConductivityType condtype() const override;

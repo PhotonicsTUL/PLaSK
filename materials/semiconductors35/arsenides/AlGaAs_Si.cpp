@@ -34,6 +34,20 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
     else mob_RT = mob_GaAs_Si_RT * fx2B;
 }
 
+MI_PROPERTY(AlGaAs_Si, EactA,
+            MIComment("this parameter will be removed")
+            )
+double AlGaAs_Si::EactA(double T) const {
+    return 0.;
+}
+
+MI_PROPERTY(AlGaAs_Si, EactD,
+            MISource("L. Piskorski, PhD thesis (2010)")
+            )
+double AlGaAs_Si::EactD(double T) const {
+    return 1e-3; // TODO add correct value
+}
+
 MI_PROPERTY(AlGaAs_Si, mob,
             MISource("based on 3 papers 1982-1990 about Si-doped AlGaAs"),
             MISource("based on Si-doped GaAs")
@@ -49,6 +63,20 @@ MI_PROPERTY(AlGaAs_Si, Nf,
             )
 double AlGaAs_Si::Nf(double T) const {
     return ( Nf_RT );
+}
+
+MI_PROPERTY(AlGaAs_Si, Na,
+            MIComment("-")
+            )
+double AlGaAs_Si::Na() const {
+    return ( 0. );
+}
+
+MI_PROPERTY(AlGaAs_Si, Nd,
+            MIComment("-")
+            )
+double AlGaAs_Si::Nd() const {
+    return ( ND );
 }
 
 double AlGaAs_Si::Dop() const {

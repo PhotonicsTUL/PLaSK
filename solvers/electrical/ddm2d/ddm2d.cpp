@@ -47,7 +47,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     maxerrFn(1e-6),
     maxerrFp(1e-6),
     iterlimPsiI(10000),
-    iterlimPsi0(2000),
+    iterlimPsi0(200),
     iterlimPsi(3),
     iterlimFn(3),
     iterlimFp(3),
@@ -829,21 +829,6 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(std::string calctype
 
 
 template<typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype, unsigned loops) {
-    if (calctype=="PsiI") {
-        computePsiI(loops);
-    }
-    else {
-        switch (algorithm) {
-            case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(calctype, loops);
-            case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(calctype, loops);
-            case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(calctype, loops);
-        }
-    }
-    return 0.;
-}
-
-template<typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage() {
     // boundary conditions of the first kind
     auto vconst = voltage_boundary(this->mesh, this->geometry);
@@ -875,6 +860,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage() {
 
 template<typename Geometry2DType>
 int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
+    this->writelog(LOG_INFO, "Calculating initial potential");
+
     this->initCalculation();
 
     std::string oldmatname = "-";
@@ -937,6 +924,46 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
 }
 
 
+template<typename Geometry2DType>
+double DriftDiffusionModel2DSolver<Geometry2DType>::computePsi0(unsigned loops) {
+    this->writelog(LOG_INFO, "Calculating potential for U = 0V");
+    double errorPsi0 = compute("Psi0",1);
+    int itersPsi0 = 0;
+    while ((errorPsi0 > maxerrPsi0) && (itersPsi0<iterlimPsi0)) { // 100
+         errorPsi0 = compute("Psi0",1);
+         itersPsi0 += 1;
+    }
+    return errorPsi0;
+}
+
+
+template<typename Geometry2DType>
+double DriftDiffusionModel2DSolver<Geometry2DType>::computePsi(unsigned loops) {
+    this->writelog(LOG_INFO, "Calculating potential");
+    double errorPsi = compute("Psi",1);
+    int itersPsi = 0;
+    while ((errorPsi > maxerrPsi) && (itersPsi<iterlimPsi)) { // 3
+         errorPsi = compute("Psi",1);
+         itersPsi += 1;
+    }
+    this->writelog(LOG_INFO, "Calculating quasi-Fermi energy level for electrons");
+    double errorFn = compute("Fn",1);
+    int itersFn = 0;
+    while ((errorFn > maxerrFn) && (itersFn<iterlimFn)) { // 3
+         errorFn = compute("Fn",1);
+         itersFn += 1;
+    }
+    this->writelog(LOG_INFO, "Calculating quasi-Fermi energy level for holes");
+    double errorFp = compute("Fp",1);
+    int itersFp = 0;
+    while ((errorFp > maxerrFp) && (itersFp<iterlimFp)) { // 3
+         errorFp = compute("Fp",1);
+         itersFp += 1;
+    }
+    return 0.;
+}
+
+
 template<typename Geometry2DType> //LP_09.2015
 void DriftDiffusionModel2DSolver<Geometry2DType>::setPsiI() {
     this->writelog(LOG_INFO, "Setting initial potential in nodes");
@@ -966,6 +993,17 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setPsiI() {
 
 
 template<typename Geometry2DType>
+double DriftDiffusionModel2DSolver<Geometry2DType>::compute(std::string calctype, unsigned loops) {
+    switch (algorithm) {
+        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(calctype, loops);
+        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(calctype, loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(calctype, loops);
+    }
+    return 0.;
+}
+
+
+template<typename Geometry2DType>
 template <typename MatrixT>
 double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calctype, unsigned loops)
 {
@@ -976,7 +1014,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
 
-    this->writelog(LOG_INFO, "Running drift_diffusion calculations");
+    //this->writelog(LOG_INFO, "Running drift_diffusion calculations");
 
     size_t loopno = 0;
 
@@ -1093,8 +1131,6 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
 */ // LP_09.2015
-
-//outPotential.fireChanged();
 
     return totDel;
 }

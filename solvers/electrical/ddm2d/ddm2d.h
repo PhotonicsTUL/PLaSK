@@ -173,7 +173,19 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// Perform computations for particular matrix type
     template <typename MatrixT>
     double doCompute(std::string calctype, unsigned loops=1);
+/*
+    template <typename MatrixT>
+    double doComputePsi0(unsigned loops=1);
 
+    template <typename MatrixT>
+    double doComputePsi(unsigned loops=1);
+
+    template <typename MatrixT>
+    double doComputeFn(unsigned loops=1);
+
+    template <typename MatrixT>
+    double doComputeFp(unsigned loops=1);
+*/
     /** Return \c true if the specified point is at junction
      * \param point point to test
      * \returns number of active region + 1 (0 for none)
@@ -262,7 +274,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * Calculate potential at U=0V for all nodes
      * \return max correction of potential against the last call // TODO
      **/
-    int computePsi0(unsigned loops=1);
+    double computePsi0(unsigned loops=1);
+
+    /**
+     * Calculate potential at U>0V for all nodes
+     * \return max correction of potential against the last call // TODO
+     **/
+    double computePsi(unsigned loops=1);
 
     /**
      * Run drift_diffusion calculations
