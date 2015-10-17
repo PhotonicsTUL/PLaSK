@@ -190,7 +190,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
 class PlotWidget(QtGui.QGroupBox):
 
-    def __init__(self, controller=None, parent=None, picker=None, NavBar=NavigationToolbar):
+    def __init__(self, controller=None, parent=None, picker=None, toolbar_class=NavigationToolbar):
         super(PlotWidget, self).__init__(parent)
         self.setContentsMargins(0, 0, 0, 0)
 
@@ -205,7 +205,7 @@ class PlotWidget(QtGui.QGroupBox):
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
-        self.toolbar = NavigationToolbar(self.canvas, self, controller)
+        self.toolbar = toolbar_class(self.canvas, self, controller)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.toolbar)

@@ -144,12 +144,12 @@ class GridsController(Controller):
         try:
             manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             if model.is_mesh:
-                toplot = manager.mesh[model.name]
+                mesh = manager.mesh[model.name]
             else:
-                toplot = None
+                mesh = None
             if model != self.plotted_model:
                 self.preview.toolbar._views.clear()
-            self.preview.update_plot(toplot, set_limits=set_limits)
+            self.preview.update_plot(mesh, None, set_limits=set_limits)
         except Exception as e:
             # self.status_bar.showMessage(str(e))
             # palette = self.status_bar.palette()
@@ -164,7 +164,7 @@ class GridsController(Controller):
         else:
             self.manager = manager
             self.plotted_model = model
-            self.plotted_mesh = toplot
+            self.plotted_mesh = mesh
             # if mesh.dim == 3:
             #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
             # else:
