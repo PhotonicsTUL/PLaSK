@@ -468,6 +468,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     def roots_cartesian3d(self):
         return (root for root in self.roots if isinstance(root, GNCartesian) and root.dim == 3)
 
+    def get_roots(self, dim=None):
+        if dim is None:
+            return self.roots
+        else:
+            return (root for root in self.roots if root.dim == dim)
+
     def create_info(self):
         res = super(GeometryModel, self).create_info()
         names = OrderedDict()

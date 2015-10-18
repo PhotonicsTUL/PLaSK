@@ -101,8 +101,17 @@ class GridsController(Controller):
             self._current_controller = self.model.entries[new_index].get_controller(self.document)
             self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
             self._current_controller.on_edit_enter()
+            self.update_geometries()
         self.vertical_splitter.setSizes([100000,1])
         return True
+
+    def update_geometries(self):
+        if plask is not None:
+            dim = max(self._current_controller.model.dim, 2)
+            geoms = list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
+            geometry_list = self.preview.toolbar.widgets['select_geometry']
+            geometry_list.clear()
+            geometry_list.addItems(geoms)
 
     def grid_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
@@ -118,9 +127,10 @@ class GridsController(Controller):
             self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        self.grids_table.selectionModel().clear()   # model could completly changed
+        self.grids_table.selectionModel().clear()   # model could have completly changed
         if self._last_index is not None:
             self.grids_table.selectRow(self._last_index)
+            self.update_geometries()
         self.grids_table.setFocus()
 
     def on_edit_exit(self):
@@ -145,6 +155,9 @@ class GridsController(Controller):
             manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             if model.is_mesh:
                 mesh = manager.mesh[model.name]
+            elif model.is_generator:
+                geometry = manager.geometry[str(self.preview.toolbar.widgets['select_geometry'].currentText())]
+                mesh = manager.meshgen[model.name](geometry)
             else:
                 mesh = None
             if model != self.plotted_model:

@@ -38,7 +38,7 @@ class NavigationToolbar(GeometryNavigationToolbar):
     )
 
     def select_geometry(self, *args):
-        print args
+        pass
 
 class PlotWidget(GeometryPlotWidget):
 

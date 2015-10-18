@@ -47,6 +47,8 @@ class AxisConf(object):
 class RectangularMesh1D(Grid):
     """Model of 1D rectangular mesh (ordered or regular)"""
 
+    dim = 1
+
     @staticmethod
     def from_xml(grids_model, element):
         e = RectangularMesh1D(grids_model, element.attrib['name'], element.attrib['type'])

@@ -34,7 +34,7 @@ cursord = {
 class NavigationToolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas, parent, controller=None, coordinates=True):
-        self._widgets = {}
+        self.widgets = {}
         super(NavigationToolbar, self).__init__(canvas, parent, coordinates)
         self.controller = controller
 
@@ -76,7 +76,7 @@ class NavigationToolbar(NavigationToolbar2QT):
                     combo.currentIndexChanged.connect(getattr(self, callback))
                     if tooltip_text is not None:
                         combo.setToolTip(tooltip_text)
-                    self._widgets[callback] = combo
+                    self.widgets[callback] = combo
                     if text is None:
                         widget = combo
                     else:
@@ -177,14 +177,14 @@ class NavigationToolbar(NavigationToolbar2QT):
         if axes is not None and axes != self._axes_names:
             if ',' in axes:
                 axes = axes.split(',')
-            indx = self._widgets['select_plane'].currentIndex()
-            with BlockQtSignals(self._widgets['select_plane']):
-                self._widgets['select_plane'].clear()
-                self._widgets['select_plane'].addItems((axes[1]+'-'+axes[0], axes[0]+'-'+axes[2], axes[1]+'-'+axes[2]))
+            indx = self.widgets['select_plane'].currentIndex()
+            with BlockQtSignals(self.widgets['select_plane']):
+                self.widgets['select_plane'].clear()
+                self.widgets['select_plane'].addItems((axes[1]+'-'+axes[0], axes[0]+'-'+axes[2], axes[1]+'-'+axes[2]))
             self._axes_names = axes
             self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
-            with BlockQtSignals(self._widgets['select_plane']):
-                self._widgets['select_plane'].setCurrentIndex(indx)
+            with BlockQtSignals(self.widgets['select_plane']):
+                self.widgets['select_plane'].setCurrentIndex(indx)
             self.set_message(self.mode)
 
 
