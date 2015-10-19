@@ -13,6 +13,8 @@
 from matplotlib.ticker import MaxNLocator
 import plask
 
+from ...qt.QtCore import Qt
+
 from ...utils.config import CONFIG
 from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
 
@@ -40,9 +42,12 @@ class NavigationToolbar(GeometryNavigationToolbar):
 
     def __init__(self, *args, **kwargs):
         super(NavigationToolbar, self).__init__(*args, **kwargs)
+        self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
         self.disable_planes(('long','tran','vert'))
 
     def select_geometry(self, *args):
+        # if self.controller._current_controller is not None:
+        #     self.controller._current_controller.geometry_name = self.widgets['select_geometry'].currentText()
         if self.controller.plot_auto_refresh:
             self.controller.plot()
         else:
@@ -76,7 +81,7 @@ class PlotWidget(GeometryPlotWidget):
         super(PlotWidget, self).__init__(controller, parent, picker, toolbar_class=NavigationToolbar)
         self.get_color = BwColor(self.axes)
 
-    def update_plot(self, mesh, geometry, set_limits, plane='12'):
+    def update_mesh_plot(self, mesh, geometry, set_limits, plane='12'):
         # self.figure.clear()
         self.axes.cla()
         self.selectors = []

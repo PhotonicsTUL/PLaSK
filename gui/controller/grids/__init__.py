@@ -92,6 +92,7 @@ class GridsController(Controller):
         selection_model = self.grids_table.selectionModel()
         selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
+        self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
 
@@ -137,13 +138,17 @@ class GridsController(Controller):
                 self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
             geoms = list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
-            curr = geometry_list.currentText()
+            current = geometry_list.currentText()
             geometry_list.clear()
             geometry_list.addItems(geoms)
-            try:
-                geometry_list.setCurrentIndex(geoms.index(curr))
-            except ValueError:
-                pass
+            for sel in (getattr(self._current_controller.model, 'geometry_name', None), current):
+                if sel is not None:
+                    try:
+                        geometry_list.setCurrentIndex(geoms.index(sel))
+                    except ValueError:
+                        pass
+                    else:
+                        return
 
     def grid_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
@@ -184,13 +189,17 @@ class GridsController(Controller):
             pass
 
     def plot_mesh(self, model, set_limits):
+        if model is not None:
+            model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
         if plask is None:
             return
         manager = plask.Manager(draft=True)
         try:
             manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
-            try: geometry = manager.geometry[str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())]
-            except KeyError: geometry = None
+            try:
+                geometry = manager.geometry[str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())]
+            except KeyError:
+                geometry = None
             if model.is_mesh:
                 mesh = manager.mesh[model.name]
             elif model.is_generator:
@@ -198,8 +207,8 @@ class GridsController(Controller):
             else:
                 mesh = None
             if model != self.plotted_model:
-                self.mesh_preview.toolbar._views.clear()
-            self.mesh_preview.update_plot(mesh, geometry, set_limits=set_limits)
+                self.clear = self.mesh_preview.toolbar._views.clear()
+            self.mesh_preview.update_mesh_plot(mesh, geometry, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.status_bar.showMessage(str(e))
             palette = self.status_bar.palette()

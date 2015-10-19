@@ -286,19 +286,19 @@ class PlotWidget(QtGui.QGroupBox):
         super(PlotWidget, self).resizeEvent(event)
         self.figure.set_tight_layout(0)
 
-    def update_plot(self, to_plot, set_limits, plane='12'):
+    def update_plot(self, geometry, set_limits, plane='12'):
         # self.figure.clear()
         self.axes.cla()
         self.selectors = []
         self.axes.minorticks_on()
-        if to_plot is not None:
+        if geometry is not None:
             xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()
             self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
             self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
             self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
             margin = 0.1 if set_limits else None
-            _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=to_plot,
+            _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=geometry,
                                                      fill=True, margin=margin, zorder=1,
                                                      plane=plane, lw=1.5, picker=self.picker,
                                                      extra=dict(ec=to_rgba(CONFIG['geometry/extra_color'],

@@ -146,7 +146,7 @@
     <axis1 start="0" stop="1" num="10"></axis1>
   </mesh>
   <generator method="smooth" name="sss" type="rectangular3d">
-    <steps small="0.005" factor="1.2"/>
+    <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
 </grids>
 
