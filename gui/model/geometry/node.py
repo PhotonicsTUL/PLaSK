@@ -330,12 +330,16 @@ class GNode(object):
             if not c.names_before(result_set, end_node): return False
         return True
 
-    def names(self):
+    def names(self, filter=None):
         """
         Calculate all names of nodes in subtree with self in root.
+        :param filter: names filter
         :return set: calculated set of names
         """
-        return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse()) if n is not None)
+        if filter is not None:
+            return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse() if filter(nd)) if n is not None)
+        else:
+            return set(n for n in (getattr(nd, 'name', None) for nd in self.traverse()) if n is not None)
 
     def find(self, predicate):
         """
@@ -355,12 +359,15 @@ class GNode(object):
         """
         return self.find(lambda node: getattr(node, 'name', None) == name)
 
-    def paths(self):
+    def paths(self, filter=None):
         """
         Calculate all path's names of nodes in subtree with self in root.
         :return set: calculated set of path's names
         """
-        return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
+        if filter is not None:
+            return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse() if filter(nd)) if n is not None)
+        else:
+            return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
 
     def new_child_pos(self):
         """Return position of a new child"""

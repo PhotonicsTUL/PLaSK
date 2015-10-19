@@ -90,18 +90,33 @@ class _MaterialToColor(object):
         return colorsys.hsv_to_rgb(h, s, v)
 
 
-class _ColorFromDict(object):
+class ColorFromDict(object):
     """
-    Get color from dict:
-    material name string/re -> color or using material_to_color (for names which are not present in dict).
+    Get color from Python dictionary. The dictionary should map material name
+    or regular expression object to RGB tuple with each component in range [0, 1].
+
+    Args:
+        material_dict (dict): Dictionary with mapping.
+        axes (matplotlib.axes.Axes): Matplotlib axes, to which the geometry will
+                                     plotted. It is used for retrieving background
+                                     color.
     """
 
     def __init__(self, material_dict, axes=None):
-        super(_ColorFromDict, self).__init__()
+        super(ColorFromDict, self).__init__()
         self.material_dict = material_dict
         self.material_to_color = _MaterialToColor(axes)
 
     def __call__(self, material):
+        """
+        Get color for specified material.
+
+        Args:
+            material (str): Material name
+
+        Returns:
+            tuple: Tuple with desired color in RGB format.
+        """
         s = str(material)
         try:
             return self.material_dict[s]
@@ -249,9 +264,9 @@ class DrawEnviroment(object):
         self.extra = extra
 
         if get_color is None:
-            self.get_color = _ColorFromDict(DEFAULT_COLORS, dest)
+            self.get_color = ColorFromDict(DEFAULT_COLORS, dest)
         elif get_color is not None and not isinstance(get_color, collections.Callable):
-            self.get_color = _ColorFromDict(get_color, dest)
+            self.get_color = ColorFromDict(get_color, dest)
         else:
             self.get_color = get_color
 

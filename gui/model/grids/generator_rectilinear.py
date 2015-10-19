@@ -73,17 +73,18 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
         TableModelEditMethods.__init__(self)
         self.generator = generator
         self.entries = entries if entries is not None else []
+        self.one = int(self.generator.dim == 1)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
     def columnCount(self, parent=QtCore.QModelIndex()):
-        return len(RefinementConf.all_attributes_names)
+        return len(RefinementConf.all_attributes_names)-self.one
 
     def get(self, col, row):
-        value = self.entries[row].get_attr_by_index(col)
-        if col == 0:
+        value = self.entries[row].get_attr_by_index(col+self.one)
+        if not self.one and col == 0:
             value = AXIS_NAMES[self.generator.dim-1][value]
         return value
 
@@ -102,9 +103,9 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
                 RefinementConf.all_attributes_help[col])
 
     def set(self, col, row, value):
-        if col == 0:
+        if not self.one and col == 0:
             value = AXIS_NAMES[self.generator.dim-1].index(value)
-        self.entries[row].set_attr_by_index(col, value)
+        self.entries[row].set_attr_by_index(col+self.one, value)
 
     def flags(self, index):
         flags = super(Refinements, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -114,7 +115,7 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             try:
-                return RefinementConf.all_attributes_names[col].title()
+                return RefinementConf.all_attributes_names[col+self.one].title()
             except IndexError:
                 return None
 

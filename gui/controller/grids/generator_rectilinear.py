@@ -12,6 +12,7 @@
 
 from .. import Controller
 from ..defines import DefinesCompletionDelegate, get_defines_completer
+from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
 from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
@@ -86,19 +87,23 @@ class RectilinearRefinedGeneratorController(Controller):
 
         self.refinements = QtGui.QTableView()
         self.refinements.setModel(model.refinements)
-        self.refinements.setItemDelegateForColumn(0, ComboBoxDelegate(AXIS_NAMES[self.model.dim-1],
-                                                                      self.refinements, editable=False))
-        self.refinements.setItemDelegateForColumn(1, ComboBoxDelegate(self.document.geometry.model.names,
-                                                                      self.refinements, editable=True))
-        self.refinements.setItemDelegateForColumn(2, ComboBoxDelegate(self.document.geometry.model.paths,
-                                                                      self.refinements, editable=True))
+        one = int(self.model.dim == 1)
+        if one:
+            self.refinements.setItemDelegateForColumn(0, ComboBoxDelegate(AXIS_NAMES[self.model.dim-1],
+                                                                          self.refinements, editable=False))
+        def object_names():
+            return self.document.geometry.model.names(filter=lambda x: not isinstance(x, GNGeometryBase))
+        self.refinements.setItemDelegateForColumn(1-one, ComboBoxDelegate(object_names,
+                                                                          self.refinements, editable=True))
+        self.refinements.setItemDelegateForColumn(2-one, ComboBoxDelegate(self.document.geometry.model.paths,
+                                                                          self.refinements, editable=True))
         defines_delegate = DefinesCompletionDelegate(self.document.defines.model, self.refinements)
-        self.refinements.setItemDelegateForColumn(3, defines_delegate)
-        self.refinements.setItemDelegateForColumn(4, defines_delegate)
-        self.refinements.setItemDelegateForColumn(5, defines_delegate)
+        self.refinements.setItemDelegateForColumn(3-one, defines_delegate)
+        self.refinements.setItemDelegateForColumn(4-one, defines_delegate)
+        self.refinements.setItemDelegateForColumn(5-one, defines_delegate)
         # self.refinements.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        self.refinements.setColumnWidth(1, 140)
-        self.refinements.setColumnWidth(2, 120)
+        self.refinements.setColumnWidth(1-one, 140)
+        self.refinements.setColumnWidth(2-one, 120)
         self.refinements.setMinimumHeight(100)
         vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements', add_undo_action=False))
 

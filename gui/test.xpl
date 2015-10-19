@@ -136,6 +136,11 @@
   <generator method="smooth" name="smoothie" type="rectangular2d">
     <steps small="0.005" factor="1.2"/>
   </generator>
+  <generator method="divide" name="oned" type="ordered">
+    <refinements>
+      <axis0 object="bottom-DBR" at="1"/>
+    </refinements>
+  </generator>
   <mesh name="plots" type="rectangular2d">
     <axis0 start="0" stop="10" num="20"></axis0>
     <axis1 start="0" stop="1" num="10"></axis1>

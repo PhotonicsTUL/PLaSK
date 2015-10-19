@@ -102,6 +102,7 @@ def Font(entry, help=None):
 
 CONFIG_WIDGETS = OrderedDict([
     ("General Settings", [
+        "General Settings",
         ("Create backup files on save",
          CheckBox('main_window/make_backup',
                   "Create backup files on save. "
@@ -409,21 +410,21 @@ class ConfigDialog(QtGui.QDialog):
         hlayout.addWidget(stack)
         vlayout.addLayout(hlayout)
 
-        # current_layout = QtGui.QFormLayout()
-
         self.items = []
 
         for cat, items in CONFIG_WIDGETS.items():
-            tab = QtGui.QGroupBox(self)
-            tab_layout = QtGui.QFormLayout()
-            tab.setLayout(tab_layout)
-            stack.addWidget(tab)
+            # page = QtGui.QToolBox()
+            page = QtGui.QTabWidget()
+            stack.addWidget(page)
             categories.addItem(cat)
-            hr = ""
+            tab = None
             for item in items:
                 if isinstance(item, str):
-                    tab_layout.addRow(QtGui.QLabel(hr+"<b>"+item+"</b>", self))
-                    hr = "<hr/>"
+                    tab = QtGui.QWidget(page)
+                    tab_layout = QtGui.QFormLayout()
+                    tab.setLayout(tab_layout)
+                    # page.addItem(tab, item)
+                    page.addTab(tab, item)
                 else:
                     widget = item[1](self)
                     self.items.append(widget)
@@ -440,7 +441,7 @@ class ConfigDialog(QtGui.QDialog):
         vlayout.addWidget(buttons)
         self.setLayout(vlayout)
 
-        self.resize(600, 0)
+        self.resize(600, 600)
 
     def apply(self):
         for item in self.items:

@@ -466,7 +466,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, zo
         raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
 
     if set_limits is not None:
-        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolette, set 'margin' instead")
+        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolete, set 'margin' instead")
         if margin is None: margin = 0.
 
     for line in lines:
@@ -488,4 +488,4 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, zo
     return lines
 
 
-from ._plot_geometry import plot_geometry
+from ._plot_geometry import plot_geometry, DEFAULT_COLORS, ColorFromDict

@@ -446,14 +446,14 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             if not r.names_before(res, end_node): break
         return res
 
-    def names(self):
+    def names(self, filter=None):
         res = set()
-        for r in self.roots: res |= r.names()
+        for r in self.roots: res |= r.names(filter)
         return res
 
-    def paths(self):
+    def paths(self, filter=None):
         res = set()
-        for r in self.roots: res |= r.paths()
+        for r in self.roots: res |= r.paths(filter)
         return res
 
     @property
