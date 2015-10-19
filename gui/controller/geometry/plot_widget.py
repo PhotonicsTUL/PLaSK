@@ -43,13 +43,12 @@ class NavigationToolbar(NavigationToolbar2QT):
             return QtGui.QIcon.fromTheme(name)
 
     toolitems = (
-        # ('Home', 'Reset original view', 'go-home', 'home'),
         ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
         ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
         (None, None, None, None, None),
+        ('Home', 'Reset original view', 'go-home', 'home', None),
         ('Back', 'Back to  previous view', 'go-previous', 'back', None),
         ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-        (None, None, None, None, None),
         ('Zoom selected', 'Zoom to selected object', 'zoom-fit-best', 'zoom_current', None),
         (None, None, None, None, None),
         ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
@@ -163,9 +162,14 @@ class NavigationToolbar(NavigationToolbar2QT):
         plane = ('10', '02', '12')[index]
         self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
         self.controller.checked_plane = plane
-        if self.controller.plotted_tree_element is not None and \
-           getattr(self.controller.plotted_tree_element, 'dim') == 3:
-            self.controller.plot_element(self.controller.plotted_tree_element, set_limits=True)
+        try:
+            plotted_tree_element = self.controller.plotted_tree_element
+        except AttributeError:
+            pass
+        else:
+            if plotted_tree_element is not None and \
+               getattr(plotted_tree_element, 'dim') == 3:
+                self.controller.plot_element(plotted_tree_element, set_limits=True)
         self.set_message(self.mode)
 
     def disable_planes(self, axes):

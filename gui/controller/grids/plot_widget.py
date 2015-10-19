@@ -13,6 +13,7 @@
 from matplotlib.ticker import MaxNLocator
 import plask
 
+from ...utils.config import CONFIG
 from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
 
 
@@ -21,10 +22,10 @@ class NavigationToolbar(GeometryNavigationToolbar):
     toolitems = (
         ('Geometry:', 'Select geometry for mesh preview', None, 'select_geometry', ((), 0)),
         (None, None, None, None, None),
-        # ('Home', 'Reset original view', 'go-home', 'home'),
         ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
-        ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
+        # ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', False),
         (None, None, None, None, None),
+        ('Home', 'Reset original view', 'go-home', 'home', None),
         ('Back', 'Back to  previous view', 'go-previous', 'back', None),
         ('Forward', 'Forward to next view', 'go-next', 'forward', None),
         (None, None, None, None, None),
@@ -37,13 +38,43 @@ class NavigationToolbar(GeometryNavigationToolbar):
          (('tran-long', 'long-vert', 'tran-vert'), 2)),
     )
 
+    def __init__(self, *args, **kwargs):
+        super(NavigationToolbar, self).__init__(*args, **kwargs)
+        self.disable_planes(('long','tran','vert'))
+
     def select_geometry(self, *args):
-        pass
+        if self.controller.plot_auto_refresh:
+            self.controller.plot()
+        else:
+            self.parent.axes.cla()
+            self.canvas.draw()
+
+
+class BwColor(object):
+
+    def __init__(self, axes, compress=0.5):
+        self.color = plask.ColorFromDict(plask.DEFAULT_COLORS, axes)
+        self.compress = compress
+
+    def __call__(self, material):
+        try:
+            color = self.color(material)
+            if isinstance(color, str):
+                if color.startswith('#'): color = color[1:]
+                r, g, b = tuple(ord(c)/255. for c in color.decode('hex'))
+            else:
+                r, g, b = color
+        except:
+            r, b, b = 0.5, 0.5, 0.5
+        bw = (1.0-self.compress) + self.compress * (0.2126*r + 0.7152*b + 0.0722*b)
+        return bw, bw, bw
+
 
 class PlotWidget(GeometryPlotWidget):
 
     def __init__(self, controller=None, parent=None, picker=None):
         super(PlotWidget, self).__init__(controller, parent, picker, toolbar_class=NavigationToolbar)
+        self.get_color = BwColor(self.axes)
 
     def update_plot(self, mesh, geometry, set_limits, plane='12'):
         # self.figure.clear()
@@ -58,17 +89,20 @@ class PlotWidget(GeometryPlotWidget):
             self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
             margin = 0.1 if set_limits else None
 
-            plask.plot_mesh(axes=self.axes, mesh=mesh, margin=margin, zorder=1.5, plane=plane, lw=1.2,
-                            color="#00aa00")
-
-            for ax in self.axes.xaxis, self.axes.yaxis:
-                ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
-                ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))
-            if not set_limits:
-                self.axes.set_xlim(xlim)
-                self.axes.set_ylim(ylim)
-            self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
-            self.canvas.draw()
-            self.plane = plane
+            plask.plot_mesh(axes=self.axes, mesh=mesh, margin=margin, zorder=1.5, plane=plane,
+                            lw=CONFIG['mesh/line_width'], color=CONFIG['mesh/mesh_color'])
+            try:
+                plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, margin=margin, zorder=1,
+                                    plane=plane, lw=1.5, get_color=self.get_color)
+            finally:
+                for ax in self.axes.xaxis, self.axes.yaxis:
+                    ax.set_major_locator(MaxNLocator(nbins=10, steps=(1, 10)))
+                    ax.set_minor_locator(MaxNLocator(nbins=100, steps=(1, 10)))
+                if not set_limits:
+                    self.axes.set_xlim(xlim)
+                    self.axes.set_ylim(ylim)
+                self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
+                self.canvas.draw()
+                self.plane = plane
 
 

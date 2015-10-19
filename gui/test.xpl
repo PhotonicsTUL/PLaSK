@@ -39,7 +39,7 @@
       <rectangle material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
-  <cartesian2d>
+  <cartesian2d name="simple">
     <stack>
       <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
       <rectangle material="Al(0.73)GaAs:Si=1e18" dtran="1" dvert="1"/>
@@ -132,6 +132,9 @@
   <generator method="divide" name="optical" type="rectangular2d">
     <prediv by0="10" by1="3"/>
     <options aspect="100" gradual="no"/>
+  </generator>
+  <generator method="smooth" name="smoothie" type="rectangular2d">
+    <steps small="0.005" factor="1.2"/>
   </generator>
   <mesh name="plots" type="rectangular2d">
     <axis0 start="0" stop="10" num="20"></axis0>
