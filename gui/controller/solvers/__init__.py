@@ -220,6 +220,7 @@ class NewSolverDialog(QtGui.QDialog):
 
     def __init__(self, parent=None):
         super(NewSolverDialog, self).__init__(parent)
+        self.setWindowTitle('Create New Solver')
         layout = QtGui.QFormLayout()
         layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
 
