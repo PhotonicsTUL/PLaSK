@@ -26,6 +26,10 @@ from .confsolver import SolverAutoWidget
 class ConfSolverController(Controller):
     """Class for solvers defined in configuration dictionary"""
 
+    """
+        :param document:
+        :param model: model of solver to configure TODO should be section model?
+    """
     def __init__(self, document, model):
         super(ConfSolverController, self).__init__(document, model)
         try:
@@ -34,6 +38,24 @@ class ConfSolverController(Controller):
         except AttributeError:
             widget_class = SolverAutoWidget
         self.widget = widget_class(self)
+        self.section_model.changed.connect(self._model_change_cb)
+
+    def _model_change_cb(self, *args, **kwargs):
+        self.widget.load_data()
+
+    """
+        :return ConfSolver: model of edited solver
+    """
+    @property
+    def solver_model(self):
+        return self.model
+
+    """
+        :return SolversModel: model of a whole solver's section
+    """
+    @property
+    def section_model(self):
+        return self.solver_model.tree_parent
 
     def get_widget(self):
         return self.widget
@@ -127,6 +149,10 @@ from ...model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS
 
 class SolversController(Controller):
 
+    """
+        :param document:
+        :param SolversModel model:
+    """
     def __init__(self, document, model=None):
         if model is None: model = SolversModel()
         Controller.__init__(self, document, model)

@@ -15,12 +15,45 @@ from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
 from ...utils.textedit import TextEdit
-from ...utils.widgets import VerticalScrollArea, EDITOR_FONT
+from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
 
 
 class SolverAutoWidget(VerticalScrollArea):
+
+    class ChangeItemCommand(QtGui.QUndoCommand):
+
+        def __init__(self, model, node, setter, new_value, old_value, action_name, QUndoCommand_parent = None):
+            super(SolverAutoWidget.ChangeItemCommand, self).__init__(action_name, QUndoCommand_parent)
+            self.model = model
+            self.node = node
+            self.setter = setter
+            self.new_value = new_value
+            self.old_value = old_value
+
+        def set_property_value(self, value):
+            self.setter(self.node, value)
+            #index = self.model.entries.index(self.node)
+            #self.model.dataChanged.emit(index, index)
+            self.model.fire_changed()
+
+        def redo(self):
+            self.set_property_value(self.new_value)
+
+        def undo(self):
+            self.set_property_value(self.old_value)
+
+    def _change_attr(self, group, attr, value):
+        def set_solver_attr(node, value): node.data[group][attr] = value
+        node = self.controller.solver_model
+        model = self.controller.section_model
+        old_value = node.data[group][attr]
+        if value != old_value:
+            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+                model, node, set_solver_attr, value, old_value, 'change attribute of solver'
+            ))
+
 
     def __init__(self, controller, parent=None):
         super(SolverAutoWidget, self).__init__(parent)
@@ -88,13 +121,18 @@ class SolverAutoWidget(VerticalScrollArea):
                         edit.setCompleter(defines)
                     else:
                         if item.name[-1] == '#':
-                            edit = QtGui.QPlainTextEdit()
+                            edit = TextEditWithCB()
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             edit.textChanged.connect(self.controller.fire_changed)
+                            #TODO see save_data
+                            #edit.focus_out_cb = lambda edit=edit, group=group, name=item.name: self._change_attr(group, name, edit.text())
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
-                            edit.textEdited.connect(self.controller.fire_changed)
+                            #edit.textEdited.connect(self.controller.fire_changed)
+                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                                                         self._change_attr(group, name, edit.text()))
+
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
                     self.controls[group, item.name] = edit
                     layout.addRow(item.label + ':', edit)

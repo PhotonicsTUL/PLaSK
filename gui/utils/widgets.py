@@ -258,3 +258,23 @@ class TextEdit(QtGui.QTextEdit):
         super(ComboBox, self).keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL:
             self.editingFinished.emit()
+
+class TextEditWithCB(QtGui.QPlainTextEdit):
+    """
+        QPlainTextEdit which emits some extra callbacks:
+        focus_out_cb - when it lost focus
+        key_cb - when kay is pressed
+    """
+
+    def __init__(self, focus_out_cb = None, key_cb = None):
+        super(TextEditWithCB, self).__init__()
+        self.focus_out_cb = focus_out_cb
+        self.key_cb = key_cb
+
+    def focusOutEvent(self, event):
+        super(TextEditWithCB, self).focusOutEvent(event)
+        if self.focus_out_cb is not None: self.focus_out_cb()
+
+    def keyPressEvent(self, event):
+        super(TextEditWithCB, self).keyPressEvent(event)
+        if self.key_cb is not None: self.key_cb(event)

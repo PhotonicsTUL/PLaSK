@@ -19,7 +19,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import ComboBox
+from ...utils.widgets import ComboBox, TextEditWithCB
 
 
 def controller_to_aligners(position_controllers):
@@ -115,24 +115,9 @@ class GNodeController(Controller):
 
     def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
                                   change_cb=None, key_cb=None):
-
-        class TextEditWithCB(QtGui.QPlainTextEdit):
-            def __init__(self, focus_out_cb = None):
-                super(TextEditWithCB, self).__init__()
-                self.focus_out_cb = focus_out_cb
-                self.setTabChangesFocus(True)
-                self.setFixedHeight(int(3.5 * QtGui.QFontMetrics(self.font()).height()))
-
-            def focusOutEvent(self, event):
-                super(TextEditWithCB, self).focusOutEvent(event)
-                if self.focus_out_cb is not None: self.focus_out_cb()
-
-            def keyPressEvent(self, event):
-                super(TextEditWithCB, self).keyPressEvent(event)
-                if key_cb is not None:
-                    key_cb(event)
-
-        res = TextEditWithCB()
+        res = TextEditWithCB(key_cb=key_cb)
+        res.setTabChangesFocus(True)
+        res.setFixedHeight(int(3.5 * QtGui.QFontMetrics(res.font()).height()))
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
