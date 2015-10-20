@@ -135,10 +135,7 @@ class GeometryController(Controller):
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.status_bar.showMessage(str(e))
-            palette = self.status_bar.palette()
-            palette.setColor(QtGui.QPalette.Background, QtGui.QColor('#ff8888'))
-            self.status_bar.setPalette(palette)
-            self.status_bar.setAutoFillBackground(True)
+            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ff8888; }")
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
@@ -153,10 +150,7 @@ class GeometryController(Controller):
             else:
                 self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
             self.status_bar.showMessage('')
-            palette = self.status_bar.palette()
-            palette.setColor(QtGui.QPalette.Background, self.statusbar_color)
-            self.status_bar.setPalette(palette)
-            self.status_bar.setAutoFillBackground(False)
+            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: palette(background); }")
             self.show_selection()
             return True
 
@@ -172,8 +166,16 @@ class GeometryController(Controller):
             self.plot_element(self.plotted_tree_element, set_limits=False)
 
     def on_model_change(self, *args, **kwargs):
-        if self.plotted_tree_element is not None and self.plot_auto_refresh:
-            self.plot_element(self.plotted_tree_element, set_limits=False)
+        if self.plotted_tree_element is not None:
+            if self.plot_auto_refresh:
+                self.plot_element(self.plotted_tree_element, set_limits=False)
+            else:
+                self.status_bar.showMessage("Geometry changed: refresh the plot")
+                self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ffff88; }")
+        else:
+            self.status_bar.showMessage('')
+            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; "
+                                          "background-color: palette(background); }")
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -285,21 +287,13 @@ class GeometryController(Controller):
 
         self.status_bar = QtGui.QStatusBar()
         self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        palette = self.status_bar.palette()
-        self.statusbar_color = palette.color(QtGui.QPalette.Background)
-        self.status_bar.setPalette(palette)
+        self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; }")
 
-        geometry_widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        geometry_widget.setLayout(layout)
-        layout.addWidget(self.geometry_view)
-        layout.addWidget(self.status_bar)
+        self.geometry_view.layout().addWidget(self.status_bar)
 
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
-        self.main_splitter.addWidget(geometry_widget)
+        self.main_splitter.addWidget(self.geometry_view)
 
         self.document.window.config_changed.connect(self.reconfig)
 

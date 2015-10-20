@@ -51,9 +51,7 @@ class NavigationToolbar(GeometryNavigationToolbar):
         if self.controller.plot_auto_refresh:
             self.controller.plot()
         else:
-            self.parent.axes.cla()
-            self.canvas.draw()
-
+            self.controller._update_required()
 
 class BwColor(object):
 
@@ -80,6 +78,7 @@ class PlotWidget(GeometryPlotWidget):
     def __init__(self, controller=None, parent=None, picker=None):
         super(PlotWidget, self).__init__(controller, parent, picker, toolbar_class=NavigationToolbar)
         self.get_color = BwColor(self.axes)
+        self.layout().setContentsMargins(0, 9, 6, 2)
 
     def update_mesh_plot(self, mesh, geometry, set_limits, plane='12'):
         # self.figure.clear()

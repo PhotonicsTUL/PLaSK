@@ -28,16 +28,20 @@ class GNObjectController(GNodeController):
     #    super(GNObjectController, self).__init__(document, model, node)
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
-    def construct_form(self):
+    def construct_form(self, roles=True):
+        from .geometry import GNGeometryController
         self.construct_group('Basic Settings')
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'
                                 ' In the script section, the object is available by GEO table,'
                                 ' which is indexed by names of geometry objects.'.format(self.node.tag_name(False)))
-        self.role = self.construct_line_edit('Roles:', node_property_name='role', display_property_name='roles')
-        self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
-                                'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
+        if roles:
+            self.role = self.construct_line_edit('Roles:', node_property_name='role', display_property_name='roles')
+            self.role.setToolTip('&lt;{} <b>role</b>="" ...&gt;<br/>'
+                                    'Object role. Important for some solvers.'.format(self.node.tag_name(False)))
+        else:
+            self.role = None
         self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)), node_property_name='axes')
         self.axes.setToolTip('&lt;{} <b>axes</b>="" ...&gt;<br/>'
                             'Specification of the axes.'
@@ -54,7 +58,8 @@ class GNObjectController(GNodeController):
     def fill_form(self):
         super(GNObjectController, self).fill_form()
         self.name.setText(none_to_empty(self.node.name))
-        self.role.setText(none_to_empty(self.node.role))
+        if self.role is not None:
+            self.role.setText(none_to_empty(self.node.role))
         with BlockQtSignals(self.axes) as ignored:
             self.axes.setEditText(axes_to_str(self.node.axes))
         if self.in_parent_controller is not None: self.in_parent_controller.fill_form()

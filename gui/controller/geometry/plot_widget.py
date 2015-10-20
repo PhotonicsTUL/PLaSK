@@ -192,11 +192,10 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.set_message(self.mode)
 
 
-class PlotWidget(QtGui.QGroupBox):
+class PlotWidget(QtGui.QWidget):
 
     def __init__(self, controller=None, parent=None, picker=None, toolbar_class=NavigationToolbar):
         super(PlotWidget, self).__init__(parent)
-        self.setContentsMargins(0, 0, 0, 0)
 
         self.picker = picker
         self.selectors = []
@@ -214,6 +213,8 @@ class PlotWidget(QtGui.QGroupBox):
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
+        vbox.update()
+        vbox.setContentsMargins(0, 9, 6, 6)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
         self.axes.grid()

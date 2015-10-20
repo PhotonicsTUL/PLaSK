@@ -87,37 +87,6 @@ class GridsController(Controller):
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
 
-    def set_current_index(self, new_index):
-        """
-            Try to change current index.
-            :param int new_index: index of new current script
-            :return: False only when script should restore old selection
-        """
-        if self._current_index == new_index: return True
-        if self._current_controller is not None:
-            if not self._current_controller.on_edit_exit():
-                self.vertical_splitter.setSizes([100000,0])
-                if plask is not None:
-                    self._update_required()
-                return False
-        self._current_index = new_index
-        for i in reversed(range(self.parent_for_editor_widget.count())):
-            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
-        if self._current_index is None:
-            self._current_controller = None
-        else:
-            self._current_controller = self.model.entries[new_index].get_controller(self.document)
-            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
-            self._current_controller.on_edit_enter()
-            self.update_geometries()
-            if plask is not None:
-                if self.plot_auto_refresh:
-                    self.plot()
-                else:
-                    self._update_required()
-        self.vertical_splitter.setSizes([100000,1])
-        return True
-
     def update_geometries(self):
         if plask is not None:
             dim = max(self._current_controller.model.dim, 2)
@@ -125,7 +94,7 @@ class GridsController(Controller):
                 self.mesh_preview.toolbar.enable_planes(('long','tran','vert'))
             else:
                 self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
-            geoms = list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
+            geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
             current = geometry_list.currentText()
             geometry_list.clear()
@@ -138,12 +107,6 @@ class GridsController(Controller):
                         pass
                     else:
                         return
-
-    def grid_selected(self, new_selection, old_selection):
-        if new_selection.indexes() == old_selection.indexes(): return
-        indexes = new_selection.indexes()
-        if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grids_table.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
 
     def get_widget(self):
         return self.splitter
@@ -177,6 +140,45 @@ class GridsController(Controller):
             #TODO try to select property
             pass
 
+    def grid_selected(self, new_selection, old_selection):
+        if new_selection.indexes() == old_selection.indexes(): return
+        indexes = new_selection.indexes()
+        if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
+            self.grids_table.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
+
+    def set_current_index(self, new_index):
+        """
+            Try to change current index.
+            :param int new_index: index of new current script
+            :return: False only when script should restore old selection
+        """
+        if self._current_index == new_index: return True
+        if self._current_controller is not None:
+            if not self._current_controller.on_edit_exit():
+                self.vertical_splitter.setSizes([100000,0])
+                if plask is not None:
+                    self._update_required()
+                return False
+        self._current_index = new_index
+        for i in reversed(range(self.parent_for_editor_widget.count())):
+            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
+        if self._current_index is None:
+            self._current_controller = None
+        else:
+            self._current_controller = self.model.entries[new_index].get_controller(self.document)
+            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+            self._current_controller.on_edit_enter()
+            self.update_geometries()
+            if plask is not None:
+                if self.plot_auto_refresh or getattr(self._current_controller.model, 'geometry_name', None):
+                    self.plot()
+                else:
+                    self.mesh_preview.axes.cla()
+                    self.mesh_preview.canvas.draw()
+                    self._update_required()
+        self.vertical_splitter.setSizes([100000,1])
+        return True
+
     def _update_required(self):
         if self._current_controller is not None:
             self.status_bar.showMessage("Press Alt+P to update the plot")
@@ -195,12 +197,18 @@ class GridsController(Controller):
         try:
             manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             try:
-                geometry = manager.geometry[str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())]
+                selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
+                if selected_geometry:
+                    geometry = manager.geometry[selected_geometry]
+                else:
+                    geometry = None
             except KeyError:
                 geometry = None
             if model.is_mesh:
                 mesh = manager.mesh[model.name]
             elif model.is_generator:
+                if geometry is None:
+                    raise ValueError("You must select geometry to preview generator")
                 mesh = manager.meshgen[model.name](geometry)
             else:
                 mesh = None

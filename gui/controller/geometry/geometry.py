@@ -40,7 +40,7 @@ class GNGeometryController(GNObjectController):
         self.construct_group('Border Settings')
         self.borders = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
                              for (lo, hi) in self.node.get_alternative_direction_names())
-        super(GNGeometryController, self).construct_form()
+        super(GNGeometryController, self).construct_form(roles=False)
 
     def fill_form(self):
         super(GNGeometryController, self).fill_form()
