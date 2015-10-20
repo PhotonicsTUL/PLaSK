@@ -245,3 +245,16 @@ class ComboBox(QtGui.QComboBox):
         super(ComboBox, self).keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return):
             self.editingFinished.emit()
+
+
+class TextEdit(QtGui.QTextEdit):
+    editingFinished = QtSignal()
+
+    def focusOutEvent(self, event):
+        self.editingFinished.emit()
+        super(ComboBox, self).focusOutEvent(event)
+
+    def keyPressEvent(self, event):
+        super(ComboBox, self).keyPressEvent(event)
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL:
+            self.editingFinished.emit()

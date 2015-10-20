@@ -16,6 +16,7 @@ from ...qt import QtGui
 from ...utils.str import empty_to_none
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
 from ..defines import get_defines_completer
+from ...utils.widgets import ComboBox, TextEdit
 
 
 class AxisEdit(QtGui.QGroupBox):
@@ -28,37 +29,37 @@ class AxisEdit(QtGui.QGroupBox):
         self.allow_type_select = allow_type_select
         if not allow_type_select: self.accept_non_regular = accept_non_regular
         if self.allow_type_select:
-            self.type = QtGui.QComboBox()
+            self.type = ComboBox()
             self.type.addItems(['(auto-detected)', 'ordered', 'regular'])
             self.type.setToolTip('&lt;{} <b>type</b>=""&gt;<br/>'
                                  'Type of axis. If auto-detected is selected, axis will be regular only if any of the '
                                  'start, stop or num attributes are specified (in other case it will be ordered).'
                                  .format(axis))
-            self.type.currentIndexChanged.connect(controller.fire_changed)
+            self.type.editingFinished.connect(controller.fire_changed)
             form_layout.addRow("Axis type:", self.type)
         self.start = QtGui.QLineEdit()
         self.start.setCompleter(defines)
         self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
                               u'Position of the first point on the axis. (float [µm])'.format(axis))
-        self.start.textEdited.connect(controller.fire_changed)
+        self.start.editingFinished.connect(controller.fire_changed)
         form_layout.addRow("Start:", self.start)
         self.stop = QtGui.QLineEdit()
         self.stop.setCompleter(defines)
         self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
                              u'Position of the last point on the axis. (float [µm])'.format(axis))
-        self.stop.textEdited.connect(controller.fire_changed)
+        self.stop.editingFinished.connect(controller.fire_changed)
         form_layout.addRow("Stop:", self.stop)
         self.num = QtGui.QLineEdit()
         self.num.setCompleter(defines)
         self.num.setToolTip('&lt;{} start="" stop="" <b>num</b>=""&gt;<br/>'
                             'Number of the equally distributed points along the axis. (integer)'.format(axis))
-        self.num.textEdited.connect(controller.fire_changed)
+        self.num.editingFinished.connect(controller.fire_changed)
         form_layout.addRow("Num:", self.num)
         if allow_type_select or accept_non_regular:
-            self.points = QtGui.QTextEdit()
+            self.points = TextEdit()
             self.points.setToolTip('&lt;{0}&gt;<b><i>points</i></b>&lt;/{0}&gt;<br/>'
                                    'Comma-separated list of the mesh points along this axis.'.format(axis))
-            self.points.textChanged.connect(controller.fire_changed)
+            # self.points.editingFinished.connect(controller.fire_changed)
             #self.points.setWordWrapMode(QtGui.QTextEdit.LineWrapMode)
             form_layout.addRow("Points:", self.points)
             if allow_type_select:
@@ -108,12 +109,10 @@ class RectangularMesh1DController(Controller):
 
     def save_data_in_model(self):
         self.editor.to_model(self.model.axis)
-        self.model.fire_changed()
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        self.editor.from_model(self.model.axis)
-        self.notify_changes = True
+        with self.mute_changes():
+            self.editor.from_model(self.model.axis)
 
     def get_widget(self):
         return self.editor
@@ -140,10 +139,9 @@ class RectangularMeshController(Controller):
             self.axis_edit[i].to_model(self.model.axis[i])
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        for i in range(0, self.model.dim):
-            self.axis_edit[i].from_model(self.model.axis[i])
-        self.notify_changes = True
+        with self.mute_changes():
+            for i in range(0, self.model.dim):
+                self.axis_edit[i].from_model(self.model.axis[i])
 
     def get_widget(self):
         return self.form

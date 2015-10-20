@@ -13,6 +13,19 @@
 from ..qt import QtGui, QtCore
 from ..utils import sorted_index
 
+
+class MuteChanges(object):
+
+    def __init__(self, controller):
+        self.controller = controller
+
+    def __enter__(self):
+        self.controller._notify_changes = False
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.controller._notify_changes = True
+
+
 class Controller(object):
     """
         Base class for controllers.
@@ -21,7 +34,7 @@ class Controller(object):
         They also transfer data from model to editor (typically in on_edit_enter) and in opposite direction
         (typically in save_data_in_model).
     """
-    
+
     def __init__(self, document=None, model=None):
         """
         Optionally set document and/or model.
@@ -33,13 +46,13 @@ class Controller(object):
             self.document = document
         if model is not None:
             self.model = model
-        self.notify_changes = False
+        self._notify_changes = True
 
     def save_data_in_model(self):
         """Called to force save data from editor in model (typically by on_edit_exit or when model is needed while
-         editor still is active - for instance when user saves edited document to file)."""
+        editor still is active - for instance when user saves edited document to file)."""
         pass  
-        
+
     def on_edit_enter(self):
         """Called when editor is entered and will be visible."""
         pass
@@ -85,7 +98,7 @@ class Controller(object):
         raise NotImplementedError("Method 'get_widget' must be overriden in a subclass!")
 
     def fire_changed(self, *args, **kwargs):
-        if self.notify_changes:
+        if self._notify_changes:
             self.model.fire_changed()
 
     def select_info(self, info):
@@ -95,6 +108,9 @@ class Controller(object):
         :param ..model.info.Info info: info object
         '''
         pass
+
+    def mute_changes(self):
+        return MuteChanges(self)
 
 
 class NoConfController(Controller):
@@ -178,6 +194,7 @@ class ControllerWithSubController(Controller):
             self._last_index = self._current_index
             self.grid.selectionModel().clear()
         return True
+
 
 def select_index_from_info(info, model, table):
     try:

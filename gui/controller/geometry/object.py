@@ -44,9 +44,9 @@ class GNObjectController(GNodeController):
             self.role = None
         self.axes = self.construct_combo_box('Axes:', AXES.get(self.node.dim, ('',)), node_property_name='axes')
         self.axes.setToolTip('&lt;{} <b>axes</b>="" ...&gt;<br/>'
-                            'Specification of the axes.'
-                            ' Most popular values are <it>xy</it>, <it>yz</it>, <it>rz</it>'
-                            ' (letters are names of the horizontal and vertical axis, respectively).'
+                             'Specification of the axes.'
+                             ' Most popular values are <it>xy</it>, <it>yz</it>, <it>rz</it>'
+                             ' (letters are names of the horizontal and vertical axis, respectively).'
                              .format(self.node.tag_name(False)))
         self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
         if self.in_parent_controller is not None:

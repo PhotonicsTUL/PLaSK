@@ -83,6 +83,8 @@ class GridsController(Controller):
         selection_model = self.grids_table.selectionModel()
         selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
+        self.model.changed.connect(self.on_model_change)
+
         self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
@@ -171,9 +173,10 @@ class GridsController(Controller):
             self.update_geometries()
             if plask is not None:
                 if self.plot_auto_refresh or getattr(self._current_controller.model, 'geometry_name', None):
-                    self.plot()
+                    self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
                 else:
-                    self.mesh_preview.axes.cla()
+                    self.mesh_preview.axes.lines = []
+                    self.mesh_preview.axes.patches = []
                     self.mesh_preview.canvas.draw()
                     self._update_required()
         self.vertical_splitter.setSizes([100000,1])
@@ -188,7 +191,16 @@ class GridsController(Controller):
             self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; "
                                           "background-color: palette(background); }")
 
-    def plot_mesh(self, model, set_limits):
+    def on_model_change(self, *args, **kwargs):
+        self.save_data_in_model()
+        if plask is not None:
+            if self.plot_auto_refresh:
+                if self._current_controller is not None:
+                    self.plot_mesh(self._current_controller.model, set_limits=False, ignore_no_geometry=True)
+            else:
+                self._update_required()
+
+    def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
         if plask is None:
@@ -208,8 +220,12 @@ class GridsController(Controller):
                 mesh = manager.mesh[model.name]
             elif model.is_generator:
                 if geometry is None:
-                    raise ValueError("You must select geometry to preview generator")
-                mesh = manager.meshgen[model.name](geometry)
+                    if ignore_no_geometry:
+                        mesh = None
+                    else:
+                        raise ValueError("You must select geometry to preview generators")
+                else:
+                    mesh = manager.meshgen[model.name](geometry)
             else:
                 mesh = None
             if model != self.plotted_model:
@@ -239,6 +255,4 @@ class GridsController(Controller):
 
     def plot(self):
         if self._current_controller is not None:
-            model = self._current_controller.model
-            self.plot_mesh(model, set_limits=True)
-
+            self.plot_mesh(self._current_controller.model, set_limits=True)

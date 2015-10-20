@@ -53,8 +53,8 @@ class GNodeController(Controller):
 
     class ChangeNodeCommand(QtGui.QUndoCommand):
         
-        def __init__(self, model, node, setter, new_value, old_value, action_name, QUndoCommand_parent = None):
-            super(GNodeController.ChangeNodeCommand, self).__init__(action_name, QUndoCommand_parent)
+        def __init__(self, model, node, setter, new_value, old_value, action_name, parent=None):
+            super(GNodeController.ChangeNodeCommand, self).__init__(action_name, parent)
             self.model = model
             self.node = node
             self.setter = setter

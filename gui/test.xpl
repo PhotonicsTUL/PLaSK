@@ -22,7 +22,7 @@
 </materials>
 
 <geometry>
-  <cartesian2d name="geo2d">
+  <cartesian2d name="geo2d" length="1000">
     <stack>
       <arrange dtran="0.4" dvert="0" count="3">
         <stack>
@@ -118,7 +118,7 @@
 
 <grids>
   <generator method="divide" name="default" type="rectangular2d">
-    <postdiv by0="3" by1="2"/>
+    <postdiv by="2"/>
     <refinements>
       <axis1 object="p-contact" at="50"/>
       <axis0 object="oxide" at="-0.1"/>
@@ -148,6 +148,10 @@
   <generator method="smooth" name="sss" type="rectangular3d">
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
+  <mesh name="order" type="ordered">
+    <axis></axis>
+  </mesh>
+  <generator method="smooth" name="s" type="ordered"/>
 </grids>
 
 <solvers>

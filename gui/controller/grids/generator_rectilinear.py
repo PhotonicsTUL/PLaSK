@@ -18,7 +18,7 @@ from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
 from ...qt import QtGui
 from ...utils.str import empty_to_none
-from ...utils.widgets import ComboBoxDelegate
+from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 
 class RectilinearRefinedGeneratorController(Controller):
@@ -33,13 +33,16 @@ class RectilinearRefinedGeneratorController(Controller):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
         for i,r in enumerate(res):
-            axis_name = AXIS_NAMES[self.model.dim-1][i]
-            hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
+            if self.model.dim != 1:
+                axis_name = AXIS_NAMES[self.model.dim-1][i]
+                hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
+            else:
+                axis_name = 'horizontal'
             hbox_div.addWidget(r)
             r.setToolTip(
                 tooltip.format('{}'.format(i), ' in {} direction'.format(axis_name) if axis_name else ''))
             r.setCompleter(defines_completer)
-            r.textEdited.connect(self.fire_changed)
+            r.editingFinished.connect(self.fire_changed)
         container_to_add.addRow(label, hbox_div)
         return res
 
@@ -55,7 +58,7 @@ class RectilinearRefinedGeneratorController(Controller):
         self.options = QtGui.QHBoxLayout()
 
         self.aspect = QtGui.QLineEdit()
-        self.aspect.textEdited.connect(self.fire_changed)
+        self.aspect.editingFinished.connect(self.fire_changed)
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
@@ -68,9 +71,8 @@ class RectilinearRefinedGeneratorController(Controller):
 
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
-            cb = QtGui.QComboBox()
-            cb.currentIndexChanged.connect(self.fire_changed)
-            cb.textChanged.connect(self.fire_changed)
+            cb = ComboBox()
+            cb.editingFinished.connect(self.fire_changed)
             cb.addItems(['', 'yes', 'no'])
             cb.setEditable(True)
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
@@ -116,12 +118,11 @@ class RectilinearRefinedGeneratorController(Controller):
         self.model.aspect = self.aspect.text()
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
-            a = getattr(self.model, attr_name)
-            getattr(self, attr_name).setEditText('' if a is None else a)
-        self.aspect.setText(self.model.aspect)
-        self.notify_changes = True
+        with self.mute_changes():
+            for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
+                a = getattr(self.model, attr_name)
+                getattr(self, attr_name).setEditText('' if a is None else a)
+            self.aspect.setText(self.model.aspect)
 
     def get_widget(self):
         return self.form
@@ -133,9 +134,8 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
     def __init__(self, document, model):
         super(RectilinearDivideGeneratorController, self).__init__(document=document, model=model)
 
-        self.gradual = QtGui.QComboBox()    # not checkbox to allow put defines {}
-        self.gradual.currentIndexChanged.connect(self.fire_changed)
-        self.gradual.textChanged.connect(self.fire_changed)
+        self.gradual = ComboBox()
+        self.gradual.editingFinished.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
         self.gradual.setMinimumWidth(150)
@@ -156,19 +156,17 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
 
     def save_data_in_model(self):
         super(RectilinearDivideGeneratorController, self).save_data_in_model()
-        self.model.gradual =  empty_to_none(self.gradual.currentText())
+        self.model.gradual = empty_to_none(self.gradual.currentText())
         self.model.set_prediv([empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)])
         self.model.set_postdiv([empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)])
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        super(RectilinearDivideGeneratorController, self).on_edit_enter()
-        self.gradual.setEditText('' if self.model.gradual is None else self.model.gradual)
-        for i in range(0, self.model.dim):
-            self.prediv[i].setText(self.model.get_prediv(i))
-            self.postdiv[i].setText(self.model.get_postdiv(i))
-        self.notify_changes = True
-
+        with self.mute_changes():
+            super(RectilinearDivideGeneratorController, self).on_edit_enter()
+            self.gradual.setEditText('' if self.model.gradual is None else self.model.gradual)
+            for i in range(0, self.model.dim):
+                self.prediv[i].setText(self.model.get_prediv(i))
+                self.postdiv[i].setText(self.model.get_postdiv(i))
 
 class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController):
     """Ordered and rectangular 2D and 3D divide generator script."""
@@ -191,9 +189,8 @@ class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController
         self.model.set_factor([empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)])
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        super(RectilinearSmoothGeneratorController, self).on_edit_enter()
-        for i in range(0, self.model.dim):
-            self.small[i].setText(self.model.get_small(i))
-            self.factor[i].setText(self.model.get_factor(i))
-        self.notify_changes = True
+        with self.mute_changes():
+            super(RectilinearSmoothGeneratorController, self).on_edit_enter()
+            for i in range(0, self.model.dim):
+                self.small[i].setText(self.model.get_small(i))
+                self.factor[i].setText(self.model.get_factor(i))

@@ -39,39 +39,38 @@ class ConfSolverController(Controller):
         return self.widget
 
     def on_edit_enter(self):
-        self.notify_changes = False
-        try:
-            if self.model.solver.endswith('2D'):
-                geometries = [g.name for g in self.document.geometry.model.roots_cartesian2d if g.name]
-            elif self.model.solver.endswith('Cyl'):
-                geometries = [g.name for g in self.document.geometry.model.roots_cylindrical if g.name]
-            elif self.model.solver.endswith('3D'):
-                geometries = [g.name for g in self.document.geometry.model.roots_cartesian3d if g.name]
-            else:
-                raise AttributeError
-        except AttributeError:
-            pass
-        else:
-            self.widget.geometry.clear()
-            self.widget.geometry.addItems([''] + geometries)
-        try:
-            grids = []
-            if self.model.mesh_type is not None:
-                if ',' in self.model.mesh_type:
-                    mesh_types = (m.strip() for m in self.model.mesh_type.split(','))
+        with self.mute_changes():
+            try:
+                if self.model.solver.endswith('2D'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian2d if g.name]
+                elif self.model.solver.endswith('Cyl'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cylindrical if g.name]
+                elif self.model.solver.endswith('3D'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian3d if g.name]
                 else:
-                    mesh_types = self.model.mesh_type,
-                for mesh_type in mesh_types:
-                    mesh_type = mesh_type.lower()
-                    grids.extend(m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type)
-        except AttributeError:
-            pass
-        else:
-            if self.widget.mesh is not None:
-                self.widget.mesh.clear()
-                self.widget.mesh.addItems([''] + grids)
-        self.widget.load_data()
-        self.notify_changes = True
+                    raise AttributeError
+            except AttributeError:
+                pass
+            else:
+                self.widget.geometry.clear()
+                self.widget.geometry.addItems([''] + geometries)
+            try:
+                grids = []
+                if self.model.mesh_type is not None:
+                    if ',' in self.model.mesh_type:
+                        mesh_types = (m.strip() for m in self.model.mesh_type.split(','))
+                    else:
+                        mesh_types = self.model.mesh_type,
+                    for mesh_type in mesh_types:
+                        mesh_type = mesh_type.lower()
+                        grids.extend(m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type)
+            except AttributeError:
+                pass
+            else:
+                if self.widget.mesh is not None:
+                    self.widget.mesh.clear()
+                    self.widget.mesh.addItems([''] + grids)
+            self.widget.load_data()
 
     def save_data_in_model(self):
         self.widget.save_data()
@@ -113,11 +112,10 @@ class FilterController(Controller):
         else:
             self.geometry.clear()
             self.geometry.addItems([''] + geometries)
-        self.notify_changes = False
-        self.geometry.setCurrentIndex(self.geometry.findText(self.model.geometry))
-        self.geometry.setEditText(self.model.geometry)
-        self.what.setCurrentIndex(self.what.findText(self.model.what))
-        self.notify_changes = True
+        with self.mute_changes():
+            self.geometry.setCurrentIndex(self.geometry.findText(self.model.geometry))
+            self.geometry.setEditText(self.model.geometry)
+            self.what.setCurrentIndex(self.what.findText(self.model.what))
 
     def save_data_in_model(self):
         self.model.geometry = self.geometry.currentText()

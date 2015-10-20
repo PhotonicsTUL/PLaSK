@@ -25,7 +25,7 @@ class NavigationToolbar(GeometryNavigationToolbar):
         ('Geometry:', 'Select geometry for mesh preview', None, 'select_geometry', ((), 0)),
         (None, None, None, None, None),
         ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
-        # ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', False),
+        ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', False),
         (None, None, None, None, None),
         ('Home', 'Reset original view', 'go-home', 'home', None),
         ('Back', 'Back to  previous view', 'go-previous', 'back', None),
@@ -96,7 +96,8 @@ class PlotWidget(GeometryPlotWidget):
             plask.plot_mesh(axes=self.axes, mesh=mesh, margin=margin, zorder=1.5, plane=plane,
                             lw=CONFIG['mesh/line_width'], color=CONFIG['mesh/mesh_color'])
             try:
-                plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, margin=margin, zorder=1,
+                if geometry is not None:
+                    plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, margin=margin, zorder=1,
                                     plane=plane, lw=1.5, get_color=self.get_color)
             finally:
                 for ax in self.axes.xaxis, self.axes.yaxis:
