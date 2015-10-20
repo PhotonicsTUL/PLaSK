@@ -16,6 +16,7 @@ from ...qt.QtGui import QSplitter
 
 from .. import Controller, select_index_from_info
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
+from ...utils.qsignals import BlockQtSignals
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
@@ -99,16 +100,13 @@ class GridsController(Controller):
             geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
             current = geometry_list.currentText()
-            geometry_list.clear()
-            geometry_list.addItems(geoms)
-            for sel in (getattr(self._current_controller.model, 'geometry_name', None), current):
-                if sel is not None:
-                    try:
-                        geometry_list.setCurrentIndex(geoms.index(sel))
-                    except ValueError:
-                        pass
-                    else:
-                        return
+            with BlockQtSignals(geometry_list):
+                geometry_list.clear()
+                geometry_list.addItems(geoms)
+            try:
+                geometry_list.setCurrentIndex(geoms.index(self._current_controller.model.geometry_name))
+            except (AttributeError, ValueError):
+                pass
 
     def get_widget(self):
         return self.splitter
@@ -172,13 +170,14 @@ class GridsController(Controller):
             self._current_controller.on_edit_enter()
             self.update_geometries()
             if plask is not None:
-                if self.plot_auto_refresh or getattr(self._current_controller.model, 'geometry_name', None):
-                    self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
-                else:
-                    self.mesh_preview.axes.lines = []
-                    self.mesh_preview.axes.patches = []
-                    self.mesh_preview.canvas.draw()
-                    self._update_required()
+                pass
+            if self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name'):
+                self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
+            else:
+                self.mesh_preview.axes.lines = []
+                self.mesh_preview.axes.patches = []
+                self.mesh_preview.canvas.draw()
+                self._update_required()
         self.vertical_splitter.setSizes([100000,1])
         return True
 

@@ -198,7 +198,7 @@ CONFIG_WIDGETS = OrderedDict([
         ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
     ]),
     ("Workarounds", [
-        "Script completion",
+        "Script Completion",
         ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
                                             "Do not show completion pop-up after you type a dot. This still allows "
                                             "to show the pop-up manually by pressing Ctrl+Space.")),
