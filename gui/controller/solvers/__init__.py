@@ -38,7 +38,7 @@ class ConfSolverController(Controller):
         except AttributeError:
             widget_class = SolverAutoWidget
         self.widget = widget_class(self)
-        self.section_model.changed.connect(self._model_change_cb)
+        #self.section_model.changed.connect(self._model_change_cb)
 
     def _model_change_cb(self, *args, **kwargs):
         self.widget.load_data()

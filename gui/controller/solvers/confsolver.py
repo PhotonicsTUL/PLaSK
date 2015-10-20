@@ -129,9 +129,9 @@ class SolverAutoWidget(VerticalScrollArea):
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
-                            #edit.textEdited.connect(self.controller.fire_changed)
-                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
-                                                         self._change_attr(group, name, edit.text()))
+                            edit.textEdited.connect(self.controller.fire_changed)
+                            #edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                            #                             self._change_attr(group, name, edit.text()))
 
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
                     self.controls[group, item.name] = edit
