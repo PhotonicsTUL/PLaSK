@@ -70,7 +70,7 @@ DEFAULTS = {
     'geometry/extra_color': '#00aaff',
     'geometry/extra_alpha': 0.7,
     'geometry/extra_width': 1.0,
-    'mesh/mesh_color': '#00aa00',
+    'mesh/mesh_color': '#00aaff',
     'mesh/line_width': 1.0,
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,

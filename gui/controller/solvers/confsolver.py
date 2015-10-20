@@ -14,7 +14,7 @@ from ...qt import QtGui
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
-from ...utils.textedit import TextEdit
+from ...utils.texteditor import TextEditor
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
@@ -137,7 +137,7 @@ class SolverAutoWidget(VerticalScrollArea):
                     self.controls[group, item.name] = edit
                     layout.addRow(item.label + ':', edit)
             else:
-                edit = TextEdit(parent, line_numbers=False)
+                edit = TextEditor(parent, line_numbers=False)
                 font = QtGui.QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),

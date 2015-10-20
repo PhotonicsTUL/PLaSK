@@ -320,3 +320,8 @@ class PlotWidget(QtGui.QWidget):
         res.setContentsMargins(0, 0, 0, 0)
         res.setWidget(self)
         return res
+
+    def clear(self):
+        self.axes.lines = []
+        self.axes.patches = []
+        self.canvas.draw()

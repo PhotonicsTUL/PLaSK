@@ -46,7 +46,7 @@ from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
 from .utils.config import CONFIG, ConfigDialog
-from .utils.textedit import update_textedit_colors
+from .utils.texteditor import update_textedit_colors
 
 try:
     import plask

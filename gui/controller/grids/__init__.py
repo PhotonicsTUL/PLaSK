@@ -59,8 +59,9 @@ class GridsController(Controller):
         if plask is not None:
             self.mesh_preview = PlotWidget(self, self.vertical_splitter)
 
-            self.status_bar = QtGui.QStatusBar()
+            self.status_bar = QtGui.QLabel()
             self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
 
             self.mesh_preview.layout().addWidget(self.status_bar)
             self.vertical_splitter.addWidget(self.mesh_preview)
@@ -99,7 +100,6 @@ class GridsController(Controller):
                 self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
             geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
-            current = geometry_list.currentText()
             with BlockQtSignals(geometry_list):
                 geometry_list.clear()
                 geometry_list.addItems(geoms)
@@ -116,14 +116,14 @@ class GridsController(Controller):
             self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        self.grids_table.selectionModel().clear()   # model could have completly changed
+        self.grids_table.selectionModel().clear()   # model could have completely changed
         if self._last_index is not None:
             self.grids_table.selectRow(self._last_index)
             self.update_geometries()
             if plask is not None and self.plot_auto_refresh:
                 self.plot()
         elif plask is not None:
-            self._update_required()
+            self.show_update_required()
         self.grids_table.setFocus()
 
     def on_edit_exit(self):
@@ -157,7 +157,8 @@ class GridsController(Controller):
             if not self._current_controller.on_edit_exit():
                 self.vertical_splitter.setSizes([100000,0])
                 if plask is not None:
-                    self._update_required()
+                    self.mesh_preview.clear()
+                    self.show_update_required()
                 return False
         self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -170,25 +171,21 @@ class GridsController(Controller):
             self._current_controller.on_edit_enter()
             self.update_geometries()
             if plask is not None:
-                pass
-            if self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name'):
-                self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
-            else:
-                self.mesh_preview.axes.lines = []
-                self.mesh_preview.axes.patches = []
-                self.mesh_preview.canvas.draw()
-                self._update_required()
+                if self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name'):
+                    self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
+                else:
+                    self.mesh_preview.clear()
+                    self.show_update_required()
         self.vertical_splitter.setSizes([100000,1])
         return True
 
-    def _update_required(self):
+    def show_update_required(self):
         if self._current_controller is not None:
-            self.status_bar.showMessage("Press Alt+P to update the plot")
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ffff88; }")
+            self.status_bar.setText("Press Alt+P to update the plot")
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
-            self.status_bar.showMessage('')
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; "
-                                          "background-color: palette(background); }")
+            self.status_bar.setText('')
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
     def on_model_change(self, *args, **kwargs):
         self.save_data_in_model()
@@ -197,9 +194,10 @@ class GridsController(Controller):
                 if self._current_controller is not None:
                     self.plot_mesh(self._current_controller.model, set_limits=False, ignore_no_geometry=True)
             else:
-                self._update_required()
+                self.show_update_required()
 
     def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
+        self.mesh_preview.clear()
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
         if plask is None:
@@ -231,8 +229,8 @@ class GridsController(Controller):
                 self.clear = self.mesh_preview.toolbar._views.clear()
             self.mesh_preview.update_mesh_plot(mesh, geometry, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.status_bar.showMessage(str(e))
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ff8888; }")
+            self.status_bar.setText(str(e))
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             # self.status_bar.setAutoFillBackground(True)
             from ... import _DEBUG
             if _DEBUG:
@@ -247,9 +245,8 @@ class GridsController(Controller):
             #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
             # else:
             #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.status_bar.showMessage('')
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid blask; "
-                                          "background-color: palette(background); }")
+            self.status_bar.setText('')
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
             return True
 
     def plot(self):

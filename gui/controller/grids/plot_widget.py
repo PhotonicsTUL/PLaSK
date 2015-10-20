@@ -11,8 +11,8 @@
 # GNU General Public License for more details.
 
 from matplotlib.ticker import MaxNLocator
-import plask
 
+import plask
 from ...qt.QtCore import Qt
 
 from ...utils.config import CONFIG
@@ -51,7 +51,16 @@ class NavigationToolbar(GeometryNavigationToolbar):
         if self.controller.plot_auto_refresh:
             self.controller.plot()
         else:
-            self.controller._update_required()
+            self.controller.show_update_required()
+
+    def select_plane(self, index):
+        plane = ('10', '02', '12')[index]
+        self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
+        self.controller.checked_plane = plane
+        if self.controller.plot_auto_refresh: self.controller.plot()
+        else: self.controller.show_update_required()
+        self.set_message(self.mode)
+
 
 class BwColor(object):
 
@@ -109,5 +118,3 @@ class PlotWidget(GeometryPlotWidget):
                 self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
                 self.canvas.draw()
                 self.plane = plane
-
-

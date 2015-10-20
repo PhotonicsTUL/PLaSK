@@ -235,7 +235,12 @@ class VerticalScrollArea(QtGui.QScrollArea):
 
 
 class ComboBox(QtGui.QComboBox):
+
     editingFinished = QtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super(ComboBox, self).__init__(*args, **kwargs)
+        self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
 
     def focusOutEvent(self, event):
         self.editingFinished.emit()

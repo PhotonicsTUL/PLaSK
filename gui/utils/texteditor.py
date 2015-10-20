@@ -26,11 +26,11 @@ def update_textedit_colors():
 update_textedit_colors()
 
 
-class TextEdit(QtGui.QPlainTextEdit):
+class TextEditor(QtGui.QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
     def __init__(self, parent=None, line_numbers=True):
-        super(TextEdit, self).__init__(parent)
+        super(TextEditor, self).__init__(parent)
         self.setFont(EDITOR_FONT)
         self.setLineWrapMode(QtGui.QPlainTextEdit.NoWrap)
         if line_numbers:
@@ -48,7 +48,7 @@ class TextEdit(QtGui.QPlainTextEdit):
         self.textChanged.connect(self.on_text_change)
 
     def resizeEvent(self, e):
-        super(TextEdit, self).resizeEvent(e)
+        super(TextEditor, self).resizeEvent(e)
         if self.line_numbers is not None:
             cr = self.contentsRect()
             self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
@@ -66,14 +66,14 @@ class TextEdit(QtGui.QPlainTextEdit):
             self.setTextCursor(cursor)
             event.ignore()
             return
-        super(TextEdit, self).keyPressEvent(event)
+        super(TextEditor, self).keyPressEvent(event)
 
     def focusInEvent(self, event):
-        super(TextEdit, self).focusInEvent(event)
+        super(TextEditor, self).focusInEvent(event)
         self.update_selections()
 
     def focusOutEvent(self, event):
-        super(TextEdit, self).focusOutEvent(event)
+        super(TextEditor, self).focusOutEvent(event)
         self.update_selections()
 
     def update_selections(self, selections=None):

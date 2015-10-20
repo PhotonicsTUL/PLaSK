@@ -12,7 +12,7 @@
 
 import itertools
 
-from ...qt import QtCore, QtGui
+from ...qt import QtCore, QtGui, QtSignal
 from ...qt.QtCore import Qt
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
@@ -20,7 +20,7 @@ from ...external.highlighter.python27 import syntax
 from ..script import scheme
 
 from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re
-from ...utils.textedit import TextEdit
+from ...utils.texteditor import TextEditor
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from .. import Controller, select_index_from_info
@@ -131,7 +131,9 @@ class MaterialLineEdit(QtGui.QLineEdit):
         show_material_plot(self, self.materials_model, self.text())
 
 
-class MaterialsComboBox(ComboBox):
+class MaterialsComboBox(QtGui.QComboBox):
+
+    editingFinished = QtSignal()
 
     def __init__(self, parent=None, materials_model=None, material_list=None, defines_model=None, popup_select_cb=None):
         """
@@ -154,6 +156,16 @@ class MaterialsComboBox(ComboBox):
             self.setMaxVisibleItems(len(material_list))
         self.currentIndexChanged[str].connect(self.show_components_popup)
 
+    def focusOutEvent(self, event):
+        if self.material_edit_popup is None:
+            self.editingFinished.emit()
+        super(MaterialsComboBox, self).focusOutEvent(event)
+
+    # def keyPressEvent(self, event):
+    #     super(MaterialsComboBox, self).keyPressEvent(event)
+    #     if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+    #         self.editingFinished.emit()
+    #
     def append_list(self, list_to_append, insert_separator=True):
         """
         Append list to combo-box.
@@ -366,7 +378,7 @@ class MaterialsController(Controller):
         table_edit_shortcut(self.properties_table, 1, 'v')
 
         # font.setPointSize(font.pointSize()-1)
-        self.propedit = TextEdit(self.prop_splitter, line_numbers=False)
+        self.propedit = TextEditor(self.prop_splitter, line_numbers=False)
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
                                                       default_font=EDITOR_FONT)
         self.propedit.hide()

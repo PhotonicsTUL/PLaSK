@@ -16,7 +16,7 @@ from ...qt.QtCore import Qt
 from .. import Controller
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.qsignals import BlockQtSignals
-from ...utils.textedit import TextEdit
+from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
@@ -40,7 +40,7 @@ MATCH_COLOR = QtGui.QColor(CONFIG['editor/match_color'])
 REPLACE_COLOR = QtGui.QColor(CONFIG['editor/replace_color'])
 
 
-class XMLEditor(TextEdit):
+class XMLEditor(TextEditor):
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -89,7 +89,7 @@ class XMLEditor(TextEdit):
 
 class SourceWidget(QtGui.QWidget):
 
-    def __init__(self, parent, editor_class=TextEdit, *args, **kwargs):
+    def __init__(self, parent, editor_class=TextEditor, *args, **kwargs):
         super(SourceWidget, self).__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)

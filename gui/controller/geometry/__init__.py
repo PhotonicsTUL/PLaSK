@@ -134,8 +134,8 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.status_bar.showMessage(str(e))
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ff8888; }")
+            self.status_bar.setText(str(e))
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
@@ -149,8 +149,8 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
             else:
                 self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.status_bar.showMessage('')
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: palette(background); }")
+            self.status_bar.setText('')
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
             self.show_selection()
             return True
 
@@ -170,12 +170,11 @@ class GeometryController(Controller):
             if self.plot_auto_refresh:
                 self.plot_element(self.plotted_tree_element, set_limits=False)
             else:
-                self.status_bar.showMessage("Geometry changed: refresh the plot")
-                self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; background-color: #ffff88; }")
+                self.status_bar.setText("Geometry changed: refresh the plot")
+                self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
-            self.status_bar.showMessage('')
-            self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; "
-                                          "background-color: palette(background); }")
+            self.status_bar.setText('')
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -285,9 +284,9 @@ class GeometryController(Controller):
         self.geometry_view = PlotWidget(self, picker=True)
         self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
 
-        self.status_bar = QtGui.QStatusBar()
+        self.status_bar = QtGui.QLabel()
         self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        self.status_bar.setStyleSheet("QStatusBar { border: 1px solid black; }")
+        self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
 
         self.geometry_view.layout().addWidget(self.status_bar)
 

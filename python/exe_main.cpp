@@ -44,7 +44,7 @@ namespace plask { namespace python {
     PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
 
     PLASK_PYTHON_API std::string getPythonExceptionMessage();
-    
+
     PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
     PLASK_PYTHON_API void createPythonLogger();

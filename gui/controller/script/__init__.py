@@ -30,7 +30,7 @@ from ..source import SourceEditController, SourceWidget
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.widgets import EDITOR_FONT
-from ...utils.textedit import TextEdit
+from ...utils.texteditor import TextEditor
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 if sys.version_info >= (3, 0, 0):
@@ -65,7 +65,7 @@ def update_python_scheme():
 update_python_scheme()
 
 
-class ScriptEditor(TextEdit):
+class ScriptEditor(TextEditor):
     """Editor with some features usefult for script editing"""
 
     def __init__(self, parent=None, controller=None):

@@ -118,7 +118,7 @@
 
 <grids>
   <generator method="divide" name="default" type="rectangular2d">
-    <postdiv by="2"/>
+    <postdiv by0="2" by1="1"/>
     <refinements>
       <axis1 object="p-contact" at="50"/>
       <axis0 object="oxide" at="-0.1"/>
@@ -134,7 +134,7 @@
     <options aspect="100" gradual="no"/>
   </generator>
   <generator method="smooth" name="smoothie" type="rectangular2d">
-    <steps small="0.005" factor="1.2"/>
+    <steps small0="0.005" small1="0.01" factor="1.2"/>
   </generator>
   <generator method="divide" name="oned" type="ordered">
     <refinements>
@@ -148,10 +148,6 @@
   <generator method="smooth" name="sss" type="rectangular3d">
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
-  <mesh name="order" type="ordered">
-    <axis></axis>
-  </mesh>
-  <generator method="smooth" name="s" type="ordered"/>
 </grids>
 
 <solvers>

@@ -785,6 +785,8 @@ if(WIN32)
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\external\\\\highlighter\\\\js.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\resources.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\main.py*\\\"
+        Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\widgets\\\\textedit
+        .py*\\\"
     ") #HACK Temporary fix to remove files from old versions
 endif()
 
