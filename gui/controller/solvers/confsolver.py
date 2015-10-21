@@ -36,9 +36,14 @@ def attr_list_to_text(model, group, attr):
 
 def text_to_attr_list(model, group, attr, text):
     attr = attr[:-1]
-    values = text.strip().splitlines()
-    for i,value in enumerate(values):
-        model.data[group][attr+str(i)] = value
+    data = model.data[group]
+
+    skip = len(attr)    #delete old attributes, while data can have more attributes than text and not all will be overwritten
+    for k in data.keys():
+        if k[:skip] == attr and k[-1].isdigit(): del data[k]
+
+    for i,value in enumerate(text.strip().splitlines()):
+        data[attr+str(i)] = value
 
 
 class SolverAutoWidget(VerticalScrollArea):
@@ -65,7 +70,7 @@ class SolverAutoWidget(VerticalScrollArea):
         def undo(self):
             self.set_property_value(self.old_value)
 
-    def _change_attr(self, group, attr, value):
+    def _change_attr(self, group, attr, value, label = None):
         def set_solver_attr(node, value):
             if attr is None:
                 node.data[group] = value
@@ -76,10 +81,10 @@ class SolverAutoWidget(VerticalScrollArea):
         old_value = node.data[group] if attr is None else node.data[group][attr]
         if value != old_value:
             model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
-                model, node, set_solver_attr, value, old_value, 'change attribute of solver'
+                model, node, set_solver_attr, value, old_value, "change solver's {}".format('attribute' if label is None else label)
             ))
 
-    def _change_multi_attr(self, group, attr, text):
+    def _change_multi_attr(self, group, attr, text, label = None):
         def set_solver_attr(node, value):
             text_to_attr_list(node, group, attr, value)
         node = self.controller.solver_model
@@ -87,7 +92,7 @@ class SolverAutoWidget(VerticalScrollArea):
         old_text = attr_list_to_text(node, group, attr)
         if text != old_text:
             model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
-                model, node, set_solver_attr, text, old_text, 'change attribute of solver'
+                model, node, set_solver_attr, text, old_text, "change solver's {}".format('attribute' if label is None else label)
             ))
 
     def _change_node_field(self, field_name, value):
@@ -97,7 +102,7 @@ class SolverAutoWidget(VerticalScrollArea):
         old_value = getattr(node, field_name)
         if value != old_value:
             model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
-                model, node, set_solver_field, value, old_value, 'change {} of solver'.format(field_name)
+                model, node, set_solver_field, value, old_value, "change solver's {}".format(field_name)
             ))
 
 
@@ -160,8 +165,8 @@ class SolverAutoWidget(VerticalScrollArea):
                         edit.addItems([''] + list(item.choices))
                         #edit.textChanged.connect(self.controller.fire_changed)
                         #edit.currentIndexChanged.connect(self.controller.fire_changed)
-                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
-                                                         self._change_attr(group, name, edit.currentText()))
+                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name, label=item.label:
+                                                         self._change_attr(group, name, edit.currentText(), label))
                         edit.setCompleter(defines)
                     elif isinstance(item, (AttrGeometryObject, AttrGeometryPath)):
                         edit = ComboBox()
@@ -176,14 +181,14 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit = TextEditWithCB()
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             #edit.textChanged.connect(self.controller.fire_changed)
-                            edit.focus_out_cb = lambda edit=edit, group=group, name=item.name:\
-                                                    self._change_multi_attr(group, name, edit.toPlainText())
+                            edit.focus_out_cb = lambda edit=edit, group=group, name=item.name, label=item.label:\
+                                                    self._change_multi_attr(group, name, edit.toPlainText(), label)
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
                             #edit.textEdited.connect(self.controller.fire_changed)
-                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
-                                                         self._change_attr(group, name, edit.text()))
+                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name, label=item.label:
+                                                         self._change_attr(group, name, edit.text(), label))
 
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
                     self.controls[group, item.name] = edit
@@ -239,27 +244,6 @@ class SolverAutoWidget(VerticalScrollArea):
                 edit = self.controls[group]
                 with BlockQtSignals(edit):
                     edit.setPlainText(model.data[group])
-
-    def save_data(self):
-        model = self.controller.model
-        model.geometry = self.geometry.currentText()
-        if self.mesh is not None:
-            model.mesh = self.mesh.currentText()
-        for group, _, items in model.config:
-            if type(items) in (tuple, list):
-                for item in items:
-                    attr = item.name
-                    edit = self.controls[group, attr]
-                    if isinstance(item, AttrMulti):
-                        text_to_attr_list(model, group, attr, edit.toPlainText())
-                    else:
-                        if type(edit) in (ComboBox, QtGui.QComboBox):
-                            model.data[group][attr] = edit.currentText()
-                        else:
-                            model.data[group][attr] = edit.text()
-            else:
-                edit = self.controls[group]
-                model.data[group] = edit.toPlainText()
 
 
 class ConfSolverController(Controller):
@@ -332,6 +316,3 @@ class ConfSolverController(Controller):
                     self.widget.mesh.clear()
                     self.widget.mesh.addItems([''] + grids)
             self.widget.load_data()
-
-    def save_data_in_model(self):
-        self.widget.save_data()
