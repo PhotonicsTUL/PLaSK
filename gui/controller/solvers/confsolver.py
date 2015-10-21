@@ -18,6 +18,7 @@ from ...utils.texteditor import TextEditor
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
+from . import Controller
 
 
 class SolverAutoWidget(VerticalScrollArea):
@@ -213,3 +214,78 @@ class SolverAutoWidget(VerticalScrollArea):
             else:
                 edit = self.controls[group]
                 model.data[group] = edit.toPlainText()
+
+
+class ConfSolverController(Controller):
+    """Class for solvers defined in configuration dictionary"""
+
+    """
+        :param document:
+        :param model: model of solver to configure TODO should be section model?
+    """
+    def __init__(self, document, model):
+        super(ConfSolverController, self).__init__(document, model)
+        try:
+            widget_class = self.model.widget
+            if widget_class is None: raise AttributeError
+        except AttributeError:
+            widget_class = SolverAutoWidget
+        self.widget = widget_class(self)
+        #self.section_model.changed.connect(self._model_change_cb)
+
+    def _model_change_cb(self, *args, **kwargs):
+        self.widget.load_data()
+
+    """
+        :return ConfSolver: model of edited solver
+    """
+    @property
+    def solver_model(self):
+        return self.model
+
+    """
+        :return SolversModel: model of a whole solver's section
+    """
+    @property
+    def section_model(self):
+        return self.solver_model.tree_parent
+
+    def get_widget(self):
+        return self.widget
+
+    def on_edit_enter(self):
+        with self.mute_changes():
+            try:
+                if self.model.solver.endswith('2D'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian2d if g.name]
+                elif self.model.solver.endswith('Cyl'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cylindrical if g.name]
+                elif self.model.solver.endswith('3D'):
+                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian3d if g.name]
+                else:
+                    raise AttributeError
+            except AttributeError:
+                pass
+            else:
+                self.widget.geometry.clear()
+                self.widget.geometry.addItems([''] + geometries)
+            try:
+                grids = []
+                if self.model.mesh_type is not None:
+                    if ',' in self.model.mesh_type:
+                        mesh_types = (m.strip() for m in self.model.mesh_type.split(','))
+                    else:
+                        mesh_types = self.model.mesh_type,
+                    for mesh_type in mesh_types:
+                        mesh_type = mesh_type.lower()
+                        grids.extend(m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type)
+            except AttributeError:
+                pass
+            else:
+                if self.widget.mesh is not None:
+                    self.widget.mesh.clear()
+                    self.widget.mesh.addItems([''] + grids)
+            self.widget.load_data()
+
+    def save_data_in_model(self):
+        self.widget.save_data()

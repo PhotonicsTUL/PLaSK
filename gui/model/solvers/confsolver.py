@@ -156,7 +156,7 @@ class ConfSolver(Solver):
                         self.data[tag] = print_interior(el)
 
     def get_controller(self, document):
-        from ...controller.solvers import ConfSolverController
+        from ...controller.solvers.confsolver import ConfSolverController
         return ConfSolverController(document, self)
 
     def stub(self):
