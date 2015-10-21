@@ -36,6 +36,7 @@ class AxisEdit(QtGui.QGroupBox):
                                  'start, stop or num attributes are specified (in other case it will be ordered).'
                                  .format(axis))
             self.type.editingFinished.connect(controller.fire_changed)
+            self.type.currentIndexChanged.connect(controller.fire_changed)
             form_layout.addRow("Axis type:", self.type)
         self.start = QtGui.QLineEdit()
         self.start.setCompleter(defines)

@@ -238,17 +238,21 @@ class ComboBox(QtGui.QComboBox):
 
     editingFinished = QtSignal()
 
-    def __init__(self, *args, **kwargs):
-        super(ComboBox, self).__init__(*args, **kwargs)
-        self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
+    #Please do not mix this two signals!
+    #currentIndexChanged is also emitted from very unexpected places like addItems, which ruins some my code (in Solver undo)
+    #Instead, just connect to both: editingFinished and currentIndexChanged
+    #PB
+    #def __init__(self, *args, **kwargs):
+    #    super(ComboBox, self).__init__(*args, **kwargs)
+    #    self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
 
     def focusOutEvent(self, event):
-        self.editingFinished.emit()
+        if not self.signalsBlocked(): self.editingFinished.emit()
         super(ComboBox, self).focusOutEvent(event)
 
     def keyPressEvent(self, event):
         super(ComboBox, self).keyPressEvent(event)
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
 
 
@@ -272,8 +276,8 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         key_cb - when kay is pressed
     """
 
-    def __init__(self, focus_out_cb = None, key_cb = None):
-        super(TextEditWithCB, self).__init__()
+    def __init__(self, focus_out_cb = None, key_cb = None, **kwargs):
+        super(TextEditWithCB, self).__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
         self.key_cb = key_cb
 
@@ -284,3 +288,4 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
     def keyPressEvent(self, event):
         super(TextEditWithCB, self).keyPressEvent(event)
         if self.key_cb is not None: self.key_cb(event)
+

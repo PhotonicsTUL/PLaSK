@@ -73,6 +73,7 @@ class RectilinearRefinedGeneratorController(Controller):
         for w in RectilinearDivideGenerator.warnings:
             cb = ComboBox()
             cb.editingFinished.connect(self.fire_changed)
+            cb.currentIndexChanged.connect(self.fire_changed)
             cb.addItems(['', 'yes', 'no'])
             cb.setEditable(True)
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
@@ -136,6 +137,7 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
 
         self.gradual = ComboBox()
         self.gradual.editingFinished.connect(self.fire_changed)
+        self.gradual.currentIndexChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
         self.gradual.setMinimumWidth(150)

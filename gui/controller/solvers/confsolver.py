@@ -14,11 +14,31 @@ from ...qt import QtGui
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
-from ...utils.texteditor import TextEditor
-from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB
+from ...utils.texteditor import TextEditor, TextEditorWithCB
+from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB, ComboBox
+from ...utils.qsignals import BlockQtSignals
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
 from . import Controller
+
+
+def attr_list_to_text(model, group, attr):
+    attr = attr[:-1]
+    skip = len(attr)
+    data = model.data[group]
+    items = [(int(k[skip:]), data[k]) for k in data.keys() if k[:skip] == attr and k[-1].isdigit()]
+    if items:
+        values = (max(i[0] for i in items) + 1) * ['']
+        for i, v in items:
+            values[i] = v
+        return '\n'.join(values)
+    return None
+
+def text_to_attr_list(model, group, attr, text):
+    attr = attr[:-1]
+    values = text.strip().splitlines()
+    for i,value in enumerate(values):
+        model.data[group][attr+str(i)] = value
 
 
 class SolverAutoWidget(VerticalScrollArea):
@@ -46,13 +66,38 @@ class SolverAutoWidget(VerticalScrollArea):
             self.set_property_value(self.old_value)
 
     def _change_attr(self, group, attr, value):
-        def set_solver_attr(node, value): node.data[group][attr] = value
+        def set_solver_attr(node, value):
+            if attr is None:
+                node.data[group] = value
+            else:
+                node.data[group][attr] = value
         node = self.controller.solver_model
         model = self.controller.section_model
-        old_value = node.data[group][attr]
+        old_value = node.data[group] if attr is None else node.data[group][attr]
         if value != old_value:
             model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
                 model, node, set_solver_attr, value, old_value, 'change attribute of solver'
+            ))
+
+    def _change_multi_attr(self, group, attr, text):
+        def set_solver_attr(node, value):
+            text_to_attr_list(node, group, attr, value)
+        node = self.controller.solver_model
+        model = self.controller.section_model
+        old_text = attr_list_to_text(node, group, attr)
+        if text != old_text:
+            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+                model, node, set_solver_attr, text, old_text, 'change attribute of solver'
+            ))
+
+    def _change_node_field(self, field_name, value):
+        def set_solver_field(node, value): setattr(node, field_name, value)
+        node = self.controller.solver_model
+        model = self.controller.section_model
+        old_value = getattr(node, field_name)
+        if value != old_value:
+            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+                model, node, set_solver_field, value, old_value, 'change {} of solver'.format(field_name)
             ))
 
 
@@ -72,10 +117,11 @@ class SolverAutoWidget(VerticalScrollArea):
 
         defines = get_defines_completer(self.controller.document.defines.model, self)
 
-        self.geometry = QtGui.QComboBox()
+        self.geometry = ComboBox()
         self.geometry.setEditable(True)
-        self.geometry.textChanged.connect(self.controller.fire_changed)
-        self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
+        #self.geometry.textChanged.connect(self.controller.fire_changed)
+        #self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
+        self.geometry.editingFinished.connect(lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
         self.geometry.setCompleter(defines)
         self.geometry.setToolTip('&lt;<b>geometry ref</b>=""&gt;<br/>'
                                  'Name of the existing geometry for use by this solver.')
@@ -83,10 +129,11 @@ class SolverAutoWidget(VerticalScrollArea):
         layout.addRow("Geometry:", self.geometry)
 
         if controller.model.mesh_type is not None:
-            self.mesh = QtGui.QComboBox()
+            self.mesh = ComboBox()
             self.mesh.setEditable(True)
-            self.mesh.textChanged.connect(self.controller.fire_changed)
-            self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
+            #self.mesh.textChanged.connect(self.controller.fire_changed)
+            #self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
+            self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(defines)
             self.mesh.setToolTip('&lt;<b>mesh ref</b>=""&gt;<br/>'
                                  'Name of the existing {} mesh for use by this solver.'
@@ -108,37 +155,41 @@ class SolverAutoWidget(VerticalScrollArea):
             if type(items) in (tuple, list):
                 for item in items:
                     if isinstance(item, AttrChoice):
-                        edit = QtGui.QComboBox()
+                        edit = ComboBox()
                         edit.setEditable(True)
                         edit.addItems([''] + list(item.choices))
-                        edit.textChanged.connect(self.controller.fire_changed)
-                        edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        #edit.textChanged.connect(self.controller.fire_changed)
+                        #edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                                                         self._change_attr(group, name, edit.currentText()))
                         edit.setCompleter(defines)
                     elif isinstance(item, (AttrGeometryObject, AttrGeometryPath)):
-                        edit = QtGui.QComboBox()
+                        edit = ComboBox()
                         edit.setEditable(True)
-                        edit.textChanged.connect(self.controller.fire_changed)
-                        edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        #edit.textChanged.connect(self.controller.fire_changed)
+                        #edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                                                    self._change_attr(group, name, edit.currentText()))
                         edit.setCompleter(defines)
                     else:
                         if item.name[-1] == '#':
                             edit = TextEditWithCB()
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
-                            edit.textChanged.connect(self.controller.fire_changed)
-                            #TODO see save_data
-                            #edit.focus_out_cb = lambda edit=edit, group=group, name=item.name: self._change_attr(group, name, edit.text())
+                            #edit.textChanged.connect(self.controller.fire_changed)
+                            edit.focus_out_cb = lambda edit=edit, group=group, name=item.name:\
+                                                    self._change_multi_attr(group, name, edit.toPlainText())
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
-                            edit.textEdited.connect(self.controller.fire_changed)
-                            #edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
-                            #                             self._change_attr(group, name, edit.text()))
+                            #edit.textEdited.connect(self.controller.fire_changed)
+                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                                                         self._change_attr(group, name, edit.text()))
 
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
                     self.controls[group, item.name] = edit
                     layout.addRow(item.label + ':', edit)
             else:
-                edit = TextEditor(parent, line_numbers=False)
+                edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QtGui.QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
@@ -146,7 +197,8 @@ class SolverAutoWidget(VerticalScrollArea):
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, desc))
                 self.controls[group] = edit
                 layout.addRow(edit)
-                edit.textChanged.connect(self.controller.fire_changed)
+                #edit.textChanged.connect(self.controller.fire_changed)
+                edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
 
         main = QtGui.QWidget()
         main.setLayout(layout)
@@ -154,42 +206,39 @@ class SolverAutoWidget(VerticalScrollArea):
 
     def load_data(self):
         model = self.controller.model
-        self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
-        self.geometry.setEditText(model.geometry)
+        with BlockQtSignals(self.geometry):
+            self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
+            self.geometry.setEditText(model.geometry)
         if self.mesh is not None:
-            self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
-            self.mesh.setEditText(model.mesh)
+            with BlockQtSignals(self.mesh):
+                self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
+                self.mesh.setEditText(model.mesh)
         for group, _, items in model.config:
             if type(items) in (tuple, list):
                 for item in items:
                     attr = item.name
                     edit = self.controls[group, attr]
-                    if isinstance(item, AttrMulti):
-                        attr = attr[:-1]
-                        skip = len(attr)
-                        data = model.data[group]
-                        items = [(int(k[skip:]), data[k]) for k in data.keys() if k[:skip] == attr and k[-1].isdigit()]
-                        if items:
-                            values = (max(i[0] for i in items) + 1) * ['']
-                            for i, v in items:
-                                values[i] = v
-                            edit.setPlainText('\n'.join(values))
-                    else:
-                        value = model.data[group][attr]
-                        if isinstance(item, AttrGeometryObject):
-                            edit.clear()
-                            edit.addItems([''] + list(self.controller.document.geometry.model.names()))
-                        if isinstance(item, AttrGeometryPath):
-                            edit.clear()
-                            edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
-                        if type(edit) == QtGui.QComboBox:
-                            edit.setCurrentIndex(edit.findText(value))
-                            edit.setEditText(value)
+                    with BlockQtSignals(edit):
+                        if isinstance(item, AttrMulti):
+                            text = attr_list_to_text(model, group, attr)
+                            if text is not None: edit.setPlainText(text)
                         else:
-                            edit.setText(value)
+                            value = model.data[group][attr]
+                            if isinstance(item, AttrGeometryObject):
+                                edit.clear()
+                                edit.addItems([''] + list(self.controller.document.geometry.model.names()))
+                            if isinstance(item, AttrGeometryPath):
+                                edit.clear()
+                                edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
+                            if type(edit) in (ComboBox, QtGui.QComboBox):
+                                edit.setCurrentIndex(edit.findText(value))
+                                edit.setEditText(value)
+                            else:
+                                edit.setText(value)
             else:
                 edit = self.controls[group]
-                edit.setPlainText(model.data[group])
+                with BlockQtSignals(edit):
+                    edit.setPlainText(model.data[group])
 
     def save_data(self):
         model = self.controller.model
@@ -202,12 +251,9 @@ class SolverAutoWidget(VerticalScrollArea):
                     attr = item.name
                     edit = self.controls[group, attr]
                     if isinstance(item, AttrMulti):
-                        attr = attr[:-1]
-                        values = edit.toPlainText().strip().splitlines()
-                        for i,value in enumerate(values):
-                            model.data[group][attr+str(i)] = value
+                        text_to_attr_list(model, group, attr, edit.toPlainText())
                     else:
-                        if type(edit) == QtGui.QComboBox:
+                        if type(edit) in (ComboBox, QtGui.QComboBox):
                             model.data[group][attr] = edit.currentText()
                         else:
                             model.data[group][attr] = edit.text()
@@ -231,7 +277,7 @@ class ConfSolverController(Controller):
         except AttributeError:
             widget_class = SolverAutoWidget
         self.widget = widget_class(self)
-        #self.section_model.changed.connect(self._model_change_cb)
+        self.section_model.changed.connect(self._model_change_cb)
 
     def _model_change_cb(self, *args, **kwargs):
         self.widget.load_data()
