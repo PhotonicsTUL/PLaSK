@@ -276,22 +276,32 @@ class SmoothGenerator(unittest.TestCase):
     def setUp(self):
         self.rect = plask.geometry.Rectangle(28., 1., None)
         self.geometry = plask.geometry.Cartesian2D(self.rect)
-        self.generator = plask.mesh.Rectangular2D.SmoothGenerator()
-        self.generator.factor = 2., 2.
-        self.generator.small = 2., 2.
+        self.generator = plask.mesh.Ordered.SmoothGenerator()
+        self.generator.factor = 2.
+        self.generator.small = 2.1
 
     def testExact(self):
-        self.generator.small[0] = 2.
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
+        self.generator.small = 2.
+        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 26., 28.] )
 
     def testEven(self):
-        self.generator.small[0] = 2.5
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 22., 26., 28.] )
+        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 26., 28.] )
 
     def testOdd(self):
         self.rect.width = 44.
-        self.generator.small[0] = 2.1
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh.axis0), [0., 2., 6., 14., 30., 38., 42., 44.] )
+        self.assertEqual( list(msh), [0., 2., 6., 14., 30., 38., 42., 44.] )
+
+    def testLimitedEven(self):
+        self.rect.width = 44.
+        self.generator.large = 9.
+        msh = self.generator(self.geometry)
+        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 30., 38., 42., 44.] )
+
+    def testLimitedOdd(self):
+        self.rect.width = 36.
+        self.generator.large = 9.
+        msh = self.generator(self.geometry)
+        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 30., 34., 36.] )

@@ -36,7 +36,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
 
         if (param == "potential")
             source.throwException("<potential> boundary conditions have been permanently renamed to <voltage>");
-        
+
         if (param == "voltage")
             this->readBoundaryConditions(manager, source, voltage_boundary);
 

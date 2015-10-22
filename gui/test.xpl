@@ -134,7 +134,7 @@
     <options aspect="100" gradual="no"/>
   </generator>
   <generator method="smooth" name="smoothie" type="rectangular2d">
-    <steps small0="0.005" small1="0.01" factor="1.2"/>
+    <steps small0="0.005" small1="0.01" large0="0.05" factor="1.2"/>
   </generator>
   <generator method="divide" name="oned" type="ordered">
     <refinements>

@@ -288,12 +288,13 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
         e.set_xml_element(element)
         return e
 
-    def __init__(self, grids_model, name, type, aspect=None, small=None, factor=None, refinements=None,
+    def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
         super(RectilinearSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.small = small
+        self.large = large
         self.factor = factor
 
     @property
@@ -315,6 +316,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
         if self.small is not None or self.factor is not None:
             steps = SubElement(res, 'steps')
             self._set_steps_attribute('small', steps)
+            self._set_steps_attribute('large', steps)
             self._set_steps_attribute('factor', steps)
         self.get_xml_common(res)
         return res
@@ -338,6 +340,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
             else:
                 with AttributeReader(steps) as a:
                     self._steps_from_xml('small', a)
+                    self._steps_from_xml('large', a)
                     self._steps_from_xml('factor', a)
 
     def _set_step(self, name, tab):
@@ -351,6 +354,12 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
 
     def set_small(self, small):
         self._set_step('small', small)
+
+    def get_large(self, index):
+        return None if self.large is None else self.large[index]
+
+    def set_large(self, large):
+        self._set_step('large', large)
 
     def get_factor(self, index):
         return None if self.factor is None else self.factor[index]

@@ -502,27 +502,44 @@ namespace detail {
 
 
     template <int dim>
-    struct SmoothGeneratorDivMethods {
+    struct SmoothGeneratorParamMethods {
 
         typedef AxisParamProxy<double,dim,RectilinearMeshSmoothGenerator<dim>> ProxyT;
 
-        static shared_ptr<ProxyT> getEdge(RectilinearMeshSmoothGenerator<dim>& self) {
+        static shared_ptr<ProxyT> getSmall(RectilinearMeshSmoothGenerator<dim>& self) {
             return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFineStep, &RectilinearMeshSmoothGenerator<dim>::setFineStep);
+        }
+
+        static shared_ptr<ProxyT> getLarge(RectilinearMeshSmoothGenerator<dim>& self) {
+            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getMaxStep, &RectilinearMeshSmoothGenerator<dim>::setMaxStep);
         }
 
         static shared_ptr<ProxyT> getFactor(RectilinearMeshSmoothGenerator<dim>& self) {
             return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFactor, &RectilinearMeshSmoothGenerator<dim>::setFactor);
         }
 
-        static void setEdge(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
+        static void setSmall(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
             // try {
             //     double v = py::extract<double>(val);
             //     for (int i = 0; i < dim; ++i) self.finestep[i] = v;
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'edge' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'small' (%1% items provided and %2% required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.finestep[i] = py::extract<double>(val[i]);
+            // }
+            self.fireChanged();
+        }
+
+        static void setLarge(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
+            // try {
+            //     double v = py::extract<double>(val);
+            //     for (int i = 0; i < dim; ++i) self.finestep[i] = v;
+            // } catch (py::error_already_set) {
+            //     PyErr_Clear();
+                if (py::len(val) != dim)
+                    throw ValueError("Wrong size of 'large' (%1% items provided and %2% required)", py::len(val), dim);
+                for (int i = 0; i < dim; ++i) self.maxstep[i] = py::extract<double>(val[i]);
             // }
             self.fireChanged();
         }
@@ -544,18 +561,26 @@ namespace detail {
     };
 
     template <>
-    struct SmoothGeneratorDivMethods<1> {
+    struct SmoothGeneratorParamMethods<1> {
 
-        static double getEdge(RectilinearMeshSmoothGenerator<1>& self) {
+        static double getSmall(RectilinearMeshSmoothGenerator<1>& self) {
             return self.getFineStep(Primitive<2>::DIRECTION_TRAN);
+        }
+
+        static double getLarge(RectilinearMeshSmoothGenerator<1>& self) {
+            return self.getMaxStep(Primitive<2>::DIRECTION_TRAN);
         }
 
         static double getFactor(RectilinearMeshSmoothGenerator<1>& self) {
             return self.getFactor(Primitive<2>::DIRECTION_TRAN);
         }
 
-        static void setEdge(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
+        static void setSmall(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
             self.setFineStep(Primitive<2>::DIRECTION_TRAN, py::extract<double>(val));
+        }
+
+        static void setLarge(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
+            self.setMaxStep(Primitive<2>::DIRECTION_TRAN, py::extract<double>(val));
         }
 
         static void setFactor(RectilinearMeshSmoothGenerator<1>& self, py::object val) {
@@ -749,11 +774,13 @@ void register_divide_generator() {
 
 
 template <int dim>
-shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object edge, py::object factor, double aspect,
+shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object small, py::object large, py::object factor,
+                                                                                       double aspect,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
     auto result = make_shared<RectilinearMeshSmoothGenerator<dim>>();
-    if (edge != py::object()) detail::SmoothGeneratorDivMethods<dim>::setEdge(*result, edge);
-    if (factor != py::object()) detail::SmoothGeneratorDivMethods<dim>::setFactor(*result, factor);
+    if (small != py::object()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small);
+    if (large != py::object()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, small);
+    if (factor != py::object()) detail::SmoothGeneratorParamMethods<dim>::setFactor(*result, factor);
     result->aspect = aspect;
     result->warn_multiple = warn_multiple;
     result->warn_missing = warn_missing;
@@ -771,32 +798,34 @@ void register_smooth_generator() {
             "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
             register_refined_generator_base<dim>(dividecls); dividecls
             .def("__init__", py::make_constructor(&RectilinearMeshSmoothGenerator__init__<dim>, py::default_call_policies(),
-                 (py::arg("small")=py::object(), py::arg("factor")=py::object(), py::arg("aspect")=0,
+                 (py::arg("small")=py::object(), py::arg("large")=py::object(), py::arg("factor")=py::object(), py::arg("aspect")=0,
                   py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))
         ;
     py::implicitly_convertible<shared_ptr<RectilinearMeshSmoothGenerator<dim>>, shared_ptr<const RectilinearMeshSmoothGenerator<dim>>>();
 
         if (dim != 1) dividecls
             .add_property("small",
-                        py::make_function(&detail::SmoothGeneratorDivMethods<dim>::getEdge, py::with_custodian_and_ward_postcall<0,1>()),
-                        &detail::SmoothGeneratorDivMethods<dim>::setEdge,
-                        "initial division of all geometry objects")
+                        py::make_function(&detail::SmoothGeneratorParamMethods<dim>::getSmall, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::SmoothGeneratorParamMethods<dim>::setSmall, "small size of mesh elements near object edges along each axis")
+            .add_property("large",
+                        py::make_function(&detail::SmoothGeneratorParamMethods<dim>::getLarge, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::SmoothGeneratorParamMethods<dim>::setLarge, "maximum size of mesh elements along each axis")
             .add_property("factor",
-                        py::make_function(&detail::SmoothGeneratorDivMethods<dim>::getFactor, py::with_custodian_and_ward_postcall<0,1>()),
-                        &detail::SmoothGeneratorDivMethods<dim>::setFactor,
-                        "final division of all geometry objects")
+                        py::make_function(&detail::SmoothGeneratorParamMethods<dim>::getFactor, py::with_custodian_and_ward_postcall<0,1>()),
+                        &detail::SmoothGeneratorParamMethods<dim>::setFactor, "factor by which element sizes increase along each axis")
         ; else dividecls
             .add_property("small",
-                        &detail::SmoothGeneratorDivMethods<dim>::getEdge,
-                        &detail::SmoothGeneratorDivMethods<dim>::setEdge,
-                        "initial division of all geometry objects")
+                        &detail::SmoothGeneratorParamMethods<dim>::getSmall, &detail::SmoothGeneratorParamMethods<dim>::setSmall,
+                        "small size of mesh elements near object edges along each axis")
+            .add_property("large",
+                        &detail::SmoothGeneratorParamMethods<dim>::getLarge, &detail::SmoothGeneratorParamMethods<dim>::setLarge,
+                        "maximum size of mesh elements along each axis")
             .add_property("factor",
-                        &detail::SmoothGeneratorDivMethods<dim>::getFactor,
-                        &detail::SmoothGeneratorDivMethods<dim>::setFactor,
-                        "final division of all geometry objects")
+                        &detail::SmoothGeneratorParamMethods<dim>::getFactor, &detail::SmoothGeneratorParamMethods<dim>::setFactor,
+                        "factor by which element sizes increase along each axis")
         ;
 
-        detail::SmoothGeneratorDivMethods<dim>::register_proxy(dividecls);
+        detail::SmoothGeneratorParamMethods<dim>::register_proxy(dividecls);
 }
 
 

@@ -298,13 +298,16 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::processAxis(shared_
 
 
 template<>
-RectilinearMeshSmoothGenerator<1>::RectilinearMeshSmoothGenerator(): finestep {0.005}, factor {1.2} {}
+RectilinearMeshSmoothGenerator<1>::RectilinearMeshSmoothGenerator():
+    finestep {0.005}, maxstep {INFINITY}, factor {1.2} {}
 
 template<>
-RectilinearMeshSmoothGenerator<2>::RectilinearMeshSmoothGenerator(): finestep {0.005, 0.005}, factor {1.2, 1.2} {}
+RectilinearMeshSmoothGenerator<2>::RectilinearMeshSmoothGenerator():
+    finestep {0.005, 0.005}, maxstep {INFINITY, INFINITY}, factor {1.2, 1.2} {}
 
 template<>
-RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator(): finestep {0.005, 0.005, 0.005}, factor {1.2, 1.2, 1.2} {}
+RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator():
+    finestep {0.005, 0.005, 0.005}, maxstep {INFINITY, INFINITY, INFINITY}, factor {1.2, 1.2, 1.2} {}
 
 
 template <int dim>
@@ -314,33 +317,40 @@ shared_ptr<OrderedAxis> RectilinearMeshSmoothGenerator<dim>::processAxis(shared_
     double x = *axis->begin();
     std::vector<double> points; //points.reserve(...);
     for (auto i = axis->begin()+1; i!= axis->end(); ++i) {
-        double w = *i - x;
-        if (w+OrderedAxis::MIN_DISTANCE <= finestep[dir])
+        double width = *i - x;
+        if (width+OrderedAxis::MIN_DISTANCE <= finestep[dir])
             continue;
         if (factor[dir] == 1.) {
-            double m = ceil(w / finestep[dir]);
-            double d = w / m;
+            double m = ceil(width / finestep[dir]);
+            double d = width / m;
             for (size_t i = 1, n = size_t(m); i < n; ++i) points.push_back(x + i*d);
             continue;
         }
-        double m = ceil(log(0.5*(w-OrderedAxis::MIN_DISTANCE)/finestep[dir]*(factor[dir]-1)+1) / log(factor[dir])); // number of points in one half
-        double end = finestep[dir] * (pow(factor[dir],m)-1) / (factor[dir]-1);
-        double last = finestep[dir] * pow(factor[dir],m-1);
-        bool odd = 2.*end - w >= last;
-        double s;
-        if (odd) {
-            s = finestep[dir] * 0.5*w / (end-0.5*last);
-            m -= 1.;
+        double logf = log(factor[dir]);
+        double maxm = floor(log(maxstep[dir]/finestep[dir]) / logf + OrderedAxis::MIN_DISTANCE);
+        double m = ceil(log(0.5*(width-OrderedAxis::MIN_DISTANCE)/finestep[dir]*(factor[dir]-1.)+1.) / logf) - 1.; // number of points in one half
+        size_t lin = 0;
+        if (m > maxm) { m = maxm; lin = 1; }
+        size_t n = size_t(m);
+        double end = finestep[dir] * (pow(factor[dir],m) - 1.) / (factor[dir] - 1.);
+        double last = finestep[dir] * pow(factor[dir],m);
+        if (lin) {
+            lin = size_t(ceil((width-2.*end) / last));
+        } else if (width - 2.*end <= last) {
+            lin = 1;
         } else {
-            s = finestep[dir] * 0.5*w / end;
+            lin = 2;
         }
+        double s = finestep[dir] * 0.5*width / (end+0.5*lin*last);
         double dx = 0.;
-        for (size_t i = 0, n = size_t(m); i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             dx += s; s *= factor[dir];
             points.push_back(x + dx);
         }
-        if (odd) { dx += s; points.push_back(x + dx); }
-        for (size_t i = 1, n = size_t(m); i < n; ++i) {
+        for (size_t i = 0; i < lin; ++i) {
+            dx += s; points.push_back(x + dx);
+        }
+        for (size_t i = 1; i < n; ++i) {
             s /= factor[dir]; dx += s;
             points.push_back(x + dx);
         }
@@ -461,14 +471,22 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
-            boost::optional<double> edge = reader.getAttribute<double>("small");
-            if (edge) {
+            boost::optional<double> small = reader.getAttribute<double>("small");
+            if (small) {
                 if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
                 if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");
                 if (reader.hasAttribute("small2")) throw XMLConflictingAttributesException(reader, "small", "small2");
-                for (int i = 0; i < dim; ++i) result->finestep[i] = *edge;
+                for (int i = 0; i < dim; ++i) result->finestep[i] = *small;
             } else
                 for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small%d", i), result->finestep[i]);
+            boost::optional<double> large = reader.getAttribute<double>("large");
+            if (large) {
+                if (reader.hasAttribute("large0")) throw XMLConflictingAttributesException(reader, "large", "large0");
+                if (reader.hasAttribute("large1")) throw XMLConflictingAttributesException(reader, "large", "large1");
+                if (reader.hasAttribute("large2")) throw XMLConflictingAttributesException(reader, "large", "large2");
+                for (int i = 0; i < dim; ++i) result->maxstep[i] = *large;
+            } else
+                for (int i = 0; i < dim; ++i) result->maxstep[i] = reader.getAttribute<double>(format("large%d", i), result->maxstep[i]);
             boost::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");

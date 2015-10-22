@@ -381,6 +381,7 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
     using MeshGeneratorD<dim>::DIM;
 
     double finestep[dim];   ///< Small step next to the boundary
+    double maxstep[dim];    ///< Maximum step in the mesh
     double factor[dim];     ///< Maximum element increase factor
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
@@ -403,6 +404,19 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
     inline void setFineStep(typename Primitive<DIM>::Direction direction, double value) {
         assert(size_t(direction) <= dim);
         finestep[size_t(direction)] = value;
+        this->fireChanged();
+    }
+
+    /// Get small step next to the boundary
+    inline double getMaxStep(typename Primitive<DIM>::Direction direction) const {
+        assert(size_t(direction) <= dim);
+        return maxstep[size_t(direction)];
+    }
+
+    /// Set small step next to the boundary
+    inline void setMaxStep(typename Primitive<DIM>::Direction direction, double value) {
+        assert(size_t(direction) <= dim);
+        maxstep[size_t(direction)] = value;
         this->fireChanged();
     }
 

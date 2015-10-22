@@ -170,6 +170,7 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
                 self.prediv[i].setText(self.model.get_prediv(i))
                 self.postdiv[i].setText(self.model.get_postdiv(i))
 
+
 class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController):
     """Ordered and rectangular 2D and 3D divide generator script."""
 
@@ -180,14 +181,19 @@ class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController
                                            '&lt;<b>step small{}</b>=""&gt;<br/>'
                                            'The size of the smallest element near each object edge{}.',
                                            self.defines)
+        self.large = self._make_param_hbox(self.form_layout, 'Largest element:',
+                                           '&lt;<b>step large{}</b>=""&gt;<br/>'
+                                           'Maximum size of mesh elements{}.',
+                                           self.defines)
         self.factor = self._make_param_hbox(self.form_layout, 'Increase factor:',
                                             '&lt;<b>step factor{}</b>=""&gt;<br/>'
-                                            'Increase factor for element sizes further form object edges{}.',
+                                            'Increase factor for element sizes further from object edges{}.',
                                             self.defines)
 
     def save_data_in_model(self):
         super(RectilinearSmoothGeneratorController, self).save_data_in_model()
         self.model.set_small([empty_to_none(self.small[i].text()) for i in range(0, self.model.dim)])
+        self.model.set_large([empty_to_none(self.large[i].text()) for i in range(0, self.model.dim)])
         self.model.set_factor([empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)])
 
     def on_edit_enter(self):
@@ -195,4 +201,5 @@ class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController
             super(RectilinearSmoothGeneratorController, self).on_edit_enter()
             for i in range(0, self.model.dim):
                 self.small[i].setText(self.model.get_small(i))
+                self.large[i].setText(self.model.get_large(i))
                 self.factor[i].setText(self.model.get_factor(i))

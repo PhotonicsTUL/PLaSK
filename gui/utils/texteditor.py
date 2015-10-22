@@ -118,7 +118,7 @@ class TextEditorWithCB(TextEditor):
         focus_out_cb - when it lost focus
         key_cb - when kay is pressed
     """
-    def __init__(self, focus_out_cb = None, key_cb = None, **kwargs):
+    def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
         super(TextEditorWithCB, self).__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
         self.key_cb = key_cb
