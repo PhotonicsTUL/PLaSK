@@ -232,7 +232,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
-    // Uupdate junction conductivities
+    // Update junction conductivities
     if (loopno != 0) {
         for (auto elem: mesh->elements) {
             if (isActive(elem)) {
@@ -243,14 +243,16 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
                        right = mesh->index1(uuu);
                 size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index2(lll)) - acthi.begin();
                 assert(nact < acthi.size());
-                double jy = - 0.25e6 * conds[index].c11  *
+                double jy = 0.25e6 * conds[index].c11  * abs
                     (- potential[mesh->index(back,left,actlo[nact])] - potential[mesh->index(front,left,actlo[nact])]
                      - potential[mesh->index(back,right,actlo[nact])] - potential[mesh->index(front,right,actlo[nact])]
                      + potential[mesh->index(back,left,acthi[nact])] + potential[mesh->index(front,left,acthi[nact])]
                      + potential[mesh->index(back,right,acthi[nact])] + potential[mesh->index(front,right,acthi[nact])])
                     / actd[nact]; // [j] = A/m²
                 conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
-                if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) conds[index].c11 = 1e-16;
+                if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
+                    conds[index].c11 = 1e-16;
+                }
             }
         }
     }
