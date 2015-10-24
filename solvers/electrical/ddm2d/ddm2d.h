@@ -345,9 +345,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     const LazyData<double> getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const; // KKRAKOW
+    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method); // KKRAKOW
 
-    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const; // KKRAKOW
+    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method); // KKRAKOW
 
 
     /*

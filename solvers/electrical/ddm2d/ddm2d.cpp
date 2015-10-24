@@ -848,8 +848,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::increaseVoltage() {
     }
 
     savePsi();
-    saveEc();
-    saveEv();
+    //saveEc();
+    //saveEv();
     saveFn();
     saveFp();
     saveFnEta();
@@ -913,8 +913,8 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI(unsigned loops) {
 
     setPsiI();
     savePsi();
-    saveEc();
-    saveEv();
+    //saveEc();
+    //saveEv();
     saveN();
     saveP();
 
@@ -1037,8 +1037,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
-            saveEc();
-            saveEv();
+            //saveEc();
+            //saveEv();
             saveN();
             saveP();
 
@@ -1054,8 +1054,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(std::string calcty
             totDel = addCorr(calctype, vconst); // max. update
             this->writelog(LOG_DETAIL, "Maximal update: %1%", totDel*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
-            saveEc();
-            saveEv();
+            //saveEc();
+            //saveEv();
             saveN();
             saveP();
 
@@ -1328,8 +1328,9 @@ const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFerm
 
 
 template<typename Geometry2DType>
-const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    saveEc();
     if (!dvnEc) throw NoValue("Conduction band edge");
     this->writelog(LOG_DEBUG, "Getting conduction band edge");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
@@ -1338,8 +1339,9 @@ const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getConductio
 
 
 template<typename Geometry2DType>
-const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData<double> DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    saveEv();
     if (!dvnEv) throw NoValue("Valence band edge");
     this->writelog(LOG_DEBUG, "Getting valence band edge");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;

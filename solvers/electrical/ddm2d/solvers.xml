@@ -13,18 +13,26 @@
 <!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
 <!--    </tag>-->
 
-<!--    <tag name="matrix" label="Matrix Solver">-->
-<!--      Configuration of the matrix solver.-->
-<!--      <attr name="algorithm" label="Solution algorithm" type="choice">-->
-<!--        Algorithm used for solving set of linear positive-definite equations.-->
-<!--        <choice>cholesky</choice>-->
-<!--        <choice>gauss</choice>-->
-<!--        <choice>iterative</choice>-->
-<!--      </attr>-->
-<!--      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>-->
-<!--      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>-->
+    <tag name="matrix" label="Matrix Solver">
+      Configuration of the matrix solver.
+      <attr name="algorithm" label="Solution algorithm" type="choice">
+        Algorithm used for solving set of linear positive-definite equations.
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+        <choice>iterative</choice>
+      </attr>
+      <attr name="maxerrPsiI" label="Max. residual error for PsiI" type="float">Maximum allowed residual error for PsiI for the iterative algorithm.</attr>
+      <attr name="maxerrPsi0" label="Max. residual error for Psi0" type="float">Maximum allowed residual error for Psi0 for the iterative algorithm.</attr>
+      <attr name="maxerrPsi" label="Max. residual error for Psi" type="float">Maximum allowed residual error for Psi for the iterative algorithm.</attr>
+      <attr name="maxerrFn" label="Max. residual error for Fn" type="float">Maximum allowed residual error for Fn for the iterative algorithm.</attr>
+      <attr name="maxerrFp" label="Max. residual error for Fp" type="float">Maximum allowed residual error for Fp for the iterative algorithm.</attr>
+      <attr name="iterlimPsiI" label="Max. number of iterations for PsiI" type="int">Maximum number of iterations for PsiI for the iterative algorithm.</attr>
+      <attr name="iterlimPsi0" label="Max. number of iterations for Psi0" type="int">Maximum number of iterations for Psi0 for the iterative algorithm.</attr>
+      <attr name="iterlimPsi" label="Max. number of iterations for Psi" type="int">Maximum number of iterations for Psi for the iterative algorithm.</attr>
+      <attr name="iterlimFn" label="Max. number of iterations for Fn" type="int">Maximum number of iterations for Fn for the iterative algorithm.</attr>
+      <attr name="iterlimFp" label="Max. number of iterations for Fp" type="int">Maximum number of iterations for Fp for the iterative algorithm.</attr>
 <!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
-<!--    </tag>-->
+    </tag>
 
 <!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
 <!--      Configuration of the effective model of p-n junction.-->
@@ -45,12 +53,12 @@
 <!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
 <!--    </tag>-->
 
-<!--    <bcond name="voltage" label="Voltage"/>-->
+    <bcond name="voltage" label="Voltage"/>
 
-<!--    <flow>-->
-<!--      <receiver name="inTemperature"/>-->
+    <flow>
+      <receiver name="inTemperature"/>
 <!--      <provider name="outCurrentDensity"/>-->
-<!--    </flow>-->
+    </flow>
   </solver>
 
   <solver name="DriftDiffusionCyl" category="electrical" lib="ddm2d">
@@ -65,18 +73,26 @@
 <!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
 <!--    </tag>-->
 
-<!--    <tag name="matrix" label="Matrix Solver">-->
-<!--      Configuration of the matrix solver.-->
-<!--      <attr name="algorithm" label="Solution algorithm" type="choice">-->
-<!--        Algorithm used for solving set of linear positive-definite equations.-->
-<!--        <choice>cholesky</choice>-->
-<!--        <choice>gauss</choice>-->
-<!--        <choice>iterative</choice>-->
-<!--      </attr>-->
-<!--      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>-->
-<!--      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>-->
+    <tag name="matrix" label="Matrix Solver">
+      Configuration of the matrix solver.
+      <attr name="algorithm" label="Solution algorithm" type="choice">
+        Algorithm used for solving set of linear positive-definite equations.
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+        <choice>iterative</choice>
+      </attr>
+      <attr name="maxerrPsiI" label="Max. residual error for PsiI" type="float">Maximum allowed residual error for PsiI for the iterative algorithm.</attr>
+      <attr name="maxerrPsi0" label="Max. residual error for Psi0" type="float">Maximum allowed residual error for Psi0 for the iterative algorithm.</attr>
+      <attr name="maxerrPsi" label="Max. residual error for Psi" type="float">Maximum allowed residual error for Psi for the iterative algorithm.</attr>
+      <attr name="maxerrFn" label="Max. residual error for Fn" type="float">Maximum allowed residual error for Fn for the iterative algorithm.</attr>
+      <attr name="maxerrFp" label="Max. residual error for Fp" type="float">Maximum allowed residual error for Fp for the iterative algorithm.</attr>
+      <attr name="iterlimPsiI" label="Max. number of iterations for PsiI" type="int">Maximum number of iterations for PsiI for the iterative algorithm.</attr>
+      <attr name="iterlimPsi0" label="Max. number of iterations for Psi0" type="int">Maximum number of iterations for Psi0 for the iterative algorithm.</attr>
+      <attr name="iterlimPsi" label="Max. number of iterations for Psi" type="int">Maximum number of iterations for Psi for the iterative algorithm.</attr>
+      <attr name="iterlimFn" label="Max. number of iterations for Fn" type="int">Maximum number of iterations for Fn for the iterative algorithm.</attr>
+      <attr name="iterlimFp" label="Max. number of iterations for Fp" type="int">Maximum number of iterations for Fp for the iterative algorithm.</attr>
 <!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
-<!--    </tag>-->
+    </tag>
 
 <!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
 <!--      Configuration of the effective model of p-n junction.-->
@@ -97,7 +113,7 @@
 <!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
 <!--    </tag>-->
 
-<!--    <bcond name="voltage" label="Voltage"/>-->
+    <bcond name="voltage" label="Voltage"/>
 
 <!--    <flow>-->
 <!--      <receiver name="inTemperature"/>-->
