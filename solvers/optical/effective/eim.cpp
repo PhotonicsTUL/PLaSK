@@ -291,7 +291,7 @@ void EffectiveIndex2D::updateCache()
 {
     bool fresh = !initCalculation();
 
-    if (fresh || inTemperature.changed() || (need_gain && inGain.changed())) {
+    if (fresh) {
         // we need to update something
 
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {

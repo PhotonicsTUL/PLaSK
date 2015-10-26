@@ -238,9 +238,6 @@ class Receiver: public ReceiverBase {
 
     boost::signals2::connection providerConnection;
 
-    /// Is @c true only if data provides by provider was changed after previous value retrieval.
-    bool _changed;
-
 protected:
 
     /// Is @c true only if provider is private and will be deleted by this receiver.
@@ -267,19 +264,7 @@ public:
     ProviderT* provider;
 
     /// Construct Receiver without connected provider and with set changed flag.
-    Receiver(): _changed(true), _hasPrivateProvider(false), provider(0) {}
-
-    /**
-     * Check if data provides by provider was changed after previous value retrieval.
-     * @return @c true only if data provides by provider was changed after previous value retrieval
-     */
-    bool changed() const { return _changed; }
-
-    /**
-     * Set change flag. This flag is set if data provides by provider was changed after previous value retrieval.
-     * @param new_value new value for changed flag
-     */
-    void changed(bool new_value) { _changed = new_value; }
+    Receiver(): _hasPrivateProvider(false), provider(0) {}
 
     /// Destructor. Disconnect from provider.
     virtual ~Receiver() {
@@ -296,7 +281,6 @@ public:
      * @param reason passed to providerValueChanged signal
      */
     void fireChanged(ChangeReason reason) {
-        _changed = true;
         providerValueChanged(*this, reason);
     }
 
@@ -402,7 +386,6 @@ public:
         try {
             return boost::optional<decltype((*provider)(params...))>(this->operator()(params...));
         } catch (std::exception&) {
-            const_cast<Receiver*>(this)->_changed = false; // unless anything changes, next call to optional will return the same
             return boost::optional<decltype((*provider)(params...))>();
         }
     }
@@ -448,7 +431,6 @@ protected:
      */
     void beforeGetValue() const {
         ensureHasProvider();
-        const_cast<Receiver*>(this)->_changed = false;
     }
 
 };

@@ -243,7 +243,7 @@ void EffectiveFrequencyCyl::updateCache()
 {
     bool fresh = !initCalculation();
 
-    if (fresh || cache_outdated || inTemperature.changed() || (need_gain && inGain.changed()) || k0 != old_k0) {
+    if (fresh || cache_outdated || k0 != old_k0) {
         // we need to update something
 
         // Some additional checks

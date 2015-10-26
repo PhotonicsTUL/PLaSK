@@ -139,8 +139,6 @@ namespace detail {
             receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>,
                                format(docstring_receiver_assign, property_name).c_str(),
                                py::arg("value"));
-            receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed,
-                                        "Indicates whether the receiver value has changed since the last retrieval.");
             receiver_class.def("__get__", &__get__);
             receiver_class.def("__set__", &__set__);
         }

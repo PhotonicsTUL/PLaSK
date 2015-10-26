@@ -115,10 +115,7 @@ class ProfileTest(unittest.TestCase):
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile.outHeat)
         self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]), mesh.Ordered([5, 11])))), [0., 1e7] )
-        self.assertFalse( receiver.changed )
         profile[hot] = 2e7
-        receiver.changed
-        self.assertTrue( receiver.changed )
         self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]),  mesh.Ordered([5, 11])))), [0., 2e7] )
 
     def testAdding(self):
