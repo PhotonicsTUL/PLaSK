@@ -221,7 +221,7 @@ class GridsModel(TableModel):
                 names.setdefault(entry.name, []).append(i)
         for name, indexes in names.items():
             if len(indexes) > 1:
-                res.append(Info('Duplicated solver name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
+                res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
                                 Info.ERROR, cols=[0], rows=indexes))
         return res
 

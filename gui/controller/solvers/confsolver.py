@@ -20,7 +20,7 @@ from ...utils.qsignals import BlockQtSignals
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
 from . import Controller
-
+from ..table import InTableChangeItemCommand
 
 def attr_list_to_text(model, group, attr):
     attr = attr[:-1]
@@ -48,28 +48,6 @@ def text_to_attr_list(model, group, attr, text):
 
 class SolverAutoWidget(VerticalScrollArea):
 
-    class ChangeItemCommand(QtGui.QUndoCommand):
-
-        def __init__(self, model, node, setter, new_value, old_value, action_name, QUndoCommand_parent = None):
-            super(SolverAutoWidget.ChangeItemCommand, self).__init__(action_name, QUndoCommand_parent)
-            self.model = model
-            self.node = node
-            self.setter = setter
-            self.new_value = new_value
-            self.old_value = old_value
-
-        def set_property_value(self, value):
-            self.setter(self.node, value)
-            #index = self.model.entries.index(self.node)
-            #self.model.dataChanged.emit(index, index)
-            self.model.fire_changed()
-
-        def redo(self):
-            self.set_property_value(self.new_value)
-
-        def undo(self):
-            self.set_property_value(self.old_value)
-
     def _change_attr(self, group, attr, value, label = None):
         def set_solver_attr(node, value):
             if attr is None:
@@ -80,7 +58,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_value = node.data[group] if attr is None else node.data[group][attr]
         if value != old_value:
-            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+            model.undo_stack.push(InTableChangeItemCommand(
                 model, node, set_solver_attr, value, old_value, "change solver's {}".format('attribute' if label is None else label)
             ))
 
@@ -91,7 +69,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_text = attr_list_to_text(node, group, attr)
         if text != old_text:
-            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+            model.undo_stack.push(InTableChangeItemCommand(
                 model, node, set_solver_attr, text, old_text, "change solver's {}".format('attribute' if label is None else label)
             ))
 
@@ -101,7 +79,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_value = getattr(node, field_name)
         if value != old_value:
-            model.undo_stack.push(SolverAutoWidget.ChangeItemCommand(
+            model.undo_stack.push(InTableChangeItemCommand(
                 model, node, set_solver_field, value, old_value, "change solver's {}".format(field_name)
             ))
 
