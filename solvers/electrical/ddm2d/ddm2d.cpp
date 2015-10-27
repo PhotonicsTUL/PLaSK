@@ -261,8 +261,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         double kk, kx, ky, gg, ff;
 
         if (calctype == CALC_FN) {
-            double Ec0 = material->CB(T, 0., '*') / mEx;
-            double Nc = material->Nc(T, 0., '*') / mNx;
+            double Ec0 = material->CB(T, 0., 'G') / mEx;
+            double Nc = material->Nc(T, 0., 'G') / mNx;
             double Ne = Nc * exp(dvePsi[i]-Ec0);
             double mobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
@@ -293,8 +293,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }*/
         } else if (calctype == CALC_FP)  {
-            double Ev0 = material->VB(T, 0., '*') / mEx;
-            double Nv = material->Nv(T, 0., '*') / mNx;
+            double Ev0 = material->VB(T, 0., 'G') / mEx;
+            double Nv = material->Nv(T, 0., 'G') / mNx;
             double Nh = Nv * exp(-dvePsi[i]+Ev0);
             double mobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
@@ -325,8 +325,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }*/
         } else {
-            double Nc = material->Nc(T, 0., '*') / mNx;
-            double Nv = material->Nv(T, 0., '*') / mNx;
+            double Nc = material->Nc(T, 0., 'G') / mNx;
+            double Nv = material->Nv(T, 0., 'G') / mNx;
             //double Ni = material->Ni(T) / mNx;
             double eps = material->eps(T) / mEpsRx;
             double Nd = material->Nd() / mNx;
@@ -504,8 +504,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNc = material->Nc(T, 0., '*')/mNx;
-        double normEc0 = material->CB(T, 0., '*')/mEx;
+        double normNc = material->Nc(T, 0., 'G')/mNx;
+        double normEc0 = material->CB(T, 0., 'G')/mEx;
         double normT = T/mTx;
 
         dveN[i] = calcN(normNc, dveFnEta[i], dvePsi[i], normEc0, normT);
@@ -519,12 +519,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
     for (auto e: this->mesh->elements)
     {
         size_t i = e.getIndex();
-        Vec < 2,double> midpoint = e.getMidpoint();
+        Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNv = material->Nv(T, 0., '*')/mNx;
-        double normEv0 = material->VB(T, 0., '*')/mEx;
+        double normNv = material->Nv(T, 0., 'G')/mNx;
+        double normEv0 = material->VB(T, 0., 'G')/mEx;
         double normT = T/mTx;
 
         dveP[i] = calcP(normNv, dveFpKsi[i], dvePsi[i], normEv0, normT);
@@ -546,13 +546,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveEc()
         size_t upleftno = e.getLoUpIndex();
         size_t uprghtno = e.getUpUpIndex(); //LP_09.2015
 
-        Vec < 2,double> midpoint = e.getMidpoint();
+        Vec <2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        dvnEc[loleftno] += material->CB(T, 0., '*') / mEx - dvnPsi[loleftno];
-        dvnEc[lorghtno] += material->CB(T, 0., '*') / mEx - dvnPsi[lorghtno];
-        dvnEc[upleftno] += material->CB(T, 0., '*') / mEx - dvnPsi[upleftno];
-        dvnEc[uprghtno] += material->CB(T, 0., '*') / mEx - dvnPsi[uprghtno];
+        dvnEc[loleftno] += material->CB(T, 0., 'G') / mEx - dvnPsi[loleftno];
+        dvnEc[lorghtno] += material->CB(T, 0., 'G') / mEx - dvnPsi[lorghtno];
+        dvnEc[upleftno] += material->CB(T, 0., 'G') / mEx - dvnPsi[upleftno];
+        dvnEc[uprghtno] += material->CB(T, 0., 'G') / mEx - dvnPsi[uprghtno];
     }
     divideByElements(dvnEc);
 }
@@ -572,13 +572,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveEv()
         size_t upleftno = e.getLoUpIndex();
         size_t uprghtno = e.getUpUpIndex(); //LP_09.2015
 
-        Vec < 2,double> midpoint = e.getMidpoint();
+        Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        dvnEv[loleftno] += material->VB(T, 0., '*') / mEx - dvnPsi[loleftno];
-        dvnEv[lorghtno] += material->VB(T, 0., '*') / mEx - dvnPsi[lorghtno];
-        dvnEv[upleftno] += material->VB(T, 0., '*') / mEx - dvnPsi[upleftno];
-        dvnEv[uprghtno] += material->VB(T, 0., '*') / mEx - dvnPsi[uprghtno];
+        dvnEv[loleftno] += material->VB(T, 0., 'G') / mEx - dvnPsi[loleftno];
+        dvnEv[lorghtno] += material->VB(T, 0., 'G') / mEx - dvnPsi[lorghtno];
+        dvnEv[upleftno] += material->VB(T, 0., 'G') / mEx - dvnPsi[upleftno];
+        dvnEv[uprghtno] += material->VB(T, 0., 'G') / mEx - dvnPsi[uprghtno];
     }
     divideByElements(dvnEv);
 }
@@ -699,7 +699,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(const BoundaryCondit
             dvnFp[i] = dvnFp[i] + deltaFp; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
             dvnFpKsi[i] = exp(-dvnFp[i]);*/ // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
-        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: %1%.", err);
+        this->writelog(LOG_DEBUG, "Maximum relative update for the quasi-Fermi energy level for holes: %1%.", err);
     }
     return err; // for Psi -> normalised (max. delPsi)
 
@@ -752,10 +752,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
         }
 
         // normalise material parameters and temperature
-        double normEc0 = material->CB(T, 0., '*') / mEx;
-        double normEv0 = material->VB(T, 0., '*', 'h') / mEx;
-        double normNc = material->Nc(T, 0., '*') / mNx;
-        double normNv = material->Nv(T, 0., '*') / mNx;
+        double normEc0 = material->CB(T, 0., 'G') / mEx;
+        double normEv0 = material->VB(T, 0., 'G', 'h') / mEx;
+        double normNc = material->Nc(T, 0., 'G') / mNx;
+        double normNv = material->Nv(T, 0., 'G') / mNx;
         double normNd = material->Nd() / mNx;
         double normNa = material->Na() / mNx;
         double normEd = material->EactD(T) / mEx;
@@ -863,7 +863,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
         }
         else { // found initial normalized potential
             loop = tL;
-            //this->writelog(LOG_DETAIL, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
+            //this->writelog(LOG_DETBUG, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
             return tPsi0;
         }
 
@@ -923,7 +923,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
 
-    this->writelog(LOG_INFO, "Running drift-diffusion calculations");
+    this->writelog(LOG_INFO, "Running drift-diffusion calculations for a single voltage");
 
     MatrixT A(size, this->mesh->minorAxis()->size());
 
@@ -937,7 +937,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             setMatrix<CALC_PSI0>(A, dvnDeltaPsi, vconst);    // czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
             errorPsi0 = addCorr<CALC_PSI0>(vconst); // max. update
-            this->writelog(LOG_DETAIL, "Initial potential maximum update: %1%", errorPsi0*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            this->writelog(LOG_DEBUG, "Initial potential maximum update: %1%", errorPsi0*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
             saveN();
             saveP();
@@ -951,7 +951,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     for (auto cond: vconst) {
         for (auto i: cond.place) {
             double dU = cond.value / mEx;
-            novoltage &= dU == 0.;
+            novoltage = novoltage && dU == 0.;
             dvnPsi[i] = (dvnPsi0[i] + dU);
             dvnFn[i] = -dU;
             dvnFp[i] = -dU;
@@ -972,40 +972,49 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 
     if (loops == 0) loops = std::numeric_limits<unsigned>::max();
     unsigned loopno = 0;
-    double errorPsi = 2.*maxerrPsi0, errorFn = 2.*maxerrFn, errorFp = 2.*maxerrFp;
+    double errorPsi = 2.*maxerrPsi, errorFn = 2.*maxerrFn, errorFp = 2.*maxerrFp, err;
 
     while ((errorPsi > maxerrPsi || errorFn > maxerrFn || errorFp > maxerrFp) && loopno < loops) {
-        this->writelog(LOG_INFO, "Calculating potential");
+        this->writelog(LOG_DETAIL, "Calculating potential");
         unsigned itersPsi = 0;
-        while(errorPsi > maxerrPsi && itersPsi < iterlimPsi) {
+        errorPsi = 0.;
+        err = 2.*maxerrPsi;
+        while(err > maxerrPsi && itersPsi < iterlimPsi) {
             setMatrix<CALC_PSI>(A, dvnDeltaPsi, vconst);    // czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaPsi);
-            errorPsi = addCorr<CALC_PSI>(vconst); // max. update
-            this->writelog(LOG_DETAIL, "Maximum update: %1%", errorPsi*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            err = addCorr<CALC_PSI>(vconst); // max. update
+            if (err > errorPsi) errorPsi = err;
+            this->writelog(LOG_DETAIL, "Maximum potential update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
             saveN();
             saveP();
             itersPsi += 1;
         }
-        this->writelog(LOG_INFO, "Calculating quasi-Fermi energy level for electrons");
+        this->writelog(LOG_DETAIL, "Calculating quasi-Fermi level for electrons");
         unsigned itersFn = 0;
-        while(errorFn > maxerrFn && itersFn < iterlimFn) {
+        errorFn = 0.;
+        err = 2.*maxerrFn;
+        while(err > maxerrFn && itersFn < iterlimFn) {
             setMatrix<CALC_FN>(A, dvnDeltaFn, vconst);    // czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFn);
-            errorFn = addCorr<CALC_FN>(vconst); // max. update
-            this->writelog(LOG_DETAIL, "Maximum update: %1%", errorFn*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            err = addCorr<CALC_FN>(vconst); // max. update
+            if (err > errorFn) errorFn = err;
+            this->writelog(LOG_DETAIL, "Maximum electrons quasi-Fermi level update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFn();
             saveFnEta();
             saveN();
             itersFn += 1;
         }
-        this->writelog(LOG_INFO, "Calculating quasi-Fermi energy level for holes");
+        this->writelog(LOG_DETAIL, "Calculating quasi-Fermi energy level for holes");
         unsigned itersFp = 0;
-        while(errorFp > maxerrFp && itersFp < iterlimFp) {
+        errorFp = 0.;
+        err = 2.*maxerrFp;
+        while(err > maxerrFp && itersFp < iterlimFp) {
             setMatrix<CALC_FP>(A, dvnDeltaFp, vconst);    // czy nie moze byc po prostu dvnDelta?
             solveMatrix(A, dvnDeltaFp);
-            errorFp = addCorr<CALC_FP>(vconst); // max. update
-            this->writelog(LOG_DETAIL, "Maximum update: %1%", errorFp*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            err = addCorr<CALC_FP>(vconst); // max. update
+            if (err > errorFp) errorFp = err;
+            this->writelog(LOG_DETAIL, "Maximum holes quasi-Fermi level update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFp();
             saveFpKsi();
             saveP();

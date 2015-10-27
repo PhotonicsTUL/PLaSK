@@ -420,7 +420,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, zorder=1.5, set_limits=None):
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, figure=None, zorder=1.5, set_limits=None):
     """Plot two-dimensional rectilinear mesh."""
     #TODO documentation
 

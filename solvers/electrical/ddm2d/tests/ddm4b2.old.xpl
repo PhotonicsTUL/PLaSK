@@ -78,9 +78,9 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 10000)
 
-DDM2D.compute_initial_potential(1);
+DDM2D.compute_initial_potential(1)
 
-errorPsi0 = DDM2D.compute_potential_0(1);
+errorPsi0 = DDM2D.compute_potential_0(1)
 print errorPsi0
 
 while (U <= 1.2):
@@ -89,7 +89,7 @@ while (U <= 1.2):
 
      print "U: %.3f V" % U
 
-     DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), U)
+     DDM2D.voltage_boundary[0].value = U
      DDM2D.increase_voltage();
 
      itersPsiFnFp = 0

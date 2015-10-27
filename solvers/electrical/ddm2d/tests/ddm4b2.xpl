@@ -78,7 +78,7 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 10000)
 
-for U in arange(0., 1.2+dU/2., dU):
+for U in arange(0., 1.8+dU/2., dU):
      print "U: %.3f V" % U
      DDM2D.voltage_boundary[0].value = U
      DDM2D.compute(200)
@@ -97,47 +97,24 @@ Ev_z = DDM2D.outValenceBandEdge(mesh.Rectangular2D([0.], z), 'nearest')
 #         out_txt.write("%.6f     %.6f     %.6f     %.6f\n" % (z[i], potential_z[i], Fn_z[i], Fp_z[i]))
 #out_txt.close()
 
-# wykres E(r,z)
-figure()
-plot_field(potential_rz, 16)
-colorbar()
-plot_geometry(GEO.main, color="w")
-gcf().canvas.set_window_title("Energy 2D distribution")
-
-# wykres E(z)
-#figure()
-#plot(z, potential_z)
-#xlabel(u"z [\xb5m]")
-#ylabel("energy (eV)")
-#xlim(z[0], z[-1])
-#gcf().canvas.set_window_title("Energy along the laser axis")
-
-# wykres Fn(z)
-#figure()
-#plot(z, Fn_z)
-#xlabel(u"z [\xb5m]")
-#ylabel("energy (eV)")
-#xlim(z[0], z[-1])
-#gcf().canvas.set_window_title("Quasi-Fermi electron level along the laser axis")
-
-# wykres Fp(z)
-#figure()
-#plot(z, Fp_z)
-#xlabel(u"z [\xb5m]")
-#ylabel("energy (eV)")
-#xlim(z[0], z[-1])
-#gcf().canvas.set_window_title("Quasi-Fermi hole level along the laser axis")
+# # wykres E(r,z)
+# figure()
+# plot_field(potential_rz, 16)
+# colorbar()
+# plot_geometry(GEO.main, color="w")
+# gcf().canvas.set_window_title("Energy 2D distribution")
 
 # wykres E(z)
 figure()
-plot(z, potential_z)
-plot(z, Fn_z)
-plot(z, Fp_z)
-plot(z, Ec_z)
-plot(z, Ev_z)
+plot(z, potential_z, label="$V$")
+plot(z, Fn_z, label="$F_n$")
+plot(z, Fp_z, label="$F_p$")
+plot(z, Ec_z, label="$E_c$")
+plot(z, Ev_z, label="$E_v$")
 xlabel(u"z [\xb5m]")
 ylabel("energy (eV)")
 xlim(z[0], z[-1])
+legend(loc='best')
 gcf().canvas.set_window_title("Psi, Fn, Fp, Ec, Ev along the laser axis")
 
 # zapis do pliku

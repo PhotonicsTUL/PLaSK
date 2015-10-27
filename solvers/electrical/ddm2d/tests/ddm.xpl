@@ -37,11 +37,16 @@ DDM2D = DriftDiffusion2D("DDM2D")
 DDM2D.geometry = GEO.main
 DDM2D.mesh = MSG.siatka
 
+#DDM2D.iterlimPsi0 = 0
 DDM2D.invalidate()
 
 T = 300
 
-DDM2D.compute(1);
+try:
+  DDM2D.compute()
+except AttributeError:
+  DDM2D.compute_initial_potential(1000)
+  DDM2D.compute_potential_0(1000)
 
 print_log(LOG_INFO, "Calculations done!")
 
@@ -51,30 +56,30 @@ print_log(LOG_INFO, "Calculations done!")
 # interesujacy fragment struktury
 left   = 0.
 right  = 0.0003
-top    = 2. * dxLay
+top    = 2. * dyLay
 bottom = 0.
 
 # linie do wykresow 1D
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 2000)
 
-# to bedzie rysowane
-energy_rz = DDM2D.outPotential(DDM2D.mesh)
-energy_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
+mshz = mesh.Rectangular2D([0.], z)
 
-# wykres E(r,z)
-figure()
-plot_field(energy_rz, 16)
-colorbar()
-plot_geometry(GEO.main, color="w")
-gcf().canvas.set_window_title("Energy 2D distribution")
+# # wykres E(r,z)
+# energy_rz = DDM2D.outPotential(DDM2D.mesh)
+# figure()
+# plot_field(energy_rz, 16)
+# colorbar()
+# plot_geometry(GEO.main, color="w")
+# gcf().canvas.set_window_title("Energy 2D distribution")
 
 # wykres E(z)
+energy_z = DDM2D.outPotential(mshz, 'nearest')
 figure()
-plot(z, energy_z)
+plot(mshz.axis1, energy_z)
 xlabel(u"z [\xb5m]")
 ylabel("energy (eV)")
-xlim(z[0], z[-1])
+xlim(mshz.axis1[0], mshz.axis1[-1])
 gcf().canvas.set_window_title("Energy along the laser axis")
 # zapis do pliku
 out_txt = open("Ez.txt", 'w')

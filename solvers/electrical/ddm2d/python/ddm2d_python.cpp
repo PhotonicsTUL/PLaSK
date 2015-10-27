@@ -6,41 +6,6 @@ using namespace plask::python;
 #include "../ddm2d.h"
 using namespace plask::solvers::drift_diffusion;
 
-/*template <typename Class> static double Shockley_getBeta(const Class& self) { return self.getBeta(0); }
-template <typename Class> static void Shockley_setBeta(Class& self, double value) { self.setBeta(0, value); }
-
-template <typename Class> static double Shockley_getVt(const Class& self) { return self.getVt(0); }
-template <typename Class> static void Shockley_setVt(Class& self, double value) { self.setVt(0, value); }
-
-template <typename Class> static double Shockley_getJs(const Class& self) { return self.getJs(0); }
-template <typename Class> static void Shockley_setJs(Class& self, double value) { self.setJs(0, value); }
-
-template <typename Class> py::object Shockley__getattr__(const Class& self, const std::string& attr)
-{
-    try {
-        if (attr.substr(0,4) == "beta") return py::object(self.getBeta(boost::lexical_cast<size_t>(attr.substr(4))));
-        if (attr.substr(0,2) == "Vt") return py::object(self.getVt(boost::lexical_cast<size_t>(attr.substr(2))));
-        if (attr.substr(0,2) == "js") return py::object(self.getJs(boost::lexical_cast<size_t>(attr.substr(2))));
-    } catch (boost::bad_lexical_cast) {
-        throw AttributeError("%1% object has no attribute '%2%'", self.getClassName(), attr);
-    }
-    return py::object();
-}
-
-template <typename Class> void Shockley__setattr__(const py::object& oself, const std::string& attr, const py::object& value)
-{
-    Class& self = py::extract<Class&>(oself);
-
-    try {
-        if (attr.substr(0,4) == "beta") { self.setBeta(boost::lexical_cast<size_t>(attr.substr(4)), py::extract<double>(value)); return; }
-        if (attr.substr(0,2) == "Vt") { self.setVt(boost::lexical_cast<size_t>(attr.substr(2)), py::extract<double>(value)); return; }
-        if (attr.substr(0,2) == "js") { self.setJs(boost::lexical_cast<size_t>(attr.substr(2)), py::extract<double>(value)); return; }
-    } catch (boost::bad_lexical_cast) {}
-
-    oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
-}*/
-
-
 template <typename GeometryT>
 inline static void register_drift_diffusion_solver(const char* name, const char* geoname)
 {
@@ -83,33 +48,6 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     RW_FIELD(iterlimFp, "Maximum number of iterations for iterative method for quasi-Fermi energy level for holes");
     //RW_FIELD(maxerr, "Limit for the potential updates");
     RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
-    /*solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-    solver.add_property("beta", &Shockley_getBeta<__Class__>, &Shockley_setBeta<__Class__>,
-                        "Junction coefficient [1/V].\n\n"
-                        "In case there is more than one junction you may set $\\beta$ parameter for any\n"
-                        "of them by using ``beta#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``beta`` is an alias for ``beta0``.\n"
-                       );
-    solver.add_property("Vt", &Shockley_getVt<__Class__>, &Shockley_setVt<__Class__>,
-                        "Junction thermal voltage [V].\n\n"
-                        "In case there is more than one junction you may set $V_t$ parameter for any\n"
-                        "of them by using ``Vt#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``Vt`` is an alias for ``Vt0``.\n"
-                       );
-    solver.add_property("js", &Shockley_getJs<__Class__>, &Shockley_setJs<__Class__>,
-                        "Reverse bias current density [A/m\\ :sup:2:].\n\n"
-                        "In case there is more than one junction you may set $j_s$ parameter for any\n"
-                        "of them by using ``js#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``js`` is an alias for ``js0``.\n"
-                       );
-    solver.def("__getattr__",  &Shockley__getattr__<__Class__>);
-    solver.def("__setattr__",  &Shockley__setattr__<__Class__>);
-    RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
-    RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");*/
     /*solver.setattr("outVoltage", solver.attr("outPotential"));
     RW_FIELD(itererr, "Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, "Maximum number of iterations for iterative method");

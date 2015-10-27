@@ -70,17 +70,14 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 2000)
 
+figure()
 msh = MSG.generator(GEO.main)
 plot_geometry(GEO.main, margin=0.01)
-plot_mesh(msh)
-print msh.axis1
-show()
+plot_mesh(msh, color='b')
 
 for U in arange(0, 0.02+dU/2., dU):
-
      print "U: %.3f V" % U
-
-     DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), U)
+     DDM2D.voltage_boundary[0].value = 0
      DDM2D.compute();
 
 print_log(LOG_INFO, "Calculations done!")
