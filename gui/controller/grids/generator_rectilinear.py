@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .. import Controller
+from . import GridController
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
@@ -21,7 +21,7 @@ from ...utils.str import empty_to_none
 from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 
-class RectilinearRefinedGeneratorController(Controller):
+class RectilinearRefinedGeneratorController(GridController):
 
     warnings_help = {
         'missing': 'Warn if any refinement references to non-existing object. Defaults to true.',
@@ -58,7 +58,7 @@ class RectilinearRefinedGeneratorController(Controller):
         self.options = QtGui.QHBoxLayout()
 
         self.aspect = QtGui.QLineEdit()
-        self.aspect.editingFinished.connect(self.fire_changed)
+        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', self.aspect.text))   #self.fire_changed
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
@@ -116,7 +116,7 @@ class RectilinearRefinedGeneratorController(Controller):
     def save_data_in_model(self):
         for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
             setattr(self.model, attr_name, empty_to_none(getattr(self, attr_name).currentText()))
-        self.model.aspect = self.aspect.text()
+        #self.model.aspect = self.aspect.text()
 
     def on_edit_enter(self):
         with self.mute_changes():

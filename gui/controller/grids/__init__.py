@@ -256,6 +256,10 @@ class GridsController(Controller):
 
 class GridController(Controller):
 
+    def __init__(self, document=None, model=None):
+        super(GridController, self).__init__(document, model)
+        #self.grid_model.changed.connect(self._model_change_cb)
+
     """
         :return Grid: model of edited grid
     """
@@ -271,10 +275,8 @@ class GridController(Controller):
         return self.grid_model.tree_parent
 
     def _change_attr(self, attr, value, label = None):
-        node = self.controller.solver_model
-        model = self.controller.section_model
-        old_value = getattr(node, attr)
+        old_value = getattr(self.grid_model, attr)
         if value != old_value:
-            model.undo_stack.push(InTableChangeItemCommand(
-                model, node, lambda n, v: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
+            self.section_model.undo_stack.push(InTableChangeItemCommand(
+                self.section_model, self.grid_model, lambda n, v: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
             ))

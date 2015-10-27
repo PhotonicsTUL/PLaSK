@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .. import Controller
+from . import GridController
 from ...qt import QtGui
 from ...utils.str import empty_to_none
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
@@ -102,7 +102,7 @@ class AxisEdit(QtGui.QGroupBox):
             if widget: widget.setText('' if a is None else a)
 
 
-class RectangularMesh1DController(Controller):
+class RectangularMesh1DController(GridController):
     """1D rectangular mesh (ordered or regular) script"""
     def __init__(self, document, model):
         super(RectangularMesh1DController, self).__init__(document=document, model=model)
@@ -119,7 +119,7 @@ class RectangularMesh1DController(Controller):
         return self.editor
 
 
-class RectangularMeshController(Controller):
+class RectangularMeshController(GridController):
     """2D and 3D rectangular mesh script"""
 
     def __init__(self, document, model):
