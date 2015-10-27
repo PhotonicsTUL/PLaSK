@@ -17,12 +17,19 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
-/// Choice of heat computation method in active region
-enum HeatMethod {
-    HEAT_JOULES, ///< compute Joules heat using effective conductivity
-    HEAT_BANDGAP ///< compute heat based on the size of the band gap
+/// Carrier statistics types
+enum Statistics {
+    STAT_MB,            ///< Maxwell-Boltzmann
+    STAT_FD             ///< Fermi-Dirac
 };
 
+/// Type of calculations passed to some functions
+enum CalcType {
+    CALC_PSI0,          ///< Initial potential
+    CALC_PSI,           ///< Potential
+    CALC_FN,            ///< Quasi-Fermi level for electrons
+    CALC_FP             ///< Quasi-Fermi level for holes
+};
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
@@ -78,7 +85,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxDelFn;   ///< maximal correction for quasi-Fermi levels for electrons calculations (eV)
     double maxDelFp;   ///< maximal correction for quasi-Fermi levels for holes calculations (eV)
 
-    std::string stat;  ///< statistics ("MB" - Maxwell-Boltzmann or "FD" - Fermi-Dirac)
+    Statistics stat;  ///< carriers statistics
 
     //int loopno;                 ///< Number of completed loops
     //double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
@@ -93,7 +100,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
     DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
 
-    DataVector<int> dvnNodeInfo;                ///< Number of elements which have this node (size: nodes)
     DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes)
     DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes)
     DataVector<double> dvnDeltaPsi;             ///< Computed potentials corrections (size: nodes)
@@ -108,16 +114,71 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     //DataVector<Vec<2,double>> currents;         ///< Computed current densities
     //DataVector<double> heats;                   ///< Computed and cached heat source densities
 
-    void setScaleParam(); ///< set scalling parameters //LP_09.2015
-    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop); ///< find initial potential //LP_09.2015
-    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT); ///< calculate electron concentration //LP_09.2015
-    double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT); ///< calculate hole concentration //LP_09.2015
-    double calcFD12(double iEta); ///< Fermi-Dirac integral of grade 1/2 //LP_09.2015
+    bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
 
-    /// Save locate stiffness matrix to global one
-    inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
-                               double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
-                               double ky, double width, const Vec<2,double>& midpoint);
+    /// Initialize the solver
+    virtual void onInitialize() override;
+
+    /// Invalidate the data
+    virtual void onInvalidate() override;
+
+    /**
+     * Calculate initial potential for all elements
+     */
+    void computePsiI();
+
+  private:
+
+    /// Slot called when gain has changed
+    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        needPsi0 = true;
+    }
+
+    /**
+     * Set initial potential for all nodes
+     */
+    void setPsiI();
+
+    /// Find initial potential
+    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const;
+
+    /// Calculate electron concentration
+    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const { 
+        double yn;
+        switch (stat) {
+            case STAT_MB: yn = 1.; break;
+            case STAT_FD: yn = calcFD12(log(iFnEta) + iPsi - iEc0) / (iFnEta * exp(iPsi-iEc0)); break;
+        }
+        return iNc * iFnEta * yn * exp(iPsi-iEc0);
+    }
+
+    /// Calculate hole concentration
+    double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT) const {
+        double yp;
+        switch (stat) {
+            case STAT_MB: yp = 1.; break;
+            case STAT_FD: yp = calcFD12(log(iFpKsi) - iPsi + iEv0) / (iFpKsi * exp(-iPsi+iEv0)); break;
+        }
+        return iNv * iFpKsi * yp * exp(iEv0-iPsi);
+    }
+
+    void divideByElements(DataVector<double>& nodes) {
+        size_t majs = this->mesh->majorAxis()->size(), mins = this->mesh->minorAxis()->size();
+        if (mins == 0 || majs == 0) return;
+        for (size_t j = 1, jend = mins-1; j < jend; ++j) dvnPsi[j] *= 0.5;
+        for (size_t i = 1, iend = majs-1; i < iend; ++i) {
+            dvnPsi[mins*i] *= 0.5;
+            for (size_t j = 1, jend = mins-1; j < jend; ++j) dvnPsi[mins*i+j] *= 0.25;
+            dvnPsi[mins*(i+1)-1] *= 0.5;
+        }
+        for (size_t j = mins*(majs-1)+1, jend = this->mesh->size()-1; j < jend; ++j) dvnPsi[j] *= 0.5;
+    }
+
+    /// Fermi-Dirac integral of grade 1/2
+    double calcFD12(double iEta) const {
+        double tKsi = pow(iEta,4.) + 33.6*iEta*(1.-0.68*exp(-0.17*(iEta+1.)*(iEta+1.))) + 50.;
+        return 0.5*sqrt(M_PI) / (0.75*sqrt(M_PI)*pow(tKsi,-0.375) + exp(-iEta));
+    }
 
     void savePsi(); ///< save potentials for all elements to datavector
     void saveFn();  ///< save quasi-Fermi electron level for all elements to datavector
@@ -128,7 +189,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void saveP(); ///< save hole concentrations for all elements to datavector
     void saveEc(); ///< save conduction band edge for all elements to datavector
     void saveEv(); ///< save valence band edge for all elements to datavector
-    double addCorr(std::string calctype, const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst); ///< add corrections to datavectors
+
+    /// Add corrections to datavectors
+    template <CalcType calctype>
+    double addCorr(const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst);
+
 /*
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
@@ -141,12 +206,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Matrix solver
     void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
-
-    /// Initialize the solver
-    virtual void onInitialize() override;
-
-    /// Invalidate the data
-    virtual void onInvalidate() override;
 /*
     /// Get info on active region
     void setActiveRegions();
@@ -162,61 +221,26 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     }
 */
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
 
-    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+
+//     /// Save locate stiffness matrix to global one
+//     inline void addCurvature(double& k44, double& k33, double& k22, double& k11,
+//                              double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
+//                              double ky, double width, const Vec<2,double>& midpoint);
 
     /// Set stiffness matrix + load vector
-    template <typename MatrixT>
-    void setMatrix(std::string calctype, MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    template <CalcType calctype, typename MatrixT>
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(std::string calctype, unsigned loops=1);
-/*
-    template <typename MatrixT>
-    double doComputePsi0(unsigned loops=1);
-
-    template <typename MatrixT>
-    double doComputePsi(unsigned loops=1);
-
-    template <typename MatrixT>
-    double doComputeFn(unsigned loops=1);
-
-    template <typename MatrixT>
-    double doComputeFp(unsigned loops=1);
-*/
-    /** Return \c true if the specified point is at junction
-     * \param point point to test
-     * \returns number of active region + 1 (0 for none)
-     */
-    size_t isActive(const Vec<2>& point) const {
-        size_t no(0);
-        auto roles = this->geometry->getRolesAt(point);
-        for (auto role: roles) {
-            size_t l = 0;
-            if (role.substr(0,6) == "active") l = 6;
-            else if (role.substr(0,8)  == "junction") l = 8;
-            else continue;
-            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
-            if (role.size() == l)
-                no = 1;
-            else {
-                try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
-                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '%1%'", role); }
-            }
-        }
-        return no;
-    }
-
-    /// Return \c true if the specified element is a junction
-    size_t isActive(const RectangularMesh<2>::Element& element) const { return isActive(element.getMidpoint()); }
+    double doCompute(unsigned loops=1);
 
   public:
 
     double maxerr;              ///< Maximum relative current density correction accepted as convergence
-
-    HeatMethod heatmet;         ///< Method of heat computation
 
     /// Boundary condition      
     BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
@@ -240,8 +264,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 */
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 
-    ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
-
     Algorithm algorithm;    ///< Factorization algorithm to use
 
     double maxerrPsiI;  ///< Maximum estimated error for initial potential during all iterations (useful for single calculations managed by external python script)
@@ -254,45 +276,15 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     size_t iterlimPsi;  ///< Maximum number of iterations for iterative method for potential
     size_t iterlimFn;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for electrons
     size_t iterlimFp;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for holes
-    double itererr;         ///< Allowed residual iteration for iterative method
-    size_t iterlim;         ///< Maximum number of iterations for iterative method
-    size_t logfreq;         ///< Frequency of iteration progress reporting
-
-    /**
-     * Calculate initial potential for all elements
-     * \return max correction of potential against the last call // TODO
-     **/
-    int computePsiI(unsigned loops=1);
-
-    /**
-     * Set initial potential for all nodes
-     * \return max correction of potential against the last call // TODO
-     **/
-    void setPsiI();
-
-    /**
-     * Calculate potential at U=0V for all nodes
-     * \return max correction of potential against the last call // TODO
-     **/
-    double computePsi0(unsigned loops=1);
-
-    /**
-     * Calculate potential at U>0V for all nodes
-     * \return max correction of potential against the last call // TODO
-     **/
-    double computePsi(unsigned loops=1);
+    double itererr;     ///< Allowed residual iteration for iterative method
+    size_t iterlim;     ///< Maximum number of iterations for iterative method
+    size_t logfreq;     ///< Frequency of iteration progress reporting
 
     /**
      * Run drift_diffusion calculations
      * \return max correction of potential against the last call
-     **/
-    double compute(std::string calctype, unsigned loops=1);
-
-    /**
-     * Increase voltage for p-contacts
-     * \return nothing
-     **/
-    void increaseVoltage();
+     */
+    double compute(unsigned loops=1);
 
     /**
      * Integrate vertical total current at certain level.
@@ -345,9 +337,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     const LazyData<double> getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method); // KKRAKOW
+    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
-    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method); // KKRAKOW
+    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
 
     /*

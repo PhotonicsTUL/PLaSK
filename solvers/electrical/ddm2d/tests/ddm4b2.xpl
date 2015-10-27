@@ -34,7 +34,7 @@
     <axis1 start="0" stop="{2.*dyLay}" num="{ny}"></axis1>
   </mesh>
   <generator method="smooth" name="genmesh2" type="rectangular2d">
-    <steps small0="0.0002" small1="0.0001" factor0="1.1" factor1="1.1"/>
+    <steps small0="0.0002" small1="0.0001" factor="1.1"/>
   </generator>
 </grids>
 
@@ -48,20 +48,20 @@ from electrical import DriftDiffusion2D
 DDM2D = DriftDiffusion2D("DDM2D")
 DDM2D.maxerrPsiI = 1e-12
 DDM2D.maxerrPsi0 = 1e-10
-DDM2D.maxerrPsi = 1e-6
-DDM2D.maxerrFn = 1e-6
-DDM2D.maxerrFp = 1e-6
+DDM2D.maxerrPsi = 1e-4
+DDM2D.maxerrFn = 1e-4
+DDM2D.maxerrFp = 1e-4
 DDM2D.iterlimPsiI = 10000
 DDM2D.iterlimPsi0 = 2000
 DDM2D.iterlimPsi = 3
 DDM2D.iterlimFn = 3
 DDM2D.iterlimFp = 3
 DDM2D.geometry = GEO.main
-DDM2D.mesh = MSH.siatka
-#DDM2D.mesh = MSG.genmesh2
+# DDM2D.mesh = MSH.siatka
+DDM2D.mesh = MSG.genmesh2
 U = 0
 dU = 0.001
-DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), U)
+DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), 0.0)
 DDM2D.voltage_boundary.append(DDM2D.mesh.BottomOf(GEO.nsu), 0.0)
 
 DDM2D.invalidate()
@@ -78,25 +78,10 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 10000)
 
-DDM2D.compute_initial_potential(1);
-
-errorPsi0 = DDM2D.compute_potential_0(1);
-print errorPsi0
-
-while (U <= 1.8):
-
-     U = U + dU
-
+for U in arange(0., 1.2+dU/2., dU):
      print "U: %.3f V" % U
-
-     DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), U)
-     DDM2D.increase_voltage();
-
-     itersPsiFnFp = 0
-     while (itersPsiFnFp<5): # 5
-
-          error = DDM2D.compute_potential(1);
-          itersPsiFnFp += 1
+     DDM2D.voltage_boundary[0].value = U
+     DDM2D.compute(200)
 
 print_log(LOG_INFO, "Calculations done!")
 # to bedzie rysowane

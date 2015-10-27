@@ -2,7 +2,7 @@
 
 <defines>
   <define name="dxLay" value="0.0003"/>
-  <define name="dyLay" value="0.0010"/>
+  <define name="dyLay" value="0.5000"/>
 </defines>
 
 <materials>
@@ -21,10 +21,9 @@
 </geometry>
 
 <grids>
-  <mesh name="siatka" type="rectangular2d">
-    <axis0 start="0" stop="{dxLay}" num="3"></axis0>
-    <axis1 start="0" stop="{2.*dyLay}" num="21"></axis1>
-  </mesh>
+  <generator method="smooth" name="siatka" type="rectangular2d">
+    <steps small0="{dxLay}" small1="0.0001" large1="0.01" factor1="1.2"/>
+  </generator>
 </grids>
 
 <script><![CDATA[
@@ -36,13 +35,13 @@ from electrical import DriftDiffusion2D
 # ustawienia solverow:
 DDM2D = DriftDiffusion2D("DDM2D")
 DDM2D.geometry = GEO.main
-DDM2D.mesh = MSH.siatka
+DDM2D.mesh = MSG.siatka
 
 DDM2D.invalidate()
 
 T = 300
 
-DDM2D.compute_initial_potential(1);
+DDM2D.compute(1);
 
 print_log(LOG_INFO, "Calculations done!")
 
@@ -52,7 +51,7 @@ print_log(LOG_INFO, "Calculations done!")
 # interesujacy fragment struktury
 left   = 0.
 right  = 0.0003
-top    = 0.0020
+top    = 2. * dxLay
 bottom = 0.
 
 # linie do wykresow 1D

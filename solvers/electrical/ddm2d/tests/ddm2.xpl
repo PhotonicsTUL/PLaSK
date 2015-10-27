@@ -52,9 +52,8 @@ DDM2D.iterlimFn = 3
 DDM2D.iterlimFp = 3
 DDM2D.geometry = GEO.main
 DDM2D.mesh = MSH.siatka
-U = 0
 dU = 0.01
-DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), U)
+DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), 0.0)
 DDM2D.voltage_boundary.append(DDM2D.mesh.BottomOf(GEO.nlayer), 0.0)
 
 DDM2D.invalidate()
@@ -77,48 +76,12 @@ plot_mesh(msh)
 print msh.axis1
 show()
 
-DDM2D.compute_initial_potential(1);
-
-errorPsi0 = DDM2D.compute("Psi0",1);
-itersPsi0 = 0
-while ((errorPsi0 > DDM2D.maxerrPsi0) and (itersPsi0<20)):
-     errorPsi0 = DDM2D.compute("Psi0",1);
-     itersPsi0 += 1
-
-
-while (U <= 0.02):
-
-     U = U + dU
+for U in arange(0, 0.02+dU/2., dU):
 
      print "U: %.3f V" % U
 
      DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), U)
-     DDM2D.increase_voltage();
-
-#######(errorPsi > DDM2D.maxerrPsi) and (errorFn > DDM2D.maxerrFn) and (errorFp > DDM2D.maxerrFp) and 
-
-     itersPsiFnFp = 0
-     while itersPsiFnFp < 1: # 5
-
-          errorPsi = DDM2D.compute("Psi",1);
-          itersPsi = 0
-          while ((errorPsi > DDM2D.maxerrPsi) and (itersPsi<3)): # 3
-               errorPsi = DDM2D.compute("Psi",1);
-               itersPsi += 1
-
-          errorFn = DDM2D.compute("Fn",1);
-          itersFn = 0
-          while ((errorFn > DDM2D.maxerrFn) and (itersFn<3)): # 3
-               errorFn = DDM2D.compute("Fn",1);
-               itersFn += 1
-  
-          errorFp = DDM2D.compute("Fp",1);
-          itersFp = 0
-          while ((errorFp > DDM2D.maxerrFp) and (itersFp<3)): # 3
-               errorFp = DDM2D.compute("Fp",1);
-               itersFp += 1
-
-          itersPsiFnFp += 1
+     DDM2D.compute();
 
 print_log(LOG_INFO, "Calculations done!")
 

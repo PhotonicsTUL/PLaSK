@@ -3,20 +3,26 @@
 <defines>
   <define name="dxLay" value="0.0004"/>
   <define name="dyLay" value="0.5000"/>
-  <define name="nx" value="3"/>
-  <define name="ny" value="2501"/>
+  <define name="nx" value="2"/>
+  <define name="ny" value="9301"/>
 </defines>
 
 <materials>
-  <material name="pcladding" base="GaAs:C=1e16"/>
-  <material name="ncladding" base="GaAs:Si=1e16"/>
+  <material name="pcap" base="GaAs:C=1e17"/>
+  <material name="pcladding" base="Al(0.40)GaAs:C=1e17"/>
+  <material name="pactive" base="Al(0.14)GaAs:C=5e16"/>
+  <material name="ncladding" base="Al(0.40)GaAs:Si=1e17"/>
+  <material name="nsubstrate" base="GaAs:Si=1e17"/>
 </materials>
 
 <geometry>
   <cartesian2d name="main" axes="xy">
     <stack name="eel">
-      <rectangle name="player" material="pcladding" dx="{dxLay}" dy="{dyLay}"/>
-      <rectangle name="nlayer" material="ncladding" dx="{dxLay}" dy="{dyLay}"/>
+      <rectangle name="pca" material="pcap" dx="{dxLay}" dy="{0.3000}"/>
+      <rectangle name="pcl" material="pcladding" dx="{dxLay}" dy="{2.0000}"/>
+      <rectangle name="pac" material="pactive" dx="{dxLay}" dy="{0.0500}"/>
+      <rectangle name="ncl" material="ncladding" dx="{dxLay}" dy="{0.3000}"/>
+      <rectangle name="nsu" material="nsubstrate" dx="{dxLay}" dy="{2.0000}"/>
       <zero/>
     </stack>
   </cartesian2d>
@@ -29,22 +35,6 @@
   </mesh>
   <generator method="smooth" name="genmesh2" type="rectangular2d">
     <steps small0="0.0002" small1="0.0001" factor="1.1"/>
-  </generator>
-  <generator method="divide" name="genmesh" type="rectangular2d">
-    <refinements>
-      <axis1 object="nlayer" at="0.0001"/>
-      <axis1 object="nlayer" at="0.0050"/>
-      <axis1 object="nlayer" at="0.0100"/>
-      <axis1 object="nlayer" at="{dyLay-0.0001}"/>
-      <axis1 object="nlayer" at="{dyLay-0.0050}"/>
-      <axis1 object="nlayer" at="{dyLay-0.0100}"/>
-      <axis1 object="player" at="0.0001"/>
-      <axis1 object="player" at="0.0050"/>
-      <axis1 object="player" at="0.0100"/>
-      <axis1 object="player" at="{dyLay-0.0001}"/>
-      <axis1 object="player" at="{dyLay-0.0050}"/>
-      <axis1 object="player" at="{dyLay-0.0100}"/>
-    </refinements>
   </generator>
 </grids>
 
@@ -67,11 +57,12 @@ DDM2D.iterlimPsi = 3
 DDM2D.iterlimFn = 3
 DDM2D.iterlimFp = 3
 DDM2D.geometry = GEO.main
-# DDM2D.mesh = MSH.siatka
+#DDM2D.mesh = MSH.siatka
 DDM2D.mesh = MSG.genmesh2
-dU = 0.002
-DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), 0.0)
-DDM2D.voltage_boundary.append(DDM2D.mesh.BottomOf(GEO.nlayer), 0.0)
+U = 0
+dU = 0.001
+DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), U)
+DDM2D.voltage_boundary.append(DDM2D.mesh.BottomOf(GEO.nsu), 0.0)
 
 DDM2D.invalidate()
 
@@ -80,20 +71,34 @@ T = 300
 # interesujacy fragment struktury
 left   = 0.
 right  = 0.0003
-top    = 1.0000
+top    = 10.0000
 bottom = 0.
 
 # linie do wykresow 1D
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 10000)
 
-for U in arange(0., 0.5+dU/2., dU):
+DDM2D.compute_initial_potential(1);
+
+errorPsi0 = DDM2D.compute_potential_0(1);
+print errorPsi0
+
+while (U <= 1.2):
+
+     U = U + dU
+
      print "U: %.3f V" % U
-     DDM2D.voltage_boundary[0].value = U
-     DDM2D.compute();
+
+     DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.pca), U)
+     DDM2D.increase_voltage();
+
+     itersPsiFnFp = 0
+     while (itersPsiFnFp<5): # 5
+
+          error = DDM2D.compute_potential(1);
+          itersPsiFnFp += 1
 
 print_log(LOG_INFO, "Calculations done!")
-
 # to bedzie rysowane
 potential_rz = DDM2D.outPotential(DDM2D.mesh)
 potential_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
