@@ -437,16 +437,14 @@ class MaterialsController(Controller):
 
     def property_selected(self, new_selection, old_selection):
         indexes = new_selection.indexes()
+        try: self.propedit.textChanged.disconnect()
+        except (RuntimeError, TypeError): pass
         if indexes:
-            try: self.propedit.textChanged.disconnect()
-            except (RuntimeError, TypeError): pass
             row = indexes[0].row()
             self.propedit.setPlainText(self.selected_material.properties[row][1])
             self.propedit.show()
             self.propedit.textChanged.connect(lambda: self.propedit_changed(row))
         else:
-            try: self.propedit.textChanged.disconnect()
-            except (RuntimeError, TypeError): pass
             self.propedit.hide()
 
     def propedit_changed(self, row):
@@ -456,9 +454,10 @@ class MaterialsController(Controller):
         finally:
             self.selected_material.dataChanged.connect(self.property_data_changed)
 
-    def property_data_changed(self, tl, br):
-        with BlockQtSignals(self.propedit):
-            self.propedit.setPlainText(self.selected_material.get(1, tl.row()))
+    def property_data_changed(self, top_left, bottom_right):
+        if top_left.row() in (i.row() for i in self.properties_table.selectedIndexes()):
+            with BlockQtSignals(self.propedit):
+                self.propedit.setPlainText(self.selected_material.get(1, top_left.row()))
 
     def get_widget(self):
         return self.splitter
