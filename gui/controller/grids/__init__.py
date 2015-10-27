@@ -17,7 +17,7 @@ from ...qt.QtGui import QSplitter
 from .. import Controller, select_index_from_info
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
-from ..table import table_with_manipulators
+from ..table import table_with_manipulators, InTableChangeItemCommand
 from ...model.grids import GridsModel
 
 try:
@@ -252,3 +252,29 @@ class GridsController(Controller):
     def plot(self):
         if self._current_controller is not None:
             self.plot_mesh(self._current_controller.model, set_limits=True)
+
+
+class GridController(Controller):
+
+    """
+        :return Grid: model of edited grid
+    """
+    @property
+    def grid_model(self):
+        return self.model
+
+    """
+        :return GridsModel: model of a whole grids's section
+    """
+    @property
+    def section_model(self):
+        return self.grid_model.tree_parent
+
+    def _change_attr(self, attr, value, label = None):
+        node = self.controller.solver_model
+        model = self.controller.section_model
+        old_value = getattr(node, attr)
+        if value != old_value:
+            model.undo_stack.push(InTableChangeItemCommand(
+                model, node, lambda n, v: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
+            ))
