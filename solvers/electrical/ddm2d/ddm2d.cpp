@@ -570,7 +570,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveEv()
         size_t loleftno = e.getLoLoIndex();
         size_t lorghtno = e.getUpLoIndex();
         size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex(); //LP_09.2015
+        size_t uprghtno = e.getUpUpIndex();
 
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
@@ -699,7 +699,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(const BoundaryCondit
             dvnFp[i] = dvnFp[i] + deltaFp; // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
             dvnFpKsi[i] = exp(-dvnFp[i]);*/ // KRAKOW - NIE ROBIC TEGO W WEZLACH GDZIE JEST ZADANY POTENCJAL
         }
-        this->writelog(LOG_DEBUG, "Maximum relative update for the quasi-Fermi energy level for holes: %1%.", err);
+        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: %1%.", err);
     }
     return err; // for Psi -> normalised (max. delPsi)
 

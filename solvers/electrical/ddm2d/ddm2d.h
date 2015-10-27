@@ -162,16 +162,16 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         return iNv * iFpKsi * yp * exp(iEv0-iPsi);
     }
 
-    void divideByElements(DataVector<double>& nodes) {
+    void divideByElements(DataVector<double>& values) {
         size_t majs = this->mesh->majorAxis()->size(), mins = this->mesh->minorAxis()->size();
         if (mins == 0 || majs == 0) return;
-        for (size_t j = 1, jend = mins-1; j < jend; ++j) dvnPsi[j] *= 0.5;
+        for (size_t j = 1, jend = mins-1; j < jend; ++j) values[j] *= 0.5;
         for (size_t i = 1, iend = majs-1; i < iend; ++i) {
-            dvnPsi[mins*i] *= 0.5;
-            for (size_t j = 1, jend = mins-1; j < jend; ++j) dvnPsi[mins*i+j] *= 0.25;
-            dvnPsi[mins*(i+1)-1] *= 0.5;
+            values[mins*i] *= 0.5;
+            for (size_t j = 1, jend = mins-1; j < jend; ++j) values[mins*i+j] *= 0.25;
+            values[mins*(i+1)-1] *= 0.5;
         }
-        for (size_t j = mins*(majs-1)+1, jend = this->mesh->size()-1; j < jend; ++j) dvnPsi[j] *= 0.5;
+        for (size_t j = mins*(majs-1)+1, jend = this->mesh->size()-1; j < jend; ++j) values[j] *= 0.5;
     }
 
     /// Fermi-Dirac integral of grade 1/2
