@@ -135,7 +135,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
                         "``Vt`` is an alias for ``Vt0``.\n"
                        );
     solver.add_property("js", &Shockley_getJs<__Class__>, &Shockley_setJs<__Class__>,
-                        "Reverse bias current density [A/m\\ :sup:2:].\n\n"
+                        "Reverse bias current density [A/m\\ :sup:`2`\ ].\n\n"
                         "In case there is more than one junction you may set $j_s$ parameter for any\n"
                         "of them by using ``js#`` property, where # is the junction number (specified\n"
                         "by a role ``junction#`` or ``active#``).\n\n"

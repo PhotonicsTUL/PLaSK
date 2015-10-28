@@ -93,7 +93,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     DataVector<double> dveN;                    ///< Cached electron concentrations (size: elements)
     DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements)
-    DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements)
     DataVector<double> dvePsi;                  ///< Computed potentials (size: elements)
     DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
     DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
@@ -124,11 +123,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         needPsi0 = true;
     }
-
-    /**
-     * Set initial potential for all nodes
-     */
-    void setPsiI();
 
     /// Find initial potential
     double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const;
