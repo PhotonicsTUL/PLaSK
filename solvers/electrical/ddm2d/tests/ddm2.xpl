@@ -87,6 +87,8 @@ potential_rz = DDM2D.outPotential(DDM2D.mesh)
 potential_z = DDM2D.outPotential(mesh.Rectangular2D([0.], z), 'nearest')
 Fn_z = DDM2D.outQuasiFermiEnergyLevelForElectrons(mesh.Rectangular2D([0.], z), 'nearest')
 Fp_z = DDM2D.outQuasiFermiEnergyLevelForHoles(mesh.Rectangular2D([0.], z), 'nearest')
+Ec_z = DDM2D.outConductionBandEdge(mesh.Rectangular2D([0.], z), 'nearest')
+Ev_z = DDM2D.outValenceBandEdge(mesh.Rectangular2D([0.], z), 'nearest')
 # zapis do pliku
 out_txt = open("ResultsZ.txt", 'w')
 for i in range(len(z)):
@@ -102,11 +104,16 @@ gcf().canvas.set_window_title("Energy 2D distribution")
 
 # wykres E(z)
 figure()
-plot(z, potential_z)
+plot(z, potential_z, label="$V$")
+plot(z, Fn_z, label="$F_n$")
+plot(z, Fp_z, label="$F_p$")
+plot(z, Ec_z, label="$E_c$")
+plot(z, Ev_z, label="$E_v$")
 xlabel(u"z [\xb5m]")
 ylabel("energy (eV)")
 xlim(z[0], z[-1])
-gcf().canvas.set_window_title("Energy along the laser axis")
+legend(loc='best')
+gcf().canvas.set_window_title("Psi, Fn, Fp, Ec, Ev along the laser axis")
 
 # # zapis do pliku
 # out_txt = open("Vz.txt", 'w')

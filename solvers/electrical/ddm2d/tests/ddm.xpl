@@ -37,7 +37,7 @@ DDM2D = DriftDiffusion2D("DDM2D")
 DDM2D.geometry = GEO.main
 DDM2D.mesh = MSG.siatka
 
-#DDM2D.iterlimPsi0 = 0
+DDM2D.loopsV0 = 0
 DDM2D.invalidate()
 
 T = 300

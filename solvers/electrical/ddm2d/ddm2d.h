@@ -165,6 +165,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         return 0.5*sqrt(M_PI) / (0.75*sqrt(M_PI)*pow(tKsi,-0.375) + exp(-iEta));
     }
 
+    void savePsi0(); ///< save potentials for all elements to datavector
     void savePsi(); ///< save potentials for all elements to datavector
     void saveFnEta();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
