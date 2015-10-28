@@ -8,10 +8,19 @@
 
     <mesh type="Rectangular2D"/>
 
-<!--    <tag name="loop" label="Configuration of the Self-Consistent Loop">-->
-<!--      Configuration of the self-consistent loop.-->
-<!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
-<!--    </tag>-->
+    <tag name="loop" label="Configuration of the Self-Consistent Loop">
+      Configuration of the self-consistent loop.
+      <attr name="maxerrVi" label="Max initial potential update" type="float">Limit for the initial potential estimate updates.</attr>
+      <attr name="maxerrV0" label="Max built-in potential update" type="float">Limit for the built-in potential updates.</attr>
+      <attr name="maxerrV" label="Max potential update" type="float">Limit for the potential updates.</attr>
+      <attr name="maxerrFn" label="Max &lt;i&gt;F&lt;sub&gt;n&lt;/sub&gt;&lt;/i&gt; update" type="float">Limit for the electrons quasi-Fermi level updates.</attr>
+      <attr name="maxerrFp" label="Max &lt;i&gt;F&lt;sub&gt;p&lt;/sub&gt;&lt;/i&gt; update" type="float">Limit for the holes quasi-Fermi level updates.</attr>
+      <attr name="loopsVi" label="Initial potential loop limit" type="float">Loops limit for the initial potential estimate.</attr>
+      <attr name="loopsV0" label="Built-in potential loop limit" type="float">Loops limit for the built-in potential.</attr>
+      <attr name="loopsV" label="Potential loop limit" type="float">Loops limit for the potential.</attr>
+      <attr name="loopsFn" label="&lt;i&gt;F&lt;sub&gt;n&lt;/sub&gt;&lt;/i&gt; loop limit" type="float">Loops limit for the electrons quasi-Fermi level.</attr>
+      <attr name="loopsFp" label="&lt;i&gt;F&lt;sub&gt;p&lt;/sub&gt;&lt;/i&gt; loop limit" type="float">Loops limit for the holes quasi-Fermi level.</attr>
+    </tag>
 
     <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
@@ -21,104 +30,22 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="maxerrPsiI" label="Max. residual error for PsiI" type="float">Maximum allowed residual error for PsiI for the iterative algorithm.</attr>
-      <attr name="maxerrPsi0" label="Max. residual error for Psi0" type="float">Maximum allowed residual error for Psi0 for the iterative algorithm.</attr>
-      <attr name="maxerrPsi" label="Max. residual error for Psi" type="float">Maximum allowed residual error for Psi for the iterative algorithm.</attr>
-      <attr name="maxerrFn" label="Max. residual error for Fn" type="float">Maximum allowed residual error for Fn for the iterative algorithm.</attr>
-      <attr name="maxerrFp" label="Max. residual error for Fp" type="float">Maximum allowed residual error for Fp for the iterative algorithm.</attr>
-      <attr name="iterlimPsiI" label="Max. number of iterations for PsiI" type="int">Maximum number of iterations for PsiI for the iterative algorithm.</attr>
-      <attr name="iterlimPsi0" label="Max. number of iterations for Psi0" type="int">Maximum number of iterations for Psi0 for the iterative algorithm.</attr>
-      <attr name="iterlimPsi" label="Max. number of iterations for Psi" type="int">Maximum number of iterations for Psi for the iterative algorithm.</attr>
-      <attr name="iterlimFn" label="Max. number of iterations for Fn" type="int">Maximum number of iterations for Fn for the iterative algorithm.</attr>
-      <attr name="iterlimFp" label="Max. number of iterations for Fp" type="int">Maximum number of iterations for Fp for the iterative algorithm.</attr>
-<!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
+      <attr name="itererr" label="Max residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-<!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
-<!--      Configuration of the effective model of p-n junction.-->
-<!--      <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>-->
-<!--      <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>-->
-<!--      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>-->
-<!--      <attr name="heat" label="Heat generation method" type="choice">-->
-<!--        Method of determination of the heat generated in the junction.-->
-<!--        <choice>joules</choice>-->
-<!--        <choice>wavelength</choice>-->
-<!--      </attr>-->
-<!--      <attr name="wavelength" label="Emitted wavelength" type="float" unit="nm">Emitted wavelength if heat generation method is set to ‘&lt;i&gt;wavelength&lt;/i&gt;’.</attr>-->
-<!--    </tag>-->
-
-<!--    <tag name="contacts" label="Properties of the Contacts">-->
-<!--      Properties of the contact layers.-->
-<!--      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>-->
-<!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
-<!--    </tag>-->
 
     <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inTemperature"/>
+      <provider name="outPotential"/>
+      <provider name="outQuasiFermiEnergyLevelForElectrons"/>
+      <provider name="outQuasiFermiEnergyLevelForHoles"/>
+      <provider name="outConductionBandEdge"/>
+      <provider name="outValenceBandEdge"/>
 <!--      <provider name="outCurrentDensity"/>-->
     </flow>
-  </solver>
-
-  <solver name="DriftDiffusionCyl" category="electrical" lib="ddm2d">
-    Finite element drift-diffusion electrical solver for 2D cylindrical geometry using finite-element method.
-
-    <geometry type="Cylindrical2D"/>
-
-    <mesh type="Rectangular2D"/>
-
-<!--    <tag name="loop" label="Configuration of the Self-Consistent Loop">-->
-<!--      Configuration of the self-consistent loop.-->
-<!--      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>-->
-<!--    </tag>-->
-
-    <tag name="matrix" label="Matrix Solver">
-      Configuration of the matrix solver.
-      <attr name="algorithm" label="Solution algorithm" type="choice">
-        Algorithm used for solving set of linear positive-definite equations.
-        <choice>cholesky</choice>
-        <choice>gauss</choice>
-        <choice>iterative</choice>
-      </attr>
-      <attr name="maxerrPsiI" label="Max. residual error for PsiI" type="float">Maximum allowed residual error for PsiI for the iterative algorithm.</attr>
-      <attr name="maxerrPsi0" label="Max. residual error for Psi0" type="float">Maximum allowed residual error for Psi0 for the iterative algorithm.</attr>
-      <attr name="maxerrPsi" label="Max. residual error for Psi" type="float">Maximum allowed residual error for Psi for the iterative algorithm.</attr>
-      <attr name="maxerrFn" label="Max. residual error for Fn" type="float">Maximum allowed residual error for Fn for the iterative algorithm.</attr>
-      <attr name="maxerrFp" label="Max. residual error for Fp" type="float">Maximum allowed residual error for Fp for the iterative algorithm.</attr>
-      <attr name="iterlimPsiI" label="Max. number of iterations for PsiI" type="int">Maximum number of iterations for PsiI for the iterative algorithm.</attr>
-      <attr name="iterlimPsi0" label="Max. number of iterations for Psi0" type="int">Maximum number of iterations for Psi0 for the iterative algorithm.</attr>
-      <attr name="iterlimPsi" label="Max. number of iterations for Psi" type="int">Maximum number of iterations for Psi for the iterative algorithm.</attr>
-      <attr name="iterlimFn" label="Max. number of iterations for Fn" type="int">Maximum number of iterations for Fn for the iterative algorithm.</attr>
-      <attr name="iterlimFp" label="Max. number of iterations for Fp" type="int">Maximum number of iterations for Fp for the iterative algorithm.</attr>
-<!--      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>-->
-    </tag>
-
-<!--    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">-->
-<!--      Configuration of the effective model of p-n junction.-->
-<!--      <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>-->
-<!--      <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>-->
-<!--      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>-->
-<!--      <attr name="heat" label="Heat generation method" type="choice">-->
-<!--        Method of determination of the heat generated in the junction.-->
-<!--        <choice>joules</choice>-->
-<!--        <choice>wavelength</choice>-->
-<!--      </attr>-->
-<!--      <attr name="wavelength" label="Emitted wavelength" type="float" unit="nm">Emitted wavelength if heat generation method is set to ‘&lt;i&gt;wavelength&lt;/i&gt;’.</attr>-->
-<!--    </tag>-->
-
-<!--    <tag name="contacts" label="Properties of the Contacts">-->
-<!--      Properties of the contact layers.-->
-<!--      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>-->
-<!--      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>-->
-<!--    </tag>-->
-
-    <bcond name="voltage" label="Voltage"/>
-
-<!--    <flow>-->
-<!--      <receiver name="inTemperature"/>-->
-<!--      <provider name="outCurrentDensity"/>-->
-<!--    </flow>-->
   </solver>
 
 </solvers>

@@ -21,8 +21,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
     </tag>
 
@@ -73,8 +73,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max. residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max. number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
     </tag>
 

@@ -90,7 +90,7 @@ As we will need to put some gain into the rectangle with the *active* material, 
 After the above edits, your geometry XML should look as follows:
 
 .. code-block:: xml
-aperture
+
    <cylindrical2d name="main" axes="r,z" outer="extend" bottom="GaAs">
        <shelf>
          <rectangle material="active" dr="4" dz="0.0050"

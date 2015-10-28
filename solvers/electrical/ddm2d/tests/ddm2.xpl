@@ -51,7 +51,7 @@ DDM2D.iterlimPsi = 3
 DDM2D.iterlimFn = 3
 DDM2D.iterlimFp = 3
 DDM2D.geometry = GEO.main
-DDM2D.mesh = MSH.siatka
+DDM2D.mesh = MSG.generator
 dU = 0.01
 DDM2D.voltage_boundary.append(DDM2D.mesh.TopOf(GEO.player), 0.0)
 DDM2D.voltage_boundary.append(DDM2D.mesh.BottomOf(GEO.nlayer), 0.0)

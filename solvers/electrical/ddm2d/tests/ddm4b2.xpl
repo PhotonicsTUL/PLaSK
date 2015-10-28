@@ -78,7 +78,7 @@ bottom = 0.
 r = linspace(left, right, 1000)
 z = linspace(bottom, top, 10000)
 
-for U in arange(0., 1.2+dU/2., dU):
+for U in arange(0., 1.8+dU/2., dU):
      print "U: %.3f V" % U
      DDM2D.voltage_boundary[0].value = U
      DDM2D.compute(200)

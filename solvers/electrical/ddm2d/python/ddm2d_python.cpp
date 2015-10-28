@@ -20,39 +20,31 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     METHOD(compute, compute, "Run drift-diffusion calculations", py::arg("loops")=0);
     /*METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
     RO_PROPERTY(err, getErr, "Maximum estimated error");*/
-    //RO_PROPERTY(errPsi0, getErrPsi0, "Maximum estimated error for potential at U = 0 V"); czy to potrzebne?
-    //RO_PROPERTY(errPsi, getErrPsi, "Maximum estimated error for potential"); czy to potrzebne?
-    //RO_PROPERTY(errFn, getErrFn, "Maximum estimated error for quasi-Fermi energy level for electrons"); czy to potrzebne?
-    //RO_PROPERTY(errFp, getErrFp, "Maximum estimated error for quasi-Fermi energy level for holes"); czy to potrzebne?
-    /*RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
-    RECEIVER(inTemperature, "");*/
+    RECEIVER(inTemperature, "");
     PROVIDER(outPotential, "");
     PROVIDER(outQuasiFermiEnergyLevelForElectrons, "");
     PROVIDER(outQuasiFermiEnergyLevelForHoles, "");
     PROVIDER(outConductionBandEdge, "");
     PROVIDER(outValenceBandEdge, "");
-    /*PROVIDER(outPotential, "");
-    PROVIDER(outCurrentDensity, "");
+    /*PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");
     PROVIDER(outConductivity, "");*/
     BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-    RW_FIELD(maxerrPsiI, "Limit for the initial potential updates");
-    RW_FIELD(maxerrPsi0, "Limit for the potential at U = 0 V updates");
-    RW_FIELD(maxerrPsi, "Limit for the potential updates");
-    RW_FIELD(maxerrFn, "Limit for the quasi-Fermi energy level for electrons updates");
-    RW_FIELD(maxerrFp, "Limit for the quasi-Fermi energy level for holes updates");
-    RW_FIELD(iterlimPsiI, "Maximum number of iterations for iterative method for initial potential");
-    RW_FIELD(iterlimPsi0, "Maximum number of iterations for iterative method for potential at U = 0 V");
-    RW_FIELD(iterlimPsi, "Maximum number of iterations for iterative method for potential");
-    RW_FIELD(iterlimFn, "Maximum number of iterations for iterative method for quasi-Fermi energy level for electrons");
-    RW_FIELD(iterlimFp, "Maximum number of iterations for iterative method for quasi-Fermi energy level for holes");
-    //RW_FIELD(maxerr, "Limit for the potential updates");
-    RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
-    /*solver.setattr("outVoltage", solver.attr("outPotential"));
-    RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-    RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-    RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-    METHOD(get_electrostatic_energy, getTotalEnergy,
+    solver.def_readwrite("maxerrVi", &__Class__::maxerrPsiI, "Limit for the initial potential estimate updates");
+    solver.def_readwrite("maxerrV0", &__Class__::maxerrPsi0, "Limit for the built-in potential updates");
+    solver.def_readwrite("maxerrV", &__Class__::maxerrPsi, "Limit for the potential updates");
+    solver.def_readwrite("maxerrFn", &__Class__::maxerrFn, "Limit for the electrons quasi-Fermi level updates");
+    solver.def_readwrite("maxerrFp", &__Class__::maxerrFp, "Limit for the holes quasi-Fermi level updates");
+    solver.def_readwrite("loopsVi", &__Class__::loopsPsiI, "Loops limit for the initial potential estimate");
+    solver.def_readwrite("loopsV0", &__Class__::loopsPsi0, "Loops limit for the built-in potential");
+    solver.def_readwrite("loopsV", &__Class__::loopsPsi, "Loops limit for the potential");
+    solver.def_readwrite("loopsFn", &__Class__::loopsFn, "Loops limit for the electrons quasi-Fermi level");
+    solver.def_readwrite("loopsFp", &__Class__::loopsFp, "Loops limit for the holes quasi-Fermi level");
+    solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
+    solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
+    solver.def_readwrite("iterlim", &__Class__::iterlim, "Maximum number of iterations for iterative method");
+    solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");
+    /*METHOD(get_electrostatic_energy, getTotalEnergy,
            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            "Return:\n"
            "    Total electrostatic energy [J].\n"

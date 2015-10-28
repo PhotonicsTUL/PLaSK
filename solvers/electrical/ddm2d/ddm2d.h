@@ -57,27 +57,27 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     int size;                   ///< Number of columns in the main matrix
 
-    bool mRsrh;    ///< SRH recombination is taken into account //LP_09.2015
-    bool mRrad;    ///< radiative recombination is taken into account //LP_09.2015
-    bool mRaug;    ///< Auger recombination is taken into account //LP_09.2015
-    bool mPol;     ///< polarization (GaN is the substrate) //LP_09.2015
-    bool mFullIon; ///< dopant ionization = 100% //LP_09.2015
+    bool mRsrh;    ///< SRH recombination is taken into account
+    bool mRrad;    ///< radiative recombination is taken into account
+    bool mRaug;    ///< Auger recombination is taken into account
+    bool mPol;     ///< polarization (GaN is the substrate)
+    bool mFullIon; ///< dopant ionization = 100%
 
     // scalling parameters
-    double mTx;    ///< ambient temperature (K) //LP_09.2015
-    double mEx;    ///< energy (eV) //LP_09.2015
-    double mNx;    ///< maximal doping concentration (1/cm^3) //LP_09.2015
-    double mEpsRx; ///< maximal dielectric constant (-) //LP_09.2015
-    double mXx;    ///< sometimes denoted as LD (um) //LP_09.2015
-    //double mKx;    ///< thermal conductivity (W/(m*K)) //LP_09.2015
-    double mMix;   ///< maximal mobility (cm^2/Vs) //LP_09.2015
-    double mRx;    ///< recombination parameter (1/(cm^3*s)) //LP_09.2015
-    double mJx;    ///< current density parameter (kA/cm2) //LP_09.2015
-    double mtx;    ///< SRH recombination lifetime (s) //LP_09.2015
-    double mBx;    ///< radiative recombination coefficient (cm^3/s) //LP_09.2015
-    double mCx;    ///< Auger recombination coefficient (cm^6/s) //LP_09.2015
-    //double mHx;    ///< heat source (W/(m^3)) //LP_09.2015
-    double mPx;    ///< polarization (C/m^2) //LP_09.2015
+    double mTx;    ///< ambient temperature (K)
+    double mEx;    ///< energy (eV)
+    double mNx;    ///< maximal doping concentration (1/cm^3)
+    double mEpsRx; ///< maximal dielectric constant (-)
+    double mXx;    ///< sometimes denoted as LD (um)
+    //double mKx;    ///< thermal conductivity (W/(m*K))
+    double mMix;   ///< maximal mobility (cm^2/Vs)
+    double mRx;    ///< recombination parameter (1/(cm^3*s))
+    double mJx;    ///< current density parameter (kA/cm2)
+    double mtx;    ///< SRH recombination lifetime (s)
+    double mBx;    ///< radiative recombination coefficient (cm^3/s)
+    double mCx;    ///< Auger recombination coefficient (cm^6/s)
+    //double mHx;    ///< heat source (W/(m^3))
+    double mPx;    ///< polarization (C/m^2)
 
     double dU;         ///< default voltage step (V)
     double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
@@ -95,22 +95,13 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements)
     DataVector<double> dvePsiI;                 ///< Computed initial potentials (size: elements)
     DataVector<double> dvePsi;                  ///< Computed potentials (size: elements)
-    DataVector<double> dveFn;                   ///< Computed potentials (size: elements)
-    DataVector<double> dveFp;                   ///< Computed potentials (size: elements)
     DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
     DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
 
     DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes)
     DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes)
-    DataVector<double> dvnDeltaPsi;             ///< Computed potentials corrections (size: nodes)
-    DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes)
-    DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes)
     DataVector<double> dvnFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: nodes)
     DataVector<double> dvnFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: nodes)
-    DataVector<double> dvnDeltaFn;              ///< Computed quasi-Fermi levels for electrons corrections (size: nodes)
-    DataVector<double> dvnDeltaFp;              ///< Computed quasi-Fermi levels for holes corrections (size: nodes)
-    DataVector<double> dvnEc;                   ///< Computed conduction band edge (size: points)
-    DataVector<double> dvnEv;                   ///< Computed valence band edge (size: points)
     //DataVector<Vec<2,double>> currents;         ///< Computed current densities
     //DataVector<double> heats;                   ///< Computed and cached heat source densities
 
@@ -181,18 +172,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     }
 
     void savePsi(); ///< save potentials for all elements to datavector
-    void saveFn();  ///< save quasi-Fermi electron level for all elements to datavector
-    void saveFp();  ///< save quasi-Fermi electron level for all elements to datavector
     void saveFnEta();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
-    void saveEc(); ///< save conduction band edge for all elements to datavector
-    void saveEv(); ///< save valence band edge for all elements to datavector
 
     /// Add corrections to datavectors
     template <CalcType calctype>
-    double addCorr(const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& vconst);
+    double addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& vconst);
 
 /*
     /// Create 2D-vector with calculated heat densities
@@ -206,20 +193,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Matrix solver
     void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
-/*
-    /// Get info on active region
-    void setActiveRegions();
 
-    virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
-        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
-        setActiveRegions();
-    }
-
-    virtual void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
-        setActiveRegions();
-    }
-*/
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
 
@@ -271,11 +245,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxerrPsi;   ///< Maximum estimated error for potential during all iterations (useful for single calculations managed by external python script)
     double maxerrFn;    ///< Maximum estimated error for quasi-Fermi energy level for electrons during all iterations (useful for single calculations managed by external python script)
     double maxerrFp;    ///< Maximum estimated error for quasi-Fermi energy level for holes during all iterations (useful for single calculations managed by external python script)
-    size_t iterlimPsiI; ///< Maximum number of iterations for iterative method for initial potential
-    size_t iterlimPsi0; ///< Maximum number of iterations for iterative method for potential at U = 0 V
-    size_t iterlimPsi;  ///< Maximum number of iterations for iterative method for potential
-    size_t iterlimFn;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for electrons
-    size_t iterlimFp;   ///< Maximum number of iterations for iterative method for quasi-Fermi energy level for holes
+    size_t loopsPsiI;   ///< Loops limit for initial potential
+    size_t loopsPsi0;   ///< Loops limit for potential at U = 0 V
+    size_t loopsPsi;    ///< Loops limit for potential
+    size_t loopsFn;     ///< Loops limit for quasi-Fermi energy level for electrons
+    size_t loopsFp;     ///< Loops limit for quasi-Fermi energy level for holes
     double itererr;     ///< Allowed residual iteration for iterative method
     size_t iterlim;     ///< Maximum number of iterations for iterative method
     size_t logfreq;     ///< Frequency of iteration progress reporting
