@@ -610,9 +610,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
         dvnPsi0[upleftno] += dvePsi[i];
         dvnPsi0[uprghtno] += dvePsi[i];
     }
-    divideByElements(dvnPsi);
+    divideByElements(dvnPsi0);
 
-    if (dvnPsi) dvnPsi = dvnPsi0.copy();
+    if (!dvnPsi) dvnPsi = dvnPsi0.copy();
 
     savePsi();
     saveN();
