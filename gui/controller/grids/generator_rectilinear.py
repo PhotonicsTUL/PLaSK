@@ -17,7 +17,8 @@ from ..table import table_with_manipulators
 from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
 from ...qt import QtGui
-from ...utils.str import empty_to_none
+from ...utils.qsignals import BlockQtSignals
+from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 
@@ -58,7 +59,7 @@ class RectilinearRefinedGeneratorController(GridController):
         self.options = QtGui.QHBoxLayout()
 
         self.aspect = QtGui.QLineEdit()
-        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', self.aspect.text()))   #self.fire_changed
+        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', empty_to_none(self.aspect.text())))
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
@@ -72,8 +73,9 @@ class RectilinearRefinedGeneratorController(GridController):
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
             cb = ComboBox()
-            cb.editingFinished.connect(self.fire_changed)
-            cb.currentIndexChanged.connect(self.fire_changed)
+            cb.editingFinished.connect(lambda w=w, cb=cb: self._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning') )
+            #cb.editingFinished.connect(self.fire_changed)
+            #cb.currentIndexChanged.connect(self.fire_changed)
             cb.addItems(['', 'yes', 'no'])
             cb.setEditable(True)
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
@@ -114,19 +116,13 @@ class RectilinearRefinedGeneratorController(GridController):
         self.form.setLayout(vbox)
 
     def fill_form(self):
-        self.aspect.setText(self.grid_model.aspect)
-
-    def save_data_in_model(self):
-        for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
-            setattr(self.model, attr_name, empty_to_none(getattr(self, attr_name).currentText()))
-        #self.model.aspect = self.aspect.text()
-
-    def on_edit_enter(self):
-        super(RectilinearRefinedGeneratorController, self).on_edit_enter()
+        super(RectilinearRefinedGeneratorController, self).fill_form()
+        self.aspect.setText(none_to_empty(self.grid_model.aspect))
         with self.mute_changes():
             for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
+                cb = getattr(self, attr_name)
                 a = getattr(self.model, attr_name)
-                getattr(self, attr_name).setEditText('' if a is None else a)
+                with BlockQtSignals(cb): cb.setEditText(none_to_empty(a))
 
     def get_widget(self):
         return self.form
@@ -139,8 +135,9 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
         super(RectilinearDivideGeneratorController, self).__init__(document=document, model=model)
 
         self.gradual = ComboBox()
-        self.gradual.editingFinished.connect(self.fire_changed)
-        self.gradual.currentIndexChanged.connect(self.fire_changed)
+        self.gradual.editingFinished.connect(lambda : self._change_attr('gradual', empty_to_none(self.gradual.currentText())))
+        #self.gradual.editingFinished.connect(self.fire_changed)
+        #self.gradual.currentIndexChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
         self.gradual.setMinimumWidth(150)
@@ -159,16 +156,20 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
                                              'The number of the final divisions of each geometry object{}.',
                                              self.defines)
 
+    def fill_form(self):
+        super(RectilinearDivideGeneratorController, self).fill_form()
+        with self.mute_changes():
+            with BlockQtSignals(self.gradual):
+                self.gradual.setEditText(none_to_empty(self.model.gradual))
+
     def save_data_in_model(self):
         super(RectilinearDivideGeneratorController, self).save_data_in_model()
-        self.model.gradual = empty_to_none(self.gradual.currentText())
         self.model.set_prediv([empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)])
         self.model.set_postdiv([empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)])
 
     def on_edit_enter(self):
+        super(RectilinearDivideGeneratorController, self).on_edit_enter()
         with self.mute_changes():
-            super(RectilinearDivideGeneratorController, self).on_edit_enter()
-            self.gradual.setEditText('' if self.model.gradual is None else self.model.gradual)
             for i in range(0, self.model.dim):
                 self.prediv[i].setText(self.model.get_prediv(i))
                 self.postdiv[i].setText(self.model.get_postdiv(i))
