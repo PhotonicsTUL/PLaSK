@@ -397,6 +397,8 @@ class StepProfile(object):
         return provider
 
     def __call__(self, mesh, *args):
+        if not isinstance(mesh, _plask.mesh.Mesh) and len(args):
+            mesh = args[0]
         result = ones(len(mesh), self.dtype) * self._default
         for xobj,val in self.steps.items():
             obj, pth = xobj if type(xobj) is tuple else (xobj, None)
