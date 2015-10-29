@@ -11,6 +11,8 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
 {
+    pml_tran.factor = {1., -2.};
+    pml_long.factor = {1., -2.};
     detlog.global_prefix = this->getId();
     smooth = 0.00025;
 }

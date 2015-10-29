@@ -1,3 +1,6 @@
+#include <boost/algorithm/clamp.hpp>
+using boost::algorithm::clamp;
+
 #include "expansion3d.h"
 #include "solver3d.h"
 #include "../meshadapter.h"
@@ -34,19 +37,19 @@ void ExpansionPW3D::init()
             throw BadInput(solver->getId(), "Transverse symmetry not allowed for asymmetric structure");
 
     if (geometry->isSymmetric(Geometry3D::DIRECTION_LONG)) {
-        if (front <= 0) {
+        if (front <= 0.) {
             back = -back; front = -front;
             std::swap(back, front);
         }
-        if (back != 0) throw BadMesh(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
+        if (back != 0.) throw BadMesh(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_long()) back = -front;
     }
     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
-        if (right <= 0) {
+        if (right <= 0.) {
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0) throw BadMesh(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0.) throw BadMesh(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_tran()) left = -right;
     }
 
@@ -733,6 +736,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
     }
 
     if (field_interpolation == INTERPOLATION_FOURIER) {
+        const double lo0 = symmetric_long()? -front : back, hi0 = front,
+                     lo1 = symmetric_tran()? -right : left, hi1 = right;
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double Ll = (symmetric_long()? 2. : 1.) * (front - back),
                Lt = (symmetric_tran()? 2. : 1.) * (right - left);
@@ -775,6 +780,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 dcomplex gl = bl*double(il) - ikx;
                 for (size_t ip = 0; ip != dest_mesh->size(); ++ip) {
                     auto p = dest_mesh->at(ip);
+                    if (!periodic_long) p.c0 = clamp(p.c0, lo0, hi0);
+                    if (!periodic_tran) p.c1 = clamp(p.c1, lo1, hi1);
                     result[ip] += coeff * exp(gl * (p.c0-back) + gt * (p.c1-left));
                 }
             }

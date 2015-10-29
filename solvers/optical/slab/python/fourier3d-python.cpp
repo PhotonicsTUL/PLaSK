@@ -284,13 +284,13 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             } else
                 self->setKtran(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "dispersive")
-            throw TypeError("Dispersive argument has been removes. Set solver.lam0 attribute.");
+            throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
-    
+
     FourierSolver3D::ParamGuard guard(self);
-            
+
     if (wavelength) self->setWavelength(*wavelength);
     if (k0) self->setK0(*k0);
 

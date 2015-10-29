@@ -42,11 +42,7 @@ DDM2D.invalidate()
 
 T = 300
 
-try:
-  DDM2D.compute()
-except AttributeError:
-  DDM2D.compute_initial_potential(1000)
-  DDM2D.compute_potential_0(1000)
+DDM2D.compute()
 
 print_log(LOG_INFO, "Calculations done!")
 

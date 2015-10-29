@@ -1,3 +1,6 @@
+#include <boost/algorithm/clamp.hpp>
+using boost::algorithm::clamp;
+
 #include "expansion2d.h"
 #include "solver2d.h"
 #include "../meshadapter.h"
@@ -633,7 +636,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                 }
             }
         }
-   }
+    }
 
     if (dx) { field[field.size()-1].tran() = 0.; }
     if (dz) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
@@ -649,7 +652,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                 size_t j = (k>=0)? k : k + N;
                 dcomplex G = B * double(k) - ikx;
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
-                    result[i] += field[j] * exp(G * (dest_mesh->at(i)[0]-left));
+                    double x = dest_mesh->at(i)[0];
+                    if (!periodic) x = clamp(x, left, right);
+                    result[i] += field[j] * exp(G * (x-left));
                 }
             }
         } else {
@@ -658,8 +663,10 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             for (size_t i = 0; i != dest_mesh->size(); ++i) {
                 result[i] = field[0];
                 for (int k = 1; k <= order; ++k) {
-                    double cs =  2. * cos(B * k * dest_mesh->at(i)[0]);
-                    double sn =  2. * sin(B * k * dest_mesh->at(i)[0]);
+                    double x = dest_mesh->at(i)[0];
+                    if (!periodic) x = clamp(x, -right, right);
+                    double cs =  2. * cos(B * k * x);
+                    double sn =  2. * sin(B * k * x);
                     if (sym == E_TRAN) {
                         result[i].lon() += field[k].lon() * sn;
                         result[i].tran() += field[k].tran() * cs;

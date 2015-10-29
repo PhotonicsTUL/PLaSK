@@ -13,7 +13,6 @@ category = os.path.basename(source)
 title = category.title()
 
 if category == 'skel': exit()
-      
 
 data = []
 
@@ -21,9 +20,12 @@ data = []
 for dirname, _, files in os.walk(source):
     if 'solvers.xml' in files:
         library = os.path.basename(dirname)
-        dom = et.parse(os.path.join(dirname, 'solvers.xml'))
+        try:
+            dom = et.parse(os.path.join(dirname, 'solvers.xml'))
+        except et.XMLSyntaxError:
+            continue
 
-        root = dom.getroot()    
+        root = dom.getroot()
         xns = root.nsmap.get(None, '')
         if xns: xns = '{'+xns+'}'
 

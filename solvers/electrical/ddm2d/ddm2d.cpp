@@ -1,3 +1,5 @@
+#include <boost/algorithm/clamp.hpp>
+
 #include "ddm2d.h"
 
 namespace plask { namespace solvers { namespace drift_diffusion {
@@ -520,7 +522,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
         err = 0.;
         double normDel = maxDelPsi0 / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            if (corr[i] > normDel) corr[i] = normDel; else if (corr[i] < -normDel) corr[i] = -normDel;
+            corr[i] = boost::algorithm::clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi0[i] += corr[i];
         }
@@ -530,7 +532,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
         err = 0.;
         double normDel = maxDelPsi / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            if (corr[i] > normDel) corr[i] = normDel; else if (corr[i] < -normDel) corr[i] = -normDel;
+            corr[i] = boost::algorithm::clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi[i] += corr[i];
         }

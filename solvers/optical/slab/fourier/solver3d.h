@@ -92,7 +92,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     void clear_modes() override {
         modes.clear();
     }
-    
+
     /// Mesh multiplier for finer computation of the refractive indices in the longitudinal direction
     size_t refine_long;
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
