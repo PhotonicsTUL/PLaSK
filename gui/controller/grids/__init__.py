@@ -278,5 +278,20 @@ class GridController(Controller):
         old_value = getattr(self.grid_model, attr)
         if value != old_value:
             self.section_model.undo_stack.push(InTableChangeItemCommand(
-                self.section_model, self.grid_model, lambda n, v: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
+                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
             ))
+
+    def fill_form(self):
+        pass
+
+    def _fill_form_cb(self, *args, **kwargs):
+        self.fill_form()
+
+    def on_edit_enter(self):
+        super(GridController, self).on_edit_enter()
+        self.section_model.changed.connect(self._fill_form_cb)
+        self.fill_form()
+
+    def on_edit_exit(self):
+        self.section_model.changed.disconnect(self._fill_form_cb)
+        return super(GridController, self).on_edit_exit()

@@ -58,7 +58,7 @@ class RectilinearRefinedGeneratorController(GridController):
         self.options = QtGui.QHBoxLayout()
 
         self.aspect = QtGui.QLineEdit()
-        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', self.aspect.text))   #self.fire_changed
+        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', self.aspect.text()))   #self.fire_changed
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
@@ -113,17 +113,20 @@ class RectilinearRefinedGeneratorController(GridController):
         #vbox.addStretch()
         self.form.setLayout(vbox)
 
+    def fill_form(self):
+        self.aspect.setText(self.grid_model.aspect)
+
     def save_data_in_model(self):
         for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
             setattr(self.model, attr_name, empty_to_none(getattr(self, attr_name).currentText()))
         #self.model.aspect = self.aspect.text()
 
     def on_edit_enter(self):
+        super(RectilinearRefinedGeneratorController, self).on_edit_enter()
         with self.mute_changes():
             for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
                 a = getattr(self.model, attr_name)
                 getattr(self, attr_name).setEditText('' if a is None else a)
-            self.aspect.setText(self.model.aspect)
 
     def get_widget(self):
         return self.form
