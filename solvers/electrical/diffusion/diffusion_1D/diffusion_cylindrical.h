@@ -20,7 +20,6 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         plask::ReceiverFor<plask::CurrentDensity, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
-        plask::ReceiverFor<plask::GainOverCarriersConcentration, Geometry2DType> inGainOverCarriersConcentration;
         plask::ReceiverFor<plask::Wavelength> inWavelength;
         plask::ReceiverFor<plask::LightMagnitude, Geometry2DType> inLightMagnitude;
 

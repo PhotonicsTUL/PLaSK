@@ -6,7 +6,6 @@ namespace plask { namespace python {
 // void register_standard_properties_thermal();
 // void register_standard_properties_electrical();
 void register_standard_properties_gain();
-void register_standard_properties_GainOverCarriersConcentration();
 void register_standard_properties_optical();
 void register_standard_properties_refractive();
 
@@ -81,15 +80,15 @@ PLASK_PYTHON_API const char* docstring_receiver_assign =
 
     "   >>> solver.in%1% = 300.";
 
-template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_provider();
+template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_provider_impl();
 
-template <> PLASK_PYTHON_API const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
+template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
-    "This class is used for %3% provider in binary solvers. You can also create\n"
-    "a custom provider for your Python solver.\n\n"
+    "This class is used for %3% provider in binary solvers.\n"
+    "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
     "   data: provided value or callable returning it on request.\n"
@@ -119,13 +118,13 @@ template <> PLASK_PYTHON_API const char* docstring_provider<SINGLE_VALUE_PROPERT
     "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> PLASK_PYTHON_API const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
+template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
-    "This class is used for %3% provider in binary solvers. You can also create\n"
-    "a custom provider for your Python solver.\n\n"
+    "This class is used for %3% provider in binary solvers.\n"
+    "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
     "   data: provided value or callable returning it on request.\n"
@@ -166,13 +165,13 @@ template <> PLASK_PYTHON_API const char* docstring_provider<MULTI_VALUE_PROPERTY
     "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> PLASK_PYTHON_API const char* docstring_provider<FIELD_PROPERTY>() { return
+template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
-    "This class is used for %3% provider in binary solvers. You can also create\n"
-    "a custom provider for your Python solver.\n\n"
+    "This class is used for %3% provider in binary solvers.\n"
+    "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
     "   data: ``Data`` object to interpolate or callable returning it for given mesh.\n"
@@ -205,13 +204,13 @@ template <> PLASK_PYTHON_API const char* docstring_provider<FIELD_PROPERTY>() { 
     "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
-template <> PLASK_PYTHON_API const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
+template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>() { return
     "%1%Provider%2%(data)\n\n"
 
     "Provider of the %3%%4% [%7%].\n\n"
 
-    "This class is used for %3% provider in binary solvers. You can also create\n"
-    "a custom provider for your Python solver.\n\n"
+    "This class is used for %3% provider in binary solvers.\n"
+    "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
     "   data: ``Data`` object to interpolate or callable returning it for given mesh.\n"
@@ -255,10 +254,10 @@ template <> PLASK_PYTHON_API const char* docstring_provider<MULTI_FIELD_PROPERTY
     "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
-template PLASK_PYTHON_API const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider<MULTI_VALUE_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider<FIELD_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider<MULTI_FIELD_PROPERTY>();
+template PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>();
+template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>();
+template PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>();
+template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>();
 
 
 PLASK_PYTHON_API py::object flow_module;
@@ -385,7 +384,6 @@ void register_standard_properties()
     register_standard_properties_valence_band_edge();
     
     register_standard_properties_gain();
-    register_standard_properties_GainOverCarriersConcentration();
 
     register_standard_properties_optical();
     register_standard_properties_refractive();

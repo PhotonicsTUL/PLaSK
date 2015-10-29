@@ -136,9 +136,6 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
-    /// Provider for gain over carriers concentration derivative distribution
-    typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
-
     FermiGainSolver(const std::string& name="");
 
     virtual ~FermiGainSolver();
@@ -203,21 +200,13 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
 
     /**
      * Compute the gain on the mesh. This method is called by gain provider.
+     * \param what what to return (gain or its carriera derivative)
      * \param dst_mesh destination mesh
      * \param wavelength wavelength to compute gain for
      * \param interp interpolation method
      * \return gain distribution
      */
-    const LazyData<double> getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
-
-    /**
-     * Compute the gain over carriers concentration on the mesh. This method is called by gain provider.
-     * \param dst_mesh destination mesh
-     * \param wavelength wavelength to compute gain for
-     * \param interp interpolation method
-     * \return gain distribution
-     */
-    const LazyData<double> getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 

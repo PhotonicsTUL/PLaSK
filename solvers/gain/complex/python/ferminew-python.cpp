@@ -97,7 +97,6 @@ BOOST_PYTHON_MODULE(complex)
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         PROVIDER(outLuminescence, "");
-        PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness of the layers [-].");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
@@ -143,7 +142,6 @@ BOOST_PYTHON_MODULE(complex)
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         PROVIDER(outLuminescence, "");
-        PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness of the layers [-].");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");

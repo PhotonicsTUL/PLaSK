@@ -146,9 +146,6 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
     /// Provider for luminescence distribution
     typename ProviderFor<Luminescence,GeometryType>::Delegate outLuminescence;
 
-    /// Provider for gain over carriers concentration derivative distribution
-    typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
-
     FermiNewGainSolver(const std::string& name="");
 
     virtual ~FermiNewGainSolver();
@@ -232,8 +229,8 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
      * \param interp interpolation method
      * \return gain distribution
      */
-    const LazyData<double> getGain(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
-    const LazyData<double> getDgDn(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getGain(Gain::EnumType what, const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
     const LazyData<double> getLuminescence(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
 

@@ -296,7 +296,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         // write_debug("n < 0: %1% times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
                         // write_debug("g[0]: %1% cm(-1)", g[0]);
-                        auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
+                        auto dgdn = inGain(Gain::DGDN, mesh2, wavelength, interpolation_method);
                         // write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
                         auto factor = inv_hc * wavelength; // inverse one photon energy
                         for (size_t i = 0; i != mesh2->size(); ++i)

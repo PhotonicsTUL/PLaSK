@@ -23,7 +23,11 @@ namespace plask {
  * Providers of material gain should accept additional parameter,
  * which is the wavelength for which the gain should be computed.
  */
-struct PLASK_API Gain : public FieldProperty<double, double> {
+struct PLASK_API Gain : public MultiFieldProperty<double, double> {
+    enum EnumType {
+        GAIN = 0,
+        DGDN = 1
+    };
     static constexpr const char* NAME = "material gain";
     static constexpr const char* UNIT = "1/cm";
     static inline double getDefaultValue() { return NAN; }
@@ -37,20 +41,6 @@ struct PLASK_API Luminescence : public FieldProperty<double, double> {
     static constexpr const char* UNIT = "a.u.";
     static inline double getDefaultValue() { return NAN; }
 };
-
-/**
- * Derivative of material gain over carriers concentration [cm²].
- *
- * Providers of material gain derivative should accept additional parameter,
- * which is the wavelength for which the derivative should be computed.
- */
-struct PLASK_API GainOverCarriersConcentration : public FieldProperty<double, double> {
-    static constexpr const char* NAME = "material gain over carriers concentration derivative";
-    static constexpr const char* UNIT = "cm²";
-    static inline double getDefaultValue() { return 0.; }
-
-};
-
 
 } // namespace plask
 

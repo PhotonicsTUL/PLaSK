@@ -4,8 +4,7 @@ namespace plask { namespace solvers { namespace fermi {
 
 template <typename GeometryType>
 FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
-    outGain(this, &FermiGainSolver<GeometryType>::getGain),
-    outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
+    outGain(this, &FermiGainSolver<GeometryType>::getGain, []{return 2;})
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     lifetime = 0.1; // [ps]
@@ -724,28 +723,21 @@ struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::
 
 
 template <typename GeometryType>
-const LazyData<double> FermiGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FermiGainSolver<GeometryType>::getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
-    this->writelog(LOG_DETAIL, "Calculating gain");
-    this->initCalculation(); // This must be called before any calculation!
-
-    GainData* data = new GainData(this, dst_mesh);
-    data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
-
-    return LazyData<double>(data);
-}
-
-
-template <typename GeometryType>
-const LazyData<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
-{
-    this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
-    this->initCalculation(); // This must be called before any calculation!
-
-    DgdnData* data = new DgdnData(this, dst_mesh);
-    data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
-
-    return LazyData<double>(data);
+    if (what == Gain::DGDN) {
+        this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
+        this->initCalculation(); // This must be called before any calculation!
+        DgdnData* data = new DgdnData(this, dst_mesh);
+        data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
+        return LazyData<double>(data);
+    } else {
+        this->writelog(LOG_DETAIL, "Calculating gain");
+        this->initCalculation(); // This must be called before any calculation!
+        GainData* data = new GainData(this, dst_mesh);
+        data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
+        return LazyData<double>(data);
+    }
 }
 
 

@@ -74,6 +74,68 @@ private:
 
 };
 
+//This class is simillar to field provider, but in each point it returns optional value
+template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
+class DataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
+//: public FieldProvider<boost::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+{
+
+    //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
+
+public:
+
+    typedef OutputSpaceT OutputSpaceType;
+    typedef typename PropertyT::EnumType EnumType;
+
+    /**
+     * Signal called when source has been changed.
+     */
+    boost::signals2::signal<void()> changed;
+
+    /*shared_ptr<OutputSpaceType> getDestinationSpace() const { return destinationSpace; }
+
+    virtual void setDestinationSpace(shared_ptr<OutputSpaceType>) { this->destinationSpace = destinationSpace; }*/
+
+    /*
+     * Check if this source can provide value for given point.
+     * @param p point, in outer space coordinates
+     * @return @c true only if this can provide data in given point @p p
+     */
+    //virtual bool canProvide(const Vec<OutputSpaceType::DIM, double>& p) const = 0;
+
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+
+    /*
+     * Check if this source can provide value for given point and eventualy return this value.
+     * @param p point (in outer space coordinates)
+     * @param extra_args
+     * @param method interpolation method to use
+     * @return value in point @p, set only if this can provide data in given point @p p
+     */
+   // virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+   // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    virtual size_t size() const = 0;
+    
+    inline std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
+        typedef std::tuple<ExtraArgs...> Tuple;
+        return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
+    }
+
+private:
+    template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
+    inline std::function<boost::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
+      return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
+    }
+
+};
+
 template <typename PropertyT, typename OutputSpaceType>
 using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
 

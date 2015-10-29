@@ -102,10 +102,11 @@ public:
      * Construct solver with given output @p geometry.
      * @param geometry output geometry
      */
-    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry) {
-        this->out.valueGetter = [&] (const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> LazyData<ValueType> {
+    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry),
+        out([&] (const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> LazyData<ValueType> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
-        };
+        })
+    {
         setDefault(PropertyAtSpace<PropertyT, OutputSpaceType>::getDefaultValue());
     }
 
@@ -126,6 +127,227 @@ public:
      */
     LazyData<ValueType> get(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         return new FilterLazyDataImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        /*if (innerSources.empty())   //special case, for fast getting data from outer source
+            return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        DataVector<ValueT> result(dst_mesh.size());
+        NoLogging nolog;
+        bool silent = outerSource && typeid(*outerSource) != typeid(ConstDataSource<PropertyT, OutputSpaceType>);
+        for (std::size_t i = 0; i < result.size(); ++i) {
+            // iterate over inner sources, if inner sources don't provide data, use outer source:
+            boost::optional<ValueT> innerVal;
+            for (const DataSourceTPtr& innerSource: innerSources) {
+                innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
+                if (innerVal) { silent = true; break; }
+            }
+            result[i] = *(innerVal ? innerVal : outerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method));
+            if (silent) nolog.silence();
+        }
+        return result;*/
+    }
+
+    /**
+     * Set outer source to @p outerSource.
+     * @param outerSource source to use in all points where inner sources don't provide values.
+     */
+    void setOuter(DataSourceTPtr&& outerSource) {
+        disconnect(this->outerSource);
+        this->outerSource = std::move(outerSource);
+        connect(*this->outerSource);
+        out.fireChanged();
+    }
+
+    /**
+     * Set outer provider to provide constant @p value.
+     * @param value value which is used in all points where inner sources don't provide values.
+     */
+    void setDefault(const ValueType& value) {
+        disconnect(this->outerSource);
+        this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
+        connect(*this->outerSource);
+        out.fireChanged();
+    }
+
+    /**
+     * Append inner data source.
+     * @param innerSource inner source to add
+     */
+    void appendInner(DataSourceTPtr&& innerSource) {
+        this->innerSources.push_back(std::move(innerSource));
+        connect(*this->innerSources.back());
+        out.fireChanged();
+    }
+
+    /**
+     * Set outer or append inner input.
+     * @param obj
+     * @param path
+     * @return
+     */
+    virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) = 0;
+
+    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<GeometryObjectD<3>> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& input(Geometry3D& inGeom, const PathHints* path = nullptr) {
+        return input(inGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<Geometry3D> inGeom, const PathHints* path = nullptr) {
+        return input(inGeom->getChild(), path);
+    }
+
+    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) = 0;
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(shared_ptr<Geometry2DCartesian> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
+
+    virtual ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical& obj, const PathHints* path = nullptr) = 0;
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(shared_ptr<Geometry2DCylindrical> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
+
+private:
+
+    void onSourceChange(/*Provider&, bool isDestr*/) {
+        //if (!isDestr)
+        out.fireChanged();
+    }
+
+    void connect(DataSourceT& in) {
+        in.changed.connect(boost::bind(&FilterBaseImpl::onSourceChange, this/*, _1, _2*/));
+    }
+
+    void disconnect(DataSourceT& in) {
+        in.changed.disconnect(boost::bind(&FilterBaseImpl::onSourceChange, this/*, _1, _2*/));
+    }
+
+    void disconnect(DataSourceTPtr& in) {
+        if (in) disconnect(*in);
+    }
+};
+
+template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
+struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
+    : public FilterCommonBase
+{
+    // one outer source (input)
+    // vector of inner sources (inputs)
+    // one output (provider)
+
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
+    typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
+    typedef std::function<boost::optional<ValueType>(std::size_t)> DataSourceF;
+    typedef typename PropertyT::EnumType EnumType;
+
+    struct FilterLazyDataImpl: public LazyDataImpl<ValueType> {
+
+        DataSourceF outerSourceData;
+
+        std::vector<DataSourceF> innerSourcesData;
+
+        /*const FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >& filter;*/
+        shared_ptr<const MeshD<OutputSpaceType::DIM>> dst_mesh;
+        //std::tuple<ExtraArgs...> extra_args;
+        //InterpolationMethod method;
+
+        EnumType num;
+        
+        FilterLazyDataImpl(
+                const FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >& filter,
+                EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method
+                )
+            : innerSourcesData(filter.innerSources.size()), /*filter(filter),*/ dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/, num(num) 
+        {
+            for (std::size_t source_index = 0; source_index < filter.innerSources.size(); ++source_index)
+                innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            outerSourceData = filter.outerSource->operator()(num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        }
+
+        virtual ValueType at(std::size_t point_index) const override {
+            for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
+                //if (!innerSourcesData[source_index])
+                //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
+                boost::optional<ValueType> v = innerSourcesData[source_index](point_index);
+                if (v) return *v;
+            }
+            //if (!outerSourceData) outerSourceData = filter.outerSource->operator()(dst_mesh, extra_args, method);
+            return *outerSourceData(point_index);
+        }
+
+        virtual std::size_t size() const override { return dst_mesh->size(); }
+
+    };
+
+protected:
+    std::vector<DataSourceTPtr> innerSources;
+
+    DataSourceTPtr outerSource;
+
+    /// Output space in which the results are provided.
+    shared_ptr<OutputSpaceType> geometry;
+
+    template <typename SourceType>
+    auto setOuterRecv(std::unique_ptr<SourceType>&& outerSource) -> decltype(outerSource->in)& {
+        decltype(outerSource->in)& res = outerSource->in;
+        // setOuter(std::move(outerSource)); //can't call fireChange before connecting provider to returned receiver
+        disconnect(this->outerSource);
+        this->outerSource = std::move(outerSource);
+        connect(*this->outerSource);
+        return res;
+    }
+
+    template <typename SourceType>
+    auto appendInnerRecv(std::unique_ptr<SourceType>&& innerSource) -> decltype(innerSource->in)& {
+        decltype(innerSource->in)& res = innerSource->in;
+        this->innerSources.push_back(std::move(innerSource));
+        connect(*this->innerSources.back());
+        return res;
+    }
+
+public:
+
+    /// Provider of filtered data.
+    typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
+
+    /**
+     * Construct solver with given output @p geometry.
+     * @param geometry output geometry
+     */
+    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry),
+        out([&] (EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> LazyData<ValueType> {
+                return this->get(num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            },
+            [&] () -> size_t {
+                size_t size = this->outerSource->size();
+                for (const auto& inner: this->innerSources)
+                    size = std::min(size, inner->size());
+                return size;
+            })
+    {
+        setDefault(PropertyAtSpace<PropertyT, OutputSpaceType>::getDefaultValue());
+    }
+
+    virtual std::string getClassName() const override { return "Filter"; }
+
+    /**
+     * Get this filter output geometry.
+     * \return filter geometry
+     */
+    shared_ptr<OutputSpaceType> getGeometry() const { return geometry; }
+
+    /**
+     * Get value provided by output of this solver.
+     * @param dst_mesh
+     * @param extra_args
+     * @param method
+     * @return
+     */
+    LazyData<ValueType> get(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        return new FilterLazyDataImpl(*this, num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         /*if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());

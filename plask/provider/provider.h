@@ -206,7 +206,7 @@ struct PLASK_API Provider {
 
 /**
  * Common non-template base for all receivers.
- * This class is usefult for metaprogramming and also can be used for holding pointers to receivers.
+ * This class is usefull for metaprogramming and also can be used for holding pointers to receivers.
  */
 struct PLASK_API ReceiverBase {
 
@@ -462,7 +462,7 @@ struct SingleValueProvider: public Provider {
  * @tparam ValueT type of provided value
  * @tparam ArgsT type of arguments required by provider (optional)
  */
-template <typename ValueT, typename... ArgsT>
+template <typename ValueT, typename EnumT, typename... ArgsT>
 struct MultiValueProvider: public Provider {
 
     static constexpr const char* NAME = "undefined value";
@@ -471,11 +471,14 @@ struct MultiValueProvider: public Provider {
     /// Type of provided value.
     typedef ValueT ProvidedType;
 
+    /// Type of value number
+    typedef EnumT EnumType;
+    
     /**
      * Provided value getter.
      * @return provided value
      */
-    virtual ProvidedType operator()(size_t num, ArgsT...) const = 0;
+    virtual ProvidedType operator()(EnumT num, ArgsT...) const = 0;
 
     /**
      * Get number of values
@@ -542,7 +545,7 @@ private:
  * Instantiation of this template is abstract base class for provider class which provide values in points described by mesh
  * and use interpolation.
  */
-template <typename ValueT, typename SpaceT, typename... ExtraArgs>
+template <typename ValueT, typename SpaceT, typename EnumT, typename... ExtraArgs>
 struct MultiFieldProvider: public Provider {
 
     static constexpr const char* NAME = "undefined field";
@@ -551,6 +554,9 @@ struct MultiFieldProvider: public Provider {
     /// Type of value provided by this (returned by operator()).
     typedef LazyData<ValueT> ProvidedType;
 
+    /// Type of value number
+    typedef EnumT EnumType;
+    
     /**
      * Get number of values
      * \return number of values
@@ -564,7 +570,7 @@ struct MultiFieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual ProvidedType operator()(EnumT num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Call this->operator()(dst_mesh, DEFAULT).
@@ -573,7 +579,7 @@ struct MultiFieldProvider: public Provider {
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(EnumT num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(num, dst_mesh, extra_args..., INTERPOLATION_DEFAULT);
     }
 
@@ -584,9 +590,42 @@ struct MultiFieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+    inline ProvidedType operator()(EnumT num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(num, dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
+    }
+
+    /**
+     * Call this->operator()(0, dst_mesh, methos).
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        return this->operator()(EnumT(0), dst_mesh, extra_args..., method);
+    }
+
+    /**
+     * Call this->operator()(0, dst_mesh, DEFAULT).
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args) const {
+        return this->operator()(EnumT(0), dst_mesh, extra_args..., INTERPOLATION_DEFAULT);
+    }
+
+    /**
+     * Call this->operator()(0, dst_mesh, method).
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments, given in tuple
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+        typedef std::tuple<ExtraArgs...> Tuple;
+        return apply_tuple(EnumT(0), dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
 private:
@@ -640,9 +679,12 @@ template<typename _BaseClass, typename _Signature> struct PolymorphicDelegatePro
 template<typename _BaseClass, typename _Res, typename... _ArgTypes>
 struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _BaseClass {
 
+    
     /// Held external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
+    PolymorphicDelegateProvider() = delete;
+    
     /**
      * Create delegate provider
      * \param functor delegate functor

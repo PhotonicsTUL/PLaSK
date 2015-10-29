@@ -39,7 +39,6 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
         RECEIVER(inWavelength, "It is required only for the overthreshold computations.");
-        RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
         RECEIVER(inLightMagnitude, "It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, "");
         METHOD(get_total_burning, burning_integral, "Compute total power burned over threshold [mW].");
@@ -79,7 +78,6 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inCurrentDensity, "");
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "It is required only for the overthreshold computations.");
-        RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
         RECEIVER(inLightMagnitude, "It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, "");
         METHOD(get_total_burning, burning_integral, "Compute total power burned over threshold [mW].");

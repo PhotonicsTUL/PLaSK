@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<Gain> registerGainFilters;
+//FiltersFactory::RegisterStandard<Gain> registerGainFilters;
 
 }   // namespace plask

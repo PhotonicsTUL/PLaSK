@@ -556,15 +556,15 @@ void export_FourierSolver3D()
         , py::no_init)
         .def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*>
                                             (&FourierSolver3D::Reflected::outElectricField),
-            format(docstring_attr_provider<FIELD_PROPERTY>(), "LightE", "3D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
+            format(docstring_attr_provider<LightE>(), "LightE", "3D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
         )
         .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*>
                                             (&FourierSolver3D::Reflected::outMagneticField),
-            format(docstring_attr_provider<FIELD_PROPERTY>(), "LightH", "3D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
+            format(docstring_attr_provider<LightH>(), "LightH", "3D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
         )
         .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry3D> FourierSolver3D::Reflected::*>
                                             (&FourierSolver3D::Reflected::outLightMagnitude),
-            format(docstring_attr_provider<FIELD_PROPERTY>(), "LightMagnitude", "3D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()
+            format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "3D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()
         )
         .def("get_electric_coefficients", FourierSolver3D_getReflectedFieldVectorE, py::arg("level"),
              "Get Fourier expansion coefficients for the electric field.\n\n"

@@ -81,9 +81,9 @@ constexpr const char* docstring_attr_receiver() { return
     "   Data filter: :class:`plask.filter.%1%Filter%2%`\n";
 }
 
-template <PropertyType propertyType> constexpr const char* docstring_attr_provider();
+template <PropertyType propertyType> constexpr const char* docstring_attr_provider_impl();
 
-template <> constexpr const char* docstring_attr_provider<SINGLE_VALUE_PROPERTY>() { return
+template <> constexpr const char* docstring_attr_provider_impl<SINGLE_VALUE_PROPERTY>() { return
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
@@ -108,7 +108,7 @@ template <> constexpr const char* docstring_attr_provider<SINGLE_VALUE_PROPERTY>
     "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> constexpr const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>() { return
+template <> constexpr const char* docstring_attr_provider_impl<MULTI_VALUE_PROPERTY>() { return
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
@@ -142,7 +142,7 @@ template <> constexpr const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>(
     "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> constexpr const char* docstring_attr_provider<FIELD_PROPERTY>() { return
+template <> constexpr const char* docstring_attr_provider_impl<FIELD_PROPERTY>() { return
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
@@ -169,7 +169,7 @@ template <> constexpr const char* docstring_attr_provider<FIELD_PROPERTY>() { re
     "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
-template <> constexpr const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>() { return
+template <> constexpr const char* docstring_attr_provider_impl<MULTI_FIELD_PROPERTY>() { return
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
@@ -205,6 +205,18 @@ template <> constexpr const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>(
     "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
+
+template <typename PropertyTag>
+static constexpr const char* docstring_attr_provider() {
+    return docstring_attr_provider_impl<PropertyTag::propertyType>();
+}
+
+}} // namespace plask::python
+
+#include "python_property_desc.h"
+
+namespace plask { namespace python {
+
 /**
  * This class should be instantiated to export a solver to Python.
  *
@@ -229,7 +241,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ClassT::* BaseTypePtr;
 
         this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field),
-            format(docstring_attr_provider<ProviderT::PropertyTag::propertyType>(),
+            format(docstring_attr_provider<typename ProviderT::PropertyTag>(),
                    type_name<typename ProviderT::PropertyTag>(),                                // %1% Gain
                    spaceSuffix<typename ProviderT::SpaceType>(),                                // %2% Cartesian2D
                    ProviderT::PropertyTag::NAME,                                                // %3% material gain

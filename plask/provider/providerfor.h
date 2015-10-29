@@ -239,7 +239,7 @@ struct PropertyAtSpace<PropertyTag, void>: public PropertyAt<PropertyTag, 2> {
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueT = double, typename... _ExtraParams>
+template<typename ValueT=double, typename... _ExtraParams>
 struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
 
 /**
@@ -248,8 +248,11 @@ struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT, Value
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueT = double, typename... _ExtraParams>
-struct MultiValueProperty: public Property<MULTI_VALUE_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
+template<typename ValueT=double, typename... _ExtraParams>
+struct MultiValueProperty: public Property<MULTI_VALUE_PROPERTY, ValueT, ValueT, _ExtraParams...> {
+    /// Default value enumeration type
+    typedef size_t EnumType;
+};
 
 /**
  * Helper class which makes it easier to define property tags class for fields.
@@ -257,7 +260,7 @@ struct MultiValueProperty: public Property<MULTI_VALUE_PROPERTY, ValueT, ValueT,
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueT = double, typename... _ExtraParams>
+template<typename ValueT=double, typename... _ExtraParams>
 struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
 
 /**
@@ -267,7 +270,10 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, ValueT, _ExtraPara
  * (tag class for each property must by separate class - always use different types for different properties).
  */
 template<typename ValueT = double, typename... _ExtraParams>
-struct MultiFieldProperty: public Property<MULTI_FIELD_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
+struct MultiFieldProperty: public Property<MULTI_FIELD_PROPERTY, ValueT, ValueT, _ExtraParams...> {
+    /// Default value enumeration type
+    typedef size_t EnumType;
+};
 
 /**
  * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
@@ -293,7 +299,10 @@ struct CustomFieldProperty: public Property<FIELD_PROPERTY, ValueT_2D, ValueT_3D
  * (tag class for each property must be a separate class — always use different types for different properties).
  */
 template<typename ValueT_2D, typename ValueT_3D, typename... _ExtraParams>
-struct MultiCustomFieldProperty: public Property<MULTI_FIELD_PROPERTY, ValueT_2D, ValueT_3D, _ExtraParams...> {};
+struct MultiCustomFieldProperty: public Property<MULTI_FIELD_PROPERTY, ValueT_2D, ValueT_3D, _ExtraParams...> {
+    /// Default value enumeration type
+    typedef size_t EnumType;
+};
 
 /**
  * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
@@ -335,6 +344,9 @@ struct VectorFieldProperty: public Property<FIELD_PROPERTY, Vec<2, ValueT>, Vec<
  */
 template<typename ValueT = double, typename... _ExtraParams>
 struct MultiVectorFieldProperty: public Property<MULTI_FIELD_PROPERTY, Vec<2, ValueT>, Vec<3, ValueT>, _ExtraParams...> {
+
+    /// Default value enumeration type
+    typedef size_t EnumType;
 
     /**
      * Convert value in 3D space to 2D space by removing component.
@@ -559,7 +571,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
      * Implementation of one value provider class which holds value inside (in value field) and operator() returns its held value.
      * It always has a value.
      *
-     * It ignores eventual extra parameters.
+     * It ignores extra parameters.
      */
     struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
@@ -593,9 +605,9 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return its held value.
      *
-     * Its value is optional and can throw exception if value was not assigned before request to it.
+     * Its value is optional and can throw exception if value was not assigned before requesting it.
      *
-     * It ignores eventual extra parameters.
+     * It ignores extra parameters.
      */
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
@@ -667,10 +679,12 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
  * @tparam SpaceT ignored
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
+struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
 
+    typedef typename PropertyT::EnumType EnumType;
+    
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
 
@@ -680,13 +694,13 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
-    typedef typename MultiValueProvider<ValueType>::ProvidedType ProvidedType;
+    typedef typename MultiValueProvider<ValueType, EnumType>::ProvidedType ProvidedType;
 
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() returns its held value.
      * It always has a value.
      *
-     * It ignores eventual extra parameters.
+     * It ignores extra parameters.
      */
     struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
@@ -747,7 +761,8 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get provided value.
          * @return provided value
          */
-        virtual ProvidedType operator()(size_t n, _ExtraParams...) const override {
+        virtual ProvidedType operator()(EnumType num, _ExtraParams...) const override {
+            size_t n(num);
             if (n > values.size()) return default_value;
             return values[n];
         }
@@ -756,9 +771,9 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return its held value.
      *
-     * Its value is optional and can throw exception if value was not assigned before request to it.
+     * Its value is optional and can throw exception if value was not assigned before requesting it.
      *
-     * It ignores eventual extra parameters.
+     * It ignores extra parameters.
      */
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
@@ -801,7 +816,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * \return reference to the value
          */
         ProvidedType& operator[](size_t n) {
-            if (n > values.size())  throw BadInput(NAME, "Wrong value index");
+            if (n > values.size()) throw BadInput(NAME, "Wrong value index");
             return values[n];
         }
 
@@ -836,7 +851,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          * \throw NoValue if value is empty boost::optional
          */
-        virtual ProvidedType operator()(size_t n, _ExtraParams...) const override {
+        virtual ProvidedType operator()(EnumType n, _ExtraParams...) const override {
             ensureIndex(n);
             return values[n];
         }
@@ -845,9 +860,9 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     /**
      * Implementation of one value provider class which delegates all operator() calls to external functor.
      */
-    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t, _ExtraParams...)> {
+    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(EnumType, _ExtraParams...)> {
 
-        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t, _ExtraParams...)> Base;
+        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(EnumType, _ExtraParams...)> Base;
 
         std::function<size_t()> sizeGetter;
 
@@ -1097,11 +1112,13 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
  * Specialization which implements provider class which provides multiple values in mesh points and uses interpolation.
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
+struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
 
     typedef SpaceT SpaceType;
+
+    typedef typename PropertyT::EnumType EnumType;
     
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
@@ -1112,7 +1129,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
-    typedef typename MultiFieldProvider<ValueType, SpaceT>::ProvidedType ProvidedType;
+    typedef typename MultiFieldProvider<ValueType, SpaceT, EnumType>::ProvidedType ProvidedType;
 
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
@@ -1189,7 +1206,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const override {
+        size_t size() const override {
             return values.size();
         }
 
@@ -1307,12 +1324,13 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
 
         /**
          * Calculate interpolated values using plask::interpolate.
-         * \param n value index
+         * \param num value index
          * \param dst_mesh set of requested points
          * \param method method which should be use to do interpolation
          * \return values in points described by mesh \a dst_mesh
          */
-        virtual ProvidedType operator()(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
+        ProvidedType operator()(EnumType num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
+            size_t n(num);
             ensureHasCorrectValue(n);
             if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
             return interpolate(mesh_ptr, values[n], dst_mesh, method);
@@ -1322,9 +1340,9 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> {
+    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(EnumType n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> {
 
-        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> Base;
+        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(EnumType n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> Base;
 
         std::function<size_t()> sizeGetter;
 
@@ -1397,7 +1415,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(size_t, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
+        virtual ProvidedType operator()(EnumType, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
             return ProvidedType(dst_mesh->size(), value);
         }
 

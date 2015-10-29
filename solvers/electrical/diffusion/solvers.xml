@@ -30,7 +30,6 @@
       <receiver name="inTemperature"/>
       <receiver name="inCurrentDensity"/>
       <receiver name="inGain"/>
-      <receiver name="inGainOverCarriersConcentration"/>
       <receiver name="inLightMagnitude"/>
       <receiver name="inWavelength"/>
       <provider name="outCarriersConcentration"/>
@@ -66,7 +65,6 @@
       <receiver name="inTemperature"/>
       <receiver name="inCurrentDensity"/>
       <receiver name="inGain"/>
-      <receiver name="inGainOverCarriersConcentration"/>
       <receiver name="inLightMagnitude"/>
       <receiver name="inWavelength"/>
       <provider name="outCarriersConcentration"/>

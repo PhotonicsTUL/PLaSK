@@ -484,6 +484,7 @@ void register_data_vector() {
         // .def("__itruediv__", &DataVectorWrap__idiv__<const T,dim>)
         .def("__eq__", &DataVectorWrap__eq__<const T,dim>)
     ;
+    data.attr("__name__") = "Data";
     data.attr("__module__") = "plask";
 }
 
