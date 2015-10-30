@@ -40,7 +40,10 @@ def make_rst(dirname):
     """Create documentation from solvers.rst"""
     category = os.path.basename(os.path.dirname(dirname))
     library = os.path.basename(dirname)
-    dom = et.parse(os.path.join(dirname, 'solvers.xml'))
+    try:
+        dom = et.parse(os.path.join(dirname, 'solvers.xml'))
+    except et.XMLSyntaxError:
+        return
 
     root = dom.getroot()
     xns = root.nsmap.get(None, '')

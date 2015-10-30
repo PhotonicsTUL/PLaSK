@@ -1,4 +1,16 @@
-#include <boost/algorithm/clamp.hpp>
+#include <boost/version.hpp>
+
+#if (BOOST_VERSION >= 105000)
+    #include <boost/algorithm/clamp.hpp>
+    using boost::algorithm::clamp;
+#else
+    template <typename T>
+    const T& clamp(const T& v, const T& min, const T& max) {
+        if (v < min) return min;
+        if (v > max) return max;
+        return v;
+    }
+#endif
 
 #include "ddm2d.h"
 
@@ -522,7 +534,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
         err = 0.;
         double normDel = maxDelPsi0 / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            corr[i] = boost::algorithm::clamp(corr[i], -normDel, normDel);
+            corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi0[i] += corr[i];
         }
@@ -532,7 +544,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
         err = 0.;
         double normDel = maxDelPsi / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            corr[i] = boost::algorithm::clamp(corr[i], -normDel, normDel);
+            corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi[i] += corr[i];
         }
