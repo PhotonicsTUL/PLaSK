@@ -252,10 +252,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            double normNc = material->Nc(T, 0., 'G') / mNx;
-            double normEc0 = material->CB(T, 0., 'G') / mEx;
-            double normNv = material->Nv(T, 0., 'G') / mNx;
-            double normEv0 = material->VB(T, 0., 'G') / mEx;
+            double normNc = material->Nc(T, 0., '*') / mNx;
+            double normEc0 = material->CB(T, 0., '*') / mEx;
+            double normNv = material->Nv(T, 0., '*') / mNx;
+            double normEv0 = material->VB(T, 0., '*') / mEx;
             double normT = T / mTx;
             double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
             n = calcN(normNc, 1., ePsi, normEc0, normT);
@@ -268,15 +268,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         double kk, kx, ky, gg, ff;
 
         if (calctype == CALC_FN) {
-            double Ec0 = material->CB(T, 0., 'G') / mEx;
-            double Nc = material->Nc(T, 0., 'G') / mNx;
+            double Ec0 = material->CB(T, 0., '*') / mEx;
+            double Nc = material->Nc(T, 0., '*') / mNx;
             double Ne = Nc * exp(dvePsi[i]-Ec0);
             double mobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
             double yn;
             switch (stat) {
                 case STAT_MB: yn = 1.; break;
-                case STAT_FD: yn = calcFD12(log(dveFnEta[i])+dvePsi[i]-Ec0)/(dveFnEta[i]*exp(dvePsi[i]-Ec0)); break;
+                case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-Ec0)/(dveFnEta[i]*exp(dvePsi[i]-Ec0)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -300,15 +300,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }*/
         } else if (calctype == CALC_FP)  {
-            double Ev0 = material->VB(T, 0., 'G') / mEx;
-            double Nv = material->Nv(T, 0., 'G') / mNx;
+            double Ev0 = material->VB(T, 0., '*') / mEx;
+            double Nv = material->Nv(T, 0., '*') / mNx;
             double Nh = Nv * exp(-dvePsi[i]+Ev0);
             double mobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
             double yp;
             switch (stat) {
                 case STAT_MB: yp = 1.; break;
-                case STAT_FD: yp = calcFD12(log(dveFpKsi[i])-dvePsi[i]+Ev0)/(dveFpKsi[i]*exp(-dvePsi[i]+Ev0)); break;
+                case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+Ev0)/(dveFpKsi[i]*exp(-dvePsi[i]+Ev0)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -332,8 +332,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }*/
         } else {
-            double Nc = material->Nc(T, 0., 'G') / mNx;
-            double Nv = material->Nv(T, 0., 'G') / mNx;
+            double Nc = material->Nc(T, 0., '*') / mNx;
+            double Nv = material->Nv(T, 0., '*') / mNx;
             //double Ni = material->Ni(T) / mNx;
             double eps = material->eps(T) / mEpsRx;
             double Nd = material->Nd() / mNx;
@@ -490,8 +490,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNc = material->Nc(T, 0., 'G') / mNx;
-        double normEc0 = material->CB(T, 0., 'G') / mEx;
+        double normNc = material->Nc(T, 0., '*') / mNx;
+        double normEc0 = material->CB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
         dveN[i] = calcN(normNc, dveFnEta[i], dvePsi[i], normEc0, normT);
@@ -509,8 +509,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNv = material->Nv(T, 0., 'G') / mNx;
-        double normEv0 = material->VB(T, 0., 'G') / mEx;
+        double normNv = material->Nv(T, 0., '*') / mNx;
+        double normEv0 = material->VB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
         dveP[i] = calcP(normNv, dveFpKsi[i], dvePsi[i], normEv0, normT);
@@ -620,10 +620,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             epsi = found->second;
         } else {
             // normalise material parameters and temperature
-            double normEc0 = material->CB(T, 0., 'G') / mEx;
-            double normEv0 = material->VB(T, 0., 'G', 'h') / mEx;
-            double normNc = material->Nc(T, 0., 'G') / mNx;
-            double normNv = material->Nv(T, 0., 'G') / mNx;
+            double normEc0 = material->CB(T, 0., '*') / mEx;
+            double normEv0 = material->VB(T, 0., '*', 'h') / mEx;
+            double normNc = material->Nc(T, 0., '*') / mNx;
+            double normNv = material->Nv(T, 0., '*') / mNx;
             double normNd = material->Nd() / mNx;
             double normNa = material->Na() / mNx;
             double normEd = material->EactD(T) / mEx;
@@ -842,7 +842,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         errorPsi = 0.;
         err = 2.*maxerrPsi;
         while(err > maxerrPsi && itersPsi < loopsPsi) {
-            setMatrix<CALC_PSI>(A, B, vconst);    // czy nie moze byc po prostu dvnDelta?
+            setMatrix<CALC_PSI>(A, B, vconst);
             solveMatrix(A, B);
             err = addCorr<CALC_PSI>(B, vconst); // max. update
             if (err > errorPsi) errorPsi = err;
@@ -857,7 +857,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         errorFn = 0.;
         err = 2.*maxerrFn;
         while(err > maxerrFn && itersFn < loopsFn) {
-            setMatrix<CALC_FN>(A, B, vconst);    // czy nie moze byc po prostu dvnDelta?
+            setMatrix<CALC_FN>(A, B, vconst);
             solveMatrix(A, B);
             err = addCorr<CALC_FN>(B, vconst); // max. update
             if (err > errorFn) errorFn = err;
@@ -871,7 +871,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         errorFp = 0.;
         err = 2.*maxerrFp;
         while(err > maxerrFp && itersFp < loopsFp) {
-            setMatrix<CALC_FP>(A, B, vconst);    // czy nie moze byc po prostu dvnDelta?
+            setMatrix<CALC_FP>(A, B, vconst);
             solveMatrix(A, B);
             err = addCorr<CALC_FP>(B, vconst); // max. update
             if (err > errorFp) errorFp = err;
@@ -1119,10 +1119,10 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConduct
         Vec <2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        dvnEc[loleftno] += material->CB(T, 0., 'G') - dvnPsi[loleftno] * mEx;
-        dvnEc[lorghtno] += material->CB(T, 0., 'G') - dvnPsi[lorghtno] * mEx;
-        dvnEc[upleftno] += material->CB(T, 0., 'G') - dvnPsi[upleftno] * mEx;
-        dvnEc[uprghtno] += material->CB(T, 0., 'G') - dvnPsi[uprghtno] * mEx;
+        dvnEc[loleftno] += material->CB(T, 0., '*') - dvnPsi[loleftno] * mEx;
+        dvnEc[lorghtno] += material->CB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
+        dvnEc[upleftno] += material->CB(T, 0., '*') - dvnPsi[upleftno] * mEx;
+        dvnEc[uprghtno] += material->CB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
     }
     divideByElements(dvnEc);
 
@@ -1151,10 +1151,10 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValence
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        dvnEv[loleftno] += material->VB(T, 0., 'G') - dvnPsi[loleftno] * mEx;
-        dvnEv[lorghtno] += material->VB(T, 0., 'G') - dvnPsi[lorghtno] * mEx;
-        dvnEv[upleftno] += material->VB(T, 0., 'G') - dvnPsi[upleftno] * mEx;
-        dvnEv[uprghtno] += material->VB(T, 0., 'G') - dvnPsi[uprghtno] * mEx;
+        dvnEv[loleftno] += material->VB(T, 0., '*') - dvnPsi[loleftno] * mEx;
+        dvnEv[lorghtno] += material->VB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
+        dvnEv[upleftno] += material->VB(T, 0., '*') - dvnPsi[upleftno] * mEx;
+        dvnEv[uprghtno] += material->VB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
     }
     divideByElements(dvnEv);
 

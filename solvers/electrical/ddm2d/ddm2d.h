@@ -4,6 +4,7 @@
 #include <plask/plask.hpp>
 #include <limits>
 
+#include "fermidirac.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"
 #include "gauss_matrix.h"
@@ -132,7 +133,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         double yn;
         switch (stat) {
             case STAT_MB: yn = 1.; break;
-            case STAT_FD: yn = calcFD12(log(iFnEta) + iPsi - iEc0) / (iFnEta * exp(iPsi-iEc0)); break;
+            case STAT_FD: yn = fermiDiracHalf(log(iFnEta) + iPsi - iEc0) / (iFnEta * exp(iPsi-iEc0)); break;
         }
         return iNc * iFnEta * yn * exp(iPsi-iEc0);
     }
@@ -142,7 +143,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         double yp;
         switch (stat) {
             case STAT_MB: yp = 1.; break;
-            case STAT_FD: yp = calcFD12(log(iFpKsi) - iPsi + iEv0) / (iFpKsi * exp(-iPsi+iEv0)); break;
+            case STAT_FD: yp = fermiDiracHalf(log(iFpKsi) - iPsi + iEv0) / (iFpKsi * exp(-iPsi+iEv0)); break;
         }
         return iNv * iFpKsi * yp * exp(iEv0-iPsi);
     }
@@ -157,12 +158,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
             values[mins*(i+1)-1] *= 0.5;
         }
         for (size_t j = mins*(majs-1)+1, jend = this->mesh->size()-1; j < jend; ++j) values[j] *= 0.5;
-    }
-
-    /// Fermi-Dirac integral of grade 1/2
-    double calcFD12(double iEta) const {
-        double tKsi = pow(iEta,4.) + 33.6*iEta*(1.-0.68*exp(-0.17*(iEta+1.)*(iEta+1.))) + 50.;
-        return 0.5*sqrt(M_PI) / (0.75*sqrt(M_PI)*pow(tKsi,-0.375) + exp(-iEta));
     }
 
     void savePsi0(); ///< save potentials for all elements to datavector

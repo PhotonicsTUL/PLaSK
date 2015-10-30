@@ -116,7 +116,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
           .. xml:contents::
 
-          One or more polygons separated by ``^`` characters. Each polygon is formed by two or more vertices, separated by ``;`` characters. Each vertex consists of two space-separated integers.
+             One or more polygons separated by ``^`` characters. Each polygon is formed by two or more vertices, separated by ``;`` characters. Each vertex consists of two space-separated integers.
 
    Example:
 

@@ -62,9 +62,9 @@ Containers
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
 
-.. xml:tag:: <container2d> (or <container>)
+.. xml:tag:: <container3d> (or <container>)
 
-   Alias for :xml:tag:`<align2d>`.
+   Alias for :xml:tag:`<align3d>`.
 
 
 .. xml:tag:: <container3d> (or <container>)
