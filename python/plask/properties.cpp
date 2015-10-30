@@ -92,8 +92,8 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PR
 
     "Args:\n"
     "   data: provided value or callable returning it on request.\n"
-    "       The callable must accept the same arguments as the provider\n"
-    "       ``__call__`` method (see below).\n\n"
+    "         The callable must accept the same arguments as the provider\n"
+    "         ``__call__`` method (see below).\n\n"
 
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"

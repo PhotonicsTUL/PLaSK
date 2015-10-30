@@ -44,6 +44,11 @@ namespace plask { namespace python {
         return docstring_provider_impl<PropertyTag::propertyType>();
     }
 
+    template <typename PropertyTag>
+    static constexpr const char* docstring_provider_call_multi_param() {
+        return ":param int n: Value number.\n";
+    }
+
 }} // namespace plask::python
 
 #include "python_property_desc.h"
@@ -672,7 +677,11 @@ namespace detail {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static ValueT __call__(ProviderT& self, const ExtraParams&... params) { return self(params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(),
+                                     format("Get value from the provider.\n\n%s",
+                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
+                                     .c_str()
+                                    );
         }
     };
 
@@ -692,8 +701,13 @@ namespace detail {
         }
         static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(EnumType(0), params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the provider.");
-            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value());
+            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(),
+                                     format("Get value from the provider.\n\n%s%s",
+                                        docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
+                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
+                                     .c_str()
+                                    );
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };
@@ -710,7 +724,14 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(),
+                                     format("Get value from the provider.\n\n"
+                                            ":param mesh mesh: Target mesh to get the field at.\n"
+                                            ":param str interpolation: Requested interpolation method.\n"
+                                            "%s",
+                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
+                                     .c_str()
+                                    );
         }
     };
 
@@ -735,8 +756,17 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(EnumType(0), mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the provider.");
-            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value());
+            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(),
+                                     format("Get value from the provider.\n\n"
+                                            "%s"
+                                            ":param mesh mesh: Target mesh to get the field at.\n"
+                                            ":param str interpolation: Requested interpolation method.\n"
+                                            "%s",
+                                        docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
+                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
+                                     .c_str()
+                                    );
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };

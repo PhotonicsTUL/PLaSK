@@ -116,6 +116,13 @@ template <> constexpr const char* docstring_attr_provider<Gain>() { return
     "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
     "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
 }
+template <>
+constexpr const char* docstring_provider_call_multi_param<Gain>() {
+    return ":param str deriv: Gain derivative to return. can be e '' (empty) or 'conc'.\n"
+           "                  In the latter case, the gain derivative over carriers\n"
+           "                  concentration is returned.\n";
+}
+
 
 }} // namespace plask
 
