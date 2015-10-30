@@ -34,6 +34,14 @@ from sphinx.jinja2glue import BuiltinTemplateLoader
 from sphinx.util.osutil import ensuredir
 from sphinx.util.inspect import safe_getattr
 
+# Sphinx bug workaround
+from plask import Solver
+boost_class = type(Solver)
+from sphinx.ext.autodoc import AttributeDocumenter
+AttributeDocumenter.method_types = \
+    AttributeDocumenter.method_types + (boost_class,)
+
+
 def main(argv=sys.argv):
     usage = """%prog [OPTIONS] SOURCEFILE ..."""
     p = optparse.OptionParser(usage.strip())
