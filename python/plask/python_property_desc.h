@@ -48,7 +48,7 @@ template <> constexpr const char* docstring_provider<Gain>() { return
 
     ".. method:: solver.out%1%(deriv='', mesh%5%, interpolation='default')\n\n"
 
-    "   :param str deriv: Gain derivative to return. can be e '' (empty) or 'conc'.\n"
+    "   :param str deriv: Gain derivative to return. can be '' (empty) or 'conc'.\n"
     "                     In the latter case, the gain derivative over carriers\n"
     "                     concentration is returned.\n"
     "   :param mesh mesh: Target mesh to get the field at.\n"
@@ -85,7 +85,7 @@ template <> constexpr const char* docstring_attr_provider<Gain>() { return
 
     "%8%(deriv='', mesh%6%, interpolation='default')\n\n"
 
-    ":param str deriv: Gain derivative to return. can be e '' (empty) or 'conc'.\n"
+    ":param str deriv: Gain derivative to return. can be '' (empty) or 'conc'.\n"
     "                  In the latter case, the gain derivative over carriers\n"
     "                  concentration is returned.\n"
     ":param mesh mesh: Target mesh to get the field at.\n"
@@ -118,7 +118,7 @@ template <> constexpr const char* docstring_attr_provider<Gain>() { return
 }
 template <>
 constexpr const char* docstring_provider_call_multi_param<Gain>() {
-    return ":param str deriv: Gain derivative to return. can be e '' (empty) or 'conc'.\n"
+    return ":param str deriv: Gain derivative to return. can be '' (empty) or 'conc'.\n"
            "                  In the latter case, the gain derivative over carriers\n"
            "                  concentration is returned.\n";
 }
