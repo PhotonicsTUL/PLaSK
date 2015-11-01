@@ -63,9 +63,6 @@ Tensor2<double> Air::mob(double T) const { throwNotApplicable("mob(double T)"); 
 
 double Air::Mso(double T, double e) const { throwNotApplicable("Mso(double T, double e)"); return 0; }
 
-double Air::Nc(double T, double e, char point) const { throwNotApplicable("Nc(double T, double e, char point)"); return 0; }
-double Air::Nv(double T, double e, char point) const { throwNotApplicable("Nv(double T, double e, char point)"); return 0; }
-
 double Air::Nf(double T) const { throwNotApplicable("Nf(double T)"); return 0; }
 
 double Air::Ni(double T) const { throwNotApplicable("Ni(double T)"); return 0; }
