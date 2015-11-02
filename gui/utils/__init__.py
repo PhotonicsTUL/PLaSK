@@ -37,7 +37,11 @@ def getattr_by_path(object, name, **kw):
     :except IndexError: when int is given and [] operator raise IndexError
     :except TypeError: when int is given and object hasn't got [] operator
     """
-    if isinstance(name, basestring): return getattr(object, name, **kw)
+    if isinstance(name, basestring):
+        if kw.has_key('default'):
+            return getattr(object, name, kw['default'])
+        else:
+            return getattr(object, name)
     try:
         if isinstance(name, int): return object[name]
         for a in name:
