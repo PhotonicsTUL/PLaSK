@@ -13,8 +13,59 @@
 from bisect import bisect_left
 
 def sorted_index(sorted_list, x):
-    'Locate the leftmost value exactly equal to x, raise ValueError if x is not in sorted_list.'
+    """
+        Locate the leftmost value exactly equal to x, raise ValueError if x is not in sorted_list.
+        :param list sorted_list: sorted list
+        :param x: object to find in sorted_list
+        :return int: index of x in sorted_list
+        :except ValueError: if x is not included in sorted_list
+    """
     i = bisect_left(sorted_list, x)
     if i != len(sorted_list) and sorted_list[i] == x:
         return i
     raise ValueError
+
+def getattr_by_path(object, name, **kw):
+    """
+    Extended version of standard getattr, which support strings, ints and iterable over strings and ints as name.
+    iterable leads to sequence of getting attributes, ints are interpreted as indexes for [] operator
+    :param object: object whose attribute should be get or first object of path
+    :param name: string or int or iterable over strings and ints
+    :param default: optional default value, if given exceptions are not raised but this value is returned instead
+    :return: value of object's attribute
+    :except AttributeError: when object hasn't got attribute with given name
+    :except IndexError: when int is given and [] operator raise IndexError
+    :except TypeError: when int is given and object hasn't got [] operator
+    """
+    if isinstance(name, basestring): return getattr(object, name, **kw)
+    try:
+        if isinstance(name, int): return object[name]
+        for a in name:
+            if isinstance(a, int):
+                object = object[a]
+            else:
+                object = getattr_by_path(object, a)
+    except (AttributeError, IndexError, TypeError):
+        if kw.has_key('default'):
+            return kw['default']
+        else:
+            raise
+    return object
+
+def setattr_by_path(object, name, value):
+    """
+    Extended version of standard setattr, which support strings, ints and iterable over strings and ints as name.
+    iterable leads to sequence of getting attributes, ints are interpreted as indexes for [] operator
+    :param object: object whose attribute should be set or first object of path
+    :param name: string or int or iterable over strings and ints
+    :param value: new value for attribute
+    :except AttributeError: when path can't be resolved because object hasn't got attribute with given name
+    :except IndexError: when int is given and [] operator raise IndexError
+    :except TypeError: when int is given and object hasn't got [] operator
+    """
+    if isinstance(name, basestring):
+        setattr(object, name, value)
+    elif isinstance(name, int):
+        object[name] = value
+    else:
+        setattr_by_path(getattr_by_path(object, name[:-1]), name[-1], value)
