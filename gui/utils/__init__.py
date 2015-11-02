@@ -25,7 +25,10 @@ def sorted_index(sorted_list, x):
         return i
     raise ValueError
 
-def getattr_by_path(object, name, **kw):
+class GETATTR_BY_PATH_NO_DEFAULT(object):
+    pass
+
+def getattr_by_path(object, name, default=GETATTR_BY_PATH_NO_DEFAULT):
     """
     Extended version of standard getattr, which support strings, ints and iterable over strings and ints as name.
     iterable leads to sequence of getting attributes, ints are interpreted as indexes for [] operator
@@ -38,10 +41,10 @@ def getattr_by_path(object, name, **kw):
     :except TypeError: when int is given and object hasn't got [] operator
     """
     if isinstance(name, basestring):
-        if kw.has_key('default'):
-            return getattr(object, name, kw['default'])
-        else:
+        if default == GETATTR_BY_PATH_NO_DEFAULT:
             return getattr(object, name)
+        else:
+            return getattr(object, name, default)
     try:
         if isinstance(name, int): return object[name]
         for a in name:
@@ -50,8 +53,8 @@ def getattr_by_path(object, name, **kw):
             else:
                 object = getattr_by_path(object, a)
     except (AttributeError, IndexError, TypeError):
-        if kw.has_key('default'):
-            return kw['default']
+        if default != GETATTR_BY_PATH_NO_DEFAULT:
+            return default
         else:
             raise
     return object
