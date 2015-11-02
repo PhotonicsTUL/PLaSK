@@ -275,6 +275,12 @@ class GridController(Controller):
     def section_model(self):
         return self.grid_model.tree_parent
 
+    def _change(self, setter, value, old_value, label):
+        if value != old_value:
+            self.section_model.undo_stack.push(InTableChangeItemCommand(
+                self.section_model, self.grid_model, setter, value, old_value, "change grid's {}".format(label)
+            ))
+
     def _change_attr(self, attr, value, label = None):
         old_value = getattr_by_path(self.grid_model, attr, default=None)
         if value != old_value:
