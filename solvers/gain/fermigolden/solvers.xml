@@ -1,7 +1,7 @@
-<!--<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <solver name="FermiGolden2D" category="gain" lib="complex">
+<!--  <solver name="FermiGolden2D" category="gain" lib="complex">
     Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
 
     This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
@@ -96,6 +96,6 @@
       <provider name="outLuminescence"/>
     </flow>
 
-  </solver>
+  </solver>-->
 
-</solvers>-->
+</solvers>

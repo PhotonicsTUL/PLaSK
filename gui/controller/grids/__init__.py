@@ -15,6 +15,7 @@ from ...qt.QtCore import Qt
 from ...qt.QtGui import QSplitter
 
 from .. import Controller, select_index_from_info
+from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
 from ..table import table_with_manipulators, InTableChangeItemCommand
@@ -275,10 +276,10 @@ class GridController(Controller):
         return self.grid_model.tree_parent
 
     def _change_attr(self, attr, value, label = None):
-        old_value = getattr(self.grid_model, attr)
+        old_value = getattr_by_path(self.grid_model, attr, default=None)
         if value != old_value:
             self.section_model.undo_stack.push(InTableChangeItemCommand(
-                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
+                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr_by_path(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
             ))
 
     def fill_form(self):
