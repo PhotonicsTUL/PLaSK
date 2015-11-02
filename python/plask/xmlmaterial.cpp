@@ -31,7 +31,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
-        Na, Nc, Nd, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
+        Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
         mobe, mobh, Ae, Ah, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
@@ -173,9 +173,7 @@ class PythonEvalMaterial : public Material
     double eps(double T) const override { PYTHON_EVAL_CALL_1(double, eps, T) }
     double chi(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, chi, T, e, point) }
     double Na() const override { PYTHON_EVAL_CALL_0(double, Na) }
-    double Nc(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nc, T, e, point) }
     double Nd() const override { PYTHON_EVAL_CALL_0(double, Nd) }
-    double Nv(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Nv, T, e, point) }
     double Ni(double T) const override { PYTHON_EVAL_CALL_1(double, Ni, T) }
     double Nf(double T) const override { PYTHON_EVAL_CALL_1(double, Nf, T) }
     double EactD(double T) const override { PYTHON_EVAL_CALL_1(double, EactD, T) }
@@ -341,9 +339,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
         COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Na)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nd)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Nv)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
         COMPILE_PYTHON_MATERIAL_FUNCTION(EactD)

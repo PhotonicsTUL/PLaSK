@@ -140,10 +140,6 @@ Tensor2<double> Material::mob(double T) const { throwNotImplemented("mob(double 
 
 double Material::Mso(double T, double e) const { throwNotImplemented("Mso(double T, double e)"); return 0; }
 
-double Material::Nc(double T, double e, char point) const { throwNotImplemented("Nc(double T, double e, char point)"); return 0; }
-
-double Material::Nv(double T, double e, char point) const { throwNotImplemented("Nv(double T, double e, char point)"); return 0; }
-
 double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); return 0; }
 
 double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); return 0; }

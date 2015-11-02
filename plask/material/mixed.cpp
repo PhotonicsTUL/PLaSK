@@ -148,14 +148,6 @@ double MixedMaterial::Mso(double T, double e) const {
     return avg([&](const Material& m) { return m.Mso(T); });
 }
 
-double MixedMaterial::Nc(double T, double e, char point) const {
-    return avg([&](const Material& m) { return m.Nc(T, e, point); });
-}
-
-double MixedMaterial::Nv(double T, double e, char point) const {
-    return avg([&](const Material& m) { return m.Nv(T, e, point); });
-}
-
 double MixedMaterial::Nf(double T) const {
     return avg([&](const Material& m) { return m.Nf(T); });
 }

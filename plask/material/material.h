@@ -544,24 +544,6 @@ struct PLASK_API Material {
     virtual double chi(double T, double e=0., char point='*') const;
 
     /**
-     * Get effective density of states in the conduction band Nc [cm^(-3)].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
-     * @return effective density of states in the conduction band Nc [cm^(-3)]
-     */
-    virtual double Nc(double T, double e=0., char point='*') const;
-
-    /**
-     * Get effective density of states in the valance band Nv [cm^(-3)].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
-     * @return effective density of states in the valance band Nv [cm^(-3)]
-     */
-    virtual double Nv(double T, double e=0., char point='*') const;
-
-    /**
      * Get intrinsic carrier concentration Ni [cm^(-3)].
      * @param T temperature [K]
      * @return intrinsic carrier concentration Ni [cm^(-3)]

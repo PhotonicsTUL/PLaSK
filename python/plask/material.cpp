@@ -265,9 +265,7 @@ class PythonMaterial: public Material, Overriden
     double eps(double T) const override { return call<double>("eps", &Material::eps, cache->eps, T); }
     double chi(double T, double e, char point) const override { return call<double>("chi", &Material::chi, cache->chi, T, e, point); }
     double Na() const override { return call<double>("Na", &Material::Na, cache->Na); }
-    double Nc(double T, double e, char point) const override { return call<double>("Nc", &Material::Nc, cache->Nc, T, e, point); }
     double Nd() const override { return call<double>("Nd", &Material::Nd, cache->Nd); }
-    double Nv(double T, double e, char point) const override { return call<double>("Nv", &Material::Nv, cache->Nv, T, e, point); }
     double Ni(double T) const override { return call<double>("Ni", &Material::Ni, cache->Ni, T); }
     double Nf(double T) const override { return call<double>("Nf", &Material::Nf, cache->Nf, T); }
     double EactD(double T) const override { return call<double>("EactD", &Material::EactD, cache->EactD, T); }
@@ -526,9 +524,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         CHECK_CACHE(double, eps, "eps", 300.)
         CHECK_CACHE(double, chi, "chi", 300., 0., "G")
         CHECK_CACHE(double, Na, "Na")
-        CHECK_CACHE(double, Nc, "Nc", 300., 0., "G")
         CHECK_CACHE(double, Nd, "Nd")
-        CHECK_CACHE(double, Nv, "Nv", 300., 0., "G")
         CHECK_CACHE(double, Ni, "Ni", 300.)
         CHECK_CACHE(double, Nf, "Nf", 300.)
         CHECK_CACHE(double, EactD, "EactD", 300.)
@@ -709,9 +705,7 @@ py::dict getMaterialInfo(const std::string& name) {
     detail::getPropertyInfo(result, *minfo, MaterialInfo::eps, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::chi, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Na);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nc, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Nd);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nv, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Ni, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Nf, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::EactD, MaterialInfo::T);
@@ -968,23 +962,9 @@ void initMaterials() {
                  "Get acceptor concentration Na [1/m³].\n\n"
                  "Args:-\n")
 
-        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get effective density of states in the conduction band Nc [1/m³].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
-
         .def("Nd", &Material::Nd,
              "Get donor concentration Nd [1/m³].\n\n"
              "Args:-\n")
-
-        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get effective density of states in the valence band Nv [1/m³].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Ni", &Material::Ni, (py::arg("T")=300.),
              "Get intrinsic carrier concentration Ni [1/m³].\n\n"
