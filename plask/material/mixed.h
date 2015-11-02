@@ -91,10 +91,6 @@ struct PLASK_API MixedMaterial: public Material {
 
     double chi(double T, double e=0., char point='*') const override;
 
-    double Nc(double T, double e=0., char point='*') const override;
-
-    double Nv(double T, double e=0., char point='*') const override;
-
     double Ni(double T=0.) const override;
 
     double Nf(double T=0.) const override;

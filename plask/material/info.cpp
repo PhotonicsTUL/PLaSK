@@ -25,8 +25,8 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
     "c44",
     "eps",
     "chi",
-    "Nc",
-    "Nv",
+    "Na",
+    "Nd",
     "Ni",
     "Nf",
     "EactD",
@@ -45,7 +45,7 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
     "absp",
     "Nr",
     "NR",
-    
+
     "mobe",
     "mobh",
     "Ae",

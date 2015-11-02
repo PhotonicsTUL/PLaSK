@@ -102,24 +102,6 @@ Tensor2<double> GaAs::Mh(double T, double e) const {
     return ( tMh );
 }
 
-MI_PROPERTY(GaAs, Nc,
-            MIComment("-")
-           )
-double GaAs::Nc(double T, double e, char point) const {
-    double tNc00 = 2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
-    //double tNc11 = 2e-6*pow((Me(T,e,point).c11*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
-    return ( tNc00 );
-}
-
-MI_PROPERTY(GaAs, Nv,
-            MIComment("-")
-           )
-double GaAs::Nv(double T, double e, char point) const {
-    double tNv00 = 2e-6*pow((Mh(T,e).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
-    //double tNv11 = 2e-6*pow((Mh(T,e).c11*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
-    return ( tNv00 );
-}
-
 MI_PROPERTY(GaAs, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
            )

@@ -29,9 +29,7 @@ struct MaterialCache {
     boost::optional<double> eps;
     boost::optional<double> chi;
     boost::optional<double> Na;
-    boost::optional<double> Nc;
     boost::optional<double> Nd;
-    boost::optional<double> Nv;
     boost::optional<double> Ni;
     boost::optional<double> Nf;
     boost::optional<double> EactD;

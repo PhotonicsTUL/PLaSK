@@ -16,6 +16,16 @@
 
 namespace plask { namespace solvers { namespace drift_diffusion {
 
+/** Compute effective density of states
+ * \param M carrier effective mass
+ * \param T temperature
+ */
+static inline const double Ne(Tensor2<double> M, double T) {
+    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+    double m = pow(M.c00 * M.c00 * M.c11, 0.3333333333333333);
+    return 2e-6 * pow(fact * m * T, 1.5);
+}
+
 template <typename Geometry2DType>
 DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
     mRsrh(false),
@@ -227,6 +237,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
+//TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
+    
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
 
@@ -252,9 +264,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            double normNc = material->Nc(T, 0., '*') / mNx;
+            double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
             double normEc0 = material->CB(T, 0., '*') / mEx;
-            double normNv = material->Nv(T, 0., '*') / mNx;
+            double normNv = Ne(material->Mh(T, 0.), T) / mNx;
             double normEv0 = material->VB(T, 0., '*') / mEx;
             double normT = T / mTx;
             double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
@@ -269,7 +281,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         if (calctype == CALC_FN) {
             double Ec0 = material->CB(T, 0., '*') / mEx;
-            double Nc = material->Nc(T, 0., '*') / mNx;
+            double Nc = Ne(material->Me(T, 0., '*'), T) / mNx;
             double Ne = Nc * exp(dvePsi[i]-Ec0);
             double mobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
@@ -301,7 +313,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             }*/
         } else if (calctype == CALC_FP)  {
             double Ev0 = material->VB(T, 0., '*') / mEx;
-            double Nv = material->Nv(T, 0., '*') / mNx;
+            double Nv = Ne(material->Mh(T, 0.), T) / mNx;
             double Nh = Nv * exp(-dvePsi[i]+Ev0);
             double mobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
@@ -332,8 +344,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }*/
         } else {
-            double Nc = material->Nc(T, 0., '*') / mNx;
-            double Nv = material->Nv(T, 0., '*') / mNx;
+            double Nc = Ne(material->Me(T, 0., '*'), T) / mNx;
+            double Nv = Ne(material->Mh(T, 0.), T) / mNx;
             //double Ni = material->Ni(T) / mNx;
             double eps = material->eps(T) / mEpsRx;
             double Nd = material->Nd() / mNx;
@@ -490,7 +502,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNc = material->Nc(T, 0., '*') / mNx;
+        double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
         double normEc0 = material->CB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
@@ -509,7 +521,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNv = material->Nv(T, 0., '*') / mNx;
+        double normNv = Ne(material->Mh(T, 0.), T) / mNx;
         double normEv0 = material->VB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
@@ -622,8 +634,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             // normalise material parameters and temperature
             double normEc0 = material->CB(T, 0., '*') / mEx;
             double normEv0 = material->VB(T, 0., '*', 'h') / mEx;
-            double normNc = material->Nc(T, 0., '*') / mNx;
-            double normNv = material->Nv(T, 0., '*') / mNx;
+            double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
+            double normNv = Ne(material->Mh(T, 0), T) / mNx;
             double normNd = material->Nd() / mNx;
             double normNa = material->Na() / mNx;
             double normEd = material->EactD(T) / mEx;
