@@ -284,8 +284,9 @@ class GridController(Controller):
     def _change_attr(self, attr, value, label = None):
         old_value = getattr_by_path(self.grid_model, attr, default=None)
         if value != old_value:
+            if label is None: label = attr if isinstance(attr, basestring) else attr[0]
             self.section_model.undo_stack.push(InTableChangeItemCommand(
-                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr_by_path(n, attr, v), value, old_value, "change grid's {}".format(attr if label is None else label)
+                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr_by_path(n, attr, v), value, old_value, "change grid's {}".format(label)
             ))
 
     def fill_form(self):

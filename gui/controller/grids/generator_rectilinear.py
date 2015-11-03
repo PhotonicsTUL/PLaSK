@@ -30,10 +30,10 @@ class RectilinearRefinedGeneratorController(GridController):
         'outside': 'Warn if refining line lies outside of the specified object. Defaults to true.'
     }
 
-    def _make_param_hbox(self, container_to_add, label, tooltip, defines_completer):
+    def _make_param_hbox(self, container_to_add, label, tooltip, defines_completer, model_path = None):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
-        for i,r in enumerate(res):
+        for i, r in enumerate(res):
             if self.model.dim != 1:
                 axis_name = AXIS_NAMES[self.model.dim-1][i]
                 hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
@@ -43,7 +43,10 @@ class RectilinearRefinedGeneratorController(GridController):
             r.setToolTip(
                 tooltip.format('{}'.format(i), ' in {} direction'.format(axis_name) if axis_name else ''))
             r.setCompleter(defines_completer)
-            r.editingFinished.connect(self.fire_changed)
+            if model_path is None:
+                r.editingFinished.connect(self.fire_changed)
+            else:
+                r.editingFinished.connect(lambda i=i, r=r: self._change_attr((model_path, i), empty_to_none(r.text())))
         container_to_add.addRow(label, hbox_div)
         return res
 
@@ -150,29 +153,32 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
         self.prediv = self._make_param_hbox(self.form_layout, 'Pre-refining divisions:',
                                             '&lt;<b>prediv by{}</b>=""&gt;<br/>'
                                             'The number of the initial divisions of each geometry object{}.',
-                                            self.defines)
+                                            self.defines, 'prediv')
         self.postdiv = self._make_param_hbox(self.form_layout, 'Post-refining divisions:',
                                              '&lt;<b>postdiv by{}</b>=""&gt;<br/>'
                                              'The number of the final divisions of each geometry object{}.',
-                                             self.defines)
+                                             self.defines, 'postdiv')
 
     def fill_form(self):
         super(RectilinearDivideGeneratorController, self).fill_form()
         with self.mute_changes():
             with BlockQtSignals(self.gradual):
                 self.gradual.setEditText(none_to_empty(self.model.gradual))
-
-    def save_data_in_model(self):
-        super(RectilinearDivideGeneratorController, self).save_data_in_model()
-        self.model.set_prediv([empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)])
-        self.model.set_postdiv([empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)])
-
-    def on_edit_enter(self):
-        super(RectilinearDivideGeneratorController, self).on_edit_enter()
-        with self.mute_changes():
             for i in range(0, self.model.dim):
-                self.prediv[i].setText(self.model.get_prediv(i))
-                self.postdiv[i].setText(self.model.get_postdiv(i))
+                self.prediv[i].setText(self.model.prediv[i])
+                self.postdiv[i].setText(self.model.postdiv[i])
+
+    #def save_data_in_model(self):
+    #    super(RectilinearDivideGeneratorController, self).save_data_in_model()
+    #    self.model.prediv = [empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)]
+    #    self.model.postdiv = [empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)]
+
+    #def on_edit_enter(self):
+    #    super(RectilinearDivideGeneratorController, self).on_edit_enter()
+    #    with self.mute_changes():
+    #        for i in range(0, self.model.dim):
+    #            self.prediv[i].setText(self.model.prediv[i])
+    #            self.postdiv[i].setText(self.model.postdiv[i])
 
 
 class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController):
@@ -184,26 +190,26 @@ class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController
         self.small = self._make_param_hbox(self.form_layout, 'Smallest element:',
                                            '&lt;<b>step small{}</b>=""&gt;<br/>'
                                            'The size of the smallest element near each object edge{}.',
-                                           self.defines)
+                                           self.defines, 'small')
         self.large = self._make_param_hbox(self.form_layout, 'Largest element:',
                                            '&lt;<b>step large{}</b>=""&gt;<br/>'
                                            'Maximum size of mesh elements{}.',
-                                           self.defines)
+                                           self.defines, 'large')
         self.factor = self._make_param_hbox(self.form_layout, 'Increase factor:',
                                             '&lt;<b>step factor{}</b>=""&gt;<br/>'
                                             'Increase factor for element sizes further from object edges{}.',
-                                            self.defines)
+                                            self.defines, 'factor')
 
-    def save_data_in_model(self):
-        super(RectilinearSmoothGeneratorController, self).save_data_in_model()
-        self.model.set_small([empty_to_none(self.small[i].text()) for i in range(0, self.model.dim)])
-        self.model.set_large([empty_to_none(self.large[i].text()) for i in range(0, self.model.dim)])
-        self.model.set_factor([empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)])
+    #def save_data_in_model(self):
+    #    super(RectilinearSmoothGeneratorController, self).save_data_in_model()
+    #    self.model.small = [empty_to_none(self.small[i].text()) for i in range(0, self.model.dim)]
+    #    self.model.large = [empty_to_none(self.large[i].text()) for i in range(0, self.model.dim)]
+    #    self.model.factor = [empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)]
 
-    def on_edit_enter(self):
+    def fill_form(self):
         with self.mute_changes():
-            super(RectilinearSmoothGeneratorController, self).on_edit_enter()
+            super(RectilinearSmoothGeneratorController, self).fill_form()
             for i in range(0, self.model.dim):
-                self.small[i].setText(self.model.get_small(i))
-                self.large[i].setText(self.model.get_large(i))
-                self.factor[i].setText(self.model.get_factor(i))
+                self.small[i].setText(self.model.small[i])
+                self.large[i].setText(self.model.large[i])
+                self.factor[i].setText(self.model.factor[i])

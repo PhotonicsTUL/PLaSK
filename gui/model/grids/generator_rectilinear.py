@@ -211,12 +211,12 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
         super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.gradual = gradual
-        self.prediv = prediv
-        self.postdiv = postdiv
+        self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
+        self.postdiv = [None for _ in range(0, self.dim)] if postdiv is None else postdiv
 
     def _append_div_xml_element(self, div_name, dst):
         div = getattr(self, div_name)
-        if div is None: return
+        #if div is None: return
         div_element = Element(div_name)
         if div[0] is not None and div.count(div[0]) == self.dim:
             div_element.attrib['by'] = div[0]
@@ -230,8 +230,7 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
     def get_xml_element(self):
         res = super(RectilinearDivideGenerator, self).get_xml_element()
         options = {}
-        if self.gradual is not None:
-            options['gradual'] = self.gradual
+        if self.gradual is not None: options['gradual'] = self.gradual
         self._append_div_xml_element('prediv', res)
         self._append_div_xml_element('postdiv', res)
         self.get_xml_common(res, options)
@@ -240,14 +239,14 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
     def _div_from_xml(self, div_name, src):
         div_element = src.find(div_name)
         if div_element is None:
-            setattr(self, div_name, None)
+            setattr(self, div_name, [None for _ in range(0, self.dim)])
         else:
             with AttributeReader(div_element) as a:
                 by = a.get('by')
                 if by is not None:
-                    setattr(self, div_name, tuple(by for _ in range(0, self.dim)))
+                    setattr(self, div_name, [by for _ in range(0, self.dim)])
                 else:
-                    setattr(self, div_name, tuple(a.get('by'+str(i)) for i in range(0, self.dim)))
+                    setattr(self, div_name, [a.get('by'+str(i)) for i in range(0, self.dim)])
 
     def set_xml_element(self, element):
         super(RectilinearDivideGenerator, self).set_xml_element(element)
@@ -255,24 +254,6 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
             self._div_from_xml('prediv', res)
             self._div_from_xml('postdiv', res)
             self.set_xml_common(res, 'gradual')
-
-    def _set_div(self, attr_name, div_tab):
-        if div_tab is None or div_tab.count(None) == self.dim:
-            setattr(self, attr_name, None)
-        else:
-            setattr(self, attr_name, div_tab)
-
-    def get_prediv(self, index):
-        return None if self.prediv is None else self.prediv[index]
-
-    def set_prediv(self, prediv_tab):
-        self._set_div('prediv', prediv_tab)
-
-    def get_postdiv(self, index):
-        return None if self.postdiv is None else self.postdiv[index]
-
-    def set_postdiv(self, postdiv_tab):
-        self._set_div('postdiv', postdiv_tab)
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorController
@@ -293,9 +274,9 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
 
         super(RectilinearSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
-        self.small = small
-        self.large = large
-        self.factor = factor
+        self.small = [None for _ in range(0, self.dim)] if small is None else small
+        self.large = [None for _ in range(0, self.dim)] if large is None else large
+        self.factor = [None for _ in range(0, self.dim)] if factor is None else factor
 
     @property
     def dim(self):
@@ -303,7 +284,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
 
     def _set_steps_attribute(self, attr, element):
         value = getattr(self, attr)
-        if value is None: return
+        #if value is None: return
         if value[0] is not None and value.count(value[0]) == self.dim:
             element.attrib[attr] = value[0]
         else:
@@ -324,11 +305,9 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
     def _steps_from_xml(self, name, reader):
         val = reader.get(name)
         if val is not None:
-            setattr(self, name, self.dim * (val,))
+            setattr(self, name, self.dim * [val,])
         else:
-            value = tuple(reader.get(name + str(i)) for i in range(0, self.dim))
-            if value == self.dim * (None,): value = None
-            setattr(self, name, value)
+            setattr(self, name, [reader.get(name + str(i)) for i in range(0, self.dim)])
 
     def set_xml_element(self, element):
         super(RectilinearSmoothGenerator, self).set_xml_element(element)
@@ -336,36 +315,13 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
             self.set_xml_common(res, 'gradual')
             steps = res.find('steps')
             if steps is None:
-                self.small = self.factor = None
+                self.small = self.dim * [None]
+                self.factor = self.dim * [None]
             else:
                 with AttributeReader(steps) as a:
                     self._steps_from_xml('small', a)
                     self._steps_from_xml('large', a)
                     self._steps_from_xml('factor', a)
-
-    def _set_step(self, name, tab):
-        if tab is None or tab.count(None) == self.dim:
-            setattr(self, name, None)
-        else:
-            setattr(self, name, tab)
-
-    def get_small(self, index):
-        return None if self.small is None else self.small[index]
-
-    def set_small(self, small):
-        self._set_step('small', small)
-
-    def get_large(self, index):
-        return None if self.large is None else self.large[index]
-
-    def set_large(self, large):
-        self._set_step('large', large)
-
-    def get_factor(self, index):
-        return None if self.factor is None else self.factor[index]
-
-    def set_factor(self, factor):
-        self._set_step('factor', factor)
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearSmoothGeneratorController
