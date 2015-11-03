@@ -90,6 +90,7 @@ Possible attributes for these objects are defined in sections:
 .. toctree::
    xpl/geometry/2d/objects
    xpl/geometry/3d/objects
+
    
 Creating Geometry from Python
 =============================
