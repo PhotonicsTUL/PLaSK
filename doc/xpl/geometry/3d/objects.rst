@@ -1,5 +1,5 @@
-Physical objects
-^^^^^^^^^^^^^^^^
+Physical objects 3D
+^^^^^^^^^^^^^^^^^^^
 
 Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
 

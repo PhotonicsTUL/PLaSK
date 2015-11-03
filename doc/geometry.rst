@@ -54,11 +54,11 @@ Possible three-dimensional objects are:
    xpl/geometry/3d/transforms
    xpl/geometry/3d/objects
 
-Each geometry object can have an optional name for further reference in computational script or further in geometry specification. Each geometry object can therefore be copied - see section :ref:`sec-xpl-copy`. 
+Each geometry object can have an optional name for further reference in computational script or further in geometry specification. Each geometry object can therefore be copied - see section :ref:`sec-xpl-geometry-copies`. 
 
   .. _sec-xpl-Geometry-objects-copy-ref:
   
-Physical geometry objects are representing actual objects having defined shape, dimensions and material. One can define following physical objects for two-dimensional geometry:
+Physical geometry objects are representing actual objects having defined shape, dimensions and material. One can define following physical objects for **two-dimensional** geometry:
 
 .. xml:tag:: <block2d/> (or <block/>)
   
@@ -72,7 +72,7 @@ Physical geometry objects are representing actual objects having defined shape, 
 
    Circle with centre at point (0, 0).
  
-or these for three-dimensional geometry:
+or these for **three-dimensional** geometry:
 
 .. xml:tag:: <block3D/> (or <block/>)
 
