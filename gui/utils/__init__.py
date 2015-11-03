@@ -12,6 +12,7 @@
 
 from bisect import bisect_left
 
+
 def sorted_index(sorted_list, x):
     """
         Locate the leftmost value exactly equal to x, raise ValueError if x is not in sorted_list.
@@ -25,14 +26,16 @@ def sorted_index(sorted_list, x):
         return i
     raise ValueError
 
-class GETATTR_BY_PATH_NO_DEFAULT(object):
+
+class _GETATTR_BY_PATH_NO_DEFAULT(object):
     pass
 
-def getattr_by_path(object, name, default=GETATTR_BY_PATH_NO_DEFAULT):
+
+def getattr_by_path(obj, name, default=_GETATTR_BY_PATH_NO_DEFAULT):
     """
     Extended version of standard getattr, which support strings, ints and iterable over strings and ints as name.
     iterable leads to sequence of getting attributes, ints are interpreted as indexes for [] operator
-    :param object: object whose attribute should be get or first object of path
+    :param obj: object whose attribute should be get or first object of path
     :param name: string or int or iterable over strings and ints
     :param default: optional default value, if given exceptions are not raised but this value is returned instead
     :return: value of object's attribute
@@ -41,29 +44,30 @@ def getattr_by_path(object, name, default=GETATTR_BY_PATH_NO_DEFAULT):
     :except TypeError: when int is given and object hasn't got [] operator
     """
     if isinstance(name, basestring):
-        if default == GETATTR_BY_PATH_NO_DEFAULT:
-            return getattr(object, name)
+        if default == _GETATTR_BY_PATH_NO_DEFAULT:
+            return getattr(obj, name)
         else:
-            return getattr(object, name, default)
+            return getattr(obj, name, default)
     try:
-        if isinstance(name, int): return object[name]
+        if isinstance(name, int): return obj[name]
         for a in name:
             if isinstance(a, int):
-                object = object[a]
+                obj = obj[a]
             else:
-                object = getattr_by_path(object, a)
+                obj = getattr_by_path(obj, a)
     except (AttributeError, IndexError, TypeError):
-        if default != GETATTR_BY_PATH_NO_DEFAULT:
+        if default != _GETATTR_BY_PATH_NO_DEFAULT:
             return default
         else:
             raise
-    return object
+    return obj
 
-def setattr_by_path(object, name, value):
+
+def setattr_by_path(obj, name, value):
     """
     Extended version of standard setattr, which support strings, ints and iterable over strings and ints as name.
     iterable leads to sequence of getting attributes, ints are interpreted as indexes for [] operator
-    :param object: object whose attribute should be set or first object of path
+    :param obj: object whose attribute should be set or first object of path
     :param name: string or int or iterable over strings and ints
     :param value: new value for attribute
     :except AttributeError: when path can't be resolved because object hasn't got attribute with given name
@@ -71,8 +75,8 @@ def setattr_by_path(object, name, value):
     :except TypeError: when int is given and object hasn't got [] operator
     """
     if isinstance(name, basestring):
-        setattr(object, name, value)
+        setattr(obj, name, value)
     elif isinstance(name, int):
-        object[name] = value
+        obj[name] = value
     else:
-        setattr_by_path(getattr_by_path(object, name[:-1]), name[-1], value)
+        setattr_by_path(getattr_by_path(obj, name[:-1]), name[-1], value)

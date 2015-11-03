@@ -66,7 +66,7 @@ macro(make_default)
         install(TARGETS ${SOLVER_LIBRARY} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     endif()
 
-    if(BUILD_PYTHON)
+    if(BUILD_PYTHON AND interface_src)
         set(SOLVER_PYTHON_MODULE ${SOLVER_LIBRARY}-python)
         # Make package hierarchy
         set(curr_path "${PLASK_PATH}/solvers")
@@ -106,7 +106,7 @@ macro(make_default)
             add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
         endif()
     endif()
-    
+
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml)
         add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
                             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
