@@ -7,25 +7,26 @@ Geometry Specification
 Specifying geometry in XPL file
 ===============================
 
-See section :ref:`sec-xpl-geometry`.
+See :ref:`sec-xpl-geometry`.
 
   .. _sec-geometry-python:
 	
 The whole definition of the structure's geometry have to be located between tags ``<geometry>`` and ``</geometry>``. More than one geometry can be specified, however inside each geometry tag there must be a single geometry object. 
 There are three different types of geometries:
+
 .. xml:tag:: <cartesian2d>
 
-   It is two-dimensional Cartesian geometry.
+   It is a two-dimensional Cartesian geometry.
 
 .. xml:tag:: <cylindrical2d> (or <cylindrical>)
 
-   It is two-dimensional cylindrical geometry.
+   It is a two-dimensional cylindrical geometry.
    
 .. xml:tag:: <cartesian3d>
 
-   It is three-dimensional Cartesian geometry.
+   It is a three-dimensional Cartesian geometry.
 
-For attributes of these geometries see section :ref:`sec-xpl-attributes`.
+For attributes of these geometries see section :ref:`sec-xpl-geometry-types`.
 
   .. _sec-xpl-geometry-types:
 
