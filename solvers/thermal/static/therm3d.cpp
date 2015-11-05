@@ -103,7 +103,7 @@ void FiniteElementMethodThermal3DSolver::onInitialize() {
             else break;
         }
         double h = top - bottom;
-        for (size_t r = ibottom; r != itop; ++r)
+        for (size_t r = ibottom; r < itop; ++r)
             thickness[this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r).getIndex()] = h;
     }
 }

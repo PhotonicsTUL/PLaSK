@@ -566,7 +566,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
-        return std::max((int(axis0->size())-1) * (int(axis1->size())-1) * (int(axis2->size())-1), 0);
+        return std::max(int(axis0->size())-1, 0) * std::max(int(axis1->size())-1, 0) * std::max(int(axis2->size())-1, 0);
     }
 
     /**
