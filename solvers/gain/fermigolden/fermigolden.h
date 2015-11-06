@@ -11,8 +11,15 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> //TODO rectilinear only?
+struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>>
 {
+    /// Which level to compute
+    enum WhichLevel {
+        LEVEL_EC,
+        LEVEL_HH,
+        LEVEL_LH
+    };
+
     /// Structure containing information about each active region
     struct ActiveRegionInfo
     {
@@ -65,7 +72,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         }
 
         std::vector<shared_ptr<Material>> materials; ///< All materials in the active region
-        std::vector<double> lens; ///< Thicknesses of the layers in the active region
+        std::vector<double> lens;               ///< Thicknesses of the layers in the active region
 
         double qwtotallen;                      ///< Total quantum wells thickness [Å]
         double totallen;                        ///< Total active region thickness [Å]
@@ -112,7 +119,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                     lastbarrier = true;
                 } // TODO something must be added here because of spacers placed next to external barriers
             }
-            qwtotallen *= 1e4; // µm -> Å
+            qwtotallen *= 1e3; // µm -> nm
         }
     };
 
@@ -137,6 +144,36 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     virtual std::string getClassName() const;
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
+
+  private:
+
+    template <WhichLevel level> Tensor2<double> Meff(const Material* material, double T, double e) {
+        switch (level) {
+            case LEVEL_EC: return material->Me(T, e);
+            case LEVEL_HH: return material->Mhh(T, e);
+            case LEVEL_LH: return material->Mlh(T, e);
+        }
+    }
+
+    template <WhichLevel level> double UB(const Material* material, double T, double e) {
+        switch (level) {
+            case LEVEL_EC: return  material->CB(T, e);
+            case LEVEL_HH: return -material->VB(T, e, '*', 'H');
+            case LEVEL_LH: return -material->VB(T, e, '*', 'L');
+        }
+    }
+
+    template <WhichLevel level> 
+    double layerk2(size_t reg, double substra, double T, double E, size_t i) {
+        const Material* material = regions[reg].materials[i].get();
+        OmpLockGuard<OmpNestLock> lockq = material->lock();
+        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+        return 2./(phys::hb_eV*phys::hb_eV) * phys::me * Meff<level>(material, T, e).c11 * (E - UB<level>(material, T, e));
+    }
+
+    /// Compute determinant for energy levels
+    template <WhichLevel level>
+    double level(size_t reg, double T, double E);
 
   protected:
 

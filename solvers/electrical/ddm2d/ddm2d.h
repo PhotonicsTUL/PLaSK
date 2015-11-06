@@ -4,7 +4,7 @@
 #include <plask/plask.hpp>
 #include <limits>
 
-#include "fermidirac.h"
+#include "fd.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"
 #include "gauss_matrix.h"

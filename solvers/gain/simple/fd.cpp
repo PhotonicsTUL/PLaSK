@@ -1,7 +1,7 @@
 #include <limits>
 #include <cmath>
 
-#include "fermidirac.h"
+#include "fd.h"
 
 namespace plask {
 

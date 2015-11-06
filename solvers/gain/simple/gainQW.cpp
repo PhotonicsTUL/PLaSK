@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "fermidirac.h"
+#include "fd.h"
 using namespace plask;
 
 #include "gainQW.h"

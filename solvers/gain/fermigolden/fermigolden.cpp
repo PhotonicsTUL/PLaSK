@@ -1,3 +1,4 @@
+#include "gauss_matrix.h"
 #include "fermigolden.h"
 
 namespace plask { namespace gain { namespace fermigolden {
@@ -279,6 +280,64 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
         // }
         n++;
     }
+}
+
+
+template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel level>
+double FermiGoldenGainSolver<GeometryType>::level(size_t reg, double T, double E)
+{
+    size_t N = regions[reg].materials.size();
+    size_t last = 2*N - 1;
+    double substra = materialSubstrate->lattC(T, 'a');
+
+    DgbMatrix A(2*N);
+
+    double k1_2 = layerk2<level>(reg, substra, T, E, 0);
+    double k1 = sqrt(abs(k1_2));
+
+    // Wave functions are confined, so we can assume exponentially decreasing relation in the outer layers
+    A(0, 0) = A(last, last) = 1.;
+    A(0, 1) = A(last, last-1) = 0.;
+
+    for (size_t i = 0; i < N-1; ++i) {
+        size_t o = 2*i + 1;
+
+        double k0_2 = k1_2, k0 = k1;
+        double d = regions[reg].lens[i];
+        if (k0_2 >= 0.) {
+            double coskd = cos(k0*d), sinkd = sin(k0*d);
+            A(o,   o-1) = coskd;
+            A(o+1, o-1) = -k0 * sinkd;
+            A(o,   o  ) = sinkd;
+            A(o+1, o  ) = k0 * coskd;
+        } else {
+            double phi = exp(-k0*d);
+            A(o,   o-1) = phi;
+            A(o+1, o-1) = -k0 * phi;
+            A(o,   o  ) = 1. / phi;
+            A(o+1, o  ) = k0 / phi;
+        }
+
+        A(o+2, o  ) = 0.;
+        A(o-1, o+1) = 0.;
+
+        k1_2 = layerk2<level>(reg, substra, T, E, i+1);
+        if (k1_2 >= 0.) {
+            k1 = sqrt(k1_2);
+            A(o,   o-1) = -1.;
+            A(o+1, o-1) =  0.;
+            A(o,   o  ) =  0;
+            A(o+1, o  ) = -k1;
+        } else {
+            k1 = sqrt(-k1_2);
+            A(o,   o-1) = -1.;
+            A(o+1, o-1) =  k1;
+            A(o,   o  ) = -1.;
+            A(o+1, o  ) = -k1;
+        }
+    }
+
+    return A.determinant();
 }
 
 
