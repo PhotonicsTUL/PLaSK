@@ -84,6 +84,11 @@ void FermiGoldenGainSolver<GeometryType>::onInitialize()
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::onInvalidate()
 {
+    levels_el.clear();
+    levels_hh.clear();
+    levels_lh.clear();
+    regions.clear();
+    materialSubstrate.reset();
 }
 
 //template <typename GeometryType>
@@ -280,19 +285,22 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
         // }
         n++;
     }
+    
+    if (strained && !materialSubstrate)
+        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
 }
 
 
-template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel level>
-double FermiGoldenGainSolver<GeometryType>::level(size_t reg, double T, double E)
+template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
+double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region, double T, double E)
 {
-    size_t N = regions[reg].materials.size();
+    size_t N = region.materials.size();
     size_t last = 2*N - 1;
     double substra = materialSubstrate->lattC(T, 'a');
 
     DgbMatrix A(2*N);
 
-    double k1_2 = layerk2<level>(reg, substra, T, E, 0);
+    double k1_2 = layerk2<which>(region, substra, T, E, 0);
     double k1 = sqrt(abs(k1_2));
 
     // Wave functions are confined, so we can assume exponentially decreasing relation in the outer layers
@@ -303,7 +311,7 @@ double FermiGoldenGainSolver<GeometryType>::level(size_t reg, double T, double E
         size_t o = 2*i + 1;
 
         double k0_2 = k1_2, k0 = k1;
-        double d = regions[reg].lens[i];
+        double d = region.lens[i];
         if (k0_2 >= 0.) {
             double coskd = cos(k0*d), sinkd = sin(k0*d);
             A(o,   o-1) = coskd;
@@ -321,7 +329,7 @@ double FermiGoldenGainSolver<GeometryType>::level(size_t reg, double T, double E
         A(o+2, o  ) = 0.;
         A(o-1, o+1) = 0.;
 
-        k1_2 = layerk2<level>(reg, substra, T, E, i+1);
+        k1_2 = layerk2<which>(region, substra, T, E, i+1);
         if (k1_2 >= 0.) {
             k1 = sqrt(k1_2);
             A(o,   o-1) = -1.;
@@ -344,277 +352,38 @@ double FermiGoldenGainSolver<GeometryType>::level(size_t reg, double T, double E
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 {
-//     std::deque<std::tuple<std::vector<double>,std::vector<double>,std::vector<double>,double,double>> result;
-// 
-//     if (regions.size() == 1)
-//         this->writelog(LOG_DETAIL, "Found 1 active region");
-//     else
-//         this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
-// 
-//     for (int act=0; act<regions.size(); act++) {
-//         double qFlc, qFlv;
-//         std::vector<double> el, hh, lh;
-// 
-//         this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
-// 
-//         QW::gain gainModule = getGainModule(0.0, T, n, regions[act]); //wavelength=0.0 - no refractive index needs to be calculated (any will do)
-// 
-//         writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", qFlc = gainModule.Get_qFlc());
-//         writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = %1% eV", qFlv = gainModule.Get_qFlv());
-// 
-//         int j = 0;
-//         double level;
-// 
-//         std::string levelsstr = "Electron energy levels (from the conduction band edge) [eV]: ";
-//         do
-//         {
-//             level = gainModule.Get_electron_level_depth(j);
-//             if (level > 0) {
-//                 el.push_back(level);
-//                 levelsstr += format("%1%, ", level);
-//             }
-//             j++;
-//         }
-//         while(level>0);
-//         writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
-// 
-//         levelsstr = "Heavy hole energy levels (from the valence band edge) [eV]: ";
-//         j=0;
-//         do {
-//             level = gainModule.Get_heavy_hole_level_depth(j);
-//             if (level > 0) {
-//                 hh.push_back(level);
-//                 levelsstr += format("%1%, ", level);
-//             }
-//             j++;
-//         }
-//         while(level>0);
-//         writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
-// 
-//         levelsstr = "Light hole energy levels (from the valence band edge) [eV]: ";
-//         j=0;
-//         do {
-//             level = gainModule.Get_light_hole_level_depth(j);
-//             if (level > 0) {
-//                 lh.push_back(level);
-//                 levelsstr += format("%1%, ", level);
-//             }
-//             j++;
-//         }
-//         while(level>0);
-//         writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
-// 
-//         result.push_back(std::make_tuple(el, hh, lh, qFlc, qFlv));
-//     }
-//     return result;
+    if (regions.size() == 1)
+        this->writelog(LOG_DETAIL, "Found 1 active region");
+    else
+        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
+
+    double substra = strained? materialSubstrate->lattC(T0, 'a') : 0.;
+
+    levels_el.clear(); levels_el.reserve(regions.size());
+    levels_hh.clear(); levels_hh.reserve(regions.size());
+    levels_lh.clear(); levels_lh.reserve(regions.size());
+    
+    for (const ActiveRegionInfo& region: regions) {
+        size_t N = region.materials.size();
+        double cbmin = std::numeric_limits<double>::max(), cbmax = std::numeric_limits<double>::min();
+        double vhmin = std::numeric_limits<double>::max(), vhmax = std::numeric_limits<double>::min();
+        double vlmin = std::numeric_limits<double>::max(), vlmax = std::numeric_limits<double>::min();
+        for (size_t i = 0; i < N; ++i) {
+            double cb = layerUB<LEVEL_EC>(region, substra, T0, i);
+            cbmax = max(cb, cbmax); cbmin = min(cb, cbmin);
+            double vh = layerUB<LEVEL_HH>(region, substra, T0, i);
+            vhmax = max(vh, vhmax); vhmin = min(vh, vhmin);
+            double vl = layerUB<LEVEL_LH>(region, substra, T0, i);
+            vlmax = max(vl, vlmax); vlmin = min(vl, vlmin);
+#ifndef NDEBUG
+            this->writelog(LOG_DEBUG, "Electron levels between %g and %g", cbmin, cbmax);
+            this->writelog(LOG_DEBUG, "Heavy holes levels between %g and %g", vhmin, vhmax);
+            this->writelog(LOG_DEBUG, "Light holes levels between %g and %g", vlmin, vlmax);
+#endif
+        }
+    }
 }
 
-
-// template <typename GeometryType>
-// QW::gain FermiGoldenGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region)
-// {
-//     QW::gain gainModule;
-// 
-//     if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
-//     n = max(n, 1e-6); // To avoid hangs
-// 
-//     gainModule.Set_temperature(T);
-//     gainModule.Set_koncentr(n);
-// 
-//     double qstrain = 0.; // strain in well
-//     double bstrain = 0.; // strain in barrier
-// 
-//     if (strained) {
-//         if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
-// 
-//         qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-//         bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
-//         qstrain *= 1.;
-//         bstrain *= 1.;
-//         //writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
-//         //writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
-//     }
-// 
-//     //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
-//     //writelog(LOG_RESULT, "latt const for subs: %1%", materialSubstrate->lattC(T,'a'));
-//     //writelog(LOG_RESULT, "latt const for barr: %1%", region.materialBarrier->lattC(T,'a'));
-// 
-//     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
-//     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
-//     double qEgG, qEgX, qEgL, bEgG, bEgX, bEgL; // qw and barrier energy gaps
-// 
-//     {
-//         // Usefull as the material may be defined in Python
-//         OmpLockGuard<OmpNestLock> lockq = region.materialQW->lock();
-// 
-//         qme = region.materialQW->Me(T,qstrain);
-//         qmhh = region.materialQW->Mhh(T,qstrain);
-//         qmlh = region.materialQW->Mlh(T,qstrain);
-// 
-//         qEc = region.materialQW->CB(T,qstrain) + cond_qw_shift;
-//         qEvhh = region.materialQW->VB(T,qstrain,'G','H') + vale_qw_shift;
-//         qEvlh = region.materialQW->VB(T,qstrain,'G','L') + vale_qw_shift;
-// 
-//         gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
-//         gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
-// 
-//         qEgG = region.materialQW->Eg(T,0.,'G');
-//         qEgX = region.materialQW->Eg(T,0.,'X');
-//         qEgL = region.materialQW->Eg(T,0.,'L');
-// 
-//         OmpLockGuard<OmpNestLock> lockb = region.materialBarrier->lock();
-// 
-//         bme = region.materialBarrier->Me(T,bstrain);
-//         bmhh = region.materialBarrier->Mhh(T,bstrain);
-//         bmlh = region.materialBarrier->Mlh(T,bstrain);
-// 
-//         bEgG = region.materialBarrier->Eg(T,0.,'G');
-//         bEgX = region.materialBarrier->Eg(T,0.,'X');
-//         bEgL = region.materialBarrier->Eg(T,0.,'L');
-// 
-//         bEc = region.materialBarrier->CB(T,bstrain);
-//         bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
-//         bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
-//     }
-// 
-//     // TODO co robic w ponizszych przypadkach? - poprawic jak bedzie wiadomo
-//          if ((qEgG > qEgX) && (qEgX)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", qEgG, qEgX);
-//     else if ((qEgG > qEgL) && (qEgL)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", qEgG, qEgL);
-//          if ((bEgG > bEgX) && (bEgX)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", bEgG, bEgX);
-//     else if ((bEgG > bEgL) && (bEgL)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", bEgG, bEgL);
-// 
-//     if (qEc < qEvhh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for heavy holes = %2% eV", qEc, qEvhh);
-//     if (qEc < qEvlh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for light holes = %2% eV", qEc, qEvlh);
-//     if (bEc < bEvhh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for heavy holes = %2% eV", bEc, bEvhh);
-//     if (bEc < bEvlh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for light holes = %2% eV", bEc, bEvlh);
-// 
-//     gainModule.Set_electron_mass_in_plain(qme.c00);
-//     gainModule.Set_electron_mass_transverse(qme.c11);
-//     gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);
-//     gainModule.Set_heavy_hole_mass_transverse(qmhh.c11);
-//     gainModule.Set_light_hole_mass_in_plain(qmlh.c00);
-//     gainModule.Set_light_hole_mass_transverse(qmlh.c11);
-//     gainModule.Set_electron_mass_in_barrier(bme.c00);
-//     gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c00);
-//     gainModule.Set_light_hole_mass_in_barrier(bmlh.c00);
-//     gainModule.Set_well_width(region.qwlen); //powinno byc - szerokosc pojedynczej studni
-//     gainModule.Set_waveguide_width(region.totallen);
-//     gainModule.Set_lifetime(lifetime);
-//     gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
-// 
-//     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
-//     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
-// 
-//     //writelog(LOG_RESULT, "qwlen: %1%", region.qwlen); // TEST
-//     //writelog(LOG_RESULT, "totallen: %1%", region.totallen); // TEST
-// 
-//     qEg = qEc-qEvhh;
-//     cdepth = bEc - qEc;
-//     vhhdepth = qEvhh-bEvhh;
-//     vlhdepth = qEvlh-bEvlh;
-//     vdepth = vhhdepth;
-// 
-//     if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
-//         std::string qname = region.materialQW->name(),
-//                     bname = region.materialBarrier->name();
-//         throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%", qname, bname);
-//     }
-// 
-//     if (cdepth < 0.) {
-//         std::string qname = region.materialQW->name(),
-//                     bname = region.materialBarrier->name();
-//         throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
-//     }
-// 
-//     gainModule.Set_conduction_depth(cdepth);
-// 
-//     if (strained == true) {
-//         // compute levels
-//         if (extern_levels)
-//             gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));// earlier: qwtotallen
-//         else {
-//             gainModule.przygoblE();
-//             /*for (int i=0; i<gainModule.Get_number_of_electron_levels(); ++i) // TEST
-//                 writelog(LOG_RESULT, "el_lev: %1%", gainModule.Get_electron_level_depth(i));*/ // TEST
-// 
-//             gainModule.Set_valence_depth(vhhdepth);
-//             gainModule.przygoblHH();
-//             /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
-//                 writelog(LOG_RESULT, "hh_lev: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
-//             if (bstrain < 0.) {
-//                 std::vector<double> levHH;
-//                 double delEv = bEvhh-bEvlh;
-//                 for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i)
-//                     levHH.push_back(gainModule.Get_heavy_hole_level_depth(i)+delEv);
-//                 gainModule.przygoblHHc(levHH);
-//                 /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
-//                     writelog(LOG_RESULT, "hh_lev_corr: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
-//             }
-// 
-//             gainModule.Set_valence_depth(vlhdepth);
-//             gainModule.przygoblLH();
-//             /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
-//                     writelog(LOG_RESULT, "lh_lev: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
-//             if (bstrain > 0.) {
-//                 std::vector<double> levLH;
-//                 double delEv = bEvhh-bEvlh;
-//                 for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i)
-//                     levLH.push_back(gainModule.Get_light_hole_level_depth(i)-delEv);
-//                 gainModule.przygoblLHc(levLH);
-//                 /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
-//                         writelog(LOG_RESULT, "lh_lev_corr: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
-//             }
-//         }
-// 
-//         if (qstrain<=0.)
-//             qEg = qEc-qEvhh;
-//         else
-//             qEg = qEc-qEvlh;
-// 
-//         if ( (qstrain==0.) && (bstrain==0.) )
-//             vdepth = vhhdepth;
-//         else if ( (qstrain<0.) && (bstrain==0.) )
-//             vdepth = vhhdepth;
-//         else if ( (qstrain>0.) && (bstrain==0.) )
-//             vdepth = vlhdepth;
-//         else if ( (qstrain==0.) && (bstrain<0.) )
-//             vdepth = vlhdepth;
-//         else if ( (qstrain<0.) && (bstrain<0.) )
-//             vdepth = qEvhh-bEvlh;
-//         else if ( (qstrain>0.) && (bstrain<0.) )
-//             vdepth = vlhdepth;
-//         else if ( (qstrain==0.) && (bstrain>0.) )
-//             vdepth = vhhdepth;
-//         else if ( (qstrain<0.) && (bstrain>0.) )
-//             vdepth = vhhdepth;
-//         else if ( (qstrain>0.) && (bstrain>0.) )
-//             vdepth = qEvlh-bEvhh;
-//     }
-// 
-//     if (!matrixelem) matrixelem = (1./gainModule.Get_electron_mass_transverse() - 1.)*(qEg+gainModule.Get_split_off())*qEg/(qEg+2.*gainModule.Get_split_off()/3.)/2.;
-// 
-//     //matrixelem *= matrixelemscfact;
-//     gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
-//     //writelog(LOG_INFO, "recalculated matrix elem: %1%", matrixelem*matrixelemscfact); // TEST
-// 
-//     gainModule.Set_bandgap(qEg);
-//     gainModule.Set_valence_depth(vdepth);
-// 
-//     if (strained == true) {
-//          gainModule.przygoblQFL(region.qwlen); // earlier: qwtotallen
-//          //gainModule.przygoblQFL(region.qwtotallen); old line - nice way to change quasi-Fermi levels when another well is added - do not follow this way in old-gain model;-)
-//     } else {
-//         // compute levels
-//         if (extern_levels)
-//             gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen)); // earlier: qwtotallen
-//         else
-//             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
-//     }
-// 
-//     //writelog(LOG_RESULT, "matrix element: %1%", gainModule.Get_momentum_matrix_element()); // TEST;
-// 
-//     return gainModule;
-// }
 
 static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));
 

@@ -14,7 +14,7 @@ template <typename GeometryType>
 struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>>
 {
     /// Which level to compute
-    enum WhichLevel {
+    enum WhichLevel: size_t {
         LEVEL_EC,
         LEVEL_HH,
         LEVEL_LH
@@ -147,33 +147,41 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
   private:
 
-    template <WhichLevel level> Tensor2<double> Meff(const Material* material, double T, double e) {
-        switch (level) {
+    template <WhichLevel which> Tensor2<double> Meff(const Material* material, double T, double e=0.) {
+        switch (which) {
             case LEVEL_EC: return material->Me(T, e);
             case LEVEL_HH: return material->Mhh(T, e);
             case LEVEL_LH: return material->Mlh(T, e);
         }
     }
 
-    template <WhichLevel level> double UB(const Material* material, double T, double e) {
-        switch (level) {
+    template <WhichLevel which> double UB(const Material* material, double T, double e=0.) {
+        switch (which) {
             case LEVEL_EC: return  material->CB(T, e);
             case LEVEL_HH: return -material->VB(T, e, '*', 'H');
             case LEVEL_LH: return -material->VB(T, e, '*', 'L');
         }
     }
 
-    template <WhichLevel level> 
-    double layerk2(size_t reg, double substra, double T, double E, size_t i) {
-        const Material* material = regions[reg].materials[i].get();
+    template <WhichLevel which> 
+    double layerk2(const ActiveRegionInfo& region, double substra, double T, double E, size_t i) {
+        const Material* material = region.materials[i].get();
         OmpLockGuard<OmpNestLock> lockq = material->lock();
         double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        return 2./(phys::hb_eV*phys::hb_eV) * phys::me * Meff<level>(material, T, e).c11 * (E - UB<level>(material, T, e));
+        return 2./(phys::hb_eV*phys::hb_eV) * phys::me * Meff<which>(material, T, e).c11 * (E - UB<which>(material, T, e));
     }
 
     /// Compute determinant for energy levels
-    template <WhichLevel level>
-    double level(size_t reg, double T, double E);
+    template <WhichLevel which>
+    double level(const ActiveRegionInfo& region, double T, double E);
+
+    template <WhichLevel which> 
+    double layerUB(const ActiveRegionInfo& region, double substra, double T, size_t i) {
+        const Material* material = region.materials[i].get();
+        OmpLockGuard<OmpNestLock> lockq = material->lock();
+        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+        return UB<which>(material, T, e);
+    }
 
   protected:
 
@@ -231,6 +239,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
   public:
 
+#ifndef NDEBUG
+    double detEc(double E, size_t reg=0) { return level<LEVEL_EC>(regions[reg], T0, E); }
+    double detHh(double E, size_t reg=0) { return level<LEVEL_HH>(regions[reg], T0, E); }
+    double detLh(double E, size_t reg=0) { return level<LEVEL_LH>(regions[reg], T0, E); }
+#endif
+
     double getLifeTime() const { return lifetime; }
     void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 
@@ -240,7 +254,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     friend struct GainSpectrum<GeometryType>;
 
     /**
-     * Reg gain spectrum object for future use;
+     * Reg gain spectrum object for future use
      */
     GainSpectrum<GeometryType> getGainSpectrum(const Vec<2>& point);
 };

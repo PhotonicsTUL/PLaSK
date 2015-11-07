@@ -98,6 +98,7 @@ struct DgbMatrix {
             det *= data[5*i + 2];
             if (ipiv[i] != i+1) det = -det;
         }
+        return det;
     }
 };
 
