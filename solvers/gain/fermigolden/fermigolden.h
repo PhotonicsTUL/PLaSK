@@ -25,7 +25,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
-        std::vector<size_t> wells;              ///< Division of the active region into separate quantum wells
 
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
 
@@ -75,6 +74,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
         std::vector<shared_ptr<Material>> materials;///< All materials in the active region
         std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
+        std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
 
         double total;                               ///< Total active region thickness [Å]
         double bottom;                              ///< Bottom spacer thickness [Å]
@@ -189,14 +189,26 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         return level<which>(region, T, E, region.wells[well], region.wells[well+1]);
     }
 
-    template <WhichLevel which> 
-    double layerUB(const ActiveRegionInfo& region, double substra, double T, size_t i) const {
-        const Material* material = region.materials[i].get();
-        OmpLockGuard<OmpNestLock> lockq = material->lock();
-        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        return UB<which>(material, T, e);
+    bool addLevel(std::vector<double>& levels, double val) const {
+        auto where = std::lower_bound(levels.begin(), levels.end(), val);
+        if (where == levels.end()) {
+            if (levels.size() == 0 || val - levels.back() > levelsep) {
+                levels.push_back(val);
+                return true;
+            }
+        } else {
+            if (*where - val > levelsep && (where == levels.begin() || val - *(where-1) > levelsep)) {
+                levels.insert(where, val);
+                return true;
+            }
+        }
+        return false;
     }
-
+    
+    /// Find levels estimates
+    template <WhichLevel which>
+    void levelEstimates(std::vector<double>& levels, const ActiveRegionInfo& region, double T, size_t qw) const;
+    
   protected:
 
     /// Estimate energy levels
@@ -207,9 +219,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     double T0;                      ///< Temperature used for compiting level estimates
 
-    std::vector<std::vector<double>> levels_el, ///< Approximate electron levels
-                                     levels_hh, ///< Approximate heavy hole levels
-                                     levels_lh; ///< Approximate light hole levels
+    double levelsep;                ///< Minimum separation between distinct levels
+    
+    std::vector<std::vector<double>>
+        levels_el,                  ///< Approximate electron levels
+        levels_hh,                  ///< Approximate heavy hole levels
+        levels_lh;                  ///< Approximate light hole levels
 
     bool strained;                  ///< Consider strain in QW?
 

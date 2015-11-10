@@ -1,6 +1,10 @@
 #include "gauss_matrix.h"
 #include "fermigolden.h"
 
+#include <boost/math/tools/roots.hpp>
+using boost::math::tools::toms748_solve;
+
+
 namespace plask { namespace gain { namespace fermigolden {
 
 constexpr double DIFF_STEP = 0.001;
@@ -12,6 +16,7 @@ FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& na
     lifetime(0.1),
     matrixelem(0.),
     T0(300.),
+    levelsep(0.001),
     strained(false),
     extern_levels(false)
 {
@@ -305,6 +310,52 @@ double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region
 }
 
 
+template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
+void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& levels, const ActiveRegionInfo& region, double T, size_t qw) const
+{
+    double substra = strained? materialSubstrate->lattC(T0, 'a') : 0.;
+    size_t start = region.wells[qw], stop = region.wells[qw+1];
+    double umin = std::numeric_limits<double>::max(), umax = std::numeric_limits<double>::min();
+    double num = 0.;
+    for (size_t i = start; i <= stop; ++i) {
+        const Material* material = region.materials[i].get();
+        OmpLockGuard<OmpNestLock> lockq = material->lock();
+        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+        double ub = UB<which>(material, T, e);
+        double m = Meff<which>(material, T, e).c11;
+        umax = max(ub, umax); umin = min(ub, umin);
+        if (i != start && i != stop) {
+            double no = 1e-6 / M_PI * region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * m);
+            num = max(no, num);
+        }
+    }
+    num = 2. * ceil(sqrt(umax-umin)*num);
+    umin += 0.5 * levelsep;
+    umax -= 0.5 * levelsep;
+    double step = (umax-umin) / num;
+    size_t n = size_t(num);
+    double a, b = umin;
+    double fa, fb = level<which>(region, T, b, qw);
+    if (fb == 0.) addLevel(levels, fb);
+    for (size_t i = 0; i < n; ++i) {
+        a = b; fa = fb;
+        b = a + step; fb = level<which>(region, T, b, qw);
+        if (fb == 0.) { addLevel(levels, fb); continue; }
+        if ((fa < 0.) != (fb < 0.)) {
+            boost::uintmax_t iters = 1000;
+            double xa, xb;
+            std::tie(xa, xb) = toms748_solve(
+                [&](double x){ return level<which>(region, T, x, qw); },
+                a, b, fa, fb, [this](double l, double r){ return r-l < levelsep; }, iters)
+            ;
+            if (xb - xa > levelsep)
+                throw ComputationError(this->getId(), "Could not find level estimate in quantum well");
+            addLevel(levels, 0.5*(xa+xb));
+        }
+    }
+}
+
+
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 {
@@ -313,30 +364,37 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     else
         this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
-    double substra = strained? materialSubstrate->lattC(T0, 'a') : 0.;
-
     levels_el.clear(); levels_el.reserve(regions.size());
     levels_hh.clear(); levels_hh.reserve(regions.size());
     levels_lh.clear(); levels_lh.reserve(regions.size());
 
+    size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
-        size_t N = region.materials.size();
-        double cbmin = std::numeric_limits<double>::max(), cbmax = std::numeric_limits<double>::min();
-        double vhmin = std::numeric_limits<double>::max(), vhmax = std::numeric_limits<double>::min();
-        double vlmin = std::numeric_limits<double>::max(), vlmax = std::numeric_limits<double>::min();
-        for (size_t i = 0; i < N; ++i) {
-            double cb = layerUB<LEVELS_EL>(region, substra, T0, i);
-            cbmax = max(cb, cbmax); cbmin = min(cb, cbmin);
-            double vh = layerUB<LEVELS_HH>(region, substra, T0, i);
-            vhmax = max(vh, vhmax); vhmin = min(vh, vhmin);
-            double vl = layerUB<LEVELS_LH>(region, substra, T0, i);
-            vlmax = max(vl, vlmax); vlmin = min(vl, vlmin);
+        std::vector<double> lel, lhh, llh;
+        for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
+            levelEstimates<LEVELS_EL>(lel, region, T0, qw);
+            levelEstimates<LEVELS_HH>(lhh, region, T0, qw);
+            levelEstimates<LEVELS_LH>(llh, region, T0, qw);
         }
-#ifndef NDEBUG
-        this->writelog(LOG_DEBUG, "Electron levels between %.2feV and %.2feV", cbmin, cbmax);
-        this->writelog(LOG_DEBUG, "Heavy holes levels between %.2feV and %.2feV", vhmin, vhmax);
-        this->writelog(LOG_DEBUG, "Light holes levels between %.2feV and %.2feV", vlmin, vlmax);
-#endif
+        levels_el.emplace_back(lel);
+        levels_hh.emplace_back(lhh);
+        levels_lh.emplace_back(llh);
+
+        if (maxLoglevel > LOG_DETAIL) {
+            {
+                std::stringstream str; std::string sep = "";
+                for (auto l: lel) { str << sep << format("%.4f", l); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", ++reg, str.str());
+            }{
+                std::stringstream str; std::string sep = "";
+                for (auto l: llh) { str << sep << format("%.4f", l); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region %d [eV]: %s", reg, str.str());
+            }{
+                std::stringstream str; std::string sep = "";
+                for (auto l: lhh) { str << sep << format("%.4f", l); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());        
+            }
+        }
     }
 }
 
