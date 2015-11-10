@@ -317,19 +317,27 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
     size_t start = region.wells[qw], stop = region.wells[qw+1];
     double umin = std::numeric_limits<double>::max(), umax = std::numeric_limits<double>::min();
     double num = 0.;
+    double ustart, ustop;
     for (size_t i = start; i <= stop; ++i) {
         const Material* material = region.materials[i].get();
         OmpLockGuard<OmpNestLock> lockq = material->lock();
         double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
         double ub = UB<which>(material, T, e);
+        if (i == start) ustart = ub;
+        if (i == stop) ustop = ub;
+        if (which == LEVELS_EL) umin = min(ub, umin);
+        else umax = max(ub, umax); 
         double m = Meff<which>(material, T, e).c11;
-        umax = max(ub, umax); umin = min(ub, umin);
         if (i != start && i != stop) {
             double no = 1e-6 / M_PI * region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * m);
             num = max(no, num);
         }
     }
-    num = 2. * ceil(sqrt(umax-umin)*num);
+    if (which == LEVELS_EL) umax = min(ustart, ustop);
+    else umin = max(ustart, ustop);
+    if (umax < umin)
+        throw BadInput(this->getId(), "Outer layers of active region have wrong band offset"); //TODO make clearer
+    num = 2. * ceil(sqrt(umax-umin)*num); // 2. * is the simplest way to ensure that all levels are found
     umin += 0.5 * levelsep;
     umax -= 0.5 * levelsep;
     double step = (umax-umin) / num;
