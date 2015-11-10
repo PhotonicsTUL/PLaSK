@@ -197,7 +197,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 region.origin += Vec<2>(0., -h);
                 //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
                 region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                region.bottomthck = h;
+                region.bottom = h;
                 added_bottom_cladding = true;
             }
 
@@ -231,7 +231,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
 
                     ileft = 0;
                     iright = points->axis0->size();
-                    region->topthck = h;
+                    region->top = h;
                     added_top_cladding = true;
                 }
             }
@@ -481,8 +481,8 @@ struct FermiGoldenGainSolver<GeometryT>::GainData: public FermiGoldenGainSolver<
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
 //         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
-//         double thck = (this->solver->extern_levels)? region.qwtotalthck : region.qwthck;
-//         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
+//         double thck = (this->solver->extern_levels)? region.qwtotal : region.qw;
+//         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
     }
 };
 
@@ -494,18 +494,18 @@ struct FermiGoldenGainSolver<GeometryT>::DgdnData: public FermiGoldenGainSolver<
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
-//         double thck = region.qwthck;
-//         if (this->solver->extern_levels) thck = region.qwtotalthck;
+//         double thck = region.qw;
+//         if (this->solver->extern_levels) thck = region.qwtotal;
 //         double h = 0.5 * DIFF_STEP;
 //         double conc1, conc2;
 //         conc1 = (1.-h) * conc;
 //         conc2 = (1.+h) * conc;
 //         double gain1 =
 //             this->solver->getGainModule(wavelength, temp, conc1, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
+//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
 //         double gain2 =
 //             this->solver->getGainModule(wavelength, temp, conc2, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
+//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
 //         return (gain2 - gain1) / (2.*h*conc);
     }
 };
