@@ -12,7 +12,8 @@ FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& na
     lifetime(0.1),
     matrixelem(0.),
     T0(300.),
-    strained(false)
+    strained(false),
+    extern_levels(false)
 {
     inTemperature = 300.;
     inTemperature.changedConnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
@@ -196,7 +197,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 region.origin += Vec<2>(0., -h);
                 //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
                 region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                region.bottomlen = h;
+                region.bottomthck = h;
                 added_bottom_cladding = true;
             }
 
@@ -230,7 +231,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
 
                     ileft = 0;
                     iright = points->axis0->size();
-                    region->toplen = h;
+                    region->topthck = h;
                     added_top_cladding = true;
                 }
             }
@@ -239,109 +240,64 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
         throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
 
-    this->writelog(LOG_INFO, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
-    size_t n = 0;
-    for (auto& region: regions) {
-        region.summarize(this);
-        this->writelog(LOG_DETAIL, "Active region %d: %g nm QWs, %g nm total", n++, 0.1*region.qwtotallen, 0.1*region.totallen);
-    }
+    this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
+    for (auto& region: regions) region.summarize(this);
 
-    // energy levels for active region with two identcal QWs won't be calculated so QW widths must be changed
-    this->writelog(LOG_DETAIL, "Updating QW widths");
-    n = 0;
-    for (auto& region: regions) {
-        region.lens.clear();
-        int N = region.size(); // number of all layers in the active region (QW, barr, external)
-        int noOfQWs = 0; // number of QWs counter
-        for (int i=0; i<N; ++i) {
-            if (region.isQW(i)) noOfQWs++;
-            region.lens.push_back(region.getLayerBox(i).height()*1e4); // in [A]
-            this->writelog(LOG_DEBUG, "Layer %1% thickness: %2% nm", i+1, 0.1*region.lens[i]);
-        }
-        this->writelog(LOG_DEBUG, "Number of QWs in the above active region: %1%", noOfQWs);
-
-        // if (adjust_widths) {
-        //     double hstep = region.qwlen*roughness/qw_width_mod;
-        //     if ( !(noOfQWs%2) ) {
-        //         double h0 = region.qwlen-(int(noOfQWs/2))*hstep+0.5*hstep;
-        //         for (int i=0; i<n; ++i) {
-        //             if (region.isQW(i)) {
-        //                 region.lens[i] = h0;
-        //                 this->writelog(LOG_DEBUG, "Layer %1% thickness: %2% nm", i+1, 0.1*region.lens[i]);
-        //                 h0 += hstep;
-        //             }
-        //         }
-        //     } else {
-        //         double h0 = region.qwlen-(int(noOfQWs/2))*hstep;
-        //         for (int i=0; i<n; ++i) {
-        //             if (region.isQW(i)) {
-        //                 region.lens[i] = h0;
-        //                 this->writelog(LOG_DETAIL, "Layer %1% modified thickness: %2% nm", i+1, 0.1*region.lens[i]);
-        //                 h0 += hstep;
-        //             }
-        //         }
-        //     }
-        //     this->writelog(LOG_DETAIL, "QW thickness step: %1% nm", 0.1*hstep);
-        // }
-        n++;
-    }
-    
     if (strained && !materialSubstrate)
         throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+
 }
 
 
 template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
-double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region, double T, double E)
+double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region, double T, double E, size_t start, size_t stop) const
 {
-    size_t N = region.materials.size();
-    size_t last = 2*N - 1;
-    double substra = materialSubstrate->lattC(T, 'a');
+    size_t nA = 2 * (stop - start + 1);
+    double substra = strained? materialSubstrate->lattC(T, 'a') : 0.;
 
-    DgbMatrix A(2*N);
+    DgbMatrix A(nA);
 
-    double k1_2 = layerk2<which>(region, substra, T, E, 0);
+    double k1_2, m1; getk2m<which>(k1_2, m1, region, substra, T, E, start);
     double k1 = sqrt(abs(k1_2));
 
     // Wave functions are confined, so we can assume exponentially decreasing relation in the outer layers
-    A(0, 0) = A(last, last) = 1.;
-    A(0, 1) = A(last, last-1) = 0.;
+    A(0, 0) = A(nA-1, nA-1) = 1.;
+    A(0, 1) = A(nA-1, nA-2) = 0.;
 
-    for (size_t i = 0; i < N-1; ++i) {
-        size_t o = 2*i + 1;
-
-        double k0_2 = k1_2, k0 = k1;
-        double d = region.lens[i];
+    for (size_t i = start, o = 1; i < stop; i++, o+=2) {
+        double k0_2 = k1_2, k0 = k1, m0 = m1;
+        double d = (o == 1)? 0. : region.thicknesses[i];
         if (k0_2 >= 0.) {
             double coskd = cos(k0*d), sinkd = sin(k0*d);
-            A(o,   o-1) = coskd;
-            A(o+1, o-1) = -k0 * sinkd;
-            A(o,   o  ) = sinkd;
-            A(o+1, o  ) = k0 * coskd;
+            A(o,   o-1) =  coskd;
+            A(o+1, o-1) = -sinkd;
+            A(o,   o  ) =  sinkd;
+            A(o+1, o  ) =  coskd;
         } else {
             double phi = exp(-k0*d);
-            A(o,   o-1) = phi;
-            A(o+1, o-1) = -k0 * phi;
-            A(o,   o  ) = 1. / phi;
-            A(o+1, o  ) = k0 / phi;
+            A(o,   o-1) =  phi;
+            A(o+1, o-1) = -phi;
+            A(o,   o  ) = 1./phi;
+            A(o+1, o  ) = 1./phi;
         }
 
         A(o+2, o  ) = 0.;
         A(o-1, o+1) = 0.;
 
-        k1_2 = layerk2<which>(region, substra, T, E, i+1);
+        getk2m<which>(k1_2, m1, region, substra, T, E, i+1);
         if (k1_2 >= 0.) {
             k1 = sqrt(k1_2);
-            A(o,   o-1) = -1.;
-            A(o+1, o-1) =  0.;
-            A(o,   o  ) =  0;
-            A(o+1, o  ) = -k1;
+            A(o,   o+1) = -1.;
+            A(o+1, o+1) =  0.;
+            A(o,   o+2) =  0.;
+            A(o+1, o+2) = -(k1 * m0) / (k0 * m1);
         } else {
             k1 = sqrt(-k1_2);
-            A(o,   o-1) = -1.;
-            A(o+1, o-1) =  k1;
-            A(o,   o  ) = -1.;
-            A(o+1, o  ) = -k1;
+            double f = (k1 * m0) / (k0 * m1);
+            A(o,   o+1) = -1.;
+            A(o+1, o+1) =  f;
+            A(o,   o+2) = -1.;
+            A(o+1, o+2) = -f;
         }
     }
 
@@ -362,25 +318,25 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     levels_el.clear(); levels_el.reserve(regions.size());
     levels_hh.clear(); levels_hh.reserve(regions.size());
     levels_lh.clear(); levels_lh.reserve(regions.size());
-    
+
     for (const ActiveRegionInfo& region: regions) {
         size_t N = region.materials.size();
         double cbmin = std::numeric_limits<double>::max(), cbmax = std::numeric_limits<double>::min();
         double vhmin = std::numeric_limits<double>::max(), vhmax = std::numeric_limits<double>::min();
         double vlmin = std::numeric_limits<double>::max(), vlmax = std::numeric_limits<double>::min();
         for (size_t i = 0; i < N; ++i) {
-            double cb = layerUB<LEVEL_EC>(region, substra, T0, i);
+            double cb = layerUB<LEVELS_EL>(region, substra, T0, i);
             cbmax = max(cb, cbmax); cbmin = min(cb, cbmin);
-            double vh = layerUB<LEVEL_HH>(region, substra, T0, i);
+            double vh = layerUB<LEVELS_HH>(region, substra, T0, i);
             vhmax = max(vh, vhmax); vhmin = min(vh, vhmin);
-            double vl = layerUB<LEVEL_LH>(region, substra, T0, i);
+            double vl = layerUB<LEVELS_LH>(region, substra, T0, i);
             vlmax = max(vl, vlmax); vlmin = min(vl, vlmin);
-#ifndef NDEBUG
-            this->writelog(LOG_DEBUG, "Electron levels between %g and %g", cbmin, cbmax);
-            this->writelog(LOG_DEBUG, "Heavy holes levels between %g and %g", vhmin, vhmax);
-            this->writelog(LOG_DEBUG, "Light holes levels between %g and %g", vlmin, vlmax);
-#endif
         }
+#ifndef NDEBUG
+        this->writelog(LOG_DEBUG, "Electron levels between %.2feV and %.2feV", cbmin, cbmax);
+        this->writelog(LOG_DEBUG, "Heavy holes levels between %.2feV and %.2feV", vhmin, vhmax);
+        this->writelog(LOG_DEBUG, "Light holes levels between %.2feV and %.2feV", vlmin, vlmax);
+#endif
     }
 }
 
@@ -426,7 +382,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     };
 
-    FermiGoldenGainSolver<GeometryT>* solver;                 ///< Solver
+    FermiGoldenGainSolver<GeometryT>* solver;           ///< Solver
     std::vector<shared_ptr<RectangularAxis>> regpoints; ///< Points in each active region
     std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
@@ -525,8 +481,8 @@ struct FermiGoldenGainSolver<GeometryT>::GainData: public FermiGoldenGainSolver<
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
 //         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
-//         double len = (this->solver->extern_levels)? region.qwtotallen : region.qwlen;
-//         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+//         double thck = (this->solver->extern_levels)? region.qwtotalthck : region.qwthck;
+//         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
     }
 };
 
@@ -538,18 +494,18 @@ struct FermiGoldenGainSolver<GeometryT>::DgdnData: public FermiGoldenGainSolver<
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
-//         double len = region.qwlen;
-//         if (this->solver->extern_levels) len = region.qwtotallen;
+//         double thck = region.qwthck;
+//         if (this->solver->extern_levels) thck = region.qwtotalthck;
 //         double h = 0.5 * DIFF_STEP;
 //         double conc1, conc2;
 //         conc1 = (1.-h) * conc;
 //         conc2 = (1.+h) * conc;
 //         double gain1 =
 //             this->solver->getGainModule(wavelength, temp, conc1, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
 //         double gain2 =
 //             this->solver->getGainModule(wavelength, temp, conc2, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotalthck
 //         return (gain2 - gain1) / (2.*h*conc);
     }
 };

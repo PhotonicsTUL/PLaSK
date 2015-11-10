@@ -15,9 +15,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 {
     /// Which level to compute
     enum WhichLevel: size_t {
-        LEVEL_EC,
-        LEVEL_HH,
-        LEVEL_LH
+        LEVELS_EL,
+        LEVELS_HH,
+        LEVELS_LH
     };
 
     /// Structure containing information about each active region
@@ -25,6 +25,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
+        std::vector<size_t> wells;              ///< Division of the active region into separate quantum wells
+
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
 
         /// Return number of layers in the active region with surrounding barriers
@@ -71,13 +73,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
         }
 
-        std::vector<shared_ptr<Material>> materials; ///< All materials in the active region
-        std::vector<double> lens;               ///< Thicknesses of the layers in the active region
+        std::vector<shared_ptr<Material>> materials;///< All materials in the active region
+        std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
 
-        double qwtotallen;                      ///< Total quantum wells thickness [Å]
-        double totallen;                        ///< Total active region thickness [Å]
-        double bottomlen;                       ///< Bottom spacer thickness [Å]
-        double toplen;                          ///< Top spacer thickness [Å]
+        double total;                               ///< Total active region thickness [Å]
+        double bottom;                              ///< Bottom spacer thickness [Å]
+        double top;                                 ///< Top spacer thickness [Å]
 
         /**
          * Summarize active region, check for appropriateness and compute some values
@@ -86,40 +87,42 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         void summarize(const FermiGoldenGainSolver<GeometryType>* solver)
         {
             auto bbox = layers->getBoundingBox();
-            totallen = 1e4 * (bbox.upper[1] - bbox.lower[1] - bottomlen - toplen);  // 1e4: µm -> Å
-            size_t qwn = 0;
-            qwtotallen = 0.;
-            bool lastbarrier = true;
+            total = bbox.upper[1] - bbox.lower[1] - bottom - top;
+            materials.clear(); materials.reserve(layers->children.size());
+            thicknesses.clear(); thicknesses.reserve(layers->children.size());
             for (const auto& layer: layers->children) {
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
                 auto material = block->singleMaterial();
                 if (!material) throw plask::Exception("FermiGoldenGainSolver requires solid layers.");
-                if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW")) {
-                    /*if (!materialQW)
-                        materialQW = material;
-                    else if (*material != *materialQW)
-                        throw Exception("%1%: Multiple quantum well materials in active region.", solver->getId());*/
-                    auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
-                    qwtotallen += bbox.upper[1] - bbox.lower[1];
-                    if (lastbarrier) ++qwn;
-                    else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
-                    lastbarrier = false;
-                } else { //if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier")) // TODO 4.09.2014
-                    /*if (!materialBarrier)
-                        materialBarrier = material;
-                    else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
-                             !is_zero(material->Me(300).c11 - materialBarrier->Me(300).c11) ||
-                             !is_zero(material->Mhh(300).c00 - materialBarrier->Mhh(300).c00) ||
-                             !is_zero(material->Mhh(300).c11 - materialBarrier->Mhh(300).c11) ||
-                             !is_zero(material->Mlh(300).c00 - materialBarrier->Mlh(300).c00) ||
-                             !is_zero(material->Mlh(300).c11 - materialBarrier->Mlh(300).c11) ||
-                             !is_zero(material->CB(300) - materialBarrier->CB(300)) ||
-                             !is_zero(material->VB(300) - materialBarrier->VB(300)))
-                        throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());*/
-                    lastbarrier = true;
-                } // TODO something must be added here because of spacers placed next to external barriers
+                auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
+                double thck = bbox.upper[1] - bbox.lower[1];
+                materials.push_back(material);
+                thicknesses.push_back(thck);
             }
-            qwtotallen *= 1e3; // µm -> nm
+            if (materials.size() > 2) {
+                Material* material = materials[0].get();
+                double el0 = UB<LEVELS_EL>(material, solver->T0),
+                       hh0 = UB<LEVELS_HH>(material, solver->T0),
+                       lh0 = UB<LEVELS_LH>(material, solver->T0);
+                material = materials[1].get();
+                double el1 = UB<LEVELS_EL>(material, solver->T0),
+                       hh1 = UB<LEVELS_HH>(material, solver->T0),
+                       lh1 = UB<LEVELS_LH>(material, solver->T0);
+                for (size_t i = 2; i < materials.size(); ++i) {
+                    material = materials[i].get();
+                    double el2 = UB<LEVELS_EL>(material, solver->T0);
+                    double hh2 = UB<LEVELS_HH>(material, solver->T0);
+                    double lh2 = UB<LEVELS_LH>(material, solver->T0);
+                    if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) wells.push_back(i-1);
+                    else if (i == 2) wells.push_back(0);
+                    if (el2 != el1) { el0 = el1; el1 = el2; }
+                    if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
+                    if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
+                }
+            }
+            if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
+            // for (auto w: wells) std::cerr << w << " ";
+            // std::cerr << "\n";
         }
     };
 
@@ -147,36 +150,47 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
   private:
 
-    template <WhichLevel which> Tensor2<double> Meff(const Material* material, double T, double e=0.) {
+    template <WhichLevel which> static inline Tensor2<double> Meff(const Material* material, double T, double e=0.) {
         switch (which) {
-            case LEVEL_EC: return material->Me(T, e);
-            case LEVEL_HH: return material->Mhh(T, e);
-            case LEVEL_LH: return material->Mlh(T, e);
+            case LEVELS_EL: return material->Me(T, e);
+            case LEVELS_HH: return material->Mhh(T, e);
+            case LEVELS_LH: return material->Mlh(T, e);
         }
     }
 
-    template <WhichLevel which> double UB(const Material* material, double T, double e=0.) {
+    template <WhichLevel which> static inline double UB(const Material* material, double T, double e=0.) {
         switch (which) {
-            case LEVEL_EC: return  material->CB(T, e);
-            case LEVEL_HH: return -material->VB(T, e, '*', 'H');
-            case LEVEL_LH: return -material->VB(T, e, '*', 'L');
+            case LEVELS_EL: return material->CB(T, e);
+            case LEVELS_HH: return material->VB(T, e, '*', 'H');
+            case LEVELS_LH: return material->VB(T, e, '*', 'L');
         }
     }
 
     template <WhichLevel which> 
-    double layerk2(const ActiveRegionInfo& region, double substra, double T, double E, size_t i) {
+    inline void getk2m(double& k2, double& m, const ActiveRegionInfo& region, double substra, double T, double E, size_t i) const {
         const Material* material = region.materials[i].get();
         OmpLockGuard<OmpNestLock> lockq = material->lock();
         double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        return 2./(phys::hb_eV*phys::hb_eV) * phys::me * Meff<which>(material, T, e).c11 * (E - UB<which>(material, T, e));
+        m = Meff<which>(material, T, e).c11;
+        k2 = ((which == LEVELS_EL)? 2e-12 : -2e-12) * phys::me / (phys::hb_eV*phys::hb_J) * m * (E - UB<which>(material, T, e));
     }
 
     /// Compute determinant for energy levels
     template <WhichLevel which>
-    double level(const ActiveRegionInfo& region, double T, double E);
+    double level(const ActiveRegionInfo& region, double T, double E, size_t start, size_t stop) const;
+
+    template <WhichLevel which>
+    double level(const ActiveRegionInfo& region, double T, double E) const {
+        return level<which>(region, T, E, 0, region.materials.size()-1);
+    }
+
+    template <WhichLevel which>
+    double level(const ActiveRegionInfo& region, double T, double E, size_t well) const {
+        return level<which>(region, T, E, region.wells[well], region.wells[well+1]);
+    }
 
     template <WhichLevel which> 
-    double layerUB(const ActiveRegionInfo& region, double substra, double T, size_t i) {
+    double layerUB(const ActiveRegionInfo& region, double substra, double T, size_t i) const {
         const Material* material = region.materials[i].get();
         OmpLockGuard<OmpNestLock> lockq = material->lock();
         double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
@@ -240,9 +254,18 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
   public:
 
 #ifndef NDEBUG
-    double detEc(double E, size_t reg=0) { return level<LEVEL_EC>(regions[reg], T0, E); }
-    double detHh(double E, size_t reg=0) { return level<LEVEL_HH>(regions[reg], T0, E); }
-    double detLh(double E, size_t reg=0) { return level<LEVEL_LH>(regions[reg], T0, E); }
+    double detEl(double E, size_t reg=0, size_t well=0) {
+        if (well) return level<LEVELS_EL>(regions[reg], T0, E, well-1);
+        else return level<LEVELS_EL>(regions[reg], T0, E);
+    }
+    double detHh(double E, size_t reg=0, size_t well=0) {
+        if (well) return level<LEVELS_HH>(regions[reg], T0, E, well-1);
+        else return level<LEVELS_HH>(regions[reg], T0, E);
+    }
+    double detLh(double E, size_t reg=0, size_t well=0) {
+        if (well) return level<LEVELS_LH>(regions[reg], T0, E, well-1);
+        else return level<LEVELS_LH>(regions[reg], T0, E);
+    }
 #endif
 
     double getLifeTime() const { return lifetime; }

@@ -17,6 +17,7 @@ F77SUB dgbtrf(const int& m, const int& n, const int& kl, const int& ku, double* 
 #define dgbtrs F77_GLOBAL(dgbtrs,DGBTRS)
 F77SUB dgbtrs(const char& trans, const int& n, const int& kl, const int& ku, const int& nrhs, double* ab, const int& ldab, int* ipiv, double* b, const int& ldb, int& info);
 
+#define LD 7
 
 namespace plask { namespace gain { namespace fermigolden {
 
@@ -35,7 +36,7 @@ struct DgbMatrix {
      * Create matrix
      * \param rank size of the matrix
      */
-    DgbMatrix(size_t rank): size(rank), data(aligned_malloc<double>(5*rank)) {}
+    DgbMatrix(size_t rank): size(rank), data(aligned_malloc<double>(LD*rank)) {}
 
     DgbMatrix(const DgbMatrix&) = delete; // this object is non-copyable
 
@@ -50,7 +51,7 @@ struct DgbMatrix {
         assert(r < size && c < size);
         assert(abs(int(c)-int(r)) < 3);
         // AB(kl+ku+1+i-j,j) = A(i,j)
-        return 4*c + r + 2;
+        return (LD-1)*c + r + 4;
     }
 
     /**
@@ -64,7 +65,7 @@ struct DgbMatrix {
 
     /// Clear the matrix
     void clear() {
-        std::fill_n(data, 5*size, 0.);
+        std::fill_n(data, LD*size, 0.);
     }
 
     /**
@@ -73,7 +74,7 @@ struct DgbMatrix {
      * \param result multiplication result
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dgbmv('N', size, size, 2, 2, 1., data, 5, vector.data(), 1, 0., result.data(), 1);
+        dgbmv('N', size, size, 2, 2, 1., data, LD, vector.data(), 1, 0., result.data(), 1);
     }
 
     /**
@@ -82,7 +83,7 @@ struct DgbMatrix {
      * \param result multiplication result
      */
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dgbmv('N', size, size, 2, 2, 1., data, 5, vector.data(), 1, 1., result.data(), 1);
+        dgbmv('N', size, size, 2, 2, 1., data, LD, vector.data(), 1, 1., result.data(), 1);
     }
 
     /// Compute matrix determinant
@@ -90,12 +91,12 @@ struct DgbMatrix {
         int info = 0;
         aligned_unique_ptr<int> upiv(aligned_malloc<int>(size));
         int* ipiv = upiv.get();
-        dgbtrf(size, size, 2, 2, data, 5, ipiv, info);
+        dgbtrf(size, size, 2, 2, data, LD, ipiv, info);
         assert(info >= 0);
 
         double det = 1.;
         for (int i = 0; i < size; ++i) {
-            det *= data[5*i + 2];
+            det *= data[LD*i + 4];
             if (ipiv[i] != i+1) det = -det;
         }
         return det;
@@ -103,6 +104,8 @@ struct DgbMatrix {
 };
 
 }}} // # namespace plask::gain::fermigolden
+
+#undef LD
 
 #endif // PLASK__SOLVER__GAIN_FERMIGOLDEN_GAUSS_MATRIX_H
 
