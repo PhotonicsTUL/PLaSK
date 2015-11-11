@@ -75,6 +75,27 @@ static py::object FermiNewGain_setLevels(py::tuple args, py::dict kwargs)
     return py::object();
 }*/
 
+template <typename GeometryT>
+static py::object FermiNew_getLevels(FermiNewGainSolver<GeometryT>& self, py::object To)
+{
+    self.initCalculation();
+    py::list result;
+    for (size_t reg = 0; reg < self.region_levels.size(); ++reg) {
+        py::dict info;
+        std::vector<double> el, hh, lh;
+        for (auto stan: self.region_levels[reg].mpStrEc->rozwiazania) el.push_back(stan.poziom);
+        for (auto stan: self.region_levels[reg].mpStrEvhh->rozwiazania) hh.push_back(-stan.poziom);
+        for (auto stan: self.region_levels[reg].mpStrEvlh->rozwiazania) lh.push_back(-stan.poziom);
+        info["el"] = el;
+        info["hh"] = hh;
+        info["lh"] = lh;
+        result.append(info);
+    }
+    return result;
+}
+
+
+
 /**
  * Initialization of FermiNew gain solver class to Python
  */
@@ -106,6 +127,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(Tref, getTref, setTref,
                     "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
                     "for initial computation of the energy levels [K].");
+        solver.def("get_levels", &FermiNew_getLevels<Geometry2DCartesian>, py::arg("T")=py::object());
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
@@ -151,6 +173,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(Tref, getTref, setTref,
                     "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
                     "for initial computation of the energy levels [K].");
+        solver.def("get_levels", &FermiNew_getLevels<Geometry2DCylindrical>, py::arg("T")=py::object());
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),

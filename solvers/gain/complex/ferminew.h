@@ -154,8 +154,6 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
-  protected:
-
     struct DataBase;
     struct GainData;
     struct DgDnData;

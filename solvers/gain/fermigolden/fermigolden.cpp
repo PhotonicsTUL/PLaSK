@@ -18,7 +18,8 @@ FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& na
     T0(300.),
     levelsep(0.001),
     strained(false),
-    extern_levels(false)
+    extern_levels(false),
+    quick_levels(true)
 {
     inTemperature = 300.;
     inTemperature.changedConnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
@@ -43,6 +44,7 @@ void FermiGoldenGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
             strained = reader.getAttribute<bool>("strained", strained);
+            quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
             reader.requireTagEnd();
         } else if (param == "levels") {
             std::string els, hhs, lhs;
@@ -337,7 +339,7 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
     else umin = max(ustart, ustop);
     if (umax < umin)
         throw BadInput(this->getId(), "Outer layers of active region have wrong band offset"); //TODO make clearer
-    num = 2. * ceil(sqrt(umax-umin)*num); // 2. * is the simplest way to ensure that all levels are found
+    num = 4. * ceil(sqrt(umax-umin)*num); // 4.* is the simplest way to ensure that all levels are found
     umin += 0.5 * levelsep;
     umax -= 0.5 * levelsep;
     double step = (umax-umin) / num;
@@ -395,11 +397,11 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
                 this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", ++reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: llh) { str << sep << format("%.4f", l); sep = ", "; }
+                for (auto l: lhh) { str << sep << format("%.4f", l); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region %d [eV]: %s", reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: lhh) { str << sep << format("%.4f", l); sep = ", "; }
+                for (auto l: llh) { str << sep << format("%.4f", l); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());        
             }
         }

@@ -221,14 +221,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     double levelsep;                ///< Minimum separation between distinct levels
     
-    std::vector<std::vector<double>>
-        levels_el,                  ///< Approximate electron levels
-        levels_hh,                  ///< Approximate heavy hole levels
-        levels_lh;                  ///< Approximate light hole levels
-
     bool strained;                  ///< Consider strain in QW?
 
-    bool extern_levels;             ///< Are levers set externally?
+    bool extern_levels;             ///< Are levels set externally?
 
     inline static double nm_to_eV(double wavelength) {
         return phys::h_eVc1e9 / wavelength;
@@ -268,6 +263,13 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
   public:
 
+    std::vector<std::vector<double>>
+        levels_el,                  ///< Approximate electron levels
+        levels_hh,                  ///< Approximate heavy hole levels
+        levels_lh;                  ///< Approximate light hole levels
+
+    bool quick_levels;              ///< Are levels computed quickly based on estimates
+
 #ifndef NDEBUG
     double detEl(double E, size_t reg=0, size_t well=0) {
         if (well) return level<LEVELS_EL>(regions[reg], T0, E, well-1);
@@ -289,12 +291,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
 
-    friend struct GainSpectrum<GeometryType>;
-
     /**
      * Reg gain spectrum object for future use
      */
     GainSpectrum<GeometryType> getGainSpectrum(const Vec<2>& point);
+
+    friend struct GainSpectrum<GeometryType>;
 };
 
 

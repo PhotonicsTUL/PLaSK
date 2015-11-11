@@ -157,8 +157,6 @@ public:
         el, hh, lh
     };
 
-private:
-
     static const int mInfo = 0; // LUKASZ
 
     rodzaj typ;
