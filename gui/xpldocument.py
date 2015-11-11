@@ -54,6 +54,7 @@ class XPLDocument(object):
         self.solvers = GUIAndSourceController(SolversController(self))
         self.connects = GUIAndSourceController(ConnectsController(self))
         self.loglevel = 'detail'
+        self.other_changes = False  #changes which are not in undo stacks
 
         self.controllers = (
             self.defines,
@@ -96,19 +97,23 @@ class XPLDocument(object):
             Change if document is in the clean state (the same state as in file).
             :return bool: True only if document is in the clean state
         """
-        return all(c.model.undo_stack.isClean() for c in self.controllers)
+        return all(c.model.undo_stack.isClean() for c in self.controllers) and not self.other_changes
 
     def set_clean(self):
         """
             Marks the document (stacks of all sections) as clean.
         """
+        self.other_changes = False
         for c in self.controllers:
             c.model.undo_stack.setClean()
 
     # TODO remove this method, call set_clean instead (where it is needed)
     def set_changed(self, changed=True):
-        if not changed: self.set_clean()
-        self.window.set_changed(self.is_clean())
+        if not changed:
+            self.set_clean()
+        else:
+            self.other_changes = True
+        self.window.set_changed(not self.is_clean())
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)
@@ -191,7 +196,7 @@ class XPLDocument(object):
             #     UndoCommandWithSetter(self.script.model, self, loglevelsetter, loglevel, self.loglevel, 'loglevel')
             # )
             self.loglevel = loglevel
-            #self.set_changed()
+            self.set_changed()
 
     # def set_loglevel_undoable(self, loglevel):
     #     loglevel = loglevel.lower()
