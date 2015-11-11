@@ -33,7 +33,7 @@ class AxisConf(object):
 
     def fill_xml_element(self, axisElement):
         attr_to_xml(self, axisElement, 'start', 'stop', 'num', 'type')
-        axisElement.text = self.points if self.points else ''
+        axisElement.text = self.points if self.type != 'regular' and self.points else ''
 
 
     def set_from_xml(self, axis_element):

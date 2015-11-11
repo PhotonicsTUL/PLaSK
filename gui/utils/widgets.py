@@ -260,12 +260,12 @@ class TextEdit(QtGui.QTextEdit):
     editingFinished = QtSignal()
 
     def focusOutEvent(self, event):
-        self.editingFinished.emit()
+        if not self.signalsBlocked(): self.editingFinished.emit()
         super(TextEdit, self).focusOutEvent(event)
 
     def keyPressEvent(self, event):
         super(TextEdit, self).keyPressEvent(event)
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL:
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL and not self.signalsBlocked():
             self.editingFinished.emit()
 
 
