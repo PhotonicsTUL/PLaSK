@@ -12,6 +12,7 @@
 
 import shutil
 from lxml import etree
+from .utils.qundo import UndoCommandWithSetter
 
 try:
     import plask
@@ -185,5 +186,14 @@ class XPLDocument(object):
     def set_loglevel(self, loglevel):
         loglevel = loglevel.lower()
         if self.loglevel != loglevel:
+            # def loglevelsetter(s, v): s.loglevel = v
+            # self.script.model.undo_stack.push(    #TODO script does not use this stack
+            #     UndoCommandWithSetter(self.script.model, self, loglevelsetter, loglevel, self.loglevel, 'loglevel')
+            # )
             self.loglevel = loglevel
             #self.set_changed()
+
+    # def set_loglevel_undoable(self, loglevel):
+    #     loglevel = loglevel.lower()
+    #     if self.loglevel != loglevel:
+    #         self.script.model.undo_stack.

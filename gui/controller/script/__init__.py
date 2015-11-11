@@ -254,6 +254,7 @@ class ScriptController(SourceEditController):
         window.setWindowFlags(QtCore.Qt.Widget)
 
         source = SourceWidget(parent, ScriptEditor, self)
+
         source.editor.setReadOnly(self.model.is_read_only())
         window.editor = source.editor
 

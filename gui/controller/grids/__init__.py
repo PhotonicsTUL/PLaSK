@@ -18,7 +18,8 @@ from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
-from ..table import table_with_manipulators, InTableChangeItemCommand
+from ..table import table_with_manipulators
+from ...utils.qundo import UndoCommandWithSetter
 from ...model.grids import GridsModel
 
 try:
@@ -277,7 +278,7 @@ class GridController(Controller):
 
     def _change(self, setter, value, old_value, label):
         if value != old_value:
-            self.section_model.undo_stack.push(InTableChangeItemCommand(
+            self.section_model.undo_stack.push(UndoCommandWithSetter(
                 self.section_model, self.grid_model, setter, value, old_value, "change grid's {}".format(label)
             ))
 
@@ -287,7 +288,7 @@ class GridController(Controller):
             if label is None:
                 label = attr
                 while not isinstance(label, basestring): label = label[0]
-            self.section_model.undo_stack.push(InTableChangeItemCommand(
+            self.section_model.undo_stack.push(UndoCommandWithSetter(
                 self.section_model, self.grid_model, lambda n, v, attr=attr: setattr_by_path(n, attr, v), value, old_value, "change grid's {}".format(label)
             ))
 

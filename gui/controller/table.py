@@ -189,27 +189,3 @@ class TableController(Controller):
 
 
 
-class InTableChangeItemCommand(QtGui.QUndoCommand):
-    """
-        Undo command for changes of properties of entries of table model.
-    """
-
-    def __init__(self, model, node, setter, new_value, old_value, action_name, QUndoCommand_parent = None):
-        super(InTableChangeItemCommand, self).__init__(action_name, QUndoCommand_parent)
-        self.model = model
-        self.node = node
-        self.setter = setter
-        self.new_value = new_value
-        self.old_value = old_value
-
-    def set_property_value(self, value):
-        self.setter(self.node, value)
-        #index = self.model.entries.index(self.node)
-        #self.model.dataChanged.emit(index, index)
-        self.model.fire_changed()
-
-    def redo(self):
-        self.set_property_value(self.new_value)
-
-    def undo(self):
-        self.set_property_value(self.old_value)

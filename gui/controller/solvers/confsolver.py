@@ -17,10 +17,10 @@ from ...external.highlighter.xml import syntax
 from ...utils.texteditor import TextEditor, TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB, ComboBox
 from ...utils.qsignals import BlockQtSignals
+from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ..source import SCHEME
 from . import Controller
-from ..table import InTableChangeItemCommand
 
 def attr_list_to_text(model, group, attr):
     attr = attr[:-1]
@@ -58,7 +58,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_value = node.data[group] if attr is None else node.data[group][attr]
         if value != old_value:
-            model.undo_stack.push(InTableChangeItemCommand(
+            model.undo_stack.push(UndoCommandWithSetter(
                 model, node, set_solver_attr, value, old_value, "change solver's {}".format('attribute' if label is None else label)
             ))
 
@@ -69,7 +69,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_text = attr_list_to_text(node, group, attr)
         if text != old_text:
-            model.undo_stack.push(InTableChangeItemCommand(
+            model.undo_stack.push(UndoCommandWithSetter(
                 model, node, set_solver_attr, text, old_text, "change solver's {}".format('attribute' if label is None else label)
             ))
 
@@ -79,7 +79,7 @@ class SolverAutoWidget(VerticalScrollArea):
         model = self.controller.section_model
         old_value = getattr(node, field_name)
         if value != old_value:
-            model.undo_stack.push(InTableChangeItemCommand(
+            model.undo_stack.push(UndoCommandWithSetter(
                 model, node, set_solver_field, value, old_value, "change solver's {}".format(field_name)
             ))
 
