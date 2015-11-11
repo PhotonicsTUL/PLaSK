@@ -65,8 +65,9 @@ class XPLDocument(object):
         )
         for c in self.controllers:
             c.model.changed.connect(self.on_model_change)
+            c.model.undo_stack.cleanChanged.connect(self.update_window_changed)
         self.filename = None
-        self.set_changed(False)
+        self.set_clean()
         if filename: self.load_from_file(filename)
 
         if _DEBUG and plask is not None:  # very useful!
@@ -80,15 +81,33 @@ class XPLDocument(object):
 
     coding = 'utf-8'
 
-    def on_model_change(self, model, *args, **kwargs):
-        """Slot called by model 'changed' signals when user edits any section model"""
-        self.set_changed(True)
+    def update_window_changed(self, ignored_clean_flag=None):   #ignored_clean_flag enable this to connect with cleanChanged signal
+        self.window.set_changed(not self.is_clean())
 
+    def on_model_change(self, model, *args, **kwargs):
+        """Slot called by model 'changed' signals when user edits any section model, do nothing by default."""
+        #self.set_changed(True)
+        #self.window.set_changed(self.is_clean())
+        pass
+
+    def is_clean(self):
+        """
+            Change if document is in the clean state (the same state as in file).
+            :return bool: True only if document is in the clean state
+        """
+        return all(c.model.undo_stack.isClean() for c in self.controllers)
+
+    def set_clean(self):
+        """
+            Marks the document (stacks of all sections) as clean.
+        """
+        for c in self.controllers:
+            c.model.undo_stack.setClean()
+
+    # TODO remove this method, call set_clean instead (where it is needed)
     def set_changed(self, changed=True):
-        self.window.set_changed(changed)
-        if not changed:
-            for c in self.controllers:
-                c.model.undo_stack.setClean()
+        if not changed: self.set_clean()
+        self.window.set_changed(self.is_clean())
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)
@@ -101,7 +120,7 @@ class XPLDocument(object):
                 else:
                     self.model_by_index(i).clear()
         self.filename = filename
-        self.set_changed(False)
+        self.set_clean()
 
     def get_content(self, sections=None, update_lines=None):
         """
@@ -139,7 +158,7 @@ class XPLDocument(object):
                 pass
         open(filename, 'w').write(data)
         self.filename = filename
-        self.set_changed(False)
+        self.set_clean()
 
     def controller_by_index(self, index):
         return self.controllers[index]
@@ -162,8 +181,9 @@ class XPLDocument(object):
     def stubs(self):
         return '\n'.join(s for s in (c.model.stubs() for c in self.controllers) if s)
 
+    #TODO undo support, in script undo stack
     def set_loglevel(self, loglevel):
         loglevel = loglevel.lower()
         if self.loglevel != loglevel:
             self.loglevel = loglevel
-            self.set_changed()
+            #self.set_changed()
