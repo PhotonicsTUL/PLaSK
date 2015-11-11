@@ -99,6 +99,9 @@ class XPLDocument(object):
         """
         return all(c.model.undo_stack.isClean() for c in self.controllers) and not self.other_changes
 
+    def is_changed(self):
+        return not self.is_clean()
+
     def set_clean(self):
         """
             Marks the document (stacks of all sections) as clean.
@@ -113,7 +116,7 @@ class XPLDocument(object):
             self.set_clean()
         else:
             self.other_changes = True
-        self.window.set_changed(not self.is_clean())
+        self.window.set_changed(self.is_changed())
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)
