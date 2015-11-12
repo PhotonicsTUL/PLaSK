@@ -17,6 +17,7 @@ from ..table import TableModelEditMethods
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
 from .mesh_rectilinear import AXIS_NAMES
+from .. import Info
 
 
 class RefinementConf(object):
@@ -132,6 +133,11 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
     def undo_stack(self):
         return self.generator.undo_stack
 
+    def create_info(self, res, path):
+        for i, entry in enumerate(self.entries):
+            if not entry.object: res.append(Info('Name of the geometry object is required in refinement [row: {}]'.format(i+1),
+                                                 Info.ERROR, path=path+(i,), cols=(0,)))
+
 
 class RectilinearRefinedGenerator(Grid):
 
@@ -195,6 +201,9 @@ class RectilinearRefinedGenerator(Grid):
                 for w in RectilinearDivideGenerator.warnings:
                     setattr(self, 'warn_' + w, a.get(w, None))
 
+    def create_info(self, res, path):
+        super(RectilinearRefinedGenerator, self).create_info(res, path)
+        self.refinements.create_info(res, path=path+('refinements',))
 
 class RectilinearDivideGenerator(RectilinearRefinedGenerator):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""

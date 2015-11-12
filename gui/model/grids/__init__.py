@@ -86,6 +86,10 @@ class Grid(TreeFragmentModel):
     def undo_stack(self):
         return self.tree_parent.undo_stack
 
+    def create_info(self, res, path):
+        pass
+    #    if not self.object: self._require(res, 'object')
+
 #class Generator(Grid):
 #    """Base class for models of generators"""
 
@@ -219,6 +223,7 @@ class GridsModel(TableModel):
                 res.append(Info('Grid name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))
             else:
                 names.setdefault(entry.name, []).append(i)
+            entry.create_info(res, path=(i,))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
