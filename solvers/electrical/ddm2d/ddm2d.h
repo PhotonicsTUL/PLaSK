@@ -130,22 +130,18 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Calculate electron concentration
     double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const { 
-        double yn;
         switch (stat) {
-            case STAT_MB: yn = 1.; break;
-            case STAT_FD: yn = fermiDiracHalf(log(iFnEta) + iPsi - iEc0) / (iFnEta * exp(iPsi-iEc0)); break;
+            case STAT_MB: return iNc * iFnEta * exp(iPsi-iEc0); break;
+            case STAT_FD: return iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0); break;
         }
-        return iNc * iFnEta * yn * exp(iPsi-iEc0);
     }
 
     /// Calculate hole concentration
     double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT) const {
-        double yp;
         switch (stat) {
-            case STAT_MB: yp = 1.; break;
-            case STAT_FD: yp = fermiDiracHalf(log(iFpKsi) - iPsi + iEv0) / (iFpKsi * exp(-iPsi+iEv0)); break;
+            case STAT_MB: iNv * iFpKsi * exp(iEv0-iPsi); break;
+            case STAT_FD: iNv * fermiDiracHalf(log(iFpKsi) - iPsi + iEv0); break;
         }
-        return iNv * iFpKsi * yp * exp(iEv0-iPsi);
     }
 
     void divideByElements(DataVector<double>& values) {

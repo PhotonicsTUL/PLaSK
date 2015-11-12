@@ -74,7 +74,7 @@
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
         the quantum wells.
       </attr>
-      <!--attr name="fast-levels" label="Fast levels" type="bool">
+      <!--attr name="quick-levels" label="Quick levels" type="bool">
             Compute levels only once and simply shift for different temperatures?
             Setting this to True stongly increases computation speed, but makes the results
             less accurate for high gains.

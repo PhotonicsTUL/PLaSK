@@ -418,6 +418,7 @@ class MainWindow(QtGui.QMainWindow):
             return False
         else:
             update_recent_files(os.path.abspath(filename))
+            self.setWindowModified(False)
             return True
 
     def save(self):

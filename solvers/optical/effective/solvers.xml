@@ -15,8 +15,8 @@
         <choice>TM</choice>
       </attr>
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Mode wavelength.</attr>
-      <attr name="vneff" label="Vertical effective index" type="float" unit="nm">Initial vertical effective index of the in location in which the vertical solution is calculated; setting this value helps to find models in very long resonators.</attr>
-      <attr name="vat" label="Vertical solution coord" type="float" unit="nm">Horizontal position of at which the vertical part of the field is calculated.</attr>
+      <attr name="vneff" label="Vertical effective index" type="float" unit="-">Initial vertical effective index of the in location in which the vertical solution is calculated; setting this value helps to find models in very long resonators.</attr>
+      <attr name="vat" label="Vertical solution coord" type="float" unit="-">Horizontal position of at which the vertical part of the field is calculated.</attr>
     </tag>
 
     <tag name="root" label="Parameters of the Horizontal Root-Finding Algorithm">

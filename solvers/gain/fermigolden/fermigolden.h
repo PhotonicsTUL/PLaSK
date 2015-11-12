@@ -113,7 +113,11 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                     double el2 = UB<LEVELS_EL>(material, solver->T0);
                     double hh2 = UB<LEVELS_HH>(material, solver->T0);
                     double lh2 = UB<LEVELS_LH>(material, solver->T0);
-                    if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) wells.push_back(i-1);
+                    if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
+                        if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
+                            throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
+                        wells.push_back(i-1);
+                    }
                     else if (i == 2) wells.push_back(0);
                     if (el2 != el1) { el0 = el1; el1 = el2; }
                     if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
@@ -189,30 +193,18 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         return level<which>(region, T, E, region.wells[well], region.wells[well+1]);
     }
 
-    bool addLevel(std::vector<double>& levels, double val) const {
-        auto where = std::lower_bound(levels.begin(), levels.end(), val);
-        if (where == levels.end()) {
-            if (levels.size() == 0 || val - levels.back() > levelsep) {
-                levels.push_back(val);
-                return true;
-            }
-        } else {
-            if (*where - val > levelsep && (where == levels.begin() || val - *(where-1) > levelsep)) {
-                levels.insert(where, val);
-                return true;
-            }
-        }
-        return false;
-    }
-    
     /// Find levels estimates
     template <WhichLevel which>
-    void levelEstimates(std::vector<double>& levels, const ActiveRegionInfo& region, double T, size_t qw) const;
-    
-  protected:
+    void levelEstimates(std::vector<double>& levels, std::vector<double>& masses, std::vector<double>& widths,
+                        const ActiveRegionInfo& region, double T, size_t qw) const;
 
-    /// Estimate energy levels
-    void estimateLevels();
+    /// Compute concentration for electron quasi-Fermi level
+    double getNc(double F, double T) const;
+
+    /// Compute concentration for hole quasi-Fermi level
+    double getNv(double F, double T) const;
+
+  protected:
 
     double lifetime;                ///< Stimulated emission lifetime [ps]
     double matrixelem;              ///< Optical matrix element [m0*eV]
@@ -220,7 +212,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double T0;                      ///< Temperature used for compiting level estimates
 
     double levelsep;                ///< Minimum separation between distinct levels
-    
+
     bool strained;                  ///< Consider strain in QW?
 
     bool extern_levels;             ///< Are levels set externally?
@@ -228,6 +220,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     inline static double nm_to_eV(double wavelength) {
         return phys::h_eVc1e9 / wavelength;
     }
+
+    /// Estimate energy levels
+    void estimateLevels();
+
+    /// Compute quasi-Fermi levels for given concentration and temperature
+    std::tuple<double, double> findFermiLevels(double n, double T) const;
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -266,7 +264,15 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     std::vector<std::vector<double>>
         levels_el,                  ///< Approximate electron levels
         levels_hh,                  ///< Approximate heavy hole levels
-        levels_lh;                  ///< Approximate light hole levels
+        levels_lh,                  ///< Approximate light hole levels
+
+        masses_el,                  ///< Effective masses for approximate electron levels
+        masses_hh,                  ///< Effective masses for approximate heavy hole levels
+        masses_lh,                  ///< Effective masses for approximate light hole levels
+
+        widths_el,                  ///< Effective well widths for approximate electron levels
+        widths_hh,                  ///< Effective well widths for approximate heavy hole levels
+        widths_lh;                  ///< Effective well widths for approximate light hole levels
 
     bool quick_levels;              ///< Are levels computed quickly based on estimates
 

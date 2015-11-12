@@ -104,7 +104,7 @@ class XPLDocument(object):
 
     def set_clean(self):
         """
-            Marks the document (stacks of all sections) as clean.
+            Mark the document (stacks of all sections) as clean.
         """
         self.other_changes = False
         for c in self.controllers:

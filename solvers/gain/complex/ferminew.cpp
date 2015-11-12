@@ -316,25 +316,25 @@ void FermiNewGainSolver<GeometryType>::detectActiveRegions()
             double tHstep = region.qwlen*roughness/qw_width_mod;
             if ( !(tNoOfQWs%2) )
             {
-                double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep+0.5*tHstep;
+                double tdH0 = -(int(tNoOfQWs/2))*tHstep+0.5*tHstep;
                 for (int i=0; i<tN; ++i) {
                     if (region.isQW(i))
                     {
-                        region.lens[i] = tH0;
+                        region.lens[i] += tdH0;
                         this->writelog(LOG_DEBUG, "Layer %1% thickness: %2% nm", i+1, 0.1*region.lens[i]);
-                        tH0 += tHstep;
+                        tdH0 += tHstep;
                     }
                 }
             }
             else
             {
-                double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep;
+                double tdH0 = -(int(tNoOfQWs/2))*tHstep;
                 for (int i=0; i<tN; ++i) {
                     if (region.isQW(i))
                     {
-                        region.lens[i] = tH0;
+                        region.lens[i] += tdH0;
                         this->writelog(LOG_DETAIL, "Layer %1% modified thickness: %2% nm", i+1, 0.1*region.lens[i]);
-                        tH0 += tHstep;
+                        tdH0 += tHstep;
                     }
                 }
             }

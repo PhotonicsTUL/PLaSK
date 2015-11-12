@@ -1,5 +1,6 @@
 #include "gauss_matrix.h"
 #include "fermigolden.h"
+#include "fd.h"
 
 #include <boost/math/tools/roots.hpp>
 using boost::math::tools::toms748_solve;
@@ -44,7 +45,7 @@ void FermiGoldenGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
             strained = reader.getAttribute<bool>("strained", strained);
-            quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
+//             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
             reader.requireTagEnd();
         } else if (param == "levels") {
             std::string els, hhs, lhs;
@@ -95,6 +96,12 @@ void FermiGoldenGainSolver<GeometryType>::onInvalidate()
     levels_el.clear();
     levels_hh.clear();
     levels_lh.clear();
+    masses_el.clear();
+    masses_hh.clear();
+    masses_lh.clear();
+    widths_el.clear();
+    widths_hh.clear();
+    widths_lh.clear();
     regions.clear();
     materialSubstrate.reset();
 }
@@ -222,8 +229,6 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                     auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
                     if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
-                    //if (layer_QW) this->writelog(LOG_DETAIL, "Adding qw; h = %1%",h);
-                    //else this->writelog(LOG_DETAIL, "Adding barrier; h = %1%",h);
                 }
             } else {
                 if (!added_top_cladding) {
@@ -313,13 +318,16 @@ double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region
 
 
 template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
-void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& levels, const ActiveRegionInfo& region, double T, size_t qw) const
+void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& levels, std::vector<double>& masses, std::vector<double>& widths,
+                                                         const ActiveRegionInfo& region, double T, size_t qw) const
 {
     double substra = strained? materialSubstrate->lattC(T0, 'a') : 0.;
     size_t start = region.wells[qw], stop = region.wells[qw+1];
     double umin = std::numeric_limits<double>::max(), umax = std::numeric_limits<double>::min();
     double num = 0.;
     double ustart, ustop;
+    double M;
+    double W = 0.;
     for (size_t i = start; i <= stop; ++i) {
         const Material* material = region.materials[i].get();
         OmpLockGuard<OmpNestLock> lockq = material->lock();
@@ -327,18 +335,22 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
         double ub = UB<which>(material, T, e);
         if (i == start) ustart = ub;
         if (i == stop) ustop = ub;
-        if (which == LEVELS_EL) umin = min(ub, umin);
-        else umax = max(ub, umax); 
-        double m = Meff<which>(material, T, e).c11;
+        auto meff = Meff<which>(material, T, e);
+        if (which == LEVELS_EL) {
+            if (ub < umin) { umin = ub; M = meff.c00; }
+        } else {
+            if (ub > umax) { umax = ub; M = meff.c00; }
+        }                                        //TODO better estimation of effective mass
         if (i != start && i != stop) {
-            double no = 1e-6 / M_PI * region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * m);
+            double no = 1e-6 / M_PI * region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * meff.c11);
             num = max(no, num);
+            W += region.thicknesses[i];
         }
     }
     if (which == LEVELS_EL) umax = min(ustart, ustop);
     else umin = max(ustart, ustop);
     if (umax < umin)
-        throw BadInput(this->getId(), "Outer layers of active region have wrong band offset"); //TODO make clearer
+        throw Exception("%s: Outer layers of active region have wrong band offset", this->getId()); //TODO make clearer
     num = 4. * ceil(sqrt(umax-umin)*num); // 4.* is the simplest way to ensure that all levels are found
     umin += 0.5 * levelsep;
     umax -= 0.5 * levelsep;
@@ -346,11 +358,21 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
     size_t n = size_t(num);
     double a, b = umin;
     double fa, fb = level<which>(region, T, b, qw);
-    if (fb == 0.) addLevel(levels, fb);
+    if (fb == 0.) {
+        levels.push_back(fb);
+        masses.push_back(M);
+        widths.push_back(W);
+        b += levelsep; fb = level<which>(region, T, b, qw);
+    }
     for (size_t i = 0; i < n; ++i) {
         a = b; fa = fb;
         b = a + step; fb = level<which>(region, T, b, qw);
-        if (fb == 0.) { addLevel(levels, fb); continue; }
+        if (fb == 0.) {
+            levels.push_back(fb);
+            masses.push_back(M);
+            widths.push_back(W);
+            continue;
+        }
         if ((fa < 0.) != (fb < 0.)) {
             boost::uintmax_t iters = 1000;
             double xa, xb;
@@ -360,7 +382,9 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
             ;
             if (xb - xa > levelsep)
                 throw ComputationError(this->getId(), "Could not find level estimate in quantum well");
-            addLevel(levels, 0.5*(xa+xb));
+            levels.push_back(0.5*(xa+xb));
+            masses.push_back(M);
+            widths.push_back(W);
         }
     }
 }
@@ -378,17 +402,25 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     levels_hh.clear(); levels_hh.reserve(regions.size());
     levels_lh.clear(); levels_lh.reserve(regions.size());
 
+    masses_el.clear(); masses_el.reserve(regions.size());
+    masses_hh.clear(); masses_hh.reserve(regions.size());
+    masses_lh.clear(); masses_lh.reserve(regions.size());
+
+    widths_el.clear(); widths_el.reserve(regions.size());
+    widths_hh.clear(); widths_hh.reserve(regions.size());
+    widths_lh.clear(); widths_lh.reserve(regions.size());
+
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
-        std::vector<double> lel, lhh, llh;
+        std::vector<double> lel, lhh, llh, mel, mhh, mlh, wel, whh, wlh;
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
-            levelEstimates<LEVELS_EL>(lel, region, T0, qw);
-            levelEstimates<LEVELS_HH>(lhh, region, T0, qw);
-            levelEstimates<LEVELS_LH>(llh, region, T0, qw);
+            levelEstimates<LEVELS_EL>(lel, mel, wel, region, T0, qw);
+            levelEstimates<LEVELS_HH>(lhh, mhh, whh, region, T0, qw);
+            levelEstimates<LEVELS_LH>(llh, mlh, wlh, region, T0, qw);
         }
-        levels_el.emplace_back(lel);
-        levels_hh.emplace_back(lhh);
-        levels_lh.emplace_back(llh);
+        levels_el.emplace_back(lel); masses_el.emplace_back(mel); widths_el.emplace_back(wel);
+        levels_hh.emplace_back(lhh); masses_hh.emplace_back(mhh); widths_hh.emplace_back(whh);
+        levels_lh.emplace_back(llh); masses_lh.emplace_back(mlh); widths_lh.emplace_back(wlh);
 
         if (maxLoglevel > LOG_DETAIL) {
             {
@@ -402,11 +434,30 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
             }{
                 std::stringstream str; std::string sep = "";
                 for (auto l: llh) { str << sep << format("%.4f", l); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());        
+                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());
             }
         }
     }
 }
+
+template <typename GeometryT>
+double FermiGoldenGainSolver<GeometryT>::getNc(double F, double T) const {
+    size_t n = levels_el.size();
+    const double kT = phys::kB_eV * T;
+    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+//     double N = 2e-6 * pow(fact * mXXXX * T, 1.5) * fermiDiracHalf((F-UB<LEVELS_EL>(XXX)) / kT);
+
+    for (size_t i = 0; i < n; ++i) {
+
+    }
+}
+
+template <typename GeometryT>
+std::tuple<double, double> FermiGoldenGainSolver<GeometryT>::findFermiLevels(double n, double T) const
+{
+}
+
+
 
 
 static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));

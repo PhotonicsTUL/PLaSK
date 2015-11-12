@@ -56,10 +56,10 @@ BOOST_PYTHON_MODULE(fermigolden)
         solver.def("det_Hh", &FermiGolden_detHh<Geometry2DCylindrical>, (arg("E"), arg("reg")=0, arg("well")=0));
         solver.def("det_Lh", &FermiGolden_detLh<Geometry2DCylindrical>, (arg("E"), arg("reg")=0, arg("well")=0));
 #endif
-        RW_FIELD(quick_levels, 
-                 "Compute levels only once and simply shift for different temperatures?\n\n"
-                 "Setting this to True strongly increases computation speed, but canis  make the results\n"
-                 "less accurate for high temperatures.");
+//         RW_FIELD(quick_levels, 
+//                  "Compute levels only once and simply shift for different temperatures?\n\n"
+//                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
+//                  "less accurate for high temperatures.");
         solver.def("get_levels", &FermiGolden_getLevels<Geometry2DCylindrical>, arg("T")=py::object(),
             "Get energy levels in quantum wells.\n\n"
             "Compute energy levels in quantum wells for electrons, heavy holes and\n"
