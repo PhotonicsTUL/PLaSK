@@ -15,6 +15,7 @@ from lxml import etree
 from .object import GNObject
 from .constructor import construct_geometry_object
 from ...utils.str import none_to_empty
+from ...utils.validators import can_be_float, can_be_int
 from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children
 
 
@@ -76,7 +77,9 @@ class GNTranslation(GNTransform):
 
     def create_info(self, res, names):
         super(GNTranslation, self).create_info(res, names)
-        if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
+        for i, v in enumerate(self.vector):
+            if not can_be_float(v, required=True): self._require(res, 'vector', indexes=(i,), type='float')
+        #if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -129,6 +132,11 @@ class GNClip(GNTransform):
         res = super(GNClip, self).major_properties()
         res.extend((n, getattr(self, n)) for n in self.bound_names())
         return res
+
+    def create_info(self, res, names):
+        super(GNClip, self).create_info(res, names)
+        for b in self.bound_names():
+            if not can_be_float(getattr(self, b)): self._wrong_type(res, 'float', b)
 
     def get_controller(self, document, model):
         from ...controller.geometry.transform import GNClipController
@@ -392,7 +400,9 @@ class GNArrange(GNTransform):
 
     def create_info(self, res, names):
         super(GNArrange, self).create_info(res, names)
-        if not self.count: self._require(res, 'count')
+        if not can_be_int(self.count, required=True): self._require(res, 'count', type='integer')
+        for i, s in enumerate(self.step):
+            if not can_be_float(s): self._wrong_type(res, 'float', 'step', 'component of the spacing vector', indexes=(i,))
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -459,9 +469,13 @@ class GNLattice(GNTransform):
     def create_info(self, res, names):
         super(GNLattice, self).create_info(res, names)
         for vec_idx in range(0, 2):
-            if None in self.vectors[vec_idx]:
-                self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
-                              indexes=(vec_idx, self.vectors[vec_idx].index(None)))
+            for i, v in enumerate(self.vectors[vec_idx]):
+                if not can_be_float(v, required=True):
+                    self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
+                              indexes=(vec_idx, i), type='float')
+            #if None in self.vectors[vec_idx]:
+            #    self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
+            #                  indexes=(vec_idx, self.vectors[vec_idx].index(None)))
 
     @staticmethod
     def from_xml_3d(element, conf):

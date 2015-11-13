@@ -453,9 +453,15 @@ class GNode(object):
     def _append_error(self, res, text, nodes=None, **kwargs):
         self._append_info(res, text, Info.ERROR, nodes, **kwargs)
 
-    def _require(self, res, property, display_name=None, indexes=None):
+    def _require(self, res, property, display_name=None, indexes=None, type=None):
         if display_name is None: display_name = '"{}"'.format(property)
+        if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
         self._append_error(res, 'Specifying {} is required in <{}>'.format(display_name, self.tag_name(False)),
+                           property=property, indexes=indexes)
+
+    def _wrong_type(self, res, type, property, display_name=None, indexes=None):
+        if display_name is None: display_name = '"{}"'.format(property)
+        self._append_error(res, '{} has not valid {} value in <{}>'.format(display_name, type, self.tag_name(False)),
                            property=property, indexes=indexes)
 
     def _require_child(self, res):
