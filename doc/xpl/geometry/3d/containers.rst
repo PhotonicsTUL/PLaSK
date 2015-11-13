@@ -1,5 +1,7 @@
-Containers
-^^^^^^^^^^
+.. _sec-xpl-geometry-3d-containers:
+
+Containers 3D
+^^^^^^^^^^^^^
 
 .. xml:tag:: <align3d> (or <align>)
 

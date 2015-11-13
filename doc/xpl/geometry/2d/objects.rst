@@ -1,3 +1,5 @@
+.. _sec-xpl-geometry-2d-objects:
+
 Physical objects 2D
 ^^^^^^^^^^^^^^^^^^^
 

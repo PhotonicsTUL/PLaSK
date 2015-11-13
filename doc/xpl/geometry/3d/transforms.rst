@@ -1,5 +1,7 @@
-Transforms
-^^^^^^^^^^
+.. _sec-xpl-geometry-3d-transforms:
+
+Transforms 3D
+^^^^^^^^^^^^^
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
