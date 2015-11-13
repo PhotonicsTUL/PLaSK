@@ -86,6 +86,7 @@ class GNLeaf(GNObject):
                 self._require(res, what, what.replace('_', ' '))
         if not can_be_int(self.step_num): self._wrong_type(res, 'integer', 'step_num', 'maximum number of the mesh steps')
         if not can_be_float(self.step_dist): self._wrong_type(res, 'float', 'step_dist', 'minimum step size')
+        if not can_be_float(self.material_shape): self._wrong_type(res, 'float', 'material_shape', 'exponent for graded materials')
 
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNLeafController
