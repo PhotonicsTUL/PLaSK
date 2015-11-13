@@ -10,8 +10,8 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
     matrixelemscfact = 1.; // [-] change it when numerical value is different from the experimental one
-    cond_waveguide_depth = 0.26; // [eV]
-    vale_waveguide_depth = 0.13; // [eV]
+    cond_waveguide_depth = 0.00; // [eV]
+    vale_waveguide_depth = 0.00; // [eV]
     cond_qw_shift = 0.; // [eV]
     vale_qw_shift = 0.; // [eV]
     differenceQuotient = 0.01;  // [%]

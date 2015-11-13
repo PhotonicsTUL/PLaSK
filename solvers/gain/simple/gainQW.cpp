@@ -368,9 +368,9 @@ double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziom
   double kT=kB*T;
   double sumaszer=(*wsk_sszer);
   //  std::cerr<<"\nsumaszer w gdzieqflc_n="<<sumaszer<<"\n";
-  double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
+//   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
    double k;
-  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* fermiDiracHalf((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
+  f+=sumaszer*kT*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* fermiDiracHalf((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //  std::cerr<<"\n3D_n = "<<f<<" dla ef = "<<ef;
   for(int j=(int)ceil(szer_fal*sqrt(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
     {
@@ -456,16 +456,16 @@ double gain::gdzieqflv_n(double ef,double * wsk_sszer)
   double en;
   double sumaszer=(*wsk_sszer);
   double kT=kB*T;
-  double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
+//   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
-  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
+  f+=sumaszer*kT*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
   for(int j=(int)ceil(szer_fal*sqrt(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
       en=k*k/(2*lh.masabar)+lh.gleb;
       f+=sumaszer/szer_fal*lh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
     }
-  f+=sumaszer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
+  f+=sumaszer*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
   for(int j=(int)ceil(szer_fal*sqrt(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);

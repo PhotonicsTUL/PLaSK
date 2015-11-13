@@ -76,9 +76,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
         std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
 
-        double total;                               ///< Total active region thickness [Å]
-        double bottom;                              ///< Bottom spacer thickness [Å]
-        double top;                                 ///< Top spacer thickness [Å]
+        double total;                               ///< Total active region thickness [µm]
+        double bottom;                              ///< Bottom spacer thickness [µm]
+        double top;                                 ///< Top spacer thickness [µm]
 
         /**
          * Summarize active region, check for appropriateness and compute some values
@@ -170,6 +170,25 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         }
     }
 
+    template <WhichLevel which>
+    void getside(double& U, double& M, const ActiveRegionInfo& region, double T) const {
+        size_t lm = region.materials.size() - 1;
+        double substra = strained? materialSubstrate->lattC(T, 'a') : 0.;
+        {
+            const Material* material = region.materials[0].get();
+            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+            U = UB<which>(material, T, e);
+            M = Meff<which>(material, T, e).c00;
+        }{
+            const Material* material = region.materials[lm].get();
+            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+            U = 0.5 * (U + UB<which>(material, T, e));
+            M = 0.5 * (M + Meff<which>(material, T, e).c00);
+        }
+    }
+
     template <WhichLevel which> 
     inline void getk2m(double& k2, double& m, const ActiveRegionInfo& region, double substra, double T, double E, size_t i) const {
         const Material* material = region.materials[i].get();
@@ -195,14 +214,17 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     /// Find levels estimates
     template <WhichLevel which>
-    void levelEstimates(std::vector<double>& levels, std::vector<double>& masses, std::vector<double>& widths,
+    void levelEstimates(std::vector<double>& levels, std::vector<double>& masses,
                         const ActiveRegionInfo& region, double T, size_t qw) const;
 
+#ifndef NDEBUG
+  public:
+#endif
     /// Compute concentration for electron quasi-Fermi level
-    double getNc(double F, double T) const;
+    double getN(double F, double T, size_t reg) const;
 
     /// Compute concentration for hole quasi-Fermi level
-    double getNv(double F, double T) const;
+    double getP(double F, double T, size_t reg) const;
 
   protected:
 
@@ -210,6 +232,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double matrixelem;              ///< Optical matrix element [m0*eV]
 
     double T0;                      ///< Temperature used for compiting level estimates
+
+  protected:
 
     double levelsep;                ///< Minimum separation between distinct levels
 
@@ -223,9 +247,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     /// Estimate energy levels
     void estimateLevels();
-
-    /// Compute quasi-Fermi levels for given concentration and temperature
-    std::tuple<double, double> findFermiLevels(double n, double T) const;
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -268,11 +289,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
         masses_el,                  ///< Effective masses for approximate electron levels
         masses_hh,                  ///< Effective masses for approximate heavy hole levels
-        masses_lh,                  ///< Effective masses for approximate light hole levels
-
-        widths_el,                  ///< Effective well widths for approximate electron levels
-        widths_hh,                  ///< Effective well widths for approximate heavy hole levels
-        widths_lh;                  ///< Effective well widths for approximate light hole levels
+        masses_lh;                  ///< Effective masses for approximate light hole levels
 
     bool quick_levels;              ///< Are levels computed quickly based on estimates
 
@@ -290,6 +307,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         else return level<LEVELS_LH>(regions[reg], T0, E);
     }
 #endif
+
+    /// Compute quasi-Fermi levels for given concentration and temperature
+    void findFermiLevels(double& Fc, double& Fv, double n, double T, size_t reg) const;
+
+    double getT0() const { return T0; }
+    void setT0(double T) { T0 = T; this->invalidate(); }
 
     double getLifeTime() const { return lifetime; }
     void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
