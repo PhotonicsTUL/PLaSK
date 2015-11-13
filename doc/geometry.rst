@@ -21,7 +21,7 @@ Into newly defined geometry various items can be included:
 	
 	* *stack*
 	
-For their attributes see section :ref:`sec-xpl-geometry-2d-containers` or :ref:`sec-xpl-geometry-3d-containers`.)
+For their attributes see section :ref:`sec-xpl-geometry-2d-containers` or :ref:`sec-xpl-geometry-3d-containers`.
 
 2. **transforms** - transforms always contain a single geometry object (possibly a container) as their content and perform some transformation of this object. Transforms are: 
 	
@@ -43,7 +43,7 @@ For their attributes see section :ref:`sec-xpl-geometry-2d-containers` or :ref:`
 	
 	* *revolution* (only in 3d geometry)
 	
-For their attributes see section :ref:`sec-xpl-geometry-2d-transforms` or :ref:`sec-xpl-geometry-3d-transforms`.)
+For their attributes see section :ref:`sec-xpl-geometry-2d-transforms` or :ref:`sec-xpl-geometry-3d-transforms`.
 
 3. **physical objects** which are the leafs of the whole geometry tree. Physical geometry objects are representing actual objects having defined shape, dimensions and material. One can define following physical objects for **two-dimensional** geometry:
 
@@ -65,7 +65,7 @@ For their attributes see section :ref:`sec-xpl-geometry-2d-transforms` or :ref:`
 
 For their attributes see section :ref:`sec-xpl-geometry-2d-objects` or :ref:`sec-xpl-geometry-3d-objects`.
 
-Each geometry object can have an optional name for further reference in computational script or further in geometry specification. Each geometry object can therefore be copied - see section :ref:`sec-xpl-geometry-copies`. 
+Each geometry object can have an optional name for further reference in computational script or further in geometry specification. Each geometry object can therefore be copied - see section :ref:`sec-xpl-Geometry-objects-copy-ref`.  
 
 Specifying geometry in XPL file
 ===============================
