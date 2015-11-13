@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 from .object import GNObject
+from ...utils.validators import can_be_int, can_be_float
 from ...utils.xml import xml_to_attr, attr_to_xml
 
 
@@ -83,6 +84,8 @@ class GNLeaf(GNObject):
             else:
                 what = 'material_bottom' if not self.material_bottom else 'material_top'
                 self._require(res, what, what.replace('_', ' '))
+        if not can_be_int(self.step_num): self._wrong_type(res, 'integer', 'step_num', 'maximum number of the mesh steps')
+        if not can_be_float(self.step_dist): self._wrong_type(res, 'float', 'step_dist', 'minimum step size')
 
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNLeafController
@@ -127,7 +130,9 @@ class GNBlock(GNLeaf):
 
     def create_info(self, res, names):
         super(GNBlock, self).create_info(res, names)
-        if None in self.size: self._require(res, 'size', indexes=(self.size.index(None),))
+        for i, v in enumerate(self.size):
+            if not can_be_float(v, required=True): self._require(res, 'size', 'size component', indexes=(i,), type='float')
+        # if None in self.size: self._require(res, 'size', indexes=(self.size.index(None),))
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -175,8 +180,8 @@ class GNCylinder(GNLeaf):
 
     def create_info(self, res, names):
         super(GNCylinder, self).create_info(res, names)
-        if not self.radius: self._require(res, 'radius')
-        if not self.height: self._require(res, 'height')
+        if not can_be_float(self.radius, required=True): self._require(res, 'radius', type='float')
+        if not can_be_float(self.height, required=True): self._require(res, 'height', type='float')
 
     @staticmethod
     def from_xml_3d(element, conf):
@@ -212,7 +217,7 @@ class GNCircle(GNLeaf):
 
     def create_info(self, res, names):
         super(GNCircle, self).create_info(res, names)
-        if not self.radius: self._require(res, 'radius')
+        if not can_be_float(self.radius, required=True): self._require(res, 'radius', type='float')
 
     def get_controller(self, document, model):
         from ...controller.geometry.leaf import GNCircleController
@@ -270,8 +275,13 @@ class GNTriangle(GNLeaf):
 
     def create_info(self, res, names):
         super(GNTriangle, self).create_info(res, names)
-        if None in self.points[0]: self._require(res, 'points', 'coordinate of first point', indexes=(0, self.points[0].index(None)))
-        if None in self.points[1]: self._require(res, 'points', 'coordinate of second point', indexes=(1, self.points[1].index(None)))
+        for p_nr in (0, 1):
+            for i, v in enumerate(self.points[p_nr]):
+                if not can_be_float(v, required=True):
+                    self._require(res, 'points', 'coordinate of {} point'.format(('first', 'second')[p_nr]),
+                                  indexes=(p_nr, i), type='float')
+        #if None in self.points[0]: self._require(res, 'points', 'coordinate of first point', indexes=(0, self.points[0].index(None)))
+        #if None in self.points[1]: self._require(res, 'points', 'coordinate of second point', indexes=(1, self.points[1].index(None)))
 
     @staticmethod
     def from_xml_2d(element, conf):
