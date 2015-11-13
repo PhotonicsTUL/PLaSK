@@ -14,33 +14,38 @@ using namespace plask::gain::fermigolden;
 template <typename GeometryT>
 static py::object FermiGolden_detEl(FermiGoldenGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
-    return PARALLEL_UFUNC<double>([self,reg,well](double x){return self->detEl(x, reg, well);}, E);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detEl(x, params, well);}, E);
 }
 
 template <typename GeometryT>
 static py::object FermiGolden_detHh(FermiGoldenGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
-    return PARALLEL_UFUNC<double>([self,reg,well](double x){return self->detHh(x, reg, well);}, E);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detHh(x, params, well);}, E);
 }
 
 template <typename GeometryT>
 static py::object FermiGolden_detLh(FermiGoldenGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
-    return PARALLEL_UFUNC<double>([self,reg,well](double x){return self->detLh(x, reg, well);}, E);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detLh(x, params, well);}, E);
 }
 
 template <typename GeometryT>
 static py::object FermiGoldenGainSolver_getN(FermiGoldenGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
     double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
-    return PARALLEL_UFUNC<double>([self,T,reg](double x){return self->getN(x, T, reg);}, F);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], T);
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, reg, params);}, F);
 }
 
 template <typename GeometryT>
 static py::object FermiGoldenGainSolver_getP(FermiGoldenGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
     double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
-    return PARALLEL_UFUNC<double>([self,T,reg](double x){return self->getP(x, T, reg);}, F);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], T);
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, reg, params);}, F);
 }
 #endif
 

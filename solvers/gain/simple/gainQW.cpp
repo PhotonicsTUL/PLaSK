@@ -368,7 +368,7 @@ double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziom
   double kT=kB*T;
   double sumaszer=(*wsk_sszer);
   //  std::cerr<<"\nsumaszer w gdzieqflc_n="<<sumaszer<<"\n";
-//   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
+  double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
    double k;
   f+=sumaszer*kT*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* fermiDiracHalf((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //  std::cerr<<"\n3D_n = "<<f<<" dla ef = "<<ef;

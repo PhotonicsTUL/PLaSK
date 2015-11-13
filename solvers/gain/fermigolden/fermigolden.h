@@ -15,14 +15,13 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 {
     /// Which level to compute
     enum WhichLevel: size_t {
-        LEVELS_EL,
-        LEVELS_HH,
-        LEVELS_LH
+        LEVELS_EL = 0,
+        LEVELS_HH = 1,
+        LEVELS_LH = 2
     };
 
     /// Structure containing information about each active region
-    struct ActiveRegionInfo
-    {
+    struct ActiveRegionInfo {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
 
@@ -93,7 +92,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             for (const auto& layer: layers->children) {
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
                 auto material = block->singleMaterial();
-                if (!material) throw plask::Exception("FermiGoldenGainSolver requires solid layers.");
+                if (!material) throw plask::Exception("%s: Active region can consist only of solid layers", solver->getId());
                 auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
                 double thck = bbox.upper[1] - bbox.lower[1];
                 materials.push_back(material);
@@ -101,18 +100,18 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             }
             if (materials.size() > 2) {
                 Material* material = materials[0].get();
-                double el0 = UB<LEVELS_EL>(material, solver->T0),
-                       hh0 = UB<LEVELS_HH>(material, solver->T0),
-                       lh0 = UB<LEVELS_LH>(material, solver->T0);
+                double el0 = material->CB(solver->T0, 0., '*'),
+                       hh0 = material->VB(solver->T0, 0., '*',  'H'),
+                       lh0 = material->VB(solver->T0, 0., '*',  'L');
                 material = materials[1].get();
-                double el1 = UB<LEVELS_EL>(material, solver->T0),
-                       hh1 = UB<LEVELS_HH>(material, solver->T0),
-                       lh1 = UB<LEVELS_LH>(material, solver->T0);
+                double el1 = material->CB(solver->T0, 0., '*'),
+                       hh1 = material->VB(solver->T0, 0., '*',  'H'),
+                       lh1 = material->VB(solver->T0, 0., '*',  'L');
                 for (size_t i = 2; i < materials.size(); ++i) {
                     material = materials[i].get();
-                    double el2 = UB<LEVELS_EL>(material, solver->T0);
-                    double hh2 = UB<LEVELS_HH>(material, solver->T0);
-                    double lh2 = UB<LEVELS_LH>(material, solver->T0);
+                    double el2 = material->CB(solver->T0, 0., '*');
+                    double hh2 = material->VB(solver->T0, 0., '*',  'H');
+                    double lh2 = material->VB(solver->T0, 0., '*',  'L');
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
                         if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
                             throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
@@ -130,7 +129,39 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         }
     };
 
-    shared_ptr<Material> materialSubstrate;   ///< Substrate material
+    /// Structure containing active region data for current used
+    struct ActiveRegionParams {
+        const ActiveRegionInfo& region;
+        std::vector<double> U[3];          ///< Band levels 
+        std::vector<Tensor2<double>> M[3]; ///< Effective masses
+
+        ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
+            double n = region.materials.size();
+            U[LEVELS_EL].reserve(n); U[LEVELS_HH].reserve(n); U[LEVELS_LH].reserve(n);
+            M[LEVELS_EL].reserve(n); M[LEVELS_HH].reserve(n); M[LEVELS_LH].reserve(n);
+            double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
+            for (auto material: region.materials) {
+                OmpLockGuard<OmpNestLock> lockq = material->lock();
+                double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+                U[LEVELS_EL].push_back(material->CB(T, e, 'G'));
+                U[LEVELS_HH].push_back(material->VB(T, e, 'G', 'H'));
+                U[LEVELS_LH].push_back(material->VB(T, e, 'G', 'L'));
+                M[LEVELS_EL].push_back(material->Me(T, e));
+                M[LEVELS_HH].push_back(material->Mhh(T, e));
+                M[LEVELS_LH].push_back(material->Mlh(T, e));
+            }
+        }
+
+        double sideU(WhichLevel which) const {
+            return 0.5 * (U[which][0] + U[which][U[which].size()-1]);
+        }
+
+        Tensor2<double> sideM(WhichLevel which) const {
+            return 0.5 * (M[which][0] + M[which][M[which].size()-1]);
+        }
+    };
+    
+    shared_ptr<Material> materialSubstrate;///< Substrate material
 
     /// List of active regions
     std::vector<ActiveRegionInfo> regions;
@@ -154,77 +185,29 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
   private:
 
-    template <WhichLevel which> static inline Tensor2<double> Meff(const Material* material, double T, double e=0.) {
-        switch (which) {
-            case LEVELS_EL: return material->Me(T, e);
-            case LEVELS_HH: return material->Mhh(T, e);
-            case LEVELS_LH: return material->Mlh(T, e);
-        }
-    }
-
-    template <WhichLevel which> static inline double UB(const Material* material, double T, double e=0.) {
-        switch (which) {
-            case LEVELS_EL: return material->CB(T, e);
-            case LEVELS_HH: return material->VB(T, e, '*', 'H');
-            case LEVELS_LH: return material->VB(T, e, '*', 'L');
-        }
-    }
-
-    template <WhichLevel which>
-    void getside(double& U, double& M, const ActiveRegionInfo& region, double T) const {
-        size_t lm = region.materials.size() - 1;
-        double substra = strained? materialSubstrate->lattC(T, 'a') : 0.;
-        {
-            const Material* material = region.materials[0].get();
-            OmpLockGuard<OmpNestLock> lockq = material->lock();
-            double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-            U = UB<which>(material, T, e);
-            M = Meff<which>(material, T, e).c00;
-        }{
-            const Material* material = region.materials[lm].get();
-            OmpLockGuard<OmpNestLock> lockq = material->lock();
-            double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-            U = 0.5 * (U + UB<which>(material, T, e));
-            M = 0.5 * (M + Meff<which>(material, T, e).c00);
-        }
-    }
-
-    template <WhichLevel which> 
-    inline void getk2m(double& k2, double& m, const ActiveRegionInfo& region, double substra, double T, double E, size_t i) const {
-        const Material* material = region.materials[i].get();
-        OmpLockGuard<OmpNestLock> lockq = material->lock();
-        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        m = Meff<which>(material, T, e).c11;
-        k2 = ((which == LEVELS_EL)? 2e-12 : -2e-12) * phys::me / (phys::hb_eV*phys::hb_J) * m * (E - UB<which>(material, T, e));
-    }
-
     /// Compute determinant for energy levels
-    template <WhichLevel which>
-    double level(const ActiveRegionInfo& region, double T, double E, size_t start, size_t stop) const;
-
-    template <WhichLevel which>
-    double level(const ActiveRegionInfo& region, double T, double E) const {
-        return level<which>(region, T, E, 0, region.materials.size()-1);
+    double level(WhichLevel which, double E, const ActiveRegionParams& params, size_t start, size_t stop) const;
+                                   
+    double level(WhichLevel which, double E, const ActiveRegionParams& params) const {
+        return level(which, E, params, 0, params.region.materials.size()-1);
     }
 
-    template <WhichLevel which>
-    double level(const ActiveRegionInfo& region, double T, double E, size_t well) const {
-        return level<which>(region, T, E, region.wells[well], region.wells[well+1]);
+    double level(WhichLevel which, double E, const ActiveRegionParams& params, size_t well) const {
+        return level(which, E, params, params.region.wells[well], params.region.wells[well+1]);
     }
 
     /// Find levels estimates
-    template <WhichLevel which>
-    void levelEstimates(std::vector<double>& levels, std::vector<double>& masses,
-                        const ActiveRegionInfo& region, double T, size_t qw) const;
+    void levelEstimates(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
+                        const ActiveRegionParams& params, size_t qw) const;
 
 #ifndef NDEBUG
   public:
 #endif
     /// Compute concentration for electron quasi-Fermi level
-    double getN(double F, double T, size_t reg) const;
+    double getN(double F, double T, size_t reg, const ActiveRegionParams& params) const;
 
     /// Compute concentration for hole quasi-Fermi level
-    double getP(double F, double T, size_t reg) const;
+    double getP(double F, double T, size_t reg, const ActiveRegionParams& params) const;
 
   protected:
 
@@ -285,26 +268,27 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     std::vector<std::vector<double>>
         levels_el,                  ///< Approximate electron levels
         levels_hh,                  ///< Approximate heavy hole levels
-        levels_lh,                  ///< Approximate light hole levels
+        levels_lh;                  ///< Approximate light hole levels
 
-        masses_el,                  ///< Effective masses for approximate electron levels
-        masses_hh,                  ///< Effective masses for approximate heavy hole levels
-        masses_lh;                  ///< Effective masses for approximate light hole levels
+    std::vector<std::vector<size_t>>
+        wells_el,                   ///< Well indices for approximate electron levels
+        wells_hh,                   ///< Well indices for approximate heavy hole levels
+        wells_lh;                   ///< Well indices for approximate light hole levels
 
     bool quick_levels;              ///< Are levels computed quickly based on estimates
 
 #ifndef NDEBUG
-    double detEl(double E, size_t reg=0, size_t well=0) {
-        if (well) return level<LEVELS_EL>(regions[reg], T0, E, well-1);
-        else return level<LEVELS_EL>(regions[reg], T0, E);
+    double detEl(double E, const ActiveRegionParams& params, size_t well=0) {
+        if (well) return level(LEVELS_EL, E, params, well-1);
+        else return level(LEVELS_EL, E, params);
     }
-    double detHh(double E, size_t reg=0, size_t well=0) {
-        if (well) return level<LEVELS_HH>(regions[reg], T0, E, well-1);
-        else return level<LEVELS_HH>(regions[reg], T0, E);
+    double detHh(double E, const ActiveRegionParams& params, size_t well=0) {
+        if (well) return level(LEVELS_HH, E, params, well-1);
+        else return level(LEVELS_HH, E, params);
     }
-    double detLh(double E, size_t reg=0, size_t well=0) {
-        if (well) return level<LEVELS_LH>(regions[reg], T0, E, well-1);
-        else return level<LEVELS_LH>(regions[reg], T0, E);
+    double detLh(double E, const ActiveRegionParams& params, size_t well=0) {
+        if (well) return level(LEVELS_LH, E, params, well-1);
+        else return level(LEVELS_LH, E, params);
     }
 #endif
 

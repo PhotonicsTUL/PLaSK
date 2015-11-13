@@ -97,9 +97,9 @@ void FermiGoldenGainSolver<GeometryType>::onInvalidate()
     levels_el.clear();
     levels_hh.clear();
     levels_lh.clear();
-    masses_el.clear();
-    masses_hh.clear();
-    masses_lh.clear();
+    wells_el.clear();
+    wells_hh.clear();
+    wells_lh.clear();
     regions.clear();
     materialSubstrate.reset();
 }
@@ -259,15 +259,18 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
 }
 
 
-template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
-double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region, double T, double E, size_t start, size_t stop) const
+template <typename GeometryType>
+double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, const ActiveRegionParams& params,
+                                                  size_t start, size_t stop) const
 {
     size_t nA = 2 * (stop - start + 1);
-    double substra = strained? materialSubstrate->lattC(T, 'a') : 0.;
 
     DgbMatrix A(nA);
 
-    double k1_2, m1; getk2m<which>(k1_2, m1, region, substra, T, E, start);
+    constexpr double fact = 2e-12 * phys::me / (phys::hb_eV*phys::hb_J);
+    
+    double m1 = params.M[which][start].c11;
+    double k1_2 = fact * m1 * (E - params.U[which][start]); if (which != LEVELS_EL) k1_2 = -k1_2;
     double k1 = sqrt(abs(k1_2));
 
     // Wave functions are confined, so we can assume exponentially decreasing relation in the outer layers
@@ -276,7 +279,7 @@ double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region
 
     for (size_t i = start, o = 1; i < stop; i++, o+=2) {
         double k0_2 = k1_2, k0 = k1, m0 = m1;
-        double d = (o == 1)? 0. : region.thicknesses[i];
+        double d = (o == 1)? 0. : params.region.thicknesses[i];
         if (k0_2 >= 0.) {
             double coskd = cos(k0*d), sinkd = sin(k0*d);
             A(o,   o-1) =  coskd;
@@ -294,7 +297,8 @@ double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region
         A(o+2, o  ) = 0.;
         A(o-1, o+1) = 0.;
 
-        getk2m<which>(k1_2, m1, region, substra, T, E, i+1);
+        m1 = params.M[which][i+1].c11;
+        k1_2 = fact * m1 * (E - params.U[which][i+1]); if (which != LEVELS_EL) k1_2 = -k1_2;
         if (k1_2 >= 0.) {
             k1 = sqrt(k1_2);
             A(o,   o+1) = -1.;
@@ -315,31 +319,28 @@ double FermiGoldenGainSolver<GeometryType>::level(const ActiveRegionInfo& region
 }
 
 
-template <typename GeometryType> template <typename FermiGoldenGainSolver<GeometryType>::WhichLevel which>
-void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& levels, std::vector<double>& masses,
-                                                         const ActiveRegionInfo& region, double T, size_t qw) const
+template <typename GeometryType>
+void FermiGoldenGainSolver<GeometryType>::levelEstimates(WhichLevel which, std::vector<double>& levels,
+                                                         std::vector<size_t>& wells,
+                                                         const ActiveRegionParams& params, size_t qw) const
 {
-    double substra = strained? materialSubstrate->lattC(T0, 'a') : 0.;
-    size_t start = region.wells[qw], stop = region.wells[qw+1];
+    size_t start = params.region.wells[qw], stop = params.region.wells[qw+1];
     double umin = std::numeric_limits<double>::max(), umax = -std::numeric_limits<double>::max();
     double num = 0.;
     double ustart, ustop;
-    double M;
+    size_t well;
     for (size_t i = start; i <= stop; ++i) {
-        const Material* material = region.materials[i].get();
-        OmpLockGuard<OmpNestLock> lockq = material->lock();
-        double e; if (strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        double ub = UB<which>(material, T, e);
+        double ub = params.U[which][i];
         if (i == start) ustart = ub;
         if (i == stop) ustop = ub;
-        auto meff = Meff<which>(material, T, e);
+        auto meff = params.M[which][i];
         if (which == LEVELS_EL) {
-            if (ub < umin) { umin = ub; M = meff.c00; }
+            if (ub < umin) { umin = ub; well = i; }
         } else {
-            if (ub > umax) { umax = ub; M = meff.c00; }
+            if (ub > umax) { umax = ub; well = i; }
         }                                        //TODO better estimation of effective mass
         if (i != start && i != stop) {
-            double no = 1e-6 / M_PI * region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * meff.c11);
+            double no = 1e-6 / M_PI * params.region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * meff.c11);
             num = max(no, num);
         }
     }
@@ -353,31 +354,31 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(std::vector<double>& le
     double step = (umax-umin) / num;
     size_t n = size_t(num);
     double a, b = umin;
-    double fa, fb = level<which>(region, T, b, qw);
+    double fa, fb = level(which, b, params, qw);
     if (fb == 0.) {
         levels.push_back(fb);
-        masses.push_back(M);
-        b += levelsep; fb = level<which>(region, T, b, qw);
+        wells.push_back(well);
+        b += levelsep; fb = level(which, b, params, qw);
     }
     for (size_t i = 0; i < n; ++i) {
         a = b; fa = fb;
-        b = a + step; fb = level<which>(region, T, b, qw);
+        b = a + step; fb = level(which, b, params, qw);
         if (fb == 0.) {
             levels.push_back(fb);
-            masses.push_back(M);
+            wells.push_back(well);
             continue;
         }
         if ((fa < 0.) != (fb < 0.)) {
             boost::uintmax_t iters = 1000;
             double xa, xb;
             std::tie(xa, xb) = toms748_solve(
-                [&](double x){ return level<which>(region, T, x, qw); },
+                [&](double x){ return level(which, x, params, qw); },
                 a, b, fa, fb, [this](double l, double r){ return r-l < levelsep; }, iters)
             ;
             if (xb - xa > levelsep)
                 throw ComputationError(this->getId(), "Could not find level estimate in quantum well");
             levels.push_back(0.5*(xa+xb));
-            masses.push_back(M);
+            wells.push_back(well);
         }
     }
 }
@@ -390,21 +391,23 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     levels_hh.clear(); levels_hh.reserve(regions.size());
     levels_lh.clear(); levels_lh.reserve(regions.size());
 
-    masses_el.clear(); masses_el.reserve(regions.size());
-    masses_hh.clear(); masses_hh.reserve(regions.size());
-    masses_lh.clear(); masses_lh.reserve(regions.size());
+    wells_el.clear(); wells_el.reserve(regions.size());
+    wells_hh.clear(); wells_hh.reserve(regions.size());
+    wells_lh.clear(); wells_lh.reserve(regions.size());
 
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
-        std::vector<double> lel, lhh, llh, mel, mhh, mlh;
+        std::vector<double> lel, lhh, llh;
+        std::vector<size_t> wel, whh, wlh;
+        ActiveRegionParams params(this, region, T0);
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
-            levelEstimates<LEVELS_EL>(lel, mel, region, T0, qw);
-            levelEstimates<LEVELS_HH>(lhh, mhh, region, T0, qw);
-            levelEstimates<LEVELS_LH>(llh, mlh, region, T0, qw);
+            levelEstimates(LEVELS_EL, lel, wel, params, qw);
+            levelEstimates(LEVELS_HH, lhh, whh, params, qw);
+            levelEstimates(LEVELS_LH, llh, wlh, params, qw);
         }
-        levels_el.emplace_back(lel); masses_el.emplace_back(mel);
-        levels_hh.emplace_back(lhh); masses_hh.emplace_back(mhh);
-        levels_lh.emplace_back(llh); masses_lh.emplace_back(mlh);
+        levels_el.emplace_back(lel); wells_el.emplace_back(wel);
+        levels_hh.emplace_back(lhh); wells_hh.emplace_back(whh);
+        levels_lh.emplace_back(llh); wells_lh.emplace_back(wlh);
 
         if (maxLoglevel > LOG_DETAIL) {
             {
@@ -425,42 +428,41 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, size_t reg) const {
+double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, size_t reg, const ActiveRegionParams& params) const {
     const ActiveRegionInfo& region = regions[reg];
     size_t n = levels_el[reg].size();
     const double kT = phys::kB_eV * T;
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
 
-    double Uc, Mc;
-    getside<LEVELS_EL>(Uc, Mc, region, T);
-    double N = 2e-6 * pow(fact * T * Mc, 1.5) * fermiDiracHalf((F-Uc)/kT);
+    double N = 2e-6 * pow(fact * T * params.sideM(LEVELS_EL).c00, 1.5) * fermiDiracHalf((F-params.sideU(LEVELS_EL))/kT);
 
     for (size_t i = 0; i < n; ++i) {
-        N += 2. * fact * T * masses_el[reg][i] / region.total * log(1 + exp((F-levels_el[reg][i])/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.M[LEVELS_EL][wells_el[reg][i]].c00;
+        N += 2. * fact * T * M / region.total * log(1 + exp((F-levels_el[reg][i])/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     return N;
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, size_t reg) const {
+double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, size_t reg, const ActiveRegionParams& params) const {
     const ActiveRegionInfo& region = regions[reg];
     size_t nh = levels_hh[reg].size(), nl = levels_lh[reg].size();
     const double kT = phys::kB_eV * T;
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
 
     // Get parameters for outer layers
-    double Uh, Mh, Ul, Ml;
-    getside<LEVELS_HH>(Uh, Mh, region, T);
-    getside<LEVELS_LH>(Ul, Ml, region, T);
-    double N = 2e-6 * (pow(fact * T * Mh, 1.5) * fermiDiracHalf((Uh-F)/kT) + pow(fact * T * Ml, 1.5) * fermiDiracHalf((Ul-F)/kT));
+    double N = 2e-6 * (pow(fact * T * params.sideM(LEVELS_HH).c00, 1.5) * fermiDiracHalf((params.sideU(LEVELS_HH)-F)/kT) +
+                       pow(fact * T * params.sideM(LEVELS_LH).c00, 1.5) * fermiDiracHalf((params.sideU(LEVELS_LH)-F)/kT));
 
     for (size_t i = 0; i < nh; ++i) {
-        N += 2. * fact * T * masses_hh[reg][i] / region.total * log(1 + exp((levels_hh[reg][i]-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.M[LEVELS_HH][wells_hh[reg][i]].c00;
+        N += 2. * fact * T * M / region.total * log(1 + exp((levels_hh[reg][i]-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     for (size_t i = 0; i < nl; ++i) {
-        N += 2. * fact * T * masses_lh[reg][i] / region.total * log(1 + exp((levels_lh[reg][i]-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.M[LEVELS_LH][wells_lh[reg][i]].c00;
+        N += 2. * fact * T * M / region.total * log(1 + exp((levels_lh[reg][i]-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     return N;
@@ -469,17 +471,17 @@ double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, size_t reg) co
 template <typename GeometryT>
 void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T, size_t reg) const
 {
-    const ActiveRegionInfo& region = regions[reg];
-    double _;
-    if (isnan(Fc)) getside<LEVELS_EL>(Fc, _, region, T);
-    if (isnan(Fv)) getside<LEVELS_HH>(Fv, _, region, T);
+    ActiveRegionParams params(this, regions[reg], T);
+
+    if (isnan(Fc)) Fc = params.sideU(LEVELS_EL);
+    if (isnan(Fv)) Fv = params.sideU(LEVELS_HH);
 
     boost::uintmax_t iters;
     double xa, xb;
 
     iters = 1000;
     std::tie(xa, xb) = bracket_and_solve_root(
-        [this,T,reg,n](double x){ return getN(x, T, reg) - n; },
+        [this,T,reg,n,&params](double x){ return getN(x, T, reg, params) - n; },
         Fc, 1.5, true,
         [this](double l, double r){ return r-l < levelsep; }, iters)
     ;
@@ -489,7 +491,7 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
     iters = 1000;
     std::tie(xa, xb) = bracket_and_solve_root(
-        [this,T,reg,n](double x){ return getP(x, T, reg) - n; },
+        [this,T,reg,n,&params](double x){ return getP(x, T, reg, params) - n; },
         Fv, 1.5, false,
         [this](double l, double r){ return r-l < levelsep; }, iters)
     ;
