@@ -12,9 +12,9 @@ template <int dim>
 shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
     shared_ptr< Translation<dim> > as_translation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
     if (as_translation) {    // translations are compressed, we must create new object because we can't modify child_or_translation (which can include pointer to objects in original tree)
-        return make_shared< Translation<dim> >(as_translation->getChild(), as_translation->translation + translation);
+        return plask::make_shared< Translation<dim> >(as_translation->getChild(), as_translation->translation + translation);
     } else {
-        return make_shared< Translation<dim> >(child_or_translation, translation);
+        return plask::make_shared< Translation<dim> >(child_or_translation, translation);
     }
 }
 

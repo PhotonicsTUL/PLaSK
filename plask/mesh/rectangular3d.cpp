@@ -72,7 +72,7 @@ void RectangularMesh<3>::setOptimalIterationOrder() {
 }
 
 shared_ptr<RectangularMesh<3> > RectangularMesh<3>::getMidpointsMesh() {
-    return make_shared<RectangularMesh<3>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), axis2->getMidpointsMesh(), getIterationOrder());
+    return plask::make_shared<RectangularMesh<3>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), axis2->getMidpointsMesh(), getIterationOrder());
 }
 
 void RectangularMesh<3>::setAxis(const shared_ptr<RectangularAxis> &axis, shared_ptr<RectangularAxis> new_val) {
@@ -89,7 +89,7 @@ void RectangularMesh<3>::onAxisChanged(Mesh::Event &e) {
 }
 
 RectangularMesh<3>::RectangularMesh(IterationOrder iterationOrder)
-    : axis0(make_shared<OrderedAxis>()), axis1(make_shared<OrderedAxis>()), axis2(make_shared<OrderedAxis>()), elements(this) {
+    : axis0(plask::make_shared<OrderedAxis>()), axis1(plask::make_shared<OrderedAxis>()), axis2(plask::make_shared<OrderedAxis>()), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
@@ -173,7 +173,7 @@ RectangularMesh<3>::Boundary RectangularMesh<3>::getBoundary(plask::XMLReader &b
 }
 
 shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy) {
-   return make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());
+   return plask::make_shared<RectangularMesh<3>>(plask::make_shared<OrderedAxis>(*to_copy.axis0), plask::make_shared<OrderedAxis>(*to_copy.axis1), plask::make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
@@ -195,7 +195,7 @@ static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
         }
     }
     reader.requireTagEnd();
-    return make_shared<RectangularMesh<3>>(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]));
+    return plask::make_shared<RectangularMesh<3>>(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]));
 }
 
 static RegisterMeshReader rectangular3d_reader("rectangular3d", readRectangularMesh3D);

@@ -59,7 +59,7 @@ void ExpansionBessel::init()
     // Initialize segments
     if (!SOLVER->mesh) {
         SOLVER->writelog(LOG_INFO, "Creating simple mesh");
-        SOLVER->setMesh(make_shared<OrderedMesh1DSimpleGenerator>(true));
+        SOLVER->setMesh(plask::make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
     rbounds = OrderedAxis(*SOLVER->getMesh());
     size_t nseg = rbounds.size() - 1;
@@ -84,7 +84,7 @@ void ExpansionBessel::init()
     std::deque<std::vector<double>> abscissae_cache;
     std::deque<DataVector<double>> weights_cache;
     
-    raxis = make_shared<OrderedAxis>();
+    raxis = plask::make_shared<OrderedAxis>();
     
     double a, b = 0.;
     double expcts = 0.;
@@ -240,7 +240,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     double ib = 1. / rbounds[rbounds.size()-1];
     int m = int(SOLVER->m);
 
-    auto mesh = make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
+    auto mesh = plask::make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
 
     LazyData<double> gain;
     auto temperature = SOLVER->inTemperature(mesh);
@@ -544,7 +544,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
     double b = rbounds[rbounds.size()-1];
     const dcomplex fz = dcomplex(0,2) / SOLVER->k0;
 
-    auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+    auto src_mesh = plask::make_shared<RectangularMesh<2>>(raxis, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     auto ieps = interpolate(src_mesh, iepsilons[l], dest_mesh, field_interpolation,
                             InterpolationFlags(SOLVER->getGeometry(),
                                                InterpolationFlags::Symmetry::POSITIVE,
@@ -607,7 +607,7 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
         nrs[i] = Tensor3<dcomplex>(1. / sqrt(iepsilons[layer][i]));
     }
     
-    auto src_mesh = make_shared<RectangularMesh<2>>(raxis, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+    auto src_mesh = plask::make_shared<RectangularMesh<2>>(raxis, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     return interpolate(src_mesh, nrs, dest_mesh, interp,
                        InterpolationFlags(SOLVER->getGeometry(), 
                                           InterpolationFlags::Symmetry::POSITIVE,

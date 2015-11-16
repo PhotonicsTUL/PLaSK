@@ -16,14 +16,14 @@ static py::object outPotential(const py::object& self) {
 // static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
 //     if (self->getMesh() && self->getGeometry()) {
 //         auto midmesh = self->getMesh()->getMidpointsMesh();
-//         shared_ptr<OrderedAxis> line1 = make_shared<OrderedAxis>();
+//         shared_ptr<OrderedAxis> line1 = plask::make_shared<OrderedAxis>();
 //         for (size_t n = 0; n < self->getActNo(); ++n)
 //             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
-//         auto mesh = make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
+//         auto mesh = plask::make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
 //         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
 //     } else {
-//         auto mesh = make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
-//                                                     make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
+//         auto mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
+//                                                     plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
 //         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
 //     }
 // }

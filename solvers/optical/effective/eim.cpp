@@ -78,7 +78,7 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
                 if (found != manager.generators.end()) {
                     auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
                     auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
-                    if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
+                    if (generator1) this->setMesh(plask::make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
                 } else
@@ -308,8 +308,8 @@ void EffectiveIndex2D::updateCache()
         shared_ptr<OrderedAxis> axis0, axis1;
         {
             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-            axis0 = make_shared<OrderedAxis>(*midmesh->axis0);
-            axis1 = make_shared<OrderedAxis>(*midmesh->axis1);
+            axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis0);
+            axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis1);
         }
 
         if (xbegin == 0) {
@@ -324,7 +324,7 @@ void EffectiveIndex2D::updateCache()
             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
-        auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
+        auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
         LazyData<double> gain;

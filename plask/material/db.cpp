@@ -137,7 +137,7 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
     MaterialsDB::MaterialConstructor(name)
 {
     if (name.empty()) {
-        material = make_shared<EmptyMaterial>();
+        material = plask::make_shared<EmptyMaterial>();
     } else {
         try {
             material = db.get(name);

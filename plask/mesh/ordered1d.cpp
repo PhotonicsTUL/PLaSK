@@ -111,11 +111,11 @@ void OrderedAxis::clear() {
 }
 
 shared_ptr<RectangularAxis> OrderedAxis::clone() const {
-    return make_shared<OrderedAxis>(*this);
+    return plask::make_shared<OrderedAxis>(*this);
 }
 
 shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
-    auto result = make_shared<OrderedMesh1D>();
+    auto result = plask::make_shared<OrderedMesh1D>();
     if (reader.hasAttribute("start")) {
          double start = reader.requireAttribute<double>("start");
          double stop = reader.requireAttribute<double>("stop");

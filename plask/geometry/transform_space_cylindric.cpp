@@ -24,7 +24,7 @@ Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &ch
 }
 
 shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallowCopy() const {
-    return make_shared<Revolution>(this->_child);
+    return plask::make_shared<Revolution>(this->_child);
 }
 
 GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) const {
@@ -63,7 +63,7 @@ Box3D Revolution::parentBox(const ChildBox& r) {
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     bool auto_clip = reader.source.getAttribute("auto-clip", false);
-    return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
+    return plask::make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
     /*if (res->childIsClipped()) {
         writelog(LOG_WARNING, "Child of <revolution>, read from XPL line %1%, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
     }*/

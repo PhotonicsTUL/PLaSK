@@ -56,9 +56,9 @@ shared_ptr<StackContainer<dim>> Stack__init__(const py::tuple& args, py::dict kw
         py::delitem(kwargs, py::str("shift"));
     }
     if (py::len(kwargs) == 0)
-        return make_shared<StackContainer<dim>>(shift);
+        return plask::make_shared<StackContainer<dim>>(shift);
     else
-        return make_shared<StackContainer<dim>>(shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
+        return plask::make_shared<StackContainer<dim>>(shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
 }
 
 template <int dim>
@@ -86,9 +86,9 @@ shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(c
         py::delitem(kwargs, py::str("shift"));
     }
     if (py::len(kwargs) == 0)
-        return make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift);
+        return plask::make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift);
     else
-        return make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
+        return plask::make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
 }
 
 void register_geometry_container_stack()

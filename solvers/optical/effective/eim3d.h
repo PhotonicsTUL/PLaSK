@@ -224,7 +224,7 @@
 //      **/
 //     void setSimpleMesh() {
 //         writelog(LOG_INFO, "Creating simple mesh");
-//         setMesh(make_shared<RectilinearMesh3DSimpleGenerator>());
+//         setMesh(plask::make_shared<RectilinearMesh3DSimpleGenerator>());
 //     }
 //
 //     /**

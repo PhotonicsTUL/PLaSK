@@ -104,7 +104,7 @@ Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
 }
 
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryObjectD<2>> childGeometry, double length)
-    : extrusion(make_shared<Extrusion>(childGeometry, length))
+    : extrusion(plask::make_shared<Extrusion>(childGeometry, length))
 {
     initNewChild();
 }
@@ -148,7 +148,7 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 //     // }
 //     // if (copyBorders) {
 //     //     std::unique_ptr<Geometry2DCartesian> result(new Geometry2DCartesian(*this));
-//     //     result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
+//     //     result->extrusion = plask::make_shared<Extrusion>(new_child, getExtrusion()->length);
 //     //     return result.release();
 //     // } else
 //     //     return new Geometry2DCartesian(new_child, getExtrusion()->length);
@@ -191,7 +191,7 @@ Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)
 }
 
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> childGeometry)
-    : revolution(make_shared<Revolution>(childGeometry))
+    : revolution(plask::make_shared<Revolution>(childGeometry))
 {
    initNewChild();
 }

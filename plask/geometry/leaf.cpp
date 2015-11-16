@@ -182,12 +182,12 @@ shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, c
         shared_ptr<const GeometryObjectD<3>> el = static_pointer_cast<const GeometryObjectD<3>>(to_change);
         Box3D bb = el->getBoundingBox();
         translation = bb.lower;
-        return make_shared<Block<3>>(bb.size(), material);
+        return plask::make_shared<Block<3>>(bb.size(), material);
     } else {    //to_change->getDimensionsCount() == 3
         shared_ptr<const GeometryObjectD<2>> el = static_pointer_cast<const GeometryObjectD<2>>(to_change);
         Box2D bb = el->getBoundingBox();
         translation = vec<3, double>(bb.lower);
-        return make_shared<Block<2>>(bb.size(), material);
+        return plask::make_shared<Block<2>>(bb.size(), material);
     }
 }
 

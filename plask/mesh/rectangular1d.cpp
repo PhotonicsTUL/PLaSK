@@ -39,7 +39,7 @@ void MidpointsMesh::setWrapped(shared_ptr<RectangularMesh<1> > value) {
 }
 
 shared_ptr<RectangularMesh<1> > MidpointsMesh::clone() const {
-    return make_shared<MidpointMesh>(wrapped->clone());
+    return plask::make_shared<MidpointMesh>(wrapped->clone());
 }
 
 std::size_t MidpointsMesh::size() const {
@@ -70,8 +70,8 @@ bool MidpointsMesh::isIncreasing() const {
 // -------------- RectangularMesh<1> ---------------------------------------------
 
 shared_ptr<RectangularMesh<1> > RectangularMesh<1>::clone() const {
-    //return make_shared<MidpointsMesh>(wrapped);
-    return make_shared<OrderedAxis>(*this);
+    //return plask::make_shared<MidpointsMesh>(wrapped);
+    return plask::make_shared<OrderedAxis>(*this);
 }
 
 std::size_t RectangularMesh<1>::findIndex(double to_find) const {
@@ -86,8 +86,8 @@ shared_ptr<RectangularMesh<1> > RectangularMesh<1>::getMidpointsMesh() const {
     beforeCalcMidpointMesh();
     /*const std::size_t s = this->size();
     if (s == 0) return this->clone();
-    auto result = make_shared<OrderedAxis>();*/
-    return make_shared<MidpointsMesh>(*this)->clone();
+    auto result = plask::make_shared<OrderedAxis>();*/
+    return plask::make_shared<MidpointsMesh>(*this)->clone();
 }
 
 void RectangularMesh<1>::beforeCalcMidpointMesh() const {

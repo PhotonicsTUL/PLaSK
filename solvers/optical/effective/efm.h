@@ -304,7 +304,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        setMesh(make_shared<RectilinearMesh2DSimpleGenerator>(true)); // set generator forcing line at r = 0
+        setMesh(plask::make_shared<RectilinearMesh2DSimpleGenerator>(true)); // set generator forcing line at r = 0
     }
 
     /**

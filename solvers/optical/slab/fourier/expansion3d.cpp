@@ -284,9 +284,9 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", layer, Ml, Mt);
     #endif
 
-    auto mesh = make_shared<RectangularMesh<3>>
-                           (make_shared<RegularAxis>(long_mesh),
-                            make_shared<RegularAxis>(tran_mesh),
+    auto mesh = plask::make_shared<RectangularMesh<3>>
+                           (plask::make_shared<RegularAxis>(long_mesh),
+                            plask::make_shared<RegularAxis>(tran_mesh),
                             axis2,
                             RectangularMesh<3>::ORDER_102);
     double matv = axis2->at(0); // at each point along any vertical axis material is the same
@@ -504,7 +504,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
                         0, nl
                        )
             .execute(reinterpret_cast<dcomplex*>(params.data()));
-        shared_ptr<RegularAxis> lcmesh = make_shared<RegularAxis>(), tcmesh = make_shared<RegularAxis>();
+        shared_ptr<RegularAxis> lcmesh = plask::make_shared<RegularAxis>(), tcmesh = plask::make_shared<RegularAxis>();
         if (symmetric_long()) {
             if (SOLVER->dct2()) {
                 double dx = 0.5 * (front-back) / nl;
@@ -531,8 +531,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             eps.c22 = 1. / eps.c22;
             eps.sqrt_inplace();
         }
-        auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
-                            make_shared<RegularAxis>(level->vpos(), level->vpos(), 1), RectangularMesh<3>::ORDER_210);
+        auto src_mesh = plask::make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
+                            plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1), RectangularMesh<3>::ORDER_210);
         return interpolate(src_mesh, params, dest_mesh, interp,
                            InterpolationFlags(SOLVER->getGeometry(),
                                               symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
@@ -805,10 +805,10 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 for (size_t t = 0, end = nl*nt; t != end; t += nl) field[Nl+t] = field[t];
                 dx = 0.;
             }
-            auto src_mesh = make_shared<RectangularMesh<3>>(
-                make_shared<RegularAxis>(back+dx, front-dx, nl),
-                make_shared<RegularAxis>(left+dy, right-dy, nt),
-                make_shared<RegularAxis>(vpos, vpos, 1),
+            auto src_mesh = plask::make_shared<RectangularMesh<3>>(
+                plask::make_shared<RegularAxis>(back+dx, front-dx, nl),
+                plask::make_shared<RegularAxis>(left+dy, right-dy, nt),
+                plask::make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
             auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
@@ -856,10 +856,10 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
             fft_z.execute(reinterpret_cast<dcomplex*>(field.data()));
             for (size_t l = 0, off = nl*Nt; l != Nl; ++l) field[off+l] = field[l];
             for (size_t t = 0, end = nl*nt; t != end; t += nl) field[Nl+t] = field[t];
-            auto src_mesh = make_shared<RectangularMesh<3>>(
-                make_shared<RegularAxis>(back, front, nl),
-                make_shared<RegularAxis>(left, right, nt),
-                make_shared<RegularAxis>(vpos, vpos, 1),
+            auto src_mesh = plask::make_shared<RectangularMesh<3>>(
+                plask::make_shared<RegularAxis>(back, front, nl),
+                plask::make_shared<RegularAxis>(left, right, nt),
+                plask::make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
             auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,

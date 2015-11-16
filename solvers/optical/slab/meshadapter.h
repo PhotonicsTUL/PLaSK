@@ -73,7 +73,7 @@ struct LevelsAdapterGeneric: public LevelsAdapter
         size_t index(size_t i) const override;
         double vpos() const override;
         std::size_t size() const override { return matching.size(); }
-        shared_ptr<const plask::Mesh> mesh() const override { return make_shared<const Mesh>(this); }
+        shared_ptr<const plask::Mesh> mesh() const override { return plask::make_shared<const Mesh>(this); }
     };
 
     /// Original mesh
@@ -94,7 +94,7 @@ struct LevelsAdapterGeneric: public LevelsAdapter
 
     shared_ptr<typename LevelsAdapter::Level> yield() override {
         if (iter == levels.end()) return shared_ptr<typename LevelsAdapter::Level>();
-        return make_shared<GenericLevel>(src, *(iter++));
+        return plask::make_shared<GenericLevel>(src, *(iter++));
     }
 };
 
@@ -127,7 +127,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter
         size_t index(size_t i) const override;
         double vpos() const override;
         std::size_t size() const override;
-        shared_ptr<const plask::Mesh> mesh() const override { return make_shared<const Mesh>(this); }
+        shared_ptr<const plask::Mesh> mesh() const override { return plask::make_shared<const Mesh>(this); }
     };
 
     /// Original mesh

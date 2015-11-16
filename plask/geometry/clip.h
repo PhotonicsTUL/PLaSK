@@ -62,7 +62,7 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
      * @return shallow copy of this
      */
     shared_ptr<Clip<dim>> copyShallow() const {
-         return make_shared<Clip<dim>>(getChild(), clipBox);
+         return plask::make_shared<Clip<dim>>(getChild(), clipBox);
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
@@ -73,7 +73,7 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
      * @return shallow copy of this with clip box equal to @p new_clip
      */
     shared_ptr<Clip<dim>> copyShallow(const Box& new_clip) const {
-        return make_shared<Clip<dim>>(getChild(), new_clip);
+        return plask::make_shared<Clip<dim>>(getChild(), new_clip);
     }
 
     protected:

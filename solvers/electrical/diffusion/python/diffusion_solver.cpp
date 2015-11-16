@@ -11,7 +11,7 @@ using namespace plask::solvers::diffusion_cylindrical;
 
 template <typename GeometryT>
 shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(FiniteElementMethodDiffusion2DSolver<GeometryT>& self) {
-    return make_shared<RegularMesh1D>(self.current_mesh());
+    return plask::make_shared<RegularMesh1D>(self.current_mesh());
 }
 
 /**

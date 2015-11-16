@@ -15,15 +15,15 @@ static py::object outPotential(const py::object& self) {
 static DataVectorWrap<const double,3> getCondJunc(const FiniteElementMethodElectrical3DSolver* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
-        shared_ptr<OrderedAxis> line2 = make_shared<OrderedAxis>();
+        shared_ptr<OrderedAxis> line2 = plask::make_shared<OrderedAxis>();
         for (size_t n = 0; n < self->getActNo(); ++n)
             line2->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
-        auto mesh = make_shared<RectangularMesh<3>>(midmesh->axis0->clone(), midmesh->axis1->clone(), line2);
+        auto mesh = plask::make_shared<RectangularMesh<3>>(midmesh->axis0->clone(), midmesh->axis1->clone(), line2);
         return DataVectorWrap<const double,3>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
-                                                    make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
-                                                    make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
+        auto mesh = plask::make_shared<RectangularMesh<3>>(plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
+                                                    plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
+                                                    plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
         return DataVectorWrap<const double,3>(self->getCondJunc(), mesh);
     }
 }

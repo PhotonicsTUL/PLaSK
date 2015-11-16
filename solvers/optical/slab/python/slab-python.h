@@ -146,7 +146,7 @@ struct PmlWrapper {
     ~PmlWrapper() { if (!solver) delete pml; }
 
     static shared_ptr<PmlWrapper> __init__(dcomplex factor, double size, double dist, double order) {
-        return make_shared<PmlWrapper>(nullptr, new PML(factor, size, dist, order));
+        return plask::make_shared<PmlWrapper>(nullptr, new PML(factor, size, dist, order));
     }
 
     operator PML() const { return *pml; }

@@ -303,8 +303,8 @@
 //         shared_ptr<OrderedAxis> axis0, axis1;
 //         {
 //             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-//             axis0 = make_shared<OrderedAxis>(*midmesh->axis0);
-//             axis1 = make_shared<OrderedAxis>(*midmesh->axis1);
+//             axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis0);
+//             axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis1);
 //         }
 //
 //         if (xbegin == 0) {
@@ -319,7 +319,7 @@
 //             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 //
 //         writelog(LOG_DEBUG, "Updating refractive indices cache");
-//         auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
+//         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
 //         auto temp = inTemperature(midmesh);
 //         bool have_gain = false;
 //         LazyData<double> gain;

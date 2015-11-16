@@ -32,7 +32,7 @@ template <int dim> shared_ptr<MeshD<dim>> MeshWrap<dim>::__init__(py::tuple args
                         py::extract<std::string>(kwargs.keys()[0])());
 
     py::object self(args[0]);
-    return make_shared<MeshWrap<dim>>(self.ptr());
+    return plask::make_shared<MeshWrap<dim>>(self.ptr());
 }
 
 

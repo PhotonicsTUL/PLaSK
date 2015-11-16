@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     }
 
     BOOST_FIXTURE_TEST_CASE(extrusion, Leafs2D) {
-        auto extrusion = std::make_shared<plask::Extrusion>(block_5_3, 5);
+        auto extrusion = plask::make_shared<plask::Extrusion>(block_5_3, 5);
         BOOST_CHECK_EQUAL(extrusion->getLength(), 5.0);
         BOOST_CHECK_EQUAL(extrusion->getChildNo(0), block_5_3);
         BOOST_CHECK_EQUAL(extrusion->getRealChildNo(0), block_5_3);

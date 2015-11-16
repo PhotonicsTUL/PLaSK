@@ -180,7 +180,7 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 __declspec(dllexport)
 #endif
 void createPythonLogger() {
-    plask::default_logger = make_shared<PythonSysLogger>();
+    plask::default_logger = plask::make_shared<PythonSysLogger>();
 }
 
 

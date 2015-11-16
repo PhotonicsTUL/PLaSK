@@ -23,7 +23,7 @@ extern AxisNames current_axes;
 
 template <typename T>
 shared_ptr<T> __init__empty() {
-    return make_shared<T>();
+    return plask::make_shared<T>();
 }
 
 
@@ -37,7 +37,7 @@ static std::string __str__(const T& self) {
 
 template <typename To, typename From=To>
 static shared_ptr<To> Mesh__init__(const From& from) {
-    return make_shared<To>(from);
+    return plask::make_shared<To>(from);
 }
 
 
@@ -75,7 +75,7 @@ static py::object OrderedAxis__array__(py::object self, py::object dtype) {
 template <typename RectilinearT>
 shared_ptr<RectilinearT> Rectilinear__init__seq(py::object seq) {
     py::stl_input_iterator<double> begin(seq), end;
-    return make_shared<RectilinearT>(std::vector<double>(begin, end));
+    return plask::make_shared<RectilinearT>(std::vector<double>(begin, end));
 }
 
 static std::string OrderedAxis__repr__(const OrderedAxis& self) {
@@ -140,12 +140,12 @@ static void OrderedAxis_extend(OrderedAxis& self, py::object sequence) {
 
 template <typename RegularT>
 shared_ptr<RegularT> Regular__init__one_param(double val) {
-    return make_shared<RegularT>(val, val, 1);
+    return plask::make_shared<RegularT>(val, val, 1);
 }
 
 template <typename RegularT>
 shared_ptr<RegularT> Regular__init__params(double first, double last, int count) {
-    return make_shared<RegularT>(first, last, count);
+    return plask::make_shared<RegularT>(first, last, count);
 }
 
 static std::string RegularAxis__repr__(const RegularAxis& self) {
@@ -173,7 +173,7 @@ static void RegularAxis_setLast(RegularAxis& self, double last) {
 
 template <typename MeshT, typename AxesT>
 static shared_ptr<MeshT> RectangularMesh1D__init__axis(const AxesT& axis) {
-    return make_shared<MeshT>(axis);
+    return plask::make_shared<MeshT>(axis);
 }
 
 
@@ -188,7 +188,7 @@ static void RectangularMesh2D__setOrdering(RectangularMesh<2>& self, std::string
 
 template <typename MeshT>
 static shared_ptr<MeshT> RectangularMesh2D__init__empty(std::string order) {
-    auto mesh = make_shared<MeshT>();
+    auto mesh = plask::make_shared<MeshT>();
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -199,14 +199,14 @@ shared_ptr<RectangularAxis> extract_axis(const py::object& axis) {
         return convert;
     else if (PySequence_Check(axis.ptr())) {
         py::stl_input_iterator<double> begin(axis), end;
-        return make_shared<OrderedAxis>(std::vector<double>(begin, end));
+        return plask::make_shared<OrderedAxis>(std::vector<double>(begin, end));
     } else {
         throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");
     }
 }
 
 static shared_ptr<RectangularMesh<2>> RectangularMesh2D__init__axes(py::object axis0, py::object axis1, std::string order) {
-    auto mesh = make_shared<RectangularMesh<2>>(extract_axis(axis0), extract_axis(axis1));
+    auto mesh = plask::make_shared<RectangularMesh<2>>(extract_axis(axis0), extract_axis(axis1));
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -264,13 +264,13 @@ std::string RectangularMesh3D__getOrdering(RectangularMesh<3>& self) {
 
 template <typename MeshT>
 shared_ptr<MeshT> RectangularMesh3D__init__empty(std::string order) {
-    auto mesh = make_shared<MeshT>();
+    auto mesh = plask::make_shared<MeshT>();
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
 
 shared_ptr<RectangularMesh<3>> RectangularMesh3D__init__axes(py::object axis0, py::object axis1, py::object axis2, std::string order) {
-    auto mesh = make_shared<RectangularMesh<3>>(extract_axis(axis0), extract_axis(axis1), extract_axis(axis2));
+    auto mesh = plask::make_shared<RectangularMesh<3>>(extract_axis(axis0), extract_axis(axis1), extract_axis(axis2));
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -367,7 +367,7 @@ namespace detail {
         };
 
         shared_ptr<Iter> __iter__() {
-            return make_shared<Iter>(*this);
+            return plask::make_shared<Iter>(*this);
         }
 
         static void register_proxy(py::scope scope) {
@@ -442,11 +442,11 @@ namespace detail {
         typedef AxisParamProxy<size_t,dim,RectilinearMeshDivideGenerator<dim>> ProxyT;
 
         static shared_ptr<ProxyT> getPre(RectilinearMeshDivideGenerator<dim>& self) {
-            return make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPreDivision, &RectilinearMeshDivideGenerator<dim>::setPreDivision);
+            return plask::make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPreDivision, &RectilinearMeshDivideGenerator<dim>::setPreDivision);
         }
 
         static shared_ptr<ProxyT> getPost(RectilinearMeshDivideGenerator<dim>& self) {
-            return make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPostDivision, &RectilinearMeshDivideGenerator<dim>::setPostDivision);
+            return plask::make_shared<ProxyT>(self, &RectilinearMeshDivideGenerator<dim>::getPostDivision, &RectilinearMeshDivideGenerator<dim>::setPostDivision);
         }
 
         static void setPre(RectilinearMeshDivideGenerator<dim>& self, py::object val) {
@@ -507,15 +507,15 @@ namespace detail {
         typedef AxisParamProxy<double,dim,RectilinearMeshSmoothGenerator<dim>> ProxyT;
 
         static shared_ptr<ProxyT> getSmall(RectilinearMeshSmoothGenerator<dim>& self) {
-            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFineStep, &RectilinearMeshSmoothGenerator<dim>::setFineStep);
+            return plask::make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFineStep, &RectilinearMeshSmoothGenerator<dim>::setFineStep);
         }
 
         static shared_ptr<ProxyT> getLarge(RectilinearMeshSmoothGenerator<dim>& self) {
-            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getMaxStep, &RectilinearMeshSmoothGenerator<dim>::setMaxStep);
+            return plask::make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getMaxStep, &RectilinearMeshSmoothGenerator<dim>::setMaxStep);
         }
 
         static shared_ptr<ProxyT> getFactor(RectilinearMeshSmoothGenerator<dim>& self) {
-            return make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFactor, &RectilinearMeshSmoothGenerator<dim>::setFactor);
+            return plask::make_shared<ProxyT>(self, &RectilinearMeshSmoothGenerator<dim>::getFactor, &RectilinearMeshSmoothGenerator<dim>::setFactor);
         }
 
         static void setSmall(RectilinearMeshSmoothGenerator<dim>& self, py::object val) {
@@ -722,7 +722,7 @@ static void register_refined_generator_base(RegisterT& cls) {
 template <int dim>
 shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__init__(py::object prediv, py::object postdiv, double aspect, bool gradual,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
-    auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
+    auto result = plask::make_shared<RectilinearMeshDivideGenerator<dim>>();
     if (prediv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPre(*result, prediv);
     if (postdiv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPost(*result, postdiv);
     result->gradual = gradual;
@@ -777,7 +777,7 @@ template <int dim>
 shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object small, py::object large, py::object factor,
                                                                                        double aspect,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
-    auto result = make_shared<RectilinearMeshSmoothGenerator<dim>>();
+    auto result = plask::make_shared<RectilinearMeshSmoothGenerator<dim>>();
     if (small != py::object()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small);
     if (large != py::object()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, small);
     if (factor != py::object()) detail::SmoothGeneratorParamMethods<dim>::setFactor(*result, factor);

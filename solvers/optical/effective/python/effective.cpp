@@ -125,7 +125,7 @@ void EffectiveIndex2D_setMirrors(EffectiveIndex2D& self, py::object value) {
             PyErr_Clear();
             try {
                 if (py::len(value) != 2) throw py::error_already_set();
-                self.mirrors.reset(std::make_pair<double,double>(py::extract<double>(value[0]),py::extract<double>(value[1])));
+                self.mirrors.reset(std::make_pair<double,double>(double(py::extract<double>(value[0])), double(py::extract<double>(value[1]))));
             } catch (py::error_already_set) {
                 throw ValueError("None, float, or tuple of two floats required");
             }
@@ -178,7 +178,7 @@ static void Optical_setMesh(SolverT& self, py::object omesh) {
         PyErr_Clear();
         try {
             shared_ptr<MeshGeneratorD<1>> meshg = py::extract<shared_ptr<MeshGeneratorD<1>>>(omesh);
-            self.setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(meshg));
+            self.setMesh(plask::make_shared<RectilinearMesh2DFrom1DGenerator>(meshg));
         } catch (py::error_already_set) {
             PyErr_Clear();
             plask::python::detail::ExportedSolverDefaultDefs<SolverT>::Solver_setMesh(self, omesh);

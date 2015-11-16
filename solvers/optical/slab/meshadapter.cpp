@@ -11,12 +11,12 @@ double LevelsAdapterGeneric<dim>::GenericLevel::vpos() const { return vert; }
 
 template<> shared_ptr<LevelsAdapter::Level> LevelsAdapterRectangular<2>::yield()  {
     if (idx == src->axis1->size()) return shared_ptr<typename LevelsAdapter::Level>();
-    return make_shared<LevelsAdapterRectangular<2>::RectangularLevel>(src, idx++);
+    return plask::make_shared<LevelsAdapterRectangular<2>::RectangularLevel>(src, idx++);
 }
 
 template<> shared_ptr<LevelsAdapter::Level> LevelsAdapterRectangular<3>::yield()  {
     if (idx == src->axis2->size()) return shared_ptr<typename LevelsAdapter::Level>();
-    return make_shared<LevelsAdapterRectangular<3>::RectangularLevel>(src, idx++);
+    return plask::make_shared<LevelsAdapterRectangular<3>::RectangularLevel>(src, idx++);
 }
 
 template<> std::size_t LevelsAdapterRectangular<2>::RectangularLevel::size() const {

@@ -38,43 +38,43 @@ void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omater
 
 // Rectangle constructor wraps
 static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, const py::object& material) {
-    auto result = make_shared<Rectangle>(Vec<2,double>(w,h));
+    auto result = plask::make_shared<Rectangle>(Vec<2,double>(w,h));
     setLeafMaterial<2>(result, material);
     return result;
 }
 static shared_ptr<Rectangle> Rectangle_constructor_vec(const Vec<2,double>& size, const py::object& material) {
-    auto result = make_shared<Rectangle>(size);
+    auto result = plask::make_shared<Rectangle>(size);
     setLeafMaterial<2>(result, material);
     return result;
 }
 
 // Cuboid constructor wraps
 static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, const py::object& material) {
-    auto result =  make_shared<Cuboid>(Vec<3,double>(d,w,h));
+    auto result =  plask::make_shared<Cuboid>(Vec<3,double>(d,w,h));
     setLeafMaterial<3>(result, material);
     return result;
 }
 static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, const py::object& material) {
-    auto result =  make_shared<Cuboid>(size);
+    auto result =  plask::make_shared<Cuboid>(size);
     setLeafMaterial<3>(result, material);
     return result;
 }
 
 static shared_ptr<Triangle> Triangle_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, const py::object& material) {
-    auto result = make_shared<Triangle>(p0, p1);
+    auto result = plask::make_shared<Triangle>(p0, p1);
     setLeafMaterial<2>(result, material);
     return result;
 }
 
 static shared_ptr<Triangle> Triangle_constructor_pts(double x0, double y0, double x1, double y1, const py::object& material) {
-    auto result = make_shared<Triangle>(vec(x0,y0), vec(x1,y1));
+    auto result = plask::make_shared<Triangle>(vec(x0,y0), vec(x1,y1));
     setLeafMaterial<2>(result, material);
     return result;
 }
 
 // Cylinder constructor wraps
 static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, const py::object& material) {
-    auto result =  make_shared<Cylinder>(radius, height);
+    auto result =  plask::make_shared<Cylinder>(radius, height);
     setLeafMaterial<3>(result, material);
     return result;
 }
@@ -82,7 +82,7 @@ static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, c
 // Circle constructor wraps
 template <int dim>
 static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::object& material) {
-    auto result =  make_shared<Circle<dim>>(radius);
+    auto result =  plask::make_shared<Circle<dim>>(radius);
     setLeafMaterial<dim>(result, material);
     return result;
 }

@@ -37,7 +37,7 @@ struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
  */
 template <int DIM>
 inline shared_ptr<OnePointMesh<DIM>> toMesh(const plask::Vec<DIM, double>& point) {
-    return make_shared<OnePointMesh<DIM>>(point);
+    return plask::make_shared<OnePointMesh<DIM>>(point);
 }
 
 template<> void OnePointMesh<2>::writeXML(XMLElement& object) const;
@@ -71,7 +71,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(TranslatedMesh<3>)
 //TODO return special type for rectangular meshes
 template <int DIM>
 inline shared_ptr<TranslatedMesh<DIM>> translate(const shared_ptr<const MeshD<DIM>>& sourceMesh, const Vec<DIM, double>& translation) {
-    return make_shared<TranslatedMesh<DIM>>(sourceMesh, translation);
+    return plask::make_shared<TranslatedMesh<DIM>>(sourceMesh, translation);
 }
 
 }   // namespace plask

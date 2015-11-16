@@ -9,7 +9,7 @@ namespace plask { namespace python {
 
 template <typename... Args>
 static shared_ptr<Path> Path__init__(Args... args) {
-    return make_shared<Path>(std::forward<Args>(args)...);
+    return plask::make_shared<Path>(std::forward<Args>(args)...);
 }
 
 static bool Hint__eq__(const PathHints::Hint& first, const PathHints::Hint& second) {
@@ -17,7 +17,7 @@ static bool Hint__eq__(const PathHints::Hint& first, const PathHints::Hint& seco
 }
 
 static shared_ptr<PathHints> Hint__add__(const PathHints::Hint& first, const PathHints::Hint& second) {
-    auto hints = make_shared<PathHints>();
+    auto hints = plask::make_shared<PathHints>();
     *hints += first;
     *hints += second;
     return hints;

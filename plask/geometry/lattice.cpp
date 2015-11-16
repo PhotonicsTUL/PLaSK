@@ -141,7 +141,7 @@ template <int dim>
 shared_ptr<GeometryObject> ArrangeContainer<dim>::getChildNo(std::size_t child_no) const {
     if (child_no >= getChildrenCount())
         throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
-    return make_shared<Translation<dim>>(_child, child_no * translation);
+    return plask::make_shared<Translation<dim>>(_child, child_no * translation);
 }
 
 template <int dim>
@@ -181,7 +181,7 @@ GeometryObject::Subtree ArrangeContainer<dim>::getPathsAt(const typename Arrange
 
 template <int dim>
 shared_ptr<GeometryObjectTransform<dim>> ArrangeContainer<dim>::shallowCopy() const {
-    return make_shared<ArrangeContainer<dim>>(_child, translation, repeat_count);
+    return plask::make_shared<ArrangeContainer<dim>>(_child, translation, repeat_count);
 }
 
 template <int dim>
@@ -214,7 +214,7 @@ shared_ptr<GeometryObject> read_arrange2d(GeometryReader& reader) {
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
     auto child = reader.readExactlyOneChild<typename ArrangeContainer<2>::ChildType>(!reader.manager.draft);
-    return make_shared<ArrangeContainer<2>>(child, vec, repeat, warn);
+    return plask::make_shared<ArrangeContainer<2>>(child, vec, repeat, warn);
 }
 
 shared_ptr<GeometryObject> read_arrange3d(GeometryReader& reader) {
@@ -226,7 +226,7 @@ shared_ptr<GeometryObject> read_arrange3d(GeometryReader& reader) {
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
     auto child = reader.readExactlyOneChild<typename ArrangeContainer<3>::ChildType>(!reader.manager.draft);
-    return make_shared<ArrangeContainer<3>>(child, vec, repeat, warn);
+    return plask::make_shared<ArrangeContainer<3>>(child, vec, repeat, warn);
 }
 
 static GeometryReader::RegisterObjectReader arrange2d_reader(ArrangeContainer<2>::NAME, read_arrange2d);
@@ -438,7 +438,7 @@ void Lattice::setSegments(std::vector< std::vector<Vec<2, int>> > new_segments) 
 
 shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    auto result = make_shared<Lattice>();
+    auto result = plask::make_shared<Lattice>();
     result->vec0.lon() =  reader.source.getAttribute("a"+reader.getAxisLongName(), 0.);
     result->vec0.tran() = reader.source.getAttribute("a"+reader.getAxisTranName(), 0.);
     result->vec0.vert() = reader.source.getAttribute("a"+reader.getAxisVertName(), 0.);

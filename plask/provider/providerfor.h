@@ -624,7 +624,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * Check if this has value / is initialized.
          * @return @c true only if this is initialized (has value)
          */
-        bool hasValue() const { return value; }
+        bool hasValue() const { return bool(value); }
 
         /// Throw NoValue exception if value is not initialized.
         void ensureHasValue() const {

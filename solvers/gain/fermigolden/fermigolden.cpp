@@ -185,7 +185,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                         double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                         region.origin += Vec<2>(0., -h);
                         this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
-                        region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
+                        region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
                     } else
                         throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
                 }
@@ -208,7 +208,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                 region.origin += Vec<2>(0., -h);
                 //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
-                region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+                region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                 region.bottom = h;
                 added_bottom_cladding = true;
             }
@@ -224,7 +224,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                     //TODO check if usage of getRepresentativeMaterial is fine here (was material)
                     last->setSize(w, last->size.c1 + h);
                 } else {
-                    auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
+                    auto layer = plask::make_shared<Block<2>>(Vec<2>(w,h), layer_material);
                     if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
                 }
@@ -236,7 +236,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
                             throw Exception("%1%: Material above quantum well not uniform.", this->getId());
-                    region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
+                    region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w,h), top_material));
                     //this->writelog(LOG_DETAIL, "Adding top cladding; h = %1%",h);
 
                     ileft = 0;
@@ -519,14 +519,14 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                      const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region):
             solver(solver), name(name)
         {
-            auto vaxis = make_shared<OrderedAxis>();
+            auto vaxis = plask::make_shared<OrderedAxis>();
             for(size_t n = 0; n != region.size(); ++n) {
                 if (region.isQW(n)) {
                     auto box = region.getLayerBox(n);
                     vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
                 }
             }
-            mesh = make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
+            mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
                                                          vaxis, RectangularMesh<2>::ORDER_01);
             factor = 1. / vaxis->size();
         }
@@ -560,7 +560,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 auto p = flags.wrap(vec(x,y));
                 if (solver->regions[r].contains(p)) pts.insert(p.c0);
             }
-            auto msh = make_shared<OrderedAxis>();
+            auto msh = plask::make_shared<OrderedAxis>();
             msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
             regpoints.emplace_back(std::move(msh));
         }
@@ -583,7 +583,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                     auto p = flags.wrap(point);
                     if (solver->regions[r].contains(p)) pts.insert(p.c0);
                 }
-                auto msh = make_shared<OrderedAxis>();
+                auto msh = plask::make_shared<OrderedAxis>();
                 msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
                 regpoints.emplace_back(std::move(msh));
             }
@@ -617,7 +617,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 }
             }
             if (error) std::rethrow_exception(error);
-            data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
+            data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
                                     values, dest_mesh, interp, solver->geometry);
         }
     }

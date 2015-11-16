@@ -225,7 +225,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        setMesh(make_shared<RectilinearMesh2DSimpleGenerator>());
+        setMesh(plask::make_shared<RectilinearMesh2DSimpleGenerator>());
     }
 
     /**

@@ -21,7 +21,7 @@ class Manager(unittest.TestCase):
                 </cartesian2d>
             </geometry>
             <grids>
-                <mesh type="rectilinear2d" name="lin">
+                <mesh type="rectangular2d" name="lin">
                     <axis0>1, 2, 3</axis0>
                     <axis1 type="rectilinear" start="10" stop="30" num="3"/>
                 </mesh>
@@ -29,12 +29,12 @@ class Manager(unittest.TestCase):
                     <axis0 start="10" stop="30" num="3"/>
                     <axis1 start="1" stop="3" num="3"/>
                 </mesh>
-                <generator type="rectilinear2d" method="divide" name="test">
+                <generator type="rectangular2d" method="divide" name="test">
                     <prediv by="4"/>
                     <postdiv by0="2" by1="3"/>
                     <warnings missing="false"/>
                 </generator>
-                <generator type="rectilinear2d" method="divide" name="refined">
+                <generator type="rectangular2d" method="divide" name="refined">
                     <postdiv by0="2"/>
                     <warnings multiple="no"/>
                     <refinements>
@@ -103,7 +103,7 @@ class Manager(unittest.TestCase):
             manager.load('''
             <plask>
                 <grids>
-                    <mesh type="rectilinear2d" name="lin">
+                    <mesh type="rectangular2d" name="lin">
                         <axis0>1, 2, 3</axis0>
                         <axis0>10 20 30</axis0>
                     </mesh>
@@ -114,7 +114,7 @@ class Manager(unittest.TestCase):
             manager.load('''
             <plask>
                 <grids>
-                    <generator type="rectilinear2d" method="divide" name="test">
+                    <generator type="rectangular2d" method="divide" name="test">
                         <postdiv by="4" by0="2" by1="3"/>
                     </generator>
                 </grids>
@@ -124,7 +124,7 @@ class Manager(unittest.TestCase):
             manager.load('''
             <plask>
                 <grids>
-                    <generator type="rectilinear2d" method="divide" name="test">
+                    <generator type="rectangular2d" method="divide" name="test">
                         <postdiv bye="4"/>
                     </generator>
                 </grids>

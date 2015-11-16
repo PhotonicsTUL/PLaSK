@@ -31,20 +31,20 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "Transform", "Base class f
 // Some helpful wrappers
 template <int dim>
 shared_ptr<Translation<dim>> Translation_constructor1(shared_ptr<GeometryObjectD<dim>> object, const Vec<dim,double>& trans) {
-    return make_shared<Translation<dim>>(object, trans);
+    return plask::make_shared<Translation<dim>>(object, trans);
 }
 
 template <int dim> struct Translation_constructor2 {};
 template <> struct Translation_constructor2<2> {
     static inline shared_ptr<Translation<2>> call(shared_ptr<GeometryObjectD<2>> object, double c0, double c1) {
-        return make_shared<Translation<2>>(object, Vec<2,double>(c0, c1));
+        return plask::make_shared<Translation<2>>(object, Vec<2,double>(c0, c1));
     }
     const static py::detail::keywords<3> args;
 };
 const py::detail::keywords<3> Translation_constructor2<2>::args = (py::arg("item"), py::arg("c0"), py::arg("c1"));
 template <> struct Translation_constructor2<3> {
     static inline shared_ptr<Translation<3>> call(shared_ptr<GeometryObjectD<3>> object, double c0, double c1, double c2) {
-        return make_shared<Translation<3>>(object, Vec<3,double>(c0, c1, c2));
+        return plask::make_shared<Translation<3>>(object, Vec<3,double>(c0, c1, c2));
     }
     const static py::detail::keywords<4> args;
 };
@@ -95,13 +95,13 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor1(size_t axis, shared_ptr<typename Cls::ChildType> child) {
     if (axis >= Cls::DIM) throw ValueError("Wrong axis number.");
-    return make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(axis), child);
+    return plask::make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(axis), child);
 }
 
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor2(const std::string& axis, shared_ptr<typename Cls::ChildType> child) {
     size_t no = current_axes[axis] + Cls::DIM - 3;
-    return make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(no), child);
+    return plask::make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(no), child);
 }
 
 template <typename Cls>
@@ -169,13 +169,13 @@ DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror",
 
 template <int dim>
 shared_ptr<Clip<dim>> Clip_constructor1(shared_ptr<GeometryObjectD<dim>> object, const typename Primitive<dim>::Box& clip_box) {
-    return make_shared<Clip<dim>>(object, clip_box);
+    return plask::make_shared<Clip<dim>>(object, clip_box);
 }
 
 template <int dim> struct Clip_constructor2 {};
 template <> struct Clip_constructor2<2> {
     static inline shared_ptr<Clip<2>> call(shared_ptr<GeometryObjectD<2>> object, double left, double bottom, double right, double top) {
-            return make_shared<Clip<2>>(object, Box2D(left, bottom, right, top));
+            return plask::make_shared<Clip<2>>(object, Box2D(left, bottom, right, top));
     }
     const static py::detail::keywords<5> args;
 };
@@ -185,7 +185,7 @@ const py::detail::keywords<5> Clip_constructor2<2>::args = (py::arg("item"),
 
 template <> struct Clip_constructor2<3> {
     static inline shared_ptr<Clip<3>> call(shared_ptr<GeometryObjectD<3>> object, double back, double left, double bottom, double front, double right, double top) {
-            return make_shared<Clip<3>>(object, Box3D(back, left, bottom, front, right, top));
+            return plask::make_shared<Clip<3>>(object, Box3D(back, left, bottom, front, right, top));
     }
     const static py::detail::keywords<7> args;
 };
@@ -265,7 +265,7 @@ inline static void init_Clip()
 
 template <int dim>
 shared_ptr<Intersection<dim>> Intersection_constructor(shared_ptr<GeometryObjectD<dim>> object, shared_ptr<GeometryObjectD<dim>> shape) {
-    return make_shared<Intersection<dim>>(object, shape);
+    return plask::make_shared<Intersection<dim>>(object, shape);
 }
 
 template <int dim> inline const char* IntersectionName();

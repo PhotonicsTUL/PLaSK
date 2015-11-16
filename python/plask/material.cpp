@@ -381,7 +381,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
  */
 void registerSimpleMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    auto constructor = make_shared<PythonMaterialConstructor>(name, material_class, base, true);
+    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, true);
     MaterialsDB::getDefault().addSimple(constructor);
     material_class.attr("_factory") = py::object(constructor);
 }
@@ -394,7 +394,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
  */
 void registerComplexMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    auto constructor = make_shared<PythonMaterialConstructor>(name, material_class, base, false);
+    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, false);
     MaterialsDB::getDefault().addComplex(constructor);
     material_class.attr("_factory") = py::object(constructor);
 }

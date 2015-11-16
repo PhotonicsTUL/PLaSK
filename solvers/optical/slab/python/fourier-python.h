@@ -45,7 +45,7 @@ shared_ptr<typename SolverT::Reflected> FourierSolver_getReflected(SolverT* pare
                                                                   Expansion::Component polarization,
                                                                   Transfer::IncidentDirection side)
 {
-    return make_shared<typename SolverT::Reflected>(parent, wavelength, polarization, side);
+    return plask::make_shared<typename SolverT::Reflected>(parent, wavelength, polarization, side);
 }
 
 

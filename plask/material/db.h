@@ -306,7 +306,7 @@ public:
 
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
             ensureCompositionIsNotEmpty(composition);
-            return make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
+            return plask::make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
         }
 
         bool isSimple() const override { return false; }    // == ! requireComposition
@@ -320,7 +320,7 @@ public:
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
             ensureCompositionIsNotEmpty(composition);
             ensureDopantIsNo(doping_amount_type);
-            return make_shared<MaterialType>(Material::completeComposition(composition));
+            return plask::make_shared<MaterialType>(Material::completeComposition(composition));
         }
 
         bool isSimple() const override { return false; }
@@ -333,7 +333,7 @@ public:
 
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
             ensureCompositionIsEmpty(composition);
-            return make_shared<MaterialType>(doping_amount_type, doping_amount);
+            return plask::make_shared<MaterialType>(doping_amount_type, doping_amount);
         }
 
         bool isSimple() const override { return true; }
@@ -347,7 +347,7 @@ public:
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
             ensureCompositionIsEmpty(composition);
             ensureDopantIsNo(doping_amount_type);
-            return make_shared<MaterialType>();
+            return plask::make_shared<MaterialType>();
         }
 
         bool isSimple() const override { return true; }
@@ -490,9 +490,9 @@ public:
     template <typename MaterialType, bool requireComposition, bool requireDopant>
     void add(const std::string& name) {
         if (requireComposition)
-            addComplex(make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
+            addComplex(plask::make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
         else
-            addSimple(make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
+            addSimple(plask::make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
     }
 
     /**

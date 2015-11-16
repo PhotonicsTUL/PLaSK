@@ -77,7 +77,7 @@ void Intersection<dim>::writeXMLChildren(XMLWriter::Element &dest_xml_object, Ge
 template <int dim>
 shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    shared_ptr< Intersection<dim> > intersection = make_shared<Intersection<dim>>();
+    shared_ptr< Intersection<dim> > intersection = plask::make_shared<Intersection<dim>>();
     if (reader.source.requireNext(reader.manager.draft ? (XMLReader::NODE_ELEMENT|XMLReader::NODE_ELEMENT_END) : XMLReader::NODE_ELEMENT)
             == XMLReader::NODE_ELEMENT)
     {

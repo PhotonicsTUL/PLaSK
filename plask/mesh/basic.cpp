@@ -39,7 +39,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(XMLReader& reader) {
     double c2 = reader.requireAttribute<double>("c2");
     reader.requireTagEnd();   // this is necessary to make sure the tag <point> is closed
     // Now create the mesh into a shared pointer and return it:
-    return make_shared<OnePointMesh<3>>(vec(c0, c1, c2));
+    return plask::make_shared<OnePointMesh<3>>(vec(c0, c1, c2));
 }
 
 static RegisterMeshReader onepoint3dmesh_reader("point3d", &readOnePoint3DMesh);
@@ -50,7 +50,7 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
     double c1 = reader.requireAttribute<double>("c1");
     reader.requireTagEnd();   // this is necessary to make sure the tag <point> is closed
     // Now create the mesh into a shared pointer and return it:
-    return make_shared<OnePointMesh<2>>(vec(c0, c1));
+    return plask::make_shared<OnePointMesh<2>>(vec(c0, c1));
 }
 
 static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);

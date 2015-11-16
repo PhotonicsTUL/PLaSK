@@ -24,7 +24,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,O
     {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
-        ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
+        ActiveRegionInfo(Vec<2> origin): layers(plask::make_shared<StackContainer<2>>()), origin(origin) {}
 
         /// Return number of layers in the active region with surrounding barriers
         size_t size() const
@@ -351,7 +351,7 @@ struct GainSpectrum {
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
         solver(solver), point(point), gModExist(false)
     {
-        auto mesh = make_shared<const OnePointMesh<2>>(point);
+        auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
         T = solver->inTemperature(mesh)[0];
         n = solver->inCarriersConcentration(mesh)[0];
         for (const auto& reg: solver->regions) {
@@ -371,12 +371,12 @@ struct GainSpectrum {
     GainSpectrum(GainSpectrum&& orig) = default;
     
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
         gModExist = false;
     }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
         gModExist = false;
     }
 
@@ -422,7 +422,7 @@ struct LuminescenceSpectrum {
     LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
         solver(solver), point(point), gModExist(false)
     {
-        auto mesh = make_shared<const OnePointMesh<2>>(point);
+        auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
         T = solver->inTemperature(mesh)[0];
         n = solver->inCarriersConcentration(mesh)[0];
         for (const auto& reg: solver->regions) {
@@ -442,12 +442,12 @@ struct LuminescenceSpectrum {
     LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
         
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
         gModExist = false;
     }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
         gModExist = false;
     }
 

@@ -65,7 +65,7 @@ static py::list Space_leafsAsTranslations(const S& self, const PathHints& path) 
     auto l = leafs.begin();
     auto t = translations.begin();
     for (; l != leafs.end(); ++l, ++t) {
-        result.append(make_shared<Translation<S::DIM>>(const_pointer_cast<GeometryObjectD<S::DIM>>(static_pointer_cast<const GeometryObjectD<S::DIM>>(*l)), *t));
+        result.append(plask::make_shared<Translation<S::DIM>>(const_pointer_cast<GeometryObjectD<S::DIM>>(static_pointer_cast<const GeometryObjectD<S::DIM>>(*l)), *t));
     }
     return result;
 }
@@ -128,13 +128,13 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
         if (kwargs.has_key("length")) throw TypeError("got multiple values for keyword argument 'length'");
         shared_ptr<GeometryObjectD<2>> object = py::extract<shared_ptr<GeometryObjectD<2>>>(args[1]);
         double length = py::extract<double>(args[2]);
-        space = make_shared<Geometry2DCartesian>(object, length);
+        space = plask::make_shared<Geometry2DCartesian>(object, length);
     } else if (na == 2) {
         if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(args[1]);
             if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
-            space = make_shared<Geometry2DCartesian>(extrusion);
+            space = plask::make_shared<Geometry2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
             shared_ptr<GeometryObjectD<2>> object;
@@ -145,13 +145,13 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
-            space = make_shared<Geometry2DCartesian>(object, length);
+            space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else if (na == 1 && kwargs.has_key("geometry")) {
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(kwargs["geometry"]);
             if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
-            space = make_shared<Geometry2DCartesian>(extrusion);
+            space = plask::make_shared<Geometry2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
             shared_ptr<GeometryObjectD<2>> object;
@@ -162,7 +162,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
-            space = make_shared<Geometry2DCartesian>(object, length);
+            space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else {
         throw TypeError("__init__() takes 2 or 3 non-keyword arguments (%1%) given", na);
@@ -191,7 +191,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 
     try {
         shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);
-        space = make_shared<Geometry2DCylindrical>(revolution);
+        space = plask::make_shared<Geometry2DCylindrical>(revolution);
     } catch (py::error_already_set) {
         PyErr_Clear();
         shared_ptr<GeometryObjectD<2>> object;
@@ -201,7 +201,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
             PyErr_Clear();
             throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
         }
-        space = make_shared<Geometry2DCylindrical>(object);
+        space = plask::make_shared<Geometry2DCylindrical>(object);
     }
 
     std::set<std::string> parsed_kwargs;
@@ -222,10 +222,10 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
     if (na == 2) {
         if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
         shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(args[1]);
-        space = make_shared<Geometry3D>(object);
+        space = plask::make_shared<Geometry3D>(object);
     } else if (na == 1 && kwargs.has_key("geometry")) {
         shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(kwargs["geometry"]);
-        space = make_shared<Geometry3D>(object);
+        space = plask::make_shared<Geometry3D>(object);
     } else {
         throw TypeError("__init__() exactly 2 non-keyword arguments (%1%) given", na);
     }

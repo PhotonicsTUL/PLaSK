@@ -152,7 +152,7 @@ static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim
     auto l = leafs.begin();
     auto t = translations.begin();
     for (; l != leafs.end(); ++l, ++t) {
-        result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
+        result.append(plask::make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
     }
     return result;
 }

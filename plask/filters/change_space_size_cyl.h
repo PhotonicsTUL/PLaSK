@@ -69,7 +69,7 @@ struct DataFrom3DtoCyl2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
     std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         const std::size_t point_count = this->pointsCount;
         auto data = this->in(
-                        make_shared<PointsOnCircleMeshExtend>(dst_mesh, this->inTranslation, point_count),
+                        plask::make_shared<PointsOnCircleMeshExtend>(dst_mesh, this->inTranslation, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
         return [point_count, data] (std::size_t index) {
             index *= point_count;
@@ -149,7 +149,7 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
             : dataForRegion(source.regions.size()), source(source), dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/
         {
             for (std::size_t region_index = 0; region_index < source.regions.size(); ++region_index)
-                dataForRegion[region_index].reset(source.in(make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
+                dataForRegion[region_index].reset(source.in(plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
         boost::optional<ValueType> operator()(std::size_t index) {
@@ -166,7 +166,7 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
                 return boost::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
-                dataForRegion[region_index].reset(source.in(make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
+                dataForRegion[region_index].reset(source.in(plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
 
             return PropertyT::value2Dto3D(dataForRegion[region_index][index]);
         }

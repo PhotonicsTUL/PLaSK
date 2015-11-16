@@ -154,7 +154,7 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
      * @param vec0, vec1 basis vectors
      */
     Lattice(const shared_ptr<ChildType>& child = shared_ptr<ChildType>(), const DVec& vec0 = Primitive<3>::ZERO_VEC, const DVec& vec1 = Primitive<3>::ZERO_VEC)
-        : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1), container(make_shared<TranslationContainer<3>>()) {}
+        : GeometryObjectTransform<3>(child), vec0(vec0), vec1(vec1), container(plask::make_shared<TranslationContainer<3>>()) {}
 
     shared_ptr<Material> getMaterial(const DVec& p) const override {
         return container->getMaterial(p);
@@ -210,8 +210,8 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
     shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override { return GeometryObjectTransform<3>::getRealChildNo(child_no); }
 
     shared_ptr<Lattice> copyShallow() const {
-       auto result = make_shared<Lattice>(*this);
-       result->container = make_shared<TranslationContainer<3>>(*result->container);
+       auto result = plask::make_shared<Lattice>(*this);
+       result->container = plask::make_shared<TranslationContainer<3>>(*result->container);
        return result;
     }
 

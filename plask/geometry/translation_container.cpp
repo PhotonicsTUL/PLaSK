@@ -70,7 +70,7 @@ SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() const {
 template <int dim>
 shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
         std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< TranslationContainer<dim> > result = make_shared< TranslationContainer<dim> >();
+    shared_ptr< TranslationContainer<dim> > result = plask::make_shared< TranslationContainer<dim> >();
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, children[child_no]->translation + vec<dim, double>(children_after_change[child_no].second));
@@ -79,7 +79,7 @@ shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
 
 template <int dim>
 shared_ptr<typename TranslationContainer<dim>::TranslationT> TranslationContainer<dim>::newTranslation(const shared_ptr<typename TranslationContainer<dim>::ChildType>& el, ChildAligner aligner) {
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el);
+    shared_ptr<TranslationT> trans_geom = plask::make_shared<TranslationT>(el);
     aligner.align(*trans_geom);
     return trans_geom;
 }

@@ -257,9 +257,8 @@ void PythonManager::loadConnects(XMLReader& reader)
 
         py::object provider;
 
-        for (auto item: boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("out"), boost::char_separator<char>("+"))) {
+        for (std::string key: boost::tokenizer<boost::char_separator<char>>(outkey, boost::char_separator<char>("+"))) {
 
-            std::string key = item;
             boost::algorithm::trim(key);
 
             auto out = splitString2(key, '.');

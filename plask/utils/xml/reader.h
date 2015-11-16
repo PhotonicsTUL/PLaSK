@@ -613,7 +613,7 @@ private:
      * @param name attribute name
      * @return @c true only if current node has attribute with given @p name
      */
-    bool hasAttribute(const std::string& name) const { return getAttribute(name); }
+    bool hasAttribute(const std::string& name) const { return bool(getAttribute(name)); }
 
     /**
      * Create EnumAttributeReader

@@ -134,6 +134,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
             case STAT_MB: return iNc * iFnEta * exp(iPsi-iEc0); break;
             case STAT_FD: return iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0); break;
         }
+        return NAN;
     }
 
     /// Calculate hole concentration
@@ -142,6 +143,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
             case STAT_MB: iNv * iFpKsi * exp(iEv0-iPsi); break;
             case STAT_FD: iNv * fermiDiracHalf(log(iFpKsi) - iPsi + iEv0); break;
         }
+        return NAN;
     }
 
     void divideByElements(DataVector<double>& values) {

@@ -281,7 +281,7 @@ void StackContainer<dim>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_t
 
 template <int dim>
 shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
+    shared_ptr< StackContainer<dim> > result = plask::make_shared< StackContainer<dim> >(this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, this->aligners[child_no]);
@@ -290,7 +290,7 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
 
 
 PathHints::Hint ShelfContainer2D::addGap(double size) {
-    return addUnsafe(make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));
+    return addUnsafe(plask::make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));
 }
 
 bool ShelfContainer2D::isFlat() const {
@@ -311,7 +311,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     calcHeight(elBB, stackHeights.back(), el_translation, next_height);
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.vert()));
+    shared_ptr<TranslationT> trans_geom = plask::make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.vert()));
     connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
@@ -324,7 +324,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
 
 PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
     const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.vert()));
+    shared_ptr<TranslationT> trans_geom = plask::make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.vert()));
     connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
@@ -342,7 +342,7 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
 }
 
 shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< ShelfContainer2D > result = make_shared< ShelfContainer2D >(this->getBaseHeight());
+    shared_ptr< ShelfContainer2D > result = plask::make_shared< ShelfContainer2D >(this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first);
@@ -538,7 +538,7 @@ template <typename UpperClass>
 shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChildren(
                   std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change,
                   Vec<3, double>* recomended_translation) const {
-    shared_ptr< MultiStackContainer<UpperClass> > result = make_shared< MultiStackContainer<UpperClass> >(this->repeat_count, this->getBaseHeight());
+    shared_ptr< MultiStackContainer<UpperClass> > result = plask::make_shared< MultiStackContainer<UpperClass> >(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             addChild(*result, *this, child_no, children_after_change);

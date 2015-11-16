@@ -34,7 +34,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             double r_min = reader.requireAttribute<double>("start");
             double r_max = reader.requireAttribute<double>("stop");
             size_t no_points = reader.requireAttribute<size_t>("num");
-            this->mesh = make_shared<RegularMesh1D>(r_min, r_max, no_points);
+            this->mesh = plask::make_shared<RegularMesh1D>(r_min, r_max, no_points);
             reader.requireTagEnd();
         }
         else
@@ -72,7 +72,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     z = getZQWCoordinate();
     if (!this->mesh) throw NoMeshException(this->getId());
     mesh2->setAxis0(this->mesh);
-    mesh2->setAxis1(make_shared<plask::RegularAxis>(z, z, 1));
+    mesh2->setAxis1(plask::make_shared<plask::RegularAxis>(z, z, 1));
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);
 
     n_present.reset(current_mesh().size(), 0.0);
@@ -278,10 +278,10 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         double wavelength = real(inWavelength(n));
                         write_debug("wavelength: %1% nm", wavelength);
 
-                        auto mesh_Li = make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
+                        auto mesh_Li = plask::make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
 
                         mesh_Li->setAxis0(current_mesh_ptr());
-                        mesh_Li->setAxis1(make_shared<plask::OrderedAxis>(getZQWCoordinates()));
+                        mesh_Li->setAxis1(plask::make_shared<plask::OrderedAxis>(getZQWCoordinates()));
 
 //                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
                         auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);

@@ -25,7 +25,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
 
-        ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
+        ActiveRegionInfo(Vec<2> origin): layers(plask::make_shared<StackContainer<2>>()), origin(origin) {}
 
         /// Return number of layers in the active region with surrounding barriers
         size_t size() const
@@ -360,8 +360,8 @@ struct GainSpectrum {
     double getGain(double wavelength) {
         #pragma omp critical
         {
-            if (isnan(T) and point) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(*point))[0];
-            if (isnan(n) and point) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(*point))[0];
+            if (isnan(T) and point) T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(*point))[0];
+            if (isnan(n) and point) n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(*point))[0];
         }
 //         return solver->getGainModule(wavelength, T, n, *region) // returns gain for single QW layer!
 //             .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwlen); // earlier: qwtotallen

@@ -153,7 +153,7 @@ class PLASK_API RegularAxis: public RectangularAxis {
      */
     std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
 
-    virtual shared_ptr<RectangularMesh<1>> clone() const override { return make_shared<RegularAxis>(*this); }
+    virtual shared_ptr<RectangularMesh<1>> clone() const override { return plask::make_shared<RegularAxis>(*this); }
 
     void writeXML(XMLElement& object) const override;
 

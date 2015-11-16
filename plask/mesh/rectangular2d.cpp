@@ -60,7 +60,7 @@ void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
 }
 
 RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
-    : axis0(make_shared<OrderedAxis>()), axis1(make_shared<OrderedAxis>()), elements(this) {
+    : axis0(plask::make_shared<OrderedAxis>()), axis1(plask::make_shared<OrderedAxis>()), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
@@ -85,7 +85,7 @@ RectangularMesh<2>::~RectangularMesh() {
 }
 
 shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
-    return make_shared<RectangularMesh<2>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), getIterationOrder());
+    return plask::make_shared<RectangularMesh<2>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), getIterationOrder());
 }
 
 void RectangularMesh<2>::writeXML(XMLElement& object) const {
@@ -132,7 +132,7 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary
 }
 
 shared_ptr<RectangularMesh<2> > make_rectilinear_mesh(const RectangularMesh<2> &to_copy) {
-   return make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
+   return plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(*to_copy.axis0), plask::make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
@@ -154,7 +154,7 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
         }
     }
     reader.requireTagEnd();
-    return make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
+    return plask::make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
 }
 
 static RegisterMeshReader rectangular2d_reader("rectangular2d", readRectangularMesh2D);

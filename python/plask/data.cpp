@@ -241,7 +241,7 @@ namespace detail {
 
         if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
-        auto data = make_shared<DataVectorWrap<const T,dim>>(
+        auto data = plask::make_shared<DataVectorWrap<const T,dim>>(
             DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)),
             mesh);
 
@@ -585,7 +585,7 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
         OmpLockGuard<OmpNestLock> lock(python::python_omp_lock);
         typedef python::DataVectorWrap<const DstT, dim> ReturnedType;
         boost::python::object omesh(const_pointer_cast<MeshD<dim>>(dst_mesh));
-        auto source = make_shared<python::DataVectorWrap<const SrcT, dim>>(
+        auto source = plask::make_shared<python::DataVectorWrap<const SrcT, dim>>(
             src_vec, const_pointer_cast<python::MeshWrap<dim>>(src_mesh));
         boost::python::object result = 
             src_mesh->template call_python<boost::python::object>("interpolate", source, omesh, method);

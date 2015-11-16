@@ -26,27 +26,27 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     MaterialsDB::loadAllToDefault(prefixPath() + V ".." V ".." V ".." V "lib" V "plask" V "materials");
     MaterialsDB& materials = MaterialsDB::getDefault();
 
-    auto stack = make_shared<StackContainer<2>>();
+    auto stack = plask::make_shared<StackContainer<2>>();
 
-    auto barrier = make_shared<Block<2>>(Vec<2>(10., 5.), materials.get("GaAs"));
-    auto well = make_shared<Block<2>>(Vec<2>(10., 7.), materials.get("In(0.3)GaAs"));
+    auto barrier = plask::make_shared<Block<2>>(Vec<2>(10., 5.), materials.get("GaAs"));
+    auto well = plask::make_shared<Block<2>>(Vec<2>(10., 7.), materials.get("In(0.3)GaAs"));
     well->addRole("QW");
 
-    auto active1 = make_shared<MultiStackContainer<plask::StackContainer<2>>>(2);
+    auto active1 = plask::make_shared<MultiStackContainer<plask::StackContainer<2>>>(2);
     active1->addRole("active");
     active1->push_front(barrier);
     active1->push_front(well);
     active1->push_front(barrier);
 
-    auto cladding1 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
-    auto cladding2 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
+    auto cladding1 = plask::make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
+    auto cladding2 = plask::make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
 
-    auto nothing = make_shared<Block<2>>(Vec<2>(2., 5.));
-    auto shelf1 = make_shared<ShelfContainer2D>();
+    auto nothing = plask::make_shared<Block<2>>(Vec<2>(2., 5.));
+    auto shelf1 = plask::make_shared<ShelfContainer2D>();
     shelf1->push_back(nothing);
     shelf1->push_back(active1);
 
-    auto active2 = make_shared<StackContainer<2>>();
+    auto active2 = plask::make_shared<StackContainer<2>>();
     active2->addRole("active");
     active2->push_back(well);
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     stack->push_front(shelf1);
     stack->push_front(cladding1);
 
-    auto geometry = make_shared<Geometry2DCartesian>(stack, 1000.);
+    auto geometry = plask::make_shared<Geometry2DCartesian>(stack, 1000.);
 
     TheSolver solver("gaintest");
 

@@ -55,7 +55,7 @@ void ExpansionPW2D::init()
         nM = size_t(round(SOLVER->oversampling * nN));      // N = 3  nN = 5  refine = 4  M = 20
         M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
-        xmesh = make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        xmesh = plask::make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
                                          left-dx, right-dx-L/M, M);      
     } else {
         L = 2 * right;
@@ -65,12 +65,12 @@ void ExpansionPW2D::init()
         M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
             double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
-            xmesh = make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+            xmesh = plask::make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
                                              dx, right - dx, M);         
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
             double dx = 0.5 * L * (refine-1) / (refine*nNa);
-            xmesh = make_shared<RegularAxis>(-dx, right+dx, M);
+            xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
         }
     }
 
@@ -168,7 +168,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", layer, refine * nM);
     #endif
 
-    auto mesh = make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
+    auto mesh = plask::make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 
     auto temperature = SOLVER->inTemperature(mesh);
 
@@ -317,7 +317,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
         FFT::Backward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
             .execute(reinterpret_cast<dcomplex*>(params.data()));
-        shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
+        shared_ptr<RegularAxis> cmesh = plask::make_shared<RegularAxis>();
         if (symmetric()) {
             if (SOLVER->dct2()) {
                 double dx = 0.5 * right / nN;
@@ -333,7 +333,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             eps.c22 = 1. / eps.c22;
             eps.sqrt_inplace();
         }
-        auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+        auto src_mesh = plask::make_shared<RectangularMesh<2>>(cmesh, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
         return interpolate(src_mesh, params, dest_mesh, interp,
                            InterpolationFlags(SOLVER->getGeometry(),
                                               symmetric()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
@@ -686,7 +686,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
-            auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
+            auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left+dx, right-dx, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
             return interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                InterpolationFlags(SOLVER->getGeometry(),
                                     (sym == E_TRAN)? InterpolationFlags::Symmetry::NPN : InterpolationFlags::Symmetry::PNP,
@@ -695,7 +695,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
         } else {
             fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
-            auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
+            auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left, right, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
             auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                       InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
                                       false).claim();

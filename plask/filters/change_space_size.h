@@ -90,7 +90,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
             const std::size_t point_count = this->pointsCount;
             const double d = total_len / point_count;   // first step at d/2, last at total_len - d
             auto data = this->in(
-                        make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
+                        plask::make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
             return [point_count, data] (std::size_t index) {
                 index *= point_count;
@@ -100,7 +100,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
             };
         } else {
             auto data = this->in(
-                        make_shared<CartesianMesh2DTo3D>(dst_mesh, this->inTranslation, this->outputObj->getLength() * 0.5),
+                        plask::make_shared<CartesianMesh2DTo3D>(dst_mesh, this->inTranslation, this->outputObj->getLength() * 0.5),
                         std::forward<ExtraArgs>(extra_args)..., method);
             return [data] (std::size_t index) { return PropertyT::value3Dto2D(data[index]); };
         }
@@ -177,7 +177,7 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
             : dataForRegion(source.regions.size()), source(source), dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/
         {
             for (std::size_t region_index = 0; region_index < source.regions.size(); ++region_index)
-                dataForRegion[region_index].reset(source.in(make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
+                dataForRegion[region_index].reset(source.in(plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
         boost::optional<ValueType> operator()(std::size_t index) {
@@ -186,7 +186,7 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
                 return boost::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
-                dataForRegion[region_index].reset(source.in(make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
+                dataForRegion[region_index].reset(source.in(plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
 
             return PropertyT::value2Dto3D(dataForRegion[region_index][index]);
         }
