@@ -81,7 +81,7 @@ class GNShelfController(GNObjectController):
         with BlockQtSignals(self.flat):
             self.flat.setEditText(none_to_empty(self.node.flat))
 
-class GNContainerBaseController(GNObjectController):
+class GNContainerController(GNObjectController):
 
     def construct_form(self):
         self.pos_layout = self.construct_group('Default Items Positions')
@@ -89,10 +89,10 @@ class GNContainerBaseController(GNObjectController):
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
             self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions')
         )
-        super(GNContainerBaseController, self).construct_form()
+        super(GNContainerController, self).construct_form()
 
     def fill_form(self):
-        super(GNContainerBaseController, self).fill_form()
+        super(GNContainerController, self).fill_form()
         aligners_to_controllers(self.node.aligners, self.positions)
 
 

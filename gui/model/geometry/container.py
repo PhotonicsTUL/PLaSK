@@ -15,6 +15,7 @@ from .reader import GNAligner
 from .object import GNObject
 from .node import GNode
 from .constructor import construct_geometry_object
+from ...utils.validators import can_be_float, can_be_int, can_be_bool
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 
 
@@ -69,7 +70,7 @@ class GNGap(GNode):
 
     def create_info(self, res, names):
         super(GNGap, self).create_info(res, names)
-        if not self.size: self._require(res, 'size', 'gap or total size')
+        if not can_be_float(self.size, required=True): self._require(res, 'size', 'gap or total size', type='float')
 
     @staticmethod
     def from_xml(element, conf):
@@ -227,6 +228,8 @@ class GNStack(GNContainerBase):
         if zeros_num > 1: self._append_error(res,
                 'Position of the stack bottom edge is defined {} times in {}.'.format(zeros_num, self.tag_name(False)),
                 nodes=(self,)+zeros)
+        if not can_be_float(self.shift): self._wrong_type(res, 'float', 'shift')
+        if not can_be_int(self.repeat): self._wrong_type(res, 'int', 'repeat')
 
     def add_child_options(self):
         res = super(GNStack, self).add_child_options()
@@ -360,6 +363,9 @@ class GNShelf(GNContainerBase):
             self._append_error(res,
                 '{} gaps have been given total shelf size.'.format(len(gap_with_total)),
                 nodes=(self,)+gap_with_total)
+        if not can_be_float(self.shift): self._wrong_type(res, 'float', 'shift')
+        if not can_be_int(self.repeat): self._wrong_type(res, 'int', 'repeat')
+        if not can_be_bool(self.flat): self._wrong_type(res, 'boolean', 'flat')
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNShelfController
@@ -414,6 +420,11 @@ class GNAlignContainer(GNContainerBase):
                 res.append((aligner.position_str(self.children_dim, axes_conf, axis_nr), aligner.value))
         return res
 
+    def create_info(self, res, names):
+        super(GNAlignContainer, self).create_info(res, names)
+        for i, a in enumerate(self.aligners):
+            if not can_be_float(a.value): self._wrong_type(res, 'float', 'aligners', 'component of default items position', indexes=(i,))
+
     def major_properties(self):
         return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
 
@@ -422,8 +433,8 @@ class GNAlignContainer(GNContainerBase):
         return self._aligners_to_properties(child.in_parent)
 
     def get_controller(self, document, model):
-        from ...controller.geometry.container import GNContainerBaseController
-        return GNContainerBaseController(document, model, self)
+        from ...controller.geometry.container import GNContainerController
+        return GNContainerController(document, model, self)
 
     def get_controller_for_child_inparent(self, document, model, child):
         from ...controller.geometry.container import GNContainerChildBaseController
