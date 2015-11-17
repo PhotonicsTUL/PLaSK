@@ -20,6 +20,7 @@ from ...model.geometry.reader import GNAligner
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBox, TextEditWithCB
+from ...utils import getattr_by_path
 
 
 def controller_to_aligners(position_controllers):
@@ -289,7 +290,7 @@ class GNodeController(Controller):
     def select_info(self, info):
         prop = getattr(info, "property")
         if isinstance(prop, basestring):
-            widget = getattr(self, prop)
+            widget = getattr_by_path(self, prop)
             indexes = getattr(info, "indexes")
             if indexes is not None:
                 for i in indexes: widget = widget[i]

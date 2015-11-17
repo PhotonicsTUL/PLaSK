@@ -423,7 +423,7 @@ class GNAlignContainer(GNContainerBase):
     def create_info(self, res, names):
         super(GNAlignContainer, self).create_info(res, names)
         for i, a in enumerate(self.aligners):
-            if not can_be_float(a.value): self._wrong_type(res, 'float', 'aligners', 'component of default items position', indexes=(i,))
+            if not can_be_float(a.value): self._wrong_type(res, 'float', 'positions', 'component of default items position', indexes=(i, 1))
 
     def major_properties(self):
         return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
