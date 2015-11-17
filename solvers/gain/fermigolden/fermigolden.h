@@ -161,7 +161,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         }
     };
     
-    shared_ptr<Material> materialSubstrate;///< Substrate material
+    /// Substrate material
+    shared_ptr<Material> materialSubstrate;
 
     /// List of active regions
     std::vector<ActiveRegionInfo> regions;
@@ -263,6 +264,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
      */
     const LazyData<double> getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
+    std::vector<ActiveRegionParams> params0; ///< Reference active region params
+    
   public:
 
     std::vector<std::vector<double>>

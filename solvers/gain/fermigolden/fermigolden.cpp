@@ -395,19 +395,21 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     wells_hh.clear(); wells_hh.reserve(regions.size());
     wells_lh.clear(); wells_lh.reserve(regions.size());
 
+    params0.clear(); params0.reserve(regions.size());
+    
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
         std::vector<double> lel, lhh, llh;
         std::vector<size_t> wel, whh, wlh;
-        ActiveRegionParams params(this, region, T0);
+        params0.emplace_back(this, region, T0);
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
-            levelEstimates(LEVELS_EL, lel, wel, params, qw);
-            levelEstimates(LEVELS_HH, lhh, whh, params, qw);
-            levelEstimates(LEVELS_LH, llh, wlh, params, qw);
+            levelEstimates(LEVELS_EL, lel, wel, params0.back(), qw);
+            levelEstimates(LEVELS_HH, lhh, whh, params0.back(), qw);
+            levelEstimates(LEVELS_LH, llh, wlh, params0.back(), qw);
         }
-        levels_el.emplace_back(lel); wells_el.emplace_back(wel);
-        levels_hh.emplace_back(lhh); wells_hh.emplace_back(whh);
-        levels_lh.emplace_back(llh); wells_lh.emplace_back(wlh);
+        levels_el.emplace_back(std::move(lel)); wells_el.emplace_back(std::move(wel));
+        levels_hh.emplace_back(std::move(lhh)); wells_hh.emplace_back(std::move(whh));
+        levels_lh.emplace_back(std::move(llh)); wells_lh.emplace_back(std::move(wlh));
 
         if (maxLoglevel > LOG_DETAIL) {
             {
