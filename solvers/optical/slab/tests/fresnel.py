@@ -103,7 +103,7 @@ class FresnelTest(unittest.TestCase):
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
-        
+
         # show_plots(solver, 'tran', 'Separated Tran 2D', True)
 
         solver.polarization = None
@@ -112,7 +112,7 @@ class FresnelTest(unittest.TestCase):
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
-                                         
+
         with Refl(solver, 'long', 'Et') as refl:
             for a in angles:
                 R, T = refl(a)
@@ -130,7 +130,7 @@ class FresnelTest(unittest.TestCase):
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
-                                         
+
         # show_plots(solver, 'long', 'Long 2D')
         # show_plots(solver, 'tran', 'Tran 2D')
 
@@ -153,7 +153,7 @@ class FresnelTest(unittest.TestCase):
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
-                                         
+
         with Refl(solver, 'long', 'Et') as refl:
             for a in angles:
                 R, T = refl(a)
@@ -171,7 +171,7 @@ class FresnelTest(unittest.TestCase):
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
- 
+
         # show_plots(solver, 'long', 'Long 3D')
         # show_plots(solver, 'tran', 'Tran 3D')
 

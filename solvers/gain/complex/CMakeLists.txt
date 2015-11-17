@@ -59,12 +59,6 @@ endif()
 #
 enable_testing()
 
-if(BUILD_TESTING)
-    add_executable(complexgaintest tests/complexgaintest.cpp)
-    target_link_libraries(complexgaintest ${SOLVER_LIBRARY} libplask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-    add_solver_test(solvers/gain/complex complexgaintest)
-endif()
-
 add_python_test(solvers/gain/complex ${CMAKE_CURRENT_SOURCE_DIR}/tests/newgain.py)
 
 
