@@ -268,7 +268,7 @@ double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, co
     DgbMatrix A(nA);
 
     constexpr double fact = 2e-12 * phys::me / (phys::hb_eV*phys::hb_J);
-    
+
     double m1 = params.M[which][start].c11;
     double k1_2 = fact * m1 * (E - params.U[which][start]); if (which != LEVELS_EL) k1_2 = -k1_2;
     double k1 = sqrt(abs(k1_2));
@@ -396,7 +396,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
     wells_lh.clear(); wells_lh.reserve(regions.size());
 
     params0.clear(); params0.reserve(regions.size());
-    
+
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
         std::vector<double> lel, lhh, llh;

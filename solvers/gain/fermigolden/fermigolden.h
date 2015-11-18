@@ -100,18 +100,18 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             }
             if (materials.size() > 2) {
                 Material* material = materials[0].get();
-                double el0 = material->CB(solver->T0, 0., '*'),
-                       hh0 = material->VB(solver->T0, 0., '*',  'H'),
-                       lh0 = material->VB(solver->T0, 0., '*',  'L');
+                double el0 = material->CB(solver->T0, 0., 'G'),
+                       hh0 = material->VB(solver->T0, 0., 'G',  'H'),
+                       lh0 = material->VB(solver->T0, 0., 'G',  'L');
                 material = materials[1].get();
-                double el1 = material->CB(solver->T0, 0., '*'),
-                       hh1 = material->VB(solver->T0, 0., '*',  'H'),
-                       lh1 = material->VB(solver->T0, 0., '*',  'L');
+                double el1 = material->CB(solver->T0, 0., 'G'),
+                       hh1 = material->VB(solver->T0, 0., 'G',  'H'),
+                       lh1 = material->VB(solver->T0, 0., 'G',  'L');
                 for (size_t i = 2; i < materials.size(); ++i) {
                     material = materials[i].get();
-                    double el2 = material->CB(solver->T0, 0., '*');
-                    double hh2 = material->VB(solver->T0, 0., '*',  'H');
-                    double lh2 = material->VB(solver->T0, 0., '*',  'L');
+                    double el2 = material->CB(solver->T0, 0., 'G');
+                    double hh2 = material->VB(solver->T0, 0., 'G',  'H');
+                    double lh2 = material->VB(solver->T0, 0., 'G',  'L');
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
                         if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
                             throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
@@ -160,7 +160,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             return 0.5 * (M[which][0] + M[which][M[which].size()-1]);
         }
     };
-    
+
     /// Substrate material
     shared_ptr<Material> materialSubstrate;
 
@@ -188,7 +188,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     /// Compute determinant for energy levels
     double level(WhichLevel which, double E, const ActiveRegionParams& params, size_t start, size_t stop) const;
-                                   
+
     double level(WhichLevel which, double E, const ActiveRegionParams& params) const {
         return level(which, E, params, 0, params.region.materials.size()-1);
     }

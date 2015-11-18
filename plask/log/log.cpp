@@ -10,6 +10,10 @@ using namespace std;
 #   include <unistd.h>
 #endif
 
+#ifdef OPENMP_FOUND
+#   include "../parallel.h"
+#endif
+
 namespace plask {
 
 #ifdef NDEBUG
@@ -125,24 +129,22 @@ const char* StderrLogger::head(LogLevel level) {
 }
 
 void StderrLogger::writelog(LogLevel level, const std::string& msg) {
-    // PyFrameObject* frame = PyEval_GetFrame();
-    // if (frame)
-    //     pyinfo = format("%2%:%1%: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
+#ifdef OPENMP_FOUND
+    static OmpLock loglock;
+    OmpLockGuard<OmpLock> guard(loglock);
+#endif
     if (color == COLOR_ANSI) {
-        #pragma omp critical
         fprintf(stderr, "%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
     #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
-        #pragma omp critical
         fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
         SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
     #endif
     } else {
-        #pragma omp critical
         fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
     }
 }
-    
+
 PLASK_API shared_ptr<Logger> default_logger;
 
 NoLogging::NoLogging(): old_state(default_logger->silent) {}

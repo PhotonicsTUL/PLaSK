@@ -25,7 +25,7 @@ class Manager(unittest.TestCase):
                     <axis0>1, 2, 3</axis0>
                     <axis1 type="rectilinear" start="10" stop="30" num="3"/>
                 </mesh>
-                <mesh type="regular2d" name="reg">
+                <mesh type="rectangular2d" name="reg">
                     <axis0 start="10" stop="30" num="3"/>
                     <axis1 start="1" stop="3" num="3"/>
                 </mesh>
