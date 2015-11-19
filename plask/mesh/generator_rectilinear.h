@@ -318,8 +318,8 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
 
-    virtual const char* name() { return "DivideGenerator"; }   
-    
+    const char* name() override { return "DivideGenerator"; }
+
     template <int fd>
     friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
 
@@ -386,7 +386,7 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
 
-    virtual const char* name() { return "SmoothGenerator"; }   
+    const char* name() override { return "SmoothGenerator"; }   
 
     template <int fd>
     friend shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader&, const Manager&);

@@ -16,7 +16,7 @@ namespace plask { namespace solvers { namespace slab {
 struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>> {
 
     friend struct ExpansionBessel;
-    
+
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
@@ -74,19 +74,19 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Computed modes
     std::vector<Mode> modes;
 
-    void clear_modes() {
+    void clear_modes() override {
         modes.clear();
     }
-    
+
     /// Expected integration estimate error
     double integral_error;
-    
+
     /// Maximum number of integration points in a single segemnt
     size_t max_itegration_points;
-    
+
     /// Lateral PMLs
     PML pml;
-    
+
     /// Provider for computed resonant wavelength
     typename ProviderFor<Wavelength>::Delegate outWavelength;
 
@@ -139,7 +139,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         setM(modes[num].m);
         return transfer->getFieldVectorE(z);
     }
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param num mode number
@@ -153,7 +153,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         setM(modes[num].m);
         return transfer->getFieldVectorH(z);
     }
-    
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -237,7 +237,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     cmatrix muDm();
     cmatrix muDp();
 #endif
-                                              
+
 };
 
 

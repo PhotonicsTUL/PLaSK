@@ -320,10 +320,12 @@ double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, co
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::levelEstimates(WhichLevel which, std::vector<double>& levels,
-                                                         std::vector<size_t>& wells,
-                                                         const ActiveRegionParams& params, size_t qw) const
+void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, std::vector<double>& levels,
+                                                             std::vector<size_t>& wells,
+                                                             const ActiveRegionParams& params, size_t qw) const
 {
+    if (params.U[which].size() < 3) return;
+
     size_t start = params.region.wells[qw], stop = params.region.wells[qw+1];
     double umin = std::numeric_limits<double>::max(), umax = -std::numeric_limits<double>::max();
     double num = 0.;
@@ -338,7 +340,7 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(WhichLevel which, std::
             if (ub < umin) { umin = ub; well = i; }
         } else {
             if (ub > umax) { umax = ub; well = i; }
-        }                                        //TODO better estimation of effective mass
+        }                                                       //TODO better estimation of effective mass
         if (i != start && i != stop) {
             double no = 1e-6 / M_PI * params.region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * meff.c11);
             num = max(no, num);
@@ -385,6 +387,67 @@ void FermiGoldenGainSolver<GeometryType>::levelEstimates(WhichLevel which, std::
 
 
 template <typename GeometryType>
+void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, std::vector<double>& levels,
+                                                              std::vector<size_t>& wells, const ActiveRegionParams& params) const
+{
+    if (params.U[which].size() < 5) return; // This makes sense with at least two quantum wells
+
+    /// Detect range above the wells
+    size_t N = params.U[LEVELS_EL].size()-1;
+    double umin = std::numeric_limits<double>::max(), umax = -std::numeric_limits<double>::max();
+    if (which == LEVELS_EL)
+        umax = min(params.U[LEVELS_EL][0], params.U[LEVELS_EL][N]);
+    else
+        umin = max(params.U[which][0], params.U[which][params.U[which].size()-1]);
+    size_t well;
+    for (size_t i: params.region.wells) {
+        if (i == 0 || i == N) continue;
+        double ub = params.U[which][i];
+        if (which == LEVELS_EL) {
+            if (ub < umin) { umin = ub; well = i; }
+        } else {
+            if (ub > umax) { umax = ub; well = i; }
+        }                                                       //TODO better estimation of effective mass
+    }
+    if (umax <= umin) return;
+
+    auto meff = params.M[which][well];
+    double num = 2. * ceil(1e-6 / M_PI * params.region.total * sqrt(2. * (umax-umin) * phys::me / (phys::hb_eV*phys::hb_J) * meff.c11));
+    umin += 0.5 * levelsep;
+    umax -= 0.5 * levelsep;
+    double step = (umax-umin) / num;
+    size_t n = size_t(num);
+    double a, b = umin;
+    double fa, fb = level(which, b, params);
+    if (fb == 0.) {
+        levels.push_back(fb);
+        wells.push_back(well);
+        b += levelsep; fb = level(which, b, params);
+    }
+    for (size_t i = 0; i < n; ++i) {
+        a = b; fa = fb;
+        b = a + step; fb = level(which, b, params);
+        if (fb == 0.) {
+            levels.push_back(fb);
+            wells.push_back(well);
+            continue;
+        }
+        if ((fa < 0.) != (fb < 0.)) {
+            boost::uintmax_t iters = 1000;
+            double xa, xb;
+            std::tie(xa, xb) = toms748_solve(
+                [&](double x){ return level(which, x, params); },
+                a, b, fa, fb, [this](double l, double r){ return r-l < levelsep; }, iters)
+            ;
+            if (xb - xa > levelsep)
+                throw ComputationError(this->getId(), "Could not find level estimate above quantum wells");
+            levels.push_back(0.5*(xa+xb));
+            wells.push_back(well);
+        }
+    }
+}
+
+template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 {
     levels_el.clear(); levels_el.reserve(regions.size());
@@ -403,10 +466,14 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
         std::vector<size_t> wel, whh, wlh;
         params0.emplace_back(this, region, T0);
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
-            levelEstimates(LEVELS_EL, lel, wel, params0.back(), qw);
-            levelEstimates(LEVELS_HH, lhh, whh, params0.back(), qw);
-            levelEstimates(LEVELS_LH, llh, wlh, params0.back(), qw);
+            estimateWellLevels(LEVELS_EL, lel, wel, params0.back(), qw);
+            estimateWellLevels(LEVELS_HH, lhh, whh, params0.back(), qw);
+            estimateWellLevels(LEVELS_LH, llh, wlh, params0.back(), qw);
         }
+        estimateAboveLevels(LEVELS_EL, lel, wel, params0.back());
+        estimateAboveLevels(LEVELS_HH, lhh, whh, params0.back());
+        estimateAboveLevels(LEVELS_LH, llh, wlh, params0.back());
+
         levels_el.emplace_back(std::move(lel)); wells_el.emplace_back(std::move(wel));
         levels_hh.emplace_back(std::move(lhh)); wells_hh.emplace_back(std::move(whh));
         levels_lh.emplace_back(std::move(llh)); wells_lh.emplace_back(std::move(wlh));
@@ -414,15 +481,15 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
         if (maxLoglevel > LOG_DETAIL) {
             {
                 std::stringstream str; std::string sep = "";
-                for (auto l: lel) { str << sep << format("%.4f", l); sep = ", "; }
+                for (auto l: levels_el.back()) { str << sep << format("%.4f", l); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", ++reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: lhh) { str << sep << format("%.4f", l); sep = ", "; }
+                for (auto l: levels_hh.back()) { str << sep << format("%.4f", l); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region %d [eV]: %s", reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: llh) { str << sep << format("%.4f", l); sep = ", "; }
+                for (auto l: levels_lh.back()) { str << sep << format("%.4f", l); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());
             }
         }

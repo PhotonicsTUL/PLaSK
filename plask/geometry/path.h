@@ -248,7 +248,7 @@ struct PLASK_API Path {
         : objects(paths.toLinearPath().objects) {}
 
     Path(GeometryObject::Subtree&& paths)
-        : objects(std::move(paths.toLinearPath().objects)) {}
+        : objects(paths.toLinearPath().objects) {}
 
     // These are the same as default constructors, so can be skiped:
     // Path(const Path& path): objects(path.objects) {}

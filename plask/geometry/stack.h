@@ -382,7 +382,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner);
 
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el) {
-        return addUnsafe(el);
+        return addUnsafe(el, default_aligner);
     }
 
     /**

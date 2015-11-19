@@ -220,11 +220,11 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
   protected:
 
-    void onInitialize() {
+    void onInitialize() override {
         setupLayers();
     }
 
-    void onGeometryChange(const Geometry::Event& evt) {
+    void onGeometryChange(const Geometry::Event& evt) override {
         BaseT::onGeometryChange(evt);
         if (!vbounds.empty()) setup_vbounds(); // update layers
     }

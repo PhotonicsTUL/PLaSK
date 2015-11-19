@@ -27,13 +27,13 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     virtual ~GeometryObjectTransform() { disconnectOnChildChanged(); }
 
-    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_TRANSFORM; }
+    GeometryObject::Type getType() const override { return GeometryObject::TYPE_TRANSFORM; }
 
     /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const {
         getChild()->getLeafsToVec(dest);
     }*/
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override {
         if (predicate(*this)) {
             dest.push_back(this->shared_from_this());
         } else {
@@ -107,15 +107,15 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     /**
      * Throws NoChildException if child is not set.
      */
-    virtual void validate() const {
+    void validate() const override {
         if (!hasChild()) throw NoChildException();
     }
 
-    virtual bool hasInSubtree(const GeometryObject& el) const {
+    bool hasInSubtree(const GeometryObject& el) const override {
         return &el == this || (hasChild() && _child->hasInSubtree(el));
     }
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const {
+    GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override {
         if (this == &el) return GeometryObject::Subtree(this->shared_from_this());
         if (!hasChild()) GeometryObject::Subtree();
         GeometryObject::Subtree e = _child->getPathsTo(el, path);
@@ -125,9 +125,9 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         return result;
     }
 
-    virtual std::size_t getChildrenCount() const { return hasChild() ? 1 : 0; }
+    std::size_t getChildrenCount() const override { return hasChild() ? 1 : 0; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override {
         if (!hasChild() || child_no > 0) throw OutOfBoundsException("GeometryObjectTransform::getChildNo", "child_no");
         return _child;
     }
@@ -149,7 +149,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         return result;
     }
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const {
+    shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override {
         shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
         if (changer.apply(result, translation) || !hasChild()) return result;
         shared_ptr<const GeometryObject> new_child = _child->changedVersion(changer, translation);
@@ -157,7 +157,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         return new_child == _child ? result : shallowCopy(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
     }
 
-    virtual void removeAtUnsafe(std::size_t) {
+    void removeAtUnsafe(std::size_t) override {
         _child.reset();
     }
 
@@ -174,7 +174,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
                     Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     }
 
-    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const override {
         if (predicate(*this)) {
             dest.push_back(this->getBoundingBox());
             return;

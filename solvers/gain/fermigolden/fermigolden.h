@@ -198,8 +198,12 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     }
 
     /// Find levels estimates
-    void levelEstimates(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
-                        const ActiveRegionParams& params, size_t qw) const;
+    void estimateWellLevels(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
+                            const ActiveRegionParams& params, size_t qw) const;
+
+    /// Find levels estimates
+    void estimateAboveLevels(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
+                              const ActiveRegionParams& params) const;
 
 #ifndef NDEBUG
   public:
