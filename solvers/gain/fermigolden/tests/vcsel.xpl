@@ -242,8 +242,8 @@ fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300.,
 
 levels2 = GAIN2.get_energy_levels()[0]
 
-GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)
-levels3 = GAIN3.get_levels()[0]
+# GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)
+# levels3 = GAIN3.get_levels()[0]
 
 CE = linspace(0.25, 0.65, 10001)
 VE = linspace(-0.80, -0.60, 10001)
@@ -266,8 +266,8 @@ else:
     plot(CE, els, color=colors[0], label="Electrons")
     for l in levels1['el']:
         axvline(l+cbo, ls=':', color='0.75')
-    for l in levels3['el']:
-        axvline(l+coff, ls=':', color='0.35')
+#     for l in levels3['el']:
+#         axvline(l+coff, ls=':', color='0.35')
     for l in levels2['el']:
         axvline(l, ls=':', color=colors[0])
     for w in range(1, nqw+1):
@@ -286,8 +286,8 @@ else:
     plot(VE, hhs, color=colors[1], label="Heavy holes")
     for l in levels1['hh']:
         axvline(l+vbo, ls=':', color='0.75')
-    for l in levels3['hh']:
-        axvline(l+voff, ls=':', color='0.35')
+#     for l in levels3['hh']:
+#         axvline(l+voff, ls=':', color='0.35')
     for l in levels2['hh']:
         axvline(l, ls=':', color=colors[1])
     for w in range(1, nqw+1):
@@ -304,8 +304,8 @@ else:
     plot(VE, lhs, color=colors[2], label="Light holes")
     for l in levels1['lh']:
         axvline(l+vbo, ls=':', color='0.75')
-    for l in levels3['lh']:
-        axvline(l+voff, ls=':', color='0.35')
+#     for l in levels3['lh']:
+#         axvline(l+voff, ls=':', color='0.35')
     for l in levels2['lh']:
         axvline(l, ls=':', color=colors[2])
     for w in range(1, nqw+1):

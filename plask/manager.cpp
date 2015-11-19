@@ -464,15 +464,15 @@ struct PositionValidator {
         std::sort(v2.begin(), v2.end());
         if (v1.size() == v2.size()) {
             return std::equal(v1.begin(), v1.end(), v2.begin(),
-                              [](const VectorType& x1, const VectorType& x2) { return x1.equal(x2, 1e-10); });
-        }   //different sizes:
-        auto v2_last_match_it = v2.begin(); //!= v2.end() since v2 is not empty
+                              [](const VectorType& x1, const VectorType& x2) { return isnan(x1) || isnan(x2) || x1.equal(x2, 1e-10); });
+        }   // different sizes:
+        auto v2_last_match_it = v2.begin(); // != v2.end() since v2 is not empty
         for (VectorType point: v1) {
             while (true) {
                 if (point.equal(*v2_last_match_it, 1e-10)) return true; //common point
-                if (point < *v2_last_match_it) break;   //point is not included in v2, we are going to check next point from v1
+                if (point < *v2_last_match_it) break;   // point is not included in v2, we are going to check next point from v1
                 ++v2_last_match_it;
-                if (v2_last_match_it == v2.end()) return false; //no common points found so far
+                if (v2_last_match_it == v2.end()) return false; // no common points found so far
             }
         }
         return false;

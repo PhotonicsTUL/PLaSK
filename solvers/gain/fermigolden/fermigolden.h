@@ -15,9 +15,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 {
     /// Which level to compute
     enum WhichLevel: size_t {
-        LEVELS_EL = 0,
-        LEVELS_HH = 1,
-        LEVELS_LH = 2
+        EL = 0,
+        HH = 1,
+        LH = 2
     };
 
     /// Structure containing information about each active region
@@ -137,18 +137,18 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
         ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
             double n = region.materials.size();
-            U[LEVELS_EL].reserve(n); U[LEVELS_HH].reserve(n); U[LEVELS_LH].reserve(n);
-            M[LEVELS_EL].reserve(n); M[LEVELS_HH].reserve(n); M[LEVELS_LH].reserve(n);
+            U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
+            M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
             double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
             for (auto material: region.materials) {
                 OmpLockGuard<OmpNestLock> lockq = material->lock();
                 double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                U[LEVELS_EL].push_back(material->CB(T, e, 'G'));
-                U[LEVELS_HH].push_back(material->VB(T, e, 'G', 'H'));
-                U[LEVELS_LH].push_back(material->VB(T, e, 'G', 'L'));
-                M[LEVELS_EL].push_back(material->Me(T, e));
-                M[LEVELS_HH].push_back(material->Mhh(T, e));
-                M[LEVELS_LH].push_back(material->Mlh(T, e));
+                U[EL].push_back(material->CB(T, e, 'G'));
+                U[HH].push_back(material->VB(T, e, 'G', 'H'));
+                U[LH].push_back(material->VB(T, e, 'G', 'L'));
+                M[EL].push_back(material->Me(T, e));
+                M[HH].push_back(material->Mhh(T, e));
+                M[LH].push_back(material->Mlh(T, e));
             }
         }
 
@@ -158,6 +158,27 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
         Tensor2<double> sideM(WhichLevel which) const {
             return 0.5 * (M[which][0] + M[which][M[which].size()-1]);
+        }
+    };
+
+    /// Data for energy level
+    struct Level {
+        double E;                   ///< Level energy
+        Tensor2<double> M;          ///< Representative well index
+        double thickness;           ///< Cumulated wells thickness
+
+        Level(double E, const Tensor2<double>& M): E(E), M(M) {}
+
+        // TODO Better effective thickness computation (based on wavefunction)?
+        Level(double E, const Tensor2<double>& M, WhichLevel which, const ActiveRegionParams& params): E(E), M(M) {
+            thickness = 0.;
+            if (which == EL) {
+                for (size_t i = 0; i < params.U[EL].size(); ++i)
+                    if (params.U[EL][i] < E) thickness += params.region.thicknesses[i];
+            } else {
+                for (size_t i = 0; i < params.U[which].size(); ++i)
+                    if (params.U[which][i] > E) thickness += params.region.thicknesses[i];
+            }
         }
     };
 
@@ -198,12 +219,10 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     }
 
     /// Find levels estimates
-    void estimateWellLevels(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
-                            const ActiveRegionParams& params, size_t qw) const;
+    void estimateWellLevels(WhichLevel which, std::vector<Level>& levels, const ActiveRegionParams& params, size_t qw) const;
 
     /// Find levels estimates
-    void estimateAboveLevels(WhichLevel which, std::vector<double>& levels, std::vector<size_t>& wells, 
-                              const ActiveRegionParams& params) const;
+    void estimateAboveLevels(WhichLevel which, std::vector<Level>& levels, const ActiveRegionParams& params) const;
 
 #ifndef NDEBUG
   public:
@@ -226,8 +245,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double levelsep;                ///< Minimum separation between distinct levels
 
     bool strained;                  ///< Consider strain in QW?
-
-    bool extern_levels;             ///< Are levels set externally?
 
     inline static double nm_to_eV(double wavelength) {
         return phys::h_eVc1e9 / wavelength;
@@ -269,33 +286,26 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     const LazyData<double> getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     std::vector<ActiveRegionParams> params0; ///< Reference active region params
-    
+
   public:
 
-    std::vector<std::vector<double>>
-        levels_el,                  ///< Approximate electron levels
-        levels_hh,                  ///< Approximate heavy hole levels
-        levels_lh;                  ///< Approximate light hole levels
+    std::vector<std::vector<Level>> levels[3];  ///< Approximate electron, heavy and light hole levels
+    std::vector<size_t> nlevels;                ///< Number of electron, heavy and light hole levels important for gain
 
-    std::vector<std::vector<size_t>>
-        wells_el,                   ///< Well indices for approximate electron levels
-        wells_hh,                   ///< Well indices for approximate heavy hole levels
-        wells_lh;                   ///< Well indices for approximate light hole levels
-
-    bool quick_levels;              ///< Are levels computed quickly based on estimates
+    bool quick_levels;                          ///< Are levels computed quickly based on estimates
 
 #ifndef NDEBUG
     double detEl(double E, const ActiveRegionParams& params, size_t well=0) {
-        if (well) return level(LEVELS_EL, E, params, well-1);
-        else return level(LEVELS_EL, E, params);
+        if (well) return level(EL, E, params, well-1);
+        else return level(EL, E, params);
     }
     double detHh(double E, const ActiveRegionParams& params, size_t well=0) {
-        if (well) return level(LEVELS_HH, E, params, well-1);
-        else return level(LEVELS_HH, E, params);
+        if (well) return level(HH, E, params, well-1);
+        else return level(HH, E, params);
     }
     double detLh(double E, const ActiveRegionParams& params, size_t well=0) {
-        if (well) return level(LEVELS_LH, E, params, well-1);
-        else return level(LEVELS_LH, E, params);
+        if (well) return level(LH, E, params, well-1);
+        else return level(LH, E, params);
     }
 #endif
 

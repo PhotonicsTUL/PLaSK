@@ -47,6 +47,17 @@ inline double abs(const Vec<dim,T>& v) { return sqrt(abs2<dim,T>(v)); }
 template <>
 inline double abs<2, double>(const Vec<2,double>& v) { return std::hypot(v.c0, v.c1); }
 
+/** @relates Vec
+* Check if any vector componen is not-a-number.
+* @param v a vector
+* @return \c true if any vector magnitude is Nan
+*/
+template <int dim, typename T>
+bool isnan(const Vec<dim,T>& v) {
+    for (int i = 0; i < dim; ++i) if (isnan(v[i])) return true;
+    return false;
+}
+
 namespace details {
 
     //construct vector in dim space

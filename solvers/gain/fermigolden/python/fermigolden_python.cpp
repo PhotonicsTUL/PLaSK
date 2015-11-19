@@ -52,14 +52,18 @@ static py::object FermiGoldenGainSolver_getP(FermiGoldenGainSolver<GeometryT>* s
 template <typename GeometryT>
 static py::object FermiGolden_getLevels(FermiGoldenGainSolver<GeometryT>& self, py::object To)
 {
+    static const char* names[3] = { "el", "hh", "lh" };
+
     //TODO consider temperature
     self.initCalculation();
     py::list result;
-    for (size_t reg = 0; reg < self.levels_el.size(); ++reg) {
+    for (size_t reg = 0; reg < self.regions.size(); ++reg) {
         py::dict info;
-        info["el"] = self.levels_el[reg];
-        info["hh"] = self.levels_hh[reg];
-        info["lh"] = self.levels_lh[reg];
+        for (size_t i = 0; i < 3; ++i) {
+            py::list lst;
+            for (const auto& l: self.levels[i][reg]) lst.append(l.E);
+            info[names[i]] = lst; 
+        }
         result.append(info);
     }
     return result;

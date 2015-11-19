@@ -34,7 +34,8 @@ class AxisEdit(QtGui.QGroupBox):
         defines = get_defines_completer(controller.document.defines.model, self)
         form_layout = QtGui.QFormLayout()
         self.allow_type_select = allow_type_select
-        if not allow_type_select: self.accept_non_regular = accept_non_regular
+        if not allow_type_select:
+            self.accept_non_regular = accept_non_regular
         if self.allow_type_select:
             self.type = ComboBox()
             self.type.addItems(['(auto-detected)', 'ordered', 'regular'])
@@ -48,24 +49,32 @@ class AxisEdit(QtGui.QGroupBox):
                                                       None if self.type.currentIndex() == 0 else empty_to_none(self.type.currentText())))
             self.type.currentIndexChanged.connect(self._auto_enable_points)
             form_layout.addRow("Axis type:", self.type)
+        range_layout = QtGui.QHBoxLayout()
         self.start = QtGui.QLineEdit()
         self.start.setCompleter(defines)
         self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
                               u'Position of the first point on the axis. (float [µm])'.format(axis))
         self.start.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'start'), empty_to_none(self.start.text())))
-        form_layout.addRow("Start:", self.start)
+        # range_layout.addWidget(QtGui.QLabel("Start:"))
+        range_layout.addWidget(self.start)
         self.stop = QtGui.QLineEdit()
         self.stop.setCompleter(defines)
         self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
                              u'Position of the last point on the axis. (float [µm])'.format(axis))
         self.stop.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'stop'), empty_to_none(self.stop.text())))
-        form_layout.addRow("Stop:", self.stop)
+        range_layout.addWidget(QtGui.QLabel(" Stop:"))
+        range_layout.addWidget(self.stop)
         self.num = QtGui.QLineEdit()
         self.num.setCompleter(defines)
         self.num.setToolTip('&lt;{} start="" stop="" <b>num</b>=""&gt;<br/>'
                             'Number of the equally distributed points along the axis. (integer)'.format(axis))
         self.num.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'num'), empty_to_none(self.num.text())))
-        form_layout.addRow("Num:", self.num)
+        range_layout.addWidget(QtGui.QLabel(" Num:"))
+        range_layout.addWidget(self.num)
+        range_layout.setContentsMargins(0, 0, 0, 0)
+        range_widget = QtGui.QWidget()
+        range_widget.setLayout(range_layout)
+        form_layout.addRow("Start:", range_widget)
         if allow_type_select or accept_non_regular:
             self.points = TextEdit()
             self.points.setToolTip('&lt;{0}&gt;<b><i>points</i></b>&lt;/{0}&gt;<br/>'
