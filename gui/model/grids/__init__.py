@@ -16,10 +16,11 @@ from lxml import etree
 from xml.sax.saxutils import quoteattr
 
 from ...qt import QtCore
+from utils import require_str_first_attr_path_component
 
 from ...utils.xml import print_interior, XML_parser, AttributeReader
 from ...controller.source import SourceEditController
-from .. import TreeFragmentModel, Info
+from .. import TreeFragmentModel, Info, SectionModel
 from ..table import TableModel
 
 
@@ -85,6 +86,18 @@ class Grid(TreeFragmentModel):
     @property
     def undo_stack(self):
         return self.tree_parent.undo_stack
+
+    def _append_info(self, res, text, level=None, path=None, **kwargs):
+        res.append(Info(text, level, path=path, **kwargs))
+
+    def _append_error(self, res, text, path=None, **kwargs):
+        self._append_info(res, text, Info.ERROR, path, **kwargs)
+
+    def _required(self, res, path, property_name, display_name=None, type=None, **kwargs):
+        if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property_name))
+        if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
+        self._append_error(res, 'Specifying {} is required in {}'.format(display_name, self.type_and_kind_str),
+                           path=path+(property_name if isinstance(property_name, tuple) else (property_name,)), **kwargs)
 
     def create_info(self, res, path):
         pass

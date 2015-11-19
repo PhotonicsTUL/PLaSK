@@ -12,6 +12,7 @@
 from lxml import etree
 from numbers import Number
 
+from ...utils import require_str_first_attr_path_component
 from ...utils.xml import AttributeReader, OrderedTagReader
 from .reader import GNReadConf, axes_dim
 from .types import gname
@@ -454,13 +455,13 @@ class GNode(object):
         self._append_info(res, text, Info.ERROR, nodes, **kwargs)
 
     def _require(self, res, property, display_name=None, indexes=None, type=None):
-        if display_name is None: display_name = '"{}"'.format(property)
+        if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property))
         if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
         self._append_error(res, 'Specifying {} is required in <{}>'.format(display_name, self.tag_name(False)),
                            property=property, indexes=indexes)
 
     def _wrong_type(self, res, type, property, display_name=None, indexes=None):
-        if display_name is None: display_name = '"{}"'.format(property)
+        if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property))
         self._append_error(res, '{} has not valid {} value in <{}>'.format(display_name, type, self.tag_name(False)),
                            property=property, indexes=indexes)
 

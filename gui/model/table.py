@@ -185,7 +185,7 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
         """
         if self._row_to_errors is None:
             self._row_to_errors = {}
-            for msg in self.info:
+            for msg in self.get_info():
                 for r in getattr(msg, 'rows', []):
                     self._row_to_errors.setdefault(r, []).append(msg)
         return self._row_to_errors

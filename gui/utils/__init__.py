@@ -80,3 +80,8 @@ def setattr_by_path(obj, name, value):
         obj[name] = value
     else:
         setattr_by_path(getattr_by_path(obj, name[:-1]), name[-1], value)
+
+
+def require_str_first_attr_path_component(path):
+    while not isinstance(path, basestring): path = path[0]
+    return path

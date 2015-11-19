@@ -14,6 +14,7 @@ from lxml.etree import Element, SubElement
 
 from ...qt import QtCore
 from ..table import TableModelEditMethods
+from ...utils.validators import can_be_float, can_be_bool, can_be_int
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
 from .mesh_rectilinear import AXIS_NAMES
@@ -135,8 +136,14 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
 
     def create_info(self, res, path):
         for i, entry in enumerate(self.entries):
-            if not entry.object: res.append(Info('Name of the geometry object is required in refinement [row: {}]'.format(i+1),
-                                                 Info.ERROR, path=path+(i,), cols=(0,)))
+            if not entry.object:
+                self.generator._required(res, path, i, 'name of the geometry object in refinement', cols=(0,))
+            if not can_be_float(entry.at):
+                self.generator._required(res, path, i, 'position of a line in refinement', type='float', cols=(2,))
+            if not can_be_int(entry.by):
+                self.generator._required(res, path, i, 'number of division parts in refinement', type='integer', cols=(3,))
+            if not can_be_float(entry.every):
+                self.generator._required(res, path, i, 'distance between lines in refinement', type='float', cols=(4,))
 
 
 class RectilinearRefinedGenerator(Grid):
@@ -204,6 +211,12 @@ class RectilinearRefinedGenerator(Grid):
     def create_info(self, res, path):
         super(RectilinearRefinedGenerator, self).create_info(res, path)
         self.refinements.create_info(res, path=path+('refinements',))
+        if not can_be_float(self.aspect): self._required(res, path, 'aspect', type='float')
+        for w in RectilinearDivideGenerator.warnings:
+            a = 'warn_' + w
+            if not can_be_bool(getattr(self, a, None)):
+                self._required(res, path, a, display_name='{} warning'.format(w), type='boolean')
+
 
 class RectilinearDivideGenerator(RectilinearRefinedGenerator):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
@@ -267,6 +280,12 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorController
         return RectilinearDivideGeneratorController(document=document, model=self)
+
+    def create_info(self, res, path):
+        super(RectilinearDivideGenerator, self).create_info(res, path)
+        for div_type in ('prediv', 'postdiv'):
+            for i, p in enumerate(getattr(self, div_type)):
+                if not can_be_float(p): self._required(res, path, (div_type, i), 'a component of {}'.format(div_type), type='float')
 
 
 class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
@@ -332,6 +351,16 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
                     self._steps_from_xml('large', a)
                     self._steps_from_xml('factor', a)
 
+    def create_info(self, res, path):
+        super(RectilinearSmoothGenerator, self).create_info(res, path)
+        for i, p in enumerate(self.small):
+            if not can_be_float(p): self._required(res, path, ('small', i), 'a component of smallest element', type='float')
+        for i, p in enumerate(self.large):
+            if not can_be_float(p): self._required(res, path, ('large', i), 'a component of largest element', type='float')
+        for i, p in enumerate(self.factor):
+            if not can_be_float(p): self._required(res, path, ('factor', i), 'a component of increase factor', type='float')
+
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearSmoothGeneratorController
         return RectilinearSmoothGeneratorController(document=document, model=self)
+
