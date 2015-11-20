@@ -136,13 +136,17 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
     def create_info(self, res, rows, parent_property):
         for i, entry in enumerate(self.entries):
             if not entry.object:
-                self.generator._required(res, rows, (parent_property, i), 'name of the geometry object in refinement', cols=(0,))
+                self.generator._required(res, rows, parent_property, 'name of the geometry object in refinement',
+                                         reinf_row=i, reinf_col=1)
             if not can_be_float(entry.at):
-                self.generator._required(res, rows, (parent_property, i), 'position of a line in refinement', type='float', cols=(2,))
+                self.generator._required(res, rows, parent_property, 'position of a line in refinement', type='float',
+                                         reinf_row=i, reinf_col=3)
             if not can_be_int(entry.by):
-                self.generator._required(res, rows, (parent_property, i), 'number of division parts in refinement', type='integer', cols=(3,))
+                self.generator._required(res, rows, parent_property, 'number of division parts in refinement', type='integer',
+                                         reinf_row=i, reinf_col=4)
             if not can_be_float(entry.every):
-                self.generator._required(res, rows, (parent_property, i), 'distance between lines in refinement', type='float', cols=(4,))
+                self.generator._required(res, rows, parent_property, 'distance between lines in refinement', type='float',
+                                         reinf_row=i, reinf_col=5)
 
 
 class RectilinearRefinedGenerator(Grid):

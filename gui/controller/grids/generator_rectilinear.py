@@ -130,6 +130,13 @@ class RectilinearRefinedGeneratorController(GridController):
     def get_widget(self):
         return self.form
 
+    def select_info(self, info):
+        super(RectilinearRefinedGeneratorController, self).select_info(info)
+        try:
+            if info.property == 'refinements':  # select refinements index using info.reinf_row and info.reinf_col
+                self.refinements.setCurrentIndex(self.model.refinements.createIndex(info.reinf_row, info.reinf_col))
+        except AttributeError: pass
+
 
 class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController):
     """Ordered and rectangular 2D and 3D divide generator script."""
