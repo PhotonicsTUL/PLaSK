@@ -18,7 +18,6 @@ from ...utils.validators import can_be_float, can_be_bool, can_be_int
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
 from .mesh_rectilinear import AXIS_NAMES
-from .. import Info
 
 
 class RefinementConf(object):

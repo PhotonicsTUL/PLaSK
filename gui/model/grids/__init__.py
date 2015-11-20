@@ -97,7 +97,7 @@ class Grid(TreeFragmentModel):
         if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property))
         if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
         self._append_error(res, 'Specifying {} is required in {} "{}"'.format(display_name, self.type_and_kind_str, self.name),
-                           rows=rows, property_name=property, **kwargs)
+                           rows=rows, property=property, **kwargs)
 
     def create_info(self, res, rows):
         pass

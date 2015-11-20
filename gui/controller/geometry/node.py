@@ -288,7 +288,7 @@ class GNodeController(Controller):
         return self.form
 
     def select_info(self, info):
-        prop = getattr(info, "property")
+        prop = getattr(info, "property", None)
         if isinstance(prop, basestring):
             widget = getattr_by_path(self, prop)
             indexes = getattr(info, "indexes")

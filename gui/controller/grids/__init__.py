@@ -139,8 +139,7 @@ class GridsController(Controller):
 
     def select_info(self, info):
         if select_index_from_info(info, self.model, self.grids_table):
-            #TODO try to select property
-            pass
+            self._current_controller.select_info(info) # try to select property
 
     def grid_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
@@ -306,3 +305,8 @@ class GridController(Controller):
     def on_edit_exit(self):
         self.section_model.changed.disconnect(self._fill_form_cb)
         return super(GridController, self).on_edit_exit()
+
+    def select_info(self, info):
+        try:
+            getattr_by_path(self, info.property).setFocus()
+        except: pass
