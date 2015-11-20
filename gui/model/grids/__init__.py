@@ -87,19 +87,19 @@ class Grid(TreeFragmentModel):
     def undo_stack(self):
         return self.tree_parent.undo_stack
 
-    def _append_info(self, res, text, level=None, path=None, **kwargs):
-        res.append(Info(text, level, path=path, **kwargs))
+    def _append_info(self, res, text, level=None, **kwargs):
+        res.append(Info(text, level, **kwargs))
 
-    def _append_error(self, res, text, path=None, **kwargs):
-        self._append_info(res, text, Info.ERROR, path, **kwargs)
+    def _append_error(self, res, text, **kwargs):
+        self._append_info(res, text, Info.ERROR, **kwargs)
 
-    def _required(self, res, path, property_name, display_name=None, type=None, **kwargs):
-        if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property_name))
+    def _required(self, res, rows, property, display_name=None, type=None, **kwargs):
+        if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property))
         if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
-        self._append_error(res, 'Specifying {} is required in {}'.format(display_name, self.type_and_kind_str),
-                           path=path+(property_name if isinstance(property_name, tuple) else (property_name,)), **kwargs)
+        self._append_error(res, 'Specifying {} is required in {} "{}"'.format(display_name, self.type_and_kind_str, self.name),
+                           rows=rows, property_name=property, **kwargs)
 
-    def create_info(self, res, path):
+    def create_info(self, res, rows):
         pass
     #    if not self.object: self._require(res, 'object')
 
@@ -236,7 +236,7 @@ class GridsModel(TableModel):
                 res.append(Info('Grid name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))
             else:
                 names.setdefault(entry.name, []).append(i)
-            entry.create_info(res, path=(i,))
+            entry.create_info(res, (i,))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
