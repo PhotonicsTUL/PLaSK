@@ -285,6 +285,7 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
         for div_type in ('prediv', 'postdiv'):
             for i, p in enumerate(getattr(self, div_type)):
                 if not can_be_float(p): self._required(res, rows, (div_type, i), 'a component of {}'.format(div_type), type='float')
+        if not can_be_bool(self.gradual): self._required(res, rows, 'gradual', type='boolean')
 
 
 class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
