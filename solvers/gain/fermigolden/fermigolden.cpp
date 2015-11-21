@@ -11,6 +11,22 @@ namespace plask { namespace gain { namespace fermigolden {
 
 constexpr double DIFF_STEP = 0.001;
 
+template <typename GeometryType>
+FermiGoldenGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double>& M,
+                                                  WhichLevel which, const ActiveRegionParams& params):
+    E(E), M(M)
+{
+    thickness = 0.;
+    if (which == EL) {
+        for (size_t i = 0; i < params.U[EL].size(); ++i)
+            if (params.U[EL][i] < E) thickness += params.region.thicknesses[i];
+    } else {
+        for (size_t i = 0; i < params.U[which].size(); ++i)
+            if (params.U[which][i] > E) thickness += params.region.thicknesses[i];
+    }
+}
+
+
 
 template <typename GeometryType>
 FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
@@ -52,7 +68,6 @@ void FermiGoldenGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
     }
 }
 
-
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::onInitialize()
 {
@@ -66,9 +81,7 @@ void FermiGoldenGainSolver<GeometryType>::onInitialize()
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::onInvalidate()
 {
-    levels[EL].clear();
-    levels[HH].clear();
-    levels[LH].clear();
+    params0.clear();
     regions.clear();
     materialSubstrate.reset();
 }
@@ -289,7 +302,7 @@ double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, co
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, std::vector<Level>& levels, const ActiveRegionParams& params, size_t qw) const
+void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, ActiveRegionParams& params, size_t qw) const
 {
     if (params.U[which].size() < 3) return;
 
@@ -325,14 +338,14 @@ void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, s
     double a, b = umin;
     double fa, fb = level(which, b, params, qw);
     if (fb == 0.) {
-        levels.emplace_back(fb, M, which, params);
+        params.levels[which].emplace_back(fb, M, which, params);
         b += levelsep; fb = level(which, b, params, qw);
     }
     for (size_t i = 0; i < n; ++i) {
         a = b; fa = fb;
         b = a + step; fb = level(which, b, params, qw);
         if (fb == 0.) {
-            levels.emplace_back(fb, M, which, params);
+            params.levels[which].emplace_back(fb, M, which, params);
             continue;
         }
         if ((fa < 0.) != (fb < 0.)) {
@@ -344,14 +357,14 @@ void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, s
             ;
             if (xb - xa > levelsep)
                 throw ComputationError(this->getId(), "Could not find level estimate in quantum well");
-            levels.emplace_back(0.5*(xa+xb), M, which, params);
+            params.levels[which].emplace_back(0.5*(xa+xb), M, which, params);
         }
     }
 }
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, std::vector<Level>& levels, const ActiveRegionParams& params) const
+void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, ActiveRegionParams& params) const
 {
     if (params.U[which].size() < 5) return; // This makes sense with at least two quantum wells
 
@@ -382,14 +395,14 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
     double a, b = umin;
     double fa, fb = level(which, b, params);
     if (fb == 0.) {
-        levels.emplace_back(fb, M, which, params);
+        params.levels[which].emplace_back(fb, M, which, params);
         b += levelsep; fb = level(which, b, params);
     }
     for (size_t i = 0; i < n; ++i) {
         a = b; fa = fb;
         b = a + step; fb = level(which, b, params);
         if (fb == 0.) {
-            levels.emplace_back(fb, M, which, params);
+            params.levels[which].emplace_back(fb, M, which, params);
             continue;
         }
         if ((fa < 0.) != (fb < 0.)) {
@@ -401,7 +414,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
             ;
             if (xb - xa > levelsep)
                 throw ComputationError(this->getId(), "Could not find level estimate above quantum wells");
-            levels.emplace_back(0.5*(xa+xb), M, which, params);
+            params.levels[which].emplace_back(0.5*(xa+xb), M, which, params);
         }
     }
 }
@@ -409,45 +422,38 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
 template <typename GeometryType>
 void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 {
-    for (size_t i = 0; i < 3; ++i) {
-        levels[i].clear(); levels[i].reserve(regions.size());
-    }
-    nlevels.clear(); nlevels.reserve(regions.size());
     params0.clear(); params0.reserve(regions.size());
 
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
-        std::vector<Level> lel, lhh, llh;
-        params0.emplace_back(this, region, T0);
+        params0.emplace_back(this, region);
+        ActiveRegionParams& params = params0.back();
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
-            estimateWellLevels(EL, lel, params0.back(), qw);
-            estimateWellLevels(HH, lhh, params0.back(), qw);
-            estimateWellLevels(LH, llh, params0.back(), qw);
+            estimateWellLevels(EL, params, qw);
+            estimateWellLevels(HH, params, qw);
+            estimateWellLevels(LH, params, qw);
         }
-        std::sort(lel.begin(), lel.end(), [](const Level& a, const Level& b){return a.E < b.E;});
-        std::sort(lhh.begin(), lhh.end(), [](const Level& a, const Level& b){return a.E > b.E;});
-        std::sort(llh.begin(), llh.end(), [](const Level& a, const Level& b){return a.E > b.E;});
-        nlevels.push_back(std::min(lel.size(), std::min(lhh.size(), llh.size())));
-        estimateAboveLevels(EL, lel, params0.back());
-        estimateAboveLevels(HH, lhh, params0.back());
-        estimateAboveLevels(LH, llh, params0.back());
-
-        levels[EL].emplace_back(std::move(lel));
-        levels[HH].emplace_back(std::move(lhh));
-        levels[LH].emplace_back(std::move(llh));
+        std::sort(params.levels[EL].begin(), params.levels[EL].end(), [](const Level& a, const Level& b){return a.E < b.E;});
+        std::sort(params.levels[HH].begin(), params.levels[HH].end(), [](const Level& a, const Level& b){return a.E > b.E;});
+        std::sort(params.levels[LH].begin(), params.levels[LH].end(), [](const Level& a, const Level& b){return a.E > b.E;});
+        params.nhh = std::min(params.levels[EL].size(), params.levels[HH].size());
+        params.nlh = std::min(params.levels[EL].size(), params.levels[LH].size());
+        estimateAboveLevels(EL, params);
+        estimateAboveLevels(HH, params);
+        estimateAboveLevels(LH, params);
 
         if (maxLoglevel > LOG_DETAIL) {
             {
                 std::stringstream str; std::string sep = "";
-                for (auto l: levels[EL].back()) { str << sep << format("%.4f", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", ++reg, str.str());
+                for (auto l: params.levels[EL]) { str << sep << format("%.4f", l.E); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", reg++, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: levels[HH].back()) { str << sep << format("%.4f", l.E); sep = ", "; }
+                for (auto l: params.levels[HH]) { str << sep << format("%.4f", l.E); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region %d [eV]: %s", reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: levels[LH].back()) { str << sep << format("%.4f", l.E); sep = ", "; }
+                for (auto l: params.levels[LH]) { str << sep << format("%.4f", l.E); sep = ", "; }
                 this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());
             }
         }
@@ -455,24 +461,26 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, size_t reg, const ActiveRegionParams& params) const {
-    size_t n = levels[EL][reg].size();
+double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, const ActiveRegionParams& params) const
+{
+    size_t n = params.levels[EL].size();
     const double kT = phys::kB_eV * T;
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
 
     double N = 2e-6 * pow(fact * T * params.sideM(EL).c00, 1.5) * fermiDiracHalf((F-params.sideU(EL))/kT);
 
     for (size_t i = 0; i < n; ++i) {
-        double M = levels[EL][reg][i].M.c00;
-        N += 2. * fact * T * M / levels[EL][reg][i].thickness * log(1 + exp((F-levels[EL][reg][i].E)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.levels[EL][i].M.c00;
+        N += 2. * fact * T * M / params.levels[EL][i].thickness * log(1 + exp((F-params.levels[EL][i].E)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     return N;
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, size_t reg, const ActiveRegionParams& params) const {
-    size_t nh = levels[HH][reg].size(), nl = levels[LH][reg].size();
+double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, const ActiveRegionParams& params) const
+{
+    size_t nh = params.levels[HH].size(), nl = params.levels[LH].size();
     const double kT = phys::kB_eV * T;
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
 
@@ -481,23 +489,22 @@ double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, size_t reg, co
                        pow(fact * T * params.sideM(LH).c00, 1.5) * fermiDiracHalf((params.sideU(LH)-F)/kT));
 
     for (size_t i = 0; i < nh; ++i) {
-        double M = levels[HH][reg][i].M.c00;
-        N += 2. * fact * T * M / levels[HH][reg][i].thickness * log(1 + exp((levels[HH][reg][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.levels[HH][i].M.c00;
+        N += 2. * fact * T * M / params.levels[HH][i].thickness * log(1 + exp((params.levels[HH][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     for (size_t i = 0; i < nl; ++i) {
-        double M = levels[LH][reg][i].M.c00;
-        N += 2. * fact * T * M / levels[LH][reg][i].thickness * log(1 + exp((levels[LH][reg][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        double M = params.levels[LH][i].M.c00;
+        N += 2. * fact * T * M / params.levels[LH][i].thickness * log(1 + exp((params.levels[LH][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
     }
 
     return N;
 }
 
 template <typename GeometryT>
-void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T, size_t reg) const
+void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T,
+                                                       const ActiveRegionParams& params) const
 {
-    ActiveRegionParams params(this, regions[reg], T);
-
     if (isnan(Fc)) Fc = params.sideU(EL);
     if (isnan(Fv)) Fv = params.sideU(HH);
 
@@ -506,7 +513,7 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
     iters = 1000;
     std::tie(xa, xb) = bracket_and_solve_root(
-        [this,T,reg,n,&params](double x){ return getN(x, T, reg, params) - n; },
+        [this,T,n,&params](double x){ return getN(x, T, params) - n; },
         Fc, 1.5, true,
         [this](double l, double r){ return r-l < levelsep; }, iters)
     ;
@@ -516,7 +523,7 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
     iters = 1000;
     std::tie(xa, xb) = bracket_and_solve_root(
-        [this,T,reg,n,&params](double x){ return getP(x, T, reg, params) - n; },
+        [this,T,n,&params](double x){ return getP(x, T, params) - n; },
         Fv, 1.5, false,
         [this](double l, double r){ return r-l < levelsep; }, iters)
     ;
@@ -525,6 +532,12 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
     Fv = 0.5 * (xa + xb);
 }
 
+
+template <typename GeometryT>
+double FermiGoldenGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T,
+                                                  const ActiveRegionParams& params) const
+{
+}
 
 
 

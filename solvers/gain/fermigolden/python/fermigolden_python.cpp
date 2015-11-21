@@ -36,16 +36,16 @@ template <typename GeometryT>
 static py::object FermiGoldenGainSolver_getN(FermiGoldenGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
     double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
-    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], T);
-    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, reg, params);}, F);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, params);}, F);
 }
 
 template <typename GeometryT>
 static py::object FermiGoldenGainSolver_getP(FermiGoldenGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
     double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
-    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], T);
-    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, reg, params);}, F);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, params);}, F);
 }
 #endif
 
@@ -61,7 +61,7 @@ static py::object FermiGolden_getLevels(FermiGoldenGainSolver<GeometryT>& self, 
         py::dict info;
         for (size_t i = 0; i < 3; ++i) {
             py::list lst;
-            for (const auto& l: self.levels[i][reg]) lst.append(l.E);
+            for (const auto& l: self.params0[reg].levels[i]) lst.append(l.E);
             info[names[i]] = lst; 
         }
         result.append(info);
@@ -70,14 +70,15 @@ static py::object FermiGolden_getLevels(FermiGoldenGainSolver<GeometryT>& self, 
 }
 
 template <typename GeometryT>
-static py::object FermiGolden_getFermiLevels(FermiGoldenGainSolver<GeometryT>& self, double N, py::object To, int reg)
+static py::object FermiGolden_getFermiLevels(FermiGoldenGainSolver<GeometryT>* self, double N, py::object To, int reg)
 {
-    double T = (To == py::object())? self.getT0() : py::extract<double>(To);
-    if (reg < 0) reg = self.regions.size() + reg;
-    if (reg < 0 || reg >= self.regions.size()) throw IndexError("%s: Bad active region index", self.getId());
-    self.initCalculation();
+    double T = (To == py::object())? self->getT0() : py::extract<double>(To);
+    if (reg < 0) reg = self->regions.size() + reg;
+    if (reg < 0 || reg >= self->regions.size()) throw IndexError("%s: Bad active region index", self->getId());
+    self->initCalculation();
     double Fc{NAN}, Fv{NAN};
-    self.findFermiLevels(Fc, Fv, N, T, reg);
+    typename FermiGoldenGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
+    self->findFermiLevels(Fc, Fv, N, T, params);
     return py::make_tuple(Fc, Fv);
 }
 
