@@ -152,7 +152,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
 
         std::vector<Level> levels[3];      ///< Approximate electron, heavy and light hole levels
-        size_t nhh,                        ///< Number of electron–heavy and light hole pairs important for gain
+        size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
         ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
@@ -261,6 +261,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double lifetime;                ///< Stimulated emission lifetime [ps]
     double matrixelem;              ///< Optical matrix element [m0*eV]
 
+    double polarization;            ///< Polarization state ($e_{zz}$)
+    
     double T0;                      ///< Temperature used for compiting level estimates
 
   protected:
@@ -333,7 +335,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     void findFermiLevels(double& Fc, double& Fv, double n, double T, const ActiveRegionParams& params) const;
 
     /// Find gain before convolution
-    double getGain0(double hw, double Fc, double Fv, double T, const ActiveRegionParams& params) const;
+    double getGain0(double lam, double Fc, double Fv, double T, const ActiveRegionParams& params) const;
     
     double getT0() const { return T0; }
     void setT0(double T) { T0 = T; this->invalidate(); }

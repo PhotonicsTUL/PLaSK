@@ -33,6 +33,7 @@ FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& na
     outGain(this, &FermiGoldenGainSolver<GeometryType>::getGain, []{return 2;}),
     lifetime(0.1),
     matrixelem(0.),
+    polarization(0.),
     T0(300.),
     levelsep(0.0001),
     strained(false),
@@ -534,9 +535,14 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T,
+double FermiGoldenGainSolver<GeometryT>::getGain0(double lam, double Fc, double Fv, double T,
                                                   const ActiveRegionParams& params) const
 {
+    constexpr double fac = 0.5 * phys::qe*phys::qe / (phys::c * phys::me*phys::me * phys::epsilon0);
+    
+    double g = 0.;
+    for (size_t i = 0; i < params.nhh; ++i) {
+    }
 }
 
 
