@@ -23,6 +23,17 @@ from ...utils.widgets import ComboBox, TextEditWithCB
 from ...utils import getattr_by_path
 
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+
 def controller_to_aligners(position_controllers):
     '''
     Convert data from widgets which allow to set aligner parameters to list of GNAligner.

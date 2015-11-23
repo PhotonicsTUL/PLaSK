@@ -15,6 +15,16 @@ from lxml import etree
 from .utils.qundo import UndoCommandWithSetter
 
 try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+try:
     import plask
 except ImportError:
     plask = None
@@ -147,7 +157,7 @@ class XPLDocument(object):
             if update_lines: c.update_line_numbers(current_line_in_file)
             element = c.model.get_file_xml_element()
             if len(element) or element.text:
-                section_string = etree.tostring(element, encoding="UTF-8", pretty_print=True)
+                section_string = etree.tostring(element, encoding='unicode', pretty_print=True)
                 lines_count = section_string.count('\n') + 1
                 current_line_in_file += lines_count
                 if sections is None or c.model.name in sections:
@@ -165,7 +175,10 @@ class XPLDocument(object):
                 shutil.copyfile(filename, filename+'.bak')
             except (IOError, OSError):
                 pass
-        open(filename, 'w').write(data)
+        try:
+            open(filename, 'w', encoding='utf8').write(data)
+        except TypeError:
+            open(filename, 'w').write(data.encode('utf8'))
         self.filename = filename
         self.set_clean()
 

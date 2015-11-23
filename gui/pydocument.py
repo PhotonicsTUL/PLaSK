@@ -17,7 +17,9 @@ from .qt import QtGui
 from .controller.script import ScriptController
 from .utils.config import CONFIG
 
-coding_re = re.compile(r"(?:\s*#[^\n]*\n)?\s*#[^\n]*coding[=:]\s*([-\w.]+)")
+coding_re_s = re.compile("(?:\\s*#[^\\n]*\\n)?\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
+coding_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)?\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
+
 
 class _Dummy(object):
     pass
@@ -50,10 +52,10 @@ class PyDocument(object):
         self.window.set_changed(changed)
 
     def load_from_file(self, filename):
-        data = open(filename, 'r').read()
-        m = coding_re.match(data)
+        data = open(filename, 'rb').read()
+        m = coding_re_b.match(data)
         if m:
-            coding = m.group(1)
+            coding = m.group(1).decode('ascii')
         else:
             coding = 'utf8'
         self.script.model.set_text(data.decode(coding))
@@ -62,11 +64,11 @@ class PyDocument(object):
 
     def save_to_file(self, filename):
         text = self.script.model.get_text()
-        m = coding_re.match(text)
+        m = coding_re_s.match(text)
         if m:
             coding = m.group(1)
             try:
-                text = text.encode(coding)
+                text.encode(coding)
             except UnicodeEncodeError:
                 QtGui.QMessageBox.critical(None, "Error while saving file.",
                                            "The file could not be saved with the specified encoding '{}'.\n\n"
@@ -74,14 +76,16 @@ class PyDocument(object):
                 return
             self.coding = coding
         else:
-            text = text.encode('utf-8')
             self.coding = 'utf-8'
         if CONFIG['main_window/make_backup']:
             try:
                 shutil.copyfile(filename, filename+'.bak')
             except (IOError, OSError):
                 pass
-        open(filename, 'w').write(text)
+        try:
+            open(filename, 'w', encoding=self.coding).write(text)
+        except TypeError:
+            open(filename, 'w', ).write(text.encode(self.coding))
         self.filename = filename
         self.set_changed(False)
 

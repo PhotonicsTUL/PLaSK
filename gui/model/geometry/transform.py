@@ -17,6 +17,18 @@ from .constructor import construct_geometry_object
 from ...utils.str import none_to_empty
 from ...utils.validators import can_be_float, can_be_int
 from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children
+from ...utils.compat import next
+
+
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
 
 
 class GNTransform(GNObject):
@@ -35,7 +47,7 @@ class GNTransform(GNObject):
         return not self.children
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()
+        next(path_iterator)
         return 0    # some transform, like mirror, can produce some fake, extra children
 
     def create_info(self, res, names):
@@ -420,8 +432,8 @@ class GNArrange(GNTransform):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()
-        path_iterator.next()
+        next(path_iterator)
+        next(path_iterator)
         return 0
 
 
@@ -487,8 +499,8 @@ class GNLattice(GNTransform):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()
-        path_iterator.next()
+        next(path_iterator)
+        next(path_iterator)
         return 0
 
     def get_xml_element(self, conf):

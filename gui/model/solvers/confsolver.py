@@ -15,6 +15,21 @@ from lxml import etree
 from ...utils.xml import AttributeReader, print_interior
 from . import Solver, SOLVERS
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+try:
+    import plask
+except ImportError:
+    plask = None
+
 
 class Attr(object):
     def __init__(self, name, label, help):
@@ -118,7 +133,8 @@ class ConfSolver(Solver):
                         etree.SubElement(element, tag, attrs)
             else:
                 if data:
-                    lines = data.encode('utf-8').split('\n')
+                    if not isinstance(data, str): data = data.encode('utf8')
+                    lines = data.split('\n')
                     if not lines[-1]: lines = lines[:-1]
                     lines = '\n    '.join(lines)
                     el = etree.fromstringlist(['<', tag, '>\n    ', lines, '\n  </', tag, '>'])

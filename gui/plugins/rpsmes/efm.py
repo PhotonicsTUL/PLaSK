@@ -21,6 +21,21 @@ else:
 import sys
 import os
 
+try:
+    next = next
+except NameError:
+    _raiseStopIteration = object()
+    def next(iterator, default=_raiseStopIteration):
+        if not hasattr(iterator, 'next'):
+            raise TypeError("not an iterator")
+        try:
+            return iterator.next()
+        except StopIteration:
+            if default is _raiseStopIteration:
+                raise
+            else:
+                return default
+
 
 class Material(object):
 
@@ -161,25 +176,25 @@ def read_efm(fname):
 
     def skip(n):
         for _ in range(n):
-            input.next()
+            next(input)
 
     # Read header
     skip(3)
-    _, nl = input.next(); nl = int(nl)
+    _, nl = next(input); nl = int(nl)
     skip(5)
-    _, lam0 = input.next(); lam0 = 1e3 * float(lam0)
+    _, lam0 = next(input); lam0 = 1e3 * float(lam0)
     skip(5)
-    _, m = input.next()
+    _, m = next(input)
     skip(5)
 
     materials = {}
     layers = []
 
     for i in range(nl):
-        name0, name2, name1 = input.next()
-        nr0, ar0, ng0, ag0, nr2, ar2, ng2, ag2, d = map(float, input.next()[2::2])
-        tnr0, tar0, _, _, tnr2, tar2, _, _ = map(float, input.next()[1::2])
-        nr1, ar1, ng1, ag1, tnr1, tar1, _, _ = map(float, input.next()[1::2])
+        name0, name2, name1 = next(input)
+        nr0, ar0, ng0, ag0, nr2, ar2, ng2, ag2, d = map(float, next(input)[2::2])
+        tnr0, tar0, _, _, tnr2, tar2, _, _ = map(float, next(input)[1::2])
+        nr1, ar1, ng1, ag1, tnr1, tar1, _, _ = map(float, next(input)[1::2])
         mat0 = Material(materials, name0, nr0, ar0, ng0, ag0, tnr0, tar0, lam0)
         mat1 = Material(materials, name1, nr1, ar1, ng1, ag1, tnr1, tar1, lam0)
         mat2 = Material(materials, name2, nr2, ar2, ng2, ag2, tnr2, tar2, lam0)

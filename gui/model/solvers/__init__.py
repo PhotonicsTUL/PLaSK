@@ -54,13 +54,13 @@ class Solver(TreeFragmentModel):
                 self.lib = attr['lib']
 
     def set_text(self, text):
-        tab = ['<', self.category.encode('utf-8'),
-               ' solver=', quoteattr(self.solver).encode('utf-8')]
+        tab = ['<', self.category,
+               ' solver=', quoteattr(self.solver)]
         if self.lib is not None:
-            tab.extend([' lib=', quoteattr(self.lib).encode('utf-8')])
-        tab.extend([' name=', quoteattr(self.name).encode('utf-8'), '>',
-                    text.encode('utf-8'),
-                    '</', self.category.encode('utf-8'), '>'])
+            tab.extend([' lib=', quoteattr(self.lib)])
+        tab.extend([' name=', quoteattr(self.name), '>',
+                    text,
+                    '</', self.category, '>'])
         self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))
 
     def get_controller(self, document):

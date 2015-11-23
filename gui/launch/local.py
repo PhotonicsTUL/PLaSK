@@ -292,7 +292,7 @@ class PlaskThread(QtCore.QThread):
         if sep == '\\':
             sep = '\\\\'
             fd = fd.replace('\\', '\\\\')
-        self.link = re.compile(ur'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\d+)(.*)'.format(fd, sep, fb))
+        self.link = re.compile(u'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\\d+)(.*)'.format(fd, sep, fb))
         self.lines = lines
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
@@ -320,7 +320,7 @@ class PlaskThread(QtCore.QThread):
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
             line = line.decode('utf-8')
-        line = self.link.sub(ur'<a style="color: {}" href="line:\2">\1&nbsp;line&nbsp;\2\3</a>'.format(color), line)
+        line = self.link.sub(u'<a style="color: {}" href="line:\\2">\\1&nbsp;line&nbsp;\\2\\3</a>'.format(color), line)
         try:
             self.mutex.lock()
             self.lines.append((cat[:-1].strip(),

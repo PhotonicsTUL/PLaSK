@@ -23,11 +23,21 @@ from ...utils.qundo import UndoCommandWithSetter
 from ...model.grids import GridsModel
 
 try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+
+try:
     import plask
+    from .plot_widget import PlotWidget
 except ImportError:
     plask = None
-else:
-    from .plot_widget import PlotWidget
 
 
 class GridsController(Controller):

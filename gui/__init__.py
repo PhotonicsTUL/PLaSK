@@ -21,6 +21,16 @@ import subprocess
 import pkgutil
 
 try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+try:
     _DEBUG = eval(os.environ['PLASKGUI_DEBUG'].title())
 except KeyError:
     _DEBUG = False
@@ -350,7 +360,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             document.load_from_file(filename)
         except Exception as e:
-            if _DEBUG: raise
+            if _DEBUG: raise e
             QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
@@ -456,11 +466,12 @@ class MainWindow(QtGui.QMainWindow):
                 #msgbox.setDefaultButton(QtGui.QMessageBox.Yes);
                 return msgbox.exec_() == QtGui.QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
+        sys.stdout.flush()
         if errors:
             msgbox = QtGui.QMessageBox()
             msgbox.setText("Document contains some non-critical errors. "
                            "It is possible to save it but probably not to run.")
-            msgbox.setDetailedText('\n'.join(map(str, errors)))
+            msgbox.setDetailedText(u'\n'.join(map(unicode, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
             msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             msgbox.setIcon(QtGui.QMessageBox.Warning)

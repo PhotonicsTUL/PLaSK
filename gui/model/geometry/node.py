@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 from lxml import etree
 from numbers import Number
 
@@ -17,6 +18,7 @@ from ...utils.xml import AttributeReader, OrderedTagReader
 from .reader import GNReadConf, axes_dim
 from .types import gname
 from .. import Info
+from ...utils.compat import next
 
 
 class GNode(object):
@@ -395,7 +397,7 @@ class GNode(object):
         :param path_iterator: iterator over path
         :return int: index
         """
-        return path_iterator.next()
+        return next(path_iterator)
 
     def model_to_real_index(self, index):
         """

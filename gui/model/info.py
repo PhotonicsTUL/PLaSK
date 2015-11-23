@@ -145,7 +145,7 @@ class InfoSource(object):
         if self._info is None:
             self._info = self.create_info()
         if level is not None:
-            return filter(lambda m: m.level == level, self._info)
+            return tuple(m for m in self._info if m.level == level)
         else:
             return self._info
 

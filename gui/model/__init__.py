@@ -130,9 +130,8 @@ class SectionModel(TreeFragmentModel):
 
     def set_text(self, text):
         self.set_xml_element(
-            etree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
-                                        self.name.encode('utf-8'), '>'], parser=XML_parser))
-                                        # .encode('utf-8') wymagane (tylko) przez lxml
+            etree.fromstringlist(['<', self.name, '>', text, '</',
+                                        self.name, '>'], parser=XML_parser))
 
     def is_read_only(self):
         return self.externalSource is not None

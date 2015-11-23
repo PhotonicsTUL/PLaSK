@@ -801,19 +801,27 @@ if(UNIX)
 
     execute_process(COMMAND chmod 0755 ${CMAKE_BINARY_DIR}/postinst ${CMAKE_BINARY_DIR}/prerm)
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v//100000,v//100%1000,v//10%10]))"
                     OUTPUT_VARIABLE boostver)
 
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3, python (>= 2.7.0), python-numpy")
-    if(BUILD_GUI)
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python-pyside | python-qt4 | python-pyqt5")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3")
+    if (${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python (>= 2.7.0), python-numpy")
+        if(BUILD_GUI)
+            set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python-pyside | python-qt4")
+        endif()
+        set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython (>= 0.13), python-matplotlib, python-h5py, python-scipy")
+    else()
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3 (>= 3.4.0), python3-numpy")
+        if(BUILD_GUI)
+            set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3-pyside | python3-qt4")
+        endif()
+        set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython3 (>= 0.13), python3-matplotlib, python3-h5py, python3-scipy")
     endif()
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython (>= 0.13), python-matplotlib, python-h5py")
-    set(CPACK_DEBIAN_PACKAGE_SUGGESTS "ipython-qtconsole (>= 0.13)")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
     set(CPACK_RPM_PACKAGE_GROUP Applications/Engineering)

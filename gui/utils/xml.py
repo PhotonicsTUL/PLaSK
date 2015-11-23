@@ -10,20 +10,20 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+
 from lxml import etree
 
-# default, used XML parser
-#XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, strip_cdata=False)
 #TODO remove_comments set to False when all will be ready to support it
-XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False)
+XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False, encoding='utf8')
 
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
     text = element.text.lstrip('\n') if element.text else ''
     for c in element:
-        text += etree.tostring(c, pretty_print=True)
+        text += etree.tostring(c, pretty_print=True, encoding='unicode')
     return text
+
 
 def attr_to_xml(src_obj, dst_element, *attr_names, **defaults):
     """

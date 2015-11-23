@@ -17,7 +17,7 @@ from .node import GNode
 from .constructor import construct_geometry_object
 from ...utils.validators import can_be_float, can_be_int, can_be_bool
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
-
+from ...utils.compat import next
 
 class GNZero(GNode):
 
@@ -161,8 +161,8 @@ class GNContainerBase(GNObject):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
-        index = path_iterator.next()
-        path_iterator.next()    # skip 0
+        index = next(path_iterator)
+        next(path_iterator)    # skip 0
         return index
 
 

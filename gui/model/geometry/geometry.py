@@ -2,7 +2,7 @@ from .constructor import geometry_object_names, construct_geometry_object
 from .object import GNObject
 from .transform import GNExtrusion, GNRevolution
 from ...utils.xml import xml_to_attr, attr_to_xml
-
+from ...utils.compat import next
 
 class GNGeometryBase(GNObject):
 
@@ -134,9 +134,9 @@ class GNCartesian(GNGeometryBase):
         return res
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()     # skip 0
+        next(path_iterator)     # skip 0
         if self.dim == 2 and not isinstance(self.children[0], GNExtrusion):
-            path_iterator.next()    # skip 0
+            next(path_iterator)    # skip 0
         return 0
 
     def model_to_real_index(self, index):
@@ -199,9 +199,9 @@ class GNCylindrical(GNGeometryBase):
         return res
 
     def real_to_model_index(self, path_iterator):
-        path_iterator.next()    # skip 0
+        next(path_iterator)    # skip 0
         if not isinstance(self.children[0], GNRevolution):
-            path_iterator.next()    # skip 0
+            next(path_iterator)    # skip 0
         return 0
 
     def model_to_real_index(self, index):

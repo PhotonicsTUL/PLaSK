@@ -16,11 +16,10 @@ from lxml import etree
 from xml.sax.saxutils import quoteattr
 
 from ...qt import QtCore
-from utils import require_str_first_attr_path_component
-
-from ...utils.xml import print_interior, XML_parser, AttributeReader
+from ...utils import require_str_first_attr_path_component
+from ...utils.xml import XML_parser, AttributeReader
 from ...controller.source import SourceEditController
-from .. import TreeFragmentModel, Info, SectionModel
+from .. import TreeFragmentModel, Info
 from ..table import TableModel
 
 
@@ -63,14 +62,14 @@ class Grid(TreeFragmentModel):
 
     def set_text(self, text):
         if self.is_generator:
-            tab = ['<generator name=', quoteattr(self.name).encode('utf-8'), ' type=',
-                   quoteattr(self.type).encode('utf-8'), ' method=', quoteattr(self.method).encode('utf-8'), '>',
-                   text.encode('utf-8'), '</generator>']
+            tab = ['<generator name=', quoteattr(self.name), ' type=',
+                   quoteattr(self.type), ' method=', quoteattr(self.method), '>',
+                   text, '</generator>']
         else:
-            tab = ['<mesh name=', quoteattr(self.name).encode('utf-8'), ' type=',
-                   quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>']
+            tab = ['<mesh name=', quoteattr(self.name), ' type=',
+                   quoteattr(self.type), '>', text, '</mesh>']
         #print ''.join(tab)
-        self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))
 
     @property
     def type_and_kind_str(self):

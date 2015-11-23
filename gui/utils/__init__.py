@@ -13,6 +13,17 @@
 from bisect import bisect_left
 
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+
 def sorted_index(sorted_list, x):
     """
         Locate the leftmost value exactly equal to x, raise ValueError if x is not in sorted_list.

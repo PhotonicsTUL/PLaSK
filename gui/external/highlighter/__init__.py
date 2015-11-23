@@ -8,13 +8,22 @@ import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
 
 class Format(object):
 
-    __slots__ = ("NAME", "name", "tcf")
+    __slots__ = ("name", "tcf")
 
     NAME = QTextFormat.UserProperty + 1
-
 
     def __init__(self, name, color=None, bold=None, italic=None, base_format=None):
         self.name = name

@@ -10,6 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys
+
 import plask
 
 from ...qt import QtGui, QtCore
@@ -20,7 +22,10 @@ from ...model.geometry.geometry import GNGeometryBase
 from .. import Controller
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea
 
-from .plot_widget import PlotWidget
+try:
+    from .plot_widget import PlotWidget
+except ImportError:
+    PlotWidget = None
 
 
 class GeometryController(Controller):
@@ -128,7 +133,7 @@ class GeometryController(Controller):
     def plot_element(self, tree_element, set_limits):
         manager = plask.Manager(draft=True)
         try:
-            manager.load(self.document.get_content(sections=('defines', 'geometry')))
+            manager.load(self.document.get_content(sections=('defines', 'geometry')).encode('utf8'))
             plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
             if tree_element != self.plotted_tree_element:
                 self.geometry_view.toolbar._views.clear()
@@ -140,6 +145,7 @@ class GeometryController(Controller):
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
+                sys.stderr.flush()
             return False
         else:
             self.manager = manager
@@ -281,18 +287,20 @@ class GeometryController(Controller):
         self.parent_for_editor_widget = VerticalScrollArea()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
-        self.geometry_view = PlotWidget(self, picker=True)
-        self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
-
-        self.status_bar = QtGui.QLabel()
-        self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
-
-        self.geometry_view.layout().addWidget(self.status_bar)
-
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
-        self.main_splitter.addWidget(self.geometry_view)
+
+        if PlotWidget is not None:
+            self.geometry_view = PlotWidget(self, picker=True)
+            self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
+
+            self.status_bar = QtGui.QLabel()
+            self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
+
+            self.geometry_view.layout().addWidget(self.status_bar)
+
+            self.main_splitter.addWidget(self.geometry_view)
 
         self.document.window.config_changed.connect(self.reconfig)
 
@@ -386,7 +394,7 @@ class GeometryController(Controller):
                 self.geometry_view.axes.set_xlim(self._lims[0])
                 self.geometry_view.axes.set_ylim(self._lims[1])
             self.show_selection()
-        except:
+        except IndexError:
             new_index = self.model.index(0, 0)
             self.tree.selectionModel().select(new_index,
                                               QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |

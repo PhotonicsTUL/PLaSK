@@ -25,6 +25,21 @@ except ImportError:
 else:
     qt = True
 
+try:
+    next = next
+except NameError:
+    _raiseStopIteration = object()
+    def next(iterator, default=_raiseStopIteration):
+        if not hasattr(iterator, 'next'):
+            raise TypeError("not an iterator")
+        try:
+            return iterator.next()
+        except StopIteration:
+            if default is _raiseStopIteration:
+                raise
+            else:
+                return default
+
 
 class UniqueId(object):
     """Generator of unique names"""
@@ -354,13 +369,13 @@ def read_dan(fname):
     input = Input(ifile)
 
     # Header
-    name = input.next()[0]  # structure name (will be used for output file)
-    matdb = input.next()[0]  # materials database spec (All by default)
-    line = input.next()  # symmetry (0: Cartesian2D, 1: Cylindrical2D) type and length
+    name = next(input)[0]  # structure name (will be used for output file)
+    matdb = next(input)[0]  # materials database spec (All by default)
+    line = next(input)  # symmetry (0: Cartesian2D, 1: Cylindrical2D) type and length
     sym = int(line[0])
     length = float(line[1])
-    setting = int(input.next()[0])  # setting (10,11 - temporal calculations, 100,100 - 3D)
-    line = input.next()  # number of defined regions and scale
+    setting = int(next(input)[0])  # setting (10,11 - temporal calculations, 100,100 - 3D)
+    line = next(input)  # number of defined regions and scale
     nregions = int(line[0])
     scale = float(line[1]) * 1e6  # in xpl all dimensions are in microns
 
@@ -381,24 +396,24 @@ def read_dan(fname):
         r = Region(axes)
 
         # number, position, material
-        line = input.next()
+        line = next(input)
         n = int(line[0])
         if n == 0:
             r.repeat = int(line[1])
             r.shift = [0., 0.]
             r.shift[{'pionowo': 1, 'poziomo': 0}[line[3].lower()]] = scale * float(line[2])
-            line = input.next()
+            line = next(input)
         r.x0, r.y0, r.x1, r.y1 = [scale * float(x) for x in line[1:5]]
         mat = line[5]
         if mat == "WYPELNIENIE":
-            line = input.next()
-            line = input.next()
-            line = input.next()
-            line = input.next()
+            line = next(input)
+            line = next(input)
+            line = next(input)
+            line = next(input)
             continue
 
         # conductivity
-        line = input.next()
+        line = next(input)
         sigma = [float(line[0]), float(line[1])]
         sigma_t = line[2].lower()
 
@@ -406,11 +421,11 @@ def read_dan(fname):
             pnjcond = sigma
 
         # doping
-        line = input.next()
+        line = next(input)
         doping, dopant = 1e-6 * float(line[0]), line[1]
 
         # heat conductivity
-        line = input.next()
+        line = next(input)
         kappa = [float(line[0]), float(line[1])]
         kappa_t = line[2].lower()
 
@@ -464,7 +479,7 @@ def read_dan(fname):
             r.material += "={:g}".format(doping)  # add doping information
 
         # heat sources
-        line = input.next()
+        line = next(input)
         ht = int(line[0])
         if sigma_t == 'j':
             r.roles.append('active')
@@ -482,10 +497,10 @@ def read_dan(fname):
     # boundary conditions
     def parse_bc(vname='value', opt=''):
         bounds = []
-        line = input.next()
+        line = next(input)
         nbc = int(line[0])
         for nc in range(nbc):
-            line = input.next()
+            line = next(input)
             x0, y0, x1, y1 = [scale * float(x) for x in line[0:4]]
             try:
                 val = float(line[4])

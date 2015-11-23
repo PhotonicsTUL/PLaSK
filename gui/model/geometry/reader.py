@@ -10,7 +10,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from plask import axeslist_by_name
+try:
+    from plask import axeslist_by_name
+except ImportError:
+    pass
+
+
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
 
 
 class GNAligner(object):
@@ -83,9 +97,11 @@ def axes_as_list(name_or_list):
                 neutral axes names if name_or_list is improper string
     """
     try:
-        return axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
+        return axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) \
+               else list(name_or_list)
     except:
         return ['long', 'tran', 'vert']
+
 
 def axes_dim(axes, dim):
     """

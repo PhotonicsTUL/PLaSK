@@ -15,7 +15,10 @@ from collections import OrderedDict
 from lxml import etree
 from copy import deepcopy
 import operator
-import cStringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 try:
     import cPickle as pickle
@@ -32,7 +35,16 @@ from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries
 from .node import GNFakeRoot
 
-__author__ = 'qwak'
+
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
 
 
 class PyObjMime(QtCore.QMimeData):
@@ -54,7 +66,7 @@ class PyObjMime(QtCore.QMimeData):
     def itemInstance(self):
         if self.data is not None:
             return self.data
-        io = cStringIO.StringIO(str(self.data(self.MIMETYPE)))
+        io = StringIO(str(self.data(self.MIMETYPE)))
         try:
             # Skip the type.
             pickle.load(io)

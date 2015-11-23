@@ -17,4 +17,5 @@ except SystemExit as e:
 except:
     import traceback as tb
     tb.print_exc()
+    sys.stderr.flush()
     sys.exit(1)
