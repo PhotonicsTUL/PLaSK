@@ -303,6 +303,10 @@ class PlaskThread(QtCore.QThread):
 
     def parse_line(self, line):
         if not line: return
+        try:
+            line = line.decode(self.main_window.document.coding)
+        except UnicodeDecodeError:
+            line = line.decode('utf-8')
         cat = line[:15]
         line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
         if   cat == "CRITICAL ERROR:": color = "red    "
@@ -316,10 +320,6 @@ class PlaskThread(QtCore.QThread):
         elif cat == "DEBUG         :": color = "gray   "
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
-        try:
-            line = line.decode(self.main_window.document.coding)
-        except UnicodeDecodeError:
-            line = line.decode('utf-8')
         line = self.link.sub(u'<a style="color: {}" href="line:\\2">\\1&nbsp;line&nbsp;\\2\\3</a>'.format(color), line)
         try:
             self.mutex.lock()

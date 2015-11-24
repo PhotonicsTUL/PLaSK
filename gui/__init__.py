@@ -35,7 +35,6 @@ try:
 except KeyError:
     _DEBUG = False
 
-
 from .qt import QtGui, QtCore, QtSignal
 from .qt.QtCore import Qt
 
@@ -653,6 +652,14 @@ def main():
         global _DEBUG
         del sys.argv[_debug_index]
         _DEBUG = True
+
+    if _DEBUG:
+        import traceback
+        def excepthook(exc_type, exc_val, tracebackobj):
+            msg = ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj)) + '\n'
+            sys.stderr.write(msg)
+            sys.stderr.flush()
+        sys.excepthook = excepthook
 
     global APPLICATION
     if winsparkle:

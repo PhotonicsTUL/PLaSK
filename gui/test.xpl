@@ -31,7 +31,7 @@
         </stack>
       </arrange>
       <shelf flat="no">
-        <rectangle material="Al(0.02)GaAs" dtran="1" dvert="0.2"/>
+        <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         <gap total="2"/>
         <triangle material="AlOx2" atran="-1" avert="0" btran="0" bvert="0.2"/>
       </shelf>
@@ -215,7 +215,7 @@
 <script><![CDATA[
 from scipy import optimize
 
-print mesaRadius + 0 # 0
+print(mesaRadius + 0) # 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
@@ -347,7 +347,7 @@ class A(object):
         self.a = 1
         
 a = A()
-print a.a
+print(a.a)
 ]]></script>
 
 </plask>

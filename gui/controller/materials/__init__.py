@@ -87,7 +87,7 @@ class ComponentsPopup(QtGui.QFrame):
         mat = ''
         for el, _ in self.elements:
             mat += el
-            if self.edits.has_key(el):
+            if el in self.edits:
                 val = str(self.edits[el].text())
                 if val: mat += '(' + val + ')'
         if self.label:
@@ -155,17 +155,18 @@ class MaterialsComboBox(QtGui.QComboBox):
             self.addItems(material_list)
             self.setMaxVisibleItems(len(material_list))
         self.currentIndexChanged[str].connect(self.show_components_popup)
+        self.material_edit_popup = None
 
     def focusOutEvent(self, event):
         if self.material_edit_popup is None:
             self.editingFinished.emit()
         super(MaterialsComboBox, self).focusOutEvent(event)
 
-    # def keyPressEvent(self, event):
-    #     super(MaterialsComboBox, self).keyPressEvent(event)
-    #     if event.key() in (Qt.Key_Enter, Qt.Key_Return):
-    #         self.editingFinished.emit()
-    #
+    def keyPressEvent(self, event):
+        super(MaterialsComboBox, self).keyPressEvent(event)
+        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+            self.editingFinished.emit()
+
     def append_list(self, list_to_append, insert_separator=True):
         """
         Append list to combo-box.
