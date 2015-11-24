@@ -13,6 +13,7 @@
 from lxml.etree import ElementTree, SubElement
 
 from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader, attr_to_xml, xml_to_attr
+from ...utils.validators import can_be_float, can_be_int
 from . import Grid
 
 
@@ -39,6 +40,18 @@ class AxisConf(object):
     def set_from_xml(self, axis_element):
         xml_to_attr(axis_element, self, 'start', 'stop', 'num', 'type')
         self.points = None if axis_element is None else axis_element.text
+
+    def create_info(self, grid_model, res, rows, parent_property):
+        if isinstance(parent_property, basestring): parent_property = (parent_property,)
+        if not can_be_float(self.start):
+            grid_model._required(res, rows, parent_property+('start',),
+                                 '"start" (position of the first point on the axis)', type='float')
+        if not can_be_float(self.stop):
+            grid_model._required(res, rows, parent_property+('stop',),
+                                 '"stop" (position of the last point on the axis)', type='float')
+        if not can_be_int(self.num):
+            grid_model._required(res, rows, parent_property+('num',),
+                                 '"num" (number of the equally distributed points along the axis)', type='integer')
 
 
 #RectangularMesh1D(Grid)
@@ -76,6 +89,10 @@ class RectangularMesh1D(Grid):
         from ...controller.grids.mesh_rectilinear import RectangularMesh1DController
         return RectangularMesh1DController(document=document, model=self)
 
+    def create_info(self, res, rows):
+        super(RectangularMesh1D, self).create_info(res, rows)
+        self.axis.create_info(self, res, rows, 'axis')
+
 
 class RectangularMesh(Grid):
     """Model of 2D and 3D rectangular mesh"""
@@ -110,3 +127,8 @@ class RectangularMesh(Grid):
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMeshController
         return RectangularMeshController(document=document, model=self)
+
+    def create_info(self, res, rows):
+        super(RectangularMesh, self).create_info(res, rows)
+        for i in range(0, self.dim):
+            self.axis[i].create_info(self, res, rows, ('axis', i))

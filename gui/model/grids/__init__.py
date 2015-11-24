@@ -87,7 +87,7 @@ class Grid(TreeFragmentModel):
         return self.tree_parent.undo_stack
 
     def _append_info(self, res, text, level=None, **kwargs):
-        res.append(Info(text, level, **kwargs))
+        res.append(Info('{} in {} "{}"'.format(text, self.type_and_kind_str, self.name), level, **kwargs))
 
     def _append_error(self, res, text, **kwargs):
         self._append_info(res, text, Info.ERROR, **kwargs)
@@ -95,7 +95,7 @@ class Grid(TreeFragmentModel):
     def _required(self, res, rows, property, display_name=None, type=None, **kwargs):
         if display_name is None: display_name = '"{}"'.format(require_str_first_attr_path_component(property))
         if type is not None: display_name = 'valid {} value for {}'.format(type, display_name)
-        self._append_error(res, 'Specifying {} is required in {} "{}"'.format(display_name, self.type_and_kind_str, self.name),
+        self._append_error(res, 'Specifying {} is required'.format(display_name),
                            rows=rows, property=property, **kwargs)
 
     def create_info(self, res, rows):

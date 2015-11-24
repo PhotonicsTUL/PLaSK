@@ -136,10 +136,10 @@ class RectangularMesh1DController(GridController):
     """1D rectangular mesh (ordered or regular) script"""
     def __init__(self, document, model):
         super(RectangularMesh1DController, self).__init__(document=document, model=model)
-        self.editor = AxisEdit(self, 'axis', None, allow_type_select=False, accept_non_regular=not model.is_regular)
+        self.axis = AxisEdit(self, 'axis', None, allow_type_select=False, accept_non_regular=not model.is_regular)
 
     def fill_form(self):
-         with self.mute_changes(): self.editor.fill_form()
+         with self.mute_changes(): self.axis.fill_form()
 
     #def save_data_in_model(self):
     #    self.editor.to_model(self.model.axis)
@@ -149,7 +149,7 @@ class RectangularMesh1DController(GridController):
     #        self.editor.fill_form()
 
     def get_widget(self):
-        return self.editor
+        return self.axis
 
 
 class RectangularMeshController(GridController):
@@ -159,19 +159,19 @@ class RectangularMeshController(GridController):
         super(RectangularMeshController, self).__init__(document=document, model=model)
         self.form = QtGui.QGroupBox()
         vbox = QtGui.QVBoxLayout()
-        self.axis_edit = []
+        self.axis = []
         for i in range(0, model.dim):
-            self.axis_edit.append(
+            self.axis.append(
                 AxisEdit(self, ('axis', i), model.axis_tag_name(i), title=AXIS_NAMES[model.dim - 1][i].title() + ' axis',
                          allow_type_select=True))
-            vbox.addWidget(self.axis_edit[-1])
+            vbox.addWidget(self.axis[-1])
         vbox.addStretch()
         self.form.setLayout(vbox)
 
     def fill_form(self):
         with self.mute_changes():
             for i in range(0, self.model.dim):
-                self.axis_edit[i].fill_form()
+                self.axis[i].fill_form()
 
     # def save_data_in_model(self):
     #     for i in range(0, self.model.dim):
