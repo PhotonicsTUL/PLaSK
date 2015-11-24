@@ -21,7 +21,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     };
 
     struct ActiveRegionParams;
-    
+
     /// Data for energy level
     struct Level {
         double E;                   ///< Level energy
@@ -63,12 +63,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
         }
 
-        /// Return \p true if given layer is quantum well
-        bool isQW(size_t n) const
-        {
-            return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
-        }
-
         /// Return bounding box of the whole active region
         Box2D getBoundingBox() const
         {
@@ -80,18 +74,33 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             return getBoundingBox().contains(point);
         }
 
-        /// Return \p true if given point is inside quantum well
-        bool inQW(const Vec<2>& point) const {
-            if (!contains(point)) return false;
-            assert(layers->getChildForHeight(point.c1-origin.c1));
-            return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
+        /// Return \p true if specified layer contains the point in the active region
+        bool layerContains(const Vec<2>& point, size_t n) const {
+            return getLayerBox(n).contains(point);
+        }
+
+        /// Return layer containing a specified point or maxint.
+        size_t layerContaining(const Vec<2>& point) const {
+            for (size_t i = 0; i != layers->children.size(); ++i)
+                if (layerContains(point, i)) return i;
+            return std::numeric_limits<size_t>::max();
+        }
+
+        bool isQW(size_t n) const {
+            return isqw[n];
+        }
+
+        bool isQW(const Vec<2>& point) const {
+            return isqw[layerContaining(point)];
         }
 
         std::vector<shared_ptr<Material>> materials;///< All materials in the active region
         std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
         std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
+        std::vector<bool> isqw;                     ///< Flags denoting if specified layer is qw
 
         double total;                               ///< Total active region thickness [µm]
+        double totalqw;                             ///< Total accepted quantum wells thickness [µm]
         double bottom;                              ///< Bottom spacer thickness [µm]
         double top;                                 ///< Top spacer thickness [µm]
 
@@ -115,6 +124,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                 thicknesses.push_back(thck);
             }
             if (materials.size() > 2) {
+                double mel = std::numeric_limits<double>::max(), mhh = std::numeric_limits<double>::lowest(), mlh = std::numeric_limits<double>::lowest();
                 Material* material = materials[0].get();
                 double el0 = material->CB(solver->T0, 0., 'G'),
                        hh0 = material->VB(solver->T0, 0., 'G',  'H'),
@@ -132,12 +142,31 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                         if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
                             throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
                         wells.push_back(i-1);
-                    }
-                    else if (i == 2) wells.push_back(0);
+                        if (el1 < mel) mel = el1;
+                        if (hh1 < mhh) mhh = hh1;
+                        if (lh1 < mhh) mlh = lh1;
+                    } else if (i == 2)
+                        wells.push_back(0);
                     if (el2 != el1) { el0 = el1; el1 = el2; }
                     if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
                     if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
                 }
+                if (el1 < mel) mel = el1;
+                if (hh1 < mhh) mhh = hh1;
+                if (lh1 < mhh) mlh = lh1;
+                isqw.resize(materials.size());
+                isqw[0] = isqw[materials.size()-1] = false;
+                totalqw = 0.;
+                for (size_t i = 1; i < materials.size()-1; ++i) {
+                    material = materials[i].get();
+                    if (material->CB(solver->T0, 0., 'G') < mel && 
+                        (material->VB(solver->T0, 0., 'G',  'H') > mhh || material->VB(solver->T0, 0., 'G',  'L') > mlh)) {
+                        isqw[i] = true;
+                        totalqw += thicknesses[i];
+                    }
+                }
+            } else {
+                isqw.assign(materials.size(), true);
             }
             if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
             // for (auto w: wells) std::cerr << w << " ";
@@ -148,7 +177,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     /// Structure containing active region data for current used
     struct ActiveRegionParams {
         const ActiveRegionInfo& region;
-        std::vector<double> U[3];          ///< Band levels 
+        std::vector<double> U[3];          ///< Band levels
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
 
         std::vector<Level> levels[3];      ///< Approximate electron, heavy and light hole levels
@@ -194,7 +223,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         Tensor2<double> sideM(WhichLevel which) const {
             return 0.5 * (M[which][0] + M[which][M[which].size()-1]);
         }
-        
+
         double delta(WhichLevel which, const ActiveRegionParams& ref) const {
             assert(U[which].size() == ref.U[which].size());
             double delta = 0;
@@ -262,7 +291,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     double matrixelem;              ///< Optical matrix element [m0*eV]
 
     double polarization;            ///< Polarization state ($e_{zz}$)
-    
+
     double T0;                      ///< Temperature used for compiting level estimates
 
   protected:
@@ -335,8 +364,8 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     void findFermiLevels(double& Fc, double& Fv, double n, double T, const ActiveRegionParams& params) const;
 
     /// Find gain before convolution
-    double getGain0(double lam, double Fc, double Fv, double T, const ActiveRegionParams& params) const;
-    
+    double getGain0(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
+
     double getT0() const { return T0; }
     void setT0(double T) { T0 = T; this->invalidate(); }
 

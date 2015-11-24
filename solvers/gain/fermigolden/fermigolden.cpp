@@ -111,14 +111,12 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         bool had_active = false; // indicates if we had active region in this layer
         shared_ptr<Material> layer_material;
-        bool layer_QW = false;
 
         for (size_t c = 0; c < points->axis0->size(); ++c)
         { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
-            bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
             bool substrate = tags.find("substrate") != tags.end();
 
             if (substrate) {
@@ -127,9 +125,6 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 else if (*materialSubstrate != *this->geometry->getMaterial(point))
                     throw Exception("%1%: Non-uniform substrate layer.", this->getId());
             }
-
-            if (QW && !active)
-                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
 
             if (c < ileft) {
                 if (active)
@@ -147,12 +142,9 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                             ileft = c;
                         }
                         layer_material = this->geometry->getMaterial(point);
-                        layer_QW = QW;
                     } else {
                         if (*layer_material != *this->geometry->getMaterial(point))
                             throw Exception("%1%: Non-uniform active region layer.", this->getId());
-                        if (layer_QW != QW)
-                            throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
                 } else if (had_active) {
                     if (!in_active) {
@@ -203,12 +195,11 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size()-1)) {
+                if (last && layer_material == last->getRepresentativeMaterial()) {
                     //TODO check if usage of getRepresentativeMaterial is fine here (was material)
                     last->setSize(w, last->size.c1 + h);
                 } else {
                     auto layer = plask::make_shared<Block<2>>(Vec<2>(w,h), layer_material);
-                    if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
                 }
             } else {
@@ -230,8 +221,6 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
             }
         }
     }
-    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
-        throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
 
     this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
     for (auto& region: regions) region.summarize(this);
@@ -308,7 +297,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, A
     if (params.U[which].size() < 3) return;
 
     size_t start = params.region.wells[qw], stop = params.region.wells[qw+1];
-    double umin = std::numeric_limits<double>::max(), umax = -std::numeric_limits<double>::max();
+    double umin = std::numeric_limits<double>::max(), umax = std::numeric_limits<double>::lowest();
     double num = 0.;
     double ustart, ustop;
     Tensor2<double> M;
@@ -371,7 +360,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
 
     /// Detect range above the wells
     size_t N = params.U[EL].size()-1;
-    double umin = std::numeric_limits<double>::max(), umax = -std::numeric_limits<double>::max();
+    double umin = std::numeric_limits<double>::max(), umax = std::numeric_limits<double>::lowest();
     if (which == EL)
         umax = min(params.U[EL][0], params.U[EL][N]);
     else
@@ -386,6 +375,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
             if (ub > umax) { umax = ub; M = params.M[which][i]; }
         }
     }
+
     if (umax <= umin) return;
 
     double num = 2. * ceil(1e-6 / M_PI * params.region.total * sqrt(2. * (umax-umin) * phys::me / (phys::hb_eV*phys::hb_J) * M.c11));
@@ -535,14 +525,34 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getGain0(double lam, double Fc, double Fv, double T,
+double FermiGoldenGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
                                                   const ActiveRegionParams& params) const
 {
-    constexpr double fac = 0.5 * phys::qe*phys::qe / (phys::c * phys::me*phys::me * phys::epsilon0);
-    
+    constexpr double fac = phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_eV);
+    const double ikT = (1./phys::kB_eV) * T;
+    const double eh = 1. - polarization, el = 0.3333333333333333333333 + polarization;
+
     double g = 0.;
+
     for (size_t i = 0; i < params.nhh; ++i) {
+        const double Ec = params.levels[EL][i].E, Ev = params.levels[HH][i].E;
+        if (hw < Ec-Ev) continue;
+        const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[HH][i].M.c00);
+        const double p2 = (hw - Ec + Ev) * mu;
+        const double Ec0 = Ec + p2 / params.levels[EL][i].M.c00, Ev0 = Ev - p2 / params.levels[HH][i].M.c00;
+        g += fac / (hw * nr * params.region.totalqw) * mu * matrixelem * eh * (1. / (exp(ikT*(Ec0-Fc)) + 1) - (1. / exp(ikT*(Ev0-Fv)) + 1));
     }
+
+    for (size_t i = 0; i < params.nlh; ++i) {
+        const double Ec = params.levels[EL][i].E, Ev = params.levels[LH][i].E;
+        if (hw < Ec-Ev) continue;
+        const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[LH][i].M.c00);
+        const double p2 = (hw - Ec + Ev) * mu;
+        const double Ec0 = Ec + p2 / params.levels[EL][i].M.c00, Ev0 = Ev - p2 / params.levels[LH][i].M.c00;
+        g += fac / (hw * nr * params.region.totalqw) * mu * matrixelem * el * (1. / (exp(ikT*(Ec0-Fc)) + 1) - (1. / exp(ikT*(Ev0-Fv)) + 1));
+    }
+
+    return g;
 }
 
 
@@ -565,10 +575,8 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         {
             auto vaxis = plask::make_shared<OrderedAxis>();
             for(size_t n = 0; n != region.size(); ++n) {
-                if (region.isQW(n)) {
-                    auto box = region.getLayerBox(n);
-                    vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
-                }
+                auto box = region.getLayerBox(n);
+                vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
             }
             mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
                                                          vaxis, RectangularMesh<2>::ORDER_01);
@@ -672,7 +680,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 
     double at(size_t i) const override {
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
-            if (solver->regions[reg].inQW(dest_mesh->at(i)))
+            if (solver->regions[reg].contains(dest_mesh->at(i)))
                 return data[reg][i];
         return 0.;
     }
