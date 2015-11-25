@@ -1,9 +1,9 @@
-#ifndef PLASK__SOLVER__GAIN_FERMIGOLDEN_FERMIGOLDEN_H
-#define PLASK__SOLVER__GAIN_FERMIGOLDEN_FERMIGOLDEN_H
+#ifndef PLASK__SOLVER__GAIN_FREECARRIER_FREECARRIER_H
+#define PLASK__SOLVER__GAIN_FREECARRIER_FREECARRIER_H
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace gain { namespace fermigolden {
+namespace plask { namespace gain { namespace freecarrier {
 
 template <typename GeometryT> struct GainSpectrum;
 
@@ -11,7 +11,7 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>>
+struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>>
 {
     /// Which level to compute
     enum WhichLevel: size_t {
@@ -21,7 +21,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     };
 
     struct ActiveRegionParams;
-
+    
     /// Data for energy level
     struct Level {
         double E;                   ///< Level energy
@@ -54,13 +54,19 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             if (auto m = block->singleMaterial()) return m;
-            throw plask::Exception("FermiGoldenGainSolver requires solid layers.");
+            throw plask::Exception("FreeCarrierGainSolver requires solid layers.");
         }
 
         /// Return translated bounding box of \p n-th layer
         Box2D getLayerBox(size_t n) const
         {
             return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
+        }
+
+        /// Return \p true if given layer is quantum well
+        bool isQW(size_t n) const
+        {
+            return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
         }
 
         /// Return bounding box of the whole active region
@@ -74,30 +80,23 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             return getBoundingBox().contains(point);
         }
 
-        /// Return \p true if specified layer contains the point in the active region
-        bool layerContains(const Vec<2>& point, size_t n) const {
-            return getLayerBox(n).contains(point);
+        /// Return \p true if given point is inside quantum well
+        bool inQW(const Vec<2>& point) const {
+            if (!contains(point)) return false;
+            assert(layers->getChildForHeight(point.c1-origin.c1));
+            return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
         }
 
-        /// Return layer containing a specified point or maxint.
-        size_t layerContaining(const Vec<2>& point) const {
-            for (size_t i = 0; i != layers->children.size(); ++i)
-                if (layerContains(point, i)) return i;
-            return std::numeric_limits<size_t>::max();
-        }
-
-        bool isQW(size_t n) const {
-            return isqw[n];
-        }
-
-        bool isQW(const Vec<2>& point) const {
-            return isqw[layerContaining(point)];
+        double averageNr(double lam, double T, double conc=0.) const {
+            double nr = 0.;
+            for (size_t i = 0; i != materials.size(); ++i)
+                if (isQW(i)) nr += thicknesses[i] * materials[i]->Nr(lam, T, conc).real();
+            return nr / totalqw;
         }
 
         std::vector<shared_ptr<Material>> materials;///< All materials in the active region
         std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
         std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
-        std::vector<bool> isqw;                     ///< Flags denoting if specified layer is qw
 
         double total;                               ///< Total active region thickness [µm]
         double totalqw;                             ///< Total accepted quantum wells thickness [µm]
@@ -108,7 +107,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
          * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
-        void summarize(const FermiGoldenGainSolver<GeometryType>* solver)
+        void summarize(const FreeCarrierGainSolver<GeometryType>* solver)
         {
             auto bbox = layers->getBoundingBox();
             total = bbox.upper[1] - bbox.lower[1] - bottom - top;
@@ -124,7 +123,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                 thicknesses.push_back(thck);
             }
             if (materials.size() > 2) {
-                double mel = std::numeric_limits<double>::max(), mhh = std::numeric_limits<double>::lowest(), mlh = std::numeric_limits<double>::lowest();
                 Material* material = materials[0].get();
                 double el0 = material->CB(solver->T0, 0., 'G'),
                        hh0 = material->VB(solver->T0, 0., 'G',  'H'),
@@ -142,35 +140,17 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
                         if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
                             throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
                         wells.push_back(i-1);
-                        if (el1 < mel) mel = el1;
-                        if (hh1 < mhh) mhh = hh1;
-                        if (lh1 < mhh) mlh = lh1;
-                    } else if (i == 2)
-                        wells.push_back(0);
+                    }
+                    else if (i == 2) wells.push_back(0);
                     if (el2 != el1) { el0 = el1; el1 = el2; }
                     if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
                     if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
                 }
-                if (el1 < mel) mel = el1;
-                if (hh1 < mhh) mhh = hh1;
-                if (lh1 < mhh) mlh = lh1;
-                isqw.resize(materials.size());
-                isqw[0] = isqw[materials.size()-1] = false;
-                totalqw = 0.;
-                for (size_t i = 1; i < materials.size()-1; ++i) {
-                    material = materials[i].get();
-                    if (material->CB(solver->T0, 0., 'G') < mel && 
-                        (material->VB(solver->T0, 0., 'G',  'H') > mhh || material->VB(solver->T0, 0., 'G',  'L') > mlh)) {
-                        isqw[i] = true;
-                        totalqw += thicknesses[i];
-                    }
-                }
-            } else {
-                isqw.assign(materials.size(), true);
             }
             if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
-            // for (auto w: wells) std::cerr << w << " ";
-            // std::cerr << "\n";
+            totalqw = 0.;
+            for (size_t i = 0; i < thicknesses.size(); ++i)
+                if (isQW(i)) totalqw += thicknesses.size();
         }
     };
 
@@ -184,7 +164,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
-        ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
             double n = region.materials.size();
             U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
             M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
@@ -201,10 +181,10 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
             }
         }
 
-        ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionInfo& region):
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region):
             ActiveRegionParams(solver, region, solver->T0) {}
 
-        explicit ActiveRegionParams(const FermiGoldenGainSolver* solver, const ActiveRegionParams& ref, double T):
+        explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T):
             ActiveRegionParams(solver, ref.region, T) {
                 nhh = ref.nhh;
                 nlh = ref.nlh;
@@ -249,9 +229,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
-    FermiGoldenGainSolver(const std::string& name="");
+    FreeCarrierGainSolver(const std::string& name="");
 
-    virtual ~FermiGoldenGainSolver();
+    virtual ~FreeCarrierGainSolver();
 
     virtual std::string getClassName() const;
 
@@ -300,10 +280,6 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 
     bool strained;                  ///< Consider strain in QW?
 
-    inline static double nm_to_eV(double wavelength) {
-        return phys::h_eVc1e9 / wavelength;
-    }
-
     /// Estimate energy levels
     void estimateLevels();
 
@@ -337,7 +313,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
      * \param interp interpolation method
      * \return gain distribution
      */
-    const LazyData<double> getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 
@@ -366,6 +342,9 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     /// Find gain before convolution
     double getGain0(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
 
+    /// Find gain after convolution
+    double getGain(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
+
     double getT0() const { return T0; }
     void setT0(double T) { T0 = T; this->invalidate(); }
 
@@ -378,7 +357,7 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
     /**
      * Reg gain spectrum object for future use
      */
-    GainSpectrum<GeometryType> getGainSpectrum(const Vec<2>& point);
+    shared_ptr<GainSpectrum<GeometryType>> getGainSpectrum(const Vec<2>& point);
 
     friend struct GainSpectrum<GeometryType>;
 };
@@ -390,37 +369,54 @@ struct PLASK_SOLVER_API FermiGoldenGainSolver: public SolverWithMesh<GeometryTyp
 template <typename GeometryT>
 struct GainSpectrum {
 
-    FermiGoldenGainSolver<GeometryT>* solver; ///< Source solver
+    typedef typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams ActiveRegionParams;
+
+    FreeCarrierGainSolver<GeometryT>* solver; ///< Source solver
     boost::optional<Vec<2>> point;            ///< Point in which the gain is calculated
 
-    /// Active region containg the point
-    const typename FermiGoldenGainSolver<GeometryT>::ActiveRegionInfo* region;
+    size_t reg;                         ///< Active region containg the point
+    double temp;                        ///< Temperature
+    double conc;                        ///< Concentration
+    double Fc, Fv;                      ///< Quasi-fermi levels
+    /// Active region params
+    std::unique_ptr<ActiveRegionParams> params;
 
-    double T;                           ///< Temperature
-    double n;                           ///< Carries concentration
 
-    GainSpectrum(FermiGoldenGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
-        for (const auto& reg: solver->regions) {
-            if (reg.contains(point)) {
-                region = &reg;
-                solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onTChange);
-                solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onNChange);
+    GainSpectrum(FreeCarrierGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point) {
+        for (size_t i = 0; i != solver->regions.size(); ++i) {
+            if (solver->regions[i].contains(point)) {
+                reg = i;
+                solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onChange);
+                solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onChange);
+                temp = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
+                conc = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
+                updateParams();
                 return;
             };
         }
         throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
     }
 
-    GainSpectrum(FermiGoldenGainSolver<GeometryT>* solver, double T, double n, const typename FermiGoldenGainSolver<GeometryT>::ActiveRegionInfo* reg):
-        solver(solver), T(T), n(n), region(reg) {}
+    GainSpectrum(FreeCarrierGainSolver<GeometryT>* solver, double T, double n, size_t reg):
+        solver(solver), temp(T), conc(n), reg(reg) {
+        updateParams();
+    }
 
-    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
+    void updateParams() {
+        params.reset(new ActiveRegionParams(solver, solver->params0[reg], temp));
+        Fc = Fv = NAN;
+        solver->findFermiLevels(Fc, Fv, conc, temp, *params);
+    }
 
-    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
+    void onChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        temp = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(*point))[0];
+        conc = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(*point))[0];
+        updateParams();
+    }
 
     ~GainSpectrum() {
-        solver->inTemperature.changedDisconnectMethod(this, &GainSpectrum::onTChange);
-        solver->inCarriersConcentration.changedDisconnectMethod(this, &GainSpectrum::onNChange);
+        solver->inTemperature.changedDisconnectMethod(this, &GainSpectrum::onChange);
+        solver->inCarriersConcentration.changedDisconnectMethod(this, &GainSpectrum::onChange);
     }
 
     /**
@@ -428,18 +424,13 @@ struct GainSpectrum {
      * \param wavelength wavelength to get gain
      * \return gain
      */
-    double getGain(double wavelength) {
-        #pragma omp critical
-        {
-            if (isnan(T) and point) T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(*point))[0];
-            if (isnan(n) and point) n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(*point))[0];
-        }
-//         return solver->getGainModule(wavelength, T, n, *region) // returns gain for single QW layer!
-//             .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwlen); // earlier: qwtotallen
+    double getGain(double wavelength) const {
+        double nr = solver->regions[reg].averageNr(wavelength, temp, conc);
+        return solver->getGain(phys::h_eVc1e9 / wavelength, Fc, Fv, temp, nr, *params);
     }
 };
 
 
-}}} // # namespace plask::gain::fermigolden
+}}} // # namespace plask::gain::freecarrier
 
-#endif // PLASK__SOLVER__GAIN_FERMIGOLDEN_FERMIGOLDEN_H
+#endif // PLASK__SOLVER__GAIN_FREECARRIER_FREECARRIER_H

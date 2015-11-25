@@ -1,5 +1,5 @@
 #include "gauss_matrix.h"
-#include "fermigolden.h"
+#include "freecarrier.h"
 #include "fd.h"
 
 #include <boost/math/tools/roots.hpp>
@@ -7,12 +7,12 @@ using boost::math::tools::toms748_solve;
 using boost::math::tools::bracket_and_solve_root;
 
 
-namespace plask { namespace gain { namespace fermigolden {
+namespace plask { namespace gain { namespace freecarrier {
 
 constexpr double DIFF_STEP = 0.001;
 
 template <typename GeometryType>
-FermiGoldenGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double>& M,
+FreeCarrierGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double>& M,
                                                   WhichLevel which, const ActiveRegionParams& params):
     E(E), M(M)
 {
@@ -29,8 +29,8 @@ FermiGoldenGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double
 
 
 template <typename GeometryType>
-FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
-    outGain(this, &FermiGoldenGainSolver<GeometryType>::getGain, []{return 2;}),
+FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
+    outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData, []{return 2;}),
     lifetime(0.1),
     matrixelem(0.),
     polarization(0.),
@@ -40,19 +40,19 @@ FermiGoldenGainSolver<GeometryType>::FermiGoldenGainSolver(const std::string& na
     quick_levels(true)
 {
     inTemperature = 300.;
-    inTemperature.changedConnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
-    inCarriersConcentration.changedConnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
+    inTemperature.changedConnectMethod(this, &FreeCarrierGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &FreeCarrierGainSolver<GeometryType>::onInputChange);
 }
 
 template <typename GeometryType>
-FermiGoldenGainSolver<GeometryType>::~FermiGoldenGainSolver() {
-    inTemperature.changedDisconnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
-    inCarriersConcentration.changedDisconnectMethod(this, &FermiGoldenGainSolver<GeometryType>::onInputChange);
+FreeCarrierGainSolver<GeometryType>::~FreeCarrierGainSolver() {
+    inTemperature.changedDisconnectMethod(this, &FreeCarrierGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedDisconnectMethod(this, &FreeCarrierGainSolver<GeometryType>::onInputChange);
 }
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
+void FreeCarrierGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     // Load a configuration parameter from XML.
     while (reader.requireTagOrEnd())
@@ -70,7 +70,7 @@ void FermiGoldenGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
 }
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::onInitialize()
+void FreeCarrierGainSolver<GeometryType>::onInitialize()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     detectActiveRegions();
@@ -80,7 +80,7 @@ void FermiGoldenGainSolver<GeometryType>::onInitialize()
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::onInvalidate()
+void FreeCarrierGainSolver<GeometryType>::onInvalidate()
 {
     params0.clear();
     regions.clear();
@@ -88,14 +88,14 @@ void FermiGoldenGainSolver<GeometryType>::onInvalidate()
 }
 
 //template <typename GeometryType>
-//void FermiGoldenGainSolver<GeometryType>::compute()
+//void FreeCarrierGainSolver<GeometryType>::compute()
 //{
 //    this->initCalculation(); // This must be called before any calculation!
 //}
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
+void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
 {
     regions.clear();
 
@@ -111,12 +111,14 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         bool had_active = false; // indicates if we had active region in this layer
         shared_ptr<Material> layer_material;
+        bool layer_QW = false;
 
         for (size_t c = 0; c < points->axis0->size(); ++c)
         { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
+            bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
             bool substrate = tags.find("substrate") != tags.end();
 
             if (substrate) {
@@ -125,6 +127,9 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 else if (*materialSubstrate != *this->geometry->getMaterial(point))
                     throw Exception("%1%: Non-uniform substrate layer.", this->getId());
             }
+
+            if (QW && !active)
+                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
 
             if (c < ileft) {
                 if (active)
@@ -142,9 +147,12 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                             ileft = c;
                         }
                         layer_material = this->geometry->getMaterial(point);
+                        layer_QW = QW;
                     } else {
                         if (*layer_material != *this->geometry->getMaterial(point))
                             throw Exception("%1%: Non-uniform active region layer.", this->getId());
+                        if (layer_QW != QW)
+                            throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
                 } else if (had_active) {
                     if (!in_active) {
@@ -195,11 +203,12 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->getRepresentativeMaterial()) {
+                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size()-1)) {
                     //TODO check if usage of getRepresentativeMaterial is fine here (was material)
                     last->setSize(w, last->size.c1 + h);
                 } else {
                     auto layer = plask::make_shared<Block<2>>(Vec<2>(w,h), layer_material);
+                    if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
                 }
             } else {
@@ -221,6 +230,8 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
             }
         }
     }
+    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
+        throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
 
     this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
     for (auto& region: regions) region.summarize(this);
@@ -232,7 +243,7 @@ void FermiGoldenGainSolver<GeometryType>::detectActiveRegions()
 
 
 template <typename GeometryType>
-double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, const ActiveRegionParams& params,
+double FreeCarrierGainSolver<GeometryType>::level(WhichLevel which, double E, const ActiveRegionParams& params,
                                                   size_t start, size_t stop) const
 {
     size_t nA = 2 * (stop - start + 1);
@@ -292,7 +303,7 @@ double FermiGoldenGainSolver<GeometryType>::level(WhichLevel which, double E, co
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, ActiveRegionParams& params, size_t qw) const
+void FreeCarrierGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, ActiveRegionParams& params, size_t qw) const
 {
     if (params.U[which].size() < 3) return;
 
@@ -354,7 +365,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, A
 
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, ActiveRegionParams& params) const
+void FreeCarrierGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, ActiveRegionParams& params) const
 {
     if (params.U[which].size() < 5) return; // This makes sense with at least two quantum wells
 
@@ -411,7 +422,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
 }
 
 template <typename GeometryType>
-void FermiGoldenGainSolver<GeometryType>::estimateLevels()
+void FreeCarrierGainSolver<GeometryType>::estimateLevels()
 {
     params0.clear(); params0.reserve(regions.size());
 
@@ -452,7 +463,7 @@ void FermiGoldenGainSolver<GeometryType>::estimateLevels()
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, const ActiveRegionParams& params) const
+double FreeCarrierGainSolver<GeometryT>::getN(double F, double T, const ActiveRegionParams& params) const
 {
     size_t n = params.levels[EL].size();
     const double kT = phys::kB_eV * T;
@@ -469,7 +480,7 @@ double FermiGoldenGainSolver<GeometryT>::getN(double F, double T, const ActiveRe
 }
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, const ActiveRegionParams& params) const
+double FreeCarrierGainSolver<GeometryT>::getP(double F, double T, const ActiveRegionParams& params) const
 {
     size_t nh = params.levels[HH].size(), nl = params.levels[LH].size();
     const double kT = phys::kB_eV * T;
@@ -493,7 +504,7 @@ double FermiGoldenGainSolver<GeometryT>::getP(double F, double T, const ActiveRe
 }
 
 template <typename GeometryT>
-void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T,
+void FreeCarrierGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T,
                                                        const ActiveRegionParams& params) const
 {
     if (isnan(Fc)) Fc = params.sideU(EL);
@@ -525,7 +536,7 @@ void FermiGoldenGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
 
 template <typename GeometryT>
-double FermiGoldenGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
+double FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
                                                   const ActiveRegionParams& params) const
 {
     constexpr double fac = phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_eV);
@@ -555,28 +566,35 @@ double FermiGoldenGainSolver<GeometryT>::getGain0(double hw, double Fc, double F
     return g;
 }
 
-
+template <typename GeometryT>
+double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv, double T, double nr,
+                                                 const ActiveRegionParams& params) const
+{
+    return getGain0(hw, Fc, Fv, T, nr, params);
+}
 
 static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));
 
 /// Base for lazy data implementation
 template <typename GeometryT>
-struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
+struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 {
     struct AveragedData {
         shared_ptr<const RectangularMesh<2>> mesh;
         LazyData<double> data;
         double factor;
-        const FermiGoldenGainSolver<GeometryT>* solver;
+        const FreeCarrierGainSolver<GeometryT>* solver;
         const char* name;
-        AveragedData(const FermiGoldenGainSolver<GeometryT>* solver, const char* name,
+        AveragedData(const FreeCarrierGainSolver<GeometryT>* solver, const char* name,
                      const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region):
             solver(solver), name(name)
         {
             auto vaxis = plask::make_shared<OrderedAxis>();
             for(size_t n = 0; n != region.size(); ++n) {
-                auto box = region.getLayerBox(n);
-                vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
+                if (region.isQW(n)) {
+                    auto box = region.getLayerBox(n);
+                    vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
+                }
             }
             mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
                                                          vaxis, RectangularMesh<2>::ORDER_01);
@@ -596,7 +614,9 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     };
 
-    FermiGoldenGainSolver<GeometryT>* solver;           ///< Solver
+    typedef typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams ActiveRegionParams;
+
+    FreeCarrierGainSolver<GeometryT>* solver;           ///< Solver
     std::vector<shared_ptr<RectangularAxis>> regpoints; ///< Points in each active region
     std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
@@ -618,7 +638,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     }
 
-    DataBase(FermiGoldenGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
+    DataBase(FreeCarrierGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
         solver(solver), dest_mesh(dst_mesh)
     {
         // Create horizontal points lists
@@ -644,6 +664,7 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 
     void compute(double wavelength, InterpolationMethod interp)
     {
+        double hw = phys::h_eVc1e9 / wavelength;
         // Compute gains on mesh for each active region
         data.resize(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
@@ -661,8 +682,10 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
                 try {
-                    // Make concentration non-zero
-                    values[i] = getValue(wavelength, temps[i], max(concs[i], 1e-9), solver->regions[reg]);
+                    double T = temps[i];
+                    double nr = solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                    ActiveRegionParams params(solver, solver->params0[reg], T);
+                    values[i] = getValue(hw, concs[i], T, nr, params);
                 } catch(...) {
                     #pragma omp critical
                     error = std::current_exception();
@@ -674,60 +697,54 @@ struct FermiGoldenGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     }
 
-    virtual double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) = 0;
+    virtual double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) = 0;
 
     size_t size() const override { return dest_mesh->size(); }
 
     double at(size_t i) const override {
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
-            if (solver->regions[reg].contains(dest_mesh->at(i)))
+            if (solver->regions[reg].inQW(dest_mesh->at(i)))
                 return data[reg][i];
         return 0.;
     }
 };
 
 template <typename GeometryT>
-struct FermiGoldenGainSolver<GeometryT>::GainData: public FermiGoldenGainSolver<GeometryT>::DataBase
+struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<GeometryT>::DataBase
 {
     template <typename... Args>
     GainData(Args... args): DataBase(args...) {}
 
-    double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
+    double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
     {
-//         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
-//         double thck = (this->solver->extern_levels)? region.qwtotal : region.qw;
-//         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
+        double Fc, Fv;
+        this->solver->findFermiLevels(Fc, Fv, conc, T, params);
+        return this->solver->getGain(hw, Fc, Fv, T, nr, params);
     }
 };
 
 template <typename GeometryT>
-struct FermiGoldenGainSolver<GeometryT>::DgdnData: public FermiGoldenGainSolver<GeometryT>::DataBase
+struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<GeometryT>::DataBase
 {
     template <typename... Args>
     DgdnData(Args... args): DataBase(args...) {}
 
-    double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
+    double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
     {
-//         double thck = region.qw;
-//         if (this->solver->extern_levels) thck = region.qwtotal;
-//         double h = 0.5 * DIFF_STEP;
-//         double conc1, conc2;
-//         conc1 = (1.-h) * conc;
-//         conc2 = (1.+h) * conc;
-//         double gain1 =
-//             this->solver->getGainModule(wavelength, temp, conc1, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
-//         double gain2 =
-//             this->solver->getGainModule(wavelength, temp, conc2, region)
-//                 .Get_gain_at_n(this->solver->nm_to_eV(wavelength), thck); // earlier: qwtotal
-//         return (gain2 - gain1) / (2.*h*conc);
+        const double h = 0.5 * DIFF_STEP;
+        double Fc, Fv;
+        this->solver->findFermiLevels(Fc, Fv, (1.-h)*conc, T, params);
+        double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+        this->solver->findFermiLevels(Fc, Fv, (1.+h)*conc, T, params);
+        double gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+        return (gain2 - gain1) / (2.*h*conc);
     }
 };
 
 
 
 template <typename GeometryType>
-const LazyData<double> FermiGoldenGainSolver<GeometryType>::getGain(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (what == Gain::DGDN) {
         this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
@@ -746,17 +763,17 @@ const LazyData<double> FermiGoldenGainSolver<GeometryType>::getGain(Gain::EnumTy
 
 
 template <typename GeometryType>
-GainSpectrum<GeometryType> FermiGoldenGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point)
+shared_ptr<GainSpectrum<GeometryType>> FreeCarrierGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point)
 {
     this->initCalculation();
-    return GainSpectrum<GeometryType>(this, point);
+    return make_shared<GainSpectrum<GeometryType>>(this, point);
 }
 
 
-template <> std::string FermiGoldenGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Fermi2D"; }
-template <> std::string FermiGoldenGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FermiCyl"; }
+template <> std::string FreeCarrierGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.FreeCarrier2D"; }
+template <> std::string FreeCarrierGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FreeCarrierCyl"; }
 
-template struct PLASK_SOLVER_API FermiGoldenGainSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API FermiGoldenGainSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API FreeCarrierGainSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FreeCarrierGainSolver<Geometry2DCylindrical>;
 
 }}} // namespace

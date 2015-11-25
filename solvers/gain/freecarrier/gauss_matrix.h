@@ -1,5 +1,5 @@
-#ifndef PLASK__SOLVER__GAIN_FERMIGOLDEN_GAUSS_MATRIX_H
-#define PLASK__SOLVER__GAIN_FERMIGOLDEN_GAUSS_MATRIX_H
+#ifndef PLASK__SOLVER__GAIN_FREECARRIER_GAUSS_MATRIX_H
+#define PLASK__SOLVER__GAIN_FREECARRIER_GAUSS_MATRIX_H
 
 #include <cstddef>
 #include <plask/plask.hpp>
@@ -19,7 +19,7 @@ F77SUB dgbtrs(const char& trans, const int& n, const int& kl, const int& ku, con
 
 #define LD 7
 
-namespace plask { namespace gain { namespace fermigolden {
+namespace plask { namespace gain { namespace freecarrier {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -103,9 +103,9 @@ struct DgbMatrix {
     }
 };
 
-}}} // # namespace plask::gain::fermigolden
+}}} // # namespace plask::gain::freecarrier
 
 #undef LD
 
-#endif // PLASK__SOLVER__GAIN_FERMIGOLDEN_GAUSS_MATRIX_H
+#endif // PLASK__SOLVER__GAIN_FREECARRIER_GAUSS_MATRIX_H
 

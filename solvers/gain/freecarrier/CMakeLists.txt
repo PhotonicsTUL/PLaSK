@@ -4,7 +4,7 @@
 #/// In most cases you should be able to use it only setting the project name
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/gain/fermigolden)
+project(plask/gain/freecarrier)
 
 
 # Do not change thew following two lines

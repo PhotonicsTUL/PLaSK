@@ -207,7 +207,7 @@
     <geometry ref="main"/>
     <config lifetime="0.3" matrix-elem="10"/>
   </gain>
-  <gain name="GAIN2" solver="XFermiCyl">
+  <gain name="GAIN2" solver="FreeCarrierCyl">
     <geometry ref="main"/>
     <config lifetime="0.3" matrix-elem="10"/>
   </gain>
@@ -278,7 +278,7 @@ else:
     tight_layout(0.1)
     axhline(0., color='k')
     yscale('symlog')
-    plt.get_current_fig_manager().window.showMaximized()
+    #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
     gcf().canvas.set_window_title("Electrons")
 
@@ -296,7 +296,7 @@ else:
     xlim(VE[0], VE[-1])
     axhline(0., color='k')
     yscale('symlog')
-    plt.get_current_fig_manager().window.showMaximized()
+    #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
     gcf().canvas.set_window_title("Heavy Holes")
 
@@ -314,7 +314,7 @@ else:
     xlim(VE[0], VE[-1])
     axhline(0., color='k')
     yscale('symlog')
-    plt.get_current_fig_manager().window.showMaximized()
+    #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
     gcf().canvas.set_window_title("Light Holes")
 
@@ -337,7 +337,7 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
         for l in levels['lh']:
             axhline(vo+l, color=lh_color, ls='--')
     gcf().canvas.set_window_title(title)
-    plt.get_current_fig_manager().window.showMaximized()
+    #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
 
 yl = -0.8, 0.9
@@ -378,6 +378,17 @@ else:
     xlabel(u'Carriers concentation [1/cm³]')
     xscale('log')
     xlim(1e16, 1e20)
+
+z = GEO.main.get_object_positions(GEO.active)[0].z
+
+spectrum = GAIN2.spectrum(0., z+0.001)
+
+figure()
+lams = linspace(900., 1400., 501)
+plot(lams, spectrum(lams))
+xlabel("Wavelength [nm]")
+ylabel("Gain [1/cm]")
+tight_layout(0.1)
 
 show()
 
