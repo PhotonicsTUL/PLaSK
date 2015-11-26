@@ -129,6 +129,7 @@ class SectionModel(TreeFragmentModel):
         return res
 
     def set_text(self, text):
+        if not isinstance(text, str): text = text.encode('utf8')
         self.set_xml_element(
             etree.fromstringlist(['<', self.name, '>', text, '</',
                                         self.name, '>'], parser=XML_parser))

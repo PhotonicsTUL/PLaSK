@@ -64,7 +64,7 @@
         Average carriers lifetime. This parameter is used for gain spectrum broadening.
       </attr>
       <attr name="matrix-elem" label="Matrix element"
-            unit="(eV×m&lt;sub&gt;0&lt;/sub&gt;)&lt;sup&gt;2&lt;/sup&gt;" type="float">
+            unit="eV×m&lt;sub&gt;0&lt;/sub&gt;" type="float">
         Value of the squared matrix element in gain computations.
         If it is not set it is estimated automatically.
       </attr>
