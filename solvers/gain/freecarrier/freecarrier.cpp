@@ -571,7 +571,24 @@ template <typename GeometryT>
 double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv, double T, double nr,
                                                  const ActiveRegionParams& params) const
 {
-    return getGain0(hw, Fc, Fv, T, nr, params);
+    if (lifetime == 0)
+        return getGain0(hw, Fc, Fv, T, nr, params);
+
+    const double E0 = params.levels[EL][0].E - std::max(params.levels[HH][0].E, params.levels[LH][0].E);
+
+    const double b = 1e12*phys::hb_eV / lifetime;
+    const double tmax = 32. * b;
+    const double tmin = std::max(-tmax, E0-hw);
+    double dt = (tmax-tmin) / 1024.; //TODO Estimate integral precision and maybe chose better integration
+
+    double g = 0.;
+    for (double t = tmin; t <= tmax; t += dt) {
+        // L(t) = b / (π (x²+b²)),
+        g += getGain0(hw+t, Fc, Fv, T, nr, params) / (t*t + b*b);
+    }
+    g *= b * dt / M_PI;
+
+    return g;
 }
 
 static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));

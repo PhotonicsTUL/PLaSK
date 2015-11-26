@@ -205,7 +205,7 @@
 <solvers>
   <gain name="GAIN1" solver="FermiCyl" lib="simple">
     <geometry ref="main"/>
-    <config lifetime="0.0" matrix-elem="10"/>
+    <config lifetime="0.3" matrix-elem="10"/>
   </gain>
   <gain name="GAIN2" solver="FreeCarrierCyl">
     <geometry ref="main"/>
@@ -213,7 +213,7 @@
   </gain>
   <gain name="GAIN3" solver="FermiNewCyl" lib="complex">
     <geometry ref="main"/>
-    <config adjust-layers="yes" lifetime="0" matrix-elem="10"/>
+    <config adjust-layers="yes" lifetime="0.3" matrix-elem="10"/>
   </gain>
 </solvers>
 
@@ -384,21 +384,33 @@ levels1['el'] = [-l for l in levels1['el']]
 
 z = GEO.main.get_object_positions(GEO.active)[0].z
 
+from timeit import timeit
+
 figure()
 lams = linspace(800., 1400., 601)
-plot(lams, GAIN2.spectrum(0., z+0.001)(lams), label=u"Maciek")
-plot(lams, GAIN1.spectrum(0., z+0.001)(lams), '--', label=u"Michał old")
+
+class Spec(object):
+    def __init__(self, solver):
+        self.solver = solver
+    def __call__(self):
+        self.result = self.solver.spectrum(0., z+0.001)(lams)
+
+spec1 = Spec(GAIN1)
+spec2 = Spec(GAIN2)
+
+t2 = timeit(spec2, number=1)
+t1 = timeit(spec1, number=1)
+
+plot(lams, spec2.result, label=u"Maciek")
+plot(lams, spec1.result, '--', label=u"Michał old")
 # plot(lams, GAIN3.spectrum(0., z+0.001)(lams), label=u"Michał new")
 legend(loc='best').draggable()
 xlabel("Wavelength [nm]")
 ylabel("Gain [1/cm]")
 tight_layout(0.1)
 
-g1 = GAIN1.spectrum(0., z+0.001)(1100.)
-g2 = GAIN2.spectrum(0., z+0.001)(1100.)
-
-print(g1)
-print(g2)
+print("Michał:", t1, "s")
+print("Maciek:", t2, "s")
 
 show()
 
