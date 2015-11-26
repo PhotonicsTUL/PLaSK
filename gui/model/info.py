@@ -11,9 +11,11 @@
 # GNU General Public License for more details.
 
 from ..qt import QtCore, QtGui
+from ..qt.QtCore import Qt
 import weakref
 
 from ..utils.signal import Signal
+
 
 class Info(object):
 
@@ -51,7 +53,7 @@ class Info(object):
         return ans_if_non_attr
 
 
-def infoLevelIcon(level):
+def info_level_icon(level):
     if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
     if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
     if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
@@ -60,7 +62,10 @@ def infoLevelIcon(level):
 
 
 class InfoListModel(QtCore.QAbstractListModel):
-    """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""
+    """
+    Qt list model of info (warning, errors, etc.) of section model
+    (None section model is allowed and than the list is empty)
+    """
 
     def _set_model(self, model):
         if hasattr(self, 'model'):
@@ -95,16 +100,20 @@ class InfoListModel(QtCore.QAbstractListModel):
     #def columnCount(self, parent=QtCore.QModelIndex()):
     #    return 1
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return self.entries[index.row()].text
-        if role == QtCore.Qt.DecorationRole:
-            return infoLevelIcon(self.entries[index.row()].level)
+        if role == Qt.DecorationRole:
+            return info_level_icon(self.entries[index.row()].level)
+        if role == Qt.FontRole:
+            font = QtGui.QFont()
+            font.setUnderline(True)
+            return font
         return None
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return 'text'
         return None
 

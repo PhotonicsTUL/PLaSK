@@ -282,7 +282,7 @@ class MaterialsModel(TableModel):
     #             for err in self.info_by_row.get(index.row(), []):
     #                 if err.has_connection(u'cols', c, c == 0):
     #                     if err.level > max_level: max_level = err.level
-    #             return info.infoLevelIcon(max_level)
+    #             return info.info_level_icon(max_level)
             if role == Qt.BackgroundRole and index.column() >= 2:
                 return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
 

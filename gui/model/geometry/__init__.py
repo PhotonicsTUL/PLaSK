@@ -220,6 +220,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         #TableModelEditMethods.__init__(self)
         self.fake_root = GNFakeRoot(self)
         self.axes = None    #TODO ? use axes of FakeRoot
+        self._message = None
 
     @property
     def roots(self):
@@ -496,6 +497,16 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             if len(indexes) > 1:
                 res.append(Info('{} objects have the same name "{}".'.format(len(indexes), name),
                                 Info.ERROR, nodes=indexes, property='name'))
+        if self._message is not None:
+            res.append(Info(*self._message))
         return res
+
+    def info_message(self, icon=None, msg=''):
+        if icon is None:
+            self._message = None
+        else:
+            self._message = msg, icon
+        self.fire_info_changed()
+
 
 from .geometry import GNCartesian, GNCylindrical

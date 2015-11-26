@@ -214,7 +214,7 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
             for err in self.info_by_row.get(index.row(), []):
                 if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages hav decoration only in first column
                     if err.level > max_level: max_level = err.level
-            return info.infoLevelIcon(max_level)
+            return info.info_level_icon(max_level)
             #c = QtGui.QPalette().color(QtGui.QPalette.Window)    #default color
             #if max_level == info.Info.ERROR: return QtGui.QColor(255, 220, 220)
             #if max_level == info.Info.WARNING: return QtGui.QColor(255, 255, 160)

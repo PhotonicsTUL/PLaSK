@@ -145,10 +145,10 @@ class MainWindow(QtGui.QMainWindow):
         menu_bar = QtGui.QMenuBar(self)
         menu_bar.setVisible(False)
 
-        splitter = QtGui.QSplitter()
-        splitter.setOrientation(QtCore.Qt.Vertical)
-        splitter.addWidget(self.tabs)
-        self.setCentralWidget(splitter)
+        self.splitter = QtGui.QSplitter()
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.splitter.addWidget(self.tabs)
+        self.setCentralWidget(self.splitter)
 
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('show-source'),
@@ -161,15 +161,15 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon.fromTheme('plaskgui'))
 
         self.info_model = InfoListModel(None)
-        #self.info = QtGui.QTableView(self.plot_dock)
         self.info_table = QtGui.QListView()
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
+        self.info_table.setMinimumHeight(self.fontMetrics().height()+4)
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
-        pal = self.info_table.palette()
-        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
-        self.info_table.setPalette(pal)
+
+        self.info_table.setFrameShape(QtGui.QFrame.NoFrame)
+        self.info_table.clicked.connect(self._on_info_click)
 
         # self.info_dock = QtGui.QDockWidget("Warnings", self)
         # self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
@@ -178,13 +178,13 @@ class MainWindow(QtGui.QMainWindow):
         # self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
         # self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
 
-        splitter.addWidget(self.info_table)
-        #self.info_model.layoutChanged.connect(lambda: self.info_table.setVisible(self.info_model.rowCount() > 0))
+        self.splitter.addWidget(self.info_table)
+        self.info_model.layoutChanged.connect(self._update_info_color)
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = XPLDocument(self)
             self.setup_model()
-        splitter.setSizes([1000, 1])    #set minimal possible size of part with info table
+        self.splitter.setSizes([10000, 1])  # set minimal possible size of part with info table
 
         new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
                                    '&New', self)
@@ -332,6 +332,21 @@ class MainWindow(QtGui.QMainWindow):
         self.config_changed.connect(update_textedit_colors)
 
         self.show()
+
+    def _update_info_color(self):
+        pal = self.info_table.palette()
+        if self.info_model.rowCount() > 0:
+            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
+        else:
+            pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))
+            if self.splitter.sizes()[1]:
+                self.splitter.setSizes([10000, 1])
+        self.info_table.setPalette(pal)
+
+    def _on_info_click(self):
+        mainh, infoh = self.splitter.sizes()
+        delta = self.info_table.sizeHintForRow(0) * max(self.info_model.rowCount(), 1) - infoh
+        self.splitter.setSizes([mainh-delta, infoh+delta])
 
     def _on_select_info(self, current, _):
         if not current.isValid(): return
