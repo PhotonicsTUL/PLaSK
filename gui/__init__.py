@@ -11,7 +11,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 OPERATIONS = []
 
 import sys
@@ -56,6 +55,7 @@ from .controller.materials.plot import show_material_plot
 
 from .utils.config import CONFIG, ConfigDialog
 from .utils.texteditor import update_textedit_colors
+from .utils.widgets import fire_edit_end
 
 try:
     import plask
@@ -415,6 +415,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def _save_document(self, filename):
         try:
+            fire_edit_end()
             self.document.save_to_file(unicode(filename))
         except Exception as err:
             msgbox = QtGui.QMessageBox()

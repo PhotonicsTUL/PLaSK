@@ -289,3 +289,17 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         super(TextEditWithCB, self).keyPressEvent(event)
         if self.key_cb is not None: self.key_cb(event)
 
+
+def fire_edit_end(widget = None):
+    """
+    Try to call event which cause updating model by widget which is focused (or widget given as parameter).
+    :param QtGui.QWidget widget: QtGui.QApplication.focusWidget() will be used by default
+    """
+    if widget is None: widget = QtGui.QApplication.focusWidget()
+    try:
+        widget.editingFinished.emit()
+    except: pass
+    try:
+        widget.focus_out_cb()
+    except: pass
+
