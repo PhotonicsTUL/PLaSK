@@ -179,11 +179,12 @@ class MainWindow(QtGui.QMainWindow):
         # self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
 
         splitter.addWidget(self.info_table)
-        self.info_model.layoutChanged.connect(lambda: self.info_table.setVisible(self.info_model.rowCount() > 0))
+        #self.info_model.layoutChanged.connect(lambda: self.info_table.setVisible(self.info_model.rowCount() > 0))
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = XPLDocument(self)
             self.setup_model()
+        splitter.setSizes([1000, 1])    #set minimal possible size of part with info table
 
         new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
                                    '&New', self)
