@@ -28,18 +28,18 @@ try:
 except NameError:
     # 'unicode' is undefined, must be Python 3
     unicode = str
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
 
 
 def controller_to_aligners(position_controllers):
-    '''
+    """
     Convert data from widgets which allow to set aligner parameters to list of GNAligner.
     :param position_controllers: widgets with aligner parameters
     :return list[GNAligner]: resulted list of GNAligner
-    '''
+    """
     aligners_list = []
     for i, pos in enumerate(position_controllers):
         aligners_list.append(GNAligner(pos[0].currentIndex(), empty_to_none(pos[1].text())))
@@ -47,11 +47,11 @@ def controller_to_aligners(position_controllers):
 
 
 def aligners_to_controllers(aligners_list, position_controllers):
-    '''
+    """
     Get data from list of GNAligners and fill with them widgets which allow to set aligner parameters.
     :param list[GNAligner] aligners_list: source data
     :param position_controllers: widgets to fill
-    '''
+    """
     if aligners_list is None: return
     for i, pos in enumerate(position_controllers):
         aligner = aligners_list[i]

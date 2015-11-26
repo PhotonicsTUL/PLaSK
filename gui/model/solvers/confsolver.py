@@ -20,7 +20,7 @@ try:
 except NameError:
     # 'unicode' is undefined, must be Python 3
     unicode = str
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
@@ -224,7 +224,7 @@ def _load_xml(filename):
     if root.tag != xns+'solvers': return
 
     for solver in root:
-        if solver.tag != xns+'solver': return
+        if solver.tag != xns+'solver': continue
 
         name = solver.attrib.get('name')
         if name is None: return

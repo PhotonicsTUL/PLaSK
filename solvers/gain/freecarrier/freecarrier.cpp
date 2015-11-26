@@ -33,7 +33,6 @@ FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& na
     outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData, []{return 2;}),
     lifetime(0.1),
     matrixelem(0.),
-    polarization(0.),
     T0(300.),
     levelsep(0.0001),
     strained(false),
@@ -539,31 +538,33 @@ template <typename GeometryT>
 double FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
                                                   const ActiveRegionParams& params) const
 {
-    constexpr double fac = phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_eV);
-    const double ikT = (1./phys::kB_eV) * T;
-    const double eh = 1. - polarization, el = 0.3333333333333333333333 + polarization;
+    constexpr double fac = 1e4 * phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_J); // 1e4: 1/µm -> 1/cm
+    const double ikT = (1./phys::kB_eV) / T;
+    const double Dlt = 2. * (hw - params.Eg);
 
     double g = 0.;
 
     for (size_t i = 0; i < params.nhh; ++i) {
         const double Ec = params.levels[EL][i].E, Ev = params.levels[HH][i].E;
-        if (hw < Ec-Ev) continue;
+        const double Ep = hw - (Ec - Ev);
+        if (Ep < 0.) continue;
+        const double pp = 1. - ((Dlt > 0.)? Ep / Dlt : 0.);
         const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[HH][i].M.c00);
-        const double p2 = (hw - Ec + Ev) * mu;
-        const double Ec0 = Ec + p2 / params.levels[EL][i].M.c00, Ev0 = Ev - p2 / params.levels[HH][i].M.c00;
-        g += fac / (hw * nr * params.region.totalqw) * mu * matrixelem * eh * (1. / (exp(ikT*(Ec0-Fc)) + 1) - (1. / exp(ikT*(Ev0-Fv)) + 1));
+        const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[HH][i].M.c00;
+        g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
     }
 
     for (size_t i = 0; i < params.nlh; ++i) {
         const double Ec = params.levels[EL][i].E, Ev = params.levels[LH][i].E;
-        if (hw < Ec-Ev) continue;
+        const double Ep = hw - (Ec - Ev);
+        if (Ep < 0.) continue;
+        const double pp = 0.3333333333333333333333 + ((Dlt > 0.)? Ep / Dlt : 0.);
         const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[LH][i].M.c00);
-        const double p2 = (hw - Ec + Ev) * mu;
-        const double Ec0 = Ec + p2 / params.levels[EL][i].M.c00, Ev0 = Ev - p2 / params.levels[LH][i].M.c00;
-        g += fac / (hw * nr * params.region.totalqw) * mu * matrixelem * el * (1. / (exp(ikT*(Ec0-Fc)) + 1) - (1. / exp(ikT*(Ev0-Fv)) + 1));
+        const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[LH][i].M.c00;
+        g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
     }
 
-    return g;
+    return fac / (hw * nr * params.region.totalqw) * matrixelem * g;
 }
 
 template <typename GeometryT>

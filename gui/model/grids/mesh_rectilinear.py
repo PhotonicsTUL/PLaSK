@@ -16,6 +16,16 @@ from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children,
 from ...utils.validators import can_be_float, can_be_int
 from . import Grid
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str, bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
 
 AXIS_NAMES = [
     [''], ['horizontal', 'vertical'], ['longitudinal', 'transverse', 'vertical']

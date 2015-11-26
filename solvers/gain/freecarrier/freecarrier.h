@@ -21,7 +21,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     };
 
     struct ActiveRegionParams;
-    
+
     /// Data for energy level
     struct Level {
         double E;                   ///< Level energy
@@ -150,7 +150,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
             totalqw = 0.;
             for (size_t i = 0; i < thicknesses.size(); ++i)
-                if (isQW(i)) totalqw += thicknesses.size();
+                if (isQW(i)) totalqw += thicknesses[i];
         }
     };
 
@@ -161,6 +161,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
 
         std::vector<Level> levels[3];      ///< Approximate electron, heavy and light hole levels
+        double Eg;
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
@@ -169,11 +170,14 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
             M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
             double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
+            Eg = std::numeric_limits<double>::max();
             for (auto material: region.materials) {
                 OmpLockGuard<OmpNestLock> lockq = material->lock();
                 double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                U[EL].push_back(material->CB(T, e, 'G'));
-                U[HH].push_back(material->VB(T, e, 'G', 'H'));
+                double uel = material->CB(T, e, 'G'), uhh = material->VB(T, e, 'G', 'H');
+                U[EL].push_back(uel);
+                U[HH].push_back(uhh);
+                Eg = std::min(Eg, uel - uhh);
                 U[LH].push_back(material->VB(T, e, 'G', 'L'));
                 M[EL].push_back(material->Me(T, e));
                 M[HH].push_back(material->Mhh(T, e));
@@ -269,8 +273,6 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
 
     double lifetime;                ///< Stimulated emission lifetime [ps]
     double matrixelem;              ///< Optical matrix element [m0*eV]
-
-    double polarization;            ///< Polarization state ($e_{zz}$)
 
     double T0;                      ///< Temperature used for compiting level estimates
 

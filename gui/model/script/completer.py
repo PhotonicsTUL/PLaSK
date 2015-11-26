@@ -25,7 +25,7 @@ except ImportError:
 
 JEDI_MUTEX = QtCore.QMutex()
 
-PREAMBLE = '''\
+PREAMBLE = """\
 from pylab import *
 import plask
 from plask import *
@@ -33,9 +33,7 @@ import plask.geometry, plask.mesh, plask.material, plask.plow, plask.phys, plask
 from plask import geometry, mesh, material, flow, phys, algorithm
 from plask.pylab import *
 from plask.hdf5 import *
-'''
-
-
+"""
 def preload_jedi_modules():
     with Lock(JEDI_MUTEX) as lck:
         jedi.Script(PREAMBLE, 8, 0, None).completions()

@@ -161,6 +161,7 @@
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
+    <matrix itererr="2"/>
     <junction beta0="{beta_def}" beta1="{beta_def - 1.2}" js0="{js_def}" js1="{js_def + 0.1}"/>
     <voltage>
     <condition value="2.0">

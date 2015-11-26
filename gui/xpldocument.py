@@ -19,7 +19,7 @@ try:
 except NameError:
     # 'unicode' is undefined, must be Python 3
     unicode = str
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
     bytes = str

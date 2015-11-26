@@ -25,7 +25,7 @@ try:
 except NameError:
     # 'unicode' is undefined, must be Python 3
     unicode = str
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
@@ -175,20 +175,20 @@ class GNAxisBaseTransform(GNTransform):
         self.axis = None
 
     def set_axis(self, axis, conf = None):
-        '''
+        """
             :param axis: new axis value (int or string)
             :param GNReadConf conf: configuration to get axes names from
-        '''
+        """
         try:
             self.axis = (self.get_axes_conf_dim() if conf is None else conf.axes_names(self.dim)).index(axis)
         except Exception:
             self.axis = axis
 
     def axis_str(self, conf = None):
-        '''
+        """
         Get axis as string.
         :param GNReadConf conf: configuration to get axes names from
-        '''
+        """
         if self.axis is None or isinstance(self.axis, basestring): return self.axis
         if conf is not None: return conf.axis_name(self.dim, self.axis)
         return self.get_axes_conf_dim()[self.axis]

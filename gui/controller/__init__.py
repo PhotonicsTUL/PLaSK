@@ -102,11 +102,11 @@ class Controller(object):
             self.model.fire_changed()
 
     def select_info(self, info):
-        '''
+        """
         Set focus on widget or cell connecting with the given info object, to help user fixed the problem connecting
         with the this info.
         :param ..model.info.Info info: info object
-        '''
+        """
         pass
 
     def mute_changes(self):
