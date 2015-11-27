@@ -288,7 +288,7 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
         super(RectilinearDivideGenerator, self).create_info(res, rows)
         for div_type in ('prediv', 'postdiv'):
             for i, p in enumerate(getattr(self, div_type)):
-                if not can_be_int(p, int_validator=lambda n: n>=0):
+                if not can_be_int(p, int_validator=lambda n: n>0):
                     self._required(res, rows, (div_type, i), 'a component of {}'.format(div_type), type='positive integer')
         if not can_be_bool(self.gradual): self._required(res, rows, 'gradual', type='boolean')
 
