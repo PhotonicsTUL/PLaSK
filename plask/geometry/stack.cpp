@@ -578,7 +578,7 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
 
     shared_ptr<StackContainer<dim>> result(
                     reader.source.hasAttribute(repeat_attr) ?
-                    new MultiStackContainer<StackContainer<dim>>(reader.source.getAttribute(repeat_attr, 1), baseH) :
+                    new MultiStackContainer<StackContainer<dim>>(reader.source.getAttribute(repeat_attr, 1u), baseH) :
                     new StackContainer<dim>(baseH)
                 );
 
@@ -610,7 +610,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
     shared_ptr< ShelfContainer2D > result(
                      reader.source.hasAttribute(repeat_attr) ?
-                     new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(repeat_attr, 1), baseH) :
+                     new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(repeat_attr, 1u), baseH) :
                      new ShelfContainer2D(baseH)
                      );
     bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, true);
