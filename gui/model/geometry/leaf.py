@@ -132,7 +132,7 @@ class GNBlock(GNLeaf):
     def create_info(self, res, names):
         super(GNBlock, self).create_info(res, names)
         for i, v in enumerate(self.size):
-            if not can_be_float(v, required=True): self._require(res, 'size', 'size component', indexes=(i,), type='float')
+            if not can_be_float(v, required=True): self._require(res, ('size', i), 'size component', type='float')
         # if None in self.size: self._require(res, 'size', indexes=(self.size.index(None),))
 
     @staticmethod
@@ -279,8 +279,8 @@ class GNTriangle(GNLeaf):
         for p_nr in (0, 1):
             for i, v in enumerate(self.points[p_nr]):
                 if not can_be_float(v, required=True):
-                    self._require(res, 'points', 'coordinate of {} point'.format(('first', 'second')[p_nr]),
-                                  indexes=(p_nr, i), type='float')
+                    self._require(res, ('points', p_nr, i), 'coordinate of {} point'.format(('first', 'second')[p_nr]),
+                                  type='float')
         #if None in self.points[0]: self._require(res, 'points', 'coordinate of first point', indexes=(0, self.points[0].index(None)))
         #if None in self.points[1]: self._require(res, 'points', 'coordinate of second point', indexes=(1, self.points[1].index(None)))
 

@@ -3,6 +3,7 @@ from .object import GNObject
 from .transform import GNExtrusion, GNRevolution
 from ...utils.xml import xml_to_attr, attr_to_xml
 from ...utils.compat import next
+from ...utils.validators import can_be_float
 
 class GNGeometryBase(GNObject):
 
@@ -151,6 +152,11 @@ class GNCartesian(GNGeometryBase):
         res = super(GNCartesian, self).major_properties()
         if self.dim == 2: res.append(('length', self.length))
         return res
+
+    def create_info(self, res, names):
+        super(GNCartesian, self).create_info(res, names)
+        if self.dim == 2 and not can_be_float(self.length, float_validator=lambda f: f >= 0):
+            self._wrong_type(res, 'non-negative float', 'length', 'longitudinal dimension of the geometry')
 
     @staticmethod
     def from_xml_2d(element, conf):

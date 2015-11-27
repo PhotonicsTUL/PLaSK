@@ -300,12 +300,8 @@ class GNodeController(Controller):
 
     def select_info(self, info):
         prop = getattr(info, "property", None)
-        if isinstance(prop, basestring):
-            widget = getattr_by_path(self, prop)
-            indexes = getattr(info, "indexes")
-            if indexes is not None:
-                for i in indexes: widget = widget[i]
-            widget.setFocus()
+        widget = getattr_by_path(self, prop, None)
+        if widget is not None: widget.setFocus()
 
 
 class GNChildController(GNodeController):

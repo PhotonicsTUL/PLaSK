@@ -14,11 +14,8 @@
 from ...qt import QtGui
 
 from .object import GNObjectController
-from .node import GNodeController, GNChildController
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...model.geometry.reader import GNAligner
-
 
 class GNGeometryController(GNObjectController):
 

@@ -90,7 +90,7 @@ class GNTranslation(GNTransform):
     def create_info(self, res, names):
         super(GNTranslation, self).create_info(res, names)
         for i, v in enumerate(self.vector):
-            if not can_be_float(v, required=True): self._require(res, 'vector', indexes=(i,), type='float')
+            if not can_be_float(v, required=True): self._require(res, ('vector', i), 'component of translation vector', type='float')
         #if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
 
     @staticmethod
@@ -414,7 +414,7 @@ class GNArrange(GNTransform):
         super(GNArrange, self).create_info(res, names)
         if not can_be_int(self.count, required=True): self._require(res, 'count', type='integer')
         for i, s in enumerate(self.step):
-            if not can_be_float(s): self._wrong_type(res, 'float', 'step', 'component of the spacing vector', indexes=(i,))
+            if not can_be_float(s): self._wrong_type(res, 'float', ('step', i), 'component of the spacing vector')
 
     @staticmethod
     def from_xml_2d(element, conf):
@@ -483,8 +483,7 @@ class GNLattice(GNTransform):
         for vec_idx in range(0, 2):
             for i, v in enumerate(self.vectors[vec_idx]):
                 if not can_be_float(v, required=True):
-                    self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
-                              indexes=(vec_idx, i), type='float')
+                    self._require(res, ('vectors', vec_idx, i), ('first', 'second')[vec_idx] + ' basis vector', type='float')
             #if None in self.vectors[vec_idx]:
             #    self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
             #                  indexes=(vec_idx, self.vectors[vec_idx].index(None)))

@@ -70,7 +70,8 @@ class GNGap(GNode):
 
     def create_info(self, res, names):
         super(GNGap, self).create_info(res, names)
-        if not can_be_float(self.size, required=True): self._require(res, 'size', 'gap or total size', type='float')
+        if not can_be_float(self.size, required=True, float_validator=lambda f: f >= 0):
+            self._require(res, 'size', 'gap or total size', type='non-negative float')
 
     @staticmethod
     def from_xml(element, conf):
@@ -229,7 +230,7 @@ class GNStack(GNContainerBase):
                 'Position of the stack bottom edge is defined {} times in {}.'.format(zeros_num, self.tag_name(False)),
                 nodes=(self,)+zeros)
         if not can_be_float(self.shift): self._wrong_type(res, 'float', 'shift')
-        if not can_be_int(self.repeat): self._wrong_type(res, 'int', 'repeat')
+        if not can_be_int(self.repeat, int_validator=lambda i: i >= 0): self._wrong_type(res, 'non-negative integer', 'repeat')
 
     def add_child_options(self):
         res = super(GNStack, self).add_child_options()
@@ -364,7 +365,7 @@ class GNShelf(GNContainerBase):
                 '{} gaps have been given total shelf size.'.format(len(gap_with_total)),
                 nodes=(self,)+gap_with_total)
         if not can_be_float(self.shift): self._wrong_type(res, 'float', 'shift')
-        if not can_be_int(self.repeat): self._wrong_type(res, 'int', 'repeat')
+        if not can_be_int(self.repeat, int_validator=lambda i: i >= 0): self._wrong_type(res, 'non-negative integer', 'repeat')
         if not can_be_bool(self.flat): self._wrong_type(res, 'boolean', 'flat')
 
     def get_controller(self, document, model):
@@ -423,7 +424,7 @@ class GNAlignContainer(GNContainerBase):
     def create_info(self, res, names):
         super(GNAlignContainer, self).create_info(res, names)
         for i, a in enumerate(self.aligners):
-            if not can_be_float(a.value): self._wrong_type(res, 'float', 'positions', 'component of default items position', indexes=(i, 1))
+            if not can_be_float(a.value): self._wrong_type(res, 'float', ('positions', i, 1), 'component of default items position')
 
     def major_properties(self):
         return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
