@@ -59,9 +59,9 @@ class AxisConf(object):
         if not can_be_float(self.stop):
             grid_model._required(res, rows, parent_property+('stop',),
                                  '"stop" (position of the last point on the axis)', type='float')
-        if not can_be_int(self.num):
+        if not can_be_int(self.num, int_validator=lambda n: n>0):
             grid_model._required(res, rows, parent_property+('num',),
-                                 '"num" (number of the equally distributed points along the axis)', type='integer')
+                                 '"num" (number of the equally distributed points along the axis)', type='positive integer')
 
 
 #RectangularMesh1D(Grid)

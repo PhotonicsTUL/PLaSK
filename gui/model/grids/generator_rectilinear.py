@@ -141,12 +141,12 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
             if not can_be_float(entry.at):
                 self.generator._required(res, rows, parent_property, 'position of a line in refinement', type='float',
                                          reinf_row=i, reinf_col=3)
-            if not can_be_int(entry.by):
-                self.generator._required(res, rows, parent_property, 'number of division parts in refinement', type='integer',
-                                         reinf_row=i, reinf_col=4)
-            if not can_be_float(entry.every):
-                self.generator._required(res, rows, parent_property, 'distance between lines in refinement', type='float',
-                                         reinf_row=i, reinf_col=5)
+            if not can_be_int(entry.by, int_validator=lambda n: n > 0):
+                self.generator._required(res, rows, parent_property, 'number of division parts in refinement',
+                                         type='positive integer', reinf_row=i, reinf_col=4)
+            if not can_be_float(entry.every, float_validator=lambda f: f >= 0):
+                self.generator._required(res, rows, parent_property, 'distance between lines in refinement',
+                                         type='non-negative float', reinf_row=i, reinf_col=5)
 
 
 class RectilinearRefinedGenerator(Grid):
@@ -288,7 +288,8 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
         super(RectilinearDivideGenerator, self).create_info(res, rows)
         for div_type in ('prediv', 'postdiv'):
             for i, p in enumerate(getattr(self, div_type)):
-                if not can_be_float(p): self._required(res, rows, (div_type, i), 'a component of {}'.format(div_type), type='float')
+                if not can_be_int(p, int_validator=lambda n: n>=0):
+                    self._required(res, rows, (div_type, i), 'a component of {}'.format(div_type), type='positive integer')
         if not can_be_bool(self.gradual): self._required(res, rows, 'gradual', type='boolean')
 
 
