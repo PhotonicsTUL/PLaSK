@@ -130,9 +130,10 @@ class SectionModel(TreeFragmentModel):
 
     def set_text(self, text):
         if not isinstance(text, str): text = text.encode('utf8')
+        name = self.name if isinstance(self.name, str) else self.name.encode('utf8')
         self.set_xml_element(
-            etree.fromstringlist(['<', self.name, '>', text, '</',
-                                        self.name, '>'], parser=XML_parser))
+            etree.fromstringlist(['<', name, '>', text, '</',
+                                  name, '>'], parser=XML_parser))
 
     def is_read_only(self):
         return self.externalSource is not None

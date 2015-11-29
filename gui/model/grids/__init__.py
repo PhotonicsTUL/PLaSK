@@ -180,6 +180,7 @@ class GridsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
+        self._message = None
 
     def set_xml_element(self, element, undoable=True):
         self._set_entries([] if element is None else [construct_grid(self, g) for g in element], undoable)
@@ -240,5 +241,18 @@ class GridsModel(TableModel):
             if len(indexes) > 1:
                 res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
                                 Info.ERROR, cols=[0], rows=indexes))
+        if self._message is not None:
+            if self._message[1] >= Info.WARNING:
+                res.insert(0, Info(*self._message))
+            else:
+                res.append(Info(*self._message))
         return res
+
+    def info_message(self, icon=None, msg=''):
+        if icon is None:
+            self._message = None
+        else:
+            self._message = msg, icon
+        self.refresh_info()
+        self.fire_info_changed()
 

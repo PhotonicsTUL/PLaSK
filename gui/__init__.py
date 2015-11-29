@@ -55,7 +55,7 @@ from .controller.materials.plot import show_material_plot
 
 from .utils.config import CONFIG, ConfigDialog
 from .utils.texteditor import update_textedit_colors
-from .utils.widgets import fire_edit_end
+from .utils.widgets import fire_edit_end, InfoListView
 
 try:
     import plask
@@ -141,14 +141,18 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
+        # self.tabs.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
 
         menu_bar = QtGui.QMenuBar(self)
         menu_bar.setVisible(False)
 
-        self.splitter = QtGui.QSplitter()
-        self.splitter.setOrientation(QtCore.Qt.Vertical)
-        self.splitter.addWidget(self.tabs)
-        self.setCentralWidget(self.splitter)
+        layout = QtGui.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.tabs)
+        main_widget = QtGui.QWidget()
+        main_widget.setLayout(layout)
+        self.setCentralWidget(main_widget)
 
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('show-source'),
@@ -161,30 +165,20 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon.fromTheme('plaskgui'))
 
         self.info_model = InfoListModel(None)
-        self.info_table = QtGui.QListView()
+        self.info_table = InfoListView(self.info_model, self)
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
-        self.info_table.setMinimumHeight(self.fontMetrics().height()+4)
+        self.info_table.setFixedHeight(self.fontMetrics().height()+4)
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
 
         self.info_table.setFrameShape(QtGui.QFrame.NoFrame)
-        self.info_table.clicked.connect(self._on_info_click)
-
-        # self.info_dock = QtGui.QDockWidget("Warnings", self)
-        # self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
-        # self.info_dock.setTitleBarWidget(QtGui.QWidget())
-        # self.info_dock.setWidget(self.info_table)
-        # self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
-        # self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
-
-        self.splitter.addWidget(self.info_table)
+        layout.addWidget(self.info_table)
         self.info_model.layoutChanged.connect(self._update_info_color)
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = XPLDocument(self)
             self.setup_model()
-        self.splitter.setSizes([10000, 1])  # set minimal possible size of part with info table
 
         new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
                                    '&New', self)
@@ -339,14 +333,7 @@ class MainWindow(QtGui.QMainWindow):
             pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         else:
             pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))
-            if self.splitter.sizes()[1]:
-                self.splitter.setSizes([10000, 1])
         self.info_table.setPalette(pal)
-
-    def _on_info_click(self):
-        mainh, infoh = self.splitter.sizes()
-        delta = self.info_table.sizeHintForRow(0) * max(self.info_model.rowCount(), 1) - infoh
-        self.splitter.setSizes([mainh-delta, infoh+delta])
 
     def _on_select_info(self, current, _):
         if not current.isValid(): return
@@ -485,8 +472,8 @@ class MainWindow(QtGui.QMainWindow):
         sys.stdout.flush()
         if errors:
             msgbox = QtGui.QMessageBox()
-            msgbox.setText("Document contains some non-critical errors. "
-                           "It is possible to save it but probably not to run.")
+            msgbox.setText("Document contains some non-critical errors.\n\n"
+                           "It is possible to save it, however launching it will most probably fail.")
             msgbox.setDetailedText(u'\n'.join(map(unicode, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
             msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)

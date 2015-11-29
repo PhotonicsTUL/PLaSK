@@ -256,6 +256,28 @@ class ComboBox(QtGui.QComboBox):
             self.editingFinished.emit()
 
 
+class InfoListView(QtGui.QListView):
+
+    def __init__(self, model, parent):
+        super(InfoListView, self).__init__(parent)
+        self.model = model
+        self.setMouseTracking(True)
+        self._orig_height = None
+
+    def enterEvent(self, event):
+        super(InfoListView, self).enterEvent(event)
+        rows = self.model.rowCount()
+        if rows > 0:
+            self._orig_height = self.height()
+            self.setFixedHeight(self.sizeHintForRow(0) * rows)
+
+    def leaveEvent(self, event):
+        super(InfoListView, self).leaveEvent(event)
+        if self._orig_height is not None:
+            self.setFixedHeight(self._orig_height)
+            self._orig_height = None
+
+
 class TextEdit(QtGui.QTextEdit):
     editingFinished = QtSignal()
 

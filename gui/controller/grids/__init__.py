@@ -21,6 +21,7 @@ from ...utils.qsignals import BlockQtSignals
 from ..table import table_with_manipulators
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.grids import GridsModel
+from ...model.info import Info
 
 try:
     unicode = unicode
@@ -70,12 +71,10 @@ class GridsController(Controller):
 
         if plask is not None:
             self.mesh_preview = PlotWidget(self, self.vertical_splitter)
-
-            self.status_bar = QtGui.QLabel()
-            self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
-
-            self.mesh_preview.layout().addWidget(self.status_bar)
+            # self.status_bar = QtGui.QLabel()
+            # self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
+            # self.mesh_preview.layout().addWidget(self.status_bar)
             self.vertical_splitter.addWidget(self.mesh_preview)
 
         else:
@@ -192,11 +191,13 @@ class GridsController(Controller):
 
     def show_update_required(self):
         if self._current_controller is not None:
-            self.status_bar.setText("Press Alt+P to update the plot")
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
+            self.model.info_message(Info.INFO, "Mesh changed: press Alt+P to  update the plot")
+            # self.status_bar.setText("Press Alt+P to update the plot")
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
-            self.status_bar.setText('')
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+            self.model.info_message()
+            # self.status_bar.setText('')
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
     def on_model_change(self, *args, **kwargs):
         self.save_data_in_model()
@@ -240,8 +241,9 @@ class GridsController(Controller):
                 self.clear = self.mesh_preview.toolbar._views.clear()
             self.mesh_preview.update_mesh_plot(mesh, geometry, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.status_bar.setText(str(e))
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
+            self.model.info_message(Info.WARNING, "Could not update mesh preview: {}".format(str(e)))
+            # self.status_bar.setText(str(e))
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             # self.status_bar.setAutoFillBackground(True)
             from ... import _DEBUG
             if _DEBUG:
@@ -256,8 +258,9 @@ class GridsController(Controller):
             #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
             # else:
             #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.status_bar.setText('')
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+            self.model.info_message()
+            # self.status_bar.setText('')
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
             return True
 
     def plot(self):

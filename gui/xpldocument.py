@@ -165,7 +165,6 @@ class XPLDocument(object):
                 else:
                     data += '\n' * lines_count
         data += '</plask>\n'
-        if not(isinstance(data, str)): data = data.encode('utf8')
         return data
 
     def save_to_file(self, filename):

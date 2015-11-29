@@ -18,6 +18,7 @@ from ...qt import QtGui, QtCore
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
+from ...model.info import Info
 
 from .. import Controller
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea
@@ -139,8 +140,9 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.status_bar.setText(str(e))
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
+            self.model.info_message(Info.WARNING, "Could not update geometry view: {}".format(str(e)))
+            # self.status_bar.setText(str(e))
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
@@ -155,8 +157,9 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
             else:
                 self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.status_bar.setText('')
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+            self.model.info_message()
+            # self.status_bar.setText('')
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
             self.show_selection()
             return True
 
@@ -176,11 +179,13 @@ class GeometryController(Controller):
             if self.plot_auto_refresh:
                 self.plot_element(self.plotted_tree_element, set_limits=False)
             else:
-                self.status_bar.setText("Geometry changed: refresh the plot")
-                self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
+                self.model.info_message(Info.INFO, "Geometry changed: refresh the plot")
+                # self.status_bar.setText("Geometry changed: refresh the plot")
+                # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
-            self.status_bar.setText('')
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+            self.model.info_message()
+            # self.status_bar.setText('')
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -293,13 +298,10 @@ class GeometryController(Controller):
         if PlotWidget is not None:
             self.geometry_view = PlotWidget(self, picker=True)
             self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
-
-            self.status_bar = QtGui.QLabel()
-            self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-            self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
-
-            self.geometry_view.layout().addWidget(self.status_bar)
-
+            # self.status_bar = QtGui.QLabel()
+            # self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
+            # self.geometry_view.layout().addWidget(self.status_bar)
             self.main_splitter.addWidget(self.geometry_view)
 
         self.document.window.config_changed.connect(self.reconfig)
@@ -419,7 +421,7 @@ class GeometryController(Controller):
             new_nodes = info.nodes
         except AttributeError:
             return
-        if not new_nodes: return #empty??
+        if not new_nodes: return # empty??
 
         if len(new_nodes) == 1:
             self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
@@ -439,7 +441,7 @@ class GeometryController(Controller):
                     if n == current_node: after = True
                 if not found:
                     self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))
-        try:    #try to set focus on proper widget
+        try:    # try to set focus on proper widget
             self._current_controller.select_info(info)
         except AttributeError:
             pass

@@ -135,6 +135,10 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 
     std::string str;
     try {
+#if PY_VERSION_HEX < 0x03000000
+        if (PyUnicode_Check(src.ptr()))
+            src = py::str(src).encode("utf8");
+#endif
         str = py::extract<std::string>(src);
         if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
             source.reset(new XMLReader::StreamDataSource(new std::ifstream(str)));

@@ -19,6 +19,9 @@
     <C>1e-029+1.4764e-33*(T-300)</C>
     <D>10+0.016670*(T-300)</D>
   </material>
+  <material name="name"/>
+  <material name="name" base="semiconductor"/>
+  <material name="test" base="semiconductor"/>
 </materials>
 
 <geometry>

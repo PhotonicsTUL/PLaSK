@@ -103,13 +103,18 @@ class InfoListModel(QtCore.QAbstractListModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid(): return None
         if role == Qt.DisplayRole:
-            return self.entries[index.row()].text
+            row = index.row()
+            n = len(self.entries)
+            if row == 0 and n > 1:
+                return self.entries[row].text + "  (+{} message{})".format(n-1, "" if n == 2 else "s")
+            else:
+                return self.entries[row].text
         if role == Qt.DecorationRole:
             return info_level_icon(self.entries[index.row()].level)
-        if role == Qt.FontRole:
-            font = QtGui.QFont()
-            font.setUnderline(True)
-            return font
+        # if role == Qt.FontRole:
+        #     font = QtGui.QFont()
+        #     font.setUnderline(True)
+        #     return font
         return None
 
     def headerData(self, col, orientation, role):

@@ -498,7 +498,10 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 res.append(Info('{} objects have the same name "{}".'.format(len(indexes), name),
                                 Info.ERROR, nodes=indexes, property='name'))
         if self._message is not None:
-            res.append(Info(*self._message))
+            if self._message[1] >= Info.WARNING:
+                res.insert(0, Info(*self._message))
+            else:
+                res.append(Info(*self._message))
         return res
 
     def info_message(self, icon=None, msg=''):
@@ -506,6 +509,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self._message = None
         else:
             self._message = msg, icon
+        self.refresh_info()
         self.fire_info_changed()
 
 
