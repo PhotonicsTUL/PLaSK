@@ -332,11 +332,11 @@ GAIN2.inTemperature = gT
 GAIN1.inCarriersConcentration = 1e19 * gN
 GAIN2.inCarriersConcentration = 1e19 * gN
 
-# plot_gain_spectrum(GAIN1, True, u"Michał")
-# plot_gain_spectrum(GAIN2, False, u"Maciek")
-# legend(loc='best')
-# 
-# tight_layout(0.2)    
+plot_gain_spectrum(GAIN1, True, u"Michał")
+plot_gain_spectrum(GAIN2, False, u"Maciek")
+legend(loc='best')
+
+tight_layout(0.2)    
 
 msh = mesh.Rectangular2D([0.], [zqw])
 print(GAIN2.outGain(msh, 400.))[0]

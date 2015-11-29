@@ -218,8 +218,8 @@ levels1['el'] = [-l for l in levels1['el']]
 # cc = logspace(16, 20, 65)
 # fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300., c)[0] for c in cc)))
 # 
-# levels2 = GAIN2.get_energy_levels()[0]
-# 
+levels2 = GAIN2.get_energy_levels()[0]
+
 # # GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)
 # # levels3 = GAIN3.get_levels()[0]
 # 
@@ -296,30 +296,30 @@ levels1['el'] = [-l for l in levels1['el']]
 #     tight_layout(0.5)
 #     gcf().canvas.set_window_title("Light Holes")
 # 
-# 
-# def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh_color=colors[1], lh_color=colors[2]):
-#     box = GEO.main.get_object_bboxes(GEO.active)[0]
-#     zz = linspace(box.lower.z-0.002, box.upper.z+0.002, 1001)
-#     CC = [GEO.main.get_material(0.,z).CB() for z in zz]
-#     VV = [GEO.main.get_material(0.,z).VB() for z in zz]
-#     plot(1e3*zz, CC, color=colors[0])
-#     plot(1e3*zz, VV, color=colors[1])
-#     xlim(1e3*zz[0], 1e3*zz[-1])
-#     xlabel("$z$ [nm]")
-#     ylabel("Band Edges [eV]")
-#     if levels is not None:
-#         for l in levels['el']:
-#             axhline(co+l, color=el_color, ls='--')
-#         for l in levels['hh']:
-#             axhline(vo+l, color=hh_color, ls='--')
-#         for l in levels['lh']:
-#             axhline(vo+l, color=lh_color, ls='--')
-#     gcf().canvas.set_window_title(title)
-#     #plt.get_current_fig_manager().window.showMaximized()
-#     tight_layout(0.5)
-# 
-# yl = -0.8, 0.9
-# 
+
+def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh_color=colors[1], lh_color=colors[2]):
+    box = GEO.main.get_object_bboxes(GEO.active)[0]
+    zz = linspace(box.lower.z-0.002, box.upper.z+0.002, 1001)
+    CC = [GEO.main.get_material(0.,z).CB() for z in zz]
+    VV = [GEO.main.get_material(0.,z).VB() for z in zz]
+    plot(1e3*zz, CC, color=colors[0])
+    plot(1e3*zz, VV, color=colors[1])
+    xlim(1e3*zz[0], 1e3*zz[-1])
+    xlabel("$z$ [nm]")
+    ylabel("Band Edges [eV]")
+    if levels is not None:
+        for l in levels['el']:
+            axhline(co+l, color=el_color, ls='--')
+        for l in levels['hh']:
+            axhline(vo+l, color=hh_color, ls='--')
+        for l in levels['lh']:
+            axhline(vo+l, color=lh_color, ls='--')
+    gcf().canvas.set_window_title(title)
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+
+yl = -0.8, 0.9
+
 # figure()
 # plot_bands(levels1, co=cbo, vo=vbo, title=u"Levels: Michał old")
 # yl = ylim()
@@ -336,26 +336,26 @@ levels1['el'] = [-l for l in levels1['el']]
 # 
 # #ffc, ffv = zip(*(GAIN2.get_fermi_levels(c) for c in cc))
 # 
-# figure()
-# plot_bands(levels2, title=u"Levels: Maciek")
-# ff = linspace(yl[0], yl[1], 1001)
-# try:
-#     nn = GAIN2.getN(ff)
-#     pp = GAIN2.getP(ff)
-# except AttributeError:
-#     pass
-# else:
-#     twiny()
-#     plot(nn, ff)
-#     plot(pp, ff)
-# #     plot(cc, ffc, color=colors[0], ls='--', lw=1.5)
-# #     plot(cc, ffv, color=colors[1], ls='--', lw=1.5)
-#     plot(cc, fc, color='0.75')
-#     plot(cc, fv, color='0.75')
-#     ylim(*yl)
-#     xlabel(u'Carriers concentation [1/cm³]')
-#     xscale('log')
-#     xlim(1e16, 1e20)
+figure()
+plot_bands(levels2, title=u"Levels: Maciek")
+ff = linspace(yl[0], yl[1], 1001)
+try:
+    nn = GAIN2.getN(ff)
+    pp = GAIN2.getP(ff)
+except AttributeError:
+    pass
+else:
+    twiny()
+    plot(nn, ff)
+    plot(pp, ff)
+#     plot(cc, ffc, color=colors[0], ls='--', lw=1.5)
+#     plot(cc, ffv, color=colors[1], ls='--', lw=1.5)
+    plot(cc, fc, color='0.75')
+    plot(cc, fv, color='0.75')
+    ylim(*yl)
+    xlabel(u'Carriers concentation [1/cm³]')
+    xscale('log')
+    xlim(1e16, 1e20)
 
 z = GEO.main.get_object_positions(GEO.active)[0].z
 
