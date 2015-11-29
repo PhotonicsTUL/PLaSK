@@ -3,6 +3,9 @@
 
 #include <plask/plask.hpp>
 
+#include <boost/math/tools/roots.hpp>
+using boost::math::tools::toms748_solve;
+
 namespace plask { namespace gain { namespace freecarrier {
 
 template <typename GeometryT> struct GainSpectrum;
@@ -161,7 +164,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
 
         std::vector<Level> levels[3];      ///< Approximate electron, heavy and light hole levels
-        double Eg;
+        double Eg;                         ///< Wells band gap
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
@@ -260,6 +263,37 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     /// Find levels estimates
     void estimateAboveLevels(WhichLevel which, ActiveRegionParams& params) const;
 
+    /// Walk the energy to bracket the Fermi level
+    template <class F>
+    std::pair<double, double> fermi_bracket_and_solve(F f, double guess, double step, boost::uintmax_t& max_iter) const {
+        double a = guess - 0.5*step, b = guess + 0.5*step;
+        double fa = f(a), fb = f(b);
+        if (fa == 0.) return std::make_pair(a, a);
+        if (fb == 0.) return std::make_pair(b, b);
+        boost::uintmax_t count = max_iter - 1;
+        if ((fa < 0.) == (fa < fb)) {
+            while ((fa < 0.) == (fb < 0.)) {
+                if(count == 0) return std::make_pair(a, b);
+                a = b; fa = fb;
+                b += step; fb = f(b);
+                if (fb == 0.) return std::make_pair(b, b);
+                --count;
+            }
+        } else {
+            while ((fb < 0.) == (fa < 0.)) {
+                if(count == 0) return std::make_pair(a, b);
+                b = a; fb = fa;
+                a -= step; fa = f(a);
+                if (fa == 0.) return std::make_pair(a, a);
+                --count;
+            }
+        }
+        auto res = toms748_solve(f, a, b, fa, fb, [this](double l, double r){ return r-l < levelsep; }, count);
+        max_iter += count;
+        return res;
+    }
+
+    
 #ifndef NDEBUG
   public:
 #endif

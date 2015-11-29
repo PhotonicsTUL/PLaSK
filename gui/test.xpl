@@ -151,6 +151,9 @@
 </grids>
 
 <solvers>
+  <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
+    <config matrix-elem="10"/>
+  </gain>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>

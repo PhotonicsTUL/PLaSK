@@ -59,7 +59,7 @@ class SolverAutoWidget(VerticalScrollArea):
         old_value = node.data[group] if attr is None else node.data[group][attr]
         if value != old_value:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, node, set_solver_attr, value, old_value, "change solver's {}".format('attribute' if label is None else label)
+                model, node, set_solver_attr, value, old_value, u"change solver's {}".format('attribute' if label is None else label)
             ))
 
     def _change_multi_attr(self, group, attr, text, label = None):
@@ -70,7 +70,7 @@ class SolverAutoWidget(VerticalScrollArea):
         old_text = attr_list_to_text(node, group, attr)
         if text != old_text:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, node, set_solver_attr, text, old_text, "change solver's {}".format('attribute' if label is None else label)
+                model, node, set_solver_attr, text, old_text, u"change solver's {}".format('attribute' if label is None else label)
             ))
 
     def _change_node_field(self, field_name, value):
@@ -106,8 +106,8 @@ class SolverAutoWidget(VerticalScrollArea):
         #self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
         self.geometry.editingFinished.connect(lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
         self.geometry.setCompleter(defines)
-        self.geometry.setToolTip('&lt;<b>geometry ref</b>=""&gt;<br/>'
-                                 'Name of the existing geometry for use by this solver.')
+        self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
+                                 u'Name of the existing geometry for use by this solver.')
         #TODO make sure the list is up-to date; add some graphical thumbnail
         layout.addRow("Geometry:", self.geometry)
 
@@ -118,8 +118,8 @@ class SolverAutoWidget(VerticalScrollArea):
             #self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
             self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(defines)
-            self.mesh.setToolTip('&lt;<b>mesh ref</b>=""&gt;<br/>'
-                                 'Name of the existing {} mesh for use by this solver.'
+            self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
+                                 u'Name of the existing {} mesh for use by this solver.'
                                  .format(controller.model.mesh_type))
             #TODO add some graphical thumbnail
             layout.addRow("Mesh:", self.mesh)
@@ -225,9 +225,8 @@ class SolverAutoWidget(VerticalScrollArea):
 
 
 class ConfSolverController(Controller):
-    """Class for solvers defined in configuration dictionary"""
-
     """
+    Class for solvers defined in configuration dictionary
         :param document:
         :param model: model of solver to configure TODO should be section model?
     """
@@ -244,18 +243,18 @@ class ConfSolverController(Controller):
     def _model_change_cb(self, *args, **kwargs):
         self.widget.load_data()
 
-    """
-        :return ConfSolver: model of edited solver
-    """
     @property
     def solver_model(self):
+        """
+            :return ConfSolver: model of edited solver
+        """
         return self.model
 
-    """
-        :return SolversModel: model of a whole solver's section
-    """
     @property
     def section_model(self):
+        """
+            :return SolversModel: model of a whole solver's section
+        """
         return self.solver_model.tree_parent
 
     def get_widget(self):

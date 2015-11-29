@@ -1,16 +1,6 @@
 <plask loglevel="debug">
 
 <defines>
-  <define name="U" value="1.2"/>
-  <define name="m" value="0"/>
-  <define name="n" value="1"/>
-  <define name="U0" value="{U}"/>
-  <define name="UU" value="arange(1.2, 3.01, 0.1)"/>
-  <define name="oapprox" value="None"/>
-  <define name="presentation" value="True"/>
-  <define name="save_fig" value="True"/>
-  <define name="save_h5" value="False"/>
-  <define name="screen" value="True"/>
   <define name="h_oxide" value="0.020"/>
   <define name="oxide_loc" value="1.0 # 0.0 or 1.0 = antinode, 0.5 = node"/>
   <define name="n_QW" value="5"/>
@@ -22,21 +12,6 @@
   <define name="aprtc" value="16."/>
   <define name="mesa" value="40."/>
   <define name="r_substr" value="1000."/>
-  <define name="heat_t" value="100."/>
-  <define name="cool_t" value="{500.-heat_t}"/>
-  <define name="hc_cycles" value="20"/>
-  <define name="u_t" value="5"/>
-  <define name="adt" value="False"/>
-  <define name="Tamb" value="300."/>
-  <define name="PP" value="None"/>
-  <define name="P" value="1e-6"/>
-  <define name="eta" value="0.4"/>
-  <define name="modes" value="(0,1), (1,1), (2,1), (0,2), (3,1)"/>
-  <define name="THERMAL" value="'T_STATIC'"/>
-  <define name="ELECTRICAL" value="'E_SCHOCKLEY'"/>
-  <define name="DIFFUSION" value="'D_PARABOLIC'"/>
-  <define name="GAIN" value="'G_SINGLE'"/>
-  <define name="OPTICAL" value="'O_EFM'"/>
 </defines>
 
 <materials>
@@ -207,7 +182,7 @@
     <geometry ref="main"/>
     <config lifetime="0.3" matrix-elem="10"/>
   </gain>
-  <gain name="GAIN2" solver="FreeCarrierCyl">
+  <gain name="GAIN2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="main"/>
     <config lifetime="0.3" matrix-elem="10"/>
   </gain>
@@ -397,20 +372,23 @@ class Spec(object):
 
 spec1 = Spec(GAIN1)
 spec2 = Spec(GAIN2)
+spec3 = Spec(GAIN3)
 
 t2 = timeit(spec2, number=1)
 t1 = timeit(spec1, number=1)
+t3 = timeit(spec3, number=1)
 
 plot(lams, spec2.result, label=u"Maciek")
 plot(lams, spec1.result, '--', label=u"Michał old")
-# plot(lams, GAIN3.spectrum(0., z+0.001)(lams), label=u"Michał new")
+plot(lams, spec3.result, label=u"Michał new")
 legend(loc='best').draggable()
 xlabel("Wavelength [nm]")
 ylabel("Gain [1/cm]")
 tight_layout(0.1)
 
-print("Michał:", t1, "s")
-print("Maciek:", t2, "s")
+print("Maciek: {:.3f} s".format(t2))
+print("Michał old: {:.3f} s".format(t1))
+print("Michał new: {:.3f} s".format(t3))
 
 show()
 

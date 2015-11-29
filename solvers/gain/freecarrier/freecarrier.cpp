@@ -2,11 +2,6 @@
 #include "freecarrier.h"
 #include "fd.h"
 
-#include <boost/math/tools/roots.hpp>
-using boost::math::tools::toms748_solve;
-using boost::math::tools::bracket_and_solve_root;
-
-
 namespace plask { namespace gain { namespace freecarrier {
 
 constexpr double DIFF_STEP = 0.001;
@@ -466,13 +461,13 @@ double FreeCarrierGainSolver<GeometryT>::getN(double F, double T, const ActiveRe
 {
     size_t n = params.levels[EL].size();
     const double kT = phys::kB_eV * T;
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
 
     double N = 2e-6 * pow(fact * T * params.sideM(EL).c00, 1.5) * fermiDiracHalf((F-params.sideU(EL))/kT);
 
     for (size_t i = 0; i < n; ++i) {
         double M = params.levels[EL][i].M.c00;
-        N += 2. * fact * T * M / params.levels[EL][i].thickness * log(1 + exp((F-params.levels[EL][i].E)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        N += 2. * fact * T * M / params.levels[EL][i].thickness * log(1 + exp((F-params.levels[EL][i].E)/kT));
     }
 
     return N;
@@ -483,7 +478,7 @@ double FreeCarrierGainSolver<GeometryT>::getP(double F, double T, const ActiveRe
 {
     size_t nh = params.levels[HH].size(), nl = params.levels[LH].size();
     const double kT = phys::kB_eV * T;
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
 
     // Get parameters for outer layers
     double N = 2e-6 * (pow(fact * T * params.sideM(HH).c00, 1.5) * fermiDiracHalf((params.sideU(HH)-F)/kT) +
@@ -491,12 +486,12 @@ double FreeCarrierGainSolver<GeometryT>::getP(double F, double T, const ActiveRe
 
     for (size_t i = 0; i < nh; ++i) {
         double M = params.levels[HH][i].M.c00;
-        N += 2. * fact * T * M / params.levels[HH][i].thickness * log(1 + exp((params.levels[HH][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        N += 2. * fact * T * M / params.levels[HH][i].thickness * log(1 + exp((params.levels[HH][i].E-F)/kT));
     }
 
     for (size_t i = 0; i < nl; ++i) {
         double M = params.levels[LH][i].M.c00;
-        N += 2. * fact * T * M / params.levels[LH][i].thickness * log(1 + exp((params.levels[LH][i].E-F)/kT)); // 1/µm (1e6) -> 1/cm³ (1e-6)
+        N += 2. * fact * T * M / params.levels[LH][i].thickness * log(1 + exp((params.levels[LH][i].E-F)/kT));
     }
 
     return N;
@@ -506,30 +501,29 @@ template <typename GeometryT>
 void FreeCarrierGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, double n, double T,
                                                        const ActiveRegionParams& params) const
 {
-    if (isnan(Fc)) Fc = params.sideU(EL);
-    if (isnan(Fv)) Fv = params.sideU(HH);
-
+    double Ue = params.sideU(EL), Uh = params.sideU(HH);
+    double fs = 0.05 * abs(Ue - Uh); if (fs <= levelsep) fs = 2. * levelsep;
+    if (isnan(Fc)) Fc = Ue;
+    if (isnan(Fv)) Fv = Uh;
     boost::uintmax_t iters;
     double xa, xb;
 
     iters = 1000;
-    std::tie(xa, xb) = bracket_and_solve_root(
+    std::tie(xa, xb) = fermi_bracket_and_solve(
         [this,T,n,&params](double x){ return getN(x, T, params) - n; },
-        Fc, 1.5, true,
-        [this](double l, double r){ return r-l < levelsep; }, iters)
+        Fc, fs, iters)
     ;
     if (xb - xa > levelsep)
-        throw ComputationError(this->getId(), "Could not find quasi-Fermi for electrons");
+        throw ComputationError(this->getId(), "Could not find quasi-Fermi level for electrons");
     Fc = 0.5 * (xa + xb);
-
+    
     iters = 1000;
-    std::tie(xa, xb) = bracket_and_solve_root(
+    std::tie(xa, xb) = fermi_bracket_and_solve(
         [this,T,n,&params](double x){ return getP(x, T, params) - n; },
-        Fv, 1.5, false,
-        [this](double l, double r){ return r-l < levelsep; }, iters)
+        Fv, fs, iters)
     ;
     if (xb - xa > levelsep)
-        throw ComputationError(this->getId(), "Could not find quasi-Fermi for electrons");
+        throw ComputationError(this->getId(), "Could not find quasi-Fermi level for holes");
     Fv = 0.5 * (xa + xb);
 }
 
@@ -563,7 +557,6 @@ double FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double F
         const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[LH][i].M.c00;
         g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
     }
-
     return fac / (hw * nr * params.region.totalqw) * matrixelem * g;
 }
 
@@ -735,7 +728,7 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
 
     double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
     {
-        double Fc, Fv;
+        double Fc = NAN, Fv = NAN;
         this->solver->findFermiLevels(Fc, Fv, conc, T, params);
         return this->solver->getGain(hw, Fc, Fv, T, nr, params);
     }
@@ -750,7 +743,7 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
     double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
     {
         const double h = 0.5 * DIFF_STEP;
-        double Fc, Fv;
+        double Fc = NAN, Fv = NAN;
         this->solver->findFermiLevels(Fc, Fv, (1.-h)*conc, T, params);
         double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
         this->solver->findFermiLevels(Fc, Fv, (1.+h)*conc, T, params);
