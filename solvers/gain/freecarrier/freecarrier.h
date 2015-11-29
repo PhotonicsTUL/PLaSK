@@ -140,7 +140,8 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
                     double hh2 = material->VB(solver->T0, 0., 'G',  'H');
                     double lh2 = material->VB(solver->T0, 0., 'G',  'L');
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
-                        if (!(el0 < el1 && el1 > el2) || !(hh0 > hh1 && hh1 < hh2) || !(lh0 > lh1 && lh1 < lh2))
+                        if (i != 2 && i != materials.size()-1 &&
+                            !((el0 < el1 && el1 > el2) && (hh0 > hh1 && hh1 < hh2) && (lh0 > lh1 && lh1 < lh2)))
                             throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
                         wells.push_back(i-1);
                     }
