@@ -55,6 +55,7 @@ void FreeCarrierGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
         if (param == "config") {
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
+            T0 = reader.getAttribute<double>("T0", T0);
             strained = reader.getAttribute<bool>("strained", strained);
             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
             reader.requireTagEnd();
