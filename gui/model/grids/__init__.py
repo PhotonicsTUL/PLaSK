@@ -242,17 +242,17 @@ class GridsModel(TableModel):
                 res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
                                 Info.ERROR, cols=[0], rows=indexes))
         if self._message is not None:
-            if self._message[1] >= Info.WARNING:
-                res.insert(0, Info(*self._message))
+            if self._message['level'] >= Info.WARNING:
+                res.insert(0, Info(**self._message))
             else:
-                res.append(Info(*self._message))
+                res.append(Info(**self._message))
         return res
 
-    def info_message(self, icon=None, msg=''):
-        if icon is None:
+    def info_message(self, msg=None, level=Info.INFO, **kwargs):
+        if msg is None:
             self._message = None
         else:
-            self._message = msg, icon
+            self._message = dict(text=msg, level=level)
+            self._message.update(kwargs)
         self.refresh_info()
         self.fire_info_changed()
-

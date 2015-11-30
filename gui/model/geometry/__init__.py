@@ -374,7 +374,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if action == Qt.LinkAction:
             linked_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
-            from again_copy import GNAgain
+            from .again_copy import GNAgain
             again = GNAgain(ref=linked_obj.name)
             self.insert_node(parent, again, None if row == -1 else row)
             return True
@@ -396,7 +396,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             parent = parentIndex.internalPointer()
             if parent is None or linked_obj.name is None:
                 return False
-            from again_copy import GNAgain
+            from .again_copy import GNAgain
             return parent.accept_as_child(GNAgain())  # and linked_obj.name in self.names_before(parent)
         return False
 
@@ -498,17 +498,18 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 res.append(Info('{} objects have the same name "{}".'.format(len(indexes), name),
                                 Info.ERROR, nodes=indexes, property='name'))
         if self._message is not None:
-            if self._message[1] >= Info.WARNING:
-                res.insert(0, Info(*self._message))
+            if self._message['level'] >= Info.WARNING:
+                res.insert(0, Info(**self._message))
             else:
-                res.append(Info(*self._message))
+                res.append(Info(**self._message))
         return res
 
-    def info_message(self, icon=None, msg=''):
-        if icon is None:
+    def info_message(self, msg=None, level=Info.INFO, **kwargs):
+        if msg is None:
             self._message = None
         else:
-            self._message = msg, icon
+            self._message = dict(text=msg, level=level)
+            self._message.update(kwargs)
         self.refresh_info()
         self.fire_info_changed()
 

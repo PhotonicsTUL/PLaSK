@@ -19,10 +19,11 @@ from ..utils.signal import Signal
 
 class Info(object):
 
-    GROUP = 0
-    INFO = 1
-    WARNING = 2
-    ERROR = 3
+    NONE = 0
+    GROUP = 1
+    INFO = 2
+    WARNING = 3
+    ERROR = 4
 
     def __str__(self):
         return self.text

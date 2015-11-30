@@ -147,6 +147,9 @@ class GridsController(Controller):
         return self.tableActions.get(self.document.window)
 
     def select_info(self, info):
+        try: action = info.action
+        except AttributeError: pass
+        else: return action()
         if select_index_from_info(info, self.model, self.grids_table):
             self._current_controller.select_info(info) # try to select property
 
@@ -191,7 +194,7 @@ class GridsController(Controller):
 
     def show_update_required(self):
         if self._current_controller is not None:
-            self.model.info_message(Info.INFO, "Mesh changed: press Alt+P to  update the plot")
+            self.model.info_message("Mesh changed: click here to update the plot", Info.INFO, action=self.plot)
             # self.status_bar.setText("Press Alt+P to update the plot")
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
@@ -241,7 +244,7 @@ class GridsController(Controller):
                 self.clear = self.mesh_preview.toolbar._views.clear()
             self.mesh_preview.update_mesh_plot(mesh, geometry, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.model.info_message(Info.WARNING, "Could not update mesh preview: {}".format(str(e)))
+            self.model.info_message("Could not update mesh preview: {}".format(str(e)), Info.WARNING)
             # self.status_bar.setText(str(e))
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             # self.status_bar.setAutoFillBackground(True)

@@ -168,7 +168,9 @@ class MainWindow(QtGui.QMainWindow):
         self.info_table = InfoListView(self.info_model, self)
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
-        self.info_table.setFixedHeight(self.fontMetrics().height()+4)
+        self.info_model.entries = [Info('', Info.NONE)]
+        self.info_table.setFixedHeight(self.info_table.sizeHintForRow(0))
+        self.info_model.entries = []
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
 

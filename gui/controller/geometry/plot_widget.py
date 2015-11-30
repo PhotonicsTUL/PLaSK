@@ -214,7 +214,7 @@ class PlotWidget(QtGui.QWidget):
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         vbox.update()
-        vbox.setContentsMargins(0, 9, 6, 6)
+        vbox.setContentsMargins(0, 0, 2, 1)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
         self.axes.grid()

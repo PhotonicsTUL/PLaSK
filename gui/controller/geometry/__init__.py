@@ -140,7 +140,7 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.model.info_message(Info.WARNING, "Could not update geometry view: {}".format(str(e)))
+            self.model.info_message("Could not update geometry view: {}".format(str(e)), Info.WARNING)
             # self.status_bar.setText(str(e))
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             from ... import _DEBUG
@@ -170,16 +170,20 @@ class GeometryController(Controller):
             tree_element = current_index.internalPointer()
         self.plot_element(tree_element, set_limits=True)
 
+    def plot_refresh(self):
+        self.plot_element(self.plotted_tree_element, set_limits=False)
+
     def reconfig(self):
         if self.plotted_tree_element is not None and self.get_widget().isVisible():
-            self.plot_element(self.plotted_tree_element, set_limits=False)
+            self.plot_refresh()
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None:
             if self.plot_auto_refresh:
-                self.plot_element(self.plotted_tree_element, set_limits=False)
+                self.plot_refresh()
             else:
-                self.model.info_message(Info.INFO, "Geometry changed: refresh the plot")
+                self.model.info_message("Geometry changed: click here to refresh the plot", Info.INFO,
+                                        action=self.plot_refresh)
                 # self.status_bar.setText("Geometry changed: refresh the plot")
                 # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
@@ -417,6 +421,9 @@ class GeometryController(Controller):
         return self.main_splitter
 
     def select_info(self, info):
+        try: action = info.action
+        except AttributeError: pass
+        else: return action()
         try:
             new_nodes = info.nodes
         except AttributeError:

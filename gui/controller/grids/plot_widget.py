@@ -24,7 +24,7 @@ class NavigationToolbar(GeometryNavigationToolbar):
     toolitems = (
         ('Geometry:', 'Select geometry for mesh preview', None, 'select_geometry', ((), 0)),
         (None, None, None, None, None),
-        ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
+        ('Plot', 'Plot mesh preview', 'draw-brush', 'plot', None),
         ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', False),
         (None, None, None, None, None),
         ('Home', 'Reset original view', 'go-home', 'home', None),
@@ -87,7 +87,7 @@ class PlotWidget(GeometryPlotWidget):
     def __init__(self, controller=None, parent=None, picker=None):
         super(PlotWidget, self).__init__(controller, parent, picker, toolbar_class=NavigationToolbar)
         self.get_color = BwColor(self.axes)
-        self.layout().setContentsMargins(0, 9, 6, 2)
+        # self.layout().setContentsMargins(0, 9, 6, 2)
 
     def update_mesh_plot(self, mesh, geometry, set_limits, plane='12'):
         # self.figure.clear()

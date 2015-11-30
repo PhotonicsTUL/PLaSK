@@ -12,7 +12,7 @@
     <A>0.1 * T + 0.02 * (T-300)**2</A>
   </material>
   <material name="InGaAsQW:Si" base="In(0.2)GaAs:Si=1e18">
-    <Eg></Eg>
+    <Eg/>
     <nr>3.621</nr>
     <absp>0</absp>
     <A>110000000</A>
