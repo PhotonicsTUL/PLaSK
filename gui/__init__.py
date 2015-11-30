@@ -434,6 +434,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             update_recent_files(os.path.abspath(filename))
             self.setWindowModified(False)
+            self.setWindowTitle(u"{}[*] - PLaSK".format(self.document.filename))
             return True
 
     def save(self):

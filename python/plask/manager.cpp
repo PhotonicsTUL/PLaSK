@@ -571,7 +571,6 @@ void register_manager() {
         .def_readonly("solver", &PythonManager::solvers, "Dictionary of all named solvers.")
         // .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file.")
-        .def_readonly("script_first_line", &PythonManager::scriptline, "First line of the script in the XML file.")
         .def_readwrite("define", &PythonManager::locals,
                        "Local defines.\n\n"
                        "This is a combination of the values specified in the :xml:tag:`<defines>`\n"

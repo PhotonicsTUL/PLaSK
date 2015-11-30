@@ -50,7 +50,7 @@ class TableModelEditMethods(object):
         if not value:
             value = self.create_default_entry()
             if value is None: return
-        if index < 0: index = 0
+        if index is None or index < 0: index = 0
         if index >= len(self.entries): index = len(self.entries)
         self._exec_command(TableModelEditMethods.InsertEntryCommand(self, index, value))
         return index

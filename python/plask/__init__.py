@@ -287,11 +287,6 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
     """
     Implementation of showwarnings which redirects to PLaSK logs
     """
-    if filename.endswith('.xpl'):
-        try:
-            lineno += __globals['__manager__'].script_first_line
-        except NameError: pass
-        except KeyError: pass
     print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, str(message).replace('\n', ' ')))
 
 import warnings
