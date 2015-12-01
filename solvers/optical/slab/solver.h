@@ -125,6 +125,10 @@ struct PLASK_SOLVER_API SlabBase {
             this->recompute_integrals = true;
             if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         }
+        if (isnan(real(k0)) || isnan(imag(k0))) {
+            k0 = 2e3*M_PI / lam;
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        }
     }
     /// Clear lam0
     void clearLam0() {
