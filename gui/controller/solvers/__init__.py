@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from itertools import groupby
 
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 from ...qt.QtCore import Qt
@@ -21,6 +22,13 @@ from ..table import table_with_manipulators
 from ..defines import get_defines_completer
 from .confsolver import SolverAutoWidget
 
+
+def _solvers_key(slv):
+    try:
+        i = SUFFIXES.index(suffix(slv))
+    except ValueError:
+        i = len(SUFFIXES)
+    return i, slv
 
 class FilterController(Controller):
 
@@ -68,7 +76,7 @@ class FilterController(Controller):
         self.model.what = self.what.currentText()
 
 
-from ...model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS
+from ...model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS, suffix, SUFFIXES
 
 
 class SolversController(Controller):
@@ -205,7 +213,15 @@ class NewSolverDialog(QtGui.QDialog):
             self.solver.setEnabled(False)
         else:
             self.solver.setEnabled(True)
-            self.solver.addItems([slv for cat,slv in MODELS if cat == category])
+            solvers = [slv for cat, slv in MODELS if cat == category]
+            solvers.sort(key=_solvers_key)
+            self.solver.addItems(solvers)
+            grps = [len(list(g)) for _, g in groupby(solvers, suffix)]
+            i = -1
+            for l in grps[:-1]:
+                i += l + 1
+                self.solver.insertSeparator(i)
+
 
 
 def get_new_solver():

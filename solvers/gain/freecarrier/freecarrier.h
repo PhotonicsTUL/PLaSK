@@ -163,6 +163,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         const ActiveRegionInfo& region;
         std::vector<double> U[3];          ///< Band levels
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
+        double Mt;                         ///< Momentum matrix element
 
         std::vector<Level> levels[3];      ///< Approximate electron, heavy and light hole levels
         double Eg;                         ///< Wells band gap
@@ -175,17 +176,32 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
             double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
             Eg = std::numeric_limits<double>::max();
+            size_t i = 0, mi;
+            double me;
             for (auto material: region.materials) {
                 OmpLockGuard<OmpNestLock> lockq = material->lock();
                 double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
                 double uel = material->CB(T, e, 'G'), uhh = material->VB(T, e, 'G', 'H');
                 U[EL].push_back(uel);
                 U[HH].push_back(uhh);
-                Eg = std::min(Eg, uel - uhh);
+                double eg = uel - uhh;
+                if (eg < Eg) {
+                    Eg = eg;
+                    mi = i;
+                    me = e;
+                }
                 U[LH].push_back(material->VB(T, e, 'G', 'L'));
                 M[EL].push_back(material->Me(T, e));
                 M[HH].push_back(material->Mhh(T, e));
                 M[LH].push_back(material->Mlh(T, e));
+                ++i;
+            }
+            if (solver->matrixelem != 0.) {
+                Mt = solver->matrixelem;
+            } else {
+                double deltaSO = region.materials[mi]->Dso(T, me);
+                Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
+                solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to %.2f eV m0", Mt);
             }
         }
 

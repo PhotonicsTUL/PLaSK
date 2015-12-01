@@ -57,7 +57,7 @@ void FreeCarrierGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, M
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
             T0 = reader.getAttribute<double>("T0", T0);
             strained = reader.getAttribute<bool>("strained", strained);
-            quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
+//             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
             reader.requireTagEnd();
         } else
             this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <levels>, or <config>");
@@ -558,7 +558,7 @@ double FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double F
         const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[LH][i].M.c00;
         g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
     }
-    return fac / (hw * nr * params.region.totalqw) * matrixelem * g;
+    return fac / (hw * nr * params.region.totalqw) * params.Mt * g;
 }
 
 template <typename GeometryT>

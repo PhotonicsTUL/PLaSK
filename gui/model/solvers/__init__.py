@@ -29,6 +29,14 @@ CATEGORIES = (
     'optical'
 )
 
+SUFFIXES = ('2D', 'Cyl', '3D')
+
+def suffix(solver):
+    for s in SUFFIXES:
+        if solver.endswith(s):
+            return s
+    return ''
+
 
 class Solver(TreeFragmentModel):
     """Base class for all solver models"""
