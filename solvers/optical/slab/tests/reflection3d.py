@@ -11,9 +11,7 @@ from optical.slab import Fourier3D, PML
 
 @material.simple()
 class Mat(material.Material):
-    @staticmethod
-    def nr():
-        return 2.
+    nr = 2.
 
 
 class Reflection3D_Test(unittest.TestCase):

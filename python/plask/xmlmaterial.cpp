@@ -78,7 +78,7 @@ class PythonEvalMaterial : public Material
             std::string type, value;
             if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); type = ": " + type; }
             if (pvalue) { value = py::extract<std::string>(py::str(py::handle<>(pvalue))); value = ": " + value; }
-            throw ValueError("Error in the custom material function <%2%> of '%1%'%3%%4%", this->name(), funname, type, value);
+            throw ValueError("Error in custom material function <%2%> of '%1%'%3%%4%", this->name(), funname, type, value);
         }
     }
 

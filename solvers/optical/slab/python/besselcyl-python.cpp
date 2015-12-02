@@ -54,7 +54,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     BesselSolverCyl::ParamGuard guard(self);
 
     self->setM(m);
-    
+
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
@@ -201,7 +201,7 @@ void export_BesselSolverCyl()
     solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
-    
+
     METHOD(epsVmm, epsVmm, "J_{m-1}(gr) \\varepsilon^{-1} J_{m-1}(kr) r dr", "layer");
     METHOD(epsVpp, epsVpp, "J_{m+1}(gr) \\varepsilon^{-1} J_{m+1}(kr) r dr", "layer");
     METHOD(epsTmm, epsTmm, "J_{m-1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr", "layer");

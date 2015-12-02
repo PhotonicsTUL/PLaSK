@@ -22,12 +22,12 @@ class Core(material.Material):
 class Disk(unittest.TestCase):
 
     def setUp(self):
-        
+
         R = 9.
         N = 7
-        
+
         self.f = f = 1
-        
+
         disk = geometry.Rectangle(5./f, 0.5/f, 'Core')
         side = geometry.Rectangle(R-5./f, 0.5/f, 'air')
         layer = geometry.Shelf()
@@ -39,28 +39,28 @@ class Disk(unittest.TestCase):
         stack.prepend(layer)
         stack.prepend(above)
         self.geometry = geometry.Cylindrical2D(stack)
-        
+
 
         #self.solver = EffectiveFrequencyCyl('EFM')
         #self.solver.geometry = self.geometry
         #self.solver.lam0 = 1500./f
         #self.solver.vat = 0.
-        
+
         self.solver = BesselCyl('Bessel')
         self.solver.geometry = self.geometry
         self.solver.set_interface(stack)
         self.solver.size = N
-        
+
         self.solver.pml.dist = 10./f - R
-        
+
         self.solver.pml.size = 2.
         self.solver.pml.factor = 1.-2.j
         self.solver.pml.shape = 0
 
         self.solver.lam0 = 1550/f
-        
+
         self.layer = 0
-        
+
     def plot_geometry(self):
         plot_geometry(self.geometry, fill=True, margin=0.1)
 
@@ -143,12 +143,12 @@ class Disk(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    
+
     try:
         function = sys.argv[1]
     except IndexError:
         function = 'setUp'
-    
+
     disk = Disk(function)
     disk.setUp()
 
@@ -159,6 +159,5 @@ if __name__ == "__main__":
         disk.print_matrices()
         disk.plot_geometry()
         disk.plot_determinant()
-        disk.plot_field()
+        #disk.plot_field()
     show()
-    

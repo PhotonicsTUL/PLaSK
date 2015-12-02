@@ -20,11 +20,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base cla
 
 template <int dim>
 void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial) {
-    try {
-        shared_ptr<Material> material = py::extract<shared_ptr<Material>>(omaterial);
-        self->setMaterial(material);
-    } catch (py::error_already_set) {
-        PyErr_Clear();
+    if (PyTuple_Check(omaterial.ptr()) || PyList_Check(omaterial.ptr())) {
         auto l = py::len(omaterial);
         double shape = 1.;
         if (l != 2 && l != 3)
@@ -33,6 +29,9 @@ void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omater
         std::string mat2 = py::extract<std::string>(omaterial[1]);
         if (l == 3) shape = py::extract<double>(omaterial[2]);
         self->setMaterialTopBottomComposition(MaterialsDB::getDefault().getFactory(mat2, mat1, shape));
+    } else {
+        shared_ptr<Material> material = py::extract<shared_ptr<Material>>(omaterial);
+        self->setMaterial(material);
     }
 }
 

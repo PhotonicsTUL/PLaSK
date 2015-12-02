@@ -22,18 +22,17 @@ N = 12
 
 @material.simple()
 class Subs(material.Material):
-    @staticmethod
-    def nr(): return ns
+    nr = ns
 
 @material.simple()
 class Hi(material.Material):
-    @staticmethod
-    def nr(): return nh
+    #nr = nh
+    def nr(self, lam, temp, conc):
+        return nh
 
 @material.simple()
 class Lo(material.Material):
-    @staticmethod
-    def nr(): return nl
+    nr = nl
 
 
 class GratingTest(unittest.TestCase):

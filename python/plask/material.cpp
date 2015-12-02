@@ -156,12 +156,28 @@ class PythonMaterial: public Material, Overriden
     static std::map<PyObject*, std::unique_ptr<MaterialCache>> cacheMap;
     MaterialCache* cache;
 
+    template <typename R, typename... Args>
+    inline R call_method(const char* name, Args... args) const {
+        py::object result = py::call_method<py::object>(self, name, args...);
+        try {
+            return py::extract<R>(result);
+        } catch (py::error_already_set) {
+            std::string cls_name;
+            try {
+                cls_name = py::extract<std::string>(py::object(py::borrowed(self)).attr("__class__").attr("__name__"));
+            } catch (py::error_already_set) {
+                throw TypeError("Cannot convert return value of method '%s' in unknown material class to correct type", name);
+            }
+            throw TypeError("Cannot convert return value of method '%s' in material class '%s' to correct type", name, cls_name);
+        }
+    }
+
     template <typename R, typename F, typename... Args>
     inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden(name)) {
-            return py::call_method<R>(self, name, args...);
+            return call_method<R>(name, args...);
         }
         return ((*base).*f)(args...);
     }
@@ -187,7 +203,7 @@ class PythonMaterial: public Material, Overriden
                    oother { py::object(py::borrowed(theother.self)) };
 
         if (overriden("__eq__")) {
-            return py::call_method<bool>(self, "__eq__", oother);
+            return call_method<bool>("__eq__", oother);
         }
 
         return *base == *theother.base &&
@@ -211,7 +227,7 @@ class PythonMaterial: public Material, Overriden
     std::string str() const override {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden("__str__")) {
-            return py::call_method<std::string>(self, "__str__");
+            return call_method<std::string>("__str__");
         }
         else return name();
     }
@@ -288,7 +304,7 @@ class PythonMaterial: public Material, Overriden
         if (cache->Nr) return *cache->Nr;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden("Nr")) {
-            return py::call_method<dcomplex>(self, "Nr", wl, T, n);
+            return call_method<dcomplex>("Nr", wl, T, n);
         }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp"))
             return dcomplex(call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
@@ -298,14 +314,14 @@ class PythonMaterial: public Material, Overriden
         if (cache->NR) return *cache->NR;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden("NR")) {
-            return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
+            return call_method<Tensor3<dcomplex>>("NR", wl, T, n);
         }
         if (cache->Nr || overriden("Nr")) {
             dcomplex nr;
             if (cache->Nr)
                 nr = *cache->Nr;
             else {
-                nr = py::call_method<dcomplex>(self, "Nr", wl, T, n);
+                nr = call_method<dcomplex>("Nr", wl, T, n);
             }
             return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
@@ -500,9 +516,13 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         MaterialCache* cache = (cacheMap[cls.ptr()] = std::unique_ptr<MaterialCache>(new MaterialCache)).get();
         ptr->cache = cache;
         #define CHECK_CACHE(Type, fun, name, ...) \
-            if (PyObject_HasAttrString(self.ptr(), name) && PyFunction_Check(py::object(self.attr(name)).ptr())) { \
-                cache->fun.reset(py::extract<Type>(self.attr(name)())); \
-                writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%1%'", cls_name); \
+            if (PyObject_HasAttrString(self.ptr(), name) && !PyMethod_Check(py::object(self.attr(name)).ptr())) { \
+                try { \
+                    cache->fun.reset(py::extract<Type>(self.attr(name))); \
+                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%s'", cls_name); \
+                } catch (py::error_already_set) { \
+                    throw TypeError("Cannot convert static parameter '" name "' in material class '%s' to correct type", cls_name); \
+                } \
             }
         CHECK_CACHE(double, lattC, "lattC", 300., py::object())
         CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")

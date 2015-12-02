@@ -12,8 +12,7 @@ plask.config.axes = 'xy'
 
 @material.simple()
 class Core(material.Material):
-    @staticmethod
-    def Nr(): return 3.5
+    Nr = 3.5
 
 
 class Reflection2D_Test(unittest.TestCase):
