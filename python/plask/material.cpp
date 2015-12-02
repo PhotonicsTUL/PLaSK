@@ -516,14 +516,23 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         MaterialCache* cache = (cacheMap[cls.ptr()] = std::unique_ptr<MaterialCache>(new MaterialCache)).get();
         ptr->cache = cache;
         #define CHECK_CACHE(Type, fun, name, ...) \
-            if (PyObject_HasAttrString(self.ptr(), name) && !PyMethod_Check(py::object(self.attr(name)).ptr())) { \
+        if (PyObject_HasAttrString(self.ptr(), name)) { \
+            if (PyFunction_Check(py::object(self.attr(name)).ptr())) { \
+                try { \
+                    cache->fun.reset(py::extract<Type>(self.attr(name))()); \
+                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%s'", cls_name); \
+                } catch (py::error_already_set) { \
+                    throw TypeError("Cannot convert return value of static function '" name "' in material class '%s' to correct type", cls_name); \
+                } \
+            } else if (!PyMethod_Check(py::object(self.attr(name)).ptr())) { \
                 try { \
                     cache->fun.reset(py::extract<Type>(self.attr(name))); \
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%s'", cls_name); \
                 } catch (py::error_already_set) { \
                     throw TypeError("Cannot convert static parameter '" name "' in material class '%s' to correct type", cls_name); \
                 } \
-            }
+            } \
+        }
         CHECK_CACHE(double, lattC, "lattC", 300., py::object())
         CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")
         CHECK_CACHE(double, CB, "CB", 300., 0., "G")
