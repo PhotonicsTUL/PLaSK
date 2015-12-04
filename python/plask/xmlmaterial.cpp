@@ -184,8 +184,17 @@ class PythonEvalMaterial : public Material
     double B(double T) const override { PYTHON_EVAL_CALL_1(double, B, T) }
     double C(double T) const override { PYTHON_EVAL_CALL_1(double, C, T) }
     double D(double T) const override {
-        try { PYTHON_EVAL_CALL_1(double, D, T) }
-        catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; } // D = µ kB T / e
+        if (cls->cache.D) { return *cls->cache.D; }
+        if (cls->D != NULL) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            py::dict locals; locals["self"] = self; locals["T"] = T;
+            return call<double>(cls->D, locals, "D");
+        }
+        // D = µ kB T / e
+        if (cls->cache.mob || cls->mob != NULL) {
+            return mob(T).c00 * T * 8.6173423e-5;
+        }
+        return base->D(T);
     }
     Tensor2<double> thermk(double T, double h) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
     double dens(double T) const override { PYTHON_EVAL_CALL_1(double, dens, T) }
@@ -197,7 +206,7 @@ class PythonEvalMaterial : public Material
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
-            return py::extract<dcomplex>(py::handle<>(py_eval(cls->Nr, locals)).get());
+            return call<dcomplex>(cls->Nr, locals, "Nr");
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp)
             return dcomplex(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
@@ -208,7 +217,7 @@ class PythonEvalMaterial : public Material
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
-            return py::extract<Tensor3<dcomplex>>(py::handle<>(py_eval(cls->NR, locals)).get());
+            return call<Tensor3<dcomplex>>(cls->NR, locals, "NR");
         }
         if (cls->cache.Nr) {
             dcomplex nc = *cls->cache.Nr;
@@ -217,7 +226,7 @@ class PythonEvalMaterial : public Material
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
-            dcomplex nc = py::extract<dcomplex>(py::handle<>(py_eval(cls->Nr, locals)).get());
+            dcomplex nc = call<dcomplex>(cls->Nr, locals, "Nr");
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp) {

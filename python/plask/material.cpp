@@ -292,8 +292,8 @@ class PythonMaterial: public Material, Overriden
     double B(double T) const override { return call<double>("B", &Material::B, cache->B, T); }
     double C(double T) const override { return call<double>("C", &Material::C, cache->C, T); }
     double D(double T) const override {
-        try { return call<double>("D", &Material::D, cache->D, T); }
-        catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
+        if (overriden("mob")) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
+        return call<double>("D", &Material::D, cache->D, T);
     }
     Tensor2<double> thermk(double T, double t) const override { return call<Tensor2<double>>("thermk", &Material::thermk, cache->thermk, T, t); }
     double dens(double T) const override { return call<double>("dens", &Material::dens, cache->dens, T); }
