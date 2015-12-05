@@ -41,7 +41,7 @@ S patterson(const std::function<S(T)>& fun, T a, T b, double& err)
     }
 
 #ifndef NDEBUG
-    writelog(LOG_DEBUG, "Patterson quadrature for %1% points, error = %2%", (2<<n)-1, err);
+    writelog(LOG_DEBUG, "Patterson quadrature for {0} points, error = {1}", (2<<n)-1, err);
 #endif
 
     return result;

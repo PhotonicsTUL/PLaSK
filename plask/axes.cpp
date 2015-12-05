@@ -33,13 +33,13 @@ std::size_t AxisNames::operator [](const std::string &name) const {
 
 Primitive<3>::Direction AxisNames::get3D(const std::string &name) const {
     std::size_t res = operator [] (name);
-    if (res == 3) throw Exception("\"%1%\" is not proper axis name.", name);
+    if (res == 3) throw Exception("\"{0}\" is not proper axis name.", name);
     return Primitive<3>::Direction(res);
 }
 
 Primitive<2>::Direction AxisNames::get2D(const std::string &name) const {
     std::size_t res = operator [] (name);
-    if (res == 0 || res == 3) throw Exception("\"%1%\" is not proper 2D axis name.", name);
+    if (res == 0 || res == 3) throw Exception("\"{0}\" is not proper 2D axis name.", name);
     return Primitive<2>::Direction(res - 1);
 }
 

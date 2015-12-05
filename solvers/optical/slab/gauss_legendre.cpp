@@ -18,8 +18,8 @@ void gaussData(size_t n, std::vector<double>& abscissae, DataVector<double>& wei
         weights[i-1] = 0.5 / std::sqrt(1. - 0.25/(i*i));
 
     dsterf(n, &abscissae.front(), weights.data(), info);
-    if (info < 0) throw CriticalException("Gauss-Legendre abscissae: Argument %d of DSTERF has bad value", -info);
-    if (info > 0) throw ComputationError("Gauss-Legendre abscissae", "Could not converge in %d-th element", info);
+    if (info < 0) throw CriticalException("Gauss-Legendre abscissae: Argument {:d} of DSTERF has bad value", -info);
+    if (info > 0) throw ComputationError("Gauss-Legendre abscissae", "Could not converge in {:d}-th element", info);
 
     double nn = n*n;
     auto x = abscissae.begin();

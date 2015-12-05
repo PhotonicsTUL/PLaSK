@@ -93,7 +93,7 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
                     if (!materialQW)
                         materialQW = material;
                     else if (*material != *materialQW)
-                        throw Exception("%1%: Multiple quantum well materials in active region.", solver->getId());
+                        throw Exception("{0}: Multiple quantum well materials in active region.", solver->getId());
                     auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
                     qwtotallen += bbox.upper[1] - bbox.lower[1];
                     if (lastbarrier) ++qwn;
@@ -110,7 +110,7 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
                              !is_zero(material->Mlh(300).c11 - materialBarrier->Mlh(300).c11) ||
                              !is_zero(material->CB(300) - materialBarrier->CB(300)) ||
                              !is_zero(material->VB(300) - materialBarrier->VB(300)))
-                        throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());
+                        throw Exception("{0}: Multiple barrier materials around active region.", solver->getId());
                     lastbarrier = true;
                 }
             }
@@ -258,7 +258,7 @@ struct GainSpectrum {
                 return;
             };
         }
-        throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
+        throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
     }
 
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }

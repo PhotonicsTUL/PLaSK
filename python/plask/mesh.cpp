@@ -26,9 +26,9 @@ template <int dim> size_t MeshWrap<dim>::size() const {
 
 template <int dim> shared_ptr<MeshD<dim>> MeshWrap<dim>::__init__(py::tuple args, py::dict kwargs) {
     if (py::len(args) > 1)
-        throw TypeError("__init__() takes exactly 1 non-keyword arguments (%d given)", py::len(args));
+        throw TypeError("__init__() takes exactly 1 non-keyword arguments ({:d} given)", py::len(args));
     if (py::len(kwargs) > 0)
-        throw TypeError("__init__() got an unexpected keyword argument '%s'",
+        throw TypeError("__init__() got an unexpected keyword argument '{}'",
                         py::extract<std::string>(kwargs.keys()[0])());
 
     py::object self(args[0]);

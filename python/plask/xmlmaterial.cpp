@@ -78,7 +78,7 @@ class PythonEvalMaterial : public Material
             std::string type, value;
             if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); type = ": " + type; }
             if (pvalue) { value = py::extract<std::string>(py::str(py::handle<>(pvalue))); value = ": " + value; }
-            throw ValueError("Error in custom material function <%2%> of '%1%'%3%%4%", this->name(), funname, type, value);
+            throw ValueError("Error in custom material function <{1}> of '{0}'{2}{3}", this->name(), funname, type, value);
         }
     }
 
@@ -280,7 +280,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         else if (reader.getNodeName() == funcname) { \
             constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
             if (constructor->func == nullptr) \
-                throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \
@@ -288,7 +288,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                         py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals.ptr(), locals.ptr())).get() \
                     ) \
                 ); \
-                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '%1%'", material_name); \
+                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
             } catch (py::error_already_set) { \
                 PyErr_Clear(); \
             } \
@@ -299,7 +299,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         else if (reader.getNodeName() == funcname) { \
             constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
             if (constructor->func == nullptr) \
-                throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \
@@ -307,7 +307,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                         py::handle<>(PyEval_EvalCode(constructor->func, xml_globals.ptr(), locals.ptr())).get() \
                     ) \
                 ); \
-                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '%1%'", material_name); \
+                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
             } catch (py::error_already_set) { \
                 PyErr_Clear(); \
             } \
@@ -325,7 +325,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                             (condname == "other" || condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
                              Material::CONDUCTIVITY_UNDETERMINED;
             if (condtype == Material::CONDUCTIVITY_UNDETERMINED)
-                throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), "condtype"), "Material parameter syntax error, condtype must be given as one of: n, i, p, other (or: N, I, P, OTHER)");
+                throw XMLException(format("XML line {0} in <{1}>", reader.getLineNr(), "condtype"), "Material parameter syntax error, condtype must be given as one of: n, i, p, other (or: N, I, P, OTHER)");
             constructor->condtype = condtype;
         } //else if
         COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)

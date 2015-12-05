@@ -40,7 +40,7 @@ void ExpansionBessel::computeBesselZeros()
         std::copy_n(bessel_zeros[m], n, factors.begin());
     }
     if (n < N) {
-        SOLVER->writelog(LOG_DEBUG, "Computing Bessel function J_(%d) zeros %d to %d", m, n+1, N);
+        SOLVER->writelog(LOG_DEBUG, "Computing Bessel function J_({:d}) zeros {:d} to {:d}", m, n+1, N);
         cyl_bessel_j_zero(double(m), n+1, N-n, factors.begin()+n);
     }
     // #ifndef NDEBUG
@@ -128,7 +128,7 @@ void ExpansionBessel::init()
         segments[i].weights = weights_cache[j-1];
     }
 
-    SOLVER->writelog(LOG_DETAIL, "Sampling structure in %d points (error: %g/%g)", raxis->size(), error/expected, SOLVER->integral_error);
+    SOLVER->writelog(LOG_DETAIL, "Sampling structure in {:d} points (error: {:g}/{:g})", raxis->size(), error/expected, SOLVER->integral_error);
     
     // Compute integrals for permeability
     size_t N = SOLVER->size;
@@ -231,9 +231,9 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     auto zaxis = SOLVER->getLayerPoints(layer);
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer %d in thread %d", layer, omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d} in thread {:d}", layer, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer %d", layer);
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}", layer);
     #endif
 
     size_t nr = raxis->size(), N = SOLVER->size;
@@ -335,7 +335,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     }
 
     if (diagonals[layer]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
         integrals.zero();
         dcomplex epst = 0.5 * (EPS.c00 + EPS.c11), iepsv = 1. / EPS.c22;
         for (int i = 0; i < N; ++i) {

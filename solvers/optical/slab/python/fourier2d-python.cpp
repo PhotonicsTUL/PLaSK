@@ -33,7 +33,7 @@ static void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) 
 
 static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
 
     enum What {
@@ -77,7 +77,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
         else if (*i == "dispersive")
             throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
         else
-            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
+            throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
     FourierSolver2D::ParamGuard guard(self);
@@ -115,11 +115,11 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
 
 static size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("find_mode() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("find_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
 
     if (py::len(kwargs) != 1)
-        throw TypeError("find_mode() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+        throw TypeError("find_mode() takes exactly one keyword argument ({0} given)", py::len(kwargs));
     std::string key = py::extract<std::string>(kwargs.keys()[0]);
     dcomplex value = py::extract<dcomplex>(kwargs[key]);
     AxisNames* axes = getCurrentAxes();
@@ -134,7 +134,7 @@ static size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
     else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
         what = FourierSolver2D::WHAT_KTRAN;
     else
-        throw TypeError("find_mode() got unexpected keyword argument '%1%'", key);
+        throw TypeError("find_mode() got unexpected keyword argument '{0}'", key);
 
     return self->findMode(what, value);
 }
@@ -148,7 +148,7 @@ static py::object FourierSolver2D_Mode__getattr__(const FourierSolver2D::Mode& m
     auto axes = getCurrentAxes();
     if (name == "k"+axes->getNameForLong()) return py::object(mode.beta);
     if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
-    throw AttributeError("'Mode' object has no attribute '%1%'", name);
+    throw AttributeError("'Mode' object has no attribute '{0}'", name);
     return py::object();
 }
 
@@ -168,10 +168,10 @@ static std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
         default: sym = "none";
     }
     dcomplex neff = self.beta / self.k0;
-    return format("<lam: %.2fnm, neff: %.3f%+.3g, ktran: %s/um, polarization: %s, symmetry: %s, power: %.2g mW>",
+    return format("<lam: {:.2f}nm, neff: {:.3f}{:+.3g}, ktran: {}/um, polarization: {}, symmetry: {}, power: {:.2g} mW>",
                   real(2e3*M_PI / self.k0),
                   real(neff),imag(neff),
-                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
+                  (imag(self.ktran) == 0.)? format("{:.3g}",real(self.ktran)) : format("{:.3g}{:+.3g}",real(self.ktran),imag(self.ktran)),
                   pol,
                   sym,
                   self.power
@@ -191,7 +191,7 @@ static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) 
         case Expansion::E_LONG: sym = "'E" + axes->getNameForLong() + "'"; break;
         default: sym = "None";
     }
-    return format("Fourier2D.Mode(lam=%1%, neff=%2%, ktran=%3%, polarization=%4%, symmetry=%5%, power=%6%)",
+    return format("Fourier2D.Mode(lam={0}, neff={1}, ktran={2}, polarization={3}, symmetry={4}, power={5})",
                   str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
 }
 
@@ -211,13 +211,13 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
 
 static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.separated(), 2);
 }
 
 static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
 }
 

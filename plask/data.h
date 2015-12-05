@@ -625,7 +625,7 @@ std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
 template<class T, class S>
 DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<S> const& inc_val) {
     if (to_inc.size() != inc_val.size())
-        throw DataError("Data vectors sizes differ ([%1%] += [%2])", to_inc.size(), inc_val.size());
+        throw DataError("Data vectors sizes differ ([{0}] += [%2])", to_inc.size(), inc_val.size());
     for (std::size_t i = 0; i < to_inc.size(); ++i)
         to_inc[i] += inc_val[i];
     return to_inc;
@@ -640,7 +640,7 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<S> const& inc_val) {
 template<class T, class S>
 DataVector<T>& operator-=(DataVector<T>& to_dec, DataVector<S> const& dec_val) {
     if (to_dec.size() != dec_val.size())
-        throw DataError("Data vectors sizes differ ([%1%] -= [%2])", to_dec.size(), dec_val.size());
+        throw DataError("Data vectors sizes differ ([{0}] -= [%2])", to_dec.size(), dec_val.size());
     for (std::size_t i = 0; i < to_dec.size(); ++i)
         to_dec[i] -= dec_val[i];
     return to_dec;
@@ -682,7 +682,7 @@ DataVector<T>& operator/=(DataVector<T>& vec, S a) {
 template<typename T1, typename T2>
 DataVector<typename std::remove_cv<decltype(T1()+T2())>::type> operator+(DataVector<T1> const& vec1, DataVector<T2> const& vec2) {
     if (vec1.size() != vec2.size())
-        throw DataError("Data vectors sizes differ ([%1%] + [%2])", vec1.size(), vec2.size());
+        throw DataError("Data vectors sizes differ ([{0}] + [%2])", vec1.size(), vec2.size());
     DataVector<typename std::remove_cv<decltype(T1()+T2())>::type> result(vec1.size());
     for (std::size_t i = 0; i < vec1.size(); ++i)
         result[i] = vec1[i] + vec2[i];
@@ -698,7 +698,7 @@ DataVector<typename std::remove_cv<decltype(T1()+T2())>::type> operator+(DataVec
 template<typename T1, typename T2>
 DataVector<typename std::remove_cv<decltype(T1()-T2())>::type> operator-(DataVector<T1> const& vec1, DataVector<T2> const& vec2) {
     if (vec1.size() != vec2.size())
-        throw DataError("Data vectors sizes differ ([%1%] - [%2])", vec1.size(), vec2.size());
+        throw DataError("Data vectors sizes differ ([{0}] - [%2])", vec1.size(), vec2.size());
     DataVector<typename std::remove_cv<decltype(T1()-T2())>::type> result(vec1.size());
     for (std::size_t i = 0; i < vec1.size(); ++i)
         result [i] = vec1[i] - vec2[i];

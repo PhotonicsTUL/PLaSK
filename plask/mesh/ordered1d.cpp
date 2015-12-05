@@ -129,7 +129,7 @@ shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
                  double val = boost::lexical_cast<double>(point);
                  result->addPoint(val);
              } catch (boost::bad_lexical_cast) {
-                 throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
+                 throw XMLException(reader, format("Value '{0}' cannot be converted to float", point));
              }
          }
     }
@@ -149,7 +149,7 @@ static RegisterMeshReader rectilinearmesh_reader("ordered", readOrderedMesh1D);
 // obsolete:
 
 shared_ptr<OrderedMesh1D> readOrderedMesh1D_obsolete(XMLReader& reader) {
-    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete, use \"ordered\" instead.", reader.requireAttribute("type"));
+    writelog(LOG_WARNING, "Mesh type \"{0}\" is obsolete, use \"ordered\" instead.", reader.requireAttribute("type"));
     return readOrderedMesh1D(reader);
 }
 RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readOrderedMesh1D_obsolete);

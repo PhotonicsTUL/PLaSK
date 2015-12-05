@@ -29,13 +29,13 @@ class Matrix {
 
     Matrix(int m, int n) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;
-        write_debug("allocating matrix %dx%d (%.3f MB) at %p", r, c, r*c*sizeof(T)/1048576., data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         *gc = 1;
     }
 
     Matrix(int m, int n, T val) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;
-        write_debug("allocating matrix %dx%d (%.3f MB) at %p", r, c, r*c*sizeof(T)/1048576., data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
         *gc = 1;
     }
@@ -49,7 +49,7 @@ class Matrix {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
-                write_debug("freeing matrix %dx%d (%.3f MB) at %p", r, c, r*c*sizeof(T)/1048576., data_);
+                write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
             }
         }
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
@@ -59,7 +59,7 @@ class Matrix {
     Matrix(const MatrixDiagonal<T>& M) {
         r = c = M.size();
         data_ = aligned_new_array<T>(r*c); gc = new int;
-        write_debug("allocating matrix %dx%d (%.3f MB) at %p (from diagonal)", r, c, r*c*sizeof(T)/1048576., data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         int size = r*c;
         std::fill_n(data_, size, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
@@ -76,7 +76,7 @@ class Matrix {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
-                write_debug("freeing matrix %dx%d (%.3f MB) at %p", r, c, r*c*sizeof(T)/1048576., data_);
+                write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
             }
         }
     }
@@ -148,13 +148,13 @@ class MatrixDiagonal {
 
     MatrixDiagonal(int n) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-        write_debug("allocating diagonal matrix %1%x%1% (%2$.3f MB) at %3%", siz, siz*sizeof(T)/1048576., data_);
+        write_debug("allocating diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         *gc = 1;
     }
 
     MatrixDiagonal(int n, T val) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-        write_debug("allocating and filling diagonal matrix %1%x%1% (%2$.3f MB) at %3%", siz, siz*sizeof(T)/1048576., data_);
+        write_debug("allocating and filling diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, n, val);
         *gc = 1;
     }
@@ -168,7 +168,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix %1%x%1% (%2$.3f MB) at %3%", siz, siz*sizeof(T)/1048576., data_);
+                write_debug("freeing diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
         }
         siz = M.siz; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
@@ -180,7 +180,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix %1%x%1% (%2$.3f MB) at %3%", siz, siz*sizeof(T)/1048576., data_);
+                write_debug("freeing diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
         }
     }

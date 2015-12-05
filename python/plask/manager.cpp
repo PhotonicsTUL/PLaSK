@@ -84,7 +84,7 @@ class PythonXMLFilter {
                     ++close_pos;
                 }
                 if (close_pos == in.size() && level != 0)
-                    throw plask::Exception("Cannot find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
+                    throw plask::Exception("Cannot find '}' mathing to '{' at position {0} in: {1}", pos-1, in);
                 result += eval(in.substr(pos, close_pos-1 - pos));
                 pos = close_pos-1;    // pos with '}' that will be skipped
             } else
@@ -190,14 +190,14 @@ void PythonManager::loadDefines(XMLReader& reader)
             try {
                 locals[name] = (py_eval(value, xml_globals, locals));
             } catch (py::error_already_set) {
-                writelog(LOG_WARNING, "Cannot parse XML definition '%s' (storing it as string): %s",
+                writelog(LOG_WARNING, "Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
                 PyErr_Clear();
                 locals[name] = value;
             }
         }
         else if (parsed.find(name) != parsed.end())
-            throw XMLDuplicatedElementException(reader, format("Definition of '%1%'", name));
+            throw XMLDuplicatedElementException(reader, format("Definition of '{0}'", name));
         parsed.insert(name);
         reader.requireTagEnd();
     }
@@ -232,9 +232,9 @@ void PythonManager::loadConnects(XMLReader& reader)
         py::object solverin, receiver;
 
         auto in_solver = solvers.find(in.first);
-        if (in_solver == solvers.end()) throw XMLException(reader, format("Cannot find (in) solver with name '%1%'.", in.first));
+        if (in_solver == solvers.end()) throw XMLException(reader, format("Cannot find (in) solver with name '{0}'.", in.first));
         try { solverin = py::object(in_solver->second); }
-        catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", in.first)); }
+        catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '{0}' to python object.", in.first)); }
 
         if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
             int points = 10;
@@ -254,7 +254,7 @@ void PythonManager::loadConnects(XMLReader& reader)
             }
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%'.", in.first, in.second)); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second)); }
         }
 
         std::string outkey = reader.requireAttribute("out");
@@ -269,12 +269,12 @@ void PythonManager::loadConnects(XMLReader& reader)
             py::object solverout, prov;
 
             auto out_solver = solvers.find(out.first);
-            if (out_solver == solvers.end()) throw XMLException(reader, format("Cannot find (out) solver with name '%1%'.", out.first));
+            if (out_solver == solvers.end()) throw XMLException(reader, format("Cannot find (out) solver with name '{0}'.", out.first));
             try { solverout = py::object(out_solver->second); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", out.first)); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '{0}' to python object.", out.first)); }
 
             try { prov = solverout.attr(out.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%'.", out.first, out.second)); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", out.first, out.second)); }
 
             if (provider == py::object()) provider = prov;
             else provider = provider + prov;
@@ -283,7 +283,7 @@ void PythonManager::loadConnects(XMLReader& reader)
         try {
             receiver.attr("connect")(provider);
         } catch (py::error_already_set) {
-            throw XMLException(reader, format("Cannot connect '%1%' to '%2%'.", outkey, inkey));
+            throw XMLException(reader, format("Cannot connect '{0}' to '{1}'.", outkey, inkey));
         }
 
         reader.requireTagEnd();
@@ -366,7 +366,7 @@ void PythonManager::removeSpaces(unsigned xmlline) {
             else if (*beg == '#') { break; } // allow unidentation for comments
             else {
                 ptrdiff_t d = std::distance(line->begin(), beg);
-                throw XMLException(format("XML line %1%: Current script line indentation (%2% space%3%) is less than the indentation of the first script line (%4% space%5%)",
+                throw XMLException(format("XML line {0}: Current script line indentation ({1} space{2}) is less than the indentation of the first script line ({3} space{4})",
                                           xmlline+lineno, d, (d==1)?"":"s", strip, (strip==1)?"":"s"));
             }
         }
@@ -446,7 +446,7 @@ static py::object dict__getattr__(const std::map<std::string,T>& self, const std
     std::replace(key.begin(), key.end(), '_', '-');
     auto found = self.find(key);
     if (found == self.end()) {
-        PyErr_SetString(PyExc_AttributeError, format("No " + item_name<T>() + " with id '%1%'", attr).c_str());
+        PyErr_SetString(PyExc_AttributeError, format("No " + item_name<T>() + " with id '{0}'", attr).c_str());
         boost::python::throw_error_already_set();
     }
     return py::object(found->second);
@@ -464,7 +464,7 @@ static void dict__delattr__(std::map<std::string,T>& self, const std::string& at
     std::string key = attr;
     std::replace(key.begin(), key.end(), '_', ' ');
     auto found = self.find(key);
-    if (found == self.end()) throw AttributeError("No " + item_name<T>() + " with id '%1%'", attr);
+    if (found == self.end()) throw AttributeError("No " + item_name<T>() + " with id '{0}'", attr);
     self.erase(found);
 }
 

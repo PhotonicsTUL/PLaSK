@@ -252,6 +252,9 @@ endif()
 add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
 
+# cppformat
+list(APPEND plask_src extlib/cppformat/format.cc)
+
 # ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})

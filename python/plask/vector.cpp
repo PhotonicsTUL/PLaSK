@@ -73,7 +73,7 @@ namespace detail {
                 }
                 data->convertible = storage;
             } catch (py::error_already_set) {
-                throw TypeError("Must provide either plask.vector or a sequence of length %1% of proper dtype", dim);
+                throw TypeError("Must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
             }
         }
     };
@@ -188,9 +188,9 @@ inline static int vec_attr_indx(const std::string& attr) {
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError("vector attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, current_axes.str());
+            throw AttributeError("vector attribute '{}' has no sense for {:d}D vector if config.axes = '{}'", attr, dim, current_axes.str());
         else
-            throw AttributeError("'vec' object has no attribute '%s'", attr);
+            throw AttributeError("'vec' object has no attribute '{}'", attr);
     }
     return i;
 }
@@ -200,7 +200,7 @@ struct VecAttr {
     typedef Vec<dim, T> V;
     static T get(const V& self, const std::string& attr) { return self[vec_attr_indx<dim>(attr)]; }
 //     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
-    static void set(V& self, const std::string& attr, T val) { throw TypeError("vector attribute '%s' cannot be changed", attr); }
+    static void set(V& self, const std::string& attr, T val) { throw TypeError("vector attribute '{}' cannot be changed", attr); }
 };
 
 template <int dim, typename T>
@@ -337,7 +337,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
                 else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
             } catch (AttributeError) {
-                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, current_axes.str());
+                throw TypeError("wrong component name for {:d}D vector if config.axes = '{}'", n, current_axes.str());
             }
 
         }

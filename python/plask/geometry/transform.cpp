@@ -71,7 +71,7 @@ static std::string Translation__str__(const Translation<dim>& self) {
 
 template <int dim>
 static std::string Translation__repr__(const Translation<dim>& self) {
-    return format("plask.geometry.Translation%1%D%2%", dim, Translation__str__<dim>(self));
+    return format("plask.geometry.Translation{0}D{1}", dim, Translation__str__<dim>(self));
 }
 
 DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",

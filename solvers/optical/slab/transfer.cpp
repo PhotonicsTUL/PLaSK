@@ -125,7 +125,7 @@ const_cvector Transfer::getInterfaceVector()
 
         // Error handling
         if (min_mag > solver->root.tolf_max * solver->root.tolf_max)
-            throw BadInput(solver->getId(), "Interface field: determinant not sufficiently close to 0 (det=%s)", str(evals[n]));
+            throw BadInput(solver->getId(), "Interface field: determinant not sufficiently close to 0 (det={})", str(evals[n]));
 
         // Chose the eigenvector corresponding to the smallest eigenvalue
         interface_field = interface_field_matrix.data() + n*N;

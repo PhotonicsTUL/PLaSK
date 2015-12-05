@@ -87,7 +87,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError("Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -111,7 +111,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError("Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -141,7 +141,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->input(*geomd->getChild(), path), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError("Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -160,10 +160,10 @@ namespace detail {
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
         filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),
                      format(
-                         "%1%Filter%4%(geometry)\n\n"
-                         "Data filter for %2% into %3% geometry.\n\n"
+                         "{0}Filter{3}(geometry)\n\n"
+                         "Data filter for {1} into {2} geometry.\n\n"
                          "Args:\n"
-                         "    geometry (geometry.%3%): Target geometry.\n\n"
+                         "    geometry (geometry.{2}): Target geometry.\n\n"
                          "See also:\n    :mod:`plask.filter` for details on filter usage.",
                          type_name<PropertyT>(), std::string(PropertyT::NAME), spaceName<GeometryT>(), suffix).c_str(),
                      py::init<shared_ptr<GeometryT>>((py::arg("geometry")))
@@ -171,7 +171,7 @@ namespace detail {
         filter_class
             .def_readonly("out",
                           reinterpret_cast<ProviderFor<PropertyT, GeometryT> Filter<PropertyT,GeometryT>::*>(&Filter<PropertyT,GeometryT>::out),
-                          format("Filter output provider.\n\nExample:\n    >>> some_solver.in%1% = my_filter.out\n", type_name<PropertyT>()).c_str())
+                          format("Filter output provider.\n\nExample:\n    >>> some_solver.in{0} = my_filter.out\n", type_name<PropertyT>()).c_str())
             .def("__getitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinGetitemResult>)
             .def("__setitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinSetitemResult, py::object>)
         ;

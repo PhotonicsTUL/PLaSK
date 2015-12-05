@@ -40,7 +40,7 @@ static py::object FermiNewLuminescenceSpectrum__call__(LuminescenceSpectrum<Geom
 static py::object FermiNewGain_setLevels(py::tuple args, py::dict kwargs)
 {
     if (py::len(args) != 1) {
-        throw TypeError("set_levels() takes exactly 1 non-keyword argument1 (%1% given)", py::len(args));
+        throw TypeError("set_levels() takes exactly 1 non-keyword argument1 ({0} given)", py::len(args));
     }
 
     double* el = nullptr;
@@ -62,7 +62,7 @@ static py::object FermiNewGain_setLevels(py::tuple args, py::dict kwargs)
                 lh = new double[n+1]; lh[n] = 1.;
                 for (size_t i = 0; i != n; ++i) lh[i] = - py::extract<double>(kwargs["lh"][i]);
             } else if (*key != "Fc" && *key != "Fv")
-                throw TypeError("set_levels() got an unexpected keyword argument '%s'", *key);
+                throw TypeError("set_levels() got an unexpected keyword argument '{}'", *key);
         }
         if (!el || !hh || !lh) {
             throw ValueError("All 'el', 'hh', and 'lh' levels must be set");

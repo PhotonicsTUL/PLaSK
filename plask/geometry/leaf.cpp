@@ -23,13 +23,13 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
     if (!top_attr && !bottom_attr) {
         if (src.source.hasAttribute(GeometryReader::XML_MATERIAL_GRADING_ATTR))
-            src.source.throwException(format("'%s' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));        if (src.materialsAreRequired) {
+            src.source.throwException(format("'{}' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));        if (src.materialsAreRequired) {
             this->setMaterialFast(src.getMaterial(src.source.requireAttribute(GeometryReader::XML_MATERIAL_ATTR)));
         } else if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
             this->setMaterialFast(src.getMaterial(*matstr));
     } else {
         if (!top_attr || !bottom_attr)
-            src.source.throwException(format("If '%1%' or '%2%' attribute is given, the second one is also required",
+            src.source.throwException(format("If '{0}' or '{1}' attribute is given, the second one is also required",
                                                 GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
         double shape = src.source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
         this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
@@ -113,7 +113,7 @@ inline static double readAlternativeAttrs(GeometryReader& reader, const std::str
             if (reader.manager.draft)
                 return 0.0;
             else
-                throw XMLNoAttrException(reader.source, format("%1%' or '%2%", attr1, attr2));
+                throw XMLNoAttrException(reader.source, format("{0}' or '{1}", attr1, attr2));
         }
         if (*value2 < 0.) throw XMLBadAttrException(reader.source, attr2, boost::lexical_cast<std::string>(*value2));
         return *value2;

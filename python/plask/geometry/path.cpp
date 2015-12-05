@@ -25,7 +25,7 @@ static shared_ptr<PathHints> Hint__add__(const PathHints::Hint& first, const Pat
 
 static std::string PathHints__repr__(const PathHints& self) {
     if (self.hintFor.size() == 0) return "plask.geometry.PathHints()";
-    return format("plask.geometry.PathHints(<%1% hint%2%>)", self.hintFor.size(), (self.hintFor.size()==1)?"":"s" );
+    return format("plask.geometry.PathHints(<{0} hint{1}>)", self.hintFor.size(), (self.hintFor.size()==1)?"":"s" );
 }
 
 namespace detail {
@@ -53,7 +53,7 @@ namespace detail {
 
 static shared_ptr<GeometryObject> Path__getitem__(const Path& self, long int index) {
     long int i = (index >= 0) ? index : self.objects.size() + index;
-    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("Index %1% out of range for Path (%2% < index < %3%)", index, -self.objects.size(), self.objects.size());
+    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("Index {0} out of range for Path ({1} < index < {2})", index, -self.objects.size(), self.objects.size());
     return const_pointer_cast<GeometryObject>(self.objects[i]);
 }
 

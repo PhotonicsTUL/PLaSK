@@ -72,7 +72,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
-    write_debug("%s: searching for reflection for layers %d to %d", solver->getId(), start, end);
+    write_debug("{}: searching for reflection for layers {:d} to {:d}", solver->getId(), start, end);
 
     const int inc = (start < end) ? 1 : -1;
 
@@ -105,7 +105,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 bool worked = false;
                 if (!error) worked = diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
-                    if (worked) write_debug("%s: layer %d diagonalized", solver->getId(), l);
+                    if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
                     layer_locks[l].unlock();
                 #endif
             } catch(...) {
@@ -117,10 +117,10 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         if (!error) try {
 
             #ifdef OPENMP_FOUND
-                write_debug("%s: entering into single region of reflection search in thread %d", solver->getId(), omp_get_thread_num());
+                write_debug("{}: entering into single region of reflection search in thread {:d}", solver->getId(), omp_get_thread_num());
                 layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
                 #ifndef NDEBUG
-                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[start]);
+                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[start]);
                     layer_accessed[solver->stack[start]] = true;
                 #endif
             #endif
@@ -169,7 +169,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                             layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
                             #ifndef NDEBUG
                                 if (!layer_accessed[solver->stack[n+inc]]) {
-                                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n+inc]);
+                                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[n+inc]);
                                     layer_accessed[solver->stack[n+inc]] = true;
                                 }
                             #endif

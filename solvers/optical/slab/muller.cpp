@@ -11,7 +11,7 @@ dcomplex RootMuller::find(dcomplex start) const
     dcomplex first = start - 0.5 * params.initial_dist;
     dcomplex second = start + 0.5 * params.initial_dist;
 
-    writelog(LOG_DETAIL, "Searching for the root with Muller method between %1% and %2%", str(first), str(second));
+    writelog(LOG_DETAIL, "Searching for the root with Muller method between {0} and {1}", str(first), str(second));
     log_value.resetCounter();
 
     double xtol2 = params.tolx * params.tolx;
@@ -42,7 +42,7 @@ dcomplex RootMuller::find(dcomplex start) const
         }
     }
 
-    throw ComputationError(solver.getId(), "Muller: %1%: maximum number of iterations reached", log_value.chart_name);
+    throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chart_name);
 }
 
 }}} // namespace plask::solvers::slab

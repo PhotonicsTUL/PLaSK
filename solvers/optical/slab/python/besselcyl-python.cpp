@@ -7,15 +7,15 @@ namespace plask { namespace solvers { namespace slab { namespace python {
 
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
     dcomplex lam = 2e3*M_PI / self.k0;
-    return format("<m: %d, lam: (%.3f%+.3gj) nm, power: %.2g mW>", self.m, lam.real(), lam.imag(), self.power);
+    return format("<m: {:d}, lam: ({:.3f}{:+.3g}j) nm, power: {:.2g} mW>", self.m, lam.real(), lam.imag(), self.power);
 }
 std::string BesselSolverCyl_Mode_repr(const BesselSolverCyl::Mode& self) {
-    return format("BesselCyl.Mode(m=%d, lam=%g, power=%g)", self.m, str(2e3*M_PI / self.k0), self.power);
+    return format("BesselCyl.Mode(m={:d}, lam={:g}, power={:g})", self.m, str(2e3*M_PI / self.k0), self.power);
 }
 
 py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
 
     enum What {
@@ -47,7 +47,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
         else if (*i == "m")
             m = py::extract<int>(kwargs[*i]);
         else
-            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
+            throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
     if (lambda) self->setWavelength(*lambda);
 
@@ -74,13 +74,13 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
 }
 
 static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 

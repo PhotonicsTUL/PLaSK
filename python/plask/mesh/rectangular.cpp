@@ -149,7 +149,7 @@ shared_ptr<RegularT> Regular__init__params(double first, double last, int count)
 }
 
 static std::string RegularAxis__repr__(const RegularAxis& self) {
-    return format("Regular(%1%, %2%, %3%)", self.first(), self.last(), self.size());
+    return format("Regular({0}, {1}, {2})", self.first(), self.last(), self.size());
 }
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
@@ -223,12 +223,12 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.axis0->size() - index0;
     if (index0 < 0 || index0 >= int(self.axis0->size())) {
-        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0->size());
+        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.axis1->size() - index1;
     if (index1 < 0 || index1 >= int(self.axis1->size())) {
-        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1->size());
+        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
     }
     return self(index0, index1);
 }
@@ -288,17 +288,17 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.axis0->size() - index0;
     if (index0 < 0 || index0 >= int(self.axis0->size())) {
-        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0->size());
+        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.axis1->size() - index1;
     if (index1 < 0 || index1 >= int(self.axis1->size())) {
-        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1->size());
+        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
     }
     int index2 = py::extract<int>(index[2]);
     if (index2 < 0) index2 = self.axis2->size() - index2;
     if (index2 < 0 || index2 >= int(self.axis2->size())) {
-        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.axis2->size());
+        throw IndexError("third mesh index ({0}) out of range (0<=index<{1})", index2, self.axis2->size());
     }
     return self(index0, index1, index2);
 }
@@ -408,10 +408,10 @@ namespace detail {
     }
 
     template <> std::string AxisParamProxy<size_t,2,RectilinearMeshDivideGenerator<2>>::__str__() const {
-        return format("(%1%, %2%)", get(0), get(1));
+        return format("({0}, {1})", get(0), get(1));
     }
     template <> std::string AxisParamProxy<size_t,3,RectilinearMeshDivideGenerator<3>>::__str__() const {
-        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
+        return format("({0}, {1}, {2})", get(0), get(1), get(2));
     }
 
     template <> py::tuple AxisParamProxy<double,2,RectilinearMeshSmoothGenerator<2>>::__mul__(double f) const {
@@ -429,10 +429,10 @@ namespace detail {
     }
 
     template <> std::string AxisParamProxy<double,2,RectilinearMeshSmoothGenerator<2>>::__str__() const {
-        return format("(%1%, %2%)", get(0), get(1));
+        return format("({0}, {1})", get(0), get(1));
     }
     template <> std::string AxisParamProxy<double,3,RectilinearMeshSmoothGenerator<3>>::__str__() const {
-        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
+        return format("({0}, {1}, {2})", get(0), get(1), get(2));
     }
 
 
@@ -456,7 +456,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'prediv' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'prediv' ({0} items provided and {1} required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.pre_divisions[i] = py::extract<size_t>(val[i]);
             // }
             self.fireChanged();
@@ -469,7 +469,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'postdiv' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'postdiv' ({0} items provided and {1} required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.post_divisions[i] = py::extract<size_t>(val[i]);
             // }
             self.fireChanged();
@@ -525,7 +525,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'small' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'small' ({0} items provided and {1} required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.finestep[i] = py::extract<double>(val[i]);
             // }
             self.fireChanged();
@@ -538,7 +538,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'large' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'large' ({0} items provided and {1} required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.maxstep[i] = py::extract<double>(val[i]);
             // }
             self.fireChanged();
@@ -551,7 +551,7 @@ namespace detail {
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                    throw ValueError("Wrong size of 'factor' (%1% items provided and %2% required)", py::len(val), dim);
+                    throw ValueError("Wrong size of 'factor' ({0} items provided and {1} required)", py::len(val), dim);
                 for (int i = 0; i < dim; ++i) self.factor[i] = py::extract<double>(val[i]);
             // }
             self.fireChanged();
@@ -594,56 +594,56 @@ namespace detail {
 template <int dim>
 void RectilinearMeshRefinedGenerator_addRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_addRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_addRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_addRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_removeRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_removeRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_removeRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectilinearMeshRefinedGenerator_removeRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
@@ -666,7 +666,7 @@ void RectilinearMeshRefinedGenerator_removeRefinements3(RectilinearMeshDivideGen
 template <int dim>
 py::dict RectilinearMeshRefinedGenerator_listRefinements(const RectilinearMeshDivideGenerator<dim>& self, const std::string& axis) {
     int i = current_axes[axis] - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     py::dict refinements;
     for (auto refinement: self.getRefinements(typename Primitive<DIM>::Direction(i))) {
         py::object object { const_pointer_cast<GeometryObjectD<DIM>>(refinement.first.first.lock()) };
@@ -738,7 +738,7 @@ void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
                    py::bases<MeshGeneratorD<dim>>, boost::noncopyable>
             dividecls("DivideGenerator",
-            format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
+            format("Generator of Rectilinear{0}D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"
             "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
             register_refined_generator_base<dim>(dividecls); dividecls
@@ -793,7 +793,7 @@ void register_smooth_generator() {
      py::class_<RectilinearMeshSmoothGenerator<dim>, shared_ptr<RectilinearMeshSmoothGenerator<dim>>,
                    py::bases<MeshGeneratorD<dim>>, boost::noncopyable>
             dividecls("SmoothGenerator",
-            format("Generator of Rectilinear%1%D mesh with dense sampling at edges and smooth change of element size.\n\n"
+            format("Generator of Rectilinear{0}D mesh with dense sampling at edges and smooth change of element size.\n\n"
             "SmoothGenerator()\n"
             "    create generator without initial division of geometry objects", dim).c_str(), py::no_init);
             register_refined_generator_base<dim>(dividecls); dividecls

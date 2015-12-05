@@ -169,7 +169,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                    const BoundaryConditionsWithMesh<RectangularMesh<3>,Radiation>& bradiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
     auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
@@ -365,7 +365,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(T) = %.3f K, error = %g K", loop, loopno, maxT, err);
+        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(T) = {:.3f} K, error = {:g} K", loop, loopno, maxT, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
@@ -396,13 +396,13 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
-        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -419,14 +419,14 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DgbMatrix& A, DataVector<do
     // Factorize matrix
     dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
     if (info < 0) {
-        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
     }
 
     // Find solutions
     dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -442,9 +442,9 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix3D& A, Data
     double err;
     try {
         int iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError err) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());
+        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", err.what());
     }
 
     B = X;

@@ -18,12 +18,12 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
         if (v) setBorders(Direction(dir_nr), *border::Strategy::fromStrUnique(*v, materialsDB));
         v_lo = borderValuesGetter(axis_name + "-lo");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-            if (v_lo) throw BadInput("setBorders", "Border specified by both '%1%-lo' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 0));
+            if (v_lo) throw BadInput("setBorders", "Border specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
             else v_lo = v;
         }
         v_hi = borderValuesGetter(axis_name + "-hi");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-            if (v_hi) throw BadInput("setBorders", "Border specified by both '%1%-hi' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 1));
+            if (v_hi) throw BadInput("setBorders", "Border specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
             else v_hi = v;
         }
         try {
@@ -34,7 +34,7 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
                 if (v_hi) setBorder(Direction(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi, materialsDB));
             }
         } catch (DimensionError) {
-            throw BadInput("setBorders", "Axis '%1%' is not allowed for this space", axis_name);
+            throw BadInput("setBorders", "Axis '{0}' is not allowed for this space", axis_name);
         }
     }
 }

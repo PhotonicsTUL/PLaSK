@@ -176,7 +176,7 @@ static py::object DataVectorWrap_Array(py::object oself) {
     PyObject* arr = DataVectorWrap_ArrayImpl<T, RectangularMesh<2>>(self);
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RectangularMesh<3>>(self);
 
-    if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
+    if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for {0})",
                                         (dim == 2)? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
@@ -198,16 +198,16 @@ namespace detail {
         if (detail::type_dim<T>() != 1)  mesh_dims.push_back(detail::type_dim<T>());
         size_t nd = mesh_dims.size();
 
-        if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or %1% dimensions", MeshT::DIM);
+        if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or {0} dimensions", MeshT::DIM);
 
         for (size_t i = 0; i != nd; ++i)
             if (mesh_dims[i] != PyArray_DIMS(arr)[i])
-                throw ValueError("Dimension %1% for the array (%3%) does not match with the mesh (%2%)", i, mesh_dims[i], PyArray_DIMS(arr)[i]);
+                throw ValueError("Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, mesh_dims[i], PyArray_DIMS(arr)[i]);
 
         auto mesh_strides = detail::mesh_strides<T>(mesh, nd);
         for (size_t i = 0; i != nd; ++i)
             if (mesh_strides[i] != PyArray_STRIDES(arr)[i])
-                throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering (stride: mesh: %2%, array: %3%)", i, mesh_strides[i], PyArray_STRIDES(arr)[i]);
+                throw ValueError("Stride {0} for the array do not correspond to the current mesh ordering (stride: mesh: {1}, array: {2})", i, mesh_strides[i], PyArray_STRIDES(arr)[i]);
 
         return mesh.size();
     }
@@ -239,7 +239,7 @@ namespace detail {
         } else
             size = PyArray_DIMS(arr)[0] / type_dim<T>();
 
-        if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
+        if (size != mesh->size()) throw ValueError("Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
 
         auto data = plask::make_shared<DataVectorWrap<const T,dim>>(
             DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)),
@@ -612,7 +612,7 @@ PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(
         return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
     // TODO add new mesh types here
 
-    throw NotImplemented(format("interpolate(source mesh type: %s, interpolation method: %s)",
+    throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
 

@@ -59,7 +59,7 @@ RegisterMeshReader regularmesh_reader("regular", readRegularMesh1D);
 
 
 shared_ptr<RegularMesh1D> readRegularMesh1D_obsolete(XMLReader& reader) {
-    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete, use \"regular\" instead.", reader.requireAttribute("type"));
+    writelog(LOG_WARNING, "Mesh type \"{0}\" is obsolete, use \"regular\" instead.", reader.requireAttribute("type"));
     return readRegularMesh1D(reader);
 }
 RegisterMeshReader regularmesh1d_reader("regular1d", readRegularMesh1D_obsolete);

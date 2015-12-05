@@ -64,11 +64,11 @@ struct PLASK_API NotImplemented: public Exception {
 struct PLASK_API OutOfBoundsException: public Exception {
 
     OutOfBoundsException(const std::string& where, const std::string& argname)
-        : Exception("%1%: argument %2% out of bounds", where, argname) {}
+        : Exception("{0}: argument {1} out of bounds", where, argname) {}
 
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
     OutOfBoundsException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
-        : Exception("%1%: argument %2% out of bounds, should be between %3% and %4%, but was %5%", where, argname, lo, hi, was) {}
+        : Exception("{0}: argument {1} out of bounds, should be between {2} and {3}, but was {4}", where, argname, lo, hi, was) {}
 };
 
 /**
@@ -91,7 +91,7 @@ struct PLASK_API BadInput: public Exception {
      */
     template <typename... Params>
     BadInput(const std::string& where, const std::string& msg, Params... params)
-        : Exception("%1%: %2%", where, format(msg, params...)) {};
+        : Exception("{0}: {1}", where, format(msg, params...)) {};
 };
 
 /**
@@ -105,7 +105,7 @@ struct PLASK_API DataError: public Exception {
      */
     template <typename... Params>
     DataError(const std::string& msg, Params... params)
-        : Exception("%1%", format(msg, params...)) {};
+        : Exception("{0}", format(msg, params...)) {};
 };
 
 
@@ -121,7 +121,7 @@ struct PLASK_API ComputationError: public Exception {
      */
     template <typename... Params>
     ComputationError(const std::string& where, const std::string& msg, Params... params)
-        : Exception("%1%: %2%", where, format(msg, params...)) {};
+        : Exception("{0}: {1}", where, format(msg, params...)) {};
 };
 
 /**
@@ -130,7 +130,7 @@ struct PLASK_API ComputationError: public Exception {
 struct PLASK_API BadId: public Exception {
 
     BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
-        : Exception("\"%1%\" is a bad name for a %2% (must be letters, digits, or '%3%' and cannot start with a digit) ", str_to_check, where, underline_ch) {};
+        : Exception("\"{0}\" is a bad name for a {1} (must be letters, digits, or '{2}' and cannot start with a digit) ", str_to_check, where, underline_ch) {};
 
     static void throwIfBad(const std::string& where, const char* str_to_check, char underline_ch = '_') {
         if (!isCid(str_to_check, underline_ch))
@@ -151,11 +151,11 @@ struct PLASK_API BadId: public Exception {
  * @see @ref providers
  */
 struct PLASK_API NoProvider: public Exception {
-    NoProvider(const char* provider_name): Exception("No provider nor value for %1%", provider_name) {}
+    NoProvider(const char* provider_name): Exception("No provider nor value for {0}", provider_name) {}
 };
 
 struct PLASK_API NoValue: public Exception {
-    NoValue(const char* provider_name): Exception("%1% cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
+    NoValue(const char* provider_name): Exception("{0} cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
 };
 
 
@@ -185,10 +185,10 @@ class PLASK_API NoSuchMaterial: public Exception {
 public:
     /// @param material_name name of material which not exists
     NoSuchMaterial(const std::string& material_name)
-        : Exception("No such material: %1%", material_name)/*, materialName(material_name)*/ {}
+        : Exception("No such material: {0}", material_name)/*, materialName(material_name)*/ {}
 
     NoSuchMaterial(const std::string& material_name, const std::string& dopant_name)
-        : Exception("No such material: %1%%2%%3%", material_name, dopant_name.empty() ? "" : ":", dopant_name)/*, materialName(material_name)*/ {}
+        : Exception("No such material: {0}{1}{2}", material_name, dopant_name.empty() ? "" : ":", dopant_name)/*, materialName(material_name)*/ {}
 
     template <typename ComponentMap>
     NoSuchMaterial(const ComponentMap& comp, const std::string dopant_name)
@@ -221,7 +221,7 @@ struct PLASK_API MaterialMethodNotApplicable: public Exception {
      * @param method_name name of not implemented method
      */
     MaterialMethodNotApplicable(const std::string& material_name, const std::string& method_name)
-    : Exception("Material %1%: method not applicable: %2%", material_name, method_name) {
+    : Exception("Material {0}: method not applicable: {1}", material_name, method_name) {
     }
 
 };
@@ -251,7 +251,7 @@ class PLASK_API MaterialCantBeMixedException: public Exception {
 
 public:
     MaterialCantBeMixedException(const std::string& material1name_with_components, const std::string& material2name_with_components, const std::string& common_dopant = "")
-        : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\"",
+        : Exception("Material \"{0}{2}\" can not be mixed with material \"{1}{2}\"",
               material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)
               {}
 
@@ -264,7 +264,7 @@ public:
  * Exceptions of this class are thrown when solvers don't have geometry set
  */
 struct PLASK_API NoGeometryException: public Exception {
-    NoGeometryException(const std::string& where): Exception("%1%: No geometry specified", where) {}
+    NoGeometryException(const std::string& where): Exception("{0}: No geometry specified", where) {}
 };
 
 /**
@@ -368,7 +368,7 @@ struct PLASK_API NoSuchAxisNames: public Exception {
 
     /// @param axis_names name of axis which not exists
     NoSuchAxisNames(const std::string& axis_names)
-        : Exception("No such axis names \"%1%\"", axis_names) {}
+        : Exception("No such axis names \"{0}\"", axis_names) {}
 };
 
 
@@ -378,7 +378,7 @@ struct PLASK_API NoSuchAxisNames: public Exception {
  * Exceptions of this class are thrown when solvers don't have mesh set
  */
 struct PLASK_API NoMeshException: public Exception {
-    NoMeshException(const std::string& where): Exception("%1%: No mesh specified", where) {}
+    NoMeshException(const std::string& where): Exception("{0}: No mesh specified", where) {}
 };
 
 
@@ -394,7 +394,7 @@ struct PLASK_API BadMesh: public Exception {
      */
     template <typename... Params>
     BadMesh(const std::string& where, const std::string& msg, Params... params)
-        : Exception("%1%: Bad mesh: %2%", where, format(msg, params...)) {};
+        : Exception("{0}: Bad mesh: {1}", where, format(msg, params...)) {};
 };
 
 

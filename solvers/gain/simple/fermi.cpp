@@ -141,21 +141,21 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                 if (!materialSubstrate)
                     materialSubstrate = this->geometry->getMaterial(point);
                 else if (*materialSubstrate != *this->geometry->getMaterial(point))
-                    throw Exception("%1%: Non-uniform substrate layer.", this->getId());
+                    throw Exception("{0}: Non-uniform substrate layer.", this->getId());
             }
 
             if (QW && !active)
-                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
+                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
 
             if (c < ileft)
             {
                 if (active)
-                    throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
+                    throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
             }
             else if (c >= iright)
             {
                 if (active)
-                    throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                    throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
             }
             else
             {
@@ -175,9 +175,9 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                     else
                     {
                         if (*layer_material != *this->geometry->getMaterial(point))
-                            throw Exception("%1%: Non-uniform active region layer.", this->getId());
+                            throw Exception("{0}: Non-uniform active region layer.", this->getId());
                         if (layer_QW != QW)
-                            throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
+                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
                 }
                 else if (had_active)
@@ -188,11 +188,11 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                         if (layer_QW)
                         { // quantum well is at the egde of the active region, add one row below it
                             if (r == 0)
-                                throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
+                                throw Exception("{0}: Quantum-well at the edge of the structure.", this->getId());
                             auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                             for (size_t cc = ileft; cc < iright; ++cc)
                                 if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                                    throw Exception("%1%: Material below quantum well not uniform.", this->getId());
+                                    throw Exception("{0}: Material below quantum well not uniform.", this->getId());
                             auto& region = regions.back();
                             double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
                             double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
@@ -201,7 +201,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                         }
                     }
                     else
-                        throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                        throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
                 }
                 had_active |= active;
             }
@@ -238,7 +238,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
-                            throw Exception("%1%: Material above quantum well not uniform.", this->getId());
+                            throw Exception("{0}: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w,h), top_material));
                 }
                 ileft = 0;
@@ -247,13 +247,13 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
         }
     }
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
-        throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
+        throw Exception("{0}: Quantum-well at the edge of the structure.", this->getId());
 
-    this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
+    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
     size_t n = 0;
     for (auto& region: regions) {
         region.summarize(this);
-        this->writelog(LOG_DETAIL, "Active region %1%: %2%nm single QW, %3%nm all QW, %4%nm total",
+        this->writelog(LOG_DETAIL, "Active region {0}: {1}nm single QW, {2}nm all QW, {3}nm total",
                        n++, 0.1*region.qwlen, 0.1*region.qwtotallen, 0.1*region.totallen);
     }
 }
@@ -264,7 +264,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 {
     QW::gain gainModule;
 
-    if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
+    if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration ({0}/cm3)", n);
     n = max(n, 1e-6); // To avoid hangs
 
     gainModule.Set_temperature(T);
@@ -281,13 +281,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
         qstrain *= 1.;
         bstrain *= 1.;
-        //writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
-        //writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
+        //writelog(LOG_RESULT, "Strain in QW: {0}", qstrain);
+        //writelog(LOG_RESULT, "Strain in B: {0}", bstrain);
     }
 
-    //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
-    //writelog(LOG_RESULT, "latt const for subs: %1%", materialSubstrate->lattC(T,'a'));
-    //writelog(LOG_RESULT, "latt const for barr: %1%", region.materialBarrier->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for QW: {0}", region.materialQW->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for subs: {0}", materialSubstrate->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for barr: {0}", region.materialBarrier->lattC(T,'a'));
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
@@ -328,15 +328,15 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     }
 
     // TODO co robic w ponizszych przypadkach? - poprawic jak bedzie wiadomo
-         if ((qEgG > qEgX) && (qEgX)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", qEgG, qEgX);
-    else if ((qEgG > qEgL) && (qEgL)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", qEgG, qEgL);
-         if ((bEgG > bEgX) && (bEgX)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", bEgG, bEgX);
-    else if ((bEgG > bEgL) && (bEgL)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", bEgG, bEgL);
+         if ((qEgG > qEgX) && (qEgX)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = {0} eV, Eg[X] = {1} eV; using Eg[G] in calculations", qEgG, qEgX);
+    else if ((qEgG > qEgL) && (qEgL)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = {0} eV, Eg[L] = {1} eV; using Eg[G] in calculations", qEgG, qEgL);
+         if ((bEgG > bEgX) && (bEgX)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = {0} eV, Eg[X] = {1} eV; using Eg[G] in calculations", bEgG, bEgX);
+    else if ((bEgG > bEgL) && (bEgL)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = {0} eV, Eg[L] = {1} eV; using Eg[G] in calculations", bEgG, bEgL);
 
-    if (qEc < qEvhh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for heavy holes = %2% eV", qEc, qEvhh);
-    if (qEc < qEvlh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for light holes = %2% eV", qEc, qEvlh);
-    if (bEc < bEvhh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for heavy holes = %2% eV", bEc, bEvhh);
-    if (bEc < bEvlh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for light holes = %2% eV", bEc, bEvlh);
+    if (qEc < qEvhh) throw ComputationError(this->getId(), "QW CB = {0} eV is below VB for heavy holes = {1} eV", qEc, qEvhh);
+    if (qEc < qEvlh) throw ComputationError(this->getId(), "QW CB = {0} eV is below VB for light holes = {1} eV", qEc, qEvlh);
+    if (bEc < bEvhh) throw ComputationError(this->getId(), "Barrier CB = {0} eV is below VB for heavy holes = {1} eV", bEc, bEvhh);
+    if (bEc < bEvlh) throw ComputationError(this->getId(), "Barrier CB = {0} eV is below VB for light holes = {1} eV", bEc, bEvlh);
 
     gainModule.Set_electron_mass_in_plain(qme.c00);
     gainModule.Set_electron_mass_transverse(qme.c11);
@@ -355,8 +355,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
 
-    //writelog(LOG_RESULT, "qwlen: %1%", region.qwlen); // TEST
-    //writelog(LOG_RESULT, "totallen: %1%", region.totallen); // TEST
+    //writelog(LOG_RESULT, "qwlen: {0}", region.qwlen); // TEST
+    //writelog(LOG_RESULT, "totallen: {0}", region.totallen); // TEST
 
     qEg = qEc-qEvhh;
     cdepth = bEc - qEc;
@@ -367,13 +367,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
         std::string qname = region.materialQW->name(),
                     bname = region.materialBarrier->name();
-        throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%", qname, bname);
+        throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials {0} and {1}", qname, bname);
     }
 
     if (cdepth < 0.) {
         std::string qname = region.materialQW->name(),
                     bname = region.materialBarrier->name();
-        throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
+        throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials {0} and {1}", qname, bname);
     }
 
     gainModule.Set_conduction_depth(cdepth);
@@ -387,12 +387,12 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         {
             gainModule.przygoblE();
             /*for (int i=0; i<gainModule.Get_number_of_electron_levels(); ++i) // TEST
-                writelog(LOG_RESULT, "el_lev: %1%", gainModule.Get_electron_level_depth(i));*/ // TEST
+                writelog(LOG_RESULT, "el_lev: {0}", gainModule.Get_electron_level_depth(i));*/ // TEST
 
             gainModule.Set_valence_depth(vhhdepth);
             gainModule.przygoblHH();
             /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
-                writelog(LOG_RESULT, "hh_lev: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
+                writelog(LOG_RESULT, "hh_lev: {0}", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
             if (bstrain<0.)
             {
                 std::vector<double> tLevHH;
@@ -401,13 +401,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
                     tLevHH.push_back(gainModule.Get_heavy_hole_level_depth(i)+tDelEv);
                 gainModule.przygoblHHc(tLevHH);
                 /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
-                    writelog(LOG_RESULT, "hh_lev_corr: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
+                    writelog(LOG_RESULT, "hh_lev_corr: {0}", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
             }
 
             gainModule.Set_valence_depth(vlhdepth);
             gainModule.przygoblLH();
             /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
-                    writelog(LOG_RESULT, "lh_lev: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
+                    writelog(LOG_RESULT, "lh_lev: {0}", gainModule.Get_light_hole_level_depth(i));*/ // TEST
             if (bstrain>0.)
             {
                 std::vector<double> tLevLH;
@@ -416,7 +416,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
                     tLevLH.push_back(gainModule.Get_light_hole_level_depth(i)-tDelEv);
                 gainModule.przygoblLHc(tLevLH);
                 /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
-                        writelog(LOG_RESULT, "lh_lev_corr: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
+                        writelog(LOG_RESULT, "lh_lev_corr: {0}", gainModule.Get_light_hole_level_depth(i));*/ // TEST
 
             }
         }
@@ -450,7 +450,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     //matrixelem *= matrixelemscfact;
     gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
-    //writelog(LOG_INFO, "recalculated matrix elem: %1%", matrixelem*matrixelemscfact); // TEST
+    //writelog(LOG_INFO, "recalculated matrix elem: {0}", matrixelem*matrixelemscfact); // TEST
 
     gainModule.Set_bandgap(qEg);
     gainModule.Set_valence_depth(vdepth);
@@ -469,7 +469,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
     }
 
-    //writelog(LOG_RESULT, "matrix element: %1%", gainModule.Get_momentum_matrix_element()); // TEST;
+    //writelog(LOG_RESULT, "matrix element: {0}", gainModule.Get_momentum_matrix_element()); // TEST;
 
     return gainModule;
 }
@@ -487,19 +487,19 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
     if (regions.size() == 1)
         this->writelog(LOG_DETAIL, "Found 1 active region");
     else
-        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
+        this->writelog(LOG_DETAIL, "Found {0} active regions", regions.size());
 
     for (int act=0; act<regions.size(); act++)
     {
         double qFlc, qFlv;
         std::vector<double> el, hh, lh;
 
-        this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
+        this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr {0}:", act+1);
 
         QW::gain gainModule = getGainModule(0.0, T, n, regions[act]); //wavelength=0.0 - no refractive index needs to be calculated (any will do)
 
-        writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", qFlc = gainModule.Get_qFlc());
-        writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = %1% eV", qFlv = gainModule.Get_qFlv());
+        writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = {0} eV", qFlc = gainModule.Get_qFlc());
+        writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = {0} eV", qFlv = gainModule.Get_qFlv());
 
         int j = 0;
         double level;
@@ -510,7 +510,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
             level = gainModule.Get_electron_level_depth(j);
             if (level > 0) {
                 el.push_back(level);
-                levelsstr += format("%1%, ", level);
+                levelsstr += format("{0}, ", level);
             }
             j++;
         }
@@ -524,7 +524,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
             level = gainModule.Get_heavy_hole_level_depth(j);
             if (level > 0) {
                 hh.push_back(level);
-                levelsstr += format("%1%, ", level);
+                levelsstr += format("{0}, ", level);
             }
             j++;
         }
@@ -538,7 +538,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
             level = gainModule.Get_light_hole_level_depth(j);
             if (level > 0) {
                 lh.push_back(level);
-                levelsstr += format("%1%, ", level);
+                levelsstr += format("{0}, ", level);
             }
             j++;
         }
@@ -583,7 +583,7 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             for (size_t j = 0; j != mesh->axis1->size(); ++j) {
                 double v = data[mesh->index(i,j)];
                 if (isnan(v))
-                    throw ComputationError(solver->getId(), "Wrong %1% (%2%) at %3%", name, v, mesh->at(i,j));
+                    throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i,j));
                 v = max(v, 1e-6); // To avoid hangs
                 val += v;
             }

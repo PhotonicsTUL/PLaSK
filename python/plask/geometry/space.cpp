@@ -165,14 +165,14 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
             space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else {
-        throw TypeError("__init__() takes 2 or 3 non-keyword arguments (%1%) given", na);
+        throw TypeError("__init__() takes 2 or 3 non-keyword arguments ({0}) given", na);
     }
 
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
     parsed_kwargs.insert("length");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -187,7 +187,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 
     if (na == 2) geometry = args[1];
     else if (na == 1 && kwargs.has_key("geometry")) geometry = kwargs["geometry"];
-    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments (%1% given)", na);
+    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments ({0} given)", na);
 
     try {
         shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);
@@ -207,7 +207,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -227,13 +227,13 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
         shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(kwargs["geometry"]);
         space = plask::make_shared<Geometry3D>(object);
     } else {
-        throw TypeError("__init__() exactly 2 non-keyword arguments (%1%) given", na);
+        throw TypeError("__init__() exactly 2 non-keyword arguments ({0}) given", na);
     }
 
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -247,7 +247,7 @@ static typename Primitive<S::DIM>::Box Space_childBoundingBox(const S& self) {
 
 static void Space_setBorders(Geometry& self, py::dict borders) {
     std::set<std::string> parsed;
-    _Space_setBorders(self, borders, parsed, "unexpected border name '%s'");
+    _Space_setBorders(self, borders, parsed, "unexpected border name '{}'");
 }
 
 struct BordersProxy : public std::map<std::string, py::object> {
@@ -372,14 +372,14 @@ static bool Geometry3D_hasRoleAt(const Geometry3D& self, const std::string& role
 //     } else if (kwargs.has_key("path"))
 //         path = py::extract<PathHints*>(kwargs["path"]);
 //
-//     if (n >= 4) throw TypeError("getSubspace() takes 2 or 3 non-keyword arguments (%1%) given", n);
+//     if (n >= 4) throw TypeError("getSubspace() takes 2 or 3 non-keyword arguments ({0}) given", n);
 //
 //     S* space = self->getSubspace(object, path, false);
 //
 //     std::set<std::string> parsed;
 //     parsed.insert("object");
 //     parsed.insert("path");
-//     _Space_setBorders(*space, kwargs, parsed, "unexpected border name '%s'");
+//     _Space_setBorders(*space, kwargs, parsed, "unexpected border name '{}'");
 //
 //     return shared_ptr<S>(space);
 // }

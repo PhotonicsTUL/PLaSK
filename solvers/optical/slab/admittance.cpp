@@ -68,7 +68,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
                 bool worked = false;
                 if (!error) worked = diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
-                    if (worked) write_debug("%s: layer %d diagonalized", solver->getId(), l);
+                    if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
                     layer_locks[l].unlock();
                 #endif
             } catch(...) {
@@ -82,10 +82,10 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
 
             // PML layer
             #ifdef OPENMP_FOUND
-                write_debug("%s: entering into single region of admittance search in thread %d", solver->getId(), omp_get_thread_num());
+                write_debug("{}: entering into single region of admittance search in thread {:d}", solver->getId(), omp_get_thread_num());
                 layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
                 #ifndef NDEBUG
-                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[start]);
+                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[start]);
                     layer_accessed[solver->stack[start]] = true;
                 #endif
             #endif
@@ -120,7 +120,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
                     layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
                     #ifndef NDEBUG
                         if (!layer_accessed[solver->stack[n]]) {
-                            write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n]);
+                            write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[n]);
                             layer_accessed[solver->stack[n]] = true;
                         }
                     #endif

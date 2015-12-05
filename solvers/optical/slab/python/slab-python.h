@@ -176,11 +176,11 @@ struct PmlWrapper {
     }
 
     std::string __str__() const {
-        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->dist, pml->order);
+        return format("<factor: {0}, size: {1}, dist: {2}, shape: {3}>", str(pml->factor), pml->size, pml->dist, pml->order);
     }
 
     std::string __repr__() const {
-        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->dist, pml->order);
+        return format("PML(factor={0}, size={1}, dist={2}, shape={3})", str(pml->factor), pml->size, pml->dist, pml->order);
     }
 };
 

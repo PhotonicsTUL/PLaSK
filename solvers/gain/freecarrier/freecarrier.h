@@ -119,7 +119,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             for (const auto& layer: layers->children) {
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
                 auto material = block->singleMaterial();
-                if (!material) throw plask::Exception("%s: Active region can consist only of solid layers", solver->getId());
+                if (!material) throw plask::Exception("{}: Active region can consist only of solid layers", solver->getId());
                 auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
                 double thck = bbox.upper[1] - bbox.lower[1];
                 materials.push_back(material);
@@ -142,7 +142,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
                         if (i != 2 && i != materials.size()-1 &&
                             !((el0 < el1 && el1 > el2) && (hh0 > hh1 && hh1 < hh2) && (lh0 > lh1 && lh1 < lh2)))
-                            throw Exception("%1%: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
+                            throw Exception("{0}: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
                         wells.push_back(i-1);
                     }
                     else if (i == 2) wells.push_back(0);
@@ -201,7 +201,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             } else {
                 double deltaSO = region.materials[mi]->Dso(T, me);
                 Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
-                solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to %.2f eV m0", Mt);
+                solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
             }
         }
 
@@ -447,7 +447,7 @@ struct GainSpectrum {
                 return;
             };
         }
-        throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
+        throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
     }
 
     GainSpectrum(FreeCarrierGainSolver<GeometryT>* solver, double T, double n, size_t reg):

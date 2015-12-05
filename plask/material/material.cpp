@@ -214,7 +214,7 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
     for (auto i = begin; i != end; ++i) {
         if (std::isnan(i->second)) {
             if (no_info != end)
-                throw plask::MaterialParseException("Incomplete material composition for group %1% elements", ROMANS[group_nr-1]);
+                throw plask::MaterialParseException("Incomplete material composition for group {0} elements", ROMANS[group_nr-1]);
             else
                 no_info = i;
         } else {
@@ -223,12 +223,12 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
         }
     }
     if (n > 0 && sum - 1.0 > SMALL*n)
-        throw plask::MaterialParseException("Total material composition for group %1% elements exceeds 1", ROMANS[group_nr-1]);
+        throw plask::MaterialParseException("Total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
     if (no_info != end) {
         no_info->second = 1.0 - sum;
     } else {
         if (!is_zero(sum - 1.0))
-             throw plask::MaterialParseException("Total material composition for group %1% elements (%2%) differs from 1", ROMANS[group_nr-1], sum);
+             throw plask::MaterialParseException("Total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
     }
 }
 
@@ -236,7 +236,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
     std::map<int, std::vector< std::pair<std::string, double> > > by_group;
     for (auto c: composition) {
         int group = objectGroup(c.first);
-        if (group == 0) throw plask::MaterialParseException("Wrong object name \"%1%\"", c.first);
+        if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;
@@ -297,7 +297,7 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
         int g = objectGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)
-                throw MaterialParseException("Incorrect elements order in \"%1%\"", fullname);
+                throw MaterialParseException("Incorrect elements order in \"{0}\"", fullname);
             prev_g = g;
         }
         result.insert(c);
@@ -330,7 +330,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         return;
     }
     if (!isspace(*name_end))
-        throw MaterialParseException("Expected space or '=' but found '%1%' instead", *name_end);
+        throw MaterialParseException("Expected space or '=' but found '{0}' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
     //TODO check p.first if is p/n compatibile with dopant_elem_name
@@ -348,7 +348,7 @@ std::vector<std::string> Material::parseObjectsNames(const char *begin, const ch
     std::vector<std::string> elemenNames;
     do {
         const char* new_begin = getObjectEnd(begin, end);
-        if (new_begin == begin) throw MaterialParseException("Ill-formatted name \"%1%\"", std::string(full_name, end));
+        if (new_begin == begin) throw MaterialParseException("Ill-formatted name \"{0}\"", std::string(full_name, end));
         elemenNames.push_back(std::string(begin, new_begin));
         begin = new_begin;
     } while (begin != end);

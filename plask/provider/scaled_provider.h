@@ -94,7 +94,7 @@ struct ScaledProviderBase: public DstProviderT {
      */
     void ensureHasProvider() const {
         if (!source)
-            throw Exception("Scaled %1% provider has no source", this->name());
+            throw Exception("Scaled {0} provider has no source", this->name());
     }
 
 };

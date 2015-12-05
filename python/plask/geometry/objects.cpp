@@ -89,13 +89,13 @@ shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
     int n = self->getChildrenCount();
     if (n == 0) {
         if (self->isLeaf())
-            throw TypeError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+            throw TypeError("{0} object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
         else
-            throw IndexError("%1% object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
+            throw IndexError("{0} object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
     }
     if (i < 0) i = n + i;
     if (i < 0 || i >= n) {
-        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
+        throw IndexError("{0} index {1} out of range (0 <= index < {2})",
             std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
     return self->getChildNo(i);
@@ -624,7 +624,7 @@ struct GeometryObjectSteps {
     unsigned get_max_points() const { return obj->max_points; }
     void set_max_points(unsigned val) { obj->setMaxPoints(val); }
 
-    std::string str() { return format("<dist=%1%, num=%2%>", obj->min_ply, obj->max_points);  }
+    std::string str() { return format("<dist={0}, num={1}>", obj->min_ply, obj->max_points);  }
 
     static GeometryObjectSteps get(const shared_ptr<GeometryObject>& obj) { return GeometryObjectSteps(obj); }
 

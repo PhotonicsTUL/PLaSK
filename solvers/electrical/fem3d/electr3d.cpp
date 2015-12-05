@@ -113,13 +113,13 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
 
                 // Here we are inside potential active region
                 if (tra < ileft) {
-                    if (active) throw Exception("%1%: Left edge of the active region not aligned.", getId());
+                    if (active) throw Exception("{0}: Left edge of the active region not aligned.", getId());
                 } else if (tra >= iright) {
-                    if (active) throw Exception("%1%: Right edge of the active region not aligned.", getId());
+                    if (active) throw Exception("{0}: Right edge of the active region not aligned.", getId());
                 } else if (lon < iback) {
-                    if (active) throw Exception("%1%: Back edge of the active region not aligned.", getId());
+                    if (active) throw Exception("{0}: Back edge of the active region not aligned.", getId());
                 } else if (lon >= ifront) {
-                    if (active) throw Exception("%1%: Front edge of the active region not aligned.", getId());
+                    if (active) throw Exception("{0}: Front edge of the active region not aligned.", getId());
                 } else if (active) {
                     if (!had_active_lon && !had_active_tra) {
                         if (!in_active) { // active region is starting set-up new region info
@@ -131,10 +131,10 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
                     had_active_lon = true;
                 } else if (had_active_lon) {
                     if (!in_active && !had_active_tra) ifront = lon;
-                    else throw Exception("%1%: Front edge of the active region not aligned.", getId());
+                    else throw Exception("{0}: Front edge of the active region not aligned.", getId());
                 } else if (had_active_tra) {
                     if (!in_active) iright = tra;
-                    else throw Exception("%1%: Right edge of the active region not aligned.", getId());
+                    else throw Exception("{0}: Right edge of the active region not aligned.", getId());
                 }
             }
             had_active_tra |= had_active_lon;
@@ -145,14 +145,14 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         if (!in_active && actlo.size() != acthi.size()) {
             acthi.push_back(ver);
             actd.push_back(mesh->axis2->at(acthi.back()) - mesh->axis2->at(actlo.back()));
-            this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
+            this->writelog(LOG_DETAIL, "Detected active layer {1} thickness = {0}nm", 1e3 * actd.back(), actd.size()-1);
         }
     }
 
     if (actlo.size() != acthi.size()) {
         acthi.push_back(points->axis2->size());
         actd.push_back(mesh->axis2->at(acthi.back()) - mesh->axis2->at(actlo.back()));
-        this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
+        this->writelog(LOG_DETAIL, "Detected active layer {1} thickness = {0}nm", 1e3 * actd.back(), actd.size()-1);
     }
 
     assert(acthi.size() == actlo.size());
@@ -230,7 +230,7 @@ template <typename MatrixT>
 void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
     // Update junction conductivities
     if (loopno != 0) {
@@ -324,7 +324,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     double* aend = A.data + A.size * A.kd;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(getId(), "Error in stiffness matrix at position %1% (%2%)", pa-A.data, isnan(*pa)?"nan":"inf");
+            throw ComputationError(getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
 
@@ -451,7 +451,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
+        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
@@ -486,13 +486,13 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DpbMatrix& A, DataVector
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
-        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", getId(), -info);
     if (info > 0)
-        throw ComputationError(getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+        throw ComputationError(getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -509,14 +509,14 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
     // Factorize matrix
     dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
     if (info < 0) {
-        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singular (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singular (at {0})", info);
     }
 
     // Find solutions
     dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -532,9 +532,9 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix& A, Dat
     double err;
     try {
         int iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError err) {
-        throw ComputationError(getId(), "Conjugate gradient failed: %1%", err.what());
+        throw ComputationError(getId(), "Conjugate gradient failed: {0}", err.what());
     }
 
     B = X;

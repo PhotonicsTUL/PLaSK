@@ -235,7 +235,7 @@ template <CalcType calctype, typename MatrixT>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
     
@@ -440,7 +440,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     double* aend = A.data + A.size * A.kd;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1% (%2%)", pa-A.data, isnan(*pa)?"nan":"inf");
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
 
@@ -550,7 +550,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
             err = std::max(err, std::abs(corr[i]));
             dvnPsi0[i] += corr[i];
         }
-        this->writelog(LOG_DETAIL, "Maximum update for the built-in potential: %g V", err*mEx);
+        this->writelog(LOG_DETAIL, "Maximum update for the built-in potential: {:g} V", err*mEx);
     }
     else if (calctype == CALC_PSI) {
         err = 0.;
@@ -560,7 +560,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
             err = std::max(err, std::abs(corr[i]));
             dvnPsi[i] += corr[i];
         }
-        this->writelog(LOG_DETAIL, "Maximum update for the potential: %g V", err*mEx);
+        this->writelog(LOG_DETAIL, "Maximum update for the potential: {:g} V", err*mEx);
     }
     else if (calctype == CALC_FN) {
         err = 0.;
@@ -569,7 +569,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
             dvnFnEta[i] += corr[i];
             err = std::max(err, std::abs(corr[i]/dvnFnEta[i]));
         }
-        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for electrons: %1%.", err);
+        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for electrons: {0}.", err);
     }
     else if (calctype == CALC_FP) {
         err = 0.;
@@ -578,7 +578,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
             dvnFpKsi[i] += corr[i];
             err = std::max(err, std::abs(corr[i]/dvnFpKsi[i]));
         }
-        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: %1%.", err);
+        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: {0}.", err);
     }
     return err; // for Psi -> normalised (max. delPsi)
 
@@ -745,22 +745,22 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
         }
         else { // found initial normalized potential
             loop = tL;
-            //this->writelog(LOG_DETBUG, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
+            //this->writelog(LOG_DETBUG, "{0} loops done. Calculated energy level corresponding to the initial potential: {1} eV", tL, (tPsi0)*mEx); // TEST
             return tPsi0;
         }
 
         tPsiUpd = tPsi0b - tPsi0a;
         #ifndef NDEBUG
             if (!tL)
-                this->writelog(LOG_DEBUG, "Initial potential correction: %1% eV", (tPsiUpd)*mEx); // TEST
+                this->writelog(LOG_DEBUG, "Initial potential correction: {0} eV", (tPsiUpd)*mEx); // TEST
             else
-                this->writelog(LOG_DEBUG, " %1% eV", (tPsiUpd)*mEx); // TEST
+                this->writelog(LOG_DEBUG, " {0} eV", (tPsiUpd)*mEx); // TEST
         #endif
         ++tL;
     }
 
     loop = tL;
-    //this->writelog(LOG_INFO, "%1% loops done. Calculated energy level corresponding to the initial potential: %2% eV", tL, (tPsi0)*mEx); // TEST
+    //this->writelog(LOG_INFO, "{0} loops done. Calculated energy level corresponding to the initial potential: {1} eV", tL, (tPsi0)*mEx); // TEST
 
     return tPsi0;
 }
@@ -804,7 +804,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             setMatrix<CALC_PSI0>(A, B, vconst);
             solveMatrix(A, B);
             errorPsi0 = addCorr<CALC_PSI0>(B, vconst); // max. update
-            this->writelog(LOG_DEBUG, "Initial potential maximum update: %1%", errorPsi0*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            this->writelog(LOG_DEBUG, "Initial potential maximum update: {0}", errorPsi0*mEx); // czy dla Fn i Fp tez bedzie mEx?
             iter += 1;
         }
         if (!dvnPsi) {
@@ -858,7 +858,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             solveMatrix(A, B);
             err = addCorr<CALC_PSI>(B, vconst); // max. update
             if (err > errorPsi) errorPsi = err;
-            this->writelog(LOG_DETAIL, "Maximum potential update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            this->writelog(LOG_DETAIL, "Maximum potential update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             savePsi();
             saveN();
             saveP();
@@ -873,7 +873,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             solveMatrix(A, B);
             err = addCorr<CALC_FN>(B, vconst); // max. update
             if (err > errorFn) errorFn = err;
-            this->writelog(LOG_DETAIL, "Maximum electrons quasi-Fermi level update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            this->writelog(LOG_DETAIL, "Maximum electrons quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFnEta();
             saveN();
             itersFn += 1;
@@ -887,7 +887,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             solveMatrix(A, B);
             err = addCorr<CALC_FP>(B, vconst); // max. update
             if (err > errorFp) errorFp = err;
-            this->writelog(LOG_DETAIL, "Maximum holes quasi-Fermi level update: %1%", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
+            this->writelog(LOG_DETAIL, "Maximum holes quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
             saveFpKsi();
             saveP();
             itersFp += 1;
@@ -916,13 +916,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
-        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -939,14 +939,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
     // Factorize matrix
     dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
     if (info < 0) {
-        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
     }
 
     // Find solutions
     dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -963,9 +963,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
     double err;
     try {
         int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError exc) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", exc.what());
+        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
     }
 
     B = x;

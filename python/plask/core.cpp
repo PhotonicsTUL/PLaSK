@@ -98,7 +98,7 @@ std::string Config::__str__() const {
 
 std::string Config:: __repr__() const {
     return
-        format("config.axes = '%s'", axes_name()) +
+        format("config.axes = '{}'", axes_name()) +
            + "\nlog.colors = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
            + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
            + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
@@ -240,21 +240,21 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, "{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, "{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
                     std::string form = message;
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
                     }
                 } else
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -265,12 +265,12 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
                 }
         } else
-            plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
     }
     return 1;
 }
@@ -323,7 +323,7 @@ py::docstring_options doc_options(
 //             }
 //             data->convertible = storage;
 //         } catch (py::error_already_set) {
-//             throw TypeError("Must provide either plask.vector or a sequence of length %1% of proper dtype", dim);
+//             throw TypeError("Must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
 //         }
 //     }
 // };

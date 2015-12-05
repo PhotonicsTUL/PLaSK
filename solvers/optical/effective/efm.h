@@ -118,14 +118,14 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
             } else {
                 zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
                 if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute J(%1%, %2%) @ r = %3%um", m, str(x), r);
+                    throw ComputationError(solver->getId(), "Could not compute J({0}, {1}) @ r = {2}um", m, str(x), r);
             }
             if (ir == 0) {
                 Hr = Hi = 0.;
             } else {
                 zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute H(%1%, %2%) @ r = %3%um", m, str(x), r);
+                    throw ComputationError(solver->getId(), "Could not compute H({0}, {1}) @ r = {2}um", m, str(x), r);
             }
             return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
@@ -489,7 +489,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
                     if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
                 if (all_the_same) ++stripe;
             }
-            writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
+            writelog(LOG_DETAIL, "Vertical field distribution taken from stripe {0}", stripe);
             return stripe;
         } else {
             return rstripe;

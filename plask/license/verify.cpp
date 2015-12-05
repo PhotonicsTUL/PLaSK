@@ -34,7 +34,7 @@ std::time_t LicenseVerifier::extractDate(const std::string &s) {
     char delimiter;
     int d, m, y;
     if (is >> d >> delimiter >> m >> delimiter >> y) {
-        struct tm t = {0};
+        struct tm t = {-1};
         t.tm_mday = d;
         t.tm_mon = m - 1;
         t.tm_year = y - 1900;
@@ -109,14 +109,14 @@ void LicenseVerifier::verify() {
                         }
                     }
         ))
-        throw Exception("License error: Invalid signature in file \"%1%\"", filename);
+        throw Exception("License error: Invalid signature in file \"{0}\"", filename);
 
     if (!expiry)
-        throw Exception("License error: No information about expiration date in file \"%1%\"", filename);
+        throw Exception("License error: No information about expiration date in file \"{0}\"", filename);
 
     std::time_t t = extractDate(*expiry);
     if (t == (std::time_t) (-1))
-        throw Exception("License error: Ill-formatted expiration date \"%1%\"", *expiry);
+        throw Exception("License error: Ill-formatted expiration date \"{0}\"", *expiry);
 
     if (std::time(nullptr) + 24 * 3600 > t)
         throw Exception("License has expired");

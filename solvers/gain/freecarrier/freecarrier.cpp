@@ -120,18 +120,18 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                 if (!materialSubstrate)
                     materialSubstrate = this->geometry->getMaterial(point);
                 else if (*materialSubstrate != *this->geometry->getMaterial(point))
-                    throw Exception("%1%: Non-uniform substrate layer.", this->getId());
+                    throw Exception("{0}: Non-uniform substrate layer.", this->getId());
             }
 
             if (QW && !active)
-                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
+                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
 
             if (c < ileft) {
                 if (active)
-                    throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
+                    throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
             } else if (c >= iright) {
                 if (active)
-                    throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                    throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
             } else {
                 // Here we are inside potential active region
                 if (active) {
@@ -145,9 +145,9 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                         layer_QW = QW;
                     } else {
                         if (*layer_material != *this->geometry->getMaterial(point))
-                            throw Exception("%1%: Non-uniform active region layer.", this->getId());
+                            throw Exception("{0}: Non-uniform active region layer.", this->getId());
                         if (layer_QW != QW)
-                            throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
+                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
                 } else if (had_active) {
                     if (!in_active) {
@@ -157,15 +157,15 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                         /*auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                         for (size_t cc = ileft; cc < iright; ++cc)
                             if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                                throw Exception("%1%: Material below quantum well not uniform.", this->getId());
+                                throw Exception("{0}: Material below quantum well not uniform.", this->getId());
                         auto& region = regions.back();
                         double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
                         double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                         region.origin += Vec<2>(0., -h);
-                        this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
+                        this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
                         region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
                     } else
-                        throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                        throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
                 }
                 had_active |= active;
             }
@@ -180,12 +180,12 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                 auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                 for (size_t cc = ileft; cc < iright; ++cc)
                     if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                        throw Exception("%1%: Material below active region not uniform.", this->getId());
+                        throw Exception("{0}: Material below active region not uniform.", this->getId());
                 auto& region = regions.back();
                 double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
                 double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                 region.origin += Vec<2>(0., -h);
-                //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
+                //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
                 region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                 region.bottom = h;
                 added_bottom_cladding = true;
@@ -213,9 +213,9 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
-                            throw Exception("%1%: Material above quantum well not uniform.", this->getId());
+                            throw Exception("{0}: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w,h), top_material));
-                    //this->writelog(LOG_DETAIL, "Adding top cladding; h = %1%",h);
+                    //this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
 
                     ileft = 0;
                     iright = points->axis0->size();
@@ -226,9 +226,9 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
         }
     }
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
-        throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
+        throw Exception("{0}: Quantum-well at the edge of the structure.", this->getId());
 
-    this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
+    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
     for (auto& region: regions) region.summarize(this);
 
     if (strained && !materialSubstrate)
@@ -325,7 +325,7 @@ void FreeCarrierGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, A
     if (which == EL) umax = min(ustart, ustop);
     else umin = max(ustart, ustop);
     if (umax < umin)
-        throw Exception("%s: Outer layers of active region have wrong band offset", this->getId()); //TODO make clearer
+        throw Exception("{}: Outer layers of active region have wrong band offset", this->getId()); //TODO make clearer
     num = 2. * ceil(sqrt(umax-umin)*num); // 2.* is the simplest way to ensure that all levels are found
     umin += 0.5 * levelsep;
     umax -= 0.5 * levelsep;
@@ -442,16 +442,16 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
         if (maxLoglevel > LOG_DETAIL) {
             {
                 std::stringstream str; std::string sep = "";
-                for (auto l: params.levels[EL]) { str << sep << format("%.4f", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated electron levels for active region %d [eV]: %s", reg++, str.str());
+                for (auto l: params.levels[EL]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated electron levels for active region {:d} [eV]: {}", reg++, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: params.levels[HH]) { str << sep << format("%.4f", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region %d [eV]: %s", reg, str.str());
+                for (auto l: params.levels[HH]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region {:d} [eV]: {}", reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
-                for (auto l: params.levels[LH]) { str << sep << format("%.4f", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region %d [eV]: %s", reg, str.str());
+                for (auto l: params.levels[LH]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
+                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region {:d} [eV]: {}", reg, str.str());
             }
         }
     }
@@ -618,7 +618,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             for (size_t j = 0; j != mesh->axis1->size(); ++j) {
                 double v = data[mesh->index(i,j)];
                 if (isnan(v))
-                    throw ComputationError(solver->getId(), "Wrong %1% (%2%) at %3%", name, v, mesh->at(i,j));
+                    throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i,j));
                 v = max(v, 1e-6); // To avoid hangs
                 val += v;
             }

@@ -201,7 +201,7 @@ struct PLASK_API IllFormatedComplex: public Exception {
      * Constructor.
      * @param str_to_parse ill-formated complex number
      */
-    IllFormatedComplex(const std::string& str_to_parse): Exception("Ill-formatted complex number \"%1%\". Allowed formats: 'R+Ij', 'R,Ij', '(R, I)', where R and I are floating point numbers.", str_to_parse)
+    IllFormatedComplex(const std::string& str_to_parse): Exception("Ill-formatted complex number \"{0}\". Allowed formats: 'R+Ij', 'R,Ij', '(R, I)', where R and I are floating point numbers.", str_to_parse)
     {}
 
 };

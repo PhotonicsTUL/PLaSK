@@ -76,7 +76,7 @@ void ExpansionPW2D::init()
 
     if (nM < nN) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
 
-    SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
+    SOLVER->writelog(LOG_DETAIL, "Creating{2}{3} expansion with {0} plane-waves (matrix size: {1})",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
     matFFT = FFT::Forward1D(4, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
@@ -95,7 +95,7 @@ void ExpansionPW2D::init()
             work = mag;
         }
         // Add PMLs
-        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: {0}um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         if (symmetric()) pil = 0;
         else pil = std::lower_bound(xmesh->begin(), xmesh->end(), pl) - xmesh->begin();
@@ -162,10 +162,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     if (refine == 0) refine = 1;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points) in thread %3%", layer, refine * nM,
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1} points) in thread {2}", layer, refine * nM,
                          omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", layer, refine * nM);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1} points)", layer, refine * nM);
     #endif
 
     auto mesh = plask::make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
@@ -257,7 +257,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         diagonals[layer] = false;
 
     if (diagonals[layer]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
         if (nN != nM) coeffs[layer][0] = work[0];
         std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
     } else {

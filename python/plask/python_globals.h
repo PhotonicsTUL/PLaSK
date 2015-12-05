@@ -135,7 +135,7 @@ template <typename T>
 inline std::string pyformat(const T& v) { std::stringstream s; s << v; return s.str(); }
 
 template <>
-inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+gj)", real(v), imag(v)); }
+inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("({:g}{:+g}j)", real(v), imag(v)); }
 
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -290,10 +290,10 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
     try {
         detail::_parse_kwargs<0>(arglist, kwargs, names...);
     } catch (const std::string& name) {
-        throw TypeError("%1%() got multiple values for keyword argument '%2%'", fname, name);
+        throw TypeError("{0}() got multiple values for keyword argument '{1}'", fname, name);
     }
     if (py::len(arglist) != sizeof...(names))
-        throw TypeError("%1%() takes exactly %2% non-keyword arguments (%3% given)", fname, sizeof...(names), py::len(arglist));
+        throw TypeError("{0}() takes exactly {1} non-keyword arguments ({2} given)", fname, sizeof...(names), py::len(arglist));
     args = py::tuple(arglist);
 }
 
@@ -340,7 +340,7 @@ struct Overriden
         }
         py::handle<> __class__(PyObject_GetAttrString(self, "__class__"));
         py::handle<> __name__(PyObject_GetAttrString(__class__.get(), "__name__"));
-        throw AttributeError("'%s' object has not attribute '%s'",
+        throw AttributeError("'{}' object has not attribute '{}'",
                              std::string(py::extract<std::string>(py::object(__name__))),
                              name);
     }

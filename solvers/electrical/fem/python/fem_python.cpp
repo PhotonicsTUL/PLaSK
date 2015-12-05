@@ -7,7 +7,7 @@ using namespace plask::python;
 using namespace plask::solvers::electrical;
 
 static py::object outPotential(const py::object& self) {
-    throw TypeError("%s: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
+    throw TypeError("{}: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
                     std::string(py::extract<std::string>(self.attr("id"))));
     return py::object();
 }
@@ -77,7 +77,7 @@ template <typename Class> py::object Shockley__getattr__(const Class& self, cons
         if (attr.substr(0,2) == "Vt") return py::object(self.getVt(boost::lexical_cast<size_t>(attr.substr(2))));
         if (attr.substr(0,2) == "js") return py::object(self.getJs(boost::lexical_cast<size_t>(attr.substr(2))));
     } catch (boost::bad_lexical_cast) {
-        throw AttributeError("%1% object has no attribute '%2%'", self.getClassName(), attr);
+        throw AttributeError("{0} object has no attribute '{1}'", self.getClassName(), attr);
     }
     return py::object();
 }
@@ -102,9 +102,9 @@ inline static void register_electrical_solver(const char* name, const char* geon
     typedef FiniteElementMethodElectrical2DSolver<GeometryT>  __Class__;
     ExportSolver<FiniteElementMethodElectrical2DSolver<GeometryT>> solver(name, format(
 
-        "%1%(name=\"\")\n\n"
+        "{0}(name=\"\")\n\n"
 
-        "Finite element thermal solver for 2D %2% geometry."
+        "Finite element thermal solver for 2D {1} geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, "Run electrical calculations", py::arg("loops")=0);

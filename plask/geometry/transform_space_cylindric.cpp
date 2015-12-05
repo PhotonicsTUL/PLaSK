@@ -65,7 +65,7 @@ shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     bool auto_clip = reader.source.getAttribute("auto-clip", false);
     return plask::make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
     /*if (res->childIsClipped()) {
-        writelog(LOG_WARNING, "Child of <revolution>, read from XPL line %1%, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
+        writelog(LOG_WARNING, "Child of <revolution>, read from XPL line {0}, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
     }*/
 }
 

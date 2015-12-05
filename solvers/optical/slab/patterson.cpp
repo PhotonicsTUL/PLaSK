@@ -39,7 +39,7 @@ S patterson(const std::function<S(T)>& fun, T a, T b, double& err, unsigned* ord
     }
 
 #ifndef NDEBUG
-    writelog(LOG_DEBUG, "Patterson quadrature for %1% points, error = %2%", (1<<n)-1, err);
+    writelog(LOG_DEBUG, "Patterson quadrature for {0} points, error = {1}", (1<<n)-1, err);
 #endif
 
     if (order) *order = n - 1;

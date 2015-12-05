@@ -64,60 +64,60 @@ namespace detail {
 } // namespace detail
 
 constexpr const char* docstring_attr_receiver() { return
-    "Receiver of the %3% required for computations [%4%].\n"
-    "%5%\n\n"
+    "Receiver of the {2} required for computations [{3}].\n"
+    "{4}\n\n"
 
     "You will find usage details in the documentation of the receiver class\n"
-    ":class:`~plask.flow.%1%Receiver%2%`.\n\n"
+    ":class:`~plask.flow.{0}Receiver{1}`.\n\n"
 
     "Example:\n"
     "   Connect the reveiver to a provider from some other solver:\n\n"
 
-    "   >>> solver.%6% = other_solver.out%1%\n\n"
+    "   >>> solver.{5} = other_solver.out{0}\n\n"
 
     "See also:\n\n"
-    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n\n"
-    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Data filter: :class:`plask.filter.%1%Filter%2%`\n";
+    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n\n"
+    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Data filter: :class:`plask.filter.{0}Filter{1}`\n";
 }
 
 template <PropertyType propertyType> constexpr const char* docstring_attr_provider_impl();
 
 template <> constexpr const char* docstring_attr_provider_impl<SINGLE_VALUE_PROPERTY>() { return
-    "Provider of the computed %3% [%4%].\n"
-    "%5%\n\n"
+    "Provider of the computed {2} [{3}].\n"
+    "{4}\n\n"
 
-    "%8%(%6%)\n\n"
+    "{7}({5})\n\n"
 
-    "%7%\n"
+    "{6}\n"
 
-    ":return: Value of the %3% **[%4%]**.\n\n"
+    ":return: Value of the {2} **[{3}]**.\n\n"
 
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.%8%%\n\n"
+    "   >>> other_solver.in{0} = solver.{7}%\n\n"
 
     "   Obtain the provided value:\n\n"
 
-    "   >>> solver.%8%(%6%)\n"
+    "   >>> solver.{7}({5})\n"
     "   1000\n\n"
 
     "See also:\n\n"
-    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<MULTI_VALUE_PROPERTY>() { return
-    "Provider of the computed %3% [%4%].\n"
-    "%5%\n\n"
+    "Provider of the computed {2} [{3}].\n"
+    "{4}\n\n"
 
-    "%8%(n=0%6%)\n\n"
+    "{7}(n=0{5})\n\n"
 
     ":param int n: Value number.\n"
-    "%7%\n"
+    "{6}\n"
 
-    ":return: Value of the %3% **[%4%]**.\n\n"
+    ":return: Value of the {2} **[{3}]**.\n\n"
 
     "You may obtain the number of different values this provider can return by\n"
     "testing its length.\n\n"
@@ -125,62 +125,62 @@ template <> constexpr const char* docstring_attr_provider_impl<MULTI_VALUE_PROPE
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.%8%\n\n"
+    "   >>> other_solver.in{0} = solver.{7}\n\n"
 
     "   Obtain the provided value:\n\n"
 
-    "   >>> solver.%8%(n=0%6%)\n"
+    "   >>> solver.{7}(n=0{5})\n"
     "   1000\n\n"
 
     "   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.%8%)\n"
+    "   >>> len(solver.{7})\n"
     "   3\n\n"
 
     "See also:\n\n"
-    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<FIELD_PROPERTY>() { return
-    "Provider of the computed %3% [%4%].\n"
-    "%5%\n\n"
+    "Provider of the computed {2} [{3}].\n"
+    "{4}\n\n"
 
-    "%8%(mesh%6%, interpolation='default')\n\n"
+    "{7}(mesh{5}, interpolation='default')\n\n"
 
     ":param mesh mesh: Target mesh to get the field at.\n"
     ":param str interpolation: Requested interpolation method.\n"
-    "%7%\n"
+    "{6}\n"
 
-    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+    ":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
 
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.%8%\n\n"
+    "   >>> other_solver.in{0} = solver.{7}\n\n"
 
     "   Obtain the provided field:\n\n"
 
-    "   >>> solver.%8%(mesh%6%)\n"
+    "   >>> solver.{7}(mesh{5})\n"
     "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n\n"
-    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<MULTI_FIELD_PROPERTY>() { return
-    "Provider of the computed %3% [%4%].\n"
-    "%5%\n\n"
+    "Provider of the computed {2} [{3}].\n"
+    "{4}\n\n"
 
-    "%8%(n=0, mesh%6%, interpolation='default')\n\n"
+    "{7}(n=0, mesh{5}, interpolation='default')\n\n"
 
     ":param int n: Value number.\n"
     ":param mesh mesh: Target mesh to get the field at.\n"
     ":param str interpolation: Requested interpolation method.\n"
-    "%7%\n"
+    "{6}\n"
 
-    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+    ":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
 
     "You may obtain the number of different values this provider can return by\n"
     "testing its length.\n\n"
@@ -188,21 +188,21 @@ template <> constexpr const char* docstring_attr_provider_impl<MULTI_FIELD_PROPE
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.%8%\n\n"
+    "   >>> other_solver.in{0} = solver.{7}\n\n"
 
     "   Obtain the provided field:\n\n"
 
-    "   >>> solver.%8%(0, mesh%6%)\n"
+    "   >>> solver.{7}(0, mesh{5})\n"
     "   <plask.Data at 0x1234567>\n\n"
 
     "   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.%8%)\n"
+    "   >>> len(solver.{7})\n"
     "   3\n\n"
 
     "See also:\n\n"
-    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 
@@ -242,14 +242,14 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
         this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field),
             format(docstring_attr_provider<typename ProviderT::PropertyTag>(),
-                   type_name<typename ProviderT::PropertyTag>(),                                // %1% Gain
-                   spaceSuffix<typename ProviderT::SpaceType>(),                                // %2% Cartesian2D
-                   ProviderT::PropertyTag::NAME,                                                // %3% material gain
-                   ProviderT::PropertyTag::UNIT,                                                // %4% 1/cm
-                   addhelp,                                                                     // %5% Gain in the active region.
-                   docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // %6% wavelength
-                   docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // %7% :param: wavelength
-                   name                                                                         // %8% inGain
+                   type_name<typename ProviderT::PropertyTag>(),                                // {0} Gain
+                   spaceSuffix<typename ProviderT::SpaceType>(),                                // {1} Cartesian2D
+                   ProviderT::PropertyTag::NAME,                                                // {2} material gain
+                   ProviderT::PropertyTag::UNIT,                                                // {3} 1/cm
+                   addhelp,                                                                     // {4} Gain in the active region.
+                   docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // {5} wavelength
+                   docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // {6} :param: wavelength
+                   name                                                                         // {7} inGain
                   ).c_str()
         );
         return *this;
@@ -307,15 +307,15 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         detail::RegisterBoundaryConditions<MeshT, ValueT>();
 
         this->def_readonly(name, field, format(
-            "%1% \n\n"
+            "{0} \n\n"
 
             "This field holds a list of boundary conditions for the solver. You may access\n"
             "and alter is elements a normal Python list. Each element is a special class\n"
             "that has two attributes:\n\n"
 
             "============= ==================================================================\n"
-            ":attr:`place` Boundary condition location%3%.\n"
-            ":attr:`value` Boundary condition value%4%.\n"
+            ":attr:`place` Boundary condition location{2}.\n"
+            ":attr:`value` Boundary condition value{3}.\n"
             "============= ==================================================================\n\n"
 
             "When you add new boundary condition, you may use two-argument ``append``, or\n"
@@ -323,13 +323,13 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
             "specify the place and the value. See the below example for clarification.\n\n"
 
             "Example:\n"
-            "    >>> solver.%2%.clear()\n"
-            "    >>> solver.%2%.append(solver.mesh.Bottom(), some_value)\n"
-            "    >>> solver.%2%[0].value = different_value\n"
-            "    >>> solver.%2%.insert(0, solver.mesh.Top(), new_value)\n"
-            "    >>> solver.%2%[1].value == different_value\n"
+            "    >>> solver.{1}.clear()\n"
+            "    >>> solver.{1}.append(solver.mesh.Bottom(), some_value)\n"
+            "    >>> solver.{1}[0].value = different_value\n"
+            "    >>> solver.{1}.insert(0, solver.mesh.Top(), new_value)\n"
+            "    >>> solver.{1}[1].value == different_value\n"
             "    True\n"
-            "%5%",
+            "{4}",
             help, name, boundary_class, value_class, value_class_desc).c_str()
         );
         return *this;

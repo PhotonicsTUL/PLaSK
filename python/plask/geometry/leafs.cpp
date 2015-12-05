@@ -93,7 +93,7 @@ static double Block__getattr__(const Block<dim>& self, const std::string& name) 
         size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) return self.size[axis];
     }
-    throw AttributeError("'Block%1%D' object has no attribute '%2%'", dim, name);
+    throw AttributeError("'Block{0}D' object has no attribute '{1}'", dim, name);
 }
 
 template <size_t dim>
@@ -116,7 +116,7 @@ static double Triangle__getattr__(const Triangle& self, const std::string& name)
         size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) return (name.front() == 'a') ? self.p0[axis] : self.p1[axis];
     }
-    throw AttributeError("'Triangle' object has no attribute '%1%'", name);
+    throw AttributeError("'Triangle' object has no attribute '{0}'", name);
 }
 
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {

@@ -153,7 +153,7 @@ void SlabSolver<BaseT>::setupLayers()
         }
     }
 
-    Solver::writelog(LOG_DETAIL, "Detected %1% %2%layers", lverts.size(), group_layers? "distinct " : "");
+    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lverts.size(), group_layers? "distinct " : "");
 }
 
 template <>
@@ -225,7 +225,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
 
     assert(vbounds.size() == stack.size()-1);
 
-    Solver::writelog(LOG_DETAIL, "Detected %1% %2%layers", lverts.size(), group_layers? "distinct " : "");
+    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lverts.size(), group_layers? "distinct " : "");
 }
 
 

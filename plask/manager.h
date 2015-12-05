@@ -36,7 +36,7 @@ struct PLASK_API Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& manager, const MaterialsDB& materialsDB, const std::string& url, const std::string& section) {
-        throw Exception("Can't load section \"%1%\" from \"%2%\". Loading from external sources is not supported or disallowed.", section, url); }
+        throw Exception("Can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
 
     /// Allow to support reading some sections from other files.
     struct PLASK_API ExternalSourcesFromFile {
@@ -87,7 +87,7 @@ private:
 
     /*struct LoadFunCallbackT {
         std::pair< XMLReader, std::unique_ptr<LoadFunCallbackT> > get(const std::string& url) const {
-            throw Exception("Can't load section from \"%1%\". Loading from external sources is not supported or disallowed.", url);
+            throw Exception("Can't load section from \"{0}\". Loading from external sources is not supported or disallowed.", url);
         }
     };*/
 
@@ -596,13 +596,13 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         ConditionT value = parseBoundaryValue<ConditionT>(reader);
         if (place) {
             boundary = parseBoundary<MeshT>(*place, *this);
-            if (boundary.isNull()) throw XMLException(reader, format("Can't parse boundary place from string \"%1%\".", *place));
+            if (boundary.isNull()) throw XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place));
         } else {
             place = reader.getAttribute("placeref");
             if (place) {
                 auto p = this->boundaries.find(*place);
                 if (p == this->boundaries.end())
-                    throw XMLException(reader, format("Can't find boundary (place) with given name \"%1%\".", *place));
+                    throw XMLException(reader, format("Can't find boundary (place) with given name \"{0}\".", *place));
                 boundary = boost::any_cast<Boundary<MeshT>>(p->second);
             } else {
                 reader.requireTag("place");

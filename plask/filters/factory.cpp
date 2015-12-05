@@ -14,7 +14,7 @@ shared_ptr<Solver> FiltersFactory::get(XMLReader &reader, Manager& manager) {
     std::string typeName = reader.requireAttribute("for");
     auto it = filterCreators.find(typeName);
     if (it == filterCreators.end())
-        throw Exception("No filter for %1%", typeName);
+        throw Exception("No filter for {0}", typeName);
     return it->second(reader, manager);
 }
 

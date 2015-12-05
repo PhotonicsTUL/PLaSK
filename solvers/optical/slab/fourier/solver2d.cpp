@@ -57,7 +57,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.size = reader.getAttribute<double>("size", vpml.size);
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
             if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line %d in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
                 vpml.order = reader.requireAttribute<double>("order");
             }
             vpml.order = reader.getAttribute<double>("shape", vpml.order);
@@ -74,7 +74,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             pml.size = reader.getAttribute<double>("size", pml.size);
             pml.dist = reader.getAttribute<double>("dist", pml.dist);
             if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line %d in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
                 pml.order = reader.requireAttribute<double>("order");
             }
             pml.order = reader.getAttribute<double>("shape", pml.order);
@@ -138,7 +138,7 @@ void FourierSolver2D::onInitialize()
 {
     this->setupLayers();
     this->ensureInterface();
-    Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver (%1% layers in the stack, interface after %2% layer%3%)",
+    Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver ({0} layers in the stack, interface after {1} layer{2})",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
     this->recompute_integrals = true;
@@ -170,7 +170,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
             break;
         case FourierSolver2D::WHAT_NEFF:
             if (expansion.polarization != Expansion::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
+                throw Exception("{0}: Cannot search for effective index with polarization separation", getId());
             detlog.axis_arg_name = "neff";
             root = getRootDigger([this](const dcomplex& x) {
                     this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0;
@@ -207,7 +207,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
-        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
+        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
     auto gamma = transfer->diagonalizer->Gamma(l);
@@ -264,10 +264,10 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
     if (!expansion.diagonalQE(lt))
-        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
                                       (incidence == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
     if (!expansion.diagonalQE(li))
-        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
     auto gamma = transfer->diagonalizer->Gamma(lt);

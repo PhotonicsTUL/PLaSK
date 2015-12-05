@@ -7,47 +7,11 @@
 This file contains utils to format strings.
 */
 
-#include <boost/format.hpp> //TODO maybe better to take simple code from http://en.wikipedia.org/wiki/Variadic_templates
+#include <cppformat/format.h>
 
 namespace plask {
 
-/// Recursion end of format_add_args. Do nothing.
-inline void format_add_args(boost::format&) {}
-
-/**
- * Call: @code format % first_arg; format_add_args(format, rest_args...); @endcode
- * @param format, first_arg, rest_args argument for boost format calls
- * @see http://www.boost.org/doc/libs/1_48_0/libs/format/
- */
-template <typename firstT, typename... restT>
-inline void format_add_args(boost::format& format, firstT&& first_arg, restT&&... rest_args) {
-    format % std::forward<firstT>(first_arg);
-    format_add_args(format, std::forward<restT>(rest_args)...);
-}
-
-/**
- * String pass-through.
- * @param msg template string which have %1%, %2%, ...
- * @return formated string
- */
-inline std::string format(const std::string& msg) {
-    return msg;
-}
-
-/**
- * Format string using boost format.
- * @param msg template string which have %1%, %2%, ...
- * @param args arguments for %1%, %2%, ...
- * @return formated string
- * @see http://www.boost.org/doc/libs/1_48_0/libs/format/
- */
-template <typename... T>
-inline std::string format(const std::string& msg, T&&... args) {
-    boost::format format(msg);
-    format_add_args(format, std::forward<T>(args)...);
-    return format.str();
-}
-
+using fmt::format;
 
 /**
  * Convert something to pretty string
@@ -63,7 +27,7 @@ inline std::string str(T x) {
  * @param x value to convert
  */
 inline std::string str(double x) {
-    return format("%.9g", x);
+    return format("{:.9g}", x);
 }
 
 /**
@@ -71,7 +35,7 @@ inline std::string str(double x) {
  * @param x value to convert
  */
 inline std::string str(std::complex<double> x) {
-    return format("%.9g%+-0.9gj", real(x), imag(x));
+    return format("{:.9g}{:+0.9g}j", real(x), imag(x));
 }
 
 }   // namespace plask

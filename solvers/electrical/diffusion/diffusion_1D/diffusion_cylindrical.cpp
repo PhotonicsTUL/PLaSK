@@ -98,7 +98,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     threshold_computation = type == COMPUTATION_THRESHOLD;
     overthreshold_computation = type == COMPUTATION_OVERTHRESHOLD;
 
-    this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
+    this->writelog(LOG_INFO, "Computing lateral carriers diffusion using {0} FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by (in|out)Current reciever
@@ -113,9 +113,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         {
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
-                throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
+                throw ComputationError(this->getId(), "Maximum number of mesh refinements ({0}) reached", max_mesh_changes);
             size_t new_size = 2 * current_mesh.size() - 1;
-            writelog(LOG_DETAIL, "Refining mesh (new size: %1%)", new_size);
+            writelog(LOG_DETAIL, "Refining mesh (new size: {0})", new_size);
 
             plask::DataVector<double> old_n = n_present;
             size_t nm = old_n.size()-1;
@@ -157,7 +157,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     }
     while(initial_computation || threshold_computation || overthreshold_computation);
 
-    this->writelog(LOG_DETAIL, "Converged after %1% mesh refinements and %2% computational loops", mesh_changes, iterations);
+    this->writelog(LOG_DETAIL, "Converged after {0} mesh refinements and {1} computational loops", mesh_changes, iterations);
 
 }
 
@@ -276,7 +276,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         double wavelength = real(inWavelength(n));
-                        write_debug("wavelength: %1% nm", wavelength);
+                        write_debug("wavelength: {0} nm", wavelength);
 
                         auto mesh_Li = plask::make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
 
@@ -287,17 +287,17 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
                         auto Li = averageLi(initial_Li, *mesh_Li);
 
-                        write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);
+                        write_debug("Li[0]: {0} W/cm2", Li[0]*1.0e-4);
                         int ile = 0;
                         for (auto n: n_present)
                         {
                             if (n <= 0.) ile++;
                         }
-                        // write_debug("n < 0: %1% times", ile);
+                        // write_debug("n < 0: {0} times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
-                        // write_debug("g[0]: %1% cm(-1)", g[0]);
+                        // write_debug("g[0]: {0} cm(-1)", g[0]);
                         auto dgdn = inGain(Gain::DGDN, mesh2, wavelength, interpolation_method);
-                        // write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
+                        // write_debug("dgdn[0]: {0} cm(-4)", dgdn[0]);
                         auto factor = inv_hc * wavelength; // inverse one photon energy
                         for (size_t i = 0; i != mesh2->size(); ++i)
                         {
@@ -367,10 +367,10 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
-//                    write_debug("absolute error: %1%", absolute_error);
-//                    write_debug("relative error: %1%", relative_error);
-//                    write_debug("n_present[0]: %1%", n_present[0]);
-//                    write_debug("F(0): %1%", F(0));
+//                    write_debug("absolute error: {0}", absolute_error);
+//                    write_debug("relative error: {0}", relative_error);
+//                    write_debug("n_present[0]: {0}", n_present[0]);
+//                    write_debug("F(0): {0}", F(0));
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
@@ -391,8 +391,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
             iterations += 1;
 #ifndef NDEBUG
             if (overthreshold_computation)
-                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
-                writelog(LOG_DEBUG, "iteration: %1%", iterations);
+                writelog(LOG_DEBUG, "Integral of overthreshold loses: {0} mW, qw_width: {1} cm", burning_integral(), global_QW_width);
+                writelog(LOG_DEBUG, "iteration: {0}", iterations);
 #endif
         }
 
@@ -748,10 +748,10 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-//        write_debug("product before: %1%", product);
+//        write_debug("product before: {0}", product);
         product -= PM[i];
-//        write_debug("product after: %1%", product);
-//        write_debug("PM[i]: %1%", PM[i]);
+//        write_debug("product after: {0}", product);
+//        write_debug("PM[i]: {0}", PM[i]);
     }
 
     return product;
@@ -760,7 +760,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::burning_integral()
 {
     if (modesP.size() == 0)
-        throw Exception("%1%: You must run over-threshold computations first before getting burring integral.", this->getId());
+        throw Exception("{0}: You must run over-threshold computations first before getting burring integral.", this->getId());
     double int_val = 0.0;
     for (double p: modesP) int_val += p;
     return int_val;
@@ -796,15 +796,15 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             bool active = false;
             for (const std::string& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
             if (QW && !active)
-                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
+                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
             if (QW && !inQW)        // QW start
             {
                 if (foundQW)
                 {
                     if (left != grid->axis0->at(c))
-                        throw Exception("%1%: Left edge of quantum wells not vertically aligned.", this->getId());
+                        throw Exception("{0}: Left edge of quantum wells not vertically aligned.", this->getId());
                     if (*this->geometry->getMaterial(point) != *QW_material)
-                        throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
+                        throw Exception("{0}: Quantum wells of multiple materials not supported.", this->getId());
                 }
                 else
                 {
@@ -816,7 +816,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             if (!QW && inQW)        // QW end
             {
                 if (foundQW && right != grid->axis0->at(c))
-                    throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
+                    throw Exception("{0}: Right edge of quantum wells not vertically aligned.", this->getId());
                 right = grid->axis0->at(c);
                 results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
                 foundQW = true;
@@ -824,13 +824,13 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             }
             if (active) {
                 active_row = had_active = true;
-                if (after_active)  throw Exception("%1%: Multiple active regions not supported.", this->getId());
+                if (after_active)  throw Exception("{0}: Multiple active regions not supported.", this->getId());
             }
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
             if (foundQW && right != grid->axis0->at(points->axis0->size()))
-                throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
+                throw Exception("{0}: Right edge of quantum wells not vertically aligned.", this->getId());
             right = grid->axis0->at(points->axis0->size());
             results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
             foundQW = true;

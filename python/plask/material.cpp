@@ -166,9 +166,9 @@ class PythonMaterial: public Material, Overriden
             try {
                 cls_name = py::extract<std::string>(py::object(py::borrowed(self)).attr("__class__").attr("__name__"));
             } catch (py::error_already_set) {
-                throw TypeError("Cannot convert return value of method '%s' in unknown material class to correct type", name);
+                throw TypeError("Cannot convert return value of method '{}' in unknown material class to correct type", name);
             }
-            throw TypeError("Cannot convert return value of method '%s' in material class '%s' to correct type", name, cls_name);
+            throw TypeError("Cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
         }
     }
 
@@ -441,7 +441,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     }
     if (had_doping_key) {
         if (!result.hasDopantName())
-            throw ValueError("%s concentration given for undoped material",
+            throw ValueError("{} concentration given for undoped material",
                              (result.dopingAmountType==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
         result.dopingAmount = py::extract<double>(cobj);
     } else {
@@ -463,7 +463,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
         if (k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
-            throw TypeError("'%s' not allowed in material %s", k, result.name);
+            throw TypeError("'{}' not allowed in material {}", k, result.name);
         }
     }
     // make composition map
@@ -485,7 +485,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
     int len = py::len(args);
 
     if (len > 1) {
-        throw TypeError("__init__ takes exactly 1 non-keyword arguments (%d given)", len);
+        throw TypeError("__init__ takes exactly 1 non-keyword arguments ({:d} given)", len);
     }
 
     py::object self(args[0]);
@@ -520,16 +520,16 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
             if (PyFunction_Check(py::object(self.attr(name)).ptr())) { \
                 try { \
                     cache->fun.reset(py::extract<Type>(self.attr(name))()); \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%s'", cls_name); \
+                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
                 } catch (py::error_already_set) { \
-                    throw TypeError("Cannot convert return value of static function '" name "' in material class '%s' to correct type", cls_name); \
+                    throw TypeError("Cannot convert return value of static function '" name "' in material class '{}' to correct type", cls_name); \
                 } \
             } else if (!PyMethod_Check(py::object(self.attr(name)).ptr())) { \
                 try { \
                     cache->fun.reset(py::extract<Type>(self.attr(name))); \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%s'", cls_name); \
+                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
                 } catch (py::error_already_set) { \
-                    throw TypeError("Cannot convert static parameter '" name "' in material class '%s' to correct type", cls_name); \
+                    throw TypeError("Cannot convert static parameter '" name "' in material class '{}' to correct type", cls_name); \
                 } \
             } \
         }
@@ -647,7 +647,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
         std::vector<std::string> objects = Material::parseObjectsNames(basename);
         for (auto c: comp) {
             if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
-                throw TypeError("'%s' not allowed in material %s", c.first, name);
+                throw TypeError("'{}' not allowed in material {}", c.first, name);
             }
         }
     }
@@ -665,7 +665,7 @@ std::string Material__str__(const Material& self) {
 }
 
 std::string Material__repr__(const Material& self) {
-    return format("plask.materials.Material('%1%')", Material__str__(self));
+    return format("plask.materials.Material('{0}')", Material__str__(self));
 }
 
 namespace detail {

@@ -65,7 +65,7 @@ struct PLASK_API Strategy {
 
     /*void ensureCanCoexists(const Strategy& oppositeStrategy) const {
         if (!canCoexistsWith(oppositeStrategy) || !oppositeStrategy.canCoexistsWith(*this))
-            throw Exception("Border strategies \"%1%\" and \"%2%\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
+            throw Exception("Border strategies \"{0}\" and \"{1}\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
     }*/
 
     /**

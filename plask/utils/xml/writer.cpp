@@ -108,7 +108,7 @@ std::size_t XMLWriter::Element::getLevel() const {
 
 XMLWriter::Element &XMLWriter::Element::attr(const std::string &attr_name, const std::string &attr_value) {
     if (!attributesStillAlowed)
-        throw XMLWriterException(format("Can't append attribute \"%2%\" to \"%1%\" XML element because this element has already non-empty content.", name, attr_name));
+        throw XMLWriterException(format("Can't append attribute \"{1}\" to \"{0}\" XML element because this element has already non-empty content.", name, attr_name));
     writer->out->put(' ');
     writer->appendStr(attr_name);
     writer->out->puts("=\"");

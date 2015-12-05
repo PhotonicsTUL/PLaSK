@@ -50,7 +50,7 @@ shared_ptr<StackContainer<dim>> Stack__init__(const py::tuple& args, py::dict kw
             throw TypeError("__init__() got multiple values for keyword argument 'shift'");
         shift = py::extract<double>(args[1]);
         if (py::len(args) > 2)
-            throw TypeError("__init__() takes at most 2 non-keyword arguments (%1% given)", py::len(args));
+            throw TypeError("__init__() takes at most 2 non-keyword arguments ({0} given)", py::len(args));
     } else if (kwargs.has_key("shift")) {
         shift = py::extract<double>(kwargs["shift"]);
         py::delitem(kwargs, py::str("shift"));
@@ -74,13 +74,13 @@ shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(c
         repeat = py::extract<size_t>(kwargs["repeat"]);
         py::delitem(kwargs, py::str("repeat"));
     } else
-        throw TypeError("__init__() takes at least 2 arguments (%1% given)", py::len(args));
+        throw TypeError("__init__() takes at least 2 arguments ({0} given)", py::len(args));
     if (py::len(args) > 2) {
         if (kwargs.has_key("shift"))
             throw TypeError("__init__() got multiple values for keyword argument 'shift'");
         shift = py::extract<double>(args[2]);
         if (py::len(args) > 3)
-            throw TypeError("__init__() takes at most 3 non-keyword arguments (%1% given)", py::len(args));
+            throw TypeError("__init__() takes at most 3 non-keyword arguments ({0} given)", py::len(args));
     } else if (kwargs.has_key("shift")) {
         shift = py::extract<double>(kwargs["shift"]);
         py::delitem(kwargs, py::str("shift"));

@@ -116,7 +116,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 }
                 source.requireTagEnd();
             } else {
-                throw Exception("\"%1%\" is not proper name of copy operation and so it is not allowed in <copy> tag.", operation_name);
+                throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.", operation_name);
             }
         }
         new_object = const_pointer_cast<GeometryObject>(from->changedVersion(changers));

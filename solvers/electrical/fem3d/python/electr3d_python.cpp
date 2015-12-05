@@ -7,7 +7,7 @@ using namespace plask::python;
 using namespace plask::solvers::electrical3d;
 
 static py::object outPotential(const py::object& self) {
-    throw TypeError("%s: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
+    throw TypeError("{}: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
                     std::string(py::extract<std::string>(self.attr("id"))));
     return py::object();
 }

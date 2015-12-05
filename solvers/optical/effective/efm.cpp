@@ -77,7 +77,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
                 auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
                 if (mesh1) this->setHorizontalMesh(mesh1);
                 else if (mesh2) this->setMesh(mesh2);
-                else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
+                else throw BadInput(this->getId(), "Mesh '{0}' of wrong type", *name);
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
@@ -85,9 +85,9 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
                     auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(plask::make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
-                    else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
+                    else throw BadInput(this->getId(), "Mesh generator '{0}' of wrong type", *name);
                 } else
-                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
+                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '{0}' found", *name);
             }
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
@@ -97,7 +97,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
 
 size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 {
-    writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
+    writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
     Mode mode(this, m);
@@ -187,8 +187,8 @@ size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
     mode.lam = clambda;
     double det = abs(detS(mode.lam, mode));
     if (det > root.tolf_max)
-        writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
-    writelog(LOG_INFO, "Setting mode at %1%", str(clambda));
+        writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = {0})", det);
+    writelog(LOG_INFO, "Setting mode at {0}", str(clambda));
     return insertMode(mode);
 }
 
@@ -333,13 +333,13 @@ void EffectiveFrequencyCyl::stageOne()
             for (size_t i = 0; i < rsize; ++i) {
                 if (error != std::exception_ptr()) continue; // just skip loops after error
                 try {
-                    writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
+                    writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe {0}", i);
 #                   ifndef NDEBUG
                         std::stringstream nrgs; for (auto nr = nrCache[i].end(), ng = ngCache[i].end(); nr != nrCache[i].begin();) {
                             --nr; --ng;
                             nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
                         }
-                        writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", i, nrgs.str().substr(1));
+                        writelog(LOG_DEBUG, "Nr/Ng[{0}] = [{1} ]", i, nrgs.str().substr(1));
 #                   endif
                     dcomplex same_nr = nrCache[i].front();
                     dcomplex same_ng = ngCache[i].front();
@@ -350,7 +350,7 @@ void EffectiveFrequencyCyl::stageOne()
                         veffs[i] = 1.; // TODO make sure this is so!
                         nng[i] = same_nr * same_ng;
                     } else {
-                        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "vlam", "det");
+                        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", i), "vlam", "det");
                         auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
                         dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
                         veffs[i] = freqv(rootdigger->find(start));
@@ -364,16 +364,16 @@ void EffectiveFrequencyCyl::stageOne()
             if (error != std::exception_ptr()) std::rethrow_exception(error);
         } else {
             // Compute effective frequencies for just one stripe
-            writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", rstripe);
+            writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe {0}", rstripe);
 #           ifndef NDEBUG
                 std::stringstream nrgs;
                 for (auto nr = nrCache[rstripe].end(), ng = ngCache[rstripe].end(); nr != nrCache[rstripe].begin();) {
                     --nr; --ng;
                     nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
                 }
-                writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", rstripe, nrgs.str().substr(1));
+                writelog(LOG_DEBUG, "Nr/Ng[{0}] = [{1} ]", rstripe, nrgs.str().substr(1));
 #           endif
-            Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", rstripe), "vlam", "det");
+            Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", rstripe), "vlam", "det");
             auto rootdigger = RootDigger::get(this,
                                   [&](const dcomplex& x){
                                       return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[rstripe], ngCache[rstripe]);
@@ -392,9 +392,9 @@ void EffectiveFrequencyCyl::stageOne()
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
-            writelog(LOG_DEBUG, "stripes veffs = [%1% ]", strv.str().substr(1));
+            writelog(LOG_DEBUG, "stripes veffs = [{0} ]", strv.str().substr(1));
             std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
-            writelog(LOG_DEBUG, "stripes <nng> = [%1% ]", strn.str().substr(1));
+            writelog(LOG_DEBUG, "stripes <nng> = [{0} ]", strn.str().substr(1));
 #       endif
 
         have_veffs = true;
@@ -407,7 +407,7 @@ void EffectiveFrequencyCyl::stageOne()
             if (imag(lam) < imin) imin = imag(lam);
             if (imag(lam) > imax) imax = imag(lam);
         }
-        writelog(LOG_DETAIL, "Wavelengths should be between %1%nm and %2%nm", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
+        writelog(LOG_DETAIL, "Wavelengths should be between {0}nm and {1}nm", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
     }
 }
 
@@ -496,7 +496,7 @@ dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomp
 #ifndef NDEBUG
         std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
             nrs << "), (" << str((*saveto)[i].F) << ":" << str((*saveto)[i].B);
-        writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+        writelog(LOG_DEBUG, "vertical fields = [{0}) ]", nrs.str().substr(2));
 #endif
     }
 
@@ -610,17 +610,17 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, plask::solvers::effect
     //     double Jr[2], Ji[2], Hr[2], Hi[2];
     //     long nz, ierr;
     //     zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
     //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
     //     zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
     //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
     //     for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
     //     zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
     //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
     //     zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
     //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
     //     for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
     //     MatrixR A(       J1[0],                   H1[0],
@@ -653,17 +653,17 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, plask::solvers::effect
         double Jr[2], Ji[2], Hr[2], Hi[2];
         long nz, ierr;
         zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
             mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
         zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
             mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
         for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
         zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
             mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
         zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %5% nm",
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
             mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
         for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
         MatrixR A(       J1[0],                   H1[0],
@@ -914,7 +914,7 @@ const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const s
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
                 nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
-            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
+            writelog(LOG_DEBUG, "horizontal fields = [{0}) ]", nrs.str().substr(2));
         }
         #endif
         modes[num].have_fields = true;
@@ -979,7 +979,7 @@ const LazyData<double> EffectiveFrequencyCyl::getHeat(const shared_ptr<const Mes
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
-    writelog(LOG_DEBUG, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+    writelog(LOG_DEBUG, "Getting heat absorbed from {0} mode{1}", modes.size(), (modes.size()==1)? "" : "s");
     if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
     return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 }

@@ -55,7 +55,7 @@ namespace detail {
     static void contourLogZero(size_t i, size_t n, const Solver* solver, double r0, double i0, double r1, double i1) {
         double f = (2.*i-1.) / (2.*n-2.);
         double re = r0 + f*(r1-r0), im = i0 + f*(i1-i0);
-        solver->writelog(LOG_WARNING, "Zero at contour in %1% (possibly not counted)", str(dcomplex(re,im)));
+        solver->writelog(LOG_WARNING, "Zero at contour in {0} (possibly not counted)", str(dcomplex(re,im)));
     }
 }
 
@@ -187,9 +187,9 @@ namespace detail {
             size_t w1 = (*this)(contours.first);
             size_t w2 = (*this)(contours.second);
             if (w1 + w2 < wind)
-                contour.solver->writelog(LOG_WARNING, "Lost zero between %1% and %2%", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
+                contour.solver->writelog(LOG_WARNING, "Lost zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
             else if (w1 + w2 > wind)
-                contour.solver->writelog(LOG_WARNING, "New zero between %1% and %2%", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
+                contour.solver->writelog(LOG_WARNING, "New zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
             return wind;
         }
     };
@@ -209,7 +209,7 @@ std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const 
     detail::ContourBisect bisection(reps, ieps, results);
     Contour contour(solver, fun, corner0, corner1, Nr, Ni);
     int zeros = abs(contour.winding());
-    solver->writelog(LOG_DETAIL, "Looking for %5% zero%6% between %1% and %2% with %3%/%4% real/imaginary intervals",
+    solver->writelog(LOG_DETAIL, "Looking for {4} zero{5} between {0} and {1} with {2}/{3} real/imaginary intervals",
                      str(corner0), str(corner1), Nr, Ni, zeros, (zeros!=1)?"s":"");
     bisection(contour);
     return results;

@@ -78,7 +78,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
         if (memY.size() == solver->stack.size() && needAllY)
             return memY[n];
         else
-            throw CriticalException("%1%: Y matrices are not stored", solver->getId());
+            throw CriticalException("{0}: Y matrices are not stored", solver->getId());
     }
 
     /// Determine the y1 efficiently

@@ -457,7 +457,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
             if (t == "^")   //end of segment, add new one
                 result->segments.emplace_back();
         } else {    //end of point coordinate
-            if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"^\") was expected, but got \"%1%\".", t);
+            if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"^\") was expected, but got \"{0}\".", t);
             if (cords_in_current_point == 0) result->segments.back().emplace_back();
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
         }

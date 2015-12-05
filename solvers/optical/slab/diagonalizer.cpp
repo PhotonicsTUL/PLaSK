@@ -32,13 +32,13 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         int nthr = min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
-        writelog(LOG_DEBUG, "%s: Creating %d temporary matri%s for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
+        writelog(LOG_DEBUG, "{}: Creating {:d} temporary matri{} for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
         for (size_t i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);
         }
     #else
-        writelog(LOG_DEBUG, "%s: Creating temporary matrix for diagonalizer", src->solver->getId());
+        writelog(LOG_DEBUG, "{}: Creating temporary matrix for diagonalizer", src->solver->getId());
         tmpmx = new cmatrix(N, N);
     #endif
 }
@@ -84,10 +84,10 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);
         cmatrix QE = tmpmx[mn];
-        writelog(LOG_DEBUG, "%s: Diagonalizing matrix for layer %d in thread %d [%d]", src->solver->getId(), layer, omp_get_thread_num(), mn);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d} in thread {:d} [{:d}]", src->solver->getId(), layer, omp_get_thread_num(), mn);
     #else
         cmatrix QE = *tmpmx;
-        writelog(LOG_DEBUG, "%s: Diagonalizing matrix for layer %d", src->solver->getId(), layer);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}", src->solver->getId(), layer);
     #endif
 
     try {
@@ -105,13 +105,13 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // std::cerr << "PLaSK\nRE:\n";
         // for (unsigned r = 0; r != N; ++r) {
         //     for (unsigned c = 0; c != N; ++c)
-        //         std::cerr << format("%7.1f ", real(RE(r,c)));
+        //         std::cerr << format("{:7.1f} ", real(RE(r,c)));
         //     std::cerr << "\n";
         // }
         // std::cerr << "RH:\n";
         // for (unsigned r = 0; r != N; ++r) {
         //     for (unsigned c = 0; c != N; ++c)
-        //         std::cerr << format("%7.1f ", real(RH(r,c)));
+        //         std::cerr << format("{:7.1f} ", real(RH(r,c)));
         //     std::cerr << "\n";
         // }
 
@@ -127,7 +127,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             }
 
             // std::cerr << "Gamma2: ";
-            // for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
+            // for (unsigned r = 0; r != N; ++r) std::cerr << format("{:7.1f} ", real(gamma[layer][r]));
             // std::cerr << "\n";
 
             // Eigenvector matrix is simply a unity matrix
@@ -145,7 +145,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // std::cerr << "PLaSK\nQE:\n";
             // for (unsigned r = 0; r != N; ++r) {
             //     for (unsigned c = 0; c != N; ++c)
-            //         std::cerr << format("%7.1f ", real(QE(r,c)));
+            //         std::cerr << format("{:7.1f} ", real(QE(r,c)));
             //     std::cerr << "\n";
             // }
 
@@ -157,7 +157,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             int info;
             zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N,  Te[layer].data(), N,
                 Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
-            if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute %1%-th eignevalue of QE", info);
+            if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute {0}-th eignevalue of QE", info);
 
             // Find the inverse of Te in the classical way (maybe to be optimized in future)
             // TODO: eigenvectors should be built by hand based on Schur vectors

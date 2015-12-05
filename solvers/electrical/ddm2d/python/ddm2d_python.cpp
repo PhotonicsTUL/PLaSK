@@ -12,9 +12,9 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     typedef DriftDiffusionModel2DSolver<GeometryT>  __Class__;
     ExportSolver<DriftDiffusionModel2DSolver<GeometryT>> solver(name, format(
 
-        "%1%(name=\"\")\n\n"
+        "{0}(name=\"\")\n\n"
 
-        "Finite element drift-diffusion electrical solver for 2D %2% geometry."
+        "Finite element drift-diffusion electrical solver for 2D {1} geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, "Run drift-diffusion calculations", py::arg("loops")=0);

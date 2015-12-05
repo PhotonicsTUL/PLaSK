@@ -119,7 +119,7 @@ static py::object initPlask(int argc, const char* argv[])
     plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 #ifdef LICENSE_CHECKING
     std::string user = plask::license_verifier.getUser();
-    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to %s.", user);
+    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to {}.", user);
 #endif
 
     sys.attr("modules")["plask._plask"] = _plask;
@@ -384,12 +384,12 @@ int main(int argc, const char *argv[])
                                                                        plask::python::xml_globals, locals));
                     } catch (py::error_already_set) {
                         plask::writelog(plask::LOG_WARNING,
-                                        "Cannot parse command-line definition '%s' (storing it as string): %s",
+                                        "Cannot parse command-line definition '{}' (storing it as string): {}",
                                         keyval.first, plask::python::getPythonExceptionMessage());
                         PyErr_Clear();
                         locals[keyval.first] = keyval.second;
                     }
-                    plask::writelog(plask::LOG_DATA, "%s = %s", keyval.first, keyval.second);
+                    plask::writelog(plask::LOG_DATA, "{} = {}", keyval.first, keyval.second);
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();
@@ -464,12 +464,12 @@ int main(int argc, const char *argv[])
             }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, %2%", argv[1], err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", argv[1], err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", argv[1], err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", argv[1], err.what());
                 endPlask();
                 return 3;
             }

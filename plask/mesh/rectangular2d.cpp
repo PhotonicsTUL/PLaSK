@@ -161,7 +161,7 @@ static RegisterMeshReader rectangular2d_reader("rectangular2d", readRectangularM
 
 // obsolete:
 static shared_ptr<Mesh> readRectangularMesh2D_obsolete(XMLReader& reader) {
-        writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete (will not work in future versions of PLaSK), use \"rectangular2d\" instead.", reader.requireAttribute("type"));
+        writelog(LOG_WARNING, "Mesh type \"{0}\" is obsolete (will not work in future versions of PLaSK), use \"rectangular2d\" instead.", reader.requireAttribute("type"));
         return readRectangularMesh2D(reader);
 }
 static RegisterMeshReader regularmesh2d_reader("regular2d", readRectangularMesh2D_obsolete);

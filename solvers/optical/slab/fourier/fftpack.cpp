@@ -41,7 +41,7 @@ Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int strid):
                 throw NotImplemented("forward FFT for odd symmetry");
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Forward1D::Forward1D: %1%", msg);
+        throw CriticalException("FFT::Forward1D::Forward1D: {0}", msg);
     }
 }
 
@@ -69,7 +69,7 @@ void Forward1D::execute(dcomplex* data) {
             default: {} // silence the warning
         }
                     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Forward1D::execute: %1%", msg);
+        throw CriticalException("FFT::Forward1D::execute: {0}", msg);
     }
 }
 
@@ -115,7 +115,7 @@ Backward1D::Backward1D(int lot, int n, Symmetry symmetry, int strid):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Backward1D::Backward1D: %1%", msg);
+        throw CriticalException("FFT::Backward1D::Backward1D: {0}", msg);
     }
 }
 
@@ -145,7 +145,7 @@ void Backward1D::execute(dcomplex* data) {
             for (int j = 0; j < lot; ++j)
                 data[i+j] *= factor;
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Backward1D::execute: %1%", msg);
+        throw CriticalException("FFT::Backward1D::execute: {0}", msg);
     }
 }
 
@@ -204,7 +204,7 @@ Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symme
             }
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Forward2D::Forward2D: %1%", msg);
+        throw CriticalException("FFT::Forward2D::Forward2D: {0}", msg);
     }
 }
 
@@ -263,7 +263,7 @@ void Forward2D::execute(dcomplex* data) {
             default: {} // silence the warning
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Forward2D::execute: %1%", msg);
+        throw CriticalException("FFT::Forward2D::execute: {0}", msg);
     }
 }
 
@@ -328,7 +328,7 @@ Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry sym
             }
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Backward2D::Backward2D: %1%", msg);
+        throw CriticalException("FFT::Backward2D::Backward2D: {0}", msg);
     }
 }
 
@@ -403,7 +403,7 @@ void Backward2D::execute(dcomplex* data) {
             default: {}
         }
     } catch (const std::string& msg) {
-        throw CriticalException("FFT::Backward2D::execute: %1%", msg);
+        throw CriticalException("FFT::Backward2D::execute: {0}", msg);
     }
 }
 

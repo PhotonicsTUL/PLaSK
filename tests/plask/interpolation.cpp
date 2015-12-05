@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
         std::cerr << "\n";
         // for (size_t i = 0; i != 4; ++i) {
         //     for (size_t j = 0; j != 5; ++j)
-        //         std::cerr << plask::format("%12.9f ", dst[dst_mesh->index(i,j)]);
+        //         std::cerr << plask::format("{:12.9f} ", dst[dst_mesh->index(i,j)]);
         //     std::cerr << "\n";
         // }
         BOOST_CHECK_CLOSE(dst[ 0],  4.000000000,  1e-7);

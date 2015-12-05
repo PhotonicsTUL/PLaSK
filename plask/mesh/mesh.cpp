@@ -19,7 +19,7 @@ RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, ReadingFunct
 
 RegisterMeshReader::ReadingFunction RegisterMeshReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
-    if (reader == getReaders().end()) throw Exception("No registered reader for mesh of type '%1%'", name);
+    if (reader == getReaders().end()) throw Exception("No registered reader for mesh of type '{0}'", name);
     return reader->second;
 }
 
@@ -35,7 +35,7 @@ RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_
 
 RegisterMeshGeneratorReader::ReadingFunction RegisterMeshGeneratorReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
-    if (reader == getReaders().end()) throw Exception("No registered reader for mesh generator of type '%1%'", name);
+    if (reader == getReaders().end()) throw Exception("No registered reader for mesh generator of type '{0}'", name);
     return reader->second;
 }
 

@@ -218,7 +218,7 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
         auto ref = refinements[size_t(direction)].find(key);
         if (ref == refinements[size_t(direction)].end()) throw BadInput("RectilinearMeshDivideGenerator", "There are no refinements for specified geometry object.");
         auto oposition = ref->second.find(position);
-        if (oposition == ref->second.end()) throw BadInput("RectilinearMeshDivideGenerator", "Specified geometry object does not have refinements at %1%.", *oposition);
+        if (oposition == ref->second.end()) throw BadInput("RectilinearMeshDivideGenerator", "Specified geometry object does not have refinements at {0}.", *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[size_t(direction)].erase(ref);
         this->fireChanged();
@@ -429,7 +429,7 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
     /// Set maximum element increase factor
     inline void setFactor(typename Primitive<DIM>::Direction direction, double value) {
         assert(size_t(direction) <= dim);
-        if (value < 1.) throw BadInput("SmoothGenerator", "Increase factor for axis %d cannot be smaller than 1", size_t(direction));
+        if (value < 1.) throw BadInput("SmoothGenerator", "Increase factor for axis {:d} cannot be smaller than 1", size_t(direction));
         factor[size_t(direction)] = value;
         this->fireChanged();
     }

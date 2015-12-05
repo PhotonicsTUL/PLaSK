@@ -484,7 +484,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     typename std::enable_if<propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY>::type
     setValue(DataVector<const ValueType> data, shared_ptr<MeshT> mesh) {
         if (data.size() != mesh->size())
-            throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data size (%1%) do not match", data.size(), mesh->size());
+            throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data size ({0}) do not match", data.size(), mesh->size());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data, mesh), true);
     }
 
@@ -499,7 +499,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
         size_t i = 0;
         for (Iterator it = begin; it != end; ++it, ++i )
             if (*it.size() != mesh->size())
-                throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data[%3%] size (%1%) do not match", it->size(), mesh->size(), i);
+                throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), i);
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(begin, end, mesh), true);
     }
 
@@ -513,7 +513,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     setValue(const std::vector<DataVector<const ValueType>>& data, shared_ptr<MeshT> mesh) {
         for (auto it = data.begin(); it != data.end(); ++it)
             if (it->size() != mesh->size())
-                throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data[%3%] size (%1%) do not match", it->size(), mesh->size(), it-data.begin());
+                throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), it-data.begin());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data.begin(), data.end(), mesh), true);
     }
 
@@ -1004,7 +1004,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         void ensureHasCorrectValue() const {
             if (!hasValue()) throw NoValue(name());
             if (values.size() != mesh_ptr->size())
-                throw BadMesh("Provider::WithValue", "Mesh size (%2%) and values size (%1%) do not match", values.size(), mesh_ptr->size());
+                throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values size ({0}) do not match", values.size(), mesh_ptr->size());
         }
 
         /**
@@ -1237,7 +1237,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         void ensureHasCorrectValue(size_t n) const {
             if (n >= values.size()) throw NoValue(name());
             if (values[n].size() != mesh_ptr->size())
-                    throw BadMesh("Provider::WithValue", "Mesh size (%2%) and values[%3%] size (%1%) do not match", values.size(), mesh_ptr->size(), n);
+                    throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), n);
         }
 
         /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
@@ -1245,7 +1245,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
             if (values.size() == 0) throw NoValue(name());
             for (size_t i = 0; i != values.size(); ++i)
                 if (values[i].size() != mesh_ptr->size())
-                    throw BadMesh("Provider::WithValue", "Mesh size (%2%) and values[%3%] size (%1%) do not match", values.size(), mesh_ptr->size(), i);
+                    throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), i);
         }
 
         /**

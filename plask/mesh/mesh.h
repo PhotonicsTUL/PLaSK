@@ -368,7 +368,7 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
     template <typename RequiredType>
     static shared_ptr<RequiredType> cast(const shared_ptr<MeshType>& res) {
         auto finall_res = dynamic_pointer_cast<RequiredType>(res);
-        if (res && !finall_res) throw Exception("Wrong type of generated %1%D mesh.", MESH_DIM);
+        if (res && !finall_res) throw Exception("Wrong type of generated {0}D mesh.", MESH_DIM);
         return finall_res;
     }
 

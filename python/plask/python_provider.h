@@ -199,7 +199,7 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            throw TypeError("You can only assign %1% provider, or value of type '%2%'",
+            throw TypeError("You can only assign {0} provider, or value of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -224,7 +224,7 @@ namespace detail {
             if (assignProvider(self, obj)) return;
             if (assignMultipleValues(self, obj)) return;
             if (assignValue(self, obj)) return;
-            throw TypeError("You can only assign %1% provider, or sequence of values of type '%2%'",
+            throw TypeError("You can only assign {0} provider, or sequence of values of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -258,7 +258,7 @@ namespace detail {
             if (assignValue(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
-            throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
+            throw TypeError("You can only assign {0} provider, data, or constant of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -298,7 +298,7 @@ namespace detail {
             if (assignValue(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
-            throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
+            throw TypeError("You can only assign {0} provider, sequence of data, or constant of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -550,7 +550,7 @@ struct RegisterCombinedProvider {
         py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
             py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseType>()).m_class_object
         )));
-        if (!cls) throw CriticalException("No registered provider for %1%", py::type_id<typename CombinedProviderT::BaseType>().name());
+        if (!cls) throw CriticalException("No registered provider for {0}", py::type_id<typename CombinedProviderT::BaseType>().name());
         py::scope cls_scope = py::object(cls);
         py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
                                  py::with_custodian_and_ward_postcall<0,2,
@@ -678,7 +678,7 @@ namespace detail {
         static ValueT __call__(ProviderT& self, const ExtraParams&... params) { return self(params...); }
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(),
-                                     format("Get value from the provider.\n\n%s",
+                                     format("Get value from the provider.\n\n{}",
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()
                                     );
@@ -696,14 +696,14 @@ namespace detail {
             int n(num);
             if (n < 0) num = EnumType(self.size() + n);
             if (n < 0 || n >= self.size())
-                throw NoValue(format("%1% [%2%]", self.name(), num).c_str());
+                throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return self(num, params...);
         }
         static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(EnumType(0), params...); }
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value());
             this->provider_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(),
-                                     format("Get value from the provider.\n\n%s%s",
+                                     format("Get value from the provider.\n\n{}{}",
                                         docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()
@@ -720,7 +720,7 @@ namespace detail {
         typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::ValueType ValueT;
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
+            if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
             return DataVectorWrap<const ValueT,DIMS>(self(mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
@@ -728,7 +728,7 @@ namespace detail {
                                      format("Get value from the provider.\n\n"
                                             ":param mesh mesh: Target mesh to get the field at.\n"
                                             ":param str interpolation: Requested interpolation method.\n"
-                                            "%s",
+                                            "{}",
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()
                                     );
@@ -744,25 +744,25 @@ namespace detail {
         typedef typename ProviderT::ValueType ValueT;
         typedef typename ProviderT::EnumType EnumType;
         static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, EnumType num, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
+            if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
             int n(num);
             if (n < 0) num = EnumType(self.size() + n);
             if (n < 0 || n >= self.size())
-                throw NoValue(format("%1% [%2%]", self.name(), num).c_str());
+                throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return DataVectorWrap<const ValueT,DIMS>(self(num, mesh, params..., method), mesh);
         }
         static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
+            if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
             return DataVectorWrap<const ValueT,DIMS>(self(EnumType(0), mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value());
             this->provider_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(),
                                      format("Get value from the provider.\n\n"
-                                            "%s"
+                                            "{}"
                                             ":param mesh mesh: Target mesh to get the field at.\n"
                                             ":param str interpolation: Requested interpolation method.\n"
-                                            "%s",
+                                            "{}",
                                         docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()

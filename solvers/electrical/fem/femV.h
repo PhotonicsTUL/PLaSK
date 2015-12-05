@@ -141,7 +141,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
                 no = 1;
             else {
                 try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
-                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '%1%'", role); }
+                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '{0}'", role); }
             }
         }
         return no;
@@ -221,7 +221,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     /// Return beta.
     double getBeta(size_t n) const {
-        if (beta.size() <= n) throw Exception("%1%: no beta given for junction %2%", this->getId(), n);
+        if (beta.size() <= n) throw Exception("{0}: no beta given for junction {1}", this->getId(), n);
         return beta[n];
     }
     /// Set new beta and invalidate the solver.
@@ -235,7 +235,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     /// Get junction thermal voltage.
     double getVt(size_t n) const {
-        if (beta.size() <= n) throw Exception("%1%: no Vt given for junction %2%", this->getId(), n);
+        if (beta.size() <= n) throw Exception("{0}: no Vt given for junction {1}", this->getId(), n);
         return 1. / beta[n];
     }
     /// Set new junction thermal voltage and invalidate the solver.
@@ -249,7 +249,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     /// Return js
     double getJs(size_t n) const {
-        if (js.size() <= n) throw Exception("%1%: no js given for junction %2%", this->getId(), n);
+        if (js.size() <= n) throw Exception("{0}: no js given for junction {1}", this->getId(), n);
         return js[n];
     }
     /// Set new js and invalidate the solver

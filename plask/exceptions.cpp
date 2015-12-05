@@ -16,12 +16,12 @@ inline void print_current_exception() {
         try {
              std::rethrow_exception (p);
         } catch (std::exception& e) {
-             printf("Current exception: %s\n", e.what());
+             printf("Current exception: {}\n", e.what());
         } catch (...) {
-             printf("%s\n", "Current exception is not std one.");
+             printf("{}\n", "Current exception is not std one.");
         }
     } else
-        printf("%s\n", "There is no current exception.");
+        printf("{}\n", "There is no current exception.");
 }
 
 const char* sig_name(int sig_nr) {
@@ -36,7 +36,7 @@ const char* sig_name(int sig_nr) {
 void plask_win_signal_handler (int param) {
 	#pragma omp critical (winbacktrace)
 	{
-        printf("Signal %s (%d) handler:\n", sig_name(param), param);
+        printf("Signal {} ({:d}) handler:\n", sig_name(param), param);
 		print_current_exception();
 		//SIG_DFL(param); //call default signal handler
 		printStack();   //print stack-trace

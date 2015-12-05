@@ -63,7 +63,7 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     //handler = LoadLibraryW(output_buffer->get());
     handler = LoadLibraryA(filename.c_str());
     if (!handler) {
-        throw plask::Exception("Could not open dynamic library from file \"%1%\". %2%", filename, GetLastErrorStr());
+        throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, GetLastErrorStr());
     }
     unload = !(flags & DONT_CLOSE);
 #else
@@ -71,7 +71,7 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     if (flags & DONT_CLOSE) mode |= RTLD_NODELETE;
     handler = dlopen(filename.c_str(), mode);
     if (!handler) {
-        throw plask::Exception("Could not open dynamic library from file \"%1%\". %2%", filename, dlerror());
+        throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, dlerror());
     }
 #endif
 }
@@ -81,11 +81,11 @@ void DynamicLibrary::close() {
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     if (unload) {
         if (!FreeLibrary(handler))
-            throw plask::Exception("Can't close dynamic library: %1%", GetLastErrorStr());
+            throw plask::Exception("Can't close dynamic library: {0}", GetLastErrorStr());
     }
 #else
     if (dlclose(handler))
-        throw plask::Exception("Can't close dynamic library: %1%", dlerror());
+        throw plask::Exception("Can't close dynamic library: {0}", dlerror());
 #endif
     handler = 0;
 }
@@ -105,7 +105,7 @@ void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
 void *DynamicLibrary::requireSymbol(const std::string &symbol_name) const {
     void* result = getSymbol(symbol_name);
     if (!result)
-        throw plask::Exception("There is no symbol \"%1%\" in dynamic library.", symbol_name);
+        throw plask::Exception("There is no symbol \"{0}\" in dynamic library.", symbol_name);
     return result;
 }
 

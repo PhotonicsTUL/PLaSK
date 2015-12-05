@@ -44,7 +44,7 @@
 //             if (pol) {
 //                 if (*pol == "TE") polarization = TE;
 //                 else if (*pol == "TM") polarization = TM;
-//                 else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
+//                 else throw BadInput(getId(), "Wrong polarization specification '{0}' in XML", *pol);
 //             }
 //             k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
 //             stripex = reader.getAttribute<double>("vat", stripex);
@@ -70,15 +70,15 @@
 //             if (found != manager.meshes.end()) {
 //                 auto mesh = dynamic_pointer_cast<RectangularMesh<3>>(found->second);
 //                 if (mesh) this->setMesh(mesh);
-//                 else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
+//                 else throw BadInput(this->getId(), "Mesh '{0}' of wrong type", *name);
 //             } else {
 //                 auto found = manager.generators.find(*name);
 //                 if (found != manager.generators.end()) {
 //                     auto generator = dynamic_pointer_cast<MeshGeneratorD<3>>(found->second);
 //                     if (generator) this->setMesh(generator);
-//                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
+//                     else throw BadInput(this->getId(), "Mesh generator '{0}' of wrong type", *name);
 //                 } else
-//                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
+//                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '{0}' found", *name);
 //             }
 //         } else
 //             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root-tran>, <root-vert>, or <outer>");
@@ -132,7 +132,7 @@
 //
 //     if (maxLoglevel >= LOG_RESULT) {
 //         if (results.size() != 0) {
-//             Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
+//             Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
 //             std::string msg = "Found vertical effective indices at: ";
 //             for (auto z: results) {
 //                 msg += str(z) + ", ";
@@ -149,7 +149,7 @@
 //
 // size_t EffectiveIndex3D::findMode(dcomplex neff, Symmetry symmetry)
 // {
-//     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
+//     writelog(LOG_INFO, "Searching for the mode starting from Neff = {0}", str(neff));
 //     stageOne();
 //     Mode mode(this, symmetry);
 //     mode.neff = RootDigger::get(this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root_tran)->find(neff);
@@ -231,8 +231,8 @@
 //     mode.neff = neff;
 //     double det = abs(detS(neff, mode));
 //     if (det > root_tran.tolf_max)
-//         writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
-//     writelog(LOG_INFO, "Setting mode at %1%", str(neff));
+//         writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = {0})", det);
+//     writelog(LOG_INFO, "Setting mode at {0}", str(neff));
 //     return insertMode(mode);
 // }
 //
@@ -359,14 +359,14 @@
 //         size_t stripe = mesh->tran()->findIndex(stripex);
 //         if (stripe < xbegin) stripe = xbegin;
 //         else if (stripe >= xend) stripe = xend-1;
-//         writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
+//         writelog(LOG_DETAIL, "Computing effective index for vertical stripe {0} (polarization {1})", stripe-xbegin, (polarization==TE)?"TE":"TM");
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
-//             writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
+//             writelog(LOG_DEBUG, "Nr[{0}] = [{1} ]", stripe-xbegin, nrs.str().substr(1));
 //         }
 // #endif
-//         Data3DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
+//         Data3DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
 //         auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, root_vert);
 //         if (vneff == 0.) {
 //             dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
@@ -391,7 +391,7 @@
 //                 dcomplex n = sqrt(epsilons[i]); if (abs(n.real()) < 1e-10) n.real(0.); if (abs(n.imag()) < 1e-10) n.imag(0.);
 //                 nrs << ", " << str(n);
 //             }
-//             writelog(LOG_DEBUG, "horizontal neffs = [%1% ]", nrs.str().substr(1));
+//             writelog(LOG_DEBUG, "horizontal neffs = [{0} ]", nrs.str().substr(1));
 //         }
 // #endif
 //         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
@@ -402,7 +402,7 @@
 //             if (imag(n) < imin) imin = imag(n);
 //             if (imag(n) > imax) imax = imag(n);
 //         }
-//         writelog(LOG_DETAIL, "Effective index should be between %1% and %2%", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
+//         writelog(LOG_DETAIL, "Effective index should be between {0} and {1}", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
 //         recompute_neffs = false;
 //     }
 // }
@@ -483,7 +483,7 @@
 // #ifndef NDEBUG
 //         std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
 //             nrs << "), (" << str(yfields[i].F) << ":" << str(yfields[i].B);
-//         writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+//         writelog(LOG_DEBUG, "vertical fields = [{0}) ]", nrs.str().substr(2));
 // #endif
 //     }
 //
@@ -545,7 +545,7 @@
 // // #ifndef NDEBUG
 // //     {
 // //         std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << ", " << str(weights[i]);
-// //         writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
+// //         writelog(LOG_DEBUG, "vertical weights = [{0}) ]", nrs.str().substr(2));
 // //     }
 // // #endif
 // }
@@ -688,7 +688,7 @@
 //         {
 //             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i)
 //                 nrs << "), (" << str(mode.xfields[i].F) << ":" << str(mode.xfields[i].B);
-//             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
+//             writelog(LOG_DEBUG, "horizontal fields = [{0}) ]", nrs.str().substr(2));
 //         }
 // #endif
 //     }
@@ -716,7 +716,7 @@
 //         if (stripe < solver->xbegin) stripe = solver->xbegin;
 //         else if (stripe >= solver->xend) stripe = solver->xend-1;
 //
-//         solver->writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
+//         solver->writelog(LOG_INFO, "Computing field distribution for Neff = {0}", str(neff));
 //
 //         dcomplex neff2 = dcomplex(real(neff), imag(neff)-solver->getMirrorLosses(real(neff))); neff2 *= neff2;
 //         for (size_t i = 0; i < solver->xend; ++i) {
@@ -906,7 +906,7 @@
 // {
 //     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
 //     // in case of fast varying light intensity and too sparse mesh.
-//     writelog(LOG_DEBUG, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+//     writelog(LOG_DEBUG, "Getting heat absorbed from {0} mode{1}", modes.size(), (modes.size()==1)? "" : "s");
 //     if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
 //     return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 // }

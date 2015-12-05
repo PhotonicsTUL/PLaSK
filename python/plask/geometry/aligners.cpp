@@ -68,7 +68,7 @@ namespace detail {
                                                         current_axes
                                                        );
 
-        if (!map.empty()) throw TypeError("Got unexpected alignment keyword '%1%'", map.begin()->first);
+        if (!map.empty()) throw TypeError("Got unexpected alignment keyword '{0}'", map.begin()->first);
 
         // Stash the memory chunk pointer for later use by boost.python
         data->convertible = storage;
@@ -97,7 +97,7 @@ namespace detail {
                                                         current_axes
                                                        );
 
-        if (!map.empty()) throw TypeError("Got unexpected alignment keyword '%1%'", map.begin()->first);
+        if (!map.empty()) throw TypeError("Got unexpected alignment keyword '{0}'", map.begin()->first);
 
         // Stash the memory chunk pointer for later use by boost.python
         data->convertible = storage;

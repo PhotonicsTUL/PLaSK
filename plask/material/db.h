@@ -85,11 +85,11 @@ struct PLASK_API MaterialsDB {
         virtual ~MaterialConstructor() {}
 
         void ensureCompositionIsEmpty(const Material::Composition& composition) const {
-            if (!composition.empty()) throw Exception("Redundant composition given for material '%1%'", materialName);
+            if (!composition.empty()) throw Exception("Redundant composition given for material '{0}'", materialName);
         }
 
         void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) const {
-            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material '%1%'", materialName);
+            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material '{0}'", materialName);
         }
     };
 

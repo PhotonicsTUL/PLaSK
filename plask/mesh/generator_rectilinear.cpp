@@ -36,7 +36,7 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 shared_ptr<MeshD<1> > OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry, extend_to_zero);
-    writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh (%1%)", mesh->size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh ({0})", mesh->size());
     return mesh;
 }
 
@@ -64,7 +64,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<2> > RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, extend_to_zero);
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
@@ -97,7 +97,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<3> > RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    writelog(LOG_DETAIL, "mesh.Rectangular3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
@@ -134,7 +134,7 @@ shared_ptr<OrderedAxis> RectilinearMeshRefinedGenerator<dim>::getAxis(shared_ptr
     for (auto ref: this->refinements[dir]) {
         auto object = ref.first.first.lock();
         if (!object) {
-             if (this->warn_missing) writelog(LOG_WARNING, "%s: Refinement defined for object not existing any more", name());
+             if (this->warn_missing) writelog(LOG_WARNING, "{}: Refinement defined for object not existing any more", name());
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getObjectBoundingBoxes(*object, path);
@@ -149,7 +149,7 @@ shared_ptr<OrderedAxis> RectilinearMeshRefinedGenerator<dim>::getAxis(shared_ptr
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
                     if (this->warn_outside && (x < lower || x > upper))
-                        writelog(LOG_WARNING, "%5%: Refinement at specified at %1% lying at %2% in global coords. is outside of the object (%3% to %4%)",
+                        writelog(LOG_WARNING, "{4}: Refinement at specified at {0} lying at {1} in global coords. is outside of the object ({2} to {3})",
                                             x, x+zero, lower+zero, upper+zero, name());
                     axis->addPoint(zero + x);
                 }
@@ -166,7 +166,7 @@ RectilinearMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::Geom
 {
     shared_ptr<OrderedAxis> mesh = makeGeometryGrid1D(geometry);
     getAxis(mesh, geometry, 0);
-    writelog(LOG_DETAIL, "mesh.Rectilinear1D::%s: Generating new mesh (%d)", name(), mesh->size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::{}: Generating new mesh ({:d})", name(), mesh->size());
     return mesh;
 }
 
@@ -190,7 +190,7 @@ RectilinearMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::Geom
     }
 
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::%s: Generating new mesh (%dx%d, max. aspect %.0f:1)", name(), 
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::{}: Generating new mesh ({:d}x{:d}, max. aspect {:.0f}:1)", name(), 
              mesh->axis0->size(), mesh->axis1->size(), max(asp0, asp1));
     return mesh;
 }
@@ -222,7 +222,7 @@ RectilinearMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::Geom
     }
 
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular3D::%s: Generating new mesh (%dx%dx%d, max. aspect %.0f:1)", name(),
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::{}: Generating new mesh ({:d}x{:d}x{:d}, max. aspect {:.0f}:1)", name(),
                           mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size(), max(asp0, max(asp1, asp2)));
     return mesh;
 }
@@ -433,7 +433,7 @@ shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->pre_divisions[i] = *into;
             } else
-                for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
+                for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
@@ -443,7 +443,7 @@ shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->post_divisions[i] = *into;
             } else
-                for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
+                for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "options") {
             result->setGradual(reader.getAttribute<bool>("gradual", result->getGradual()));
@@ -478,7 +478,7 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("small2")) throw XMLConflictingAttributesException(reader, "small", "small2");
                 for (int i = 0; i < dim; ++i) result->finestep[i] = *small;
             } else
-                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small%d", i), result->finestep[i]);
+                for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small{:d}", i), result->finestep[i]);
             boost::optional<double> large = reader.getAttribute<double>("large");
             if (large) {
                 if (reader.hasAttribute("large0")) throw XMLConflictingAttributesException(reader, "large", "large0");
@@ -486,7 +486,7 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("large2")) throw XMLConflictingAttributesException(reader, "large", "large2");
                 for (int i = 0; i < dim; ++i) result->maxstep[i] = *large;
             } else
-                for (int i = 0; i < dim; ++i) result->maxstep[i] = reader.getAttribute<double>(format("large%d", i), result->maxstep[i]);
+                for (int i = 0; i < dim; ++i) result->maxstep[i] = reader.getAttribute<double>(format("large{:d}", i), result->maxstep[i]);
             boost::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
@@ -494,7 +494,7 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
                 if (reader.hasAttribute("factor2")) throw XMLConflictingAttributesException(reader, "factor", "factor2");
                 for (int i = 0; i < dim; ++i) result->factor[i] = *factor;
             } else
-                for (int i = 0; i < dim; ++i) result->factor[i] = reader.getAttribute<double>(format("factor%d", i), result->factor[i]);
+                for (int i = 0; i < dim; ++i) result->factor[i] = reader.getAttribute<double>(format("factor{:d}", i), result->factor[i]);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "options") {
             result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));

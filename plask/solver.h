@@ -874,10 +874,10 @@ void SolverOver<SpaceT>::parseStandardConfiguration(XMLReader& reader, Manager& 
         else reader.requireTagEnd();
         auto found = manager.geometrics.find(*name);
         if (found == manager.geometrics.end())
-            throw BadInput(this->getId(), "Geometry '%1%' not found", *name);
+            throw BadInput(this->getId(), "Geometry '{0}' not found", *name);
         else {
             auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-            if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type", *name);
+            if (!geometry) throw BadInput(this->getId(), "Geometry '{0}' of wrong type", *name);
             this->setGeometry(geometry);
         }
     } else {
@@ -894,17 +894,17 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
         auto found = manager.meshes.find(*name);
         if (found != manager.meshes.end()) {
             auto mesh = dynamic_pointer_cast<MeshT>(found->second);
-            if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
+            if (!mesh) throw BadInput(this->getId(), "Mesh '{0}' of wrong type", *name);
             this->setMesh(mesh);
         }
         else {
             auto found = manager.generators.find(*name);
             if (found != manager.generators.end()) {
                 auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
-                if (!generator) throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
+                if (!generator) throw BadInput(this->getId(), "Mesh generator '{0}' of wrong type", *name);
                 this->setMesh(generator);
             } else
-                throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
+                throw BadInput(this->getId(), "Neither mesh nor mesh generator '{0}' found", *name);
         }
     } else {
         SolverOver<SpaceT>::parseStandardConfiguration(reader, manager, expected_msg);

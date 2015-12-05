@@ -113,7 +113,7 @@ template<typename MatrixT>
 void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
     auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
@@ -231,7 +231,7 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
     double* aend = A.data + A.size * A.kd;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-A.data);
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);
     }
 #endif
 
@@ -293,7 +293,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
         if (logfreq && l == 0)
         {
             maxT = *std::max_element(temperatures.begin(), temperatures.end());
-            this->writelog(LOG_RESULT, "Time %.2f ns: max(T) = %.3f K", elapstime, maxT);
+            this->writelog(LOG_RESULT, "Time {:.2f} ns: max(T) = {:.3f} K", elapstime, maxT);
             l = logfreq;
         }
 
@@ -317,9 +317,9 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DpbMatrix& A)
     // Factorize matrix TODO bez tego
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
-        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // now A contains factorized matrix
 }
@@ -330,7 +330,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DpbMatrix& A, DataVe
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now B contains solutions
 }
@@ -345,9 +345,9 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DgbMatrix& A)
     // Factorize matrix
     dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, A.ipiv.get(), info);
     if (info < 0) {
-        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
     }
 
     // now A contains factorized matrix
@@ -359,7 +359,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DgbMatrix& A, DataVe
 
     // Find solutions
     dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, A.ipiv.get(), B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }

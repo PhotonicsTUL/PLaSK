@@ -26,7 +26,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
     double a = x - dist,
            b = x + dist;
 
-    writelog(LOG_DETAIL, "Searching for the root with Brent method between %1% and %2% in the %3% axis",
+    writelog(LOG_DETAIL, "Searching for the root with Brent method between {0} and {1} in the {2} axis",
                          str(a), str(b), realaxis?"real":"imaginary");
 
     if (isnan(fx)) fx = fun(x);
@@ -55,7 +55,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
                 break;
             }
         }
-        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between %1% and %2%", a, b);
+        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between {0} and {1}", a, b);
     } else if (fw >= fx && fx >= fv) {
         writelog(LOG_DETAIL, "Extending search range to higher values");
         for (; i < params.maxiter; ++i) {
@@ -69,12 +69,12 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
                 break;
             }
         }
-        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between %1% and %2%", a, b);
+        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between {0} and {1}", a, b);
     } else bounded = true;
 
     if (!bounded)
         throw ComputationError(solver.getId(),
-                               "Brent: %1%: minimum still unbounded after maximum number of iterations",
+                               "Brent: {0}: minimum still unbounded after maximum number of iterations",
                                log_value.chart_name);
 
     double sa = a, sb = b, w = x, v = x, e = 0.0;
@@ -149,7 +149,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
         }
         log_value.count(carg(x), fx);
     }
-    throw ComputationError(solver.getId(), "Brent: %1%: maximum number of iterations reached", log_value.chart_name);
+    throw ComputationError(solver.getId(), "Brent: {0}: maximum number of iterations reached", log_value.chart_name);
     return 0;
 }
 
@@ -166,7 +166,7 @@ dcomplex RootBrent::find(dcomplex xstart) const
 
     if (f0 > params.tolf_min)
         ComputationError(solver.getId(),
-                         "Brent: %1%: After real and imaginary minimum search, determinant still not small enough",
+                         "Brent: {0}: After real and imaginary minimum search, determinant still not small enough",
                          log_value.chart_name);
     return xstart;
 }

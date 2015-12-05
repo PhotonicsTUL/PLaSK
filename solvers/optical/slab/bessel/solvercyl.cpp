@@ -53,7 +53,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.size = reader.getAttribute<double>("size", vpml.size);
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
             if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line %d in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
                 vpml.order = reader.requireAttribute<double>("order");
             }
             vpml.order = reader.getAttribute<double>("shape", vpml.order);
@@ -70,7 +70,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             pml.size = reader.getAttribute<double>("size", pml.size);
             pml.dist = reader.getAttribute<double>("dist", pml.dist);
             if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line %d in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
                 pml.order = reader.requireAttribute<double>("order");
             }
             pml.order = reader.getAttribute<double>("shape", pml.order);
@@ -90,7 +90,7 @@ void BesselSolverCyl::onInitialize()
 {
     this->setupLayers();
     this->ensureInterface();
-    Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver (%1% layers in the stack, interface after %2% layer%3%)",
+    Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack, interface after {1} layer{2})",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
     this->recompute_integrals = true;

@@ -860,11 +860,11 @@ Struktura::Struktura(const std::vector<unique_ptr<Warstwa>>& tablica, rodzaj co)
   int i;
   for(i = 1; i <= (int) tablica.size() - 2; i++) {
     //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-    //plask::writelog(plask::LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+    //plask::writelog(plask::LOG_DETAIL, "Layers ends: {0}, {1}", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
     if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
 	{
       //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
-      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw {0} i {1}", (i-1), i); // LUKASZ
       abort();
 	}
       kawalki.push_back(*tablica[i]);
@@ -882,11 +882,11 @@ Struktura::Struktura(const std::vector<unique_ptr<Warstwa>>& tablica, rodzaj co)
   //  std::clog<<"i = "<<i<<"\tx_pocz("<<(i-1)"<<(tablica[i - 1]->x_pocz)<<"\n";
 
   //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-  //plask::writelog(plask::LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+  //plask::writelog(plask::LOG_DETAIL, "Layers ends: {0}, {1}", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
   if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
     {
       //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";
-      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw {0} i {1}", (i-1), i); // LUKASZ
       plask::writelog(plask::LOG_DETAIL, "Rozne krance warstw"); // LUKASZ
       abort();
     }
@@ -913,11 +913,11 @@ Struktura::Struktura(const std::vector<unique_ptr<Warstwa>>& tablica, rodzaj co)
   else if (co==QW::Struktura::hh) tCo = "heavy holes";
   else if (co==QW::Struktura::lh) tCo = "light holes";
 
-  plask::writelog(plask::LOG_DETAIL, "Computing energy levels for %1%", tCo); // LUKASZ
+  plask::writelog(plask::LOG_DETAIL, "Computing energy levels for {0}", tCo); // LUKASZ
   szukanie_poziomow(gora);
   plask::writelog(plask::LOG_DETAIL, "Normalisation"); // LUKASZ
   normowanie();
-  plask::writelog(plask::LOG_DETAIL, "Structure built for %1%", tCo); // LUKASZ
+  plask::writelog(plask::LOG_DETAIL, "Structure built for {0}", tCo); // LUKASZ
   // profil(0., 1e-5);
 }
 /*****************************************************************************/
@@ -961,7 +961,7 @@ double Struktura::czyosobliwa(double E)
   int N = kawalki.size() + 2; //liczba warstw
   // Bylo bez '+ 2'
   if(N < 3)
-      throw plask::format("Too few layers (%d)", N);
+      throw plask::format("Too few layers ({:d})", N);
   int M = 2*N - 2; // liczba rownan
   A2D macierz(M, M, 0.0);
   zrobmacierz(E, macierz);
@@ -1565,7 +1565,7 @@ void Struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
         for (int i=0; i<iNoOfQWs; i++)
         {
             tAvgEnLev += it_stan->poziom;
-            plask::writelog(plask::LOG_DETAIL, "QW %1% - energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, it_stan->poziom);
+            plask::writelog(plask::LOG_DETAIL, "QW {0} - energy level for {1}: {2} eV from cladding band edge", tQWno, iStr, it_stan->poziom);
             it_stan++;
             if (it_stan == rozwiazania.end())
             {
@@ -1574,7 +1574,7 @@ void Struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
             }
         }
         if (tCalcAvg)
-            plask::writelog(plask::LOG_DETAIL, "QW %1% - average energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, tAvgEnLev/iNoOfQWs);
+            plask::writelog(plask::LOG_DETAIL, "QW {0} - average energy level for {1}: {2} eV from cladding band edge", tQWno, iStr, tAvgEnLev/iNoOfQWs);
         tQWno++;
     }
 }
@@ -1637,7 +1637,7 @@ ObszarAktywny::ObszarAktywny(Struktura * elektron, const std::vector<Struktura *
   for(int i = 0; i <= liczba_war - 1; i++)
     {
       el_mac.push_back(element(i)*iMatrixElemScFact);
-      if (iShowM) plask::writelog(plask::LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
+      if (iShowM) plask::writelog(plask::LOG_DETAIL, "Layer {0} - M: {1} m0*eV", i+1, el_mac[i]); // LUKASZ
     }
   //zrob_macierze_przejsc();
 }
@@ -1930,14 +1930,14 @@ void Gain::ustaw_przerwy() // TODO MW
      {
        //Egcv_T[i] = pasma->Egcv[i]; // prymitywne przepisanie z obszaru aktywnego
        Egcv_T[i] = mEgClad; // juz nie prymitywne przepisanie z obszaru aktywnego
-       //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu ustaw przerwy: %1%",mEgClad);
+       //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu ustaw przerwy: {0}",mEgClad);
      }
 }
 /*****************************************************************************/
 void Gain::setEgClad(double iEgClad) // TODO MW 2
 {
   mEgClad = iEgClad;
-  //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu setEgClad: %1%",mEgClad);
+  //plask::writelog(plask::LOG_DETAIL,"mEgClad po wywolaniu setEgClad: {0}",mEgClad);
 }
 /*****************************************************************************/
 void Gain::setNsurf(double iNsurf) // 15.12.2014
@@ -2011,7 +2011,7 @@ double Gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
     tGehh = wzmocnienie_od_pary_pasm(E, 0, 0) / iL;
     tGelh = wzmocnienie_od_pary_pasm(E, 0, 1) / iL;
     return (tGehh+tGelh);*/
-    //WRITELOG(LOG_DETAIL, "Tau in kubly: %1% ps", iTau);
+    //WRITELOG(LOG_DETAIL, "Tau in kubly: {0} ps", iTau);
     if (!iTau) return ( wzmocnienie_calk_bez_splotu(E) / iL ); //20.10.2014 adding lifetime
     else return ( wzmocnienie_calk_ze_splotem(E,hb_eV*1e12/iTau) / iL ); //20.10.2014 adding lifetime
 }

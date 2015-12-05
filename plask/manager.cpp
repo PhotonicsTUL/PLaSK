@@ -16,13 +16,13 @@ void Manager::ExternalSourcesFromFile::operator()(Manager &manager, MaterialsDB&
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {
         if (originalFileName.empty())
-            throw Exception("Error while reading section \"%1%\": relative path name \"%2%\" is not supported.", section, url);
+            throw Exception("Error while reading section \"{0}\": relative path name \"{1}\" is not supported.", section, url);
         url_path = originalFileName;
         url_path.remove_filename();
         url_path /= url;
     }
     if (hasCircularRef(url_path, section))
-        throw Exception("Error while reading section \"%1%\": circular reference was detected.", section);
+        throw Exception("Error while reading section \"{0}\": circular reference was detected.", section);
     XMLReader reader(url_path.string().c_str());
     manager.loadSection(reader, section, materialsDB, ExternalSourcesFromFile(url_path, section, this));
 }
@@ -152,7 +152,7 @@ void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
 
 void Manager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB)
 {
-    writelog(LOG_ERROR, "Loading XML material from C++ not implemented (ignoring material %s)", reader.getAttribute<std::string>("name", "unknown"));
+    writelog(LOG_ERROR, "Loading XML material from C++ not implemented (ignoring material {})", reader.getAttribute<std::string>("name", "unknown"));
     reader.gotoEndOfCurrentTag();
 }
 
@@ -181,7 +181,7 @@ void Manager::loadGrids(XMLReader &reader)
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "mesh")
-                throw Exception("Internal error in %1% mesh reader, after return reader not point to end of mesh tag.", type);
+                throw Exception("Internal error in {0} mesh reader, after return reader not point to end of mesh tag.", type);
             meshes[name] = mesh;
         } else if (reader.getNodeName() == "generator") {
             std::string type = reader.requireAttribute("type");
@@ -193,7 +193,7 @@ void Manager::loadGrids(XMLReader &reader)
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "generator")
-                throw Exception("Internal error in %1% (method: %2%) mesh generator reader, after return reader not point to end of generator tag.", type, method);
+                throw Exception("Internal error in {0} (method: {1}) mesh generator reader, after return reader not point to end of generator tag.", type, method);
             generators[name] = generator;
         } else
             throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
@@ -203,7 +203,7 @@ void Manager::loadGrids(XMLReader &reader)
 shared_ptr<Solver> Manager::loadSolver(const std::string &, const std::string &, const std::string &, const std::string& name) {
     auto found = solvers.find(name);
     if (found == solvers.end())
-        throw Exception("In C++ solvers ('%1%' in this case) must be created and added to Manager::solvers manually before reading XML.", name);
+        throw Exception("In C++ solvers ('{0}' in this case) must be created and added to Manager::solvers manually before reading XML.", name);
     solvers.erase(found); // this is necessary so we don't have name conflicts — the solver will be added back to the map by loadSolvers
     return found->second;
 }
@@ -249,7 +249,7 @@ void Manager::loadSolvers(XMLReader& reader) {
             lib.reset(libs[solver_name]);
         }
         if (lib->empty())
-            throw XMLException(reader, format("Cannot determine library for %1%.%2% solver", reader.getNodeName(), solver_name));
+            throw XMLException(reader, format("Cannot determine library for {0}.{1} solver", reader.getNodeName(), solver_name));
         shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
@@ -565,7 +565,7 @@ void Manager::validatePositions() const {
         for (auto o: objs) {
             ons += " '"; ons += names.find(o)->second; ons += '\'';
         }
-        writelog(plask::LOG_WARNING, "Object%s%s ha%s different position in geometry %s and %s",
+        writelog(plask::LOG_WARNING, "Object{}{} ha{} different position in geometry {} and {}",
                  single?"":"s", ons, single?"s":"ve", geomName(*this, g1, names), geomName(*this, g2, names));
     });
 }

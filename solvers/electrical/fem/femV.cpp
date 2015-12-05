@@ -131,17 +131,17 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
                 auto& reg = regions[num-1];
                 if (prev != num) { // this region starts in the current row
                     if (reg.top < r) {
-                        throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                        throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
                     }
                     if (reg.bottom >= r) reg.bottom = r; // first row
-                    else if (reg.rowr <= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                    else if (reg.rowr <= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
                     reg.top = r + 1;
                     reg.rowl = c; if (reg.left > reg.rowl) reg.left = reg.rowl;
                 }
             }
             if (prev && prev != num) { // previous region ended
                 auto& reg = regions[prev-1];
-                if (reg.bottom < r && reg.rowl >= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), prev-1);
+                if (reg.bottom < r && reg.rowl >= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), prev-1);
                 reg.rowr = c; if (reg.right < reg.rowr) reg.right = reg.rowr;
             }
             prev = num;
@@ -158,8 +158,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
         active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis1->at(reg.top) - this->mesh->axis1->at(reg.bottom));
         condsize += reg.right - reg.left;
-        this->writelog(LOG_DETAIL, "Detected junction %1% thickness = %2%nm", i++, 1e3 * active.back().height);
-        this->writelog(LOG_DEBUG, "Junction %1% span: [%2%,%4%]-[%3%,%5%]", i-1, reg.left, reg.right, reg.bottom, reg.top);
+        this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", i++, 1e3 * active.back().height);
+        this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3}]-[{2},{4}]", i-1, reg.left, reg.right, reg.bottom, reg.top);
     }
 
     if (junction_conductivity.size() != condsize) {
@@ -281,7 +281,7 @@ template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
                                                                       const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
     // Update junction conductivities
     if (loopno != 0) {
@@ -358,7 +358,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
     double* aend = A.data + A.size * A.kd;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1% (%2%)", pa-A.data, isnan(*pa)?"nan":"inf");
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
 
@@ -475,7 +475,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
+        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
@@ -500,13 +500,13 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatri
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
-        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -523,14 +523,14 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
     // Factorize matrix
     dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
     if (info < 0) {
-        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
     }
 
     // Find solutions
     dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }
@@ -546,9 +546,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBa
     double err;
     try {
         int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError exc) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", exc.what());
+        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
     }
 
     B = x;

@@ -115,7 +115,7 @@ void ExpansionPW3D::init()
 
     if (nMl < nNl || nMt < nNt) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
 
-    SOLVER->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
+    SOLVER->writelog(LOG_DETAIL, "Creating expansion{3} with {0}x{1} plane-waves (matrix size: {2})", Nl, Nt, matrixSize(),
                      (!symmetric_long() && !symmetric_tran())? "" :
                      (symmetric_long() && symmetric_tran())? " symmetric in longitudinal and transverse directions" :
                      (!symmetric_long() && symmetric_tran())? " symmetric in transverse direction" : " symmetric in longitudinal direction"
@@ -130,7 +130,7 @@ void ExpansionPW3D::init()
     // Compute permeability coefficients
     DataVector<Tensor2<dcomplex>> work;
     if (!periodic_long || !periodic_tran) {
-        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: {0}um x {1}um)", Ll, Lt);
         size_t ml = (!periodic_long && nNl != nMl)? nMl : 0,
                mt = (!periodic_tran && nNt != nMt)? nMt : 0;
         size_t lenwork = max(ml, mt);
@@ -278,10 +278,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     const double normlim = min(Ll/nMl, Lt/nMt) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) in thread %4%",
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points) in thread {3}",
                          layer, Ml, Mt, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", layer, Ml, Mt);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points)", layer, Ml, Mt);
     #endif
 
     auto mesh = plask::make_shared<RectangularMesh<3>>
@@ -297,7 +297,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     if (gain_connected && solver->lgained[layer]) {
-        SOLVER->writelog(LOG_DEBUG, "Layer %d has gain", layer);
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
     }
 
     // Make space for the result
@@ -431,7 +431,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
         diagonals[layer] = false;
 
     if (diagonals[layer]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer %1% is uniform", layer);
+        SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
         if (oversampled) coeffs[layer][0] = work[0];
         std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
     } else {

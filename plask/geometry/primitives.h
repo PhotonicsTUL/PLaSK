@@ -720,7 +720,7 @@ struct PLASK_API Primitive<2> {
     };
 
     static void ensureIsValidDirection(unsigned direction) {
-        if (direction > 1) throw Exception("Bad 2D direction index, %1% was given but allowed are: 0, 1.", direction);
+        if (direction > 1) throw Exception("Bad 2D direction index, {0} was given but allowed are: 0, 1.", direction);
     }
 };
 
@@ -756,12 +756,12 @@ struct PLASK_API Primitive<3> {
 
     static void ensureIsValidDirection(unsigned direction) {
         if (direction > 2)
-            throw DimensionError("Bad 3D direction index, %s was given but allowed are: 0, 1, 2.", direction);
+            throw DimensionError("Bad 3D direction index, {} was given but allowed are: 0, 1, 2.", direction);
     }
 
     static void ensureIsValid2DDirection(unsigned direction) {
         if (direction != DIRECTION_TRAN && direction != DIRECTION_VERT)
-            throw DimensionError("bad 2D direction index, %s was given but allowed are: 1 (DIRECTION_TRAN), 2 (DIRECTION_VERT).", direction);
+            throw DimensionError("bad 2D direction index, {} was given but allowed are: 1 (DIRECTION_TRAN), 2 (DIRECTION_VERT).", direction);
     }
 };
 

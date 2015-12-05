@@ -148,7 +148,7 @@ std::string EffectiveIndex2D_Mode_str(const EffectiveIndex2D::Mode& self) {
         case EffectiveIndex2D::SYMMETRY_NEGATIVE: sym = "negative"; break;
         default: sym = "none";
     }
-    return format("<neff: %.3f%+.3gj, symmetry: %s, power: %.2gmW>", real(self.neff), imag(self.neff), sym, self.power);
+    return format("<neff: {:.3f}{:+.3g}j, symmetry: {}, power: {:.2g}mW>", real(self.neff), imag(self.neff), sym, self.power);
 }
 std::string EffectiveIndex2D_Mode_repr(const EffectiveIndex2D::Mode& self) {
     std::string sym;
@@ -157,7 +157,7 @@ std::string EffectiveIndex2D_Mode_repr(const EffectiveIndex2D::Mode& self) {
         case EffectiveIndex2D::SYMMETRY_NEGATIVE: sym = "'negative'"; break;
         default: sym = "None";
     }
-    return format("EffectiveIndex2D.Mode(neff=%1%, symmetry=%2%, power=%3%)", str(self.neff), sym, self.power);
+    return format("EffectiveIndex2D.Mode(neff={0}, symmetry={1}, power={2})", str(self.neff), sym, self.power);
 }
 
 
@@ -198,10 +198,10 @@ void EffectiveFrequencyCyl_setStripeR(EffectiveFrequencyCyl& self, py::object r)
 }
 
 std::string EffectiveFrequencyCyl_Mode_str(const EffectiveFrequencyCyl::Mode& self) {
-    return format("<m: %d, lam: (%.3f%+.3gj)nm, power: %.2gmW>", self.m, real(self.lam), imag(self.lam), self.power);
+    return format("<m: {:d}, lam: ({:.3f}{:+.3g}j)nm, power: {:.2g}mW>", self.m, real(self.lam), imag(self.lam), self.power);
 }
 std::string EffectiveFrequencyCyl_Mode_repr(const EffectiveFrequencyCyl::Mode& self) {
-    return format("EffectiveFrequencyCyl.Mode(m=%1%, lam=%2%, power=%3%)", self.m, str(self.lam), self.power);
+    return format("EffectiveFrequencyCyl.Mode(m={0}, lam={1}, power={2})", self.m, str(self.lam), self.power);
 }
 
 template <typename Solver>

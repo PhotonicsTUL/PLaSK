@@ -151,7 +151,7 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
     // PyFrameObject* frame = PyEval_GetFrame();
     // if (frame)
-    //     pyinfo = format("%2%:%1%: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
+    //     pyinfo = format("{1}:{0}: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
             PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
@@ -245,7 +245,7 @@ py::object print_log(py::tuple args, py::dict kwargs) {
     if (py::len(kwargs) > (kw ? 1 : 0)) {
         py::stl_input_iterator<std::string> key(kwargs);
         if (*key == "level") ++key;
-        throw TypeError("print_log() got an unexpected keyword argument '%s'", std::string(*key));
+        throw TypeError("print_log() got an unexpected keyword argument '{}'", std::string(*key));
     }
     if (!kw && py::len(args) < 1)
         throw TypeError("print_log() takes at least 1 argument (0 given)");

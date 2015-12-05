@@ -21,7 +21,7 @@ py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, co
     auto axes = getCurrentAxes();
     if (name == "k"+axes->getNameForLong()) return py::object(mode.klong);
     if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
-    throw AttributeError("'Mode' object has no attribute '%1%'", name);
+    throw AttributeError("'Mode' object has no attribute '{0}'", name);
     return py::object();
 }
 
@@ -44,16 +44,16 @@ std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
 
 std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
     dcomplex lam = 2e3*M_PI / self.k0;
-    return format("<lam: (%.3f%+.3gj) nm, klong: %s/um, ktran: %s/um, symmetry: (%s), power: %.2gmW>",
+    return format("<lam: ({:.3f}{:+.3g}j) nm, klong: {}/um, ktran: {}/um, symmetry: ({}), power: {:.2g}mW>",
                   real(lam), imag(lam),
-                  (imag(self.klong) == 0.)? format("%.3g",real(self.klong)) : format("%.3g%+.3g",real(self.klong),imag(self.klong)),
-                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
+                  (imag(self.klong) == 0.)? format("{:.3g}",real(self.klong)) : format("{:.3g}{:+.3g}",real(self.klong),imag(self.klong)),
+                  (imag(self.ktran) == 0.)? format("{:.3g}",real(self.ktran)) : format("{:.3g}{:+.3g}",real(self.ktran),imag(self.ktran)),
                   FourierSolver3D_Mode_symmetry(self),
                   self.power
                  );
 }
 std::string FourierSolver3D_Mode_repr(const FourierSolver3D::Mode& self) {
-    return format("Fourier3D.Mode(lam=%1%, klong=%2%, ktran=%3%, symmetry=(%4%), power=%5%)",
+    return format("Fourier3D.Mode(lam={0}, klong={1}, ktran={2}, symmetry=({3}), power={4})",
                   str(2e3*M_PI / self.k0),
                   str(self.klong),
                   str(self.ktran),
@@ -94,14 +94,14 @@ struct FourierSolver3D_LongTranWrapper {
         AxisNames* axes = getCurrentAxes();
         if (name == "long" || name == "l" || name == axes->getNameForLong()) return WrappedType<T>::make(self, ptr_long);
         if (name == "tran" || name == "t" || name == axes->getNameForTran()) return WrappedType<T>::make(self, ptr_tran);
-        throw AttributeError("object has no attribute '%1%'", name);
+        throw AttributeError("object has no attribute '{0}'", name);
     }
 
     void __setattr__(const std::string& name, const typename WrappedType<T>::Wrapper& value) {
         AxisNames* axes = getCurrentAxes();
         if (name == "long" || name == "l" || name == axes->getNameForLong()) { *ptr_long = value; self->invalidate(); }
         else if (name == "tran" || name == "t" || name == axes->getNameForLong()) { *ptr_tran = value; self->invalidate(); }
-        else throw AttributeError("object has no attribute '%1%'", name);
+        else throw AttributeError("object has no attribute '{0}'", name);
     }
 
     std::string __str__() {
@@ -201,14 +201,14 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
         AxisNames* axes = getCurrentAxes();
         if (name == "long" || name == "l" || name == axes->getNameForLong()) return self->getSymmetryLong();
         if (name == "tran" || name == "t" || name == axes->getNameForTran()) return self->getSymmetryTran();
-        throw AttributeError("object has no attribute '%1%'", name);
+        throw AttributeError("object has no attribute '{0}'", name);
     }
 
     void __setattr__(const std::string& name, Expansion::Component value) {
         AxisNames* axes = getCurrentAxes();
         if (name == "long" || name == "l" || name == axes->getNameForLong()) self->setSymmetryLong(value);
         else if (name == "tran" || name == "t" || name == axes->getNameForLong()) self->setSymmetryTran(value);
-        else throw AttributeError("object has no attribute '%1%'", name);
+        else throw AttributeError("object has no attribute '{0}'", name);
     }
 
     std::string __str__() {
@@ -242,7 +242,7 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 
 py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
     enum What {
@@ -286,7 +286,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
         else if (*i == "dispersive")
             throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
         else
-            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
+            throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
     FourierSolver3D::ParamGuard guard(self);
@@ -323,11 +323,11 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("find_mode() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("find_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
     if (py::len(kwargs) != 1)
-        throw TypeError("find_mode() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+        throw TypeError("find_mode() takes exactly one keyword argument ({0} given)", py::len(kwargs));
     std::string key = py::extract<std::string>(kwargs.keys()[0]);
     dcomplex value = py::extract<dcomplex>(kwargs[key]);
     AxisNames* axes = getCurrentAxes();
@@ -342,7 +342,7 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
         what = FourierSolver3D::WHAT_KTRAN;
     else
-        throw TypeError("find_mode() got unexpected keyword argument '%1%'", key);
+        throw TypeError("find_mode() got unexpected keyword argument '{0}'", key);
 
     return self->findMode(what, value);
 }
@@ -363,13 +363,13 @@ static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, d
 
 static py::object FourierSolver3D_getFieldVectorE(FourierSolver3D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError("Bad mode number %d", num);
+    if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
     return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.minor(), 3);
 }
 

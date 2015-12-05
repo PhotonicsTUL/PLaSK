@@ -121,7 +121,7 @@ struct CombinedProviderBase: public BaseProviderT {
      */
     void ensureHasProviders() const {
         if (providers.empty())
-            throw Exception("Combined %1% provider has no components", this->name());
+            throw Exception("Combined {0} provider has no components", this->name());
     }
 
 };
@@ -171,7 +171,7 @@ struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<Extra
         do {
             std::size_t last_size = providers.back().size();
             if (size != last_size)
-                throw DataError("Data sources sizes differ ([%1%] - [%2])", size, last_size);
+                throw DataError("Data sources sizes differ ([{0}] - [%2])", size, last_size);
             providers.push_back((*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method));
             ++p;
         } while (p != this->end());

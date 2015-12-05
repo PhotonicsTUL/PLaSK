@@ -52,7 +52,7 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
         self.remove(child);
         return;
     } catch (py::error_already_set) { PyErr_Clear(); }
-    throw TypeError("unrecognized object %s delete from container", std::string(py::extract<std::string>(py::str(item))));
+    throw TypeError("unrecognized object {} delete from container", std::string(py::extract<std::string>(py::str(item))));
 }
 
 

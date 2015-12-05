@@ -30,35 +30,35 @@ void register_standard_properties_quasi_Fermi_electron_level();
 void register_standard_properties_quasi_Fermi_hole_level();
 
 PLASK_PYTHON_API const char* docstring_receiver =
-    "%1%Receiver%2%()\n\n"
+    "{0}Receiver{1}()\n\n"
 
-    "Receiver of the %3%%4% [%5%].\n\n"
+    "Receiver of the {2}{3} [{4}].\n\n"
 
     "You may connect a provider to this receiver usign either the `connect` method\n"
     "or an assignement operator. Then, you can read the provided value by calling\n"
     "this receiver with arguments identical as the ones of the corresponding\n"
-    "provider :class:`~plask.flow.%1%Provider%2%`.\n\n"
+    "provider :class:`~plask.flow.{0}Provider{1}`.\n\n"
 
     "Example:\n"
     "   Connect the reveiver to a provider from some other solver:\n\n"
 
-    "   >>> solver.in%1% = other_solver.out%1%\n\n"
+    "   >>> solver.in{0} = other_solver.out{0}\n\n"
 
     "See also:\n"
-    "   Provider of %3%: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
+    "   Provider of {2}: :class:`plask.flow.{0}Provider{1}`\n\n"
+    "   Data filter for {2}: :class:`plask.flow.{0}Filter{1}`";
 
 PLASK_PYTHON_API const char* docstring_receiver_connect =
     "Connect some provider to the receiver.\n\n"
 
     "Example:\n"
-    "   >>> solver.in%1%.connect(other_solver.out%1%)\n\n"
+    "   >>> solver.in{0}.connect(other_solver.out{0})\n\n"
 
     "Note:\n"
     "   You may achieve the same effect by using the asignmnent operator\n"
     "   if you put an exisiting provider at the right side of this operator:\n\n"
 
-    "   >>> solver.in%1% = other_solver.out%1%\n";
+    "   >>> solver.in{0} = other_solver.out{0}\n";
 
 PLASK_PYTHON_API const char* docstring_receiver_assign =
     "Assign constant value to the receiver.\n\n"
@@ -68,26 +68,26 @@ PLASK_PYTHON_API const char* docstring_receiver_assign =
     "temperature.\n\n"
 
     "Example:\n"
-    "   >>> solver.in%1%.assign(300.)\n"
-    "   >>> solver.in%1%(any_mesh)[0]\n"
+    "   >>> solver.in{0}.assign(300.)\n"
+    "   >>> solver.in{0}(any_mesh)[0]\n"
     "   300.\n"
-    "   >>> solver.in%1%(any_mesh)[-1]\n"
+    "   >>> solver.in{0}(any_mesh)[-1]\n"
     "   300.\n\n"
 
     "Note:\n"
     "   You may achieve the same effect by using the asignmnent operator\n"
     "   if you put a value at the right side of this operator:\n\n"
 
-    "   >>> solver.in%1% = 300.";
+    "   >>> solver.in{0} = 300.";
 
 template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_provider_impl();
 
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>() { return
-    "%1%Provider%2%(data)\n\n"
+    "{0}Provider{1}(data)\n\n"
 
-    "Provider of the %3%%4% [%7%].\n\n"
+    "Provider of the {2}{3} [{6}].\n\n"
 
-    "This class is used for %3% provider in binary solvers.\n"
+    "This class is used for {2} provider in binary solvers.\n"
     "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
@@ -98,32 +98,32 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PR
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(%5%)\n\n"
+    ".. method:: solver.out{0}({4})\n\n"
 
-    "   %6%\n"
+    "   {5}\n"
 
-    "   :return: Value of the %3% **[%7%]**.\n\n"
+    "   :return: Value of the {2} **[{6}]**.\n\n"
 
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+    "   >>> other_solver.in{0} = solver.out{0}\n\n"
 
     "   Obtain the provided value:\n\n"
 
-    "   >>> solver.out%1%(%5%)\n"
+    "   >>> solver.out{0}({4})\n"
     "   1000\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Receiver of {2}: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>() { return
-    "%1%Provider%2%(data)\n\n"
+    "{0}Provider{1}(data)\n\n"
 
-    "Provider of the %3%%4% [%7%].\n\n"
+    "Provider of the {2}{3} [{6}].\n\n"
 
-    "This class is used for %3% provider in binary solvers.\n"
+    "This class is used for {2} provider in binary solvers.\n"
     "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
@@ -136,12 +136,12 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PRO
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(n=0%5%)\n\n"
+    ".. method:: solver.out{0}(n=0{4})\n\n"
 
     "   :param int n: Value number.\n"
-    "   %6%\n"
+    "   {5}\n"
 
-    "   :return: Value of the %3% **[%7%]**.\n\n"
+    "   :return: Value of the {2} **[{6}]**.\n\n"
 
     "You may obtain the number of different values this provider can return by\n"
     "testing its length.\n\n"
@@ -149,28 +149,28 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PRO
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+    "   >>> other_solver.in{0} = solver.out{0}\n\n"
 
     "   Obtain the provided value:\n\n"
 
-    "   >>> solver.out%1%(0%5%)\n"
+    "   >>> solver.out{0}(0{4})\n"
     "   1000\n\n"
 
     "   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.out%1%)\n"
+    "   >>> len(solver.out{0})\n"
     "   3\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Receiver of {2}: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>() { return
-    "%1%Provider%2%(data)\n\n"
+    "{0}Provider{1}(data)\n\n"
 
-    "Provider of the %3%%4% [%7%].\n\n"
+    "Provider of the {2}{3} [{6}].\n\n"
 
-    "This class is used for %3% provider in binary solvers.\n"
+    "This class is used for {2} provider in binary solvers.\n"
     "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
@@ -181,35 +181,35 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(mesh%5%, interpolation='default')\n\n"
+    ".. method:: solver.out{0}(mesh{4}, interpolation='default')\n\n"
 
     "   :param mesh mesh: Target mesh to get the field at.\n"
     "   :param str interpolation: Requested interpolation method.\n"
-    "   %6%\n"
+    "   {5}\n"
 
-    "   :return: Data with the %3% on the specified mesh **[%7%]**.\n\n"
+    "   :return: Data with the {2} on the specified mesh **[{6}]**.\n\n"
 
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+    "   >>> other_solver.in{0} = solver.out{0}\n\n"
 
     "   Obtain the provided field:\n\n"
 
-    "   >>> solver.out%1%(mesh%5%)\n"
+    "   >>> solver.out{0}(mesh{4})\n"
     "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n"
-    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
+    "   Receiver of {2}: :class:`plask.flow.{0}Receiver{1}`\n"
+    "   Data filter for {2}: :class:`plask.flow.{0}Filter{1}`";
 }
 
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>() { return
-    "%1%Provider%2%(data)\n\n"
+    "{0}Provider{1}(data)\n\n"
 
-    "Provider of the %3%%4% [%7%].\n\n"
+    "Provider of the {2}{3} [{6}].\n\n"
 
-    "This class is used for %3% provider in binary solvers.\n"
+    "This class is used for {2} provider in binary solvers.\n"
     "You can also create a custom provider for your Python solver.\n\n"
 
     "Args:\n"
@@ -222,14 +222,14 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(n=0, mesh%5%, interpolation='default')\n\n"
+    ".. method:: solver.out{0}(n=0, mesh{4}, interpolation='default')\n\n"
 
     "   :param int n: Value number.\n"
     "   :param mesh mesh: Target mesh to get the field at.\n"
     "   :param str interpolation: Requested interpolation method.\n"
-    "   %6%\n"
+    "   {5}\n"
 
-    "   :return: Data with the %3% on the specified mesh **[%7%]**.\n\n"
+    "   :return: Data with the {2} on the specified mesh **[{6}]**.\n\n"
 
     "You may obtain the number of different values this provider can return by\n"
     "testing its length.\n\n"
@@ -237,21 +237,21 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+    "   >>> other_solver.in{0} = solver.out{0}\n\n"
 
     "   Obtain the provided field:\n\n"
 
-    "   >>> solver.out%1%(0, mesh%5%)\n"
+    "   >>> solver.out{0}(0, mesh{4})\n"
     "   <plask.Data at 0x1234567>\n\n"
 
     "   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.out%1%)\n"
+    "   >>> len(solver.out{0})\n"
     "   3\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n"
-    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
+    "   Receiver of {2}: :class:`plask.flow.{0}Receiver{1}`\n"
+    "   Data filter for {2}: :class:`plask.flow.{0}Filter{1}`";
 }
 
 template PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>();
