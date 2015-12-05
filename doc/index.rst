@@ -29,6 +29,7 @@ PLaSK User Guide
    api
    glossary
    genindex
+   licensing
    
 * :doc:`preface`
 * :doc:`introduction`
@@ -47,3 +48,4 @@ PLaSK User Guide
 * :doc:`api`
 * :doc:`glossary`
 * :ref:`genindex`
+* :doc:`licensing`
