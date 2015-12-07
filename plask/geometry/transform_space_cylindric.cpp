@@ -32,6 +32,21 @@ GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) cons
     return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(childVec(point), all));
 }
 
+void Revolution::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectTransformSpace::DVec> &dest, const PathHints *path) const {
+    if (predicate(*this)) {
+        dest.push_back(Primitive<3>::ZERO_VEC);
+        return;
+    }
+    if (!this->hasChild()) return;
+    auto child_pos_vec = this->_child->getPositions(predicate, path);
+    for (const auto& v: child_pos_vec)
+        dest.emplace_back(
+           std::numeric_limits<double>::quiet_NaN(),
+           std::numeric_limits<double>::quiet_NaN(),
+           v.vert()    //only vert component is well defined
+        );
+}
+
 bool Revolution::childIsClipped() const {
     return this->hasChild() && (this->_child->getBoundingBox().lower.tran() < 0);
 }
@@ -51,6 +66,8 @@ bool Revolution::childIsClipped() const {
     result.fix();
     return result;
 }*/ //TODO bugy
+
+
 
 Box3D Revolution::parentBox(const ChildBox& r) {
     double tran = std::max(r.upper.tran(), 0.0);

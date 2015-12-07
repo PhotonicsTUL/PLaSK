@@ -237,16 +237,6 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
         return result;
     }*/
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(Primitive<this_dim>::ZERO_VEC);
-            return;
-        }
-        if (!this->hasChild()) return;
-        const std::size_t s = this->_child->getPositions(predicate, path).size();
-        for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<this_dim>::NAN_VEC);
-   }
-
 };
 
 /**

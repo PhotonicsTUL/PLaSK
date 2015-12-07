@@ -57,6 +57,8 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
 
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path = 0) const;
 
   private:

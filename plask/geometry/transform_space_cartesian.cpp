@@ -49,6 +49,16 @@ void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisName
     dest_xml_object.attr("length", length);
 }
 
+void Extrusion::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectTransformSpace::DVec> &dest, const PathHints *path) const {
+    if (predicate(*this)) {
+        dest.push_back(Primitive<3>::ZERO_VEC);
+        return;
+    }
+    if (!this->hasChild()) return;
+    auto child_pos_vec = this->_child->getPositions(predicate, path);
+    for (const auto& v: child_pos_vec) dest.push_back(parentVec(v, std::numeric_limits<double>::quiet_NaN()));
+}
+
 // void Extrusion::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
 //     if (predicate(*this)) {
 //         dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));

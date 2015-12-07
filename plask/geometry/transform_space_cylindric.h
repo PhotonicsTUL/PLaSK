@@ -41,6 +41,8 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+
     // virtual void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const;
 
     /**
