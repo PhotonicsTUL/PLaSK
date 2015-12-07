@@ -34,7 +34,7 @@ std::time_t LicenseVerifier::extractDate(const std::string &s) {
     char delimiter;
     int d, m, y;
     if (is >> d >> delimiter >> m >> delimiter >> y) {
-        struct tm t = {-1};
+        struct tm t = {0};
         t.tm_mday = d;
         t.tm_mon = m - 1;
         t.tm_year = y - 1900;

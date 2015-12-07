@@ -305,6 +305,7 @@ void Lattice::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, 
         dest.push_back(getBoundingBox());
         return;
     }
+    // hide this->child from predicate, delegate calling to its child
     container->forEachChild([&](const Translation<3> &child) { child.getBoundingBoxesToVec(predicate, dest, path); }, path);
 }
 
@@ -313,6 +314,7 @@ void Lattice::getObjectsToVec(const GeometryObject::Predicate& predicate, std::v
         dest.push_back(this->shared_from_this());
         return;
     }
+    // hide this->child from predicate, delegate calling to its child
     container->forEachChild([&](const Translation<3> &child) { child.getObjectsToVec(predicate, dest, path); }, path);
 }
 
@@ -321,6 +323,7 @@ void Lattice::getPositionsToVec(const GeometryObject::Predicate& predicate, std:
         dest.push_back(Primitive<3>::ZERO_VEC);
         return;
     }
+    // hide this->child from predicate, delegate calling to its child
     container->forEachChild([&](const Translation<3> &child) { child.getPositionsToVec(predicate, dest, path); }, path);
 }
 
