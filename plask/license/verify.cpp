@@ -125,7 +125,7 @@ void LicenseVerifier::verify() {
 std::string LicenseVerifier::getUser() {
     
     std::string user, organisation, email;
-    if (content == "") return "";
+    if (content.empty()) return "";
 
     XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
 
@@ -140,15 +140,15 @@ std::string LicenseVerifier::getUser() {
                }
     );
     
-    if (email != "") {
-        if (user != "") {
+    if (!email.empty()) {
+        if (!user.empty()) {
             user += " <"; user += email; user += ">";
         } else {
             user = email;
         }
     }
-    if (organisation != "") {
-        if (user != "") user += " ";
+    if (!organisation.empty()) {
+        if (!user.empty()) user += " ";
         user += organisation;
     }
     

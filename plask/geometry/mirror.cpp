@@ -35,8 +35,10 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
         return;
     }
     if (!this->hasChild()) return;
-    const std::size_t s = this->_child->getPositions(predicate, path).size();
-    for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<dim>::NAN_VEC);   //we can't get proper position
+    std::size_t s = dest.size();
+    this->_child->getPositionsToVec(predicate, dest, path);
+    for ( ; s < dest.size(); ++s)
+        dest[s][flipDir] = std::numeric_limits<double>::quiet_NaN(); //we can't get proper position in flipDir direction
 }
 
 template <int dim>
@@ -115,8 +117,10 @@ void Mirror<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, 
     std::size_t old_size = dest.size();
     this->_child->getPositionsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
-    for (std::size_t i = old_size; i < new_size; ++i)
-        dest.push_back(Primitive<dim>::NAN_VEC);    //we can't get proper position for fliped child
+    for (std::size_t i = old_size; i < new_size; ++i) {
+        dest.push_back(dest[i]);
+        dest.back()[flipDir] = std::numeric_limits<double>::quiet_NaN();    //we can't get proper position in flipDir direction
+    }
 }
 
 template <int dim>

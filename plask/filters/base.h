@@ -271,7 +271,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
         for (auto& p: pos) {
-            if (std::isnan(p.c0))
+            if (isnan(p))
                 throw plask::Exception("Filter error: the place of some source geometry inside a destination geometry can't be described by translation.\nThis can be caused by flip or mirror on the path from the source to the destination.");
         }
         std::vector<OutBox> bb = this->outputObj->getObjectBoundingBoxes(*this->inputObj, this->getPath());
