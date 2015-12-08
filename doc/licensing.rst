@@ -37,9 +37,9 @@ DEALINGS IN THE SOFTWARE.
 Expat
 ^^^^^
 
-Copyright (c) 1998, 1999, 2000 Thai Open Source Software Center Ltd and Clark Cooper
+Copyright © 1998, 1999, 2000 Thai Open Source Software Center Ltd and Clark Cooper
 
-Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Expat maintainers.
+Copyright © 2001, 2002, 2003, 2004, 2005, 2006 Expat maintainers.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -102,7 +102,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 C++ Format
 ^^^^^^^^^^
 
-Copyright (c) 2012 - 2015, Victor Zverovich
+Copyright © 2012 - 2015, Victor Zverovich
 
 All rights reserved.
 
@@ -130,7 +130,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Python
 ^^^^^^
 
-Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights Reserved
+Copyright © 2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights Reserved
 
 
 Numpy
@@ -153,11 +153,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 Matplotlib
 ^^^^^^^^^^
 
-Copyright (c)
+Copyright:
 
-* 2002 - 2012 John Hunter, Darren Dale, Eric Firing, Michael Droettboom and the matplotlib development team;
+* © 2002 - 2012 John Hunter, Darren Dale, Eric Firing, Michael Droettboom and the matplotlib development team;
 
-* 2012 - 2013 The matplotlib development team
+* © 2012 - 2013 The matplotlib development team
 
    
 HDF5 for Python (h5py)
@@ -197,7 +197,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 PySide
 ^^^^^^
 
-Copyright: Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+Copyright: Copyright © 2013 Digia Plc and/or its subsidiary(-ies).
 
 This package is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

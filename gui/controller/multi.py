@@ -12,8 +12,9 @@
 
 from ..qt import QtGui
 
-from .source import SourceEditController
+from ..utils.widgets import fire_edit_end, InfoListView
 from . import Controller
+from .source import SourceEditController
 
 class MultiEditorController(Controller):
     """
@@ -84,6 +85,7 @@ class GUIAndSourceController(MultiEditorController):
         MultiEditorController.__init__(self, controller, SourceEditController(controller.document, controller.model))
 
     def change_editor(self):
+        fire_edit_end()
         if not self.set_current_index(int(self.document.window.showsource_action.isChecked())):
             self.document.window.set_show_source_state(bool(self.get_current_index()))
 

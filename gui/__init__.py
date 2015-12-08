@@ -419,8 +419,8 @@ class MainWindow(QtGui.QMainWindow):
             new_window.close()
 
     def _save_document(self, filename):
+        fire_edit_end()
         try:
-            fire_edit_end()
             self.document.save_to_file(unicode(filename))
         except Exception as err:
             msgbox = QtGui.QMessageBox()

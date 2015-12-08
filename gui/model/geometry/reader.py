@@ -49,9 +49,9 @@ class GNAligner(object):
         :return: tuple with aligner names: lo, center, hi, origin, center (alternative name)
         """
         a = axis_names_in_dims[axis_nr]
-        return (('back', 'longcenter', 'front', a, a + 'center'),
-                ('left', 'trancenter', 'right', a, a + 'center'),
-                ('bottom', 'vertcenter', 'top', a, a + 'center'))[(axis_nr + 1) if dims == 2 else axis_nr]
+        return (('back', a + 'center', 'front', a, 'longcenter'),
+                ('left', a + 'center', 'right', a, 'trancenter'),
+                ('bottom', a + 'center', 'top', a, 'vertcenter'))[(axis_nr + 1) if dims == 2 else axis_nr]
 
     @staticmethod
     def display_names(dims, axis_nr):

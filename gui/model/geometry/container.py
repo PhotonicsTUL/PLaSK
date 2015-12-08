@@ -182,7 +182,7 @@ class GNStack(GNContainerBase):
     def aligners_dir(self):
         return (0,) if self.children_dim == 2 else (0, 1)
 
-    def aligners_dict(self, aligners = None):
+    def aligners_dict(self, aligners=None):
         if not aligners: aligners = self.aligners
         return dict(zip(self.aligners_dir(), aligners))
 

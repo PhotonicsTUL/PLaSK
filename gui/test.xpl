@@ -29,9 +29,11 @@
   <cartesian2d name="geo2d" length="1000">
     <stack>
       <arrange dtran="0.4" dvert="0" count="3">
-        <stack>
+        <stack name="STOS">
           <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
-          <rectangle material="In(0.5)GaN:Si=1e18" dtran="0.2" dvert="0.1"/>
+          <item left="0">
+            <rectangle material="In(0.5)GaN:Si=1e18" dtran="0.2" dvert="0.1"/>
+          </item>
         </stack>
       </arrange>
       <shelf flat="no">
