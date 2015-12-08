@@ -54,11 +54,15 @@ void ExpansionPW3D::init()
     }
 
     if (!periodic_long) {
+        if (SOLVER->getLongSize() == 0)
+            throw BadInput(solver->getId(), "Flat structure in longitudinal direction (size_long = 0) allowed only for periodic geometry");
         // Add PMLs
         if (!symmetric_long()) back -= SOLVER->pml_long.size + SOLVER->pml_long.dist;
         front += SOLVER->pml_long.size + SOLVER->pml_long.dist;
     }
     if (!periodic_tran) {
+        if (SOLVER->getTranSize() == 0)
+            throw BadInput(solver->getId(), "Flat structure in transverse direction (size_tran = 0) allowed only for periodic geometry");
         // Add PMLs
         if (!symmetric_tran()) left -= SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
         right += SOLVER->pml_tran.size + SOLVER->pml_tran.dist;

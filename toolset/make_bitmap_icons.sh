@@ -24,7 +24,8 @@ else
 
     for d in hicolor breeze; do
         for f in $@; do
-            for s in 16 24 32 48; do
+            f="${f%.*}"
+            for s in 16 24 32; do
                 inkscape -e ${iconsdir}/$d/${s}x${s}/${f}.png ${iconsdir}/$d/scalable/${f}.svg -C -w ${s} -h ${s}
                 svn add ${iconsdir}/$d/${s}x${s}/${f}.png
             done
