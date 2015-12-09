@@ -230,11 +230,43 @@ class PythonMaterial: public Material, Overriden
             return call_method<std::string>("__str__");
         }
         else {
-            std::string result = name();
-            if (result.rfind(':') != std::string::npos) {
+            std::string result, doping;
+            std::tie(result, doping) = splitString2(name(), ':');
+            py::object cls = py::object(py::borrowed(self)).attr("__class__");
+            bool simple;
+            try {
+                simple = py::extract<bool>(cls.attr("simple"));
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                simple = true;
+            }
+            if (!simple) {
+                if (PyObject_HasAttrString(self, "composition")) {
+                    py::object composition { py::handle<> (PyObject_GetAttrString(self, "composition")) };
+                    std::string basename, label;
+                    std::tie(basename, label) = splitString2(result, '_');
+                    auto elements = Material::parseObjectsNames(basename);
+                    result = "";
+                    for (const auto& el: elements) {
+                        result += el;
+                        try {
+                            double x = py::extract<double>(composition[el]);
+                            if (!isnan(x)) result += format("({})", x);
+                        } catch (py::error_already_set) {
+                            PyErr_Clear();
+                        }
+                    }
+                    if (label != "_") result += "_" + label;
+                } else {
+                    writelog(LOG_WARNING, "Cannot determine composition for material {} (override '__str__' method, or specify 'composition' attribute)", result);
+                }
+            }
+            if (doping != "") {
+                result += ":" + doping;
                 if (PyObject* dc {PyObject_GetAttrString(self, "dc")}) {
                     result += "=" + py::extract<std::string>(py::str(py::handle<>(dc)))();
                 } else if (PyObject* cc {PyObject_GetAttrString(self, "cc")}) {
+                    PyErr_Clear();
                     if (condtype() == CONDUCTIVITY_P)
                         result += " p=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
                     else
@@ -416,6 +448,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
     auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, true);
     MaterialsDB::getDefault().addSimple(constructor);
     material_class.attr("_factory") = py::object(constructor);
+    material_class.attr("simple") = true;
 }
 
 /**
@@ -429,6 +462,7 @@ void registerComplexMaterial(const std::string& name, py::object material_class,
     auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, false);
     MaterialsDB::getDefault().addComplex(constructor);
     material_class.attr("_factory") = py::object(constructor);
+    material_class.attr("simple") = false;
 }
 
 //parse material parameters from full_name and extra parameters in kwargs
@@ -509,23 +543,38 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
 
     shared_ptr<PythonMaterial> ptr;
 
+    Material::Parameters params;
     if (PyObject_HasAttrString(cls.ptr(), "_factory")) {
         shared_ptr<PythonMaterialConstructor> factory
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
-        Material::Parameters p = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
-        ptr.reset(new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopingAmountType, p.dopingAmount)));
-        if (p.dopingAmountType == DOPANT_CONCENTRATION) {
-            if (!PyObject_HasAttrString(self.ptr(), "dc")) {
-                self.attr("dc") = p.dopingAmount;
-            }
-        } else if (p.dopingAmountType == CARRIERS_CONCENTRATION) {
-            if (!PyObject_HasAttrString(self.ptr(), "cc")) {
-                self.attr("cc") = p.dopingAmount;
-            }
-        }
+        params = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
+        ptr.reset(new PythonMaterial(factory->base_constructor(params.completeComposition(), params.dopingAmountType, params.dopingAmount)));
     } else {
         ptr.reset(new PythonMaterial());
+        try {
+            params = kwargs2MaterialComposition(ptr->name(), kwargs);
+        } catch (...) {
+            PyErr_Clear();
+        }
     }
+    if (params.dopingAmountType == DOPANT_CONCENTRATION) {
+        if (!PyObject_HasAttrString(self.ptr(), "dc")) {
+            self.attr("dc") = params.dopingAmount;
+        }
+    } else if (params.dopingAmountType == CARRIERS_CONCENTRATION) {
+        if (!PyObject_HasAttrString(self.ptr(), "cc")) {
+            self.attr("cc") = params.dopingAmount;
+        }
+    }
+    if (params.composition.size() && !PyObject_HasAttrString(self.ptr(), "composition")) {
+        py::dict pycomposition;
+        for (const auto& item: params.composition) {
+            if (!isnan(item.second))
+                pycomposition[item.first] = item.second;
+        }
+        self.attr("composition") = pycomposition;
+    }
+
 
     ptr->self = self.ptr();  // key line !!!
 
