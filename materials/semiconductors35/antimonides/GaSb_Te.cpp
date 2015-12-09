@@ -11,7 +11,7 @@ std::string GaSb_Te::name() const { return NAME; }
 std::string GaSb_Te::str() const { return StringBuilder("GaSb").dopant("Te", ND); }
 
 GaSb_Te::GaSb_Te(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         Nf_RT = Val;
     else
     {

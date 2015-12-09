@@ -14,7 +14,7 @@ MI_PARENT(AlGaN_Si, AlGaN)
 
 AlGaN_Si::AlGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaN(Comp), mGaN_Si(Type,Val), mAlN_Si(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         ND = mAlN_Si.Dop()*Al + mGaN_Si.Dop()*Ga;
     else
         ND = Val;

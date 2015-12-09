@@ -14,7 +14,7 @@ MI_PARENT(GaInAs_Si, GaInAs)
 
 GaInAs_Si::GaInAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): GaInAs(Comp)/*, mGaAs_Si(Type,Val), mInAs_Si(Type,Val)*/
 {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         if (In == 0.53) ND = Val/0.55;
         else ND = Val;

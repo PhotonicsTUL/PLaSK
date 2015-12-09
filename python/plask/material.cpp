@@ -229,7 +229,19 @@ class PythonMaterial: public Material, Overriden
         if (overriden("__str__")) {
             return call_method<std::string>("__str__");
         }
-        else return name();
+        else {
+            std::string result = name();
+            if (result.rfind(':') != std::string::npos) {
+                if (py::handle<> dc{PyObject_GetAttrString(self, "dc")}) {
+                    result += "=" + py::extract<std::string>(py::str(dc))();
+                } else if (py::handle<> cc{PyObject_GetAttrString(self, "cc")}) {
+                    result += " n=" + py::extract<std::string>(py::str(cc))();
+                } else {
+                    writelog(LOG_WARNING, "Cannot determine doping for material {}; override '__str__' method or specify 'dc' attribute", result);
+                }
+            }
+            return result;
+        }
     }
 
     Material::ConductivityType condtype() const override {
@@ -434,7 +446,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
         cobj = kwargs["cc"];
         if (had_doping_key) throw ValueError("doping and carrier concentrations specified simultaneously");
         if (result.hasDoping()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
-        result.dopingAmountType = Material::CARRIER_CONCENTRATION;
+        result.dopingAmountType = Material::CARRIERS_CONCENTRATION;
         had_doping_key = true;
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -498,6 +510,15 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
         Material::Parameters p = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
         ptr.reset(new PythonMaterial(factory->base_constructor(p.completeComposition(), p.dopingAmountType, p.dopingAmount)));
+        if (p.dopingAmountType == DOPANT_CONCENTRATION) {
+            if (!PyObject_HasAttrString(self.ptr(), "dc")) {
+                self.attr("dc") = p.dopingAmount;
+            }
+        } else if (p.dopingAmountType == CARRIERS_CONCENTRATION) {
+            if (!PyObject_HasAttrString(self.ptr(), "cc")) {
+                self.attr("cc") = p.dopingAmount;
+            }
+        }
     } else {
         ptr.reset(new PythonMaterial());
     }

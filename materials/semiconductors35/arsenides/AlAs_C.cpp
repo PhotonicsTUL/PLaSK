@@ -13,7 +13,7 @@ std::string AlAs_C::str() const { return StringBuilder("AlAs").dopant("C", NA); 
 AlAs_C::AlAs_C(DopingAmountType Type, double Val) {
     //double act_GaAs = 0.92;
     //double fx1 = 1.;
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         NA = Val/0.92; // Val/(act_GaAs*fx1);
     }

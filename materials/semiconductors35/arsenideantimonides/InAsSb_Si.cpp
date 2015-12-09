@@ -14,7 +14,7 @@ MI_PARENT(InAsSb_Si, InAsSb)
 
 InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): InAsSb(Comp)//, mGaAs_Si(Type,Val), mAlAs_Si(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         Nf_RT = Val;
     else
     {

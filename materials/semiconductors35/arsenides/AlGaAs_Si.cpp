@@ -16,7 +16,7 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
 {
     double fx1A = (1.-7.8*Al*Al); // x < 0.35
     double fx1B = (1.14*Al-0.36); // else
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         if (Al < 0.35) ND = mGaAs_Si.Dop()*fx1A;
         else ND = mGaAs_Si.Dop()*fx1B;

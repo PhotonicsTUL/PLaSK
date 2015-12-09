@@ -334,7 +334,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
     //TODO check p.first if is p/n compatibile with dopant_elem_name
-    doping_amount_type = Material::CARRIER_CONCENTRATION;
+    doping_amount_type = Material::CARRIERS_CONCENTRATION;
     doping_amount = toDouble(p.second);
 }
 

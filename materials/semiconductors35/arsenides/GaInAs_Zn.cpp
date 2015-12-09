@@ -14,7 +14,7 @@ MI_PARENT(GaInAs_Zn, GaInAs)
 
 GaInAs_Zn::GaInAs_Zn(const Material::Composition& Comp, DopingAmountType Type, double Val): GaInAs(Comp)/*, mGaAs_Zn(Type,Val), mInAs_Zn(Type,Val)*/
 {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         if (In == 0.53) NA = Val/0.90;
         else NA = Val;

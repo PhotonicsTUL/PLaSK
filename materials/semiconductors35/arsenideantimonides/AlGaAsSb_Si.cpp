@@ -14,7 +14,7 @@ std::string AlGaAsSb_Si::str() const { return StringBuilder("Al", Al)("Ga")("As"
 
 AlGaAsSb_Si::AlGaAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAsSb(Comp)
 {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         Nf_RT = Val;
     else
     {

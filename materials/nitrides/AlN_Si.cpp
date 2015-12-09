@@ -13,7 +13,7 @@ std::string AlN_Si::str() const { return StringBuilder("AlN").dopant("Si", ND); 
 MI_PARENT(AlN_Si, AlN)
 
 AlN_Si::AlN_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         ND = 1.223e10*pow(Val,5.540e-1);
     }

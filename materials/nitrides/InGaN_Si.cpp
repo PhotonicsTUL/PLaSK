@@ -14,7 +14,7 @@ std::string InGaN_Si::str() const { return StringBuilder("In", In)("Ga")("N").do
 
 InGaN_Si::InGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): InGaN(Comp), mGaN_Si(Type,Val), mInN_Si(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         ND = mInN_Si.Dop()*In + mGaN_Si.Dop()*Ga;
     else
         ND = Val;

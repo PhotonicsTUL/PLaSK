@@ -11,7 +11,7 @@ std::string InP_Zn::name() const { return NAME; }
 std::string InP_Zn::str() const { return StringBuilder("InP").dopant("Zn", NA); }
 
 InP_Zn::InP_Zn(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         NA = Val/0.75;
     }

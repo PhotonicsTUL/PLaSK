@@ -14,7 +14,7 @@ AlAs_Si::AlAs_Si(DopingAmountType Type, double Val) {
     //double act_GaAs = 1.;
     //double Al = 1.; // AlAs (not AlGaAs)
     //double fx1 = 1.14*Al-0.36;
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         ND = Val/0.78; // Val/(act_GaAs*fx1);
     }

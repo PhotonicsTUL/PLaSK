@@ -14,7 +14,7 @@ std::string GaN_Si::name() const { return NAME; }
 std::string GaN_Si::str() const { return StringBuilder("GaN").dopant("Si", ND); }
 
 GaN_Si::GaN_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         ND = std::pow(Val/0.55,1/1.01);
     }

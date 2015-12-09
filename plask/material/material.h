@@ -44,7 +44,7 @@ struct PLASK_API Material {
     enum DopingAmountType {
         NO_DOPING,              ///< no dopant
         DOPANT_CONCENTRATION,   ///< doping concentration
-        CARRIER_CONCENTRATION   ///< carrier concentration
+        CARRIERS_CONCENTRATION   ///< carrier concentration
     };
 
     /// Material kind

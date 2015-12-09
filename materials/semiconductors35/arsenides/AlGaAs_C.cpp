@@ -14,7 +14,7 @@ MI_PARENT(AlGaAs_C, AlGaAs)
 
 AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_C(Type,Val), mAlAs_C(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         NA = mGaAs_C.Dop(); // mGaAs_C.Dop()*fx1;
     }

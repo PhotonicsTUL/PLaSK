@@ -11,7 +11,7 @@ std::string GaAs_C::name() const { return NAME; }
 std::string GaAs_C::str() const { return StringBuilder("GaAs").dopant("C", NA); }
 
 GaAs_C::GaAs_C(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
+    if (Type == CARRIERS_CONCENTRATION) {
         Nf_RT = Val;
         NA = Val/0.92;
     }

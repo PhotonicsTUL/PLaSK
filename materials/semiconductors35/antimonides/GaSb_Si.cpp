@@ -11,7 +11,7 @@ std::string GaSb_Si::name() const { return NAME; }
 std::string GaSb_Si::str() const { return StringBuilder("GaSb").dopant("Si", NA); }
 
 GaSb_Si::GaSb_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         Nf_RT = Val;
     else
     {

@@ -14,7 +14,7 @@ std::string InGaN_Mg::str() const { return StringBuilder("In", In)("Ga")("N").do
 
 InGaN_Mg::InGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): InGaN(Comp), mGaN_Mg(Type,Val), mInN_Mg(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION)
+    if (Type == CARRIERS_CONCENTRATION)
         NA = mInN_Mg.Dop()*In + mGaN_Mg.Dop()*Ga;
     else
         NA = Val;

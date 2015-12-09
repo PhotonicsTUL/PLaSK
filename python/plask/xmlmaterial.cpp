@@ -258,7 +258,7 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     material->self = py::object(shared_ptr<Material>(material));
     material->self.attr("base") = py::object(material->base);
     if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("dc") = doping_amount;
-    else if (doping_amount_type == Material::CARRIER_CONCENTRATION) material->self.attr("cc") = doping_amount;
+    else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("cc") = doping_amount;
     return material;
 }
 
