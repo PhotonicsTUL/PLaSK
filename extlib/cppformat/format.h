@@ -66,14 +66,18 @@ typedef long long          intmax_t;
 
 #ifdef FMT_HEADER_ONLY
 # define FMT_FUNC inline
+# define FMT_EXPORT
 #elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 # ifdef FMT_EXPORTS
 #  define FMT_FUNC __declspec(dllexport)
+#  define FMT_EXPORT __declspec(dllexport)
 # else
 #  define FMT_FUNC __declspec(dllimport)
+#  define FMT_EXPORT __declspec(dllimport)
 # endif
 #else
 # define FMT_FUNC
+# define FMT_EXPORT
 #endif
 
 #ifdef _MSC_VER
@@ -786,7 +790,7 @@ FMT_FUNC void report_unknown_type(char code, const char *type);
 // Static data is placed in this class template to allow header-only
 // configuration.
 template <typename T = void>
-struct BasicData {
+struct FMT_EXPORT BasicData {
   static const uint32_t POWERS_OF_10_32[];
   static const uint64_t POWERS_OF_10_64[];
   static const char DIGITS[];
