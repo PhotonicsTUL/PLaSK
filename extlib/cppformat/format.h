@@ -688,7 +688,7 @@ class FixedBuffer : public fmt::Buffer<Char> {
   FixedBuffer(Char *array, std::size_t size) : fmt::Buffer<Char>(array, size) {}
 
  protected:
-  void grow(std::size_t size);
+  FMT_FUNC void grow(std::size_t size);
 };
 
 template <typename Char>
@@ -716,7 +716,7 @@ class CharTraits<char> : public BasicCharTraits<char> {
 
   // Formats a floating-point number.
   template <typename T>
-  static int format_float(char *buffer, std::size_t size,
+  FMT_FUNC static int format_float(char *buffer, std::size_t size,
       const char *format, unsigned width, int precision, T value);
 };
 
@@ -727,7 +727,7 @@ class CharTraits<wchar_t> : public BasicCharTraits<wchar_t> {
   static wchar_t convert(wchar_t value) { return value; }
 
   template <typename T>
-  static int format_float(wchar_t *buffer, std::size_t size,
+  FMT_FUNC static int format_float(wchar_t *buffer, std::size_t size,
       const wchar_t *format, unsigned width, int precision, T value);
 };
 
@@ -1835,7 +1835,7 @@ class PrintfFormatter : private FormatterBase {
 
  public:
   explicit PrintfFormatter(const ArgList &args) : FormatterBase(args) {}
-  void format(BasicWriter<Char> &writer, BasicCStringRef<Char> format_str);
+  FMT_FUNC void format(BasicWriter<Char> &writer, BasicCStringRef<Char> format_str);
 };
 }  // namespace internal
 

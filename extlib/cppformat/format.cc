@@ -419,7 +419,7 @@ FMT_FUNC void fmt::SystemError::init(
 }
 
 template <typename T>
-int fmt::internal::CharTraits<char>::format_float(
+FMT_FUNC int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, T value) {
   if (width == 0) {
@@ -433,7 +433,7 @@ int fmt::internal::CharTraits<char>::format_float(
 }
 
 template <typename T>
-int fmt::internal::CharTraits<wchar_t>::format_float(
+FMT_FUNC int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, T value) {
   if (width == 0) {
@@ -595,7 +595,7 @@ FMT_FUNC void fmt::internal::format_system_error(
 }
 
 template <typename Char>
-void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
+FMT_FUNC void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
   if (!map_.empty())
     return;
   typedef internal::NamedArg<Char> NamedArg;
@@ -640,7 +640,7 @@ void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
 }
 
 template <typename Char>
-void fmt::internal::FixedBuffer<Char>::grow(std::size_t) {
+FMT_FUNC void fmt::internal::FixedBuffer<Char>::grow(std::size_t) {
   FMT_THROW(std::runtime_error("buffer overflow"));
 }
 
@@ -733,7 +733,7 @@ unsigned fmt::internal::PrintfFormatter<Char>::parse_header(
 }
 
 template <typename Char>
-void fmt::internal::PrintfFormatter<Char>::format(
+FMT_FUNC void fmt::internal::PrintfFormatter<Char>::format(
     BasicWriter<Char> &writer, BasicCStringRef<Char> format_str) {
   const Char *start = format_str.c_str();
   const Char *s = start;
@@ -882,35 +882,35 @@ template struct fmt::internal::BasicData<void>;
 
 // Explicit instantiations for char.
 
-template void fmt::internal::FixedBuffer<char>::grow(std::size_t);
+template FMT_FUNC void fmt::internal::FixedBuffer<char>::grow(std::size_t);
 
-template void fmt::internal::ArgMap<char>::init(const fmt::ArgList &args);
+template FMT_FUNC void fmt::internal::ArgMap<char>::init(const fmt::ArgList &args);
 
-template void fmt::internal::PrintfFormatter<char>::format(
+template FMT_FUNC void fmt::internal::PrintfFormatter<char>::format(
   BasicWriter<char> &writer, CStringRef format);
 
-template int fmt::internal::CharTraits<char>::format_float(
+template FMT_FUNC int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, double value);
 
-template int fmt::internal::CharTraits<char>::format_float(
+template FMT_FUNC int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, long double value);
 
 // Explicit instantiations for wchar_t.
 
-template void fmt::internal::FixedBuffer<wchar_t>::grow(std::size_t);
+template FMT_FUNC void fmt::internal::FixedBuffer<wchar_t>::grow(std::size_t);
 
-template void fmt::internal::ArgMap<wchar_t>::init(const fmt::ArgList &args);
+template FMT_FUNC void fmt::internal::ArgMap<wchar_t>::init(const fmt::ArgList &args);
 
-template void fmt::internal::PrintfFormatter<wchar_t>::format(
+template FMT_FUNC void fmt::internal::PrintfFormatter<wchar_t>::format(
     BasicWriter<wchar_t> &writer, WCStringRef format);
 
-template int fmt::internal::CharTraits<wchar_t>::format_float(
+template FMT_FUNC int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, double value);
 
-template int fmt::internal::CharTraits<wchar_t>::format_float(
+template FMT_FUNC int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, long double value);
 
