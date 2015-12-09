@@ -37,7 +37,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
             set(no_strict_aliasing_flag "-fno-strict-aliasing")
         endif()
     endif()
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(no_strict_aliasing_flag "-fno-strict-aliasing")
 endif()
 
