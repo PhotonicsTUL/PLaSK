@@ -235,7 +235,10 @@ class PythonMaterial: public Material, Overriden
                 if (PyObject* dc {PyObject_GetAttrString(self, "dc")}) {
                     result += "=" + py::extract<std::string>(py::str(py::handle<>(dc)))();
                 } else if (PyObject* cc {PyObject_GetAttrString(self, "cc")}) {
-                    result += " n=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
+                    if (condtype() == CONDUCTIVITY_P)
+                        result += " p=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
+                    else
+                        result += " n=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
                 } else {
                     PyErr_Clear();
                     writelog(LOG_WARNING, "Cannot determine doping for material {} (override '__str__' method, or specify 'dc' or 'cc' attribute)", result);

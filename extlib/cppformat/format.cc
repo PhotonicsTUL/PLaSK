@@ -60,12 +60,6 @@ using fmt::internal::Arg;
 # define FMT_CATCH(x) if (false)
 #endif
 
-#ifdef FMT_HEADER_ONLY
-# define FMT_FUNC inline
-#else
-# define FMT_FUNC
-#endif
-
 #ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4127)  // conditional expression is constant

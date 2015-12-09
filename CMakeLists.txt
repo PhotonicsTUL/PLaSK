@@ -272,7 +272,7 @@ else()
     target_link_libraries(libplask dl)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif()
-set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS -DPLASK_EXPORTS)
+set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS -DFMT_EXPORTS")
 
 #if (NOT WIN32) #can be usefull if more threads libraries will be used
 #    target_link_libraries(sdsolver "pthread")

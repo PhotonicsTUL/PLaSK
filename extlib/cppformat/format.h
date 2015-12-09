@@ -64,6 +64,18 @@ typedef long long          intmax_t;
 # include <iterator>
 #endif
 
+#ifdef FMT_HEADER_ONLY
+# define FMT_FUNC inline
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+# ifdef FMT_EXPORTS
+#  define FMT_FUNC __declspec(dllexport)
+# else
+#  define FMT_FUNC __declspec(dllimport)
+# endif
+#else
+# define FMT_FUNC
+#endif
+
 #ifdef _MSC_VER
 # include <intrin.h>  // _BitScanReverse, _BitScanReverse64
 
@@ -769,7 +781,7 @@ FMT_SPECIALIZE_MAKE_UNSIGNED(int, unsigned);
 FMT_SPECIALIZE_MAKE_UNSIGNED(long, unsigned long);
 FMT_SPECIALIZE_MAKE_UNSIGNED(LongLong, ULongLong);
 
-void report_unknown_type(char code, const char *type);
+FMT_FUNC void report_unknown_type(char code, const char *type);
 
 // Static data is placed in this class template to allow header-only
 // configuration.
@@ -863,7 +875,7 @@ class UTF8ToUTF16 {
   MemoryBuffer<wchar_t, INLINE_BUFFER_SIZE> buffer_;
 
  public:
-  explicit UTF8ToUTF16(StringRef s);
+  FMT_FUNC explicit UTF8ToUTF16(StringRef s);
   operator WStringRef() const { return WStringRef(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
   const wchar_t *c_str() const { return &buffer_[0]; }
@@ -878,7 +890,7 @@ class UTF16ToUTF8 {
 
  public:
   UTF16ToUTF8() {}
-  explicit UTF16ToUTF8(WStringRef s);
+  FMT_FUNC explicit UTF16ToUTF8(WStringRef s);
   operator StringRef() const { return StringRef(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
   const char *c_str() const { return &buffer_[0]; }
@@ -887,15 +899,15 @@ class UTF16ToUTF8 {
   // Performs conversion returning a system error code instead of
   // throwing exception on conversion error. This method may still throw
   // in case of memory allocation error.
-  int convert(WStringRef s);
+  FMT_FUNC int convert(WStringRef s);
 };
 
-void format_windows_error(fmt::Writer &out, int error_code,
-                          fmt::StringRef message) FMT_NOEXCEPT;
+FMT_FUNC void format_windows_error(fmt::Writer &out, int error_code,
+                                   fmt::StringRef message) FMT_NOEXCEPT;
 #endif
 
-void format_system_error(fmt::Writer &out, int error_code,
-                         fmt::StringRef message) FMT_NOEXCEPT;
+FMT_FUNC void format_system_error(fmt::Writer &out, int error_code,
+                                  fmt::StringRef message) FMT_NOEXCEPT;
 
 // A formatting argument value.
 struct Value {
@@ -1637,7 +1649,7 @@ class ArgMap {
   MapType map_;
 
  public:
-  void init(const ArgList &args);
+  FMT_FUNC void init(const ArgList &args);
 
   const internal::Arg* find(const fmt::BasicStringRef<Char> &name) const {
     typename MapType::const_iterator it = map_.find(name);
@@ -1767,7 +1779,7 @@ class FormatterBase {
   int next_arg_index_;
 
   // Returns the argument with specified index.
-  Arg do_get_arg(unsigned arg_index, const char *&error);
+  FMT_FUNC Arg do_get_arg(unsigned arg_index, const char *&error);
 
  protected:
   const ArgList &args() const { return args_; }
@@ -2928,14 +2940,14 @@ void format(BasicFormatter<Char> &f, const Char *&format_str, const T &value) {
 
 // Reports a system error without throwing an exception.
 // Can be used to report errors from destructors.
-void report_system_error(int error_code, StringRef message) FMT_NOEXCEPT;
+FMT_FUNC void report_system_error(int error_code, StringRef message) FMT_NOEXCEPT;
 
 #if FMT_USE_WINDOWS_H
 
 /** A Windows error. */
 class WindowsError : public SystemError {
  private:
-  void init(int error_code, CStringRef format_str, ArgList args);
+  FMT_FUNC void init(int error_code, CStringRef format_str, ArgList args);
 
  public:
   /**
@@ -2974,7 +2986,7 @@ class WindowsError : public SystemError {
 
 // Reports a Windows error without throwing an exception.
 // Can be used to report errors from destructors.
-void report_windows_error(int error_code, StringRef message) FMT_NOEXCEPT;
+FMT_FUNC void report_windows_error(int error_code, StringRef message) FMT_NOEXCEPT;
 
 #endif
 
@@ -2986,7 +2998,7 @@ enum Color { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE };
   Example:
     print_colored(fmt::RED, "Elapsed time: {0:.2f} seconds", 1.23);
  */
-void print_colored(Color c, CStringRef format, ArgList args);
+FMT_FUNC void print_colored(Color c, CStringRef format, ArgList args);
 
 /**
   \rst
@@ -3018,7 +3030,7 @@ inline std::wstring format(WCStringRef format_str, ArgList args) {
     print(stderr, "Don't {}!", "panic");
   \endrst
  */
-void print(std::FILE *f, CStringRef format_str, ArgList args);
+FMT_FUNC void print(std::FILE *f, CStringRef format_str, ArgList args);
 
 /**
   \rst
@@ -3029,7 +3041,7 @@ void print(std::FILE *f, CStringRef format_str, ArgList args);
     print("Elapsed time: {0:.2f} seconds", 1.23);
   \endrst
  */
-void print(CStringRef format_str, ArgList args);
+FMT_FUNC void print(CStringRef format_str, ArgList args);
 
 template <typename Char>
 void printf(BasicWriter<Char> &w, BasicCStringRef<Char> format, ArgList args) {
@@ -3066,7 +3078,7 @@ inline std::wstring sprintf(WCStringRef format, ArgList args) {
     fmt::fprintf(stderr, "Don't %s!", "panic");
   \endrst
  */
-int fprintf(std::FILE *f, CStringRef format, ArgList args);
+FMT_FUNC int fprintf(std::FILE *f, CStringRef format, ArgList args);
 
 /**
   \rst
@@ -3361,7 +3373,7 @@ FMT_VARIADIC(int, fprintf, std::FILE *, CStringRef)
     print(cerr, "Don't {}!", "panic");
   \endrst
  */
-void print(std::ostream &os, CStringRef format_str, ArgList args);
+FMT_FUNC void print(std::ostream &os, CStringRef format_str, ArgList args);
 FMT_VARIADIC(void, print, std::ostream &, CStringRef)
 #endif
 
