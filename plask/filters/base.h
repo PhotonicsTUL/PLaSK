@@ -317,7 +317,8 @@ struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 /// Don't use this directly, use ConstDataSource instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
 struct ConstDataSourceImpl {
-    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "filter data sources can't be use with single value properties (it can be use only with fields properties)");
+    static_assert(propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY,
+                  "filter data sources can't be used with value properties (it can be used only with field properties)");
 };
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
@@ -337,6 +338,26 @@ public:
         return [=](std::size_t) { return value; };
     }
 
+};
+
+template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
+struct ConstDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>
+        : public DataSource<PropertyT, OutputSpaceType> {
+
+public:
+
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+
+    ValueType value;
+
+    ConstDataSourceImpl(const ValueType& value): value(value) {}
+
+    std::function<boost::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType, const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
+        return [=](std::size_t) { return value; };
+    }
+
+    size_t size() const override { return 1; }
 };
 
 template <typename PropertyT, typename OutputSpaceType>

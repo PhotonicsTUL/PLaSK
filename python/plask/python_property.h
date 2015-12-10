@@ -56,7 +56,7 @@ namespace detail {
             registerReceiver<ReceiverFor<PropertyT,Geometry2DCylindrical>>();
             registerReceiver<ReceiverFor<PropertyT,Geometry3D>>();
 
-            //TODO registerFilters<PropertyT>();
+            registerFilters<PropertyT>();
         }
     };
 }

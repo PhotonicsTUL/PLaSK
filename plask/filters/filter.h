@@ -15,7 +15,8 @@ struct FilterCommonBase: public Solver {
 /// Don't use this directly, use FilterBase or Filter instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
 struct FilterBaseImpl {
-    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "Filter can't be use with single value properties (it can be use only with fields properties)");
+    static_assert(propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY,
+                  "Filter can't be used with value properties (it can be uses only with field properties)");
 };
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
@@ -323,8 +324,10 @@ public:
             },
             [&] () -> size_t {
                 size_t size = this->outerSource->size();
-                for (const auto& inner: this->innerSources)
-                    size = std::min(size, inner->size());
+                for (const auto& inner: this->innerSources) {
+                    if (inner->size() != size)
+                        throw DataError("All providers in {} filter must have equal number of values", PropertyT::NAME);
+                }
                 return size;
             })
     {
