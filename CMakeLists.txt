@@ -113,6 +113,19 @@ elseif(USE_PROFILER STREQUAL "google")
     message(STATUS "Using Google perftools profiler")
 endif()
 
+# ---------- NuGet paths ---------------------------------------------------
+if(NUGET_PACKAGES_PATH)
+	# TODO use the highest number not higher than compiler version intead of constants like "v110"
+	file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
+	file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
+	list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
+	list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
+	#file(GLOB nuget_boost_includedir "${NUGET_PACKAGES_PATH}/boost*/lib/native/include")
+	#list(APPEND CMAKE_INCLUDE_PATH ${nuget_boost_includedir})
+	#message("CMAKE_INCLUDE_PATH is: ${CMAKE_INCLUDE_PATH}")
+	#message("CMAKE_LIBRARY_PATH is: ${CMAKE_LIBRARY_PATH}")
+endif(NUGET_PACKAGES_PATH)
+
 # ---------- External libraries --------------------------------------------
 if(WIN32)
     get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
