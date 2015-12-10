@@ -60,6 +60,12 @@ using fmt::internal::Arg;
 # define FMT_CATCH(x) if (false)
 #endif
 
+#ifdef FMT_HEADER_ONLY
+# define FMT_FUNC inline
+#else
+# define FMT_FUNC
+#endif
+
 #ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4127)  // conditional expression is constant
@@ -419,7 +425,7 @@ FMT_FUNC void fmt::SystemError::init(
 }
 
 template <typename T>
-FMT_EXPORT int fmt::internal::CharTraits<char>::format_float(
+int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, T value) {
   if (width == 0) {
@@ -433,7 +439,7 @@ FMT_EXPORT int fmt::internal::CharTraits<char>::format_float(
 }
 
 template <typename T>
-FMT_EXPORT int fmt::internal::CharTraits<wchar_t>::format_float(
+int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, T value) {
   if (width == 0) {
@@ -447,7 +453,7 @@ FMT_EXPORT int fmt::internal::CharTraits<wchar_t>::format_float(
 }
 
 template <typename T>
-FMT_EXPORT const char fmt::internal::BasicData<T>::DIGITS[] =
+const char fmt::internal::BasicData<T>::DIGITS[] =
     "0001020304050607080910111213141516171819"
     "2021222324252627282930313233343536373839"
     "4041424344454647484950515253545556575859"
@@ -466,12 +472,12 @@ FMT_EXPORT const char fmt::internal::BasicData<T>::DIGITS[] =
   factor * 1000000000
 
 template <typename T>
-FMT_EXPORT const uint32_t fmt::internal::BasicData<T>::POWERS_OF_10_32[] = {
+const uint32_t fmt::internal::BasicData<T>::POWERS_OF_10_32[] = {
   0, FMT_POWERS_OF_10(1)
 };
 
 template <typename T>
-FMT_EXPORT const uint64_t fmt::internal::BasicData<T>::POWERS_OF_10_64[] = {
+const uint64_t fmt::internal::BasicData<T>::POWERS_OF_10_64[] = {
   0,
   FMT_POWERS_OF_10(1),
   FMT_POWERS_OF_10(fmt::ULongLong(1000000000)),
@@ -595,7 +601,7 @@ FMT_FUNC void fmt::internal::format_system_error(
 }
 
 template <typename Char>
-FMT_EXPORT void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
+void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
   if (!map_.empty())
     return;
   typedef internal::NamedArg<Char> NamedArg;
@@ -640,7 +646,7 @@ FMT_EXPORT void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
 }
 
 template <typename Char>
-FMT_EXPORT void fmt::internal::FixedBuffer<Char>::grow(std::size_t) {
+void fmt::internal::FixedBuffer<Char>::grow(std::size_t) {
   FMT_THROW(std::runtime_error("buffer overflow"));
 }
 
@@ -733,7 +739,7 @@ unsigned fmt::internal::PrintfFormatter<Char>::parse_header(
 }
 
 template <typename Char>
-FMT_EXPORT void fmt::internal::PrintfFormatter<Char>::format(
+void fmt::internal::PrintfFormatter<Char>::format(
     BasicWriter<Char> &writer, BasicCStringRef<Char> format_str) {
   const Char *start = format_str.c_str();
   const Char *s = start;
@@ -878,39 +884,39 @@ FMT_FUNC int fmt::fprintf(std::FILE *f, CStringRef format, ArgList args) {
 
 #ifndef FMT_HEADER_ONLY
 
-template FMT_EXPORT struct fmt::internal::BasicData<void>;
+template struct fmt::internal::BasicData<void>;
 
 // Explicit instantiations for char.
 
-template FMT_EXPORT void fmt::internal::FixedBuffer<char>::grow(std::size_t);
+template void fmt::internal::FixedBuffer<char>::grow(std::size_t);
 
-template FMT_EXPORT void fmt::internal::ArgMap<char>::init(const fmt::ArgList &args);
+template void fmt::internal::ArgMap<char>::init(const fmt::ArgList &args);
 
-template FMT_EXPORT void fmt::internal::PrintfFormatter<char>::format(
+template void fmt::internal::PrintfFormatter<char>::format(
   BasicWriter<char> &writer, CStringRef format);
 
-template FMT_EXPORT int fmt::internal::CharTraits<char>::format_float(
+template int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, double value);
 
-template FMT_EXPORT int fmt::internal::CharTraits<char>::format_float(
+template int fmt::internal::CharTraits<char>::format_float(
     char *buffer, std::size_t size, const char *format,
     unsigned width, int precision, long double value);
 
 // Explicit instantiations for wchar_t.
 
-template FMT_EXPORT void fmt::internal::FixedBuffer<wchar_t>::grow(std::size_t);
+template void fmt::internal::FixedBuffer<wchar_t>::grow(std::size_t);
 
-template FMT_EXPORT void fmt::internal::ArgMap<wchar_t>::init(const fmt::ArgList &args);
+template void fmt::internal::ArgMap<wchar_t>::init(const fmt::ArgList &args);
 
-template FMT_EXPORT void fmt::internal::PrintfFormatter<wchar_t>::format(
+template void fmt::internal::PrintfFormatter<wchar_t>::format(
     BasicWriter<wchar_t> &writer, WCStringRef format);
 
-template FMT_EXPORT int fmt::internal::CharTraits<wchar_t>::format_float(
+template int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, double value);
 
-template FMT_EXPORT int fmt::internal::CharTraits<wchar_t>::format_float(
+template int fmt::internal::CharTraits<wchar_t>::format_float(
     wchar_t *buffer, std::size_t size, const wchar_t *format,
     unsigned width, int precision, long double value);
 
