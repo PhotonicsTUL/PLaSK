@@ -95,6 +95,8 @@
     <thermk>self.base.thermk(T, 10.)[1], self.base.thermk(T, h)[1]</thermk>
   </material>
   <material name="GaN_cavity:Si" base="GaN:Si">
+    <VB>material.get('Al(0.20)GaN:Mg=4e17').VB(T, e, point)</VB>
+    <Eg>material.get('Al(0.20)GaN:Mg=4e17').Eg(T, e, point)</Eg>
     <thermk>self.base.thermk(T, 10.)[1], self.base.thermk(T, {0.1652*cavity-0.1834})[1]</thermk>
   </material>
 </materials>
@@ -237,12 +239,27 @@
     <geometry ref="electrical"/>
     <config lifetime="0.1" matrix-elem="5" strained="no"/>
   </gain>
+  <gain name="GAIN3" solver="FermiNewCyl" lib="complex">
+    <geometry ref="electrical"/>
+    <config matrix-elem="5" strained="no"/>
+  </gain>
 </solvers>
 
 <script><![CDATA[
 colors = rc.axes.color_cycle
 
 zqw = GEO.electrical.get_object_bboxes(GEO.QW)[0].center.z
+msh = mesh.Rectangular2D([0.], [zqw])
+
+GAIN1.inTemperature = gT
+GAIN2.inTemperature = gT
+GAIN3.inTemperature = gT
+
+GAIN1.inCarriersConcentration = 1e19 * gN
+GAIN2.inCarriersConcentration = 1e19 * gN
+GAIN3.inCarriersConcentration = 1e19 * gN
+
+
 
 glams = linspace(350., 500., 1201)
 
@@ -287,53 +304,90 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
     if levels is not None:
         for l in levels['el']:
             axhline(co+l, color=el_color, ls='--')
+        print("EL: {}".format(', '.join(str(x) for x in co+array(levels['el']))))
         for l in levels['hh']:
             axhline(vo+l, color=hh_color, ls='--')
+        print("HH: {}".format(', '.join(str(x) for x in vo+array(levels['hh']))))
         for l in levels['lh']:
             axhline(vo+l, color=lh_color, ls='--')
+        print("LH: {}".format(', '.join(str(x) for x in vo+array(levels['lh']))))
     gcf().canvas.set_window_title(title)
     #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
 
+levels1 = GAIN1.determine_levels(300., 1e18)[0]
+levels1['el'] = [-l for l in levels1['el']]
+mat = material.db.get("GaN_barrier")
+cbo = mat.CB()
+vbo = mat.VB()
+mat = material.db.get("InGaN_QW")
+cbq = mat.CB()
+vbq = mat.VB()
+
+figure()
+plot_bands(levels1, co=cbo, vo=vbo, title=u"Levels: Michał")
+yl = -0.4, 0.2
+
+GAIN3.outGain(msh, 430.)
+mat = material.db.get("GaN_cavity:Si={}".format(Si2*1e18))
+cbo = mat.CB()
+vbo = mat.VB()
+levels3 = GAIN3.get_levels()[0]
+plot_bands(levels3, co=cbo, vo=vbo, title=u"Levels: Michał", el_color='#00cccc', hh_color='#0000ff', lh_color='#008800')
+
+twiny()
+cc = logspace(16, 20, 65)
+ffc, ffv = map(array, zip(*((f['Fc'], f['Fv']) for f in (GAIN1.determine_levels(300., c)[0] for c in cc))))
+plot(cc, cbq+ffc, color=colors[0], ls='-', lw=1.5)
+plot(cc, vbq+ffv, color=colors[1], ls='-', lw=1.5)
+axvline(1e19*gN, color='0.75')
+xlabel(u'Carriers concentation [1/cm³]')
+xscale('log')
+xlim(1e16, 1e20)
+ylim(*yl)
+tight_layout(0.2)    
 
 levels2 = GAIN2.get_energy_levels()[0]
 
-# figure()
+figure()
+plot_bands(levels2, title=u"Levels: Maciek")
 
-# plot_bands(levels2, title=u"Levels: Maciek")
-# 
-# yl = -0.4, 4.0
-# twiny()
-# try:
-#     ff = linspace(yl[0], yl[1], 1001)
-#     nn = GAIN2.getN(ff)
-#     pp = GAIN2.getP(ff)
-# except AttributeError:
-#     pass
-# else:
-#     plot(nn, ff, color=colors[0], ls='-', lw=1.5)
-#     plot(pp, ff, color=colors[1], ls='-', lw=1.5)
-# 
-# cc = logspace(16, 20, 65)
-# ffc, ffv = zip(*(GAIN2.get_fermi_levels(c) for c in cc))
-# plot(cc, ffc, color=colors[0], ls='-', lw=2.5)
-# plot(cc, ffv, color=colors[1], ls='-', lw=2.5)
-# axvline(1e19*gN, color='0.75')
-# 
-# # ylim(*yl)
-# xlabel(u'Carriers concentation [1/cm³]')
-# xscale('log')
-# xlim(1e16, 1e20)
-# tight_layout(0.2)    
+plot_bands(levels3, co=cbo, vo=vbo, title=u"Levels: Maciek", el_color='#00cccc', hh_color='#0000ff', lh_color='#008800')
+
+twiny()
+try:
+    ff = linspace(yl[0], yl[1], 1001)
+    nn = GAIN2.getN(ff)
+    pp = GAIN2.getP(ff)
+except AttributeError:
+    pass
+else:
+    plot(nn, ff, color=colors[0], ls='-', lw=1.5)
+    plot(pp, ff, color=colors[1], ls='-', lw=1.5)
+
+cc = logspace(16, 20, 65)
+ffc, ffv = zip(*(GAIN2.get_fermi_levels(c) for c in cc))
+plot(cc, ffc, color=colors[0], ls='-', lw=1.5)
+plot(cc, ffv, color=colors[1], ls='-', lw=1.5)
+axvline(1e19*gN, color='0.75')
+
+ylim(*yl)
+xlabel(u'Carriers concentation [1/cm³]')
+xscale('log')
+xlim(1e16, 1e20)
+tight_layout(0.2)    
 
 GAIN1.inTemperature = gT
 GAIN2.inTemperature = gT
+GAIN3.inTemperature = gT
 
 GAIN1.inCarriersConcentration = 1e19 * gN
 GAIN2.inCarriersConcentration = 1e19 * gN
+GAIN3.inCarriersConcentration = 1e19 * gN
 
 plot_gain_spectrum(GAIN1, True, u"Michał")
 plot_gain_spectrum(GAIN2, False, u"Maciek")
+plot_gain_spectrum(GAIN3, False, u"Michał2")
 legend(loc='best')
 
 tight_layout(0.2)    

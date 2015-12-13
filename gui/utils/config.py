@@ -238,7 +238,7 @@ class Config(object):
         except TypeError:
             return current
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         current = self.qsettings.value(key)
         if current is None:
             return default
