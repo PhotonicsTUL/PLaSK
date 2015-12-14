@@ -343,7 +343,7 @@ inline constexpr Vec<2,T> conj(const Vec<2,T>& v) { return Vec<2,T>(conj(v.c0), 
  */
 template <typename T1, typename T2>
 inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c0) {
-    return fma(v1.c0, v2.c0, v1.c1 * v2.c1);
+    return ::plask::fma(v1.c0, v2.c0, v1.c1 * v2.c1);	//MSVC needs ::plask::fma::
 }
 
 /**
@@ -354,7 +354,7 @@ inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c
  */
 template <>
 inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,double>& v2) -> decltype(v1.c0*v2.c0) {
-    return fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);
+    return ::plask::fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);	//MSVC needs ::plask::fma::
 }
 
 /**
@@ -365,7 +365,7 @@ inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,double>& v2) -> decltype(
  */
 template <>
 inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,dcomplex>& v2) -> decltype(v1.c0*v2.c0) {
-    return fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);
+    return ::plask::fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);	//MSVC needs ::plask::fma::
 }
 
 /**
