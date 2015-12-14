@@ -352,7 +352,7 @@ inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c
  * @param v2 second vector
  * @return dot product v1·v2
  */
-template <>
+//template <>   //MSVC2015 doesn't support this specialization, and using overloding shouldn't have negative consequences
 inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,double>& v2) -> decltype(v1.c0*v2.c0) {
     return ::plask::fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);	//MSVC needs ::plask::fma::
 }
@@ -363,7 +363,7 @@ inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,double>& v2) -> decltype(
  * @param v2 second vector
  * @return dot product v1·v2
  */
-template <>
+//template <>   //MSVC2015 doesn't support this specialization, and using overloding shouldn't have negative consequences
 inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,dcomplex>& v2) -> decltype(v1.c0*v2.c0) {
     return ::plask::fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);	//MSVC needs ::plask::fma::
 }
