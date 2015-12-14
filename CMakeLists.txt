@@ -14,12 +14,16 @@ set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible featu
 
 # ---------- Common options --------------------------------------------
 
-if(MINGW)
-    set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
-else()
-    set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")
+if(MSVC)
+	# flags needed by Visual Studio
+else(MSVC)
+	if(MINGW)
+		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+	else()
+		set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+	endif()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")
+endif(MSVC)
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(WIN64 YES) # CMake cannot automatically detect that we compile for WIN64
