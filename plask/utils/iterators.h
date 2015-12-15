@@ -395,7 +395,13 @@ struct MethodIterator: public boost::iterator_facade< MethodIterator<ContainerTy
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend struct MethodIterator;
+	template <
+		typename ContainerType,
+		typename ReturnedType,
+		ReturnedType(ContainerType::*Method)(std::size_t),
+		typename Reference,
+		typename Value>
+	friend struct MethodIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {

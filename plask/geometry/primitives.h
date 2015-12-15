@@ -49,7 +49,7 @@ struct PLASK_API Box2D {
     constexpr Vec<2,double> center() const { return 0.5 * (upper + lower); }
 
     /// Construct uninitialized .
-    constexpr Box2D() {}
+    Box2D() {}
 
     /**
      * Construct box.
@@ -363,7 +363,7 @@ struct PLASK_API Box3D {
     constexpr Vec<3,double> center() const { return 0.5 * (upper + lower); }
 
     /// Construct uninitialized .
-    constexpr Box3D() {}
+    Box3D() {}
 
     /**
      * Construct  with given lower and upper corner positions.
