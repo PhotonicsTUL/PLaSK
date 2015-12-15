@@ -396,11 +396,11 @@ struct MethodIterator: public boost::iterator_facade< MethodIterator<ContainerTy
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
 	template <
-		typename ContainerType,
-		typename ReturnedType,
-		ReturnedType(ContainerType::*Method)(std::size_t),
-		typename Reference,
-		typename Value>
+        typename _ContainerType,
+        typename _ReturnedType,
+        _ReturnedType(_ContainerType::*_Method)(std::size_t),
+        typename _Reference,
+        typename _Value>
 	friend struct MethodIterator;
 
     template <typename OtherT>
