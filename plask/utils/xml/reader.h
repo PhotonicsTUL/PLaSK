@@ -205,7 +205,7 @@ class PLASK_API XMLReader {
          * \param val value of the attribute
          * \param min minimum number of letters in the attribute
          **/
-        EnumAttributeReader& value(std::string key, EnumT val, size_t min=std::numeric_limits<std::size_t>::max()) {
+        EnumAttributeReader& value(std::string key, EnumT val, std::size_t min=std::numeric_limits<std::size_t>::max()) {
             if (case_insensitive) boost::to_lower(key);
 #           ifndef NDEBUG
                 if (values.find(key) != values.end()) throw XMLException(reader, "CODE ERROR: Attribute value \"" + key + "\" already defined.");
