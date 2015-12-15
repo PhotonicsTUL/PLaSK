@@ -35,7 +35,7 @@ struct PLASK_API Geometry: public GeometryObject {
      * Calculation space constructor, set default material.
      * @param defaultMaterial material which will be used for places in which geometry doesn't define any material, air by default
      */
-    Geometry(shared_ptr<Material> defaultMaterial = plask::make_shared<materials::Air>()): defaultMaterial(defaultMaterial) {}
+    Geometry(shared_ptr<Material> defaultMaterial = make_shared<materials::Air>()): defaultMaterial(defaultMaterial) {}
 
     /**
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
