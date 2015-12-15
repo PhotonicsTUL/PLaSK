@@ -58,7 +58,7 @@ void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& p
 
 template <int dim>
 void Intersection<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
-    this->_getNotChangedPositionsToVec(predicate, dest, path);
+    this->_getNotChangedPositionsToVec(this, predicate, dest, path);
 }
 
 template <int dim>

@@ -22,8 +22,8 @@ enum LogLevel {
 };
 
 /// Maximum log level
-extern LogLevel maxLoglevel;
-extern bool forcedLoglevel;
+PLASK_API extern LogLevel maxLoglevel;
+PLASK_API extern bool forcedLoglevel;
 
 /**
  * Logger switch.
@@ -93,7 +93,7 @@ class PLASK_API Logger {
 /**
  * Pointer to the logger
  */
-extern shared_ptr<Logger> default_logger;
+PLASK_API extern shared_ptr<Logger> default_logger;
 
 PLASK_API void createDefaultLogger();
 

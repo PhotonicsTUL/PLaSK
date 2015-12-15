@@ -15,7 +15,10 @@ set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible featu
 # ---------- Common options --------------------------------------------
 
 if(MSVC)
-	# flags needed by Visual Studio
+    # flags needed by Visual Studio:
+    add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX)
+    # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
+    # NOMINMAX prevend windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
 else(MSVC)
 	if(MINGW)
 		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
