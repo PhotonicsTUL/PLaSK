@@ -218,7 +218,7 @@ namespace detail {
     static py::object makeDataVectorImpl(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
 
         size_t size;
-        py::handle<> newarr;
+        py::handle<PyArrayObject> newarr;
 
         if (PyArray_NDIM(arr) != 1) {
             auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
@@ -239,11 +239,14 @@ namespace detail {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
                     writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
                     
-                    newarr = py::handle<>(PyArray_New(&PyArray_Type, nd, meshdims.data(),
-                                          PyArray_TYPE(arr), meshstrides.data(),
-                                          nullptr, 0, 0, nullptr));
-                    PyArray_CopyInto((PyArrayObject*)newarr.get(), arr);
-                    arr = (PyArrayObject*)newarr.get();
+                    newarr = py::handle<PyArrayObject>(
+                        (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(),
+                                                    PyArray_TYPE(arr), meshstrides.data(),
+                                                    nullptr, 0, 0, nullptr)
+                    );
+                    
+                    PyArray_CopyInto(newarr.get(), arr);
+                    arr = newarr.get();
                     break;
                 }
             }
