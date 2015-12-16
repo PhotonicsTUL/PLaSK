@@ -12,7 +12,6 @@
     <A>0.1 * T + 0.02 * (T-300)**2</A>
   </material>
   <material name="InGaAsQW:Si" base="In(0.2)GaAs:Si=1e18">
-    <Eg/>
     <nr>3.621</nr>
     <absp>0</absp>
     <A>110000000</A>
@@ -20,9 +19,7 @@
     <C>1e-029+1.4764e-33*(T-300)</C>
     <D>10+0.016670*(T-300)</D>
   </material>
-  <material name="name"/>
   <material name="name" base="semiconductor"/>
-  <material name="test" base="semiconductor"/>
 </materials>
 
 <geometry>
@@ -39,7 +36,7 @@
       <shelf flat="no">
         <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         <gap total="2"/>
-        <triangle material="AlOx2" atran="-1" avert="0" btran="0" bvert="0.2"/>
+        <triangle material="AlOx" atran="-1" avert="0" btran="0" bvert="0.2"/>
       </shelf>
       <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>
@@ -67,7 +64,7 @@
         <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
         <shelf>
           <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
-          <rectangle name="oxide" material="AlOx2" dr="{mesaRadius-aperture}" dz="0.01603"/>
+          <rectangle name="oxide" material="AlOx" dr="{mesaRadius-aperture}" dz="0.01603"/>
           <gap size="12"/>
         </shelf>
         <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
@@ -219,13 +216,12 @@
   <connect in="OPTICAL.inTemperature" out="THERMAL.outTemperature"/>
   <connect in="OPTICAL.inGain" out="GAIN.outGain"/>
   <connect in="DIFFUSION.inGain" out="GAIN.outGain"/>
-  <connect in="DIFFUSION.inGainOverCarriersConcentration" out="GAIN.outGainOverCarriersConcentration"/>
 </connects>
 
 <script><![CDATA[
 from scipy import optimize
 
-print(mesaRadius + 0) # 0
+print mesaRadius + 0 # 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")

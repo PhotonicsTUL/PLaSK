@@ -216,7 +216,7 @@ class MainWindow(QtGui.QMainWindow):
         goto_action = QtGui.QAction('&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
-        goto_action.triggered.connect(self.goto_line)
+        goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
                                'Examine &Material Parameters...', self)
@@ -255,7 +255,10 @@ class MainWindow(QtGui.QMainWindow):
         if OPERATIONS:
             self.menu.addSeparator()
             for op in OPERATIONS:   # for plugins use
-                self.menu.addAction(op(self))
+                if op is not None:
+                    self.menu.addAction(op(self))
+                else:
+                    self.menu.addSeparator()
         self.menu.addSeparator()
         self.menu.addAction(settings_action)
         self.menu.addSeparator()
@@ -553,6 +556,13 @@ class MainWindow(QtGui.QMainWindow):
         except AttributeError:
             self.setWindowTitle("[*] PLaSK")
         self.setWindowModified(changed)
+
+    def on_goto_line(self):
+        dialog = GotoDialog(self)
+        if dialog.exec_():
+            self.goto_line(int(dialog.input.text()))
+        else:
+            return
 
     def goto_line(self, line_number=None):
         if line_number is None:
