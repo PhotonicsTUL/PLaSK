@@ -192,26 +192,6 @@ dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_me
 
 namespace detail {
 
-    template <typename T, typename MeshT>
-    static size_t checkMeshAndArray(PyArrayObject* arr, const MeshT& mesh) {
-        auto mesh_dims = detail::mesh_dims(mesh);
-        if (detail::type_dim<T>() != 1)  mesh_dims.push_back(detail::type_dim<T>());
-        size_t nd = mesh_dims.size();
-
-        if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or {0} dimensions", MeshT::DIM);
-
-        for (size_t i = 0; i != nd; ++i)
-            if (mesh_dims[i] != PyArray_DIMS(arr)[i])
-                throw ValueError("Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, mesh_dims[i], PyArray_DIMS(arr)[i]);
-
-        auto mesh_strides = detail::mesh_strides<T>(mesh, nd);
-        for (size_t i = 0; i != nd; ++i)
-            if (mesh_strides[i] != PyArray_STRIDES(arr)[i])
-                throw ValueError("Stride {0} for the array do not correspond to the current mesh ordering (stride: mesh: {1}, array: {2})", i, mesh_strides[i], PyArray_STRIDES(arr)[i]);
-
-        return mesh.size();
-    }
-
     struct NumpyDataDeleter {
         PyArrayObject* arr;
         NumpyDataDeleter(PyArrayObject* arr) : arr(arr) {
@@ -229,12 +209,33 @@ namespace detail {
 
         size_t size;
 
-        auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
-
         if (PyArray_NDIM(arr) != 1) {
+            auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
+            if (!rectangular) throw TypeError("For this mesh type only one-dimensional array is allowed");
 
-            if (rectangular) size = checkMeshAndArray<T, RectangularMesh<dim>>(arr, *rectangular);
-            else throw TypeError("For this mesh type only one-dimensional array is allowed");
+            auto meshdims = mesh_dims(*rectangular);
+            if (type_dim<T>() != 1)  meshdims.push_back(type_dim<T>());
+            size_t nd = meshdims.size();
+
+            if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or {0} dimensions", dim);
+
+            for (size_t i = 0; i != nd; ++i)
+                if (meshdims[i] != PyArray_DIMS(arr)[i])
+                    throw ValueError("Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i], PyArray_DIMS(arr)[i]);
+
+            auto meshstrides = mesh_strides<T>(*rectangular, nd);
+            for (size_t i = 0; i != nd; ++i) {
+                if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
+                    writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
+                    PyArrayObject* newarr = (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(), PyArray_TYPE(arr), meshstrides.data(),
+                                                                        nullptr, 0, 0, nullptr);
+                    PyArray_CopyInto(newarr, arr);
+                    arr = newarr;
+                    break;
+                }
+            }
+
+            size = mesh->size();
 
         } else
             size = PyArray_DIMS(arr)[0] / type_dim<T>();
@@ -255,9 +256,11 @@ namespace detail {
         if (ndim == dim+1) {
             if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
+            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
         } else if (ndim == 1) {
             if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
+            else if (last_dim == 4 * mesh->size()) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
         }
         return makeDataVectorImpl<T, dim>(arr, mesh);
     }
