@@ -8,6 +8,16 @@
 #include <plask/data.h>
 #include <plask/vec.h>
 
+namespace boost { namespace python {
+
+template <>
+struct base_type_traits<PyArrayObject>
+{
+    typedef PyObject type;
+};
+
+}}
+
 namespace plask { namespace python {
 
 /*
@@ -208,6 +218,7 @@ namespace detail {
     static py::object makeDataVectorImpl(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
 
         size_t size;
+        py::handle<> newarr;
 
         if (PyArray_NDIM(arr) != 1) {
             auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
@@ -227,10 +238,12 @@ namespace detail {
             for (size_t i = 0; i != nd; ++i) {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
                     writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
-                    PyArrayObject* newarr = (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(), PyArray_TYPE(arr), meshstrides.data(),
-                                                                        nullptr, 0, 0, nullptr);
-                    PyArray_CopyInto(newarr, arr);
-                    arr = newarr;
+                    
+                    newarr = py::handle<>(PyArray_New(&PyArray_Type, nd, meshdims.data(),
+                                          PyArray_TYPE(arr), meshstrides.data(),
+                                          nullptr, 0, 0, nullptr));
+                    PyArray_CopyInto((PyArrayObject*)newarr.get(), arr);
+                    arr = (PyArrayObject*)newarr.get();
                     break;
                 }
             }
