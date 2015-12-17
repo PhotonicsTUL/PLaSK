@@ -471,12 +471,12 @@ shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
-            boost::optional<double> small = reader.getAttribute<double>("small");
-            if (small) {
+            boost::optional<double> small_op = reader.getAttribute<double>("small");	//dons't use small since some windows haders: #define small char
+            if (small_op) {
                 if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
                 if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");
                 if (reader.hasAttribute("small2")) throw XMLConflictingAttributesException(reader, "small", "small2");
-                for (int i = 0; i < dim; ++i) result->finestep[i] = *small;
+                for (int i = 0; i < dim; ++i) result->finestep[i] = *small_op;
             } else
                 for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small{:d}", i), result->finestep[i]);
             boost::optional<double> large = reader.getAttribute<double>("large");

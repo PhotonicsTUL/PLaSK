@@ -24,7 +24,7 @@ struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
 
     virtual std::size_t size() const override;
 
-    virtual plask::Vec<DIM, double> at(std::size_t index) const override;
+    virtual Vec<DIM, double> at(std::size_t index) const override;
 
     virtual void writeXML(XMLElement& object) const override;
 

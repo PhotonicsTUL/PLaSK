@@ -39,7 +39,7 @@ struct LazyDataImpl {
         DataVector<T> res(this->size());
         std::exception_ptr error;
         #pragma omp parallel for
-        for (std::size_t i = 0; i < res.size(); ++i) {
+        for (int i = 0; i < res.size(); ++i) {
             if (error) continue;
             try {
                 res[i] = this->at(i);
