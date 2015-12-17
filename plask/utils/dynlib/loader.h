@@ -91,7 +91,7 @@ public:
      * Swap library ownerships between this and to_swap.
      * @param to_swap library to swap with
      */
-    void swap(DynamicLibrary& to_swap) {
+    void swap(DynamicLibrary& to_swap) noexcept {
         std::swap(handler, to_swap.handler);
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
         std::swap(unload, to_swap.unload);
@@ -215,7 +215,7 @@ public:
 namespace std {
 
 /// std::swap implementation for dynamic libraries
-inline void swap(plask::DynamicLibrary& a, plask::DynamicLibrary& b) { a.swap(b); }
+inline void swap(plask::DynamicLibrary& a, plask::DynamicLibrary& b) noexcept { a.swap(b); }
 
 /// hash method, allow to store dynamic libraries in hash maps
 template<>
