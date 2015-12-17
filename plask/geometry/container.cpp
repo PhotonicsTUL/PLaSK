@@ -36,7 +36,7 @@ void GeometryObjectContainer<dim>::disconnectOnChildChanged(Translation<dim> &ch
 }
 
 template <int dim>
-bool GeometryObjectContainer<dim>::contains(const GeometryObjectContainer::DVec &p) const {
+bool GeometryObjectContainer<dim>::contains(const typename GeometryObjectContainer<dim>::DVec &p) const {
     for (auto child: children) if (child->contains(p)) return true;
     return false;
 }
@@ -150,7 +150,7 @@ GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsTo(const GeometryO
 }
 
 template <int dim>
-GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsAt(const GeometryObjectContainer::DVec &point, bool all) const {
+GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsAt(const typename GeometryObjectContainer::DVec &point, bool all) const {
     GeometryObject::Subtree result;
     if (all) {
         for (auto child = children.begin(); child != children.end(); ++child) {

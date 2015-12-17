@@ -339,11 +339,11 @@ protected:
         return PathHints::Hint(this->shared_from_this(), to_add);
     }
 
-    PathHints::Hint _add(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
+    /*PathHints::Hint _add(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
         this->ensureCanHaveAsChild(*to_add);
-        addUnsafe(to_add, aligner);
+        this->_addUnsafe(to_add, aligner);
         return PathHints::Hint(this->shared_from_this(), to_add);
-    }
+    }*/
 
     ChildAligner getAlignerFor(shared_ptr<const TranslationT> child) {
         auto it = std::find(children.begin(), children.end(), child);

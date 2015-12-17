@@ -10,24 +10,24 @@ TranslationContainer<dim>::~TranslationContainer() {
 }
 
 template <int dim>
-PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
+PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<typename TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
     invalidateCache();
     return this->_addUnsafe(newTranslation(el, aligner), aligner);
 }
 
 template <int dim>
-PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationContainer<dim>::ChildType> el, const TranslationContainer<dim>::DVec& translation) {
+PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<typename TranslationContainer<dim>::ChildType> el, const typename TranslationContainer<dim>::DVec& translation) {
     return this->addUnsafe(el, align::fromVector(translation));
 }
 
 template <int dim>
-PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
+PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<typename TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
     invalidateCache();
     return this->_insertUnsafe(pos, newTranslation(el, aligner), aligner);
 }
 
 template <int dim>
-PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<TranslationContainer<dim>::ChildType> el, const TranslationContainer<dim>::DVec& translation) {
+PathHints::Hint TranslationContainer<dim>::insertUnsafe(const std::size_t pos, shared_ptr<typename TranslationContainer<dim>::ChildType> el, const typename TranslationContainer<dim>::DVec& translation) {
     return this->insertUnsafe(pos, el, align::fromVector(translation));
 }
 
@@ -54,14 +54,14 @@ void TranslationContainer<dim>::invalidateCache() {
 
 template <int dim>
 SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() {
-    if (!cache)
+    if (!cache.load())
         cache = buildSpatialIndex<dim>(children).release();
     return cache;
 }
 
 template <int dim>
 SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() const {
-    if (cache) return cache;
+    if (cache.load()) return cache;
     boost::lock_guard<boost::mutex> lock(const_cast<boost::mutex&>(cache_mutex));
     //this also will check if cache is non-null egain, someone could build cache when we waited for enter to critical section:
     return const_cast<TranslationContainer<dim>*>(this)->ensureHasCache();

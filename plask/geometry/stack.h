@@ -287,7 +287,7 @@ template <int dim>
 struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
 
     typedef StackContainerChildAligner<dim> ChildAligner;
-    static const StackContainer<dim>::ChildAligner& DefaultAligner();
+    static const ChildAligner& DefaultAligner();
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;

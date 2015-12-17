@@ -27,7 +27,7 @@ typename Circle<3>::Box Circle<3>::getBoundingBox() const {
 }
 
 template <int dim>
-bool Circle<dim>::contains(const Circle<dim>::DVec &p) const {
+bool Circle<dim>::contains(const typename Circle<dim>::DVec &p) const {
     return abs2(p) <= radius * radius;
 }
 

@@ -62,7 +62,7 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height, 
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
-bool StackContainerBaseImpl<dim, growingDirection>::contains(const StackContainerBaseImpl::DVec &p) const {
+bool StackContainerBaseImpl<dim, growingDirection>::contains(const typename StackContainerBaseImpl<dim, growingDirection>::DVec &p) const {
     shared_ptr<TranslationT> sec_candidate;
     const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection], sec_candidate);
     if (!c) {
@@ -73,7 +73,7 @@ bool StackContainerBaseImpl<dim, growingDirection>::contains(const StackContaine
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
-shared_ptr<Material> StackContainerBaseImpl<dim, growingDirection>::getMaterial(const StackContainerBaseImpl::DVec &p) const {
+shared_ptr<Material> StackContainerBaseImpl<dim, growingDirection>::getMaterial(const typename StackContainerBaseImpl<dim, growingDirection>::DVec &p) const {
     shared_ptr<TranslationT> sec_candidate;
     const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection], sec_candidate);
     if (c) {
@@ -181,9 +181,9 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 }
 
 template <int dim>
-shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newTranslation(const shared_ptr<StackContainer<dim>::ChildType> &el,
+shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newTranslation(const shared_ptr<typename StackContainer<dim>::ChildType> &el,
                                                                                   const typename StackContainer<dim>::ChildAligner &aligner,
-                                                                                  double up_trans, const StackContainer<dim>::Box &elBB) const {
+                                                                                  double up_trans, const typename StackContainer<dim>::Box &elBB) const {
     shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
     result->translation.vert() = up_trans;
     aligner.align(*result, elBB);
@@ -192,7 +192,7 @@ shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newT
 }
 
 template <int dim>
-shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newTranslation(const shared_ptr<StackContainer<dim>::ChildType> &el,
+shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newTranslation(const shared_ptr<typename StackContainer<dim>::ChildType> &el,
                                                                                   const typename StackContainer<dim>::ChildAligner &aligner, double up_trans) const {
     shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
     result->translation.vert() = up_trans;
@@ -210,7 +210,7 @@ void StackContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
 }
 
 template <int dim>
-PathHints::Hint StackContainer<dim>::addUnsafe(const shared_ptr<StackContainer::ChildType> &el, const StackContainer::ChildAligner &aligner) {
+PathHints::Hint StackContainer<dim>::addUnsafe(const shared_ptr<typename StackContainer<dim>::ChildType> &el, const typename StackContainer<dim>::ChildAligner &aligner) {
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -477,7 +477,7 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsTo(const Geomet
 }
 
 template <typename UpperClass>
-GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
+GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const typename MultiStackContainer<UpperClass>::DVec &point, bool all) const {
     if (repeat_count == 0) return GeometryObject::Subtree();
     MultiStackContainer::DVec new_point = point;
     reduceHeight(new_point[UpperClass::GROWING_DIR]);
@@ -485,7 +485,7 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const MultiS
 }
 
 template <typename UpperClass>
-bool MultiStackContainer<UpperClass>::contains(const MultiStackContainer::DVec &p) const {
+bool MultiStackContainer<UpperClass>::contains(const typename MultiStackContainer<UpperClass>::DVec &p) const {
     if (repeat_count == 0) return false;
     DVec p_reduced = p;
     if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return false;
@@ -493,7 +493,7 @@ bool MultiStackContainer<UpperClass>::contains(const MultiStackContainer::DVec &
 }
 
 template <typename UpperClass>
-shared_ptr<Material> MultiStackContainer<UpperClass>::getMaterial(const MultiStackContainer::DVec &p) const {
+shared_ptr<Material> MultiStackContainer<UpperClass>::getMaterial(const typename MultiStackContainer<UpperClass>::DVec &p) const {
     if (repeat_count == 0) return shared_ptr<Material>();
     DVec p_reduced = p;
     if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return shared_ptr<Material>();

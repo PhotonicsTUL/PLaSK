@@ -9,7 +9,7 @@ template <int dim>
 std::string Translation<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
-shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
+shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const typename Translation<dim>::DVec &translation) {
     shared_ptr< Translation<dim> > as_translation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
     if (as_translation) {    // translations are compressed, we must create new object because we can't modify child_or_translation (which can include pointer to objects in original tree)
         return plask::make_shared< Translation<dim> >(as_translation->getChild(), as_translation->translation + translation);
@@ -29,7 +29,7 @@ bool Translation<dim>::contains(const typename Translation<dim>::DVec &p) const 
 }
 
 template <int dim>
-GeometryObject::Subtree Translation<dim>::getPathsAt(const Translation::DVec &point, bool all) const {
+GeometryObject::Subtree Translation<dim>::getPathsAt(const typename Translation::DVec &point, bool all) const {
     if (!this->hasChild()) return GeometryObject::Subtree();
     return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point-translation, all));
 }

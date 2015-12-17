@@ -937,7 +937,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         typedef shared_ptr<MeshType> MeshPointerType;
 
         /// Type of provided value.
-        typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
+        typedef typename ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
 
         /// Type that is used to store value.
         typedef DataVector<const ValueType> HeldType;
@@ -1085,7 +1085,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
      */
     struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
+        typedef typename ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
 
         /// Provided value
         ValueType value;
@@ -1143,7 +1143,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         typedef shared_ptr<MeshType> MeshPointerType;
 
         /// Type of provided value.
-        typedef ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
+        typedef typename ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
 
         /// Type that is used to store value.
         typedef DataVector<const ValueType> HeldType;
@@ -1398,7 +1398,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
      */
     struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
+        typedef typename ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
 
         /// Provided value
         ValueType value;

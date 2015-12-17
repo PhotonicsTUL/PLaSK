@@ -12,7 +12,7 @@
 namespace plask {
 
 template <int dim>
-std::pair<int, int> ArrangeContainer<dim>::bounds(const ArrangeContainer<dim>::DVec &vec) const {
+std::pair<int, int> ArrangeContainer<dim>::bounds(const typename ArrangeContainer<dim>::DVec &vec) const {
     if (!this->hasChild() || repeat_count == 0) return std::make_pair(1, 0);
     auto box = _child->getBoundingBox();
     int hi = repeat_count - 1, lo = 0;
@@ -68,7 +68,7 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getRealBoundingBox() 
 
 template <int dim>
 void ArrangeContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
-                                                  std::vector<ArrangeContainer<dim>::Box>& dest, const PathHints* path) const {
+                                                  std::vector<typename ArrangeContainer<dim>::Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -115,7 +115,7 @@ void ArrangeContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& p
 }
 
 template <int dim>
-bool ArrangeContainer<dim>::contains(const ArrangeContainer<dim>::DVec& p) const {
+bool ArrangeContainer<dim>::contains(const typename ArrangeContainer<dim>::DVec& p) const {
     if (!this->hasChild()) return false;
     auto lohi = bounds(p);
     for (int i = lohi.second; i >= lohi.first; --i)

@@ -9,7 +9,7 @@ template < int dim >
 std::string GeometryObjectSeparator<dim>::getTypeName() const { return NAME; }
 
 template < int dim >
-shared_ptr<Material> GeometryObjectSeparator<dim>::getMaterial(const GeometryObjectSeparator<dim>::DVec &p) const {
+shared_ptr<Material> GeometryObjectSeparator<dim>::getMaterial(const typename GeometryObjectSeparator<dim>::DVec &p) const {
     return shared_ptr<Material>();
 }
 
@@ -19,7 +19,7 @@ void GeometryObjectSeparator<dim>::getLeafsInfoToVec(std::vector<std::tuple<shar
 }*/
 
 template < int dim >
-void GeometryObjectSeparator<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectSeparator<dim>::Box> &dest, const PathHints *path) const {
+void GeometryObjectSeparator<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate &predicate, std::vector<typename GeometryObjectSeparator<dim>::Box> &dest, const PathHints *path) const {
     //do nothing
     //if (predicate(*this)) dest.push_back(this->getBoundingBox());
 }
@@ -30,7 +30,7 @@ void GeometryObjectSeparator<dim>::getObjectsToVec(const GeometryObject::Predica
 }
 
 template < int dim >
-void GeometryObjectSeparator<dim>::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectSeparator<dim>::DVec> &dest, const PathHints *) const {
+void GeometryObjectSeparator<dim>::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<typename GeometryObjectSeparator<dim>::DVec> &dest, const PathHints *) const {
     if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
 }
 
@@ -45,7 +45,7 @@ GeometryObject::Subtree GeometryObjectSeparator<dim>::getPathsTo(const GeometryO
 }
 
 template < int dim >
-GeometryObject::Subtree GeometryObjectSeparator<dim>::getPathsAt(const GeometryObjectSeparator<dim>::DVec &point, bool) const {
+GeometryObject::Subtree GeometryObjectSeparator<dim>::getPathsAt(const typename GeometryObjectSeparator<dim>::DVec &point, bool) const {
     return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
 }
 
@@ -62,7 +62,7 @@ shared_ptr<const GeometryObject> GeometryObjectSeparator<dim>::changedVersion(co
 }
 
 template < int dim >
-bool GeometryObjectSeparator<dim>::contains(const GeometryObjectSeparator<dim>::DVec &p) const {
+bool GeometryObjectSeparator<dim>::contains(const typename GeometryObjectSeparator<dim>::DVec &p) const {
     return false;
 }
 

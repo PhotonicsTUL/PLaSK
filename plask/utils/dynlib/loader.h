@@ -197,6 +197,17 @@ public:
 #endif
     }
 
+    /**
+     * Compare operator, defined to allow store dynamic libriaries in standard containers which require this.
+     */
+    bool operator == (const DynamicLibrary& other) const {
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+        return (this->handler == other.handler) && (this->unload == other.unload);
+#else
+        return this->handler == other.handler;
+#endif
+    }
+
 };
 
 }   // namespace plask
@@ -211,7 +222,7 @@ template<>
 struct hash<plask::DynamicLibrary> {
     std::hash<plask::DynamicLibrary::handler_t> h;
 public:
-    size_t operator()(const plask::DynamicLibrary &s) const {
+    std::size_t operator()(const plask::DynamicLibrary &s) const {
         return h(s.getSystemHandler());
     }
 };

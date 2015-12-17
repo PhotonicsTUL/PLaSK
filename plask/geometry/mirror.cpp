@@ -8,17 +8,17 @@ template <int dim>
 std::string Flip<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
-shared_ptr<Material> Flip<dim>::getMaterial(const Flip::DVec &p) const {
+shared_ptr<Material> Flip<dim>::getMaterial(const typename Flip<dim>::DVec &p) const {
     return this->hasChild() ? this->_child->getMaterial(fliped(p)) : shared_ptr<Material>();
 }
 
 template <int dim>
-bool Flip<dim>::contains(const Flip<dim>::DVec &p) const {
+bool Flip<dim>::contains(const typename Flip<dim>::DVec &p) const {
     return this->hasChild() && this->_child->contains(fliped(p));
 }
 
 template <int dim>
-GeometryObject::Subtree Flip<dim>::getPathsAt(const Flip::DVec &point, bool all) const {
+GeometryObject::Subtree Flip<dim>::getPathsAt(const typename Flip<dim>::DVec &point, bool all) const {
     if (!this->hasChild()) return GeometryObject::Subtree();
     return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(fliped(point), all));
 }
@@ -65,12 +65,12 @@ typename Mirror<dim>::Box Mirror<dim>::getRealBoundingBox() const {
 }
 
 template <int dim>
-shared_ptr<Material> Mirror<dim>::getMaterial(const Mirror<dim>::DVec &p) const {
+shared_ptr<Material> Mirror<dim>::getMaterial(const typename Mirror<dim>::DVec &p) const {
     return this->hasChild() ? this->_child->getMaterial(flipedIfNeg(p)) : shared_ptr<Material>();
 }
 
 template <int dim>
-bool Mirror<dim>::contains(const Mirror<dim>::DVec &p) const {
+bool Mirror<dim>::contains(const typename Mirror<dim>::DVec &p) const {
     return this->hasChild() && this->_child->contains(flipedIfNeg(p));
 }
 
@@ -133,7 +133,7 @@ GeometryObject::Subtree Mirror<dim>::getPathsTo(const GeometryObject& el, const 
 }
 
 template <int dim>
-GeometryObject::Subtree Mirror<dim>::getPathsAt(const Mirror<dim>::DVec &point, bool all) const {
+GeometryObject::Subtree Mirror<dim>::getPathsAt(const typename Mirror<dim>::DVec &point, bool all) const {
     if (!this->hasChild()) GeometryObject::Subtree();
     return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(flipedIfNeg(point), all));
 }

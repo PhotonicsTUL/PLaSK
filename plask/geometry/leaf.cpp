@@ -46,7 +46,7 @@ template <int dim>
 GeometryObject::Type GeometryObjectLeaf<dim>::getType() const { return GeometryObject::TYPE_LEAF; }
 
 template <int dim>
-shared_ptr<Material> GeometryObjectLeaf<dim>::getMaterial(const GeometryObjectLeaf::DVec &p) const {
+shared_ptr<Material> GeometryObjectLeaf<dim>::getMaterial(const typename GeometryObjectLeaf<dim>::DVec &p) const {
     return this->contains(p) ? materialProvider->getMaterial(*this, p) : shared_ptr<Material>();
 }
 
@@ -55,7 +55,7 @@ shared_ptr<Material> GeometryObjectLeaf<dim>::getMaterial(const GeometryObjectLe
 }*/
 
 template <int dim>
-void GeometryObjectLeaf<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectLeaf::Box> &dest, const PathHints *) const {
+void GeometryObjectLeaf<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate &predicate, std::vector<typename GeometryObjectLeaf<dim>::Box> &dest, const PathHints *) const {
     if (predicate(*this))
         dest.push_back(this->getBoundingBox());
 }
@@ -66,7 +66,7 @@ void GeometryObjectLeaf<dim>::getObjectsToVec(const GeometryObject::Predicate &p
 }
 
 template <int dim>
-void GeometryObjectLeaf<dim>::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectLeaf::DVec> &dest, const PathHints *) const {
+void GeometryObjectLeaf<dim>::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<typename GeometryObjectLeaf::DVec> &dest, const PathHints *) const {
     if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
 }
 
@@ -81,7 +81,7 @@ GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsTo(const GeometryObject
 }
 
 template <int dim>
-GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const GeometryObjectLeaf::DVec &point, bool) const {
+GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const typename GeometryObjectLeaf<dim>::DVec &point, bool) const {
     return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
 }
 
@@ -165,7 +165,7 @@ typename Block<dim>::Box Block<dim>::getBoundingBox() const {
 }
 
 template <int dim>
-bool Block<dim>::contains(const Block<dim>::DVec &p) const {
+bool Block<dim>::contains(const typename Block<dim>::DVec &p) const {
     return this->getBoundingBox().contains(p);
 }
 

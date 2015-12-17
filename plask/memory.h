@@ -140,7 +140,7 @@ struct HolderRef {
      */
     HolderRef(T* held): held(held) {}
 
-    bool isNotNull() const { return held; }
+    bool isNotNull() const { return held != nullptr; }
 
     bool isNull() const { return !held; }
 

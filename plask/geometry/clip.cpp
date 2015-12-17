@@ -20,7 +20,7 @@ bool Clip<dim>::contains(const typename Clip<dim>::DVec &p) const {
 }
 
 template <int dim>
-GeometryObject::Subtree Clip<dim>::getPathsAt(const Clip<dim>::DVec &point, bool all) const
+GeometryObject::Subtree Clip<dim>::getPathsAt(const typename Clip<dim>::DVec &point, bool all) const
 {
     if (this->hasChild() && clipBox.contains(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point, all));

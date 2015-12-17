@@ -279,7 +279,7 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
 
     virtual bool contains(const DVec& p) const override;
 
-    bool intersects(const Block<dim>::Box &area) const {
+    bool intersects(const Box &area) const {
         return this->getBoundingBox().intersects(area);
     }
 

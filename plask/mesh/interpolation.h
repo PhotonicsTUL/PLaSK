@@ -149,8 +149,8 @@ public:
     InterpolationFlags(): sym{0,0,0}, per(0), lo{0.,0.,0.} , hi{0., 0., 0.}  {}
 
     InterpolationFlags(shared_ptr<const GeometryD<2>> geometry, Symmetry sym0, Symmetry sym1):
-        sym{geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym1 : 0},
-        per((geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 2 : 0)),
+        sym{geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym0 : (unsigned char)0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym1 : (unsigned char)0},
+        per((unsigned char)((geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 2 : 0))),
         lo{geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom(), 0.},
         hi{geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top(), 0.}
     {
@@ -176,8 +176,8 @@ public:
     InterpolationFlags(shared_ptr<Geometry2DCylindrical> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
 
     InterpolationFlags(shared_ptr<const GeometryD<3>> geometry, Symmetry sym0, Symmetry sym1, Symmetry sym2):
-        sym{geometry->isSymmetric(Geometry::DIRECTION_LONG)? (unsigned char)sym0 : 0, geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym1 : 0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym2 : 0},
-        per((geometry->isPeriodic(Geometry::DIRECTION_LONG)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 2 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 4 : 0)),
+        sym{geometry->isSymmetric(Geometry::DIRECTION_LONG)? (unsigned char)sym0 : (unsigned char)0, geometry->isSymmetric(Geometry::DIRECTION_TRAN)? (unsigned char)sym1 : (unsigned char)0, geometry->isSymmetric(Geometry::DIRECTION_VERT)? (unsigned char)sym2 : (unsigned char)0},
+        per((unsigned char)((geometry->isPeriodic(Geometry::DIRECTION_LONG)? 1 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_TRAN)? 2 : 0) + (geometry->isPeriodic(Geometry::DIRECTION_VERT)? 4 : 0))),
         lo{geometry->getChildBoundingBox().back(), geometry->getChildBoundingBox().left(), geometry->getChildBoundingBox().bottom()},
         hi{geometry->getChildBoundingBox().front(), geometry->getChildBoundingBox().right(), geometry->getChildBoundingBox().top()}
     {

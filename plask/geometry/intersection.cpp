@@ -18,7 +18,7 @@ bool Intersection<dim>::contains(const typename Intersection<dim>::DVec &p) cons
 }
 
 template <int dim>
-GeometryObject::Subtree Intersection<dim>::getPathsAt(const Intersection<dim>::DVec &point, bool all) const
+GeometryObject::Subtree Intersection<dim>::getPathsAt(const typename Intersection<dim>::DVec &point, bool all) const
 {
     if (this->hasChild() && inEnvelop(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(point, all));
