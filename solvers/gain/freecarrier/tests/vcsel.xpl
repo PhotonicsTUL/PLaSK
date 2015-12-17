@@ -215,9 +215,9 @@ GAIN3.inCarriersConcentration = conc
 levels1 = GAIN1.determine_levels(300., conc)[0]
 levels1['el'] = [-l for l in levels1['el']]
 
-# cc = logspace(16, 20, 65)
-# fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300., c)[0] for c in cc)))
-# 
+cc = logspace(16, 20, 65)
+fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300., c)[0] for c in cc)))
+
 levels2 = GAIN2.get_energy_levels()[0]
 
 # # GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)

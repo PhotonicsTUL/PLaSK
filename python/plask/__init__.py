@@ -14,7 +14,7 @@ import weakref as _weakref
 
 _any = any # this buit-in is overriden by numpy
 
-_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
+#_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
 
 import _plask
 from ._plask import *

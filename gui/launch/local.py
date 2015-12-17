@@ -287,6 +287,7 @@ class PlaskThread(QtCore.QThread):
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + [fname] + list(args),
                                          startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        sys.stdout.flush()
         fd, fb = os.path.split(fname)
         sep = os.path.sep
         if sep == '\\':
@@ -348,9 +349,6 @@ class Launcher(object):
 
     def __init__(self):
         self.dirname = None
-        self.program = CONFIG['launcher_local/program']
-        if not (self.program and os.path.isfile(self.program) and os.access(self.program, os.X_OK)):
-            self.program = which('plask') or 'plask'
 
     def widget(self, main_window):
         widget = QtGui.QWidget()
@@ -408,6 +406,10 @@ class Launcher(object):
 
     def launch(self, main_window, args, defs):
 
+        program = CONFIG['launcher_local/program']
+        if not (program and os.path.isfile(program) and os.access(program, os.X_OK)):
+            program = which('plask') or 'plask'
+
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
                                                  "The file must be saved before launching local computations. "
@@ -434,7 +436,7 @@ class Launcher(object):
             dock.raise_()
 
         self.mutex = QtCore.QMutex()
-        dock.thread = PlaskThread(self.program, filename, dirname, dock.lines, self.mutex, main_window, args, defs)
+        dock.thread = PlaskThread(program, filename, dirname, dock.lines, self.mutex, main_window, args, defs)
         dock.thread.finished.connect(dock.thread_finished)
         dock.thread.start()
 

@@ -221,7 +221,10 @@
 <script><![CDATA[
 from scipy import optimize
 
-print mesaRadius + 0 # 0
+import sys
+print_log('result', sys.executable)
+
+print(mesaRadius + 0) # 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
@@ -305,8 +308,8 @@ gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.form
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
-xlabel(u"r [\xb5m]")
-ylabel(u"z [\xb5m]")
+xlabel("r [\xb5m]")
+ylabel("z [\xb5m]")
 
 new_aperture = 3.
 GEO["aperture"].dr = new_aperture
@@ -327,8 +330,8 @@ gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.form
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
-xlabel(u"r [\xb5m]")
-ylabel(u"z [\xb5m]")
+xlabel("r [\xb5m]")
+ylabel("z [\xb5m]")
 
 figure()
 plot_geometry(GEO.GeoTE, margin=0.01)

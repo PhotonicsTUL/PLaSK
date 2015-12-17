@@ -19,9 +19,15 @@ from numpy import log10, ceil
 
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 
-if sys.platform == 'win32': _default_font_family = "Consolas"
-elif sys.platform == 'darwin': _default_font_family = "Monaco"
-else:_default_font_family = "Monospace"
+if sys.platform == 'win32':
+    _default_font_family = "Consolas"
+    _plask_binary = "plask.exe"
+elif sys.platform == 'darwin':
+    _default_font_family = "Monaco"
+    _plask_binary = "plask"
+else:
+    _default_font_family = "Monospace"
+    _plask_binary = "plask"
 
 
 DEFAULTS = {
@@ -98,6 +104,9 @@ def Syntax(entry, help=None):
 
 def Font(entry, help=None):
     return lambda parent: ConfigDialog.Font(entry, help=help, parent=parent)
+
+def Path(entry, help=None):
+    return lambda parent: ConfigDialog.Path(entry, help=help, parent=parent)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -208,6 +217,9 @@ CONFIG_WIDGETS = OrderedDict([
                                             "may be helpful if the program often crashes on completion.")),
         ("Disable completion", CheckBox('workarounds/no_jedi',
                                         "Disable script completion and on-line help.")),
+        "Launcher",
+        ("PLaSK executable", Path('launcher_local/program',
+                                  "Full patch to PLaSK executable (leave empty for default)")),
     ])
 ])
 
@@ -395,6 +407,40 @@ class ConfigDialog(QtGui.QDialog):
                 self.setFont(self.current_font)
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
+
+    class Path(QtGui.QWidget):
+        def __init__(self, entry, parent=None, help=None):
+            super(ConfigDialog.Path, self).__init__(parent)
+            layout = QtGui.QHBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
+            self.edit = QtGui.QLineEdit(self)
+            path = CONFIG[entry]
+            if path is not None:
+                self.edit.setText(str(path))
+            self.select = QtGui.QToolButton(self)
+            self.select.setIcon(QtGui.QIcon.fromTheme('document-open'))
+            self.select.pressed.connect(self.pushed)
+            layout.addWidget(self.edit)
+            layout.addWidget(self.select)
+            self.setLayout(layout)
+            self.entry = entry
+            if help is not None:
+                self.setWhatsThis(help)
+        def pushed(self):
+            dirname = os.path.dirname(self.edit.text())
+            if not dirname:
+                dirname = os.path.dirname(sys.executable)
+            filename = QtGui.QFileDialog.getOpenFileName(self, "Select PLaSK executable",
+                                                         dirname,
+                                                         "PLaSK ({});;"
+                                                         "Any program ({})"
+                                                         .format(_plask_binary,
+                                                                 '*.exe' if sys.platform == 'win32' else '*'))
+            if type(filename) == tuple: filename = filename[0]
+            if filename: self.edit.setText(filename)
+        def save(self):
+            CONFIG[self.entry] = self.edit.text()
 
     def __init__(self, parent):
         super(ConfigDialog, self).__init__(parent)

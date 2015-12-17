@@ -238,13 +238,13 @@ namespace detail {
             for (size_t i = 0; i != nd; ++i) {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
                     writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
-                    
+
                     newarr = py::handle<PyArrayObject>(
                         (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(),
                                                     PyArray_TYPE(arr), meshstrides.data(),
                                                     nullptr, 0, 0, nullptr)
                     );
-                    
+
                     PyArray_CopyInto(newarr.get(), arr);
                     arr = newarr.get();
                     break;
