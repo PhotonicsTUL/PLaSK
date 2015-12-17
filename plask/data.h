@@ -191,7 +191,7 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    DataVector(DataVector<T>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
+    DataVector(DataVector<T>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
     }
 
@@ -200,7 +200,7 @@ struct DataVector {
      * @param src data to move
      */
     template <typename TS>
-    DataVector(DataVector<TS>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
+    DataVector(DataVector<TS>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
     }
 
@@ -209,7 +209,7 @@ struct DataVector {
      * @param src data source
      * @return *this
      */
-    DataVector<T>& operator=(DataVector<T>&& src) {
+    DataVector<T>& operator=(DataVector<T>&& src) noexcept {
         swap(src);
         return *this;
     }
@@ -476,7 +476,7 @@ struct DataVector {
      * Swap all internals of this and @p other.
      * @param other data vector to swap with
      */
-    void swap(DataVector<T>& other) {
+    void swap(DataVector<T>& other) noexcept {
         std::swap(size_, other.size_);
         std::swap(gc_, other.gc_);
         std::swap(data_, other.data_);
@@ -807,7 +807,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<const std::complex<double>>)
 
 namespace std {
     template <typename T>
-    void swap(plask::DataVector<T>& s1, plask::DataVector<T>& s2) { // throw ()
+    void swap(plask::DataVector<T>& s1, plask::DataVector<T>& s2) noexcept {
       s1.swap(s2);
     }
 }   // namespace std

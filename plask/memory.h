@@ -65,13 +65,13 @@ struct Holder {
      * @brief Construct a holder with given @p held object.
      * @param held object to hold, should be not nullptr
      */
-    Holder(T* held): held(held) {}
+    Holder(T* held) noexcept: held(held) {}
 
     /**
      * @brief Construct a holder with given @p held object.
      * @param held object to hold, should be not nullptr
      */
-    Holder(T& held): held(&held) {}
+    Holder(T& held) noexcept: held(&held) {}
 
     /**
      * @brief Copy constructor. Use held->clone().
@@ -85,7 +85,7 @@ struct Holder {
      * It doesn't call held.clone().
      * @param to_move object to move
      */
-    Holder(Holder<T>&& to_move): held(to_move.held) { to_move.held = nullptr; }
+    Holder(Holder<T>&& to_move) noexcept: held(to_move.held) { to_move.held = nullptr; }
 
     /**
      * @brief Copy operator. Use held->clone().
@@ -104,7 +104,7 @@ struct Holder {
      * It doesn't call held.clone().
      * @param to_move object to move
      */
-    Holder<T>& operator=(Holder&& to_move) {
+    Holder<T>& operator=(Holder&& to_move) noexcept {
         std::swap(held, to_move.held);  // to_move destructor will delete this old held for a moment
         return *this;
     }

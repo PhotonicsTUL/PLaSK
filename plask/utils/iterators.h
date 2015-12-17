@@ -147,15 +147,15 @@ struct PolymorphicForwardIterator:
      * Move ownership of wrapped implementation object from @a src to this.
      * @param src iterator from which implementation object should be moved
      */
-    PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = nullptr; }
+    PolymorphicForwardIterator(PolymorphicForwardIterator &&src) noexcept: impl(src.impl) { src.impl = nullptr; }
     
     /**
      * Swap values of @c this and @p to_swap.
      * @param to_swap
      */
-    void swap(PolymorphicForwardIterator & to_swap) { std::swap(this->impl, to_swap.impl); }
+    void swap(PolymorphicForwardIterator & to_swap) noexcept { std::swap(this->impl, to_swap.impl); }
     
-    PolymorphicForwardIterator& operator=(PolymorphicForwardIterator &&src) {
+    PolymorphicForwardIterator& operator=(PolymorphicForwardIterator &&src) noexcept {
         this->swap(src);    //old impl of this will be deleted for a moment (when src will be deleted)
         return *this;
     }

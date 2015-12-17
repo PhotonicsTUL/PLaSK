@@ -73,7 +73,7 @@ public:
      * Move library ownership from @p to_move to this.
      * @param to_move source of moving library ownership
      */
-    DynamicLibrary(DynamicLibrary&& to_move);
+    DynamicLibrary(DynamicLibrary&& to_move) noexcept;
 
     /**
      * Move library ownership from @p to_move to this.
@@ -82,7 +82,7 @@ public:
      * @param to_move source of moving library ownership
      * @return *this
      */
-    DynamicLibrary& operator=(DynamicLibrary && to_move) {
+    DynamicLibrary& operator=(DynamicLibrary && to_move) noexcept {
         swap(to_move);  // destructor of to_move will close current this library
         return *this;
     }
