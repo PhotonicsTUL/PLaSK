@@ -517,7 +517,7 @@ void FreeCarrierGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
     if (xb - xa > levelsep)
         throw ComputationError(this->getId(), "Could not find quasi-Fermi level for electrons");
     Fc = 0.5 * (xa + xb);
-    
+
     iters = 1000;
     std::tie(xa, xb) = fermi_bracket_and_solve(
         [this,T,n,&params](double x){ return getP(x, T, params) - n; },

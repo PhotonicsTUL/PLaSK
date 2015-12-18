@@ -180,15 +180,15 @@
 <solvers>
   <gain name="GAIN1" solver="FermiCyl" lib="simple">
     <geometry ref="main"/>
-    <config lifetime="0.3" matrix-elem="10"/>
+    <config lifetime="0.1" matrix-elem="10"/>
   </gain>
   <gain name="GAIN2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="main"/>
-    <config lifetime="0.3" matrix-elem="10"/>
+    <config lifetime="0.1" matrix-elem="10"/>
   </gain>
   <gain name="GAIN3" solver="FermiNewCyl" lib="complex">
     <geometry ref="main"/>
-    <config adjust-layers="yes" lifetime="0.3" matrix-elem="10"/>
+    <config adjust-layers="yes" lifetime="0.1" matrix-elem="10"/>
   </gain>
 </solvers>
 
@@ -220,82 +220,82 @@ fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300.,
 
 levels2 = GAIN2.get_energy_levels()[0]
 
-# # GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)
-# # levels3 = GAIN3.get_levels()[0]
-# 
-# CE = linspace(0.25, 0.65, 10001)
-# VE = linspace(-0.80, -0.60, 10001)
-# 
-# nqw = 1
-# 
-# def plot_edges(attr):
-#     axvline(getattr(material.get('GaAs'), attr)(), ls='-', color='k')
-#     axvline(getattr(material.get('InAlGaAs'), attr)(), ls='-', color='k')
-#     axvline(getattr(material.get('InAlGaAs-QW'), attr)(), ls='-', color='k')
-# 
-# try:
-#     els = GAIN2.det_El(CE)
-#     hhs = GAIN2.det_Hh(VE)
-#     lhs = GAIN2.det_Lh(VE)
-# except AttributeError:
-#     pass
-# else:
-#     figure()
-#     plot(CE, els, color=colors[0], label="Electrons")
-#     for l in levels1['el']:
-#         axvline(l+cbo, ls=':', color='0.75')
-# #     for l in levels3['el']:
-# #         axvline(l+coff, ls=':', color='0.35')
-#     for l in levels2['el']:
-#         axvline(l, ls=':', color=colors[0])
-#     for w in range(1, nqw+1):
-#         plot(CE, GAIN2.det_El(CE, well=w), color=colors[0], ls='--')
-#     plot_edges('CB')
-#     xlim(CE[0], CE[-1])
-#     legend(loc='best')
-#     tight_layout(0.1)
-#     axhline(0., color='k')
-#     yscale('symlog')
-#     #plt.get_current_fig_manager().window.showMaximized()
-#     tight_layout(0.5)
-#     gcf().canvas.set_window_title("Electrons")
-# 
-#     figure()
-#     plot(VE, hhs, color=colors[1], label="Heavy holes")
-#     for l in levels1['hh']:
-#         axvline(l+vbo, ls=':', color='0.75')
-# #     for l in levels3['hh']:
-# #         axvline(l+voff, ls=':', color='0.35')
-#     for l in levels2['hh']:
-#         axvline(l, ls=':', color=colors[1])
-#     for w in range(1, nqw+1):
-#         plot(VE, GAIN2.det_Hh(VE, well=w), color=colors[1], ls='--')
-#     plot_edges('VB')
-#     xlim(VE[0], VE[-1])
-#     axhline(0., color='k')
-#     yscale('symlog')
-#     #plt.get_current_fig_manager().window.showMaximized()
-#     tight_layout(0.5)
-#     gcf().canvas.set_window_title("Heavy Holes")
-# 
-#     figure()
-#     plot(VE, lhs, color=colors[2], label="Light holes")
-#     for l in levels1['lh']:
-#         axvline(l+vbo, ls=':', color='0.75')
-# #     for l in levels3['lh']:
-# #         axvline(l+voff, ls=':', color='0.35')
-#     for l in levels2['lh']:
-#         axvline(l, ls=':', color=colors[2])
-#     for w in range(1, nqw+1):
-#         plot(VE, GAIN2.det_Lh(VE, well=w), color=colors[2], ls='--')
-#     plot_edges('VB')
-#     xlim(VE[0], VE[-1])
-#     axhline(0., color='k')
-#     yscale('symlog')
-#     #plt.get_current_fig_manager().window.showMaximized()
-#     tight_layout(0.5)
-#     gcf().canvas.set_window_title("Light Holes")
-# 
+# GAIN3.outGain(mesh.Rectangular2D([pos[0]], [pos[1]]), 1300.)
+# levels3 = GAIN3.get_levels()[0]
+
+CE = linspace(0.25, 0.65, 10001)
+VE = linspace(-0.80, -0.60, 10001)
+
+nqw = 1
+
+def plot_edges(attr):
+    axvline(getattr(material.get('GaAs'), attr)(), ls='-', color='k')
+    axvline(getattr(material.get('InAlGaAs'), attr)(), ls='-', color='k')
+    axvline(getattr(material.get('InAlGaAs-QW'), attr)(), ls='-', color='k')
+
+try:
+    els = GAIN2.det_El(CE)
+    hhs = GAIN2.det_Hh(VE)
+    lhs = GAIN2.det_Lh(VE)
+except AttributeError:
+    pass
+else:
+    figure()
+    plot(CE, els, color=colors[0], label="Electrons")
+    for l in levels1['el']:
+        axvline(l+cbo, ls=':', color='0.75')
+#     for l in levels3['el']:
+#         axvline(l+coff, ls=':', color='0.35')
+    for l in levels2['el']:
+        axvline(l, ls=':', color=colors[0])
+    for w in range(1, nqw+1):
+        plot(CE, GAIN2.det_El(CE, well=w), color=colors[0], ls='--')
+    plot_edges('CB')
+    xlim(CE[0], CE[-1])
+    legend(loc='best')
+    tight_layout(0.1)
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Electrons")
+
+    figure()
+    plot(VE, hhs, color=colors[1], label="Heavy holes")
+    for l in levels1['hh']:
+        axvline(l+vbo, ls=':', color='0.75')
+#     for l in levels3['hh']:
+#         axvline(l+voff, ls=':', color='0.35')
+    for l in levels2['hh']:
+        axvline(l, ls=':', color=colors[1])
+    for w in range(1, nqw+1):
+        plot(VE, GAIN2.det_Hh(VE, well=w), color=colors[1], ls='--')
+    plot_edges('VB')
+    xlim(VE[0], VE[-1])
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Heavy Holes")
+
+    figure()
+    plot(VE, lhs, color=colors[2], label="Light holes")
+    for l in levels1['lh']:
+        axvline(l+vbo, ls=':', color='0.75')
+#     for l in levels3['lh']:
+#         axvline(l+voff, ls=':', color='0.35')
+    for l in levels2['lh']:
+        axvline(l, ls=':', color=colors[2])
+    for w in range(1, nqw+1):
+        plot(VE, GAIN2.det_Lh(VE, well=w), color=colors[2], ls='--')
+    plot_edges('VB')
+    xlim(VE[0], VE[-1])
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Light Holes")
+
 
 def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh_color=colors[1], lh_color=colors[2]):
     box = GEO.main.get_object_bboxes(GEO.active)[0]

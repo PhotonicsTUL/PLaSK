@@ -138,11 +138,11 @@
             <rectangle material="GaN_cavity:Mg=7e17" dr="{mesa1}" dz="0.0790"/>
             <rectangle name="EBL" material="Al(0.20)GaN:Mg=4e17" dr="{mesa1}" dz="0.0240"/>
             <stack name="active" role="active">
-              <stack repeat="2">
-                <rectangle material="GaN_barrier" dr="{mesa1}" dz="0.0100"/>
-                <rectangle name="QW" role="QW" material="InGaN_QW" dr="{mesa1}" dz="0.0030"/>
-              </stack>
-              <rectangle material="GaN_barrier" dr="{mesa1}" dz="0.0100"/>
+              <rectangle name="barrier" material="GaN_barrier" dr="{mesa1}" dz="0.0100"/>
+              <rectangle name="QW" role="QW,active" material="InGaN_QW" dr="{mesa1}" dz="0.0030"/>
+              <rectangle role="active" material="GaN_barrier" dr="{mesa1}" dz="0.0100"/>
+              <again ref="QW"/>
+              <again ref="barrier"/>
             </stack>
             <rectangle material="GaN_cavity:Si={Si2*1e18}" dr="{mesa1}" dz="{0.1652 * cavity - 0.3134}"/>
           </stack>
@@ -246,6 +246,8 @@
 </solvers>
 
 <script><![CDATA[
+from __future__ import print_function
+
 colors = rc.axes.color_cycle
 
 zqw = GEO.electrical.get_object_bboxes(GEO.QW)[0].center.z
@@ -259,24 +261,106 @@ GAIN1.inCarriersConcentration = 1e19 * gN
 GAIN2.inCarriersConcentration = 1e19 * gN
 GAIN3.inCarriersConcentration = 1e19 * gN
 
-
-
 glams = linspace(350., 500., 1201)
 
-def plot_gain(sub=None, suffix=''):
-    if sub is None:
-        fig = figure()
-        fig.canvas.set_window_title("Gain Profile")
-    else:
-        subplot(sub)
-        title("Gain Profile")
-    plot_profile(GAIN1.outGain(mesh.Rectangular2D(DIFFUSION.mesh, [zqw]), 414., 'spline'), color='#7A68A6')
-    plot_rs(GEO.electrical)
-    ylabel("Gain Profile [1/cm]")
-    xlim(0., mesa1+0.2)
-    tight_layout(0.2)
-    subplots_adjust(top=0.89)
-    save_figure(suffix+'gain')
+CE = linspace(3.0, 3.8, 10001)
+VE = linspace(-0.2, 0.2, 10001)
+
+
+levels1 = GAIN1.determine_levels(300., 1e19*gN)[0]
+levels1['el'] = [-l for l in levels1['el']]
+
+mat = material.db.get("GaN_barrier")
+cbo = mat.CB()
+vbo = mat.VB()
+print("barrier:", cbo-vbo, mat.Eg())
+mat = material.db.get("InGaN_QW")
+cbq = mat.CB()
+vbq = mat.VB()
+print("well:   ", cbq-vbq, mat.Eg())
+mat = material.db.get("GaN_cavity:Si={}".format(Si2*1e18))
+coff = mat.CB()
+voff = mat.VB()
+del mat
+
+cc = logspace(16, 20, 65)
+fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300., c)[0] for c in cc)))
+
+levels2 = GAIN2.get_energy_levels()[0]
+
+GAIN3.outGain(msh, 430.)
+levels3 = GAIN3.get_levels()[0]
+
+nqw = 2
+
+def plot_edges(attr):
+    axvline(getattr(material.get('GaN_cavity:Si={}'.format(Si2*1e18)), attr)(), ls='-', color='k')
+    axvline(getattr(material.get('Al(0.20)GaN:Mg=4e17'), attr)(), ls='-', color='k')
+    axvline(getattr(material.get('GaN_barrier'), attr)(), ls='-', color='k')
+    axvline(getattr(material.get('InGaN_QW'), attr)(), ls='-', color='k')
+
+try:
+    els = GAIN2.det_El(CE)
+    hhs = GAIN2.det_Hh(VE)
+    lhs = GAIN2.det_Lh(VE)
+except AttributeError:
+    pass
+else:
+    figure()
+    plot(CE, els, color=colors[0], label="Electrons")
+    for l in levels1['el']:
+        axvline(l+cbo, ls=':', color='0.75')
+    for l in levels3['el']:
+        axvline(l+coff, ls=':', color='0.35')
+    for l in levels2['el']:
+        axvline(l, ls=':', color=colors[0])
+    for w in range(1, nqw+1):
+        plot(CE, GAIN2.det_El(CE, well=w), color=colors[0], ls='--')
+    plot_edges('CB')
+    xlim(CE[0], CE[-1])
+    legend(loc='best')
+    tight_layout(0.1)
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Electrons")
+
+    figure()
+    plot(VE, hhs, color=colors[1], label="Heavy holes")
+    for l in levels1['hh']:
+        axvline(l+vbo, ls=':', color='0.75')
+    for l in levels3['hh']:
+        axvline(l+voff, ls=':', color='0.35')
+    for l in levels2['hh']:
+        axvline(l, ls=':', color=colors[1])
+    for w in range(1, nqw+1):
+        plot(VE, GAIN2.det_Hh(VE, well=w), color=colors[1], ls='--')
+    plot_edges('VB')
+    xlim(VE[0], VE[-1])
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Heavy Holes")
+
+    figure()
+    plot(VE, lhs, color=colors[2], label="Light holes")
+    for l in levels1['lh']:
+        axvline(l+vbo, ls=':', color='0.75')
+    for l in levels3['lh']:
+        axvline(l+voff, ls=':', color='0.35')
+    for l in levels2['lh']:
+        axvline(l, ls=':', color=colors[2])
+    for w in range(1, nqw+1):
+        plot(VE, GAIN2.det_Lh(VE, well=w), color=colors[2], ls='--')
+    plot_edges('VB')
+    xlim(VE[0], VE[-1])
+    axhline(0., color='k')
+    yscale('symlog')
+    #plt.get_current_fig_manager().window.showMaximized()
+    tight_layout(0.5)
+    gcf().canvas.set_window_title("Light Holes")
 
 
 def plot_gain_spectrum(solver, new=False, label='PLaSK'):
@@ -295,9 +379,11 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
     box = GEO.electrical.get_object_bboxes(GEO.active)[0]
     zz = linspace(box.lower.z-0.002, box.upper.z+0.002, 1001)
     CC = [GEO.electrical.get_material(0.,z).CB() for z in zz]
-    VV = [GEO.electrical.get_material(0.,z).VB() for z in zz]
     plot(1e3*zz, CC, color=colors[0])
-    plot(1e3*zz, VV, color=colors[1])
+    VL = [GEO.electrical.get_material(0.,z).VB(hole='L') for z in zz]
+    plot(1e3*zz, VL, color=colors[2])
+    VH = [GEO.electrical.get_material(0.,z).VB(hole='H') for z in zz]
+    plot(1e3*zz, VH, color=colors[1])
     xlim(1e3*zz[0], 1e3*zz[-1])
     xlabel("$z$ [nm]")
     ylabel("Band Edges [eV]")
@@ -315,25 +401,9 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
     #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
 
-levels1 = GAIN1.determine_levels(300., 1e18)[0]
-levels1['el'] = [-l for l in levels1['el']]
-mat = material.db.get("GaN_barrier")
-cbo = mat.CB()
-vbo = mat.VB()
-mat = material.db.get("InGaN_QW")
-cbq = mat.CB()
-vbq = mat.VB()
-
 figure()
 plot_bands(levels1, co=cbo, vo=vbo, title=u"Levels: Michał")
 yl = -0.4, 0.2
-
-GAIN3.outGain(msh, 430.)
-mat = material.db.get("GaN_cavity:Si={}".format(Si2*1e18))
-cbo = mat.CB()
-vbo = mat.VB()
-levels3 = GAIN3.get_levels()[0]
-plot_bands(levels3, co=cbo, vo=vbo, title=u"Levels: Michał", el_color='#00cccc', hh_color='#0000ff', lh_color='#008800')
 
 twiny()
 cc = logspace(16, 20, 65)
@@ -344,15 +414,18 @@ axvline(1e19*gN, color='0.75')
 xlabel(u'Carriers concentation [1/cm³]')
 xscale('log')
 xlim(1e16, 1e20)
-ylim(*yl)
+# ylim(*yl)
 tight_layout(0.2)    
+
+figure()
+plot_bands(levels3, co=coff, vo=voff, title=u"Levels: Michał 2")
+tight_layout(0.2)    
+
 
 levels2 = GAIN2.get_energy_levels()[0]
 
 figure()
 plot_bands(levels2, title=u"Levels: Maciek")
-
-plot_bands(levels3, co=cbo, vo=vbo, title=u"Levels: Maciek", el_color='#00cccc', hh_color='#0000ff', lh_color='#008800')
 
 twiny()
 try:
@@ -371,19 +444,11 @@ plot(cc, ffc, color=colors[0], ls='-', lw=1.5)
 plot(cc, ffv, color=colors[1], ls='-', lw=1.5)
 axvline(1e19*gN, color='0.75')
 
-ylim(*yl)
+# ylim(*yl)
 xlabel(u'Carriers concentation [1/cm³]')
 xscale('log')
 xlim(1e16, 1e20)
 tight_layout(0.2)    
-
-GAIN1.inTemperature = gT
-GAIN2.inTemperature = gT
-GAIN3.inTemperature = gT
-
-GAIN1.inCarriersConcentration = 1e19 * gN
-GAIN2.inCarriersConcentration = 1e19 * gN
-GAIN3.inCarriersConcentration = 1e19 * gN
 
 plot_gain_spectrum(GAIN1, True, u"Michał")
 plot_gain_spectrum(GAIN2, False, u"Maciek")
@@ -393,7 +458,7 @@ legend(loc='best')
 tight_layout(0.2)    
 
 msh = mesh.Rectangular2D([0.], [zqw])
-print(GAIN2.outGain(msh, 400.))[0]
+print(GAIN2.outGain(msh, 400.)[0])
     
 show()
 ]]></script>

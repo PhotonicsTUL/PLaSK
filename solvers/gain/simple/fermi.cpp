@@ -344,9 +344,9 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_heavy_hole_mass_transverse(qmhh.c11);
     gainModule.Set_light_hole_mass_in_plain(qmlh.c00);
     gainModule.Set_light_hole_mass_transverse(qmlh.c11);
-    gainModule.Set_electron_mass_in_barrier(bme.c00);
-    gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c00);
-    gainModule.Set_light_hole_mass_in_barrier(bmlh.c00);
+    gainModule.Set_electron_mass_in_barrier(bme.c11);
+    gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c11);
+    gainModule.Set_light_hole_mass_in_barrier(bmlh.c11);
     gainModule.Set_well_width(region.qwlen); //powinno byc - szerokosc pojedynczej studni
     gainModule.Set_waveguide_width(region.totallen);
     gainModule.Set_lifetime(lifetime);
