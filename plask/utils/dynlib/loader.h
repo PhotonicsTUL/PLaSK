@@ -182,7 +182,8 @@ public:
 
     /**
      * Release ownership over holded system library handler.
-     * Don't close this library.
+     * This does not close the library.
+     * @return system library handler which ownership has been relased
      */
     handler_t release();
 
