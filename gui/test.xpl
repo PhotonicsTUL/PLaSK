@@ -224,7 +224,7 @@ from scipy import optimize
 import sys
 print_log('result', sys.executable)
 
-print(mesaRadius + 0) # 0
+print mesaRadius + 0 # 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
@@ -356,7 +356,7 @@ class A(object):
         self.a = 1
         
 a = A()
-print(a.a)
+print a.a
 ]]></script>
 
 </plask>

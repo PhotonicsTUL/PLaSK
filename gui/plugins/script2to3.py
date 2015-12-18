@@ -10,11 +10,17 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sys
-if sys.version_info[0] >= 3:
-
+try:
     from lib2to3.refactor import RefactoringTool, get_fixers_from_package
+except ImportError:
+    pass
+else:
     refactoring_tool = RefactoringTool(fixer_names=get_fixers_from_package('lib2to3.fixes'))
+
+    try:
+        unicode = unicode
+    except NameError:
+        unicode = str
 
     import gui
     from gui.qt import QtGui
@@ -38,7 +44,7 @@ if sys.version_info[0] >= 3:
                 msgbox.setWindowTitle("Python3 Conversion Error")
                 msgbox.setText("There was an error while converting your script to Python3!")
                 msgbox.setInformativeText("Check if the script does not have any Python2 syntax errors.")
-                msgbox.setDetailedText(str(err))
+                msgbox.setDetailedText(unicode(err))
                 msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
                 msgbox.setIcon(QtGui.QMessageBox.Critical)
                 msgbox.exec_()
@@ -46,7 +52,7 @@ if sys.version_info[0] >= 3:
                 editor.moveCursor(QtGui.QTextCursor.Start)
                 editor.moveCursor(QtGui.QTextCursor.End, True)
                 cursor = editor.textCursor()
-                cursor.insertText(str(node3)[:-1])
+                cursor.insertText(unicode(node3)[:-1])
 
                 msgbox = QtGui.QMessageBox()
                 msgbox.setWindowTitle("Python3 Conversion")
