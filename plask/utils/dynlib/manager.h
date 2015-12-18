@@ -30,8 +30,11 @@ public:
     /// Type of iterator over loaded libraries.
     typedef DynamicLibrarySet::const_iterator const_iterator;
 
-    DynamicLibraries(const DynamicLibraries&) = delete; //MSVC require this since DynamicLibrarySet is not-copyable
-    DynamicLibraries& operator=(const DynamicLibraries&) = delete;  //MSVC require this since DynamicLibrarySet is not-copyable
+    //TODO Maybe it should have some initialization?
+    DynamicLibraries() {}
+
+    DynamicLibraries(const DynamicLibraries&) = delete; // MSVC require this since DynamicLibrarySet is not-copyable
+    DynamicLibraries& operator=(const DynamicLibraries&) = delete;  // MSVC require this since DynamicLibrarySet is not-copyable
 
     /**
      * Allow to iterate over opened library included in this set.
