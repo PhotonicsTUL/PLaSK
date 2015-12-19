@@ -245,6 +245,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInf
         else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
             find_package(BFD)
             if(BFD_FOUND)
+                message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
                 set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
                 set(BACKWARD_HAS_BFD 1)
             else()
