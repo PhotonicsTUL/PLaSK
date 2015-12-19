@@ -286,11 +286,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double normNe = normNc * exp(dvePsi[i]-normEc0);
             double normNi = material->Ni(T) / mNx;
             double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
-            double normAe = material->Ae(T) / mAx;
-            double normAh = material->Ah(T) / mAx;
-            double normB = material->B(T) / mBx;
-            double normCe = material->Ce(T) / mCx;
-            double normCh = material->Ch(T) / mCx;
 
             double yn;
             switch (stat) {
@@ -305,15 +300,20 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
             /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
+                    double normAe = material->Ae(T) / mAx;
+                    double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi / normAh  + p / normAe)
                         / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
+                    double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNe * yn * p);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
+                    double normCe = material->Ce(T) / mCx;
+                    double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * ((normCe * (2. * n * p - normNi * normNi) + normCh * p * p)));
                     ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
@@ -324,11 +324,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double normNh = normNv * exp(-dvePsi[i]+normEv0);
             double normNi = material->Ni(T) / mNx;
             double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
-            double normAe = material->Ae(T) / mAx;
-            double normAh = material->Ah(T) / mAx;
-            double normB = material->B(T) / mBx;
-            double normCe = material->Ce(T) / mCx;
-            double normCh = material->Ch(T) / mCx;
 
             double yp;
             switch (stat) {
@@ -343,15 +338,20 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
             /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
+                    double normAe = material->Ae(T) / mAx;
+                    double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi / normAe + n / normAh)
                         / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
+                    double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNh * yp * n);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
+                    double normCe = material->Ce(T) / mCx;
+                    double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * ((normCh * (2. * n * p - normNi * normNi) + normCe * n * n)));
                     ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
