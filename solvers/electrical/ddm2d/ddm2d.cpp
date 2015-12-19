@@ -20,7 +20,7 @@ namespace plask { namespace solvers { namespace drift_diffusion {
  * \param M carrier effective mass
  * \param T temperature
  */
-static inline const double Ne(Tensor2<double> M, double T) {
+static inline const double Neff(Tensor2<double> M, double T) {
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
     double m = pow(M.c00 * M.c00 * M.c11, 0.3333333333333333);
     return 2e-6 * pow(fact * m * T, 1.5);
@@ -42,7 +42,8 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     mMix(1000.),
     mRx(((phys::kB_J*mTx*mMix*mNx)/(phys::qe*mXx*mXx))*1e8),
     mJx(((phys::kB_J*mNx)*mTx*mMix/mXx)*10.),
-    mtx(mNx/mRx),
+    //mtx(mNx/mRx),
+    mAx(mRx/mNx),
     mBx(mRx/(mNx*mNx)),
     mCx(mRx/(mNx*mNx*mNx)),
     //mHx(((mKx*mTx)/(mXx*mXx))*1e12),
@@ -264,9 +265,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
             double normEc0 = material->CB(T, 0., '*') / mEx;
-            double normNv = Ne(material->Mh(T, 0.), T) / mNx;
+            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             double normEv0 = material->VB(T, 0., '*') / mEx;
             double normT = T / mTx;
             double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
@@ -280,72 +281,84 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         double kk, kx, ky, gg, ff;
 
         if (calctype == CALC_FN) {
-            double Ec0 = material->CB(T, 0., '*') / mEx;
-            double Nc = Ne(material->Me(T, 0., '*'), T) / mNx;
-            double Ne = Nc * exp(dvePsi[i]-Ec0);
-            double mobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normEc0 = material->CB(T, 0., '*') / mEx;
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double normNe = normNc * exp(dvePsi[i]-normEc0);
+            double normNi = material->Ni(T) / mNx;
+            double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normAe = material->Ae(T) / mAx;
+            double normAh = material->Ah(T) / mAx;
+            double normB = material->B(T) / mBx;
+            double normCe = material->Ce(T) / mCx;
+            double normCh = material->Ch(T) / mCx;
 
             double yn;
             switch (stat) {
                 case STAT_MB: yn = 1.; break;
-                case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-Ec0)/(dveFnEta[i]*exp(dvePsi[i]-Ec0)); break;
+                case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            kx = mobN * Ne * yn * (hy*0.5) * (hy*0.5);
-            ky = mobN * Ne * yn * (hx*0.5) * (hx*0.5);
+            kx = normMobN * normNe * yn * (hy*0.5) * (hy*0.5);
+            ky = normMobN * normNe * yn * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            /*if (ttE->getL()->getID() == "QW") {
+            /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * Ne * yn * (p + ni) * (ttE->getL()->getTpNorm() * ni + ttE->getL()->getTnNorm() * p)
-                        / pow(ttE->getL()->getTpNorm() * (n + ni) + ttE->getL()->getTnNorm() * (p + ni), 2.));
-                    tFtmp += ((hx*0.5) * (hy*0.5) * (n * p - ni * ni) / (ttE->getL()->getTpNorm() * (n + ni) + ttE->getL()->getTnNorm() * (p + ni)));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi / normAh  + p / normAe)
+                        / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
+                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * ttE->getL()->getBNorm() * Ne * yn * p);
-                    tFtmp += ((hx*0.5) * (hy*0.5) * ttE->getL()->getBNorm() * (n * p - ni * ni));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNe * yn * p);
+                    ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * Ne * yn * ((ttE->getL()->getCnNorm() * (2. * n * p - ni * ni) + ttE->getL()->getCpNorm() * p * p)));
-                    tFtmp += ((hx*0.5) * (hy*0.5) * (ttE->getL()->getCnNorm() * n + ttE->getL()->getCpNorm() * p) * (n * p - ni * ni));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * ((normCe * (2. * n * p - normNi * normNi) + normCh * p * p)));
+                    ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
-            }*/
+            }
         } else if (calctype == CALC_FP)  {
-            double Ev0 = material->VB(T, 0., '*') / mEx;
-            double Nv = Ne(material->Mh(T, 0.), T) / mNx;
-            double Nh = Nv * exp(-dvePsi[i]+Ev0);
-            double mobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normEv0 = material->VB(T, 0., '*') / mEx;
+            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
+            double normNh = normNv * exp(-dvePsi[i]+normEv0);
+            double normNi = material->Ni(T) / mNx;
+            double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normAe = material->Ae(T) / mAx;
+            double normAh = material->Ah(T) / mAx;
+            double normB = material->B(T) / mBx;
+            double normCe = material->Ce(T) / mCx;
+            double normCh = material->Ch(T) / mCx;
 
             double yp;
             switch (stat) {
                 case STAT_MB: yp = 1.; break;
-                case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+Ev0)/(dveFpKsi[i]*exp(-dvePsi[i]+Ev0)); break;
+                case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            kx = mobP * Nh * yp * (hy*0.5) * (hy*0.5);
-            ky = mobP * Nh * yp * (hx*0.5) * (hx*0.5);
+            kx = normMobP * normNh * yp * (hy*0.5) * (hy*0.5);
+            ky = normMobP * normNh * yp * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            /*if (ttE->getL()->getID() == "QW") { // TODO (only in active?)
+            /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * Nh * yp * (n + ni) * (ttE->getL()->getTnNorm() * ni + ttE->getL()->getTpNorm() * n)
-                        / pow(ttE->getL()->getTpNorm() * (n + ni) + ttE->getL()->getTnNorm() * (p + ni), 2.));
-                    tFtmp += ((hx*0.5) * (hy*0.5) * (n * p - ni * ni) / (ttE->getL()->getTpNorm() * (n + ni) + ttE->getL()->getTnNorm() * (p + ni)));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi / normAe + n / normAh)
+                        / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
+                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * ttE->getL()->getBNorm() * Nh * yp * n);
-                    tFtmp += ((hx*0.5) * (hy*0.5) * ttE->getL()->getBNorm() * (n * p - ni * ni));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNh * yp * n);
+                    ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    tGtmp += ((1./9.) * (hx*0.5) * (hy*0.5) * Nh * yp * ((ttE->getL()->getCpNorm() * (2. * n * p - ni * ni) + ttE->getL()->getCnNorm() * n * n)));
-                    tFtmp += ((hx*0.5) * (hy*0.5) * (ttE->getL()->getCnNorm() * n + ttE->getL()->getCpNorm() * p) * (n * p - ni * ni));
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * ((normCh * (2. * n * p - normNi * normNi) + normCe * n * n)));
+                    ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
-            }*/
+            }
         } else {
-            double Nc = Ne(material->Me(T, 0., '*'), T) / mNx;
-            double Nv = Ne(material->Mh(T, 0.), T) / mNx;
+            double Nc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double Nv = Neff(material->Mh(T, 0.), T) / mNx;
             //double Ni = material->Ni(T) / mNx;
             double eps = material->eps(T) / mEpsRx;
             double Nd = material->Nd() / mNx;
@@ -502,7 +515,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
+        double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
         double normEc0 = material->CB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
@@ -521,7 +534,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); // TODO
-        double normNv = Ne(material->Mh(T, 0.), T) / mNx;
+        double normNv = Neff(material->Mh(T, 0.), T) / mNx;
         double normEv0 = material->VB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
@@ -634,8 +647,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             // normalise material parameters and temperature
             double normEc0 = material->CB(T, 0., '*') / mEx;
             double normEv0 = material->VB(T, 0., '*', 'h') / mEx;
-            double normNc = Ne(material->Me(T, 0., '*'), T) / mNx;
-            double normNv = Ne(material->Mh(T, 0), T) / mNx;
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double normNv = Neff(material->Mh(T, 0), T) / mNx;
             double normNd = material->Nd() / mNx;
             double normNa = material->Na() / mNx;
             double normEd = material->EactD(T) / mEx;
