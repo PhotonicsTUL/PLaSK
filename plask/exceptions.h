@@ -27,7 +27,7 @@ struct PLASK_API Exception: public std::runtime_error {
     Exception(const std::string& msg);
 
     /**
-     * Format error message using boost::format.
+     * Format error message using format.
      */
     template <typename... T>
     Exception(const std::string& msg, const T&... args): Exception(format(msg, args...)) {}
