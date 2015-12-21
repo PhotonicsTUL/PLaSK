@@ -53,20 +53,16 @@ from .model.info import InfoListModel, Info
 from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
-from .utils.config import CONFIG, ConfigDialog
+from .utils.config import CONFIG, ConfigProxy, ConfigDialog
 from .utils.texteditor import update_textedit_colors
 from .utils.widgets import fire_edit_end, InfoListView
+
+from .external.pysparkle import PySparkle
 
 try:
     import plask
 except ImportError:
     pass
-
-
-try:
-    winsparkle = ctypes.CDLL('WinSparkle.dll')
-except OSError:
-    winsparkle = None
 
 
 WINDOWS = set()
@@ -296,25 +292,12 @@ class MainWindow(QtGui.QMainWindow):
         source_button.setDefaultAction(self.showsource_action)
         self.tabs.setCornerWidget(source_button, QtCore.Qt.TopRightCorner)
 
-        global winsparkle
-        if winsparkle:
-            if winsparkle:
-                self.menu.addSeparator()
-                try:
-                    actionWinSparkleAutoupdate = QtGui.QAction(self)
-                    actionWinSparkleAutoupdate.setText(self.tr("Automatic Updates"))
-                    actionWinSparkleAutoupdate.setCheckable(True)
-                    actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
-                    actionWinSparkleAutoupdate.triggered.connect(
-                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
-                            int(actionWinSparkleAutoupdate.isChecked())))
-                    self.menu.addAction(actionWinSparkleAutoupdate)
-                except AttributeError:
-                    pass
-                actionWinSparkle = QtGui.QAction(self)
-                actionWinSparkle.setText("Check for Updates Now...")
-                actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
-                self.menu.addAction(actionWinSparkle)
+        global pysparkle
+        self.menu.addSeparator()
+        action_check_update = QtGui.QAction(self)
+        action_check_update.setText("Check for Updates Now...")
+        action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True))
+        self.menu.addAction(action_check_update)
 
         geometry = CONFIG['session/geometry']
         if geometry is None:
@@ -678,26 +661,27 @@ def main():
             sys.stderr.flush()
         sys.excepthook = excepthook
 
-    global APPLICATION
-    if winsparkle:
-        si = subprocess.STARTUPINFO()
-        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-        try:
-            ver = plask.version
-        except NameError:
-            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-            version, err = proc.communicate()
-            prog, ver = version.strip().split()
-        wp = ctypes.c_wchar_p
-        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
-        winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
-        winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
-        winsparkle.win_sparkle_init()
+    global APPLICATION, pysparkle
 
     APPLICATION = PlaskApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
     sys.argv = APPLICATION.arguments()
+
+    try:
+        ver = plask.version
+    except NameError:
+        try:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+        except AttributeError:
+            proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
+        else:
+            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+        version, err = proc.communicate()
+        _, ver = version.strip().split()
+    pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
+                          config=ConfigProxy('updates'), shutdown=False)
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
     if icons_theme == 'system':
@@ -741,8 +725,5 @@ def main():
             WINDOWS.add(MainWindow())
 
     exit_code = APPLICATION.exec_()
-
-    if winsparkle:
-        winsparkle.win_sparkle_cleanup()
 
     sys.exit(exit_code)

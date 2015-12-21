@@ -34,6 +34,7 @@ DEFAULTS = {
     'main_window/make_backup': True,
     'main_window/use_menu': False,
     'main_window/icons_theme': 'system',
+    'updates/automatic_check': None,
     'editor/font': [_default_font_family, str(QtGui.QFont().pointSize()),
                     '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/help_font': [_default_font_family, str(QtGui.QFont().pointSize()-2),
@@ -122,6 +123,9 @@ CONFIG_WIDGETS = OrderedDict([
          Combo('main_window/icons_theme',
                ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
                "Main window icons theme.")),
+        ("Automatically check for updates",
+         CheckBox('updates/automatic_check',
+                  "If this option is checked, PLaSK will automatically check for a new version on startup.")),
     ]),
     ("Window Display", [
         "Geometry View",
@@ -270,6 +274,24 @@ class Config(object):
         self.qsettings.sync()
 
 CONFIG = Config()
+
+
+class ConfigProxy(object):
+    
+    def __init__(self, prefix):
+        self.prefix = prefix + '/'
+        
+    def __getitem__(self, key):
+        return CONFIG[self.prefix + key]
+
+    def __setitem__(self, key, value):
+        CONFIG[self.prefix+key] = value
+
+    def get(self, key, default=None):
+        return CONFIG.get(self.prefix+key, default)
+
+    def sync(self):
+        CONFIG.sync()
 
 
 class ConfigDialog(QtGui.QDialog):
