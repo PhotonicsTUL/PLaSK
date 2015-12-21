@@ -98,6 +98,13 @@ def update_recent_files(filename):
         window.update_recent_list()
 
 
+def close_all_windows():
+    for window in WINDOWS:
+        if not window.close():
+            return False
+    return True
+
+
 # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 SECTION_ICONS = {
     'defines': 'accessories-dictionary',
@@ -681,7 +688,7 @@ def main():
         version, err = proc.communicate()
         _, ver = version.strip().split()
     pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
-                          config=ConfigProxy('updates'), shutdown=False)
+                          config=ConfigProxy('updates'), shutdown=close_all_windows)
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
     if icons_theme == 'system':
