@@ -55,7 +55,7 @@ void MeshD<dimension>::print(std::ostream& out) const {
 void MeshGenerator::onChange(const MeshGenerator::Event &) {}
 
 template <int MESH_DIM>
-shared_ptr<typename MeshGeneratorD<MESH_DIM>::MeshType> MeshGeneratorD<MESH_DIM>::operator()(const shared_ptr<GeometryObjectD<MeshGeneratorD<MESH_DIM>::DIM> > &geometry) {
+shared_ptr<typename MeshGeneratorD<MESH_DIM>::MeshType> MeshGeneratorD<MESH_DIM>::operator()(const typename MeshGeneratorD<MESH_DIM>::GeometryPtr &geometry) {
     if (auto res = cache.get(geometry))
         return res;
     else

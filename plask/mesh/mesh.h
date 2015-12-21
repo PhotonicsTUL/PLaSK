@@ -374,12 +374,14 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
 
   public:
 
+	typedef shared_ptr<GeometryObjectD<DIM>> GeometryPtr;
+
     /**
      * Generate new mesh
      * \param geometry on which the mesh should be generated
      * \return new generated mesh
      */
-    virtual shared_ptr<MeshType> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) = 0;
+    virtual shared_ptr<MeshType> generate(const GeometryPtr& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
@@ -390,7 +392,7 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshType> operator()(const shared_ptr<GeometryObjectD<DIM>>& geometry);
+    shared_ptr<MeshType> operator()(const GeometryPtr& geometry);
 
     template <typename RequiredType>
     shared_ptr<RequiredType> get(const shared_ptr<GeometryObjectD<DIM>>& geometry) {

@@ -208,7 +208,7 @@ struct PLASK_API Mirror: public Strategy {
  * @tparam StrategyType (base) type of held strategy, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
-class StrategyHolder {
+class PLASK_API StrategyHolder {
 
     StrategyType* strategy;
 
@@ -272,7 +272,7 @@ public:
  * @tparam StrategyType (base) type of held strategies, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
-class StrategyPairHolder {
+class PLASK_API StrategyPairHolder {
     /// lo and hi strategy
     StrategyHolder<direction, StrategyType> strategy_lo, strategy_hi;
 

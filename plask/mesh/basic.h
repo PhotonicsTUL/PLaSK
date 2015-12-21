@@ -14,19 +14,21 @@ namespace plask {
 template <int DIM>
 struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
 
+	typedef Vec<DIM, double> DVec;
+
     /// Held point:
-    Vec<DIM, double> point;
+	DVec point;
 
     OnePointMesh(const plask::Vec<DIM, double>& point)
     : point(point) {}
 
     // plask::MeshD<DIM> methods implementation:
 
-    virtual std::size_t size() const override;
+    std::size_t size() const override;
 
-    virtual Vec<DIM, double> at(std::size_t index) const override;
+    DVec at(std::size_t index) const override;
 
-    virtual void writeXML(XMLElement& object) const override;
+    void writeXML(XMLElement& object) const override;
 
 };
 
@@ -52,16 +54,18 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<3>)
 template <int DIM>
 struct PLASK_API TranslatedMesh: public MeshD<DIM> {
 
-    Vec<DIM, double> translation;
+	typedef Vec<DIM, double> DVec;
+
+	DVec translation;
 
     const shared_ptr<const MeshD<DIM>> sourceMesh;
 
     TranslatedMesh(const shared_ptr<const MeshD<DIM>>& sourceMesh, const Vec<DIM, double>& translation)
         : translation(translation), sourceMesh(sourceMesh) {}
 
-    virtual Vec<DIM, double> at(std::size_t index) const override;
+	DVec at(std::size_t index) const override;
 
-    virtual std::size_t size() const override;
+    std::size_t size() const override;
 
 };
 

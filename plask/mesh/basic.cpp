@@ -8,7 +8,7 @@ std::size_t OnePointMesh<DIM>::size() const {
 }
 
 template <int DIM>
-plask::Vec<DIM, double> OnePointMesh<DIM>::at(std::size_t) const {
+typename OnePointMesh<DIM>::DVec OnePointMesh<DIM>::at(std::size_t) const {
     return point;
 }
 
@@ -56,7 +56,7 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
 static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);
 
 template <int DIM>
-Vec<DIM, double> TranslatedMesh<DIM>::at(std::size_t index) const {
+typename TranslatedMesh<DIM>::DVec TranslatedMesh<DIM>::at(std::size_t index) const {
     return sourceMesh->at(index) + translation;
 }
 

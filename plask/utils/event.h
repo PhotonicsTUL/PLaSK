@@ -77,7 +77,7 @@ public:
      * @param flags flags to check
      * @return @c true only if one or more of @p flags are set
      */
-    bool hasAnyFlag(FlagsType flags) const { return _flags & flags; }
+    bool hasAnyFlag(FlagsType flags) const { return (_flags & flags) != 0; }
 
     /**
      * Construct event.

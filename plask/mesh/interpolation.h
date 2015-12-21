@@ -207,9 +207,9 @@ public:
     InterpolationFlags(shared_ptr<const Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
     InterpolationFlags(shared_ptr<Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
 
-    bool symmetric(int axis) const { return sym[axis]; }
+    bool symmetric(int axis) const { return sym[axis] != 0; }
 
-    bool periodic(int axis) const { return per & (1 << axis); }
+    bool periodic(int axis) const { return (per & (1 << axis)) != 0; }
 
     double low(int axis) const {
         if (sym[axis]) return min(lo[axis], -hi[axis]);

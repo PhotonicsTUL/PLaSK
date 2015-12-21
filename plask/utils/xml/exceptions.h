@@ -13,6 +13,11 @@ namespace plask {
 
 class XMLReader;
 
+#ifdef _MSC_VER
+// Disable MSVC warnings "non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'"
+# pragma warning( disable : 4275 )
+#endif
+
 /**
  * Base class for all exceptions thrown by plask library.
  */
