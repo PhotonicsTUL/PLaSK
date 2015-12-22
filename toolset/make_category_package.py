@@ -30,6 +30,7 @@ for dirname, _, files in os.walk(source):
         if xns: xns = '{'+xns+'}'
 
         for solver in root.findall(xns+'solver'):
+            if solver.attrib.get('obsolete'): continue
             cat = solver.attrib.get('category', category)
             dat = solver.attrib.get('lib', library), solver.attrib['name']
             data.append(dat)

@@ -50,6 +50,7 @@ def make_rst(dirname):
     if xns: xns = '{'+xns+'}'
 
     for solver in root.findall(xns+'solver'):
+        if solver.attrib.get('obsolete'): continue
 
         name = solver.attrib['name']
         cat = solver.attrib.get('category', category)
