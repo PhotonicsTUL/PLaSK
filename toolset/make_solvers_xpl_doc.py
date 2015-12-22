@@ -84,11 +84,15 @@ def make_rst(dirname):
 
         out(u'\n   .. xml:contents::')
 
-        geom = solver.find(xns+'geometry').attrib['type']
-        out(u'\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
-        out(u'\n         Geometry for use by this solver.')
-        out(u'\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
-            .format(geom))
+        try:
+            geom = solver.find(xns+'geometry').attrib['type']
+        except AttributeError:
+            pass
+        else:
+            out(u'\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
+            out(u'\n         Geometry for use by this solver.')
+            out(u'\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
+                .format(geom))
 
         mesh = solver.find(xns+'mesh')
         if mesh is not None:
