@@ -61,9 +61,10 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     outQuasiFermiEnergyLevelForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles),
     outConductionBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges),
     outValenceBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges),
-//     outCurrentDensity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities),
-//     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
-//     outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
+    outCurrentDensityForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
+    outCurrentDensityForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles),
+    outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
+    //outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
     maxerrPsiI(1e-6),
     maxerrPsi0(1e-6),
@@ -144,7 +145,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     dveN.reset(this->mesh->elements.size());
     dveP.reset(this->mesh->elements.size());
 
-    //currents.reset(this->mesh->elements.size());
+    currentsN.reset(this->mesh->elements.size());
+    currentsP.reset(this->mesh->elements.size());
 
     needPsi0 = true;
 }
@@ -161,8 +163,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     dveFpKsi.reset();
     dveN.reset();
     dveP.reset();
-    //currents.reset();
-    //heats.reset();
+    currentsN.reset();
+    currentsP.reset();
+    heats.reset();
 }
 
 
@@ -238,6 +241,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto temperatures = inTemperature(iMesh);
+
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
     
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
@@ -255,13 +261,16 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         size_t uprghtno = e.getUpUpIndex();
 
         // element size
-        double hx = (e.getUpper0() - e.getLower0()) / mXx;
-        double hy = (e.getUpper1() - e.getLower1()) / mXx;
+        double hx = (e.getUpper0() - e.getLower0()) / mXx; // normalised element width
+        double hy = (e.getUpper1() - e.getLower1()) / mXx; // normalised element height
 
         Vec <2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
         double T(300.); //TODO
+        // average temperature on the element
+        T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
+        double normT(T/mTx); // normalised temperature
 
         double n, p;
         if (calctype == CALC_PSI0) {
@@ -290,7 +299,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double yn;
             switch (stat) {
                 case STAT_MB: yn = 1.; break;
-                case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
+                //case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
+                case STAT_FD: yn = fermiDiracHalf((log(dveFnEta[i])+dvePsi[i]-normEc0)/normT) / (pow(dveFnEta[i],1./normT)*exp((dvePsi[i]-normEc0)/normT)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -328,7 +338,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double yp;
             switch (stat) {
                 case STAT_MB: yp = 1.; break;
-                case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
+                //case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
+                case STAT_FD: yp = fermiDiracHalf((log(dveFpKsi[i])-dvePsi[i]+normEv0)/normT) / (pow(dveFpKsi[i],1./normT)*exp((-dvePsi[i]+normEv0)/normT)); break;
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -357,30 +368,30 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }
         } else {
-            double Nc = Neff(material->Me(T, 0., '*'), T) / mNx;
-            double Nv = Neff(material->Mh(T, 0.), T) / mNx;
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             //double Ni = material->Ni(T) / mNx;
-            double eps = material->eps(T) / mEpsRx;
-            double Nd = material->Nd() / mNx;
-            double Na = material->Na() / mNx;
-            double Ed = 0.050 / mEx;
-            double Ea = 0.150 / mEx;
+            double normEps = material->eps(T) / mEpsRx;
+            double normNd = material->Nd() / mNx;
+            double normNa = material->Na() / mNx;
+            double normEd = 0.050 / mEx;
+            double normEa = 0.150 / mEx;
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            kx = eps * (hy*0.5) * (hy*0.5);
-            ky = eps * (hx*0.5) * (hx*0.5);
+            kx = normT * normEps * (hy*0.5) * (hy*0.5);
+            ky = normT * normEps * (hx*0.5) * (hx*0.5);
             gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
-            double iNdIon = Nd;
-            double iNaIon = Na;
+            double normNdIon = normNd;
+            double normNaIon = normNa;
             if (!mFullIon)
             {
                 double gD(2.), gA(4.);
-                double iNdTmp = (Nc/gD)*exp(-Ed);
-                double iNaTmp = (Nv/gA)*exp(-Ea);
-                iNdIon = Nd * (iNdTmp/(iNdTmp+n));
-                iNaIon = Na * (iNaTmp/(iNaTmp+p));
+                double normNdTmp = (normNc/gD)*exp(-normEd);
+                double normNaTmp = (normNv/gA)*exp(-normEa);
+                normNdIon = normNd * (normNdTmp/(normNdTmp+n));
+                normNaIon = normNa * (normNaTmp/(normNaTmp+p));
             }
-            ff = - (hx*0.5) * (hy*0.5) * (p - n + iNdIon - iNaIon);
+            ff = - (hx*0.5) * (hy*0.5) * (p - n + normNdIon - normNaIon);
         }
 
         // set symmetric matrix components
@@ -799,6 +810,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 
     //heats.reset(); // LP_09.2015
 
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto temperatures = inTemperature(iMesh);
+
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
 
@@ -907,13 +921,61 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         }
     }
 
+    // calculate electron and hole currents (jn and jp)
+    for (auto el: this->mesh->elements) {
+        size_t i = el.getIndex();
+        size_t loleftno = el.getLoLoIndex();
+        size_t lorghtno = el.getUpLoIndex();
+        size_t upleftno = el.getLoUpIndex();
+        size_t uprghtno = el.getUpUpIndex();
+        double dFnx = - 0.5 * (- log(dveFnEta[loleftno]) + log(dveFnEta[lorghtno]) - log(dveFnEta[upleftno]) + log(dveFnEta[uprghtno]))
+                             / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFn/dx]
+        double dFny = - 0.5 * (- log(dveFnEta[loleftno]) - log(dveFnEta[lorghtno]) + log(dveFnEta[upleftno]) + log(dveFnEta[uprghtno]))
+                             / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFn/dy]
+        double dFpx = - 0.5 * (- log(dveFpKsi[loleftno]) + log(dveFpKsi[lorghtno]) - log(dveFpKsi[upleftno]) + log(dveFpKsi[uprghtno]))
+                             / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFp/dx]
+        double dFpy = - 0.5 * (- log(dveFpKsi[loleftno]) - log(dveFpKsi[lorghtno]) + log(dveFpKsi[upleftno]) + log(dveFpKsi[uprghtno]))
+                             / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFp/dy]
+
+        double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
+        //double normT(T/mTx); // normalised temperature
+
+        /*double n, p;
+        if (calctype == CALC_PSI0) {
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double normEc0 = material->CB(T, 0., '*') / mEx;
+            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
+            double normEv0 = material->VB(T, 0., '*') / mEx;
+            double normT = T / mTx;
+            double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
+            n = calcN(normNc, 1., ePsi, normEc0, normT);
+            p = calcP(normNv, 1., ePsi, normEv0, normT);
+        } else {
+            n = dveN[i];
+            p = dveP[i];
+        }*/
+
+        auto midpoint = el.getMidpoint();
+        auto material = this->geometry->getMaterial(midpoint);
+
+        double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+        auto curN = vec(normMobN * dveN[i] * dFnx * mJx, normMobN * dveN[i] * dFny * mJx);
+
+        double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+        auto curP = vec(normMobP * dveP[i] * dFpx * mJx, normMobP * dveP[i] * dFpy * mJx);
+
+        currentsN[i] = curN; // in (kA/cm^2)
+        currentsP[i] = curP; // in (kA/cm^2)
+    }
+
     outPotential.fireChanged();
     outQuasiFermiEnergyLevelForElectrons.fireChanged();
     outQuasiFermiEnergyLevelForHoles.fireChanged();
     outConductionBandEdge.fireChanged();
     outValenceBandEdge.fireChanged();
-//     outCurrentDensity.fireChanged();
-//     outHeat.fireChanged();
+    outCurrentDensityForElectrons.fireChanged();
+    outCurrentDensityForHoles.fireChanged();
+    outHeat.fireChanged();
 
     return errorPsi + errorFn + errorFp;
 }
@@ -986,7 +1048,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
     // now A contains factorized matrix and B the solutions
 }
 
-/*
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 {
@@ -994,7 +1055,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 
     heats.reset(this->mesh->elements.size());
 
-    if (heatmet == HEAT_JOULES) {
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto temperatures = inTemperature(iMesh);
+
+    /*if (heatmet == HEAT_JOULES)*/ {
         for (auto e: this->mesh->elements) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
@@ -1002,41 +1066,27 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
             size_t upleftno = e.getLoUpIndex();
             size_t uprghtno = e.getUpUpIndex();
             auto midpoint = e.getMidpoint();
-            if (this->geometry->getMaterial(midpoint)->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
+            auto material = this->geometry->getMaterial(midpoint);
+            if (material->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
-            else {
-                double dvx = 0.;//0.5e6 * (- potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno]) // LP_09.2015
+            else { 
+                double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
+
+                double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+                double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+
+                heats[i] = ((currentsN[i].c0*currentsN[i].c0+currentsN[i].c1*currentsN[i].c1) / (normMobN*dveN[i]) + (currentsP[i].c0*currentsP[i].c0+currentsP[i].c1*currentsP[i].c1) / (normMobP*dveP[i])) * (1e12 / phys::qe);
+
+                /*double dvx = 0.;//0.5e6 * (- potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno]) // LP_09.2015
                                //     / (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
                 double dvy = 0.; //0.5e6 * (- potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno]) // LP_09.2015
                               //      / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
-                heats[i] = conds[i].c00 * dvx*dvx + conds[i].c11 * dvy*dvy;
+                heats[i] = conds[i].c00 * dvx*dvx + conds[i].c11 * dvy*dvy;*/
             }
-        }
-    } else {
-        for (auto e: this->mesh->elements) {
-            size_t i = e.getIndex();
-            size_t loleftno = e.getLoLoIndex();
-            size_t lorghtno = e.getUpLoIndex();
-            size_t upleftno = e.getLoUpIndex();
-            size_t uprghtno = e.getUpUpIndex();
-            double dvx = 0.;//0.5e6 * (- potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno])// LP_09.2015
-                                // (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
-            double dvy = 0.; //0.5e6 * (- potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno])// LP_09.2015
-                               // (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
-            auto midpoint = e.getMidpoint();
-            if (size_t nact = isActive(midpoint)) {
-                const auto& act = active[nact];
-                double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
-                double jy = conds[i].c11 * fabs(dvy); // [j] = A/m²
-                heats[i] = heatfact * jy ;
-            } else if (this->geometry->getMaterial(midpoint)->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
-                heats[i] = 0.;
-            else
-                heats[i] = conds[i].c00 * dvx*dvx + conds[i].c11 * dvy*dvy;
         }
     }
 }
-*/
+
 
 /*template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)// LP_09.2015
 {
@@ -1187,15 +1237,15 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValence
     return interpolate(this->mesh, dvnEv, dst_mesh, method, this->geometry); // here the valence band edge is rescalled (*mEx)
 }
 
-/*
+
 template <typename Geometry2DType>
-const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensities(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
+const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!potentials) throw NoValue("Current density");
+    if (!dvnFnEta) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
+    auto result = interpolate(this->mesh->getMidpointsMesh(), currentsN, dest_mesh, method, flags);
     return LazyData < Vec<2>>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
@@ -1205,9 +1255,24 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
 
 
 template <typename Geometry2DType>
+const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
+{
+    if (!dvnFpKsi) throw NoValue("Current density");
+    this->writelog(LOG_DEBUG, "Getting current densities");
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+    InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
+    auto result = interpolate(this->mesh->getMidpointsMesh(), currentsP, dest_mesh, method, flags);
+    return LazyData < Vec<2>>(result.size(),
+        [this, dest_mesh, result, flags](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
+        }
+    );
+}
+
+template <typename Geometry2DType>
 const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!potentials) throw NoValue("Heat density");
+    if ((!dvnFnEta)||(!dvnFpKsi)) throw NoValue("Heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -1220,7 +1285,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
     );
 }
 
-
+/*
 template <typename Geometry2DType>
 const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod) {
     this->initCalculation();

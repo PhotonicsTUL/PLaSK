@@ -103,8 +103,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes)
     DataVector<double> dvnFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: nodes)
     DataVector<double> dvnFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: nodes)
-    //DataVector<Vec<2,double>> currents;         ///< Computed current densities
-    //DataVector<double> heats;                   ///< Computed and cached heat source densities
+    DataVector<Vec<2,double>> currentsN;        ///< Computed current densities for electrons
+    DataVector<Vec<2,double>> currentsP;        ///< Computed current densities for holes
+    DataVector<double> heats;                   ///< Computed and cached heat source densities
 
     bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
 
@@ -129,20 +130,40 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// Find initial potential
     double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const;
 
-    /// Calculate electron concentration
+    /**
+    * Calculate electron concentration.
+    * \param iNc effective density of states for the conduction band
+    * \param iFnEta exponent of normalised quasi-Fermi energy level for elestrons
+    * \param iPsi normalised energy (potential multiplied by the elementary charge)
+    * \param iEc0 normalised conduction band edge
+    * \param iT normalised temperature
+    * \return computed electron concentration
+    */
     double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const { 
         switch (stat) {
-            case STAT_MB: return iNc * iFnEta * exp(iPsi-iEc0);
-            case STAT_FD: return iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0);
+            //case STAT_MB: return ( iNc * iFnEta * exp(iPsi-iEc0) );
+            case STAT_MB: return ( iNc * pow(iFnEta,1./iT) * exp((iPsi-iEc0)/iT) );
+            //case STAT_FD: return ( iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0) );
+            case STAT_FD: return ( iNc * fermiDiracHalf((log(iFnEta) + iPsi - iEc0)/iT) );
         }
         return NAN;
     }
 
-    /// Calculate hole concentration
+    /**
+    * Calculate hole concentration.
+    * \param iNv effective density of states for the valence band
+    * \param iFpKsi exponent of normalised quasi-Fermi energy level for holes
+    * \param iPsi normalised energy (potential multiplied by the elementary charge)
+    * \param iEv0 normalised valence band edge
+    * \param iT normalised temperature
+    * \return computed hole concentration
+    */
     double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT) const {
         switch (stat) {
-            case STAT_MB: return iNv * iFpKsi * exp(iEv0-iPsi);
-            case STAT_FD: return iNv * fermiDiracHalf(log(iFpKsi) - iPsi + iEv0);
+            //case STAT_MB: return ( iNv * iFpKsi * exp(iEv0-iPsi) );
+            case STAT_MB: return ( iNv * pow(iFpKsi,1./iT) * exp((iEv0-iPsi)/iT) );
+            //case STAT_FD: return ( iNv * fermiDiracHalf(log(iFpKsi) - iPsi + iEv0) );
+            case STAT_FD: return ( iNv * fermiDiracHalf((log(iFpKsi) - iPsi + iEv0)/iT) );
         }
         return NAN;
     }
@@ -170,10 +191,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     template <CalcType calctype>
     double addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& vconst);
 
-/*
+
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
-*/
+
     /// Matrix solver
     void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
@@ -218,11 +239,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     typename ProviderFor<ValenceBandEdge, Geometry2DType>::Delegate outValenceBandEdge;
 
-/*
-    typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
+    typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensityForElectrons;
+
+    typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensityForHoles;
 
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
-
+/*
     typename ProviderFor<Conductivity, Geometry2DType>::Delegate outConductivity;
 */
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
@@ -304,12 +326,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
-
-    /*
     const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
-    const LazyData<Vec<2>> getCurrentDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<Vec<2>> getCurrentDensitiesForElectrons(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
+    const LazyData<Vec<2>> getCurrentDensitiesForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+/*
     const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 */
 };
