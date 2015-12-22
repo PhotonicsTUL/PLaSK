@@ -65,7 +65,7 @@ namespace detail {
 
 static py::object OrderedAxis__array__(py::object self, py::object dtype) {
     OrderedAxis* axis = py::extract<OrderedAxis*>(self);
-    npy_intp dims[] = { axis->size() };
+    npy_intp dims[] = { npy_intp(axis->size()) };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*axis->begin()));
     if (arr == nullptr) throw TypeError("cannot create array");
     confirm_array<double>(arr, self, dtype);

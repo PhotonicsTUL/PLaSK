@@ -14,9 +14,19 @@ namespace plask {
 class XMLReader;
 
 #ifdef _MSC_VER
-// Disable MSVC warnings "non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'"
-# pragma warning( disable : 4275 )
+#pragma warning(push)
+#pragma warning( disable : 4275 )   // Disable MSVC warnings "non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'"
 #endif
+
+/**
+ * Exceptions of this type are thrown by XMLWriter class
+ */
+struct PLASK_API XMLWriterException: public std::runtime_error {
+    /**
+     * \param msg error message
+     */
+    XMLWriterException(const std::string& msg): std::runtime_error(msg) {}
+};
 
 /**
  * Base class for all exceptions thrown by plask library.
@@ -41,6 +51,10 @@ struct PLASK_API XMLException: public std::runtime_error {
     XMLException(const std::string& msg);
 
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /**
  * Exceptions of this class are thrown when the required attribute is not found in XML tag.
@@ -145,16 +159,6 @@ struct PLASK_API XMLConflictingAttributesException: public XMLException {
      */
     XMLConflictingAttributesException(const XMLReader& reader, const std::string& attr1, const std::string& attr2)
     : XMLException(reader, "conflicting attributes '" + attr1 + "' and '" + attr2 + "'") {}
-};
-
-/**
- * Exceptions of this type are thrown by XMLWriter class
- */
-struct PLASK_API XMLWriterException: public std::runtime_error {
-    /**
-     * \param msg error message
-     */
-    XMLWriterException(const std::string& msg): std::runtime_error(msg) {}
 };
 
 

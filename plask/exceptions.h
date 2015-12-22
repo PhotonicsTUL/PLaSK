@@ -14,8 +14,8 @@ This file contains definitions of most exceptions classes which are used in PLaS
 namespace plask {
 
 #ifdef _MSC_VER
-// Disable MSVC warnings "non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'"
-# pragma warning( disable : 4275 )
+#pragma warning(push)
+#pragma warning( disable : 4275 )   // Disable MSVC warnings "non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'"
 #endif
 
 /**
@@ -32,6 +32,10 @@ struct PLASK_API Exception: public std::runtime_error {
     template <typename... T>
     Exception(const std::string& msg, const T&... args): Exception(format(msg, args...)) {}
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /**
  * Exceptions of this class are thrownin cases of critical and very unexpected errors (possible plask bugs).
