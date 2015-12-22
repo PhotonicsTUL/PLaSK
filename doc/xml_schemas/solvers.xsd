@@ -13,6 +13,13 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:simpleType name="bool">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="yes"/>
+      <xs:enumeration value="no"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:element name="solver">
     <xs:complexType mixed="true">
       <xs:choice maxOccurs="unbounded">
@@ -25,16 +32,9 @@
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="category" type="xs:string" use="optional"/>
       <xs:attribute name="lib" type="xs:string" use="optional"/>
+      <xs:attribute name="obsolete" type="bool" use="optional"/>
     </xs:complexType>
   </xs:element>
-
-  <xs:simpleType name="bool">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="yes"/>
-      <xs:enumeration value="no"/>
-    </xs:restriction>
-  </xs:simpleType>
-
 
   <xs:element name="geometry">
     <xs:complexType>

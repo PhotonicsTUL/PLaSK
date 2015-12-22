@@ -310,7 +310,6 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         return res;
     }
 
-    
 #ifndef NDEBUG
   public:
 #endif

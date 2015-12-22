@@ -225,6 +225,7 @@ def _load_xml(filename):
 
     for solver in root:
         if solver.tag != xns+'solver': continue
+        if solver.attrib.get('obsolete'): continue
 
         name = solver.attrib.get('name')
         if name is None: return
