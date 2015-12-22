@@ -19,7 +19,8 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
     # NOMINMAX prevend windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
-    # _SCL_SECURE_NO_WARNINGS hide many warnings which are coused by boost under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
+    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
+    add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
 else(MSVC)
 	if(MINGW)
 		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -197,6 +198,7 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes") # get rid of annoying warnings in Boost
