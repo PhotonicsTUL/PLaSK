@@ -106,7 +106,7 @@
     <mesh ref="diffusion"/>
     <config accuracy="0.005" fem-method="parabolic"/>
   </electrical>
-  <gain name="GAIN" solver="FermiCyl" lib="simple">
+  <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
     <config lifetime="0.5" matrix-elem="10"/>
   </gain>
@@ -139,7 +139,7 @@ plot_boundary(THERMAL.temperature_boundary, defmesh,
 gcf().canvas.set_window_title("Default mesh")
 
 task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
-                                 GAIN, OPTICAL, 0, 1.5, 981.)
+                                 GAIN, OPTICAL, 0, 1.5, 980.5)
 threshold_voltage = task.run()
 threshold_current = task.threshold_current
 print("Vth = {:.3f}V, Ith = {:.3f}mA"

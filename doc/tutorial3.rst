@@ -152,7 +152,7 @@ It's now time to define the solvers. Switch to the *Solvers* tab and type:
      <config fem-method="parabolic" accuracy="0.005"/>
    </electrical>
 
-   <gain solver="FermiCyl" name="GAIN">
+   <gain solver="FreeCarrierCyl" name="GAIN">
      <geometry ref="GeoO"/>
      <config lifetime="0.5" matrix-elem="10"/>
    </gain>
@@ -237,7 +237,7 @@ With having the geometries and meshes prepared, we can move on to scripting the 
 .. code-block:: python
 
    task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
-                                    GAIN, OPTICAL, 0, 1.5, 981.)
+                                    GAIN, OPTICAL, 0, 1.5, 980.5)
    threshold_voltage = task.run()
    threshold_current = task.threshold_current
    print("Vth = {:.3f}V, Ith = {:.3f}mA"
@@ -248,7 +248,7 @@ With having the geometries and meshes prepared, we can move on to scripting the 
    axvline(x=GEO.aperture.dr, color='0.75', ls=":", linewidth=1, alpha=0.35)
 
 :py:class:`~plask.algorithm.ThresholdSearch` is a PLaSK algorithm class that will do the threshold search loop for you. It needs to be initialized with configured solvers (thermal, electrical, diffusion, gain, optical).
-The other constructor parameters are: ``0``\ : the index of the voltage boundary condition to vary while changing the voltage, ``1.5``\ : the initial voltage to start from, ``981.``\ : the initial wavelength to start looking for the optical mode.
+The other constructor parameters are: ``0``\ : the index of the voltage boundary condition to vary while changing the voltage, ``1.5``\ : the initial voltage to start from, ``980.5``\ : the initial wavelength to start looking for the optical mode.
 
 After initializing the algorithm you simply run it using the method :py:meth:`~plask.algorithm.ThresholdSearch.run()`. If succeeded, it will return the threshold voltage. Furthermore, it saves the results of thermal and electrical calculations to disk in a HDF5 file, which can be later loaded and reused (this is, however, out of scope of this tutorial). The following lines in the above script, print the threshold voltage and current and and plot the found optical mode at the threshold. In the last line, we add a vertical bar to the plot to mark the oprical aperture.
 
@@ -261,7 +261,7 @@ It might be often important to perform an analysis of structure geometry paramet
 To do this, at the end of the file we have to add lines modifying the size of the ``oxide`` and ``aperture`` blocks defined in the ``xpl`` file. We want to change their lengths in the *r* direction (widths). This can be done by changing the ``dr``, or ``width`` parameter of these blocks:
 
 .. code-block:: python
-
+985.5
    new_aperture = 3.
    GEO.aperture.dr = new_aperture
    GEO.oxide.dr = mesa - new_aperture
