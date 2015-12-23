@@ -131,10 +131,9 @@ class MainWindow(QtGui.QMainWindow):
         'connects': "Define connections between computational solvers (Alt+C)",
         'script': "Edit control script for your computations (Alt+R)"}
 
+    opened = QtSignal()
     closing = QtSignal(QtGui.QCloseEvent)
-
     closed = QtSignal()
-
     config_changed = QtSignal()
 
     def __init__(self, filename=None):
@@ -299,7 +298,7 @@ class MainWindow(QtGui.QMainWindow):
         source_button.setDefaultAction(self.showsource_action)
         self.tabs.setCornerWidget(source_button, QtCore.Qt.TopRightCorner)
 
-        global pysparkle
+        self.opened.connect(new_window, Qt.QueuedConnection)
         self.menu.addSeparator()
         action_check_update = QtGui.QAction(self)
         action_check_update.setText("Check for Updates Now...")
@@ -321,6 +320,10 @@ class MainWindow(QtGui.QMainWindow):
         self.config_changed.connect(update_textedit_colors)
 
         self.show()
+
+    def showEvent(self, event):
+        super(MainWindow, self).showEvent(event)
+        self.opened.emit()
 
     def _update_info_color(self):
         pal = self.info_table.palette()
@@ -650,6 +653,26 @@ class PlaskApplication(QtGui.QApplication):
         return ok
 
 
+def new_window():
+    global pysparkle
+    if pysparkle is None:
+        try:
+            ver = plask.version
+        except NameError:
+            try:
+                si = subprocess.STARTUPINFO()
+                si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+                si.wShowWindow = subprocess.SW_HIDE
+            except AttributeError:
+                proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
+            else:
+                proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+            version, err = proc.communicate()
+            _, ver = version.strip().split()
+        pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
+                              config=ConfigProxy('updates'), shutdown=close_all_windows)
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -674,21 +697,7 @@ def main():
     APPLICATION.setApplicationName("PLaSK")
     sys.argv = APPLICATION.arguments()
 
-    try:
-        ver = plask.version
-    except NameError:
-        try:
-            si = subprocess.STARTUPINFO()
-            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = subprocess.SW_HIDE
-        except AttributeError:
-            proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
-        else:
-            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-        version, err = proc.communicate()
-        _, ver = version.strip().split()
-    pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
-                          config=ConfigProxy('updates'), shutdown=close_all_windows)
+    pysparkle = None
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
     if icons_theme == 'system':
