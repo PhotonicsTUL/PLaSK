@@ -99,7 +99,7 @@ def update_recent_files(filename):
 
 
 def close_all_windows():
-    for window in WINDOWS:
+    for window in WINDOWS.copy():
         if not window.close():
             return False
     return True
