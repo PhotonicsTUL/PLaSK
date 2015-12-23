@@ -15,8 +15,8 @@ typedef std::array<unsigned char, 6> mac_address_t;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+//#define WIN32_LEAN_AND_MEAN
+#include <plask/utils/minimal_winows.h>
 #include <intrin.h>
 #include <iphlpapi.h>
 

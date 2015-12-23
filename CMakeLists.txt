@@ -18,7 +18,7 @@ if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   #increase a number of sections in obj. file, required by plask
     add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
-    # NOMINMAX prevend windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
+    # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
     # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
 else(MSVC)
