@@ -26,9 +26,10 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     PROVIDER(outQuasiFermiEnergyLevelForHoles, "");
     PROVIDER(outConductionBandEdge, "");
     PROVIDER(outValenceBandEdge, "");
-    /*PROVIDER(outCurrentDensity, "");
+    PROVIDER(outCurrentDensityForElectrons, "");
+    PROVIDER(outCurrentDensityForHoles, "");
     PROVIDER(outHeat, "");
-    PROVIDER(outConductivity, "");*/
+    /*PROVIDER(outConductivity, "");*/
     BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
     solver.def_readwrite("maxerrVi", &__Class__::maxerrPsiI, "Limit for the initial potential estimate updates");
     solver.def_readwrite("maxerrV0", &__Class__::maxerrPsi0, "Limit for the built-in potential updates");
@@ -43,7 +44,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
     solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
     solver.def_readwrite("iterlim", &__Class__::iterlim, "Maximum number of iterations for iterative method");
-    solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");
+    solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");   
     /*METHOD(get_electrostatic_energy, getTotalEnergy,
            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            "Return:\n"
@@ -78,6 +79,11 @@ BOOST_PYTHON_MODULE(ddm2d)
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
+    ;
+
+    py_enum<Statistics>()
+        .value("MAXWELL_BOLTZMANN", STAT_MB)
+        .value("FERMI_DIRAC", STAT_FD)
     ;
 
     register_drift_diffusion_solver<Geometry2DCartesian>("DriftDiffusion2D", "Cartesian");
