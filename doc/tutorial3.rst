@@ -261,7 +261,7 @@ It might be often important to perform an analysis of structure geometry paramet
 To do this, at the end of the file we have to add lines modifying the size of the ``oxide`` and ``aperture`` blocks defined in the ``xpl`` file. We want to change their lengths in the *r* direction (widths). This can be done by changing the ``dr``, or ``width`` parameter of these blocks:
 
 .. code-block:: python
-985.5
+
    new_aperture = 3.
    GEO.aperture.dr = new_aperture
    GEO.oxide.dr = mesa - new_aperture
