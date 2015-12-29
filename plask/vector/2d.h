@@ -21,7 +21,7 @@ namespace plask {
  * Vector in 2D space.
  */
 template <typename T>
-struct Vec<2,T> {
+struct PLASK_API Vec<2,T> {
 
     static const int DIMS = 2;
 

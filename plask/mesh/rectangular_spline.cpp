@@ -63,7 +63,7 @@ namespace detail {
         }
 
         for (size_t i = 1; i != n0; ++i) {
-            const int idx = stride * i;
+            const int idx = int(stride * i);
             const double da = axis->at(i) - axis->at(i-1),
                          db = axis->at(i+1) - axis->at(i);
             const DataT sa = (data[idx] - data[idx-stride]) / da,
@@ -143,7 +143,7 @@ SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<
     InterpolatedLazyDataImpl<DstT, RectangularMesh<2>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size())
 {
-    const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size();
+    const int n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size());
 
     if (n0 == 0 || n1 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
@@ -290,10 +290,10 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
            gb = ((x1 - 2.) * x1 + 1.) * x1 * d1,
            gt = (x1 - 1.) * x1 * x1 * d1;
 
-    int ilb = this->src_mesh->index(i0_1, i1_1),
-        ilt = this->src_mesh->index(i0_1, i1),
-        irb = this->src_mesh->index(i0, i1_1),
-        irt = this->src_mesh->index(i0, i1);
+    int ilb = int(this->src_mesh->index(i0_1, i1_1)),
+        ilt = int(this->src_mesh->index(i0_1, i1)),
+        irb = int(this->src_mesh->index(i0, i1_1)),
+        irt = int(this->src_mesh->index(i0, i1));
 
     SrcT data_lb = this->src_vec[ilb],
          data_lt = this->src_vec[ilt],
@@ -324,7 +324,7 @@ SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<
     InterpolatedLazyDataImpl<DstT, RectangularMesh<3>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size())
 {
-    const int n0 = src_mesh->axis0->size(), n1 = src_mesh->axis1->size(), n2 = src_mesh->axis2->size();
+    const int n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size()), n2 = int(src_mesh->axis2->size());
 
     if (n0 == 0 || n1 == 0 || n2 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
@@ -529,14 +529,14 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         top = this->src_mesh->axis2->at(i2);
     }
 
-    int illl = this->src_mesh->index(i0_1, i1_1, i2_1),
-        illh = this->src_mesh->index(i0_1, i1_1, i2),
-        ilhl = this->src_mesh->index(i0_1, i1, i2_1),
-        ilhh = this->src_mesh->index(i0_1, i1, i2),
-        ihll = this->src_mesh->index(i0, i1_1, i2_1),
-        ihlh = this->src_mesh->index(i0, i1_1, i2),
-        ihhl = this->src_mesh->index(i0, i1, i2_1),
-        ihhh = this->src_mesh->index(i0, i1, i2);
+    int illl = int(this->src_mesh->index(i0_1, i1_1, i2_1)),
+        illh = int(this->src_mesh->index(i0_1, i1_1, i2)),
+        ilhl = int(this->src_mesh->index(i0_1, i1, i2_1)),
+        ilhh = int(this->src_mesh->index(i0_1, i1, i2)),
+        ihll = int(this->src_mesh->index(i0, i1_1, i2_1)),
+        ihlh = int(this->src_mesh->index(i0, i1_1, i2)),
+        ihhl = int(this->src_mesh->index(i0, i1, i2_1)),
+        ihhh = int(this->src_mesh->index(i0, i1, i2));
 
     double d0 = front - back,
            d1 = right - left,

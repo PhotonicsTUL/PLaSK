@@ -74,7 +74,7 @@ inline static bool processLicense(XMLReader& src, XMLWriter* dst,
             case XMLReader::NODE_ELEMENT_END:
                 if (src.getLevel() == 1) {  //end of root?
                     unsigned char hash[20];
-                    sha1::calc(to_sign.data(), to_sign.size(), hash);
+                    sha1::calc(to_sign.data(), int(to_sign.size()), hash);
                     calculated_signature.reserve(40);
                     for (unsigned char h: hash) {
                         const char* to_hex = "0123456789ABCDEF";

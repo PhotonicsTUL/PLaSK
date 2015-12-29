@@ -10,7 +10,7 @@ namespace plask {
 
 /// Generic template for 2D and 3D vectors
 template <int dim, typename T=double>
-struct Vec {};
+struct PLASK_API Vec {};
 
 /**
  * Vector component helper.

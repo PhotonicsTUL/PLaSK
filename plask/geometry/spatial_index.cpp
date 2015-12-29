@@ -175,7 +175,7 @@ template <int DIMS>
 void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByLo, const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByHi,
                             int inputDir, int& bestDir, double& bestOffset, int& bestValue)
 {
-    const int max_allowed_size = inputSortedByLo.size() - 4;
+    const int max_allowed_size = int(inputSortedByLo.size()) - 4;
     std::size_t i_hi = 0;
     for (std::size_t i_lo = 1; i_lo < inputSortedByLo.size(); ++i_lo) {
         const double& offset = inputSortedByLo[i_lo].boundingBox.lower[inputDir];
@@ -187,7 +187,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
         while (i_hi < inputSortedByHi.size() && inputSortedByHi[i_hi].boundingBox.upper[inputDir] < offset)
             ++i_hi;
         //now: obj. from [i_hi, inputSortedByHi.size()) will be added to hi set
-        const int hi_size = inputSortedByHi.size() - i_hi;
+        const int hi_size = int(inputSortedByHi.size()) - i_hi;
         if (hi_size > max_allowed_size)
             continue;   //too much obj in hi, we must wait for higher i_hi
         //common part is: [i_hi, i_lo)
