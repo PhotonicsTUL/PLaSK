@@ -267,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(exit_action)
 
         menu_button = QtGui.QPushButton(self)
-        menu_button.setText("File")
+        menu_button.setText("PLaSK")
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         if os.name == 'nt':
