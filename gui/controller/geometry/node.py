@@ -171,12 +171,34 @@ class GNodeController(Controller):
 
     def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None,
                                               display_property_name=None, change_cb=None):
-        return self.construct_combo_box(row_name,
-                                        items=[''] +
-                                        sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
-                                        node_property_name=node_property_name,
-                                        display_property_name=display_property_name,
-                                        change_cb=change_cb)
+        res = self.construct_combo_box(items=[''] +
+                                       sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
+                                       node_property_name=node_property_name,
+                                       display_property_name=display_property_name,
+                                       change_cb=change_cb)
+
+        def goto():
+            found = self.model.find_by_name(res.currentText())
+            if found is not None:
+                self.document.geometry.gui.tree.setCurrentIndex(self.model.index_for_node(found))
+
+        button = QtGui.QToolButton()
+        button.setText("->")
+        button.setToolTip("Go to selected object")
+        button.pressed.connect(goto)
+
+        layout = QtGui.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(res)
+        layout.addWidget(button)
+        widget = QtGui.QWidget()
+        widget.setLayout(layout)
+
+        if row_name:
+            self._get_current_form().addRow(row_name, widget)
+            return res
+        else:
+            return widget
 
     def construct_group(self, title=None, position=None):
         external = QtGui.QGroupBox(self.form)

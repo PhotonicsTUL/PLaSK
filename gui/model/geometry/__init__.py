@@ -469,6 +469,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         for r in self.roots: res |= r.paths(filter)
         return res
 
+    def find_by_name(self, name):
+        for r in self.roots:
+            found = r.find_by_name(name)
+            if found is not None:
+                return found
+
     @property
     def roots_cartesian2d(self):
         return (root for root in self.roots if isinstance(root, GNCartesian) and root.dim == 2)

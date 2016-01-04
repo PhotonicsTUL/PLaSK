@@ -82,7 +82,10 @@ class MultiEditorController(Controller):
 class GUIAndSourceController(MultiEditorController):
 
     def __init__(self, controller):
-        MultiEditorController.__init__(self, controller, SourceEditController(controller.document, controller.model))
+        source = SourceEditController(controller.document, controller.model)
+        MultiEditorController.__init__(self, controller, source)
+        self.gui = controller
+        self.source = source
 
     def change_editor(self):
         fire_edit_end()

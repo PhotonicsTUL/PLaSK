@@ -25,7 +25,7 @@
 <geometry>
   <cartesian2d name="geo2d" length="1000">
     <stack>
-      <arrange dtran="0.4" dvert="0" count="3">
+      <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
         <stack name="STOS">
           <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
           <item left="0">
@@ -33,6 +33,7 @@
           </item>
         </stack>
       </arrange>
+      <again ref="Pilars"/>
       <shelf flat="no">
         <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         <gap total="2"/>
