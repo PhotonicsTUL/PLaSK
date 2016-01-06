@@ -2,7 +2,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif      //TODO the below function is not C becouse it throws an exception!
 
 #include "f2c.h"
 

@@ -5,7 +5,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
-add_definitions("-Wno-shift-op-parentheses")
+if(NOT MSVC)
+    add_definitions("-Wno-shift-op-parentheses")
+endif(NOT MSVC)
+
+file(GLOB_RECURSE fftpacx_headers FOLLOW_SYMLINKS *.h)
 
 add_library(fftpacx SHARED
             c1f2kb.c c1f2kf.c c1f3kb.c c1f3kf.c c1f4kb.c c1f4kf.c c1f5kb.c
@@ -23,7 +27,9 @@ add_library(fftpacx SHARED
             rfft2f.c rfft2i.c rfftb1.c rfftf1.c rffti1.c rfftmb.c rfftmf.c rfftmi.c
             sinq1b.c sinq1f.c sinq1i.c sinqmb.c sinqmf.c sinqmi.c sint1b.c sint1f.c
             sint1i.c sintb1.c sintf1.c sintmb.c sintmf.c sintmi.c tables.c w2r.c
-            xercon.c xerfft.cpp)
+            xercon.c xerfft.cpp
+            ${fftpacx_headers}
+)
 
 if(WIN32)
     install(TARGETS fftpacx RUNTIME DESTINATION bin COMPONENT solvers
