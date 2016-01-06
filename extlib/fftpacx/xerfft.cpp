@@ -47,7 +47,12 @@ int xerfft_(char *srname, integer *info, ftnlen)
     else if (*info == -6)
         msg << "On entry to " << srname << " parameter LDIM is less than 2*(L/2+1)";
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    fprintf(stderr, "%s", msg.str().c_str());
+    exit(1);
+#else
     throw msg.str();
+#endif
 
     return 0;
 }
