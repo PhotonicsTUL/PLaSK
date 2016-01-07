@@ -114,7 +114,7 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
 
-    float aspect;
+    double aspect;
 
     Refinements refinements[dim];
 

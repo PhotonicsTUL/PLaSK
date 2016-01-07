@@ -187,11 +187,11 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
         while (i_hi < inputSortedByHi.size() && inputSortedByHi[i_hi].boundingBox.upper[inputDir] < offset)
             ++i_hi;
         //now: obj. from [i_hi, inputSortedByHi.size()) will be added to hi set
-        const int hi_size = int(inputSortedByHi.size()) - i_hi;
+        const int hi_size = int(inputSortedByHi.size()) - int(i_hi);
         if (hi_size > max_allowed_size)
             continue;   //too much obj in hi, we must wait for higher i_hi
         //common part is: [i_hi, i_lo)
-        const int value = (i_lo - i_hi) * 3  //this is number of common obj in two sets * 3, we want to minimalize this
+        const int value = (int(i_lo) - int(i_hi)) * 3  //this is number of common obj in two sets * 3, we want to minimalize this
                    + std::abs(int(hi_size) - int(i_lo));    //diffrent of set sizes, we also want to minimalize this
         if (value < bestValue) {
             bestValue = value;
