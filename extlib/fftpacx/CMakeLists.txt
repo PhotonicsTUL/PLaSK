@@ -5,9 +5,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
-if(NOT MSVC)
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs /wd4554")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4554")
+else(MSVC)
     add_definitions("-Wno-shift-op-parentheses")
-endif(NOT MSVC)
+endif(MSVC)
 
 file(GLOB_RECURSE fftpacx_headers FOLLOW_SYMLINKS *.h)
 
