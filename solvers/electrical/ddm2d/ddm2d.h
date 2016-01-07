@@ -19,7 +19,7 @@ enum Algorithm {
 };
 
 /// Carrier statistics types
-enum Statistics {
+enum Stat {
     STAT_MB,            ///< Maxwell-Boltzmann
     STAT_FD             ///< Fermi-Dirac
 };
@@ -87,7 +87,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxDelFn;   ///< maximal correction for quasi-Fermi levels for electrons calculations (eV)
     double maxDelFp;   ///< maximal correction for quasi-Fermi levels for holes calculations (eV)
 
-    Statistics stat;  ///< carriers statistics
+    Stat stat;  ///< carriers statistics
 
     //int loopno;                 ///< Number of completed loops
     //double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
@@ -109,6 +109,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
 
+    std::vector<Active> active;                 ///< Active regions information
+
     /// Initialize the solver
     virtual void onInitialize() override;
 
@@ -119,6 +121,32 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * Calculate initial potential for all elements
      */
     void computePsiI();
+
+    /** Return \c true if the specified point is at junction
+     * \param point point to test
+     * \returns number of active region + 1 (0 for none)
+     */
+    size_t isActive(const Vec<2>& point) const {
+        size_t no(0);
+        auto roles = this->geometry->getRolesAt(point);
+        for (auto role: roles) {
+            size_t l = 0;
+            if (role.substr(0,6) == "active") l = 6;
+            else if (role.substr(0,8)  == "junction") l = 8;
+            else continue;
+            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+            if (role.size() == l)
+                no = 1;
+            else {
+                try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
+                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '{0}'", role); }
+            }
+        }
+        return no;
+    }
+
+    /// Return \c true if the specified element is a junction
+    size_t isActive(const RectangularMesh<2>::Element& element) const { return isActive(element.getMidpoint()); }
 
   private:
 
@@ -277,14 +305,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * \param onlyactive if true only current in the active region is considered
      * \return computed total current
      */
-    //double integrateCurrent(size_t vindex, bool onlyactive=false);// LP_09.2015
+    double integrateCurrent(size_t vindex, bool onlyactive=false);// LP_09.2015
 
     /**
      * Integrate vertical total current flowing vertically through active region.
      * \param nact number of the active region
      * \return computed total current
      */
-    //double getTotalCurrent(size_t nact=0);// LP_09.2015
+    double getTotalCurrent(size_t nact=0);// LP_09.2015
 
     /**
      * Compute total electrostatic energy stored in the structure.

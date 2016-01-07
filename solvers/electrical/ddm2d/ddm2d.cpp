@@ -95,6 +95,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
         if (param == "voltage")
             this->readBoundaryConditions(manager, source, voltage_boundary);
         else if (param == "loop") {
+            stat = source.enumAttribute<Stat>("stat")
+                .value("MaxwellBoltzmann", STAT_MB)
+                .value("FermiDirac", STAT_FD)
+                .get(stat);
             maxerrPsiI = source.getAttribute<double>("maxerrVi", maxerrPsiI);
             maxerrPsi0 = source.getAttribute<double>("maxerrV0", maxerrPsi0);
             maxerrPsi = source.getAttribute<double>("maxerrV", maxerrPsi);
@@ -922,19 +926,19 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     }
 
     // calculate electron and hole currents (jn and jp)
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements) { // PROBLEM
         size_t i = el.getIndex();
         size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();
-        double dFnx = - 0.5 * (- log(dveFnEta[loleftno]) + log(dveFnEta[lorghtno]) - log(dveFnEta[upleftno]) + log(dveFnEta[uprghtno]))
+        double dFnx = - 0.5 * (- log(dvnFnEta[loleftno]) + log(dvnFnEta[lorghtno]) - log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno]))
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFn/dx]
-        double dFny = - 0.5 * (- log(dveFnEta[loleftno]) - log(dveFnEta[lorghtno]) + log(dveFnEta[upleftno]) + log(dveFnEta[uprghtno]))
+        double dFny = - 0.5 * (- log(dvnFnEta[loleftno]) - log(dvnFnEta[lorghtno]) + log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno]))
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFn/dy]
-        double dFpx = - 0.5 * (- log(dveFpKsi[loleftno]) + log(dveFpKsi[lorghtno]) - log(dveFpKsi[upleftno]) + log(dveFpKsi[uprghtno]))
+        double dFpx = - 0.5 * (- log(dvnFpKsi[loleftno]) + log(dvnFpKsi[lorghtno]) - log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno]))
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFp/dx]
-        double dFpy = - 0.5 * (- log(dveFpKsi[loleftno]) - log(dveFpKsi[lorghtno]) + log(dveFpKsi[upleftno]) + log(dveFpKsi[uprghtno]))
+        double dFpy = - 0.5 * (- log(dvnFpKsi[loleftno]) - log(dvnFpKsi[lorghtno]) + log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno]))
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFp/dy]
 
         double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
@@ -1088,15 +1092,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 }
 
 
-/*template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)// LP_09.2015
+template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)// LP_09.2015
 {
-    if (!potentials) throw NoValue("Current densities");
+    if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint()))
-            result += currents[element.getIndex()].c1 * element.getSize0();
+            result += currentsN[element.getIndex()].c1 * element.getSize0() + currentsP[element.getIndex()].c1 * element.getSize0();
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
     return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA;
@@ -1105,14 +1109,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 
 template < > double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
 {
-    if (!potentials) throw NoValue("Current densities");
+    if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
-            result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+            result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
         }
     }
     return result * M_PI * 0.01; // kA/cm² µm² -->  mA
@@ -1128,7 +1132,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
     size_t level = (act.bottom + act.top) / 2;
     return integrateCurrent(level, true);
 }
-*/
+
 
 template <typename Geometry2DType>
 const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const

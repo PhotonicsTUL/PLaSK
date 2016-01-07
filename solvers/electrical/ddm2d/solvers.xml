@@ -10,6 +10,11 @@
 
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
+      <attr name="stat" label="Statistics" type="choice">
+        Statistics assumed in drift-diffusion equations.
+        <choice>MaxwellBoltzmann</choice>
+        <choice>FermiDirac</choice>
+      </attr>
       <attr name="maxerrVi" label="Max initial potential update" type="float">Limit for the initial potential estimate updates.</attr>
       <attr name="maxerrV0" label="Max built-in potential update" type="float">Limit for the built-in potential updates.</attr>
       <attr name="maxerrV" label="Max potential update" type="float">Limit for the potential updates.</attr>

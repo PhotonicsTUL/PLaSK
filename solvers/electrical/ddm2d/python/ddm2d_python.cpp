@@ -81,7 +81,7 @@ BOOST_PYTHON_MODULE(ddm2d)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<Statistics>()
+    py_enum<Stat>()
         .value("MAXWELL_BOLTZMANN", STAT_MB)
         .value("FERMI_DIRAC", STAT_FD)
     ;
