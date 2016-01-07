@@ -35,10 +35,11 @@ struct XmlWriter
         py::object pyfile;
         PythonOutput(const py::object& pyfile): pyfile(pyfile) {}
         void write(const char* buffer, std::size_t n) override {
-            char tmp[n+1];
+            /*char tmp[n+1];
             tmp[n] = 0;
             std::copy_n(buffer, n, tmp);
-            pyfile.attr("write")((const char*)tmp);
+            pyfile.attr("write")((const char*)tmp);*/
+            pyfile.attr("write")(std::string(buffer, n));
         }
     };
 

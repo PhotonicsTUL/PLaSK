@@ -45,8 +45,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
 
 
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { mesh.axis0->size(), mesh.axis1->size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { mesh.axis0->size(), mesh.axis1->size(), mesh.axis2->size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { npy_intp(mesh.axis0->size()), npy_intp(mesh.axis1->size()) }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { npy_intp(mesh.axis0->size()), npy_intp(mesh.axis1->size()), npy_intp(mesh.axis2->size()) }; }
 
     template <typename T>
     inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
