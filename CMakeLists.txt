@@ -124,11 +124,11 @@ endif()
 
 # ---------- NuGet paths ---------------------------------------------------
 if(NUGET_PACKAGES_PATH)
-	# TODO use the highest number not higher than compiler version intead of constants like "v110"
-	file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
-	file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
-	list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
-	list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
+    # TODO use the highest number not higher than compiler version intead of constants like "v110"
+    #file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
+    #file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
+    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
+    #list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
     file(GLOB nuget_eigen_includedir "${NUGET_PACKAGES_PATH}/Eigen*/build/native/include")
     list(APPEND CMAKE_INCLUDE_PATH ${nuget_eigen_includedir})
 	#file(GLOB nuget_blas_includedir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/include")
