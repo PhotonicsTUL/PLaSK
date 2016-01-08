@@ -21,6 +21,7 @@ if(MSVC)    # flags needed by Visual Studio:
     # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
     # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
+    add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
 else(MSVC)
 	if(MINGW)
 		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -125,10 +126,10 @@ endif()
 # ---------- NuGet paths ---------------------------------------------------
 if(NUGET_PACKAGES_PATH)
     # TODO use the highest number not higher than compiler version intead of constants like "v110"
-    #file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
-    #file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
-    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
-    #list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
+    file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
+    file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
+    list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
+    list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
     file(GLOB nuget_eigen_includedir "${NUGET_PACKAGES_PATH}/Eigen*/build/native/include")
     list(APPEND CMAKE_INCLUDE_PATH ${nuget_eigen_includedir})
 	#file(GLOB nuget_blas_includedir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/include")
