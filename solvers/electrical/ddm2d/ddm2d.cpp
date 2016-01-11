@@ -139,6 +139,74 @@ DriftDiffusionModel2DSolver<Geometry2DType>::~DriftDiffusionModel2DSolver() {
 }
 
 
+template<typename Geometry2DType>
+void DriftDiffusionModel2DSolver<Geometry2DType>::setActiveRegions()
+{
+    /*if (!this->geometry || !this->mesh) {
+        if (junction_conductivity.size() != 1) {
+            double condy = 0.;
+            for (auto cond: junction_conductivity) condy += cond;
+            junction_conductivity.reset(1, condy / junction_conductivity.size());
+        }
+        return;
+    }*/
+
+    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
+
+    std::vector<typename Active::Temp> regions;
+
+    for (size_t r = 0; r < points->axis1->size(); ++r) {
+        size_t prev = 0;
+        for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
+            auto point = points->at(c,r);
+            size_t num = isActive(point);
+
+            if (num) { // here we are inside the active region
+                regions.resize(max(regions.size(), num));
+                auto& reg = regions[num-1];
+                if (prev != num) { // this region starts in the current row
+                    if (reg.top < r) {
+                        throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
+                    }
+                    if (reg.bottom >= r) reg.bottom = r; // first row
+                    else if (reg.rowr <= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
+                    reg.top = r + 1;
+                    reg.rowl = c; if (reg.left > reg.rowl) reg.left = reg.rowl;
+                }
+            }
+            if (prev && prev != num) { // previous region ended
+                auto& reg = regions[prev-1];
+                if (reg.bottom < r && reg.rowl >= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), prev-1);
+                reg.rowr = c; if (reg.right < reg.rowr) reg.right = reg.rowr;
+            }
+            prev = num;
+        }
+        if (prev) // junction reached the edge
+            regions[prev-1].rowr = regions[prev-1].right = points->axis0->size();
+    }
+
+    size_t condsize = 0;
+    active.clear();
+    active.reserve(regions.size());
+    size_t i = 0;
+    for (auto& reg: regions) {
+        if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
+        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis1->at(reg.top) - this->mesh->axis1->at(reg.bottom));
+        condsize += reg.right - reg.left;
+        this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", i++, 1e3 * active.back().height);
+        this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3}]-[{2},{4}]", i-1, reg.left, reg.right, reg.bottom, reg.top);
+    }
+
+    //this->writelog(LOG_DEBUG, "active.size{1}", active.size());
+
+    /*if (junction_conductivity.size() != condsize) {
+        double condy = 0.;
+        for (auto cond: junction_conductivity) condy += cond;
+        junction_conductivity.reset(max(condsize, size_t(1)), condy / junction_conductivity.size());
+    }*/
+}
+
+
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
 {
@@ -307,7 +375,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             double normNe = normNc * exp(dvePsi[i]-normEc0);
             double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
-            double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix; // TODO
 
             double yn;
             switch (stat) {
@@ -347,7 +415,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             double normNh = normNv * exp(-dvePsi[i]+normEv0);
             double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
-            double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
+            double normMobP = 0.5*(material->mobh(T).c00+material->mobh(T).c11) / mMix; // TODO
 
             double yp;
             switch (stat) {
@@ -972,10 +1040,10 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         auto midpoint = el.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+        double normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix;
         auto curN = vec(normMobN * dveN[i] * dFnx * mJx, normMobN * dveN[i] * dFny * mJx);
 
-        double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+        double normMobP = 0.5*(material->mobh(T).c00+material->mobh(T).c11) / mMix;
         auto curP = vec(normMobP * dveP[i] * dFpx * mJx, normMobP * dveP[i] * dFpy * mJx);
 
         currentsN[i] = curN; // in (kA/cm^2)
@@ -1086,8 +1154,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
             else { 
                 double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
 
-                double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
-                double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix;
+                double normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix;
+                double normMobP = 0.5*(material->mobh(T).c00+material->mobh(T).c11) / mMix;
 
                 heats[i] = ((currentsN[i].c0*currentsN[i].c0+currentsN[i].c1*currentsN[i].c1) / (normMobN*dveN[i]) + (currentsP[i].c0*currentsP[i].c0+currentsP[i].c1*currentsP[i].c1) / (normMobP*dveP[i])) * (1e12 / phys::qe);
 

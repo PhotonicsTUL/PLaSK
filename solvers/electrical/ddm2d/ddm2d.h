@@ -117,6 +117,19 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// Invalidate the data
     virtual void onInvalidate() override;
 
+    /// Get info on active region
+    void setActiveRegions();
+
+    virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
+        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
+        setActiveRegions();
+    }
+
+    virtual void onGeometryChange(const Geometry::Event& evt) override {
+        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
+        setActiveRegions();
+    }
+
     /**
      * Calculate initial potential for all elements
      */
