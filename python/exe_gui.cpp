@@ -131,9 +131,9 @@ void endPlask() {
 
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <windows.h>
+#include <plask/utils/minimal_winows.h>
 #include <boost/tokenizer.hpp>
-#define BOOST_USE_WINDOWS_H
+//#define BOOST_USE_WINDOWS_H
 
 void showError(const std::string& msg, const std::string& cap) {
     MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);

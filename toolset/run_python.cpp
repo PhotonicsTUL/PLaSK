@@ -1,5 +1,5 @@
-#include <windows.h>
-#define BOOST_USE_WINDOWS_H
+#include <plask/utils/minimal_winows.h>
+//#define BOOST_USE_WINDOWS_H
 
 #include <Python.h>
 #include <marshal.h>
