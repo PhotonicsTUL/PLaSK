@@ -26,6 +26,14 @@ static inline const double Neff(Tensor2<double> M, double T) {
     return 2e-6 * pow(fact * m * T, 1.5);
 }
 
+/** Compute intrinsic carrier concentration
+ * \param M carrier effective mass
+ * \param T temperature
+ */
+static inline const double Ni(double Nc, double Nv, double Eg, double T) {
+    return sqrt(Nc*Nv) * exp(-Eg/(2*phys::kB_eV*T));
+}
+
 template <typename Geometry2DType>
 DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
     mRsrh(false),
@@ -296,8 +304,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         if (calctype == CALC_FN) {
             double normEc0 = material->CB(T, 0., '*') / mEx;
             double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             double normNe = normNc * exp(dvePsi[i]-normEc0);
-            double normNi = material->Ni(T) / mNx;
+            double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
             double normMobN = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
             double yn;
@@ -334,9 +343,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             }
         } else if (calctype == CALC_FP)  {
             double normEv0 = material->VB(T, 0., '*') / mEx;
+            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
             double normNv = Neff(material->Mh(T, 0.), T) / mNx;
             double normNh = normNv * exp(-dvePsi[i]+normEv0);
-            double normNi = material->Ni(T) / mNx;
+            double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
             double normMobP = 0.5*(material->mob(T).c00+material->mob(T).c11) / mMix; // TODO
 
             double yp;
@@ -932,13 +942,13 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         size_t lorghtno = el.getUpLoIndex();
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();
-        double dFnx = - 0.5 * (- log(dvnFnEta[loleftno]) + log(dvnFnEta[lorghtno]) - log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno]))
+        double dFnx = 0.5 * (- log(dvnFnEta[loleftno]) + log(dvnFnEta[lorghtno]) - log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno])) // + before 0.5 due to ln(FnEta)=Fn relation
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFn/dx]
-        double dFny = - 0.5 * (- log(dvnFnEta[loleftno]) - log(dvnFnEta[lorghtno]) + log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno]))
+        double dFny = 0.5 * (- log(dvnFnEta[loleftno]) - log(dvnFnEta[lorghtno]) + log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno])) // + before 0.5 due to ln(FnEta)=Fn relation
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFn/dy]
-        double dFpx = - 0.5 * (- log(dvnFpKsi[loleftno]) + log(dvnFpKsi[lorghtno]) - log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno]))
+        double dFpx = - 0.5 * (- log(dvnFpKsi[loleftno]) + log(dvnFpKsi[lorghtno]) - log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno])) // - before 0.5 due to -ln(FpKsi)=Fp relation
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFp/dx]
-        double dFpy = - 0.5 * (- log(dvnFpKsi[loleftno]) - log(dvnFpKsi[lorghtno]) + log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno]))
+        double dFpy = - 0.5 * (- log(dvnFpKsi[loleftno]) - log(dvnFpKsi[lorghtno]) + log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno])) // - before 0.5 due to -ln(FpKsi)=Fp relation
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFp/dy]
 
         double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
