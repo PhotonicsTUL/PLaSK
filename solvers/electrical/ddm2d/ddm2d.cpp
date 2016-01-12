@@ -1170,14 +1170,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 }
 
 
-template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)// LP_09.2015
+template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex/*, bool onlyactive*/)// LP_09.2015
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        if (!onlyactive || isActive(element.getMidpoint()))
+        //if (!onlyactive || isActive(element.getMidpoint()))
             result += currentsN[element.getIndex()].c1 * element.getSize0() + currentsP[element.getIndex()].c1 * element.getSize0();
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
@@ -1185,17 +1185,17 @@ template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateC
 }
 
 
-template < > double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
+template < > double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex/*, bool onlyactive*/)
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        if (!onlyactive || isActive(element.getMidpoint())) {
+        //if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
             result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
-        }
+        //}
     }
     return result * M_PI * 0.01; // kA/cm² µm² -->  mA
 }
@@ -1208,7 +1208,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
     const auto& act = active[nact];
     // Find the average of the active region
     size_t level = (act.bottom + act.top) / 2;
-    return integrateCurrent(level, true);
+    return integrateCurrent(level/*, true*/);
 }
 
 

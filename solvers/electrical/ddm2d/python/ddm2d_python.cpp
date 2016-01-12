@@ -19,6 +19,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, "Run drift-diffusion calculations", py::arg("loops")=0);
     METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
+    METHOD(integrate_current, integrateCurrent, "Integrate vertical total current at certain level [mA]", py::arg("vindex")/*, py::arg("onlyactive")=False*/);
     /*RO_PROPERTY(err, getErr, "Maximum estimated error");*/
     RECEIVER(inTemperature, "");
     PROVIDER(outPotential, "");

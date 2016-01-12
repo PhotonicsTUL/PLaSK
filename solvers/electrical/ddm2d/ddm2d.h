@@ -122,12 +122,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
-        setActiveRegions();
+        //setActiveRegions(); // PROBLEM
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
-        setActiveRegions();
+        //setActiveRegions(); // PROBLEM
     }
 
     /**
@@ -318,7 +318,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * \param onlyactive if true only current in the active region is considered
      * \return computed total current
      */
-    double integrateCurrent(size_t vindex, bool onlyactive=false);// LP_09.2015
+    double integrateCurrent(size_t vindex/*, bool onlyactive=false*/);// LP_09.2015
 
     /**
      * Integrate vertical total current flowing vertically through active region.
