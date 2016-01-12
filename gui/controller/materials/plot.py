@@ -88,6 +88,7 @@ class MaterialPlot(QtGui.QWidget):
         self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
         self.canvas.updateGeometry()
+        self.axes = None
 
         self.error = QtGui.QTextEdit(self)
         self.error.setVisible(False)
@@ -128,6 +129,16 @@ class MaterialPlot(QtGui.QWidget):
         plotbox_widget.setLayout(plotbox)
         splitter.addWidget(plotbox_widget)
 
+        self.logx_action = QtGui.QAction("Logarithmic &Argument", self.canvas)
+        self.logx_action.setCheckable(True)
+        self.logx_action.triggered.connect(self.update_scale)
+        self.logy_action = QtGui.QAction("Logarithmic &Value", self.canvas)
+        self.logy_action.setCheckable(True)
+        self.logy_action.triggered.connect(self.update_scale)
+        self.canvas.addAction(self.logx_action)
+        self.canvas.addAction(self.logy_action)
+        self.canvas.setContextMenuPolicy(Qt.ActionsContextMenu)
+
         self.info = QtGui.QTextEdit(self)
         self.info.setAcceptRichText(True)
         self.info.setReadOnly(True)
@@ -159,7 +170,8 @@ class MaterialPlot(QtGui.QWidget):
             self.error.setFixedHeight(self.error.document().size().height())
         if self.info.isVisible():
             self.info.setMaximumHeight(self.info.document().size().height())
-        self.figure.set_tight_layout(0)
+        if self.axes is not None:
+            self.figure.tight_layout(0.2)
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
@@ -334,7 +346,7 @@ class MaterialPlot(QtGui.QWidget):
 
     def update_plot(self):
         self.figure.clear()
-        axes = self.figure.add_subplot(111)
+        self.axes = self.figure.add_subplot(111)
         param = str(self.param.currentText())
 
         import warnings
@@ -387,7 +399,7 @@ class MaterialPlot(QtGui.QWidget):
                     self.vals = lambda a: plask.material.db.get(material_name, **dict(((arg_name, a),),
                                                                                       **other_elements)).\
                         __getattribute__(param)(**other_args)
-            axes.plot(plot_range, [self.vals(a) for a in plot_range])
+            self.axes.plot(plot_range, [self.vals(a) for a in plot_range])
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
 
@@ -404,22 +416,29 @@ class MaterialPlot(QtGui.QWidget):
             self.yu = MATERIALS_PROPERTES[param][1]
             self.label.show()
             self.label.setText(' ')
-            axes.set_xlabel(html_to_tex("{}{} [{}]".format(self.arg_button.descr[0].upper(), self.arg_button.descr[1:],
+            self.axes.set_xlabel(html_to_tex("{}{} [{}]".format(self.arg_button.descr[0].upper(), self.arg_button.descr[1:],
                                                            self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
-        axes.set_ylabel('[]')
+        self.axes.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)
-        axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
+        self.axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
-        self._cursor = Cursor(axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
-        self.canvas.draw()
+        self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
+        self.update_scale()
         warnings.showwarning = old_showwarning
         if warns:
             # if self.error.text(): self.error.append("\n")
             self.error.append("\n".join(warns))
             self.error.show()
             self.error.setFixedHeight(self.error.document().size().height())
+
+    def update_scale(self):
+        if self.axes is not None:
+            self.axes.set_xscale('log' if self.logx_action.isChecked() else 'linear')
+            self.axes.set_yscale('log' if self.logy_action.isChecked() else 'linear')
+        self.figure.tight_layout(pad=0.2)
+        self.canvas.draw()
 
     def on_mouse_move(self, event):
         if not self.label.isVisible(): return

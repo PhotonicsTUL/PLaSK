@@ -271,9 +271,10 @@ class MainWindow(QtGui.QMainWindow):
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         if os.name == 'nt':
-            menu_button.setIcon(QtGui.QIcon(QtGui.QIcon.fromTheme('plask').pixmap(16,16)))
+            menu_button.setAutoFillBackground(True)
+            #menu_button.setIcon(QtGui.QIcon(QtGui.QIcon.fromTheme('plask').pixmap(16,16)))
         else:
-            menu_button.setIcon(QtGui.QIcon.fromTheme('plask'))
+            menu_button.setIcon(QtGui.QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
