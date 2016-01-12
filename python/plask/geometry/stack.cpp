@@ -168,7 +168,7 @@ void register_geometry_container_stack()
              "                      the positions of a given edge/center/origin of the item.\n"
              "                      Exactly one alignment for horizontal axis must be given.\n")
         .add_property("default_aligner", py::make_getter(&StackContainer<2>::default_aligner, py::return_value_policy<py::return_by_value>()),
-                      py::make_setter(&StackContainer<2>::default_aligner),
+                      py::make_setter(&StackContainer<2>::default_aligner, py::return_value_policy<py::return_by_value>()),
                       "Default alignment for new stack items.")
     ;
 
@@ -252,7 +252,7 @@ void register_geometry_container_stack()
              "                       given edge/center/origin of the item. Exactly one\n"
              "                       alignment for each horizontal axis must be given.\n")
         .add_property("default_aligner", py::make_getter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()),
-                      py::make_setter(&StackContainer<3>::default_aligner), "Default alignment for new stack items")
+                      py::make_setter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()), "Default alignment for new stack items")
     ;
 
     // Multi-stack constainer
