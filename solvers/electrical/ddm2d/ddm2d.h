@@ -38,22 +38,6 @@ enum CalcType {
 template<typename Geometry2DType>
 struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
-    /// Details of active region
-    struct Active {
-        struct Temp {
-            size_t left, right, bottom, top;
-            size_t rowl, rowr;
-            Temp(): left(0), right(0), bottom(std::numeric_limits<size_t>::max()),
-                    top(std::numeric_limits<size_t>::max()),
-                    rowl(std::numeric_limits<size_t>::max()), rowr(0) {}
-        };
-        size_t left, right, bottom, top;
-        size_t offset;
-        double height;
-        Active() {}
-        Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
-    };
-
   protected:
 
     int size;                   ///< Number of columns in the main matrix
@@ -109,8 +93,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
 
-    std::vector<Active> active;                 ///< Active regions information
-
     /// Initialize the solver
     virtual void onInitialize() override;
 
@@ -118,16 +100,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     virtual void onInvalidate() override;
 
     /// Get info on active region
-    void setActiveRegions();
+    size_t getActiveRegionMeshIndex(size_t actnum) const;
 
     virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
-        //setActiveRegions(); // PROBLEM
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
-        //setActiveRegions(); // PROBLEM
     }
 
     /**
@@ -180,7 +160,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     * \param iT normalised temperature
     * \return computed electron concentration
     */
-    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const { 
+    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const {
         switch (stat) {
             //case STAT_MB: return ( iNc * iFnEta * exp(iPsi-iEc0) );
             case STAT_MB: return ( iNc * pow(iFnEta,1./iT) * exp((iPsi-iEc0)/iT) );
@@ -267,7 +247,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     double maxerr;              ///< Maximum relative current density correction accepted as convergence
 
-    /// Boundary condition      
+    /// Boundary condition
     BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
@@ -318,14 +298,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * \param onlyactive if true only current in the active region is considered
      * \return computed total current
      */
-    double integrateCurrent(size_t vindex/*, bool onlyactive=false*/);// LP_09.2015
+    double integrateCurrent(size_t vindex, bool onlyactive=false);
 
     /**
      * Integrate vertical total current flowing vertically through active region.
      * \param nact number of the active region
      * \return computed total current
      */
-    double getTotalCurrent(size_t nact=0);// LP_09.2015
+    double getTotalCurrent(size_t nact=0);
 
     /**
      * Compute total electrostatic energy stored in the structure.

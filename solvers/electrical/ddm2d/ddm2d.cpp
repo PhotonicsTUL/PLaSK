@@ -140,71 +140,53 @@ DriftDiffusionModel2DSolver<Geometry2DType>::~DriftDiffusionModel2DSolver() {
 
 
 template<typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::setActiveRegions()
+size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(size_t actnum) const
 {
-    /*if (!this->geometry || !this->mesh) {
-        if (junction_conductivity.size() != 1) {
-            double condy = 0.;
-            for (auto cond: junction_conductivity) condy += cond;
-            junction_conductivity.reset(1, condy / junction_conductivity.size());
-        }
-        return;
-    }*/
+    if (!this->geometry) throw NoGeometryException(this->getId());
+    if (!this->mesh) throw NoMeshException(this->getId());
+
+    size_t actlo, acthi, lon = 0, hin = 0;
 
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
-
-    std::vector<typename Active::Temp> regions;
-
+    size_t ileft = 0, iright = points->axis0->size();
+    bool in_active = false;
     for (size_t r = 0; r < points->axis1->size(); ++r) {
-        size_t prev = 0;
+        bool had_active = false;
         for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
-            size_t num = isActive(point);
-
-            if (num) { // here we are inside the active region
-                regions.resize(max(regions.size(), num));
-                auto& reg = regions[num-1];
-                if (prev != num) { // this region starts in the current row
-                    if (reg.top < r) {
-                        throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
+            bool active = isActive(point);
+            if (c >= ileft && c <= iright) {
+                // Here we are inside potential active region
+                if (active) {
+                    if (!had_active) {
+                        if (!in_active) { // active region is starting set-up new region info
+                            ileft = c;
+                            actlo = r;
+                            lon++;
+                        }
                     }
-                    if (reg.bottom >= r) reg.bottom = r; // first row
-                    else if (reg.rowr <= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
-                    reg.top = r + 1;
-                    reg.rowl = c; if (reg.left > reg.rowl) reg.left = reg.rowl;
+                } else if (had_active) {
+                    if (!in_active) iright = c;
+                    else throw Exception("{}: Right edge of the active region not aligned.", this->getId());
                 }
+                had_active |= active;
             }
-            if (prev && prev != num) { // previous region ended
-                auto& reg = regions[prev-1];
-                if (reg.bottom < r && reg.rowl >= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), prev-1);
-                reg.rowr = c; if (reg.right < reg.rowr) reg.right = reg.rowr;
-            }
-            prev = num;
         }
-        if (prev) // junction reached the edge
-            regions[prev-1].rowr = regions[prev-1].right = points->axis0->size();
+        in_active = had_active;
+        // Test if the active region has finished
+        if (!in_active && lon != hin) {
+            acthi = r;
+            if(hin++ == actnum) return (actlo + acthi) / 2;
+        }
     }
-
-    size_t condsize = 0;
-    active.clear();
-    active.reserve(regions.size());
-    size_t i = 0;
-    for (auto& reg: regions) {
-        if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
-        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis1->at(reg.top) - this->mesh->axis1->at(reg.bottom));
-        condsize += reg.right - reg.left;
-        this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", i++, 1e3 * active.back().height);
-        this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3}]-[{2},{4}]", i-1, reg.left, reg.right, reg.bottom, reg.top);
+    // Test if the active region has finished
+    if (lon != hin) {
+        acthi = points->axis1->size();
+        if(hin++ == actnum) return (actlo + acthi) / 2;
     }
-
-    //this->writelog(LOG_DEBUG, "active.size{1}", active.size());
-
-    /*if (junction_conductivity.size() != condsize) {
-        double condy = 0.;
-        for (auto cond: junction_conductivity) condy += cond;
-        junction_conductivity.reset(max(condsize, size_t(1)), condy / junction_conductivity.size());
-    }*/
+    throw BadInput(this->getId(), "Wrong active region number {}", actnum);
 }
+
 
 
 template <typename Geometry2DType>
@@ -295,7 +277,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 //                             double, double, const Vec<2,double>&)
 // {
 // }
-// 
+//
 // template <>
 // inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(double& k44, double& k33, double& k22, double& k11,
 //                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
@@ -325,7 +307,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     auto temperatures = inTemperature(iMesh);
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
-    
+
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
 
@@ -1151,7 +1133,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
             auto material = this->geometry->getMaterial(midpoint);
             if (material->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
-            else { 
+            else {
                 double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
 
                 double normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix;
@@ -1170,14 +1152,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 }
 
 
-template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex/*, bool onlyactive*/)// LP_09.2015
+template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        //if (!onlyactive || isActive(element.getMidpoint()))
+        if (!onlyactive || isActive(element.getMidpoint()))
             result += currentsN[element.getIndex()].c1 * element.getSize0() + currentsP[element.getIndex()].c1 * element.getSize0();
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
@@ -1185,17 +1167,17 @@ template < > double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateC
 }
 
 
-template < > double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex/*, bool onlyactive*/)
+template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        //if (!onlyactive || isActive(element.getMidpoint())) {
+        if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
             result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
-        //}
+        }
     }
     return result * M_PI * 0.01; // kA/cm² µm² -->  mA
 }
@@ -1204,11 +1186,8 @@ template < > double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrat
 template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 {
-    if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
-    const auto& act = active[nact];
-    // Find the average of the active region
-    size_t level = (act.bottom + act.top) / 2;
-    return integrateCurrent(level/*, true*/);
+    size_t level = getActiveRegionMeshIndex(nact);
+    return integrateCurrent(level, true);
 }
 
 

@@ -56,6 +56,8 @@ class PLASK_API Logger {
 
     friend class NoLogging;
 
+    friend void writelog(LogLevel level, const std::string& msg);
+
     template<typename... Args>
     friend void writelog(LogLevel level, const std::string& msg, Args&&... params);
 
@@ -96,6 +98,18 @@ class PLASK_API Logger {
 PLASK_API extern shared_ptr<Logger> default_logger;
 
 PLASK_API void createDefaultLogger();
+
+/**
+ * Log a message
+ * \param level log level to log
+ * \param msg log message
+ **/
+inline void writelog(LogLevel level, const std::string& msg) {
+    if (!default_logger) createDefaultLogger();
+    if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
+        default_logger->writelog(level, msg);
+    }
+}
 
 /**
  * Log a message

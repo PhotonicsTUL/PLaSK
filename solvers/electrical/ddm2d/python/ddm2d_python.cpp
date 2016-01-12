@@ -19,7 +19,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, "Run drift-diffusion calculations", py::arg("loops")=0);
     METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-    METHOD(integrate_current, integrateCurrent, "Integrate vertical total current at certain level [mA]", py::arg("vindex")/*, py::arg("onlyactive")=False*/);
+    //METHOD(integrate_current, integrateCurrent, "Integrate vertical total current at certain level [mA]", py::arg("vindex"), py::arg("onlyactive")=false);
     /*RO_PROPERTY(err, getErr, "Maximum estimated error");*/
     RECEIVER(inTemperature, "");
     PROVIDER(outPotential, "");
@@ -45,7 +45,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
     solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
     solver.def_readwrite("iterlim", &__Class__::iterlim, "Maximum number of iterations for iterative method");
-    solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");   
+    solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");
     /*METHOD(get_electrostatic_energy, getTotalEnergy,
            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            "Return:\n"
