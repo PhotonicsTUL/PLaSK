@@ -10,11 +10,25 @@
 #pragma push_macro("STRICT")
 #pragma push_macro("WIN32_LEAN_AND_MEAN")
 #pragma push_macro("NOCOMM")
-#define NOMINMAX    //prevents windows.h from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#define NOCOMM
+#ifndef NOMINMAX
+    #define NOMINMAX    //prevents windows.h from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
+#endif
+#ifndef STRICT
+    #define STRICT
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOCOMM
+    #define NOCOMM
+#endif
+
 #include <windows.h>
+
+//#ifdef copysign
+//    #undef copysign
+//#endif
+
 #pragma pop_macro("NOMINMAX")
 #pragma pop_macro("STRICT")
 #pragma pop_macro("WIN32_LEAN_AND_MEAN")

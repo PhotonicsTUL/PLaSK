@@ -1,6 +1,7 @@
 #ifndef PLASK__PYTHON_GLOBALS_H
 #define PLASK__PYTHON_GLOBALS_H
 
+#include <plask/vec.h>
 #include <cmath>
 #include <vector>
 
@@ -32,7 +33,6 @@ namespace boost { namespace python {
 
 #include <plask/exceptions.h>
 #include <plask/math.h>
-#include <plask/vec.h>
 #include <plask/axes.h>
 #include <plask/geometry/space.h>
 #include <plask/log/log.h>

@@ -6,7 +6,6 @@
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/rectangular.h>
 #include <plask/data.h>
-#include <plask/vec.h>
 
 namespace boost { namespace python {
 
