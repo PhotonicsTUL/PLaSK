@@ -1,7 +1,4 @@
 #include <cmath>
-#include <boost/python.hpp>
-#include <boost/python/stl_iterator.hpp>
-namespace py = boost::python;
 
 #include <cstdio>
 #include <vector>
@@ -16,6 +13,10 @@ namespace py = boost::python;
 #include <plask/python_manager.h>
 #include <plask/utils/string.h>
 #include <plask/license/verify.h>
+
+#include <boost/python.hpp>
+#include <boost/python/stl_iterator.hpp>
+namespace py = boost::python;
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
