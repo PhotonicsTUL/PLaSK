@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_concentration_electrons()
 {
-    registerProperty<ElectronsConcentration>();
+    registerProperty<ElectronConcentration>();
 }
 
 }} // namespace plask::python

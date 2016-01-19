@@ -42,16 +42,16 @@ struct PLASK_API CarriersConcentration: public ScalarFieldProperty {
 /**
  * Electrons concentration [1/cm^3]
  */
-struct PLASK_API ElectronsConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "electrons concentration";
+struct PLASK_API ElectronConcentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "electron concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
 
 /**
  * Holes concentration [1/cm^3]
  */
-struct PLASK_API HolesConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "holes concentration";
+struct PLASK_API HoleConcentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "hole concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
 

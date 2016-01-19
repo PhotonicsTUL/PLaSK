@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_concentration_holes()
 {
-    registerProperty<HolesConcentration>();
+    registerProperty<HoleConcentration>();
 }
 
 }} // namespace plask::python

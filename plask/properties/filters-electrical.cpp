@@ -4,7 +4,7 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<HolesConcentration> registerHolesConcentrationFilters;
+FiltersFactory::RegisterStandard<HoleConcentration> registerHoleConcentrationFilters;
 FiltersFactory::RegisterStandard<Conductivity> registerConductivityFilters;
 
 }   // namespace plask

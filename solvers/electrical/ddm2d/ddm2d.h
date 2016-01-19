@@ -264,6 +264,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensityForHoles;
 
+    typename ProviderFor<ElectronConcentration, Geometry2DType>::Delegate outElectronConcentration;
+
+    typename ProviderFor<HoleConcentration, Geometry2DType>::Delegate outHoleConcentration;
+
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
 /*
     typename ProviderFor<Conductivity, Geometry2DType>::Delegate outConductivity;
@@ -352,6 +356,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     const LazyData<Vec<2>> getCurrentDensitiesForElectrons(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 
     const LazyData<Vec<2>> getCurrentDensitiesForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+
+    const LazyData<double> getElectronConcentration(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+
+    const LazyData<double> getHoleConcentration(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+
 /*
     const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 */
