@@ -6,7 +6,7 @@ Geometry Specification
 
 .. _sec-geometry-xpl:
 
-The whole definition of the structure's geometry is based on the geometry tree. Every physical object is defined as a leaf of this tree. Below is a simple example of VCSEL cylindrical two-dimensional geometry definition in the xpl script form:
+The whole definition of the structure's geometry is based on the geometry tree. Every physical object is defined as a leaf of this tree. Below is a simple example of VCSEL two-dimensional cylindrical geometry in the xpl script form:
 
 .. code-block:: xml
 
@@ -85,9 +85,9 @@ This geometry defines such a structure:
 
 
 
-| Defining a geometry first one have to define its type. There are three possibilities: a two-dimensional Cartesian geometry, a two-dimensional cylindrical geometry or a three-dimensional Cartesian geometry. For attributes of these geometries see section :ref:`sec-xpl-geometry-types`. **Name** is obligatory for further reference. More than one geometry can be specified.
+| One can also define geometry directly in the program in the **Geometry** tag. First the type of the geometry must be chosen. There are three possibilities: a two-dimensional Cartesian geometry, a two-dimensional cylindrical geometry or a three-dimensional Cartesian geometry. For attributes of these geometries see section :ref:`sec-xpl-geometry-types`. **Name** is obligatory for further reference. More than one geometry can be specified.
 
-Into newly defined geometry various items can be included:
+Into newly defined geometry various items can be included (press **+** symbol in the top left corner of the program and select the **item** tag):
 
 
 1. **containers** are branches of the tree which include leafs. I.e. containers are boxes in which physical objects are placed. Containers are:
@@ -132,7 +132,9 @@ For their attributes see section :ref:`sec-xpl-geometry-2d-transforms` or :ref:`
 
 	* **Circle** with centre at point (0, 0).
 	
-  or these for **three-dimensional** geometry:
+or these for **three-dimensional** geometry:
+
+..
 
 	* Rectangular **block**. Its origin is located at the lower back left corner. 
 
@@ -143,6 +145,10 @@ For their attributes see section :ref:`sec-xpl-geometry-2d-transforms` or :ref:`
 For their attributes see section :ref:`sec-xpl-geometry-2d-objects` or :ref:`sec-xpl-geometry-3d-objects`.
 
 Each geometry object can have an optional name for further reference in computational script or further in geometry specification. Each geometry object can therefore be copied - see section :ref:`sec-xpl-Geometry-objects-copy-ref`.  
+
+After selecting the type of the physical object its dimensions and material must be defined. 
+
+To build a whole laser you just have to add physical object one on another (using **stack** container) or one beside the other (using **shelf** container).
 
 Specifying geometry in XPL file
 ===============================
