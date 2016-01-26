@@ -310,6 +310,9 @@ const border::Strategy &Geometry3D::getBorder(Direction direction, bool higher) 
         case DIRECTION_VERT: return bottomup.get(higher);
     }
     assert(0);
+#ifdef _MSC_VER
+	__assume(0);
+#endif
 }
 
 Geometry3D::Geometry3D(shared_ptr<GeometryObjectD<3> > child)
