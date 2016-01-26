@@ -160,7 +160,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
         if (composition.empty()) {
             // check if material is complex, but user forgot to provide composition:
             std::string complex_DbKey;
-            try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception& e) {}
+            try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception&) {}
             auto c = constructors.find(complex_DbKey);
             if (c != constructors.end()) { //material is complex
                 if (allow_complex_without_composition)

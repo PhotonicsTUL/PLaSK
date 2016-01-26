@@ -20,7 +20,7 @@ namespace plask {
  * Vector in 3D space.
  */
 template <typename T>
-struct PLASK_API Vec<3,T> {
+struct Vec<3,T> {
 
     static const int DIMS = 3;
 

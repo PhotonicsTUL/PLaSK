@@ -54,7 +54,7 @@ XMLReader::State& XMLReader::appendState(NodeType type, const std::string& text)
 bool XMLReader::readSome() {
     constexpr int buff_size = 1024 * 8;
     char buff[buff_size];
-	int read = source->read(buff, buff_size);
+	int read = int(source->read(buff, buff_size));
     bool has_more = buff_size == read;
     if (XML_Parse(parser, buff, read, !has_more) == XML_STATUS_ERROR) {
         auto error_code = XML_GetErrorCode(parser);
