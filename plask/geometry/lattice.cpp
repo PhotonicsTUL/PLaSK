@@ -462,7 +462,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
         } else {    //end of point coordinate
             if (cords_in_current_point == 2) throw Exception("End of point (\";\") or segment (\"^\") was expected, but got \"{0}\".", t);
             if (cords_in_current_point == 0) result->segments.back().emplace_back();
-            result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<double>(t);
+            result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<int>(t);
         }
     }
     result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>(!reader.manager.draft));
