@@ -338,34 +338,55 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
-            double normEc0 = material->CB(T, 0., '*') / mEx;
-            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
-            double normEv0 = material->VB(T, 0., '*') / mEx;
-            double normT = T / mTx;
-            double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
-            n = calcN(normNc, 1., ePsi, normEc0, normT);
-            p = calcP(normNv, 1., ePsi, normEv0, normT);
-        } else {
-            n = dveN[i];
-            p = dveP[i];
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+                n = 0.;
+                p = 0.;
+            }
+            else {
+                double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+                double normEc0 = material->CB(T, 0., '*') / mEx;
+                double normNv = Neff(material->Mh(T, 0.), T) / mNx;
+                double normEv0 = material->VB(T, 0., '*') / mEx;
+                double normT = T / mTx;
+                double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
+                n = calcN(normNc, 1., ePsi, normEc0, normT);
+                p = calcP(normNv, 1., ePsi, normEv0, normT);
+            }
+        }
+        else {
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+                n = 0.;
+                p = 0.;
+            }
+            else { // earlier only this
+                n = dveN[i];
+                p = dveP[i];
+            }
         }
 
         double kk, kx, ky, gg, ff;
 
         if (calctype == CALC_FN) {
-            double normEc0 = material->CB(T, 0., '*') / mEx;
-            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
-            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
-            double normNe = normNc * exp(dvePsi[i]-normEc0);
-            double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
-            double normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix; // TODO
+            double normEc0(0.), normNc(0.), normNv(0.), normNe(0.), normNi(0.), normMobN(0.), yn(0.);
 
-            double yn;
-            switch (stat) {
-                case STAT_MB: yn = 1.; break;
-                //case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
-                case STAT_FD: yn = fermiDiracHalf((log(dveFnEta[i])+dvePsi[i]-normEc0)/normT) / (pow(dveFnEta[i],1./normT)*exp((dvePsi[i]-normEc0)/normT)); break;
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+                yn = 1.; // ?
+                normMobN = 1e-3; // ?
+                normNe = 1e-20; // ?
+            }
+            else {
+                normEc0 = material->CB(T, 0., '*') / mEx;
+                normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+                normNv = Neff(material->Mh(T, 0.), T) / mNx;
+                normNe = normNc * exp(dvePsi[i]-normEc0);
+                normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
+                normMobN = 0.5*(material->mobe(T).c00+material->mobe(T).c11) / mMix; // TODO
+
+                switch (stat) {
+                    case STAT_MB: yn = 1.; break;
+                    //case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
+                    case STAT_FD: yn = fermiDiracHalf((log(dveFnEta[i])+dvePsi[i]-normEc0)/normT) / (pow(dveFnEta[i],1./normT)*exp((dvePsi[i]-normEc0)/normT)); break;
+                }
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -373,7 +394,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobN * normNe * yn * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if ((material->kind() != Material::OXIDE) && (material->kind() != Material::DIELECTRIC)) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
@@ -393,19 +414,28 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
             }
-        } else if (calctype == CALC_FP)  {
-            double normEv0 = material->VB(T, 0., '*') / mEx;
-            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
-            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
-            double normNh = normNv * exp(-dvePsi[i]+normEv0);
-            double normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
-            double normMobP = 0.5*(material->mobh(T).c00+material->mobh(T).c11) / mMix; // TODO
+        }
+        else if (calctype == CALC_FP)  {
+            double normEv0(0.), normNc(0.), normNv(0.), normNh(0.), normNi(0.), normMobP(0.), yp(0.);
 
-            double yp;
-            switch (stat) {
-                case STAT_MB: yp = 1.; break;
-                //case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
-                case STAT_FD: yp = fermiDiracHalf((log(dveFpKsi[i])-dvePsi[i]+normEv0)/normT) / (pow(dveFpKsi[i],1./normT)*exp((-dvePsi[i]+normEv0)/normT)); break;
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+                yp = 1.; // ?
+                normMobP = 1e-3; // ?
+                normNh = 1e-20; // ?
+            }
+            else {
+                normEv0 = material->VB(T, 0., '*') / mEx;
+                normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+                normNv = Neff(material->Mh(T, 0.), T) / mNx;
+                normNh = normNv * exp(-dvePsi[i]+normEv0);
+                normNi = Ni(normNc,normNv,material->Eg(T, 0., '*'),T) / mNx;
+                normMobP = 0.5*(material->mobh(T).c00+material->mobh(T).c11) / mMix; // TODO
+
+                switch (stat) {
+                    case STAT_MB: yp = 1.; break;
+                    //case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
+                    case STAT_FD: yp = fermiDiracHalf((log(dveFpKsi[i])-dvePsi[i]+normEv0)/normT) / (pow(dveFpKsi[i],1./normT)*exp((-dvePsi[i]+normEv0)/normT)); break;
+                }
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -413,7 +443,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobP * normNh * yp * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if ((material->kind() != Material::OXIDE) && (material->kind() != Material::DIELECTRIC)) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
@@ -433,31 +463,40 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (normCe * n + normCh * p) * (n * p - normNi * normNi));
                 }
             }
-        } else {
-            double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
-            double normNv = Neff(material->Mh(T, 0.), T) / mNx;
-            //double Ni = material->Ni(T) / mNx;
+        }
+        else {
             double normEps = material->eps(T) / mEpsRx;
-            double normNd = material->Nd() / mNx;
-            double normNa = material->Na() / mNx;
-            double normEd = 0.050 / mEx;
-            double normEa = 0.150 / mEx;
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
             kx = normT * normEps * (hy*0.5) * (hy*0.5);
             ky = normT * normEps * (hx*0.5) * (hx*0.5);
-            gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
-            double normNdIon = normNd;
-            double normNaIon = normNa;
-            if (!mFullIon)
-            {
-                double gD(2.), gA(4.);
-                double normNdTmp = (normNc/gD)*exp(-normEd);
-                double normNaTmp = (normNv/gA)*exp(-normEa);
-                normNdIon = normNd * (normNdTmp/(normNdTmp+n));
-                normNaIon = normNa * (normNaTmp/(normNaTmp+p));
+
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+                gg = 0.;
+                ff = 0.;
             }
-            ff = - (hx*0.5) * (hy*0.5) * (p - n + normNdIon - normNaIon);
+            else {
+                double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
+                double normNv = Neff(material->Mh(T, 0.), T) / mNx;
+                //double Ni = material->Ni(T) / mNx;
+                double normNd = material->Nd() / mNx;
+                double normNa = material->Na() / mNx;
+                double normEd = 0.050 / mEx;
+                double normEa = 0.150 / mEx;
+
+                gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
+                double normNdIon = normNd;
+                double normNaIon = normNa;
+                if (!mFullIon)
+                {
+                    double gD(2.), gA(4.);
+                    double normNdTmp = (normNc/gD)*exp(-normEd);
+                    double normNaTmp = (normNv/gA)*exp(-normEa);
+                    normNdIon = normNd * (normNdTmp/(normNdTmp+n));
+                    normNaIon = normNa * (normNaTmp/(normNaTmp+p));
+                }
+                ff = - (hx*0.5) * (hy*0.5) * (p - n + normNdIon - normNaIon);
+            }
         }
 
         // set symmetric matrix components
@@ -585,12 +624,18 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveFpKsi()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 {
+    this->writelog(LOG_DETAIL, "Saving electron concentration");
+
     for (auto e: this->mesh->elements)
     {
         size_t i = e.getIndex();
         Vec < 2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
+        if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+            dveN[i] = 0.;
+            continue;
+        }
         double T(300.); // TODO
         double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
         double normEc0 = material->CB(T, 0., '*') / mEx;
@@ -604,11 +649,18 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 {
+    this->writelog(LOG_DETAIL, "Saving hole concentration");
+
     for (auto e: this->mesh->elements)
     {
         size_t i = e.getIndex();
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
+
+        if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+            dveP[i] = 0.;
+            continue;
+        }
 
         double T(300.); // TODO
         double normNv = Neff(material->Mh(T, 0.), T) / mNx;
@@ -623,7 +675,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 template <typename Geometry2DType>
 template <CalcType calctype>
 double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>,double>& vconst)
-{
+{  
+    this->writelog(LOG_DEBUG, "Adding corrections");
+
     double err;
 
     //double tMaxRelUpd = 0.; // update/old_value = this will be the result
@@ -720,7 +774,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
         double epsi;
         if (found != cache.end()) {
             epsi = found->second;
-        } else {
+        }
+        else {
+            if ((material->kind() == Material::OXIDE) || (material->kind() == Material::DIELECTRIC)) { // 26.01.2016
+                cache[key] = epsi = 0.;
+                continue;
+            }
             // normalise material parameters and temperature
             double normEc0 = material->CB(T, 0., '*') / mEx;
             double normEv0 = material->VB(T, 0., '*', 'h') / mEx;

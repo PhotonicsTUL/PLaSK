@@ -54,6 +54,13 @@ double aSiO2::absp(double wl, double T) const {
     return ( tAbsRT + tAbsRT*1e-3*(T-300.) );
 }
 
+MI_PROPERTY(aSiO2, eps,
+            MISource("J. Robertson, Eur. Phys. J. Appl. Phys. 28, (2004) 265-291")
+            )
+double aSiO2::eps(double T) const {
+    return 3.9;
+}
+
 bool aSiO2::isEqual(const Material &other) const {
     return true;
 }
