@@ -295,7 +295,7 @@ class DrawEnviroment(object):
             #artist.set_clip_path(clipbox)
         artist.set_zorder(self.zorder)
 
-    def append_extra(self, geometry_object, artist, clipbox=None):
+    def append_extra(self, geometry_object, artist):
         """
         Configure and append artist to destination axis object.
         :param artist: artist to append
@@ -305,11 +305,7 @@ class DrawEnviroment(object):
         artist.set_fill(False)
         for attr in self.extra:
             getattr(artist, 'set_'+attr)(self.extra[attr])
-        if clipbox is not None:
-            clipbox = BBoxIntersection(clipbox, artist.get_clip_box())
-        else:
-            clipbox = artist.get_clip_box()
-        self.extra_patches.setdefault(geometry_object, []).append((artist, clipbox))
+        self.extra_patches.setdefault(geometry_object, []).append(artist)
 
 def _draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
     block = matplotlib.patches.Rectangle(
@@ -415,12 +411,11 @@ def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
             arrow = matplotlib.patches.FancyArrowPatch((0, 0), (v[env.axes[0]], v[env.axes[1]]),
                                                        arrowstyle='->', mutation_scale=40,
                                                        transform=transform)
-            env.append_extra(geometry_object, arrow, clipbox)
+            env.append_extra(geometry_object, arrow)
         for segment in geometry_object.segments:
             if not segment: continue
             polygon = [(p[env.axes[0]], p[env.axes[1]]) for p in (v0*a0+v1*a1 for (a0,a1) in segment)]
-            env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform),
-                             clipbox)
+            env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform))
 
 _geometry_drawers[plask.geometry.Lattice] = _draw_Lattice
 

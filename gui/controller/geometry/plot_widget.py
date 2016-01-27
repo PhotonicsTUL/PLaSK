@@ -267,7 +267,7 @@ class PlotWidget(QtGui.QWidget):
                     self.selectors.append(origin)
         guidelines = self.guidelines.get(selected, ())
         for guideline in guidelines:
-            self.add_selector(*guideline)
+            self.add_selector(guideline)
         self.canvas.draw()
 
     def zoom_bbox(self, box, margin=0.1):

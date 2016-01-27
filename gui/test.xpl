@@ -5,6 +5,12 @@
   <define name="aperture" value="{mesaRadius-6.}"/>
   <define name="beta_def" value="19"/>
   <define name="js_def" value="1"/>
+  <define name="L" value="4.0"/>
+  <define name="d" value="0.5"/>
+  <define name="X" value="{(6.1*sqrt(3)/2+d)*L}"/>
+  <define name="Y" value="{(6.1+d)*L}"/>
+  <define name="h_start" value="0"/>
+  <define name="h_end" value="24"/>
 </defines>
 
 <materials>
@@ -117,6 +123,44 @@
         <cylinder material="GaAs" radius="0.35" height="1.0"/>
       </lattice>
     </stack>
+  </cartesian3d>
+  <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
+    <clip left="0" back="0">
+      <align x="0" y="0" top="0">
+        <item top="{-h_start*(0.06940+0.07955)}">
+          <lattice ax="0" ay="{L}" az="0" bx="{L*sqrt(3)/2}" by="{L/2}" bz="0">
+            <segments>-1 -3; 4 -3; 4 -2; 3 0; 2 2; 1 3; -4 3; -4 2; -3 0; -2 -2 ^ 0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0</segments>
+            <cylinder material="air" radius="{0.5*d*L}" height="{(h_end-h_start)*(0.06940+0.07955)}"/>
+          </lattice>
+        </item>
+        <item xcenter="0" ycenter="0">
+          <stack>
+            <stack name="top-dbr" repeat="24">
+              <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.06940"/>
+              <cuboid material="AlGaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
+            </stack>
+            <stack name="cavity">
+              <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.12171"/>
+              <stack name="active">
+                <align name="qw" xcenter="0" ycenter="0" bottom="0">
+                  <cuboid material="QW" dx="{X}" dy="{Y}" dz="0.00800"/>
+                  <cylinder name="gain" role="gain" material="QW" radius="{L/2}" height="0.00800"/>
+                </align>
+                <cuboid name="interface" material="GaAs" dx="{X}" dy="{Y}" dz="0.00500"/>
+                <again ref="qw"/>
+                <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.00500"/>
+                <again ref="qw"/>
+              </stack>
+              <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.12171"/>
+            </stack>
+            <stack name="bottom-dbr" repeat="29">
+              <cuboid material="AlGaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
+              <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.06940"/>
+            </stack>
+          </stack>
+        </item>
+      </align>
+    </clip>
   </cartesian3d>
 </geometry>
 

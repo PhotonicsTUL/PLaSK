@@ -8,7 +8,7 @@
 
     <tag name="expansion" label="Details on Fourier Expansion">
       Details on Fourier expansion used in computations
-      <attr name="lam0" label="Wavelength for parameters" type="float">
+      <attr name="lam0" label="Wavelength for parameters" type="float" unit="nm">
         This is a wavelength at which refractive index is retrieved from the structure.
         If this parameter is None, material parameters are computed each time, the wavelenght
         changes even slightly (this is most accurate, but can be very inefficient.
@@ -116,7 +116,7 @@
     <geometry type="Cartesian3D"/>
 
     <tag name="expansion" label="Details on Fourier Expansion">
-      <attr name="lam0" label="Wavelength for parameters" type="float">
+      <attr name="lam0" label="Wavelength for parameters" type="float" unit="nm">
         This is a wavelength at which refractive index is retrieved from the structure.
         If this parameter is None, material parameters are computed each time,
         the wavelenght changes even slightly (this is most accurate, but can be very inefficient.
