@@ -83,16 +83,24 @@ def autoindent(editor):
     """Automatically set indentation of the current line"""
     cursor = editor.textCursor()
     document = editor.document()
-    row = cursor.blockNumber() - 1
-    if row == -1:
-        return
-    cursor.joinPreviousEditBlock()
-    curline = document.findBlockByNumber(row).text()
-    spaces = curline[:len(curline) - len(curline.lstrip())]
     if cursor.atBlockStart():
+        row = cursor.blockNumber() - 1
+        if row == -1:
+            return
+        cursor.joinPreviousEditBlock()
+        curline = document.findBlockByNumber(row).text()
+        spaces = curline[:len(curline) - len(curline.lstrip())]
         if indent_re.match(curline):
             cursor.insertText(spaces + '  ')
-        elif unindent_re.match(curline):
+        else:
+            cursor.insertText(spaces)
+        cursor.endEditBlock()
+    else:
+        row = cursor.blockNumber()
+        cursor.joinPreviousEditBlock()
+        curline = document.findBlockByNumber(row).text()
+        spaces = curline[:len(curline) - len(curline.lstrip())]
+        if unindent_re.match(curline):
             if row == 0:
                 prevlen = 0
                 pspaces = ''
@@ -101,14 +109,8 @@ def autoindent(editor):
                 pspaces = prevline[:len(prevline) - len(prevline.lstrip())]
                 prevlen = len(_find_prev_indent_level(document, row-1, pspaces))
             if prevlen != len(spaces):
-                cursor.insertText(spaces[:-2])
                 nl = len(spaces) - len(_find_prev_indent_level(document, row+1, spaces))
-                cursor.movePosition(QtGui.QTextCursor.Up)
                 cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
                 for i in range(nl):
                     cursor.deleteChar()
-            else:
-                cursor.insertText(spaces)
-        else:
-            cursor.insertText(spaces)
-    cursor.endEditBlock()
+        cursor.endEditBlock()

@@ -83,7 +83,7 @@ class XMLEditor(TextEditor):
 
         super(XMLEditor, self).keyPressEvent(event)
 
-        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
+        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Greater):
             autoindent(self)
 
 
