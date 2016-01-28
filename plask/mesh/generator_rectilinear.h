@@ -262,7 +262,7 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
      */
     void removeRefinements(const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path=PathHints()) {
         auto key = std::make_pair(object, path);
-        bool found;
+        bool found = false;
         for (size_t i = 0; i != dim; ++i) {
             auto ref = refinements[i].find(key);
             if (ref != refinements[i].end()) {
