@@ -694,7 +694,7 @@ namespace detail {
         typedef typename ProviderT::EnumType EnumType;
         static ValueT __call__n(ProviderT& self, int num, const ExtraParams&... params) {
             int n(num);
-            if (n < 0) num = EnumType(self.size() + n);
+            if (n < 0) num = int(EnumType(self.size() + n));
             if (n < 0 || n >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return self(num, params...);
@@ -745,7 +745,7 @@ namespace detail {
         typedef typename ProviderT::EnumType EnumType;
         static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, EnumType num, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
-            int n(num);
+            int n = int(num);
             if (n < 0) num = EnumType(self.size() + n);
             if (n < 0 || n >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());

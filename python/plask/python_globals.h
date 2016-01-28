@@ -187,7 +187,7 @@ struct VectorFromSequence {
 template <typename T>
 static std::string str__vector_of(const std::vector<T>& self) {
     std::string result = "[";
-    int i = self.size()-1;
+    int i = int(self.size())-1;
     for (auto v: self) {
         result += py::extract<std::string>(py::object(v).attr("__repr__")());
         result += (i)? ", " : "";

@@ -184,7 +184,7 @@ template <int dim, typename T>  py::object vec_list__array__(py::object self, py
 // Access components by name
 template <int dim>
 inline static int vec_attr_indx(const std::string& attr) {
-    int i = current_axes[attr] - 3 + dim;
+    int i = int(current_axes[attr]) - 3 + dim;
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")

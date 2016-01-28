@@ -119,7 +119,7 @@ static void _Space_setBorders(Geometry& self, py::dict borders, std::set<std::st
 
 
 static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple args, py::dict kwargs) {
-    int na = py::len(args);
+    boost::python::ssize_t na = py::len(args);
 
     shared_ptr <Geometry2DCartesian> space;
 
@@ -180,7 +180,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
 }
 
 static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple args, py::dict kwargs) {
-    int na = py::len(args);
+	boost::python::ssize_t na = py::len(args);
 
     shared_ptr<Geometry2DCylindrical> space;
     py::object geometry;
@@ -215,7 +215,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 }
 
 static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs) {
-    int na = py::len(args);
+	boost::python::ssize_t na = py::len(args);
 
     shared_ptr <Geometry3D> space;
 

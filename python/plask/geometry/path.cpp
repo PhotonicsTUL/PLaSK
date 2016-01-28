@@ -52,8 +52,8 @@ namespace detail {
 }
 
 static shared_ptr<GeometryObject> Path__getitem__(const Path& self, long int index) {
-    long int i = (index >= 0) ? index : self.objects.size() + index;
-    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("Index {0} out of range for Path ({1} < index < {2})", index, -self.objects.size(), self.objects.size());
+    long int i = (index >= 0) ? index : (long int)(self.objects.size()) + index;
+    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("Index {0} out of range for Path ({1} < index < {2})", index, -(long int)(self.objects.size()), self.objects.size());
     return const_pointer_cast<GeometryObject>(self.objects[i]);
 }
 

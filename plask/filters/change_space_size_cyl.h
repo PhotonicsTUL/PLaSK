@@ -112,7 +112,14 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
             index *= point_count;
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
+#endif
             return PropertyT::value3Dto2D(sum / point_count);
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
         };
     }
 
