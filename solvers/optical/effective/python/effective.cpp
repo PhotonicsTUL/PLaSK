@@ -255,7 +255,10 @@ BOOST_PYTHON_MODULE(effective)
                    "Compute the mode near the specified effective index.\n\n"
                    "Args:\n"
                    "    neff (complex): Starting point of the root search.\n"
-                   "    symmetry ('+' or '-'): Symmetry of the mode to search.\n\n"
+                   "    symmetry ('+' or '-'): Symmetry of the mode to search. If this parameter\n"
+                   "                           is not specified, the default symmetry is used:\n"
+                   "                           positive mode symmetry fir symmetrical geometries\n"
+                   "                           and no symmetry for asymmetrical geometries.\n\n"
                    "Returns:\n"
                    "    integer: Index in the :attr:`modes` list of the found mode.\n",
                    (arg("neff"), arg("symmetry")=py::object()));

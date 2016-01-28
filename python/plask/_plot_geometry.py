@@ -553,7 +553,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
 
         mirror (bool): If *True* then the geometry is mirrored if its
                 specification says so (i.e. some borders are set to
-                *mirror* of the geometry is a cylindrical one).
+                *mirror* or the geometry is a cylindrical one).
 
         periods (int): Number of periods to plot periodic geometries.
 

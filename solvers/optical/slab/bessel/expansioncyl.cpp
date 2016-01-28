@@ -236,6 +236,9 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}", layer);
     #endif
 
+    if (isnan(lam))
+        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        
     size_t nr = raxis->size(), N = SOLVER->size;
     double ib = 1. / rbounds[rbounds.size()-1];
     int m = int(SOLVER->m);
@@ -245,6 +248,11 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     LazyData<double> gain;
     auto temperature = SOLVER->inTemperature(mesh);
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
+
+    if (gain_connected && solver->lgained[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+        if (isnan(glam)) glam = lam;
+    }
 
     double matz = zaxis->at(0); // at each point along any vertical axis material is the same
 

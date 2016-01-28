@@ -152,9 +152,6 @@ void ExpansionPW2D::reset() {
 
 void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 {
-    if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-        throw BadInput(SOLVER->getId(), "No wavelength specified");
-
     auto geometry = SOLVER->getGeometry();
     auto axis1 = SOLVER->getLayerPoints(layer);
 
@@ -168,12 +165,20 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1} points)", layer, refine * nM);
     #endif
 
+    if (isnan(lam))
+        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        
     auto mesh = plask::make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 
     auto temperature = SOLVER->inTemperature(mesh);
 
     LazyData<double> gain;
     bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
+
+    if (gain_connected && solver->lgained[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+        if (isnan(glam)) glam = lam;
+    }
 
     double factor = 1. / refine;
     double maty = axis1->at(0); // at each point along any vertical axis material is the same

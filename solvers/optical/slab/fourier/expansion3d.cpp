@@ -268,9 +268,6 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
 
 void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 {
-    if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-        throw BadInput(SOLVER->getId(), "No wavelength specified");
-
     auto geometry = SOLVER->getGeometry();
     auto axis2 = SOLVER->getLayerPoints(layer);
 
@@ -288,6 +285,9 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points)", layer, Ml, Mt);
     #endif
 
+    if (isnan(lam))
+        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        
     auto mesh = plask::make_shared<RectangularMesh<3>>
                            (plask::make_shared<RegularAxis>(long_mesh),
                             plask::make_shared<RegularAxis>(tran_mesh),
@@ -302,6 +302,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+        if (isnan(glam)) glam = lam;
     }
 
     // Make space for the result
