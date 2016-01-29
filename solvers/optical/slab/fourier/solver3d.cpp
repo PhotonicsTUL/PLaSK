@@ -181,7 +181,6 @@ void FourierSolver3D::onInvalidate()
 
 size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
-    this->recompute_integrals = true;
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;

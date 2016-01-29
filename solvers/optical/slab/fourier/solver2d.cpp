@@ -155,7 +155,6 @@ void FourierSolver2D::onInvalidate()
 
 size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 {
-    this->recompute_integrals = true;
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
