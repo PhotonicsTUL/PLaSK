@@ -27,6 +27,8 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     py::object array;
     int m = 1;
 
+    BesselSolverCyl::ParamGuard guard(self);
+
     boost::optional<dcomplex> lambda;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
@@ -50,8 +52,6 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
     if (lambda) self->setWavelength(*lambda);
-
-    BesselSolverCyl::ParamGuard guard(self);
 
     self->setM(m);
 

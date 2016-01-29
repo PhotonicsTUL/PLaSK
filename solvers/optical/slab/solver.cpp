@@ -41,14 +41,14 @@ SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
-    this->inGain.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
+    this->inGain.changedConnectMethod(this, &SlabSolver<BaseT>::onGainChanged);
 }
 
 template <typename BaseT>
 SlabSolver<BaseT>::~SlabSolver()
 {
     this->inTemperature.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
-    this->inGain.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
+    this->inGain.changedDisconnectMethod(this, &SlabSolver<BaseT>::onGainChanged);
 }
 
 

@@ -255,6 +255,8 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     What what = WHAT_NOTHING;
     py::object array;
 
+    FourierSolver3D::ParamGuard guard(self);
+
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
     boost::optional<dcomplex> wavelength, k0;
@@ -288,8 +290,6 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
         else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
-
-    FourierSolver3D::ParamGuard guard(self);
 
     if (wavelength) self->setWavelength(*wavelength);
     if (k0) self->setK0(*k0);

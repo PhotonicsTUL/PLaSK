@@ -70,9 +70,11 @@ struct PLASK_SOLVER_API Expansion {
             }
             if (error) std::rethrow_exception(error);
             solver->recompute_integrals = false;
-        } else if (solver->always_recompute_gain && !is_zero(lambda - glambda)) {
+            solver->recompute_gain_integrals = false;
+        } else if (solver->recompute_gain_integrals || 
+                   (solver->always_recompute_gain && !is_zero(lambda - glambda))) {
             double lam = (solver->lam0)? *solver->lam0 : lambda;
-            glambda = lambda;
+            glambda = (solver->always_recompute_gain)? lambda : lam;
             std::vector<size_t> glayers;
             size_t nlayers = lcount();
             glayers.reserve(nlayers);
@@ -88,6 +90,7 @@ struct PLASK_SOLVER_API Expansion {
                     error = std::current_exception();
                 }
             }
+            solver->recompute_gain_integrals = false;
         }
     }
 

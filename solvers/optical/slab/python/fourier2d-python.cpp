@@ -46,6 +46,8 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     What what = WHAT_NOTHING;
     py::object array;
 
+    FourierSolver2D::ParamGuard guard(self);
+
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
@@ -79,8 +81,6 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
         else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
-
-    FourierSolver2D::ParamGuard guard(self);
 
     if (lambda) self->setWavelength(*lambda);
     if (neff) self->setKlong(*neff * self->getK0());

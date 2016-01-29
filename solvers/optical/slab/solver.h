@@ -93,7 +93,10 @@ struct PLASK_SOLVER_API SlabBase {
     /// Force re-computation of material coefficients/integrals
     bool recompute_integrals;
 
-    /// Always compute material coefficients/integtals for gained layers
+    /// Force re-computation of material coefficients/integrals in layers with gain
+    bool recompute_gain_integrals;
+
+    /// Always compute material coefficients/integrals for gained layers for current wavelength
     bool always_recompute_gain;
 
   protected:
@@ -220,6 +223,12 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
         this->clear_modes();
         this->recompute_integrals = true;
+    }
+
+    /// Reset structure if input is changed
+    void onGainChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+        this->clear_modes();
+        this->recompute_gain_integrals = true;
     }
 
   protected:
