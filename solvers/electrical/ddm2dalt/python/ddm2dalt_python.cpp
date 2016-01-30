@@ -3,14 +3,14 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../ddm2d.h"
-using namespace plask::solvers::drift_diffusion;
+#include "../ddm2dalt.h"
+using namespace plask::solvers::drift_diffusion_alt;
 
 template <typename GeometryT>
 inline static void register_drift_diffusion_solver(const char* name, const char* geoname)
 {
-    typedef DriftDiffusionModel2DSolver<GeometryT>  __Class__;
-    ExportSolver<DriftDiffusionModel2DSolver<GeometryT>> solver(name, format(
+    typedef DriftDiffusionModel2DaltSolver<GeometryT>  __Class__;
+    ExportSolver<DriftDiffusionModel2DaltSolver<GeometryT>> solver(name, format(
 
         "{0}(name=\"\")\n\n"
 
@@ -48,10 +48,6 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
     solver.def_readwrite("iterlim", &__Class__::iterlim, "Maximum number of iterations for iterative method");
     solver.def_readwrite("logfreq", &__Class__::logfreq, "Frequency of iteration progress reporting");
-    solver.def_readwrite("Rsrh", &__Class__::mRsrh, "True if SRH recombination is taken into account");
-    solver.def_readwrite("Rrad", &__Class__::mRrad, "True if radiative recombination is taken into account");
-    solver.def_readwrite("Raug", &__Class__::mRaug, "True if Auger recombination is taken into account");
-    solver.def_readwrite("FullIon", &__Class__::mFullIon, "True if dopants are completely ionized");
     /*METHOD(get_electrostatic_energy, getTotalEnergy,
            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            "Return:\n"
@@ -80,7 +76,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(ddm2d)
+BOOST_PYTHON_MODULE(ddm2dalt)
 {
     py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
@@ -93,8 +89,8 @@ BOOST_PYTHON_MODULE(ddm2d)
         .value("FERMI_DIRAC", STAT_FD)
     ;
 
-    register_drift_diffusion_solver<Geometry2DCartesian>("DriftDiffusion2D", "Cartesian");
+    register_drift_diffusion_solver<Geometry2DCartesian>("DriftDiffusion2Dalt", "Cartesian");
 
-    register_drift_diffusion_solver<Geometry2DCylindrical>("DriftDiffusionCyl", "cylindrical");
+    register_drift_diffusion_solver<Geometry2DCylindrical>("DriftDiffusionCylalt", "cylindrical");
 }
 

@@ -12,9 +12,9 @@
     }
 #endif
 
-#include "ddm2d.h"
+#include "ddm2dalt.h"
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace solvers { namespace drift_diffusion_alt {
 
 /** Compute effective density of states
  * \param M carrier effective mass
@@ -35,7 +35,12 @@ static inline const double Ni(double Nc, double Nv, double Eg, double T) {
 }
 
 template <typename Geometry2DType>
-DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
+DriftDiffusionModel2DaltSolver<Geometry2DType>::DriftDiffusionModel2DaltSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
+    mRsrh(false),
+    mRrad(false),
+    mRaug(false),
+    mPol(false),
+    mFullIon(true),
     mTx(300.),
     mEx(phys::kB_eV*mTx),
     mNx(1e18),
@@ -59,23 +64,18 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     needPsi0(true),
     //loopno(0),
     //maxerr(0.05),
-    outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
-    outQuasiFermiEnergyLevelForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons),
-    outQuasiFermiEnergyLevelForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles),
-    outConductionBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges),
-    outValenceBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges),
-    outCurrentDensityForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
-    outCurrentDensityForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles),
-    outElectronConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getElectronConcentration),
-    outHoleConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHoleConcentration),
-    outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
-    //outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
+    outPotential(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getPotentials),
+    outQuasiFermiEnergyLevelForElectrons(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons),
+    outQuasiFermiEnergyLevelForHoles(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles),
+    outConductionBandEdge(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getConductionBandEdges),
+    outValenceBandEdge(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getValenceBandEdges),
+    outCurrentDensityForElectrons(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
+    outCurrentDensityForHoles(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getCurrentDensitiesForHoles),
+    outElectronConcentration(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getElectronConcentration),
+    outHoleConcentration(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getHoleConcentration),
+    outHeat(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getHeatDensities),
+    //outConductivity(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
-    mRsrh(false),
-    mRrad(false),
-    mRaug(false),
-    mPol(false),
-    mFullIon(true),
     maxerrPsiI(1e-6),
     maxerrPsi0(1e-6),
     maxerrPsi(1e-6),
@@ -92,11 +92,11 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
 {
     onInvalidate();
     inTemperature = 300.;
-    inTemperature.changedConnectMethod(this, &DriftDiffusionModel2DSolver<Geometry2DType>::onInputChange);
+    inTemperature.changedConnectMethod(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::onInputChange);
 }
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
 {
     while (source.requireTagOrEnd())
     {
@@ -109,10 +109,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
                 .value("MaxwellBoltzmann", STAT_MB)
                 .value("FermiDirac", STAT_FD)
                 .get(stat);
-            mRsrh = source.getAttribute<bool>("Rsrh", mRsrh);
-            mRrad = source.getAttribute<bool>("Rrad", mRrad);
-            mRaug = source.getAttribute<bool>("Raug", mRaug);
-            mFullIon = source.getAttribute<bool>("FullIon", mFullIon);
             maxerrPsiI = source.getAttribute<double>("maxerrVi", maxerrPsiI);
             maxerrPsi0 = source.getAttribute<double>("maxerrV0", maxerrPsi0);
             maxerrPsi = source.getAttribute<double>("maxerrV", maxerrPsi);
@@ -141,12 +137,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
 
 
 template <typename Geometry2DType>
-DriftDiffusionModel2DSolver<Geometry2DType>::~DriftDiffusionModel2DSolver() {
+DriftDiffusionModel2DaltSolver<Geometry2DType>::~DriftDiffusionModel2DaltSolver() {
 }
 
 
 template<typename Geometry2DType>
-size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(size_t actnum) const
+size_t DriftDiffusionModel2DaltSolver<Geometry2DType>::getActiveRegionMeshIndex(size_t actnum) const
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
@@ -196,7 +192,7 @@ size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(siz
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::onInitialize()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
@@ -204,12 +200,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     size = this->mesh->size();
 
     dvnPsi0.reset(size);
-    dvnFnEta.reset(size, 1.);
-    dvnFpKsi.reset(size, 1.);
+    dvnFn.reset(size, 1.);
+    dvnFp.reset(size, 1.);
 
     dvePsi.reset(this->mesh->elements.size());
-    dveFnEta.reset(this->mesh->elements.size(), 1.);
-    dveFpKsi.reset(this->mesh->elements.size(), 1.);
+    dveFn.reset(this->mesh->elements.size(), 1.);
+    dveFp.reset(this->mesh->elements.size(), 1.);
     dveN.reset(this->mesh->elements.size());
     dveP.reset(this->mesh->elements.size());
 
@@ -221,14 +217,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::onInvalidate() {
     dvnPsi0.reset();
     dvnPsi.reset();
-    dvnFnEta.reset();
-    dvnFpKsi.reset();
+    dvnFn.reset();
+    dvnFp.reset();
     dvePsi.reset();
-    dveFnEta.reset();
-    dveFpKsi.reset();
+    dveFn.reset();
+    dveFp.reset();
     dveN.reset();
     dveP.reset();
     currentsN.reset();
@@ -239,7 +235,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
 
 template <typename Geometry2DType>
 template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
-void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
                                                           const BoundaryConditionsWithMesh<RectangularMesh<2>,double> & bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -255,7 +251,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector
 }
 
 template <typename Geometry2DType> // add deltaPsi = 0 on p- and n-contacts
-void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
                                                           const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -278,14 +274,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 }
 
 // template <>
-// inline void DriftDiffusionModel2DSolver<Geometry2DCartesian>::addCurvature(double&, double&, double&, double&,
+// inline void DriftDiffusionModel2DaltSolver<Geometry2DCartesian>::addCurvature(double&, double&, double&, double&,
 //                             double&, double&, double&, double&, double&, double&,
 //                             double, double, const Vec<2,double>&)
 // {
 // }
 //
 // template <>
-// inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(double& k44, double& k33, double& k22, double& k11,
+// inline void DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>::addCurvature(double& k44, double& k33, double& k22, double& k11,
 //                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
 //                                double, double, const Vec<2,double>& midpoint)
 // {
@@ -304,7 +300,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
 
 template <typename Geometry2DType>
 template <CalcType calctype, typename MatrixT>
-void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
@@ -353,8 +349,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 double normEv0 = material->VB(T, 0., '*') / mEx;
                 double normT = T / mTx;
                 double ePsi = 0.25 * (dvnPsi0[loleftno] + dvnPsi0[lorghtno] + dvnPsi0[upleftno] + dvnPsi0[uprghtno]);
-                n = calcN(normNc, 1., ePsi, normEc0, normT);
-                p = calcP(normNv, 1., ePsi, normEv0, normT);
+                n = calcN(normNc, 0., ePsi, normEc0, normT);
+                p = calcP(normNv, 0., ePsi, normEv0, normT);
             }
         }
         else {
@@ -389,18 +385,17 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 switch (stat) {
                     case STAT_MB: yn = 1.; break;
                     //case STAT_FD: yn = fermiDiracHalf(log(dveFnEta[i])+dvePsi[i]-normEc0)/(dveFnEta[i]*exp(dvePsi[i]-normEc0)); break;
-                    case STAT_FD: yn = fermiDiracHalf((log(dveFnEta[i])+dvePsi[i]-normEc0)/normT) / (pow(dveFnEta[i],1./normT)*exp((dvePsi[i]-normEc0)/normT)); break;
+                    case STAT_FD: yn = fermiDiracHalf((dveFn[i]-normEc0+dvePsi[i])/normT) / exp((dveFn[i]-normEc0+dvePsi[i])/normT); break;
                 }
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            kx = normMobN * normNe * yn * (hy*0.5) * (hy*0.5);
-            ky = normMobN * normNe * yn * (hx*0.5) * (hx*0.5);
+            kx = normMobN * n * yn * (hy*0.5) * (hy*0.5);
+            ky = normMobN * n * yn * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
             if ((material->kind() != Material::OXIDE) && (material->kind() != Material::DIELECTRIC)) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    this->writelog(LOG_DATA, "Recombination SRH");
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi / normAh  + p / normAe)
@@ -408,13 +403,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    this->writelog(LOG_DATA, "Recombination RAD");
                     double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNe * yn * p);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    this->writelog(LOG_DATA, "Recombination AUG");
                     double normCe = material->Ce(T) / mCx;
                     double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * ((normCe * (2. * n * p - normNi * normNi) + normCh * p * p)));
@@ -441,18 +434,17 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 switch (stat) {
                     case STAT_MB: yp = 1.; break;
                     //case STAT_FD: yp = fermiDiracHalf(log(dveFpKsi[i])-dvePsi[i]+normEv0)/(dveFpKsi[i]*exp(-dvePsi[i]+normEv0)); break;
-                    case STAT_FD: yp = fermiDiracHalf((log(dveFpKsi[i])-dvePsi[i]+normEv0)/normT) / (pow(dveFpKsi[i],1./normT)*exp((-dvePsi[i]+normEv0)/normT)); break;
+                    case STAT_FD: yp = fermiDiracHalf((normEv0-dvePsi[i]-dveFp[i])/normT) / exp((normEv0-dvePsi[i]-dveFp[i])/normT); break;
                 }
             }
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
-            kx = normMobP * normNh * yp * (hy*0.5) * (hy*0.5);
-            ky = normMobP * normNh * yp * (hx*0.5) * (hx*0.5);
+            kx = normMobP * p * yp * (hy*0.5) * (hy*0.5);
+            ky = normMobP * p * yp * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
             if ((material->kind() != Material::OXIDE) && (material->kind() != Material::DIELECTRIC)) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    this->writelog(LOG_DATA, "Recombination SRH");
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi / normAe + n / normAh)
@@ -460,13 +452,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    this->writelog(LOG_DATA, "Recombination RAD");
                     double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNh * yp * n);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    this->writelog(LOG_DATA, "Recombination AUG");
                     double normCe = material->Ce(T) / mCx;
                     double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * ((normCh * (2. * n * p - normNi * normNi) + normCe * n * n)));
@@ -499,7 +489,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 double normNaIon = normNa;
                 if (!mFullIon)
                 {
-                    this->writelog(LOG_RESULT, "Full ionization false");
                     double gD(2.), gA(4.);
                     double normNdTmp = (normNc/gD)*exp(-normEd);
                     double normNaTmp = (normNv/gA)*exp(-normEa);
@@ -555,16 +544,16 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 v4 = dvnPsi[upleftno];
                 break;
             case CALC_FN:
-                v1 = dvnFnEta[loleftno];
-                v2 = dvnFnEta[lorghtno];
-                v3 = dvnFnEta[uprghtno];
-                v4 = dvnFnEta[upleftno];
+                v1 = dvnFn[loleftno];
+                v2 = dvnFn[lorghtno];
+                v3 = dvnFn[uprghtno];
+                v4 = dvnFn[upleftno];
                 break;
             case CALC_FP:
-                v1 = dvnFpKsi[loleftno];
-                v2 = dvnFpKsi[lorghtno];
-                v3 = dvnFpKsi[uprghtno];
-                v4 = dvnFpKsi[upleftno];
+                v1 = dvnFp[loleftno];
+                v2 = dvnFp[lorghtno];
+                v3 = dvnFp[uprghtno];
+                v4 = dvnFp[upleftno];
         }
 
         B[loleftno] -= k11*v1 + k21*v2 + k31*v3 + k41*v4 + ff;
@@ -588,7 +577,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::savePsi()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::savePsi()
 {
     for (auto el: this->mesh->elements) {
         size_t i = el.getIndex();
@@ -603,7 +592,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::savePsi()
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::saveFnEta()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveFn()
 {
     for (auto el: this->mesh->elements) {
         size_t i = el.getIndex();
@@ -612,13 +601,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveFnEta()
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();
 
-        dveFnEta[i] = 0.25 * (dvnFnEta[loleftno] + dvnFnEta[lorghtno] + dvnFnEta[upleftno] + dvnFnEta[uprghtno]);
+        dveFn[i] = 0.25 * (dvnFn[loleftno] + dvnFn[lorghtno] + dvnFn[upleftno] + dvnFn[uprghtno]);
     }
 }
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::saveFpKsi()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveFp()
 {
     for (auto el: this->mesh->elements) {
         size_t i = el.getIndex();
@@ -627,13 +616,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveFpKsi()
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();
 
-        dveFpKsi[i] = 0.25 * (dvnFpKsi[loleftno] + dvnFpKsi[lorghtno] + dvnFpKsi[upleftno] + dvnFpKsi[uprghtno]);
+        dveFp[i] = 0.25 * (dvnFp[loleftno] + dvnFp[lorghtno] + dvnFp[upleftno] + dvnFp[uprghtno]);
     }
 }
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveN()
 {
     this->writelog(LOG_DETAIL, "Saving electron concentration");
 
@@ -652,13 +641,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         double normEc0 = material->CB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
-        dveN[i] = calcN(normNc, dveFnEta[i], dvePsi[i], normEc0, normT);
+        dveN[i] = calcN(normNc, dveFn[i], dvePsi[i], normEc0, normT);
     }
 }
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveP()
 {
     this->writelog(LOG_DETAIL, "Saving hole concentration");
 
@@ -678,14 +667,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         double normEv0 = material->VB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
-        dveP[i] = calcP(normNv, dveFpKsi[i], dvePsi[i], normEv0, normT);
+        dveP[i] = calcP(normNv, dveFp[i], dvePsi[i], normEv0, normT);
     }
 }
 
 
 template <typename Geometry2DType>
 template <CalcType calctype>
-double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>,double>& vconst)
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>,double>& vconst)
 {  
     this->writelog(LOG_DEBUG, "Adding corrections");
 
@@ -719,19 +708,21 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
     }
     else if (calctype == CALC_FN) {
         err = 0.;
-        //double normDel = maxDelFn / mEx;
+        double normDel = maxDelFn / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            dvnFnEta[i] += corr[i];
-            err = std::max(err, std::abs(corr[i]/dvnFnEta[i]));
+            corr[i] = clamp(corr[i], -normDel, normDel);
+            err = std::max(err, std::abs(corr[i]));
+            dvnFn[i] += corr[i];
         }
         this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for electrons: {0}.", err);
     }
     else if (calctype == CALC_FP) {
         err = 0.;
-        //double normDel = maxDelFp / mEx;
+        double normDel = maxDelFp / mEx;
         for (int i = 0; i < this->mesh->size(); ++i) {
-            dvnFpKsi[i] += corr[i];
-            err = std::max(err, std::abs(corr[i]/dvnFpKsi[i]));
+            corr[i] = clamp(corr[i], -normDel, normDel);
+            err = std::max(err, std::abs(corr[i]));
+            dvnFp[i] += corr[i];
         }
         this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: {0}.", err);
     }
@@ -761,7 +752,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
 }
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::computePsiI() {
 
     this->writelog(LOG_INFO, "Calculating built-in potential");
 
@@ -818,7 +809,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
 }
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFn, double iFp, double iT, int& loop) const
 {
     double tPsi0(0.), // calculated normalized initial potential
     tPsi0a = (-15.) / mEx, // normalized edge of the initial range
@@ -836,15 +827,14 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
         tPsi0v[i] = tPsi0a + i*tPsi0h;
 
     for (int i = 0; i < tPsi0n; ++i) {
-        tN = calcN(iNc, iFnEta, tPsi0v[i], iEc0, iT);
-        tP = calcP(iNv, iFpKsi, tPsi0v[i], iEv0, iT);
+        tN = calcN(iNc, iFn, tPsi0v[i], iEc0, iT);
+        tP = calcP(iNv, iFp, tPsi0v[i], iEv0, iT);
 
         double iNdIon = iNd;
         double iNaIon = iNa;
 
         if (!mFullIon)
         {
-            this->writelog(LOG_RESULT, "Full ionization false");
             double gD(2.), gA(4.);
             double iNdTmp = (iNc/gD)*exp(-iEd);
             double iNaTmp = (iNv/gA)*exp(-iEa);
@@ -880,8 +870,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
         tTmpA = (tNtotb-tNtota) / (tPsi0b-tPsi0a);
         tTmpB = tNtota - tTmpA*tPsi0a;
         tPsi0 = - tTmpB/tTmpA; //Psi Check Value
-        tN = calcN(iNc, iFnEta, tPsi0, iEc0, iT);
-        tP = calcP(iNv, iFpKsi, tPsi0, iEv0, iT);
+        tN = calcN(iNc, iFn, tPsi0, iEc0, iT);
+        tP = calcP(iNv, iFp, tPsi0, iEv0, iT);
 
         double iNdIon = iNd;
         double iNaIon = iNa;
@@ -928,7 +918,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
 
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
@@ -940,7 +930,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
 
 template <typename Geometry2DType>
 template <typename MatrixT>
-double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::doCompute(unsigned loops)
 {
     bool was_initialized = this->initCalculation();
     needPsi0 |= !was_initialized;
@@ -989,22 +979,22 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             double dU = cond.value / mEx;
             novoltage = novoltage && dU == 0.;
             dvnPsi[i] = dvnPsi0[i] + dU;
-            dvnFnEta[i] = exp(-dU);
-            dvnFpKsi[i] = exp(+dU);
+            dvnFn[i] = -dU;
+            dvnFp[i] = -dU;
         }
     }
     if (novoltage) {
         if (was_initialized) {
             std::copy(dvnPsi0.begin(), dvnPsi0.end(), dvnPsi.begin());
-            dvnFnEta.fill(1.);
-            dvnFpKsi.fill(1.);
+            dvnFn.fill(0.);
+            dvnFp.fill(0.);
         }
         return errorPsi0;
     }
 
     savePsi();
-    saveFnEta();
-    saveFpKsi();
+    saveFn();
+    saveFp();
     saveN();
     saveP();
 
@@ -1038,7 +1028,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             err = addCorr<CALC_FN>(B, vconst); // max. update
             if (err > errorFn) errorFn = err;
             this->writelog(LOG_DETAIL, "Maximum electrons quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
-            saveFnEta();
+            saveFn();
             saveN();
             itersFn += 1;
         }
@@ -1052,7 +1042,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
             err = addCorr<CALC_FP>(B, vconst); // max. update
             if (err > errorFp) errorFp = err;
             this->writelog(LOG_DETAIL, "Maximum holes quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
-            saveFpKsi();
+            saveFp();
             saveP();
             itersFp += 1;
         }
@@ -1065,13 +1055,13 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         size_t lorghtno = el.getUpLoIndex();
         size_t upleftno = el.getLoUpIndex();
         size_t uprghtno = el.getUpUpIndex();
-        double dFnx = 0.5 * (- log(dvnFnEta[loleftno]) + log(dvnFnEta[lorghtno]) - log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno])) // + before 0.5 due to ln(FnEta)=Fn relation
+        double dFnx = 0.5 * (- dvnFn[loleftno] + dvnFn[lorghtno] - dvnFn[upleftno] + dvnFn[uprghtno]) // + before 0.5 due to ln(FnEta)=Fn relation
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFn/dx]
-        double dFny = 0.5 * (- log(dvnFnEta[loleftno]) - log(dvnFnEta[lorghtno]) + log(dvnFnEta[upleftno]) + log(dvnFnEta[uprghtno])) // + before 0.5 due to ln(FnEta)=Fn relation
+        double dFny = 0.5 * (- dvnFn[loleftno] - dvnFn[lorghtno] + dvnFn[upleftno] + dvnFn[uprghtno]) // + before 0.5 due to ln(FnEta)=Fn relation
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFn/dy]
-        double dFpx = - 0.5 * (- log(dvnFpKsi[loleftno]) + log(dvnFpKsi[lorghtno]) - log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno])) // - before 0.5 due to -ln(FpKsi)=Fp relation
+        double dFpx = - 0.5 * (- dvnFp[loleftno] + dvnFp[lorghtno] - dvnFp[upleftno] + dvnFp[uprghtno]) // - before 0.5 due to -ln(FpKsi)=Fp relation
                              / ((el.getUpper0() - el.getLower0())/mXx); // normalised [dFp/dx]
-        double dFpy = - 0.5 * (- log(dvnFpKsi[loleftno]) - log(dvnFpKsi[lorghtno]) + log(dvnFpKsi[upleftno]) + log(dvnFpKsi[uprghtno])) // - before 0.5 due to -ln(FpKsi)=Fp relation
+        double dFpy = - 0.5 * (- dvnFp[loleftno] - dvnFp[lorghtno] + dvnFp[upleftno] + dvnFp[uprghtno]) // - before 0.5 due to -ln(FpKsi)=Fp relation
                              / ((el.getUpper1() - el.getLower1())/mXx); // normalised [dFp/dy]
 
         double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
@@ -1121,7 +1111,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
 
@@ -1142,7 +1132,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
 }
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
     this->writelog(LOG_DETAIL, "Solving matrix system");
@@ -1166,7 +1156,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
 }
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -1188,7 +1178,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
 }
 
 template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
+void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveHeatDensities()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
@@ -1227,7 +1217,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 }
 
 
-template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)
+template <> double DriftDiffusionModel2DaltSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
@@ -1242,7 +1232,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCu
 }
 
 
-template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
+template <> double DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
@@ -1259,7 +1249,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrate
 
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 {
     size_t level = getActiveRegionMeshIndex(nact);
     return integrateCurrent(level, true);
@@ -1267,7 +1257,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
     if (!dvnPsi) throw NoValue("Potential");
     this->writelog(LOG_DEBUG, "Getting potentials");
@@ -1277,16 +1267,16 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotenti
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!dvnFnEta) throw NoValue("Quasi-Fermi electron level");
+    if (!dvnFn) throw NoValue("Quasi-Fermi electron level");
     this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
 
-    DataVector<double> dvnFn(size);
-    for (size_t i = 0; i != dvnFnEta.size(); ++i) {
+    /*DataVector<double> dvnFn(size);
+    for (size_t i = 0; i != dvnFn.size(); ++i) {
             if (dvnFnEta[i] > 0.) dvnFn[i] = log(dvnFnEta[i]) * mEx;
             else dvnFn[i] = 0.;
-    }
+    }*/
 
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
@@ -1294,16 +1284,16 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFe
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!dvnFpKsi) throw NoValue("Quasi-Fermi hole level");
+    if (!dvnFp) throw NoValue("Quasi-Fermi hole level");
     this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
 
-    DataVector<double> dvnFp(size);
+    /*DataVector<double> dvnFp(size);
     for (size_t i = 0; i != dvnFpKsi.size(); ++i) {
         if (dvnFpKsi[i] > 0.) dvnFp[i] = - log(dvnFpKsi[i]) * mEx;
         else dvnFp[i] = 0.;
-    }
+    }*/
 
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
@@ -1311,7 +1301,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFe
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getConductionBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (!dvnPsi) throw NoValue("Conduction band edge");
     this->writelog(LOG_DEBUG, "Getting conduction band edge");
@@ -1343,7 +1333,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConduct
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getValenceBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (!dvnPsi) throw NoValue("Valence band edge");
     this->writelog(LOG_DEBUG, "Getting valence band edge");
@@ -1375,9 +1365,9 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValence
 
 
 template <typename Geometry2DType>
-const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
+const LazyData < Vec<2>> DriftDiffusionModel2DaltSolver<Geometry2DType>::getCurrentDensitiesForElectrons(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!dvnFnEta) throw NoValue("Current density");
+    if (!dvnFn) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
@@ -1391,9 +1381,9 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
 
 
 template <typename Geometry2DType>
-const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
+const LazyData < Vec<2>> DriftDiffusionModel2DaltSolver<Geometry2DType>::getCurrentDensitiesForHoles(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!dvnFpKsi) throw NoValue("Current density");
+    if (!dvnFp) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
@@ -1407,7 +1397,7 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getElectronConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getElectronConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (!dveN) throw NoValue("Electron concentration");
     this->writelog(LOG_DEBUG, "Getting electron concentration");
@@ -1439,7 +1429,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getElectro
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHoleConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getHoleConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (!dveP) throw NoValue("Hole concentration");
     this->writelog(LOG_DEBUG, "Getting hole concentration");
@@ -1471,9 +1461,9 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHoleCon
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if ((!dvnFnEta)||(!dvnFpKsi)) throw NoValue("Heat density");
+    if ((!dvnFn)||(!dvnFp)) throw NoValue("Heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -1488,7 +1478,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
 
 /*
 template <typename Geometry2DType>
-const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod) {
+const LazyData < Tensor2<double>> DriftDiffusionModel2DaltSolver<Geometry2DType>::getConductivity(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivities();
@@ -1508,7 +1498,7 @@ const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::g
 
 
 template <>
-double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
+double DriftDiffusionModel2DaltSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(this->mesh->getMidpointsMesh());
     for (auto e: this->mesh->elements) {
@@ -1530,7 +1520,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
 }
 
 template <>
-double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
+double DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(this->mesh->getMidpointsMesh());
     for (auto e: this->mesh->elements) {
@@ -1554,7 +1544,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
 
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::getCapacitance() {
+double DriftDiffusionModel2DaltSolver<Geometry2DType>::getCapacitance() {
 
     if (this->voltage_boundary.size() != 2) {
         throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
@@ -1567,7 +1557,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getCapacitance() {
 
 
 template <>
-double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalHeat() {
+double DriftDiffusionModel2DaltSolver<Geometry2DCartesian>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     for (auto e: this->mesh->elements) {
@@ -1579,7 +1569,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalHeat() {
 }
 
 template <>
-double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalHeat() {
+double DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     for (auto e: this->mesh->elements) {
@@ -1592,10 +1582,10 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalHeat() {
 }*/
 
 
-template < > std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "ddm2d.DriftDiffusion2D"; }
-template < > std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "ddm2d.DriftDiffusionCyl"; }
+template < > std::string DriftDiffusionModel2DaltSolver<Geometry2DCartesian>::getClassName() const { return "ddm2dalt.DriftDiffusion2Dalt"; }
+template < > std::string DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>::getClassName() const { return "ddm2dalt.DriftDiffusionCylalt"; }
 
-template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API DriftDiffusionModel2DaltSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API DriftDiffusionModel2DaltSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::solvers::thermal

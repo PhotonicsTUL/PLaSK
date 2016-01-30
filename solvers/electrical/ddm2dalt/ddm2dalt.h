@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_ELECTRICAL_DDM2D_H
-#define PLASK__MODULE_ELECTRICAL_DDM2D_H
+#ifndef PLASK__MODULE_ELECTRICAL_DDM2DALT_H
+#define PLASK__MODULE_ELECTRICAL_DDM2DALT_H
 
 #include <plask/plask.hpp>
 #include <limits>
@@ -9,7 +9,7 @@
 #include "iterative_matrix.h"
 #include "gauss_matrix.h"
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace solvers { namespace drift_diffusion_alt {
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {
@@ -36,11 +36,17 @@ enum CalcType {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2DType>
-struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API DriftDiffusionModel2DaltSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
 
     int size;                   ///< Number of columns in the main matrix
+
+    bool mRsrh;    ///< SRH recombination is taken into account
+    bool mRrad;    ///< radiative recombination is taken into account
+    bool mRaug;    ///< Auger recombination is taken into account
+    bool mPol;     ///< polarization (GaN is the substrate)
+    bool mFullIon; ///< dopant ionization = 100%
 
     // scalling parameters
     double mTx;    ///< ambient temperature (K)
@@ -74,18 +80,18 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     DataVector<double> dveN;                    ///< Cached electron concentrations (size: elements)
     DataVector<double> dveP;                    ///< Cached hole concentrations (size: elements)
     DataVector<double> dvePsi;                  ///< Computed potentials (size: elements)
-    DataVector<double> dveFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: elements)
-    DataVector<double> dveFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: elements)
+    DataVector<double> dveFn;                   ///< Computed quasi-Fermi levels for electrons (size: elements)
+    DataVector<double> dveFp;                   ///< Computed quasi-Fermi levels for holes (size: elements)
 
-    DataVector<double> dvnPsi0;                 ///< Computed potential for U=0V (size: nodes)
+    DataVector<double> dvnPsi0;                 ///< Computed potentials for U=0V (size: nodes)
     DataVector<double> dvnPsi;                  ///< Computed potentials (size: nodes)
-    DataVector<double> dvnFnEta;                ///< Computed exponents of quasi-Fermi levels for electrons (size: nodes)
-    DataVector<double> dvnFpKsi;                ///< Computed exponents of quasi-Fermi levels for holes (size: nodes)
+    DataVector<double> dvnFn;                   ///< Computed quasi-Fermi levels for electrons (size: nodes)
+    DataVector<double> dvnFp;                   ///< Computed quasi-Fermi levels for holes (size: nodes)
     DataVector<Vec<2,double>> currentsN;        ///< Computed current densities for electrons
     DataVector<Vec<2,double>> currentsP;        ///< Computed current densities for holes
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
-    bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
+    bool needPsi0;                              ///< Flag indicating if we need to compute initial potential;
 
     /// Initialize the solver
     virtual void onInitialize() override;
@@ -143,27 +149,23 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     }
 
     /// Find initial potential
-    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const;
+    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFn, double iFp, double iT, int& loop) const;
 
     /**
     * Calculate electron concentration.
     * \param iNc effective density of states for the conduction band
-    * \param iFnEta exponent of normalised quasi-Fermi energy level for elestrons
+    * \param iFn normalised quasi-Fermi energy level for elestrons
     * \param iPsi normalised energy (potential multiplied by the elementary charge)
     * \param iEc0 normalised conduction band edge
     * \param iT normalised temperature
     * \return computed electron concentration
     */
-    double calcN(double iNc, double iFnEta, double iPsi, double iEc0, double iT) const {
+    double calcN(double iNc, double iFn, double iPsi, double iEc0, double iT) const {
         switch (stat) {
             //case STAT_MB: return ( iNc * iFnEta * exp(iPsi-iEc0) );
-            case STAT_MB:
-                this->writelog(LOG_INFO, "Maxwell-Boltzmann statistics");
-                return ( iNc * pow(iFnEta,1./iT) * exp((iPsi-iEc0)/iT) );
+            case STAT_MB: return ( iNc * /*pow(iFnEta,1./iT) * */ exp((iFn-iEc0+iPsi)/iT) );
             //case STAT_FD: return ( iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0) );
-            case STAT_FD:
-                this->writelog(LOG_INFO, "Fermi-Dirac statistics");
-                return ( iNc * fermiDiracHalf((log(iFnEta) + iPsi - iEc0)/iT) );
+            case STAT_FD: return ( iNc * fermiDiracHalf((iFn-iEc0+iPsi)/iT) );
         }
         return NAN;
     }
@@ -171,18 +173,18 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /**
     * Calculate hole concentration.
     * \param iNv effective density of states for the valence band
-    * \param iFpKsi exponent of normalised quasi-Fermi energy level for holes
+    * \param iFp normalised quasi-Fermi energy level for holes
     * \param iPsi normalised energy (potential multiplied by the elementary charge)
     * \param iEv0 normalised valence band edge
     * \param iT normalised temperature
     * \return computed hole concentration
     */
-    double calcP(double iNv, double iFpKsi, double iPsi, double iEv0, double iT) const {
+    double calcP(double iNv, double iFp, double iPsi, double iEv0, double iT) const {
         switch (stat) {
             //case STAT_MB: return ( iNv * iFpKsi * exp(iEv0-iPsi) );
-            case STAT_MB: return ( iNv * pow(iFpKsi,1./iT) * exp((iEv0-iPsi)/iT) );
+            case STAT_MB: return ( iNv * exp((iEv0-iPsi-iFp)/iT) );
             //case STAT_FD: return ( iNv * fermiDiracHalf(log(iFpKsi) - iPsi + iEv0) );
-            case STAT_FD: return ( iNv * fermiDiracHalf((log(iFpKsi) - iPsi + iEv0)/iT) );
+            case STAT_FD: return ( iNv * fermiDiracHalf((iEv0-iPsi-iFp)/iT) );
         }
         return NAN;
     }
@@ -201,8 +203,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     void savePsi0(); ///< save potentials for all elements to datavector
     void savePsi(); ///< save potentials for all elements to datavector
-    void saveFnEta();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
-    void saveFpKsi();  ///< save exponent of quasi-Fermi electron level for all elements to datavector
+    void saveFn();  ///< save quasi-Fermi electron levels for all elements to datavector
+    void saveFp();  ///< save quasi-Fermi electron levels for all elements to datavector
     void saveN(); ///< save electron concentrations for all elements to datavector
     void saveP(); ///< save hole concentrations for all elements to datavector
 
@@ -274,12 +276,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     Algorithm algorithm;    ///< Factorization algorithm to use
 
-    bool mRsrh;    ///< SRH recombination is taken into account
-    bool mRrad;    ///< radiative recombination is taken into account
-    bool mRaug;    ///< Auger recombination is taken into account
-    bool mPol;     ///< polarization (GaN is the substrate)
-    bool mFullIon; ///< dopant ionization = 100%
-
     double maxerrPsiI;  ///< Maximum estimated error for initial potential during all iterations (useful for single calculations managed by external python script)
     double maxerrPsi0;  ///< Maximum estimated error for potential at U = 0 V during all iterations (useful for single calculations managed by external python script)
     double maxerrPsi;   ///< Maximum estimated error for potential during all iterations (useful for single calculations managed by external python script)
@@ -338,11 +334,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    DriftDiffusionModel2DSolver(const std::string& name="");
+    DriftDiffusionModel2DaltSolver(const std::string& name="");
 
     virtual std::string getClassName() const override;
 
-    ~DriftDiffusionModel2DSolver();
+    ~DriftDiffusionModel2DaltSolver();
 
   protected:
     const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <solver name="DriftDiffusion2D" category="electrical" lib="ddm2d">
+  <solver name="DriftDiffusion2Dalt" category="electrical" lib="ddm2dalt">
     Finite element drift-diffusion electrical solver for 2D Cartesian geometry using finite-element method.
 
     <geometry type="Cartesian2D"/>
@@ -15,10 +15,6 @@
         <choice>MaxwellBoltzmann</choice>
         <choice>FermiDirac</choice>
       </attr>
-      <attr name="Rsrh" label="SRH recombination" type="bool">Consider Shockley-Read-Hall recombination.</attr>
-      <attr name="Rrad" label="Radiative recombination" type="bool">Consider radiative recombination.</attr>
-      <attr name="Raug" label="Auger recombination" type="bool">Consider Auger recombination.</attr>
-      <attr name="FullIon" label="Complete ionization of dopants" type="bool">Complete ionization of dopants.</attr>
       <attr name="maxerrVi" label="Max initial potential update" type="float">Limit for the initial potential estimate updates.</attr>
       <attr name="maxerrV0" label="Max built-in potential update" type="float">Limit for the built-in potential updates.</attr>
       <attr name="maxerrV" label="Max potential update" type="float">Limit for the potential updates.</attr>
