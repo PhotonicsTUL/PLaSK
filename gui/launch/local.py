@@ -281,10 +281,10 @@ class PlaskThread(QtCore.QThread):
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
-            self.proc = subprocess.Popen([program, '-ldebug', '-u'] + list(defs) + [fname] + list(args),
+            self.proc = subprocess.Popen([program, '-ldebug', '-u'] + list(defs) + ['--', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
-            self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + [fname] + list(args),
+            self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + ['--', fname] + list(args),
                                          startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         sys.stdout.flush()

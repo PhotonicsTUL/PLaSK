@@ -183,6 +183,7 @@ def _get_2d_axes(plane):
 def _get_component(comp, total):
     if type(comp) == str:
         if total == 4: # tensor
+            if len(comp) == 1: comp = comp + comp # x - > xx
             try:
                 a = plask.config.axes
                 values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])

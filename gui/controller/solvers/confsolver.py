@@ -34,6 +34,7 @@ def attr_list_to_text(model, group, attr):
         return '\n'.join(values)
     return None
 
+
 def text_to_attr_list(model, group, attr, text):
     attr = attr[:-1]
     data = model.data[group]
@@ -82,7 +83,6 @@ class SolverAutoWidget(VerticalScrollArea):
             model.undo_stack.push(UndoCommandWithSetter(
                 model, node, set_solver_field, value, old_value, "change solver's {}".format(field_name)
             ))
-
 
     def __init__(self, controller, parent=None):
         super(SolverAutoWidget, self).__init__(parent)

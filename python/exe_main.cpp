@@ -271,6 +271,9 @@ int main(int argc, const char *argv[])
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
             --argc; ++argv;
+        } else if (arg == "--") {
+            --argc; ++argv;
+            break;
         } else break;
     }
 
@@ -490,7 +493,9 @@ int main(int argc, const char *argv[])
 
         if (!defs.empty()) {
             PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
-            throw py::error_already_set();
+            int exitcode = handlePythonException();
+            endPlask();
+            return exitcode;
         }
 
         py::object sys = py::import("sys");
