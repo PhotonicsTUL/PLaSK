@@ -267,30 +267,33 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
-        } else if (*i == "k0")
+        } else if (*i == "k0") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
                 k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
-        else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
+        } else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong()) {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_KLONG; array = kwargs[*i];
             } else
                 self->setKlong(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
+        } else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran()) {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_KTRAN; array = kwargs[*i];
             } else
                 self->setKtran(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "dispersive")
+        } else if (*i == "dispersive") {
             throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
-        else
+        } else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
+    if ((wavelength && k0) || (wavelength && what == WHAT_K0) || (k0 && what == WHAT_WAVELENGTH))
+        throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+    
     if (wavelength) self->setWavelength(*wavelength);
     if (k0) self->setK0(*k0);
 
@@ -319,6 +322,36 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             );
     }
     return py::object();
+}
+
+static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
+    FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
+
+    AxisNames* axes = getCurrentAxes();
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    boost::optional<dcomplex> wavelength, k0;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam") {
+            wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
+        } else if (*i == "k0")
+            k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
+        else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
+            self->setKlong(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
+            self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+        else
+            throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
+    }
+
+    if (wavelength && k0)
+        throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+    
+    if (wavelength) self->setWavelength(*wavelength);
+    if (k0) self->setK0(*k0);
+
+    return self->setMode();
 }
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
@@ -422,10 +455,12 @@ void export_FourierSolver3D()
                         &FourierSolver3D_SymmetryLongTranWrapper::setter,
                         "Longitudinal and transverse mode symmetries.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength, e.g. the effective index of lateral wavevector.\n");
+    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+                "Alias for :attr:`lam`");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
                 "Normalized frequency of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
@@ -450,6 +485,17 @@ void export_FourierSolver3D()
                 "Compute the mode near the specified effective index.\n\n"
                 "Only one of the following arguments can be given through a keyword.\n"
                 "It is the starting point for search of the specified parameter.\n\n"
+                "Args:\n"
+                "    lam (complex): Wavelength.\n"
+                "    k0 (complex): Normalized frequency.\n"
+                "    klong (complex): Longitudinal wavevector.\n"
+                "    ktran (complex): Transverse wavevector.\n");
+    solver.def("set_mode", py::raw_function(FourierSolver3D_setMode),
+                "Set the mode for specified parameters.\n\n"
+                "This method should be used if you have found a mode manually and want to insert\n"
+                "it into the solver in order to determine the fields. Calling this will raise an\n"
+                "exception if the determinant for the specified parameters is too large.\n\n"
+                "Arguments can be given through keywords only.\n\n"
                 "Args:\n"
                 "    lam (complex): Wavelength.\n"
                 "    k0 (complex): Normalized frequency.\n"

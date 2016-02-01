@@ -33,22 +33,26 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
+            if (what == WHAT_K0 || lambda)
+                throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 lambda.reset(py::extract<dcomplex>(kwargs[*i]));
-        } else if (*i == "k0")
+        } else if (*i == "k0") {
+            if (what == WHAT_WAVELENGTH || lambda)
+                throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
                 lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
-        else if (*i == "dispersive")
-            throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
-        else if (*i == "m")
+        } else if (*i == "m") {
             m = py::extract<int>(kwargs[*i]);
-        else
+        } else if (*i == "dispersive") {
+            throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
+        } else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
     if (lambda) self->setWavelength(*lambda);
@@ -70,6 +74,31 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             );
     }
     return py::object();
+}
+
+static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
+    BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
+
+    boost::optional<dcomplex> lambda, neff, ktran;
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam" || *i == "wavelength") {
+            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        } else if (*i == "k0") {
+            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+        } else if (*i == "m") {
+            self->setM(py::extract<int>(kwargs[*i]));
+        } else
+            throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
+    }
+
+    if (lambda) self->setWavelength(*lambda);
+
+    return self->setMode();
 }
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
@@ -98,6 +127,17 @@ void export_BesselSolverCyl()
 //     solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
     PROVIDER(outWavelength, "");
     PROVIDER(outLoss, "");
+    RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+                "Wavelength of the light [nm].\n\n"
+                "Use this property only if you are looking for anything else than\n"
+                "the wavelength, e.g. the effective index of lateral wavevector.\n");
+    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+                "Alias for :attr:`lam`");
+    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+                "Normalized frequency of the light [1/µm].\n\n"
+                "Use this property only if you are looking for anything else than\n"
+                "the wavelength,e.g. the effective index of lateral wavevector.\n");
     METHOD(find_mode, findMode, 
            "Compute the mode near the specified effective index.\n\n"
            "Only one of the following arguments can be given through a keyword.\n"
@@ -105,17 +145,28 @@ void export_BesselSolverCyl()
            "Args:\n"
            "    lam (complex): Wavelength.\n"
            "    k0 (complex): Normalized frequency.\n"
-           "    neff (complex): Longitudinal effective index.\n"
-           "    ktran (complex): Transverse wavevector.\n",
+           "    m (int): HE/EH Mode angular number.\n"
            "lam", arg("m")=1
           );
-    RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+    solver.def("set_mode", py::raw_function(BesselSolverCyl_setMode),
+                "Set the mode for specified parameters.\n\n"
+                "This method should be used if you have found a mode manually and want to insert\n"
+                "it into the solver in order to determine the fields. Calling this will raise an\n"
+                "exception if the determinant for the specified parameters is too large.\n\n"
+                "Arguments can be given through keywords only.\n\n"
+                "Args:\n"
+               "    lam (complex): Wavelength.\n"
+               "    k0 (complex): Normalized frequency.\n"
+               "    m (int): HE/EH Mode angular number.\n"
+              );
     solver.def("get_determinant", py::raw_function(BesselSolverCyl_getDeterminant),
                "Compute discontinuity matrix determinant.\n\n"
                "Arguments can be given through keywords only.\n\n"
                "Args:\n"
                "    lam (complex): Wavelength.\n"
-               "    k0 (complex): Normalized frequency.\n");
+               "    k0 (complex): Normalized frequency.\n"
+               "    m (int): HE/EH Mode angular number.\n"
+              );
     solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                "Get Bessel expansion coefficients for the electric field.\n\n"
                "This is a low-level function returning $E_s$ and $E_p$ Bessel expansion\n"

@@ -202,7 +202,6 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
             break;
     }
-    ParamGuard guard(this);
     root->find(start);
     return insertMode();
 }

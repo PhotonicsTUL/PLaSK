@@ -124,6 +124,15 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         }
     }
 
+    /**
+     * Return mode wavelength
+     * \param n mode number
+     */
+    double getWavelength(size_t n) {
+        if (n >= modes.size()) throw NoValue(Wavelength::NAME);
+        return (2e3*M_PI / modes[n].k0).real();
+    }
+
     Expansion& getExpansion() override { return expansion; }
 
     /**
@@ -154,6 +163,13 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         return transfer->getFieldVectorH(z);
     }
 
+    /// Check if the current parameters correspond to some mode and insert it
+    size_t setMode() {
+        if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
+            throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
+        return insertMode();
+    }
+    
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -174,15 +190,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     }
 
     size_t nummodes() const override { return modes.size(); }
-
-    /**
-     * Return mode effective index
-     * \param n mode number
-     */
-    double getWavelength(size_t n) {
-        if (n >= modes.size()) throw NoValue(Wavelength::NAME);
-        return (2e3*M_PI / modes[n].k0).real();
-    }
 
     /**
      * Return mode modal loss

@@ -205,7 +205,7 @@ template <typename SolverT>
 static void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
 
 template <typename SolverT>
-static void Solver_setK0(SolverT& self, dcomplex k0) { self.setWavelength(k0); }
+static void Solver_setK0(SolverT& self, dcomplex k0) { self.setK0(k0); }
 
 template <typename SolverT>
 static PmlWrapper Solver_vPML(SolverT* self) {
