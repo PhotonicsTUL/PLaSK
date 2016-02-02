@@ -331,6 +331,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
+        expansion.symmetry_long = modes[num].symmetry_long;
+        expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldE(dst_mesh, method);
@@ -346,6 +348,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
+        expansion.symmetry_long = modes[num].symmetry_long;
+        expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldH(dst_mesh, method);
@@ -361,6 +365,8 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
+        expansion.symmetry_long = modes[num].symmetry_long;
+        expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);

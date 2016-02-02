@@ -93,7 +93,8 @@ double Material::C(double T) const { throwNotImplemented("C(double T)"); return 
 double Material::CB(double T, double e, char point) const {
     if (e == 0.)
         return VB(T, 0., point) + Eg(T, 0., point);
-    return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + Eg(T, e, point);
+    else
+        return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + Eg(T, e, point);
 }
 
 double Material::chi(double T, double e, char point) const { throwNotImplemented("chi(double T, double e, char point)"); return 0; }
@@ -198,10 +199,6 @@ double Material::Nd() const { throwNotImplemented("Nd()"); return 0; }
 
 void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
-}
-
-void Material::throwNotApplicable(const std::string& method_name) const {
-    throw MaterialMethodNotApplicable(name(), method_name);
 }
 
 template <typename NameValuePairIter>

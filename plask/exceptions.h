@@ -221,21 +221,6 @@ struct PLASK_API MaterialMethodNotImplemented: public NotImplemented {
 };
 
 /**
- * This exception is thrown by if some material property does not make sense for particular material.
- */
-struct PLASK_API MaterialMethodNotApplicable: public Exception {
-
-    /**
-     * @param material_name name of material
-     * @param method_name name of not implemented method
-     */
-    MaterialMethodNotApplicable(const std::string& material_name, const std::string& method_name)
-    : Exception("Material {0}: method not applicable: {1}", material_name, method_name) {
-    }
-
-};
-
-/**
  * Exceptions of this class are thrownwhen material string parser find errors.
  */
 struct PLASK_API MaterialParseException: public Exception {

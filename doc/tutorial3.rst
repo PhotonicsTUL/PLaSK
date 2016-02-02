@@ -188,6 +188,7 @@ Having our solvers defined, we must define their mutual connections properly in 
 These are all the connects we need in our case. The first two are for achieving self-consistency in the thermo-electrical part. The final temperature distribution calculated by ``THERMAL`` solver will be then used by all other solvers. Additionally the ``DIFFUSION`` solver has to be provided with the current density distribution from ``ELECTRICAL`` solver, ``GAIN`` requires carriers concentration obtained in ``DIFFUSION`` to calculate the gain, which then has to be eventually connected to the ``OPTICAL`` solver.
 
 ---------------------------------------------------------------------------
+
 All the examples here have been presented as fragments of the XML code. Every element in the XPL file can be defined this way. However, the only reason we have presented it as a XML code in this tutorial is much easier copy-pasting the whole contents of each section than retyping it manually in the text boxes. While creating your own geometries, feel free to use graphical tools provided by the GUI.
 
 Manual refinements of the divide mesh generator

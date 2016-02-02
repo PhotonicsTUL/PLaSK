@@ -1,6 +1,7 @@
 #include "aSiO2.h"
 
 #include <cmath>
+#include <plask/log/log.h>
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
@@ -60,6 +61,20 @@ MI_PROPERTY(aSiO2, eps,
 double aSiO2::eps(double T) const {
     return 3.9;
 }
+
+double aSiO2::VB(double T, double e, char point, char hole) const { RETURN_MATERIAL_NAN(VB) }
+
+double aSiO2::CB(double T, double e, char point) const { RETURN_MATERIAL_NAN(CB) }
+
+double aSiO2::Eg(double T, double e, char point) const { RETURN_MATERIAL_NAN(Eg) }
+
+Tensor2<double> aSiO2::mobe(double T) const { RETURN_MATERIAL_NAN(mobe) }
+
+Tensor2<double> aSiO2::mobh(double T) const { RETURN_MATERIAL_NAN(mobh) }
+
+double aSiO2::Na() const { RETURN_MATERIAL_NAN(Na) }
+
+double aSiO2::Nd() const { RETURN_MATERIAL_NAN(Nd) }
 
 bool aSiO2::isEqual(const Material &other) const {
     return true;

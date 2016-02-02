@@ -310,6 +310,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
+        expansion.symmetry = modes[num].symmetry;
+        expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldE(dst_mesh, method);
@@ -325,6 +327,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
+        expansion.symmetry = modes[num].symmetry;
+        expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldH(dst_mesh, method);
@@ -340,6 +344,8 @@ LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const Mesh
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
+        expansion.symmetry = modes[num].symmetry;
+        expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);

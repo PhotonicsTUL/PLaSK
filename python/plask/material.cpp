@@ -1198,7 +1198,6 @@ void initMaterials() {
 
     MaterialFromPythonString();
     register_exception<NoSuchMaterial>(PyExc_ValueError);
-    register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
 
     // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
     detail::Tensor2_fromto_Python();

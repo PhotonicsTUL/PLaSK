@@ -228,7 +228,7 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
         sections (list): List of section names to read.
         destination (dict): Destination scope. If None, ``globals()`` is used.
         update (bool): If the flag is ``False``, all data got from the previous
-                       call to :fun:`loadxpl` are discarded. Set it to ``True``
+                       call to :func:`loadxpl` are discarded. Set it to ``True``
                        if you want to append some data from another file.
     """
 
@@ -255,7 +255,7 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
 
 def runxpl(source, vars={}):
     """
-    Load and run the code from the XPL file. Unlike :fun:`loadxpl` this function
+    Load and run the code from the XPL file. Unlike :func:`loadxpl` this function
     does not modify the current global scope.
 
     Args:

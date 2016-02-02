@@ -21,6 +21,11 @@ This file contains base classes for materials and material database class.
 #include "../vector/tensor3.h"
 #include "../parallel.h"
 
+#define RETURN_MATERIAL_NAN(param) \
+    static bool warn = true; \
+    if (warn) { writelog(LOG_WARNING, "Material {}: non-applicable parameter " BOOST_PP_STRINGIZE(param) " returned as NAN", name()); warn = false; } \
+    return NAN;
+
 namespace plask {
 
 /// Global Python lock
@@ -826,13 +831,6 @@ protected:
      * @param method_name name of method which is not implemented
      */
     void throwNotImplemented(const std::string& method_name) const;
-
-    /**
-     * Throw exception with information that method with name @p method_name is not applicable for this material.
-     * @param method_name name of method which is not applicable
-     */
-    void throwNotApplicable(const std::string& method_name) const;
-
 };
 
 

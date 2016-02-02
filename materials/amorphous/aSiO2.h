@@ -24,6 +24,15 @@ struct aSiO2: public Dielectric {
     virtual double absp(double wl, double T) const override;
     virtual double eps(double T) const override;
 
+    double Eg(double T, double e, char point) const override;
+    double CB(double T, double e, char point) const override;
+    double VB(double T, double e, char point, char hole) const override;
+    Tensor2<double> mobe(double T) const override;
+    Tensor2<double> mobh(double T) const override;
+    double Na() const override;
+    double Nd() const override;
+
+
 protected:
     virtual bool isEqual(const Material& other) const override;
 
