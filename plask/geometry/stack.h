@@ -192,7 +192,8 @@ public:
      * @throw Exception if not all children have the same heights
      */
     void ensureFlat() const {
-        if (!isFlat()) throw Exception("Not all items in the shelf have the same height");
+        if (!isFlat()) throw Exception("Not all items in the shelf have the same height "
+                                       "(correct heights or set 'flat' to false)");
     }
 
     /**
