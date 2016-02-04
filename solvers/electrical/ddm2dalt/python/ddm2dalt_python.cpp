@@ -34,6 +34,10 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     PROVIDER(outHeat, "");
     /*PROVIDER(outConductivity, "");*/
     BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
+    solver.def_readwrite("maxDelPsi0", &__Class__::maxDelPsi0, "Maximal correction for initial potential calculations (V)");
+    solver.def_readwrite("maxDelPsi", &__Class__::maxDelPsi, "Maximal correction for potential calculations (V)");
+    solver.def_readwrite("maxDelFn", &__Class__::maxDelFn, "Maximal correction for quasi-Fermi levels for electrons calculations (eV)");
+    solver.def_readwrite("maxDelFp", &__Class__::maxDelFp, "Maximal correction for quasi-Fermi levels for holes calculations (eV)");
     solver.def_readwrite("maxerrVi", &__Class__::maxerrPsiI, "Limit for the initial potential estimate updates");
     solver.def_readwrite("maxerrV0", &__Class__::maxerrPsi0, "Limit for the built-in potential updates");
     solver.def_readwrite("maxerrV", &__Class__::maxerrPsi, "Limit for the potential updates");

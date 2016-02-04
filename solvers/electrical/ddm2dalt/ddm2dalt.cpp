@@ -43,11 +43,11 @@ DriftDiffusionModel2DaltSolver<Geometry2DType>::DriftDiffusionModel2DaltSolver(c
     mFullIon(true),
     mTx(300.),
     mEx(phys::kB_eV*mTx),
-    mNx(1e18),
-    mEpsRx(12.9),
+    mNx(1e19),
+    mEpsRx(15.),
     mXx(sqrt((phys::epsilon0*phys::kB_J*mTx*mEpsRx)/(phys::qe*phys::qe*mNx))*1e3),
     //mKx(100.),
-    mMix(1000.),
+    mMix(5000.),
     mRx(((phys::kB_J*mTx*mMix*mNx)/(phys::qe*mXx*mXx))*1e8),
     mJx(((phys::kB_J*mNx)*mTx*mMix/mXx)*10.),
     //mtx(mNx/mRx),
@@ -55,11 +55,7 @@ DriftDiffusionModel2DaltSolver<Geometry2DType>::DriftDiffusionModel2DaltSolver(c
     mBx(mRx/(mNx*mNx)),
     mCx(mRx/(mNx*mNx*mNx)),
     //mHx(((mKx*mTx)/(mXx*mXx))*1e12),
-    dU(0.002),
-    maxDelPsi0(2.),
-    maxDelPsi(0.1*dU),
-    maxDelFn(1e20),
-    maxDelFp(1e20),
+    dU(0.01),
     stat(STAT_MB),
     needPsi0(true),
     //loopno(0),
@@ -76,6 +72,10 @@ DriftDiffusionModel2DaltSolver<Geometry2DType>::DriftDiffusionModel2DaltSolver(c
     outHeat(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getHeatDensities),
     //outConductivity(this, &DriftDiffusionModel2DaltSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
+    maxDelPsi0(0.1*dU),
+    maxDelPsi(0.1*dU),
+    maxDelFn(0.1*dU),
+    maxDelFp(0.1*dU),
     maxerrPsiI(1e-6),
     maxerrPsi0(1e-6),
     maxerrPsi(1e-6),
@@ -109,6 +109,10 @@ void DriftDiffusionModel2DaltSolver<Geometry2DType>::loadConfiguration(XMLReader
                 .value("MaxwellBoltzmann", STAT_MB)
                 .value("FermiDirac", STAT_FD)
                 .get(stat);
+            maxDelPsi0 = source.getAttribute<double>("maxDelPsi0", maxDelPsi0);
+            maxDelPsi = source.getAttribute<double>("maxDelPsi", maxDelPsi);
+            maxDelFn = source.getAttribute<double>("maxDelFn", maxDelFn);
+            maxDelFp = source.getAttribute<double>("maxDelFp", maxDelFp);
             maxerrPsiI = source.getAttribute<double>("maxerrVi", maxerrPsiI);
             maxerrPsi0 = source.getAttribute<double>("maxerrV0", maxerrPsi0);
             maxerrPsi = source.getAttribute<double>("maxerrV", maxerrPsi);
@@ -200,12 +204,12 @@ void DriftDiffusionModel2DaltSolver<Geometry2DType>::onInitialize()
     size = this->mesh->size();
 
     dvnPsi0.reset(size);
-    dvnFn.reset(size, 1.);
-    dvnFp.reset(size, 1.);
+    dvnFn.reset(size, 0.);
+    dvnFp.reset(size, 0.);
 
     dvePsi.reset(this->mesh->elements.size());
-    dveFn.reset(this->mesh->elements.size(), 1.);
-    dveFp.reset(this->mesh->elements.size(), 1.);
+    dveFn.reset(this->mesh->elements.size(), 0.);
+    dveFp.reset(this->mesh->elements.size(), 0.);
     dveN.reset(this->mesh->elements.size());
     dveP.reset(this->mesh->elements.size());
 
@@ -641,7 +645,19 @@ void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveN()
         double normEc0 = material->CB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
-        dveN[i] = calcN(normNc, dveFn[i], dvePsi[i], normEc0, normT);
+        size_t loleftno = e.getLoLoIndex();
+        size_t lorghtno = e.getUpLoIndex();
+        size_t upleftno = e.getLoUpIndex();
+        size_t uprghtno = e.getUpUpIndex();
+
+        double dveN_ll = calcN(normNc, dvnFn[loleftno], dvnPsi[loleftno], normEc0, normT);
+        double dveN_lr = calcN(normNc, dvnFn[lorghtno], dvnPsi[lorghtno], normEc0, normT);
+        double dveN_ul = calcN(normNc, dvnFn[upleftno], dvnPsi[upleftno], normEc0, normT);
+        double dveN_ur = calcN(normNc, dvnFn[uprghtno], dvnPsi[uprghtno], normEc0, normT);
+
+        dveN[i] = 0.25 * (dveN_ll+dveN_lr+dveN_ul+dveN_ur);
+
+        //dveN[i] = calcN(normNc, dveFn[i], dvePsi[i], normEc0, normT);
     }
 }
 
@@ -667,7 +683,19 @@ void DriftDiffusionModel2DaltSolver<Geometry2DType>::saveP()
         double normEv0 = material->VB(T, 0., '*') / mEx;
         double normT = T / mTx;
 
-        dveP[i] = calcP(normNv, dveFp[i], dvePsi[i], normEv0, normT);
+        size_t loleftno = e.getLoLoIndex();
+        size_t lorghtno = e.getUpLoIndex();
+        size_t upleftno = e.getLoUpIndex();
+        size_t uprghtno = e.getUpUpIndex();
+
+        double dveP_ll = calcP(normNv, dvnFp[loleftno], dvnPsi[loleftno], normEv0, normT);
+        double dveP_lr = calcP(normNv, dvnFp[lorghtno], dvnPsi[lorghtno], normEv0, normT);
+        double dveP_ul = calcP(normNv, dvnFp[upleftno], dvnPsi[upleftno], normEv0, normT);
+        double dveP_ur = calcP(normNv, dvnFp[uprghtno], dvnPsi[uprghtno], normEv0, normT);
+
+        dveP[i] = 0.25 * (dveP_ll+dveP_lr+dveP_ul+dveP_ur);
+
+        //dveP[i] = calcP(normNv, dveFp[i], dvePsi[i], normEv0, normT);
     }
 }
 
@@ -713,8 +741,9 @@ double DriftDiffusionModel2DaltSolver<Geometry2DType>::addCorr(DataVector<double
             corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnFn[i] += corr[i];
+            if (dvnFn[i] > 0) dvnFn[i] = 0.;
         }
-        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for electrons: {0}.", err);
+        this->writelog(LOG_DETAIL, "Maximum update for the quasi-Fermi energy level for electrons: {0}.", err);
     }
     else if (calctype == CALC_FP) {
         err = 0.;
@@ -723,8 +752,9 @@ double DriftDiffusionModel2DaltSolver<Geometry2DType>::addCorr(DataVector<double
             corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnFp[i] += corr[i];
+            if (dvnFp[i] > 0) dvnFp[i] = 0.;
         }
-        this->writelog(LOG_DETAIL, "Maximum relative update for the quasi-Fermi energy level for holes: {0}.", err);
+        this->writelog(LOG_DETAIL, "Maximum update for the quasi-Fermi energy level for holes: {0}.", err);
     }
     return err; // for Psi -> normalised (max. delPsi)
 
@@ -981,6 +1011,7 @@ double DriftDiffusionModel2DaltSolver<Geometry2DType>::doCompute(unsigned loops)
             dvnPsi[i] = dvnPsi0[i] + dU;
             dvnFn[i] = -dU;
             dvnFp[i] = -dU;
+            //this->writelog(LOG_DATA, "Skrajne dvnPsi {0} dvnFn {1} dvnFp {2} i mEx {3}: ", dvnPsi[i], dvnFn[i], dvnFp[i], mEx); // czy dla Fn i Fp tez bedzie mEx?
         }
     }
     if (novoltage) {
@@ -1279,7 +1310,7 @@ const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuas
     }*/
 
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
+    return interpolate(this->mesh, dvnFn*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
 }
 
 
@@ -1296,7 +1327,7 @@ const LazyData < double> DriftDiffusionModel2DaltSolver<Geometry2DType>::getQuas
     }*/
 
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
+    return interpolate(this->mesh, dvnFp*mEx, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
 }
 
 

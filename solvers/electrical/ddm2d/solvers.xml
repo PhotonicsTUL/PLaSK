@@ -12,9 +12,16 @@
       Configuration of the self-consistent loop.
       <attr name="stat" label="Statistics" type="choice">
         Statistics assumed in drift-diffusion equations.
-        <choice>MaxwellBoltzmann</choice>
-        <choice>FermiDirac</choice>
+        <choice>Maxwell-Boltzmann</choice>
+        <choice>Fermi-Dirac</choice>
       </attr>
+      <attr name="conttype" label="Type of contacts" type="choice">
+        Type of contacts.
+        <choice>Ohmic</choice>
+        <choice>Schottky</choice>
+      </attr>
+      <attr name="SchottkyP" label="Schottky barrier for p-type contact" type="float">Schottky barrier for p-type contact.</attr>
+      <attr name="SchottkyN" label="Schottky barrier for n-type contact" type="float">Schottky barrier for n-type contact.</attr>
       <attr name="Rsrh" label="SRH recombination" type="bool">Consider Shockley-Read-Hall recombination.</attr>
       <attr name="Rrad" label="Radiative recombination" type="bool">Consider radiative recombination.</attr>
       <attr name="Raug" label="Auger recombination" type="bool">Consider Auger recombination.</attr>

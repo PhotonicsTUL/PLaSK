@@ -15,6 +15,10 @@
         <choice>MaxwellBoltzmann</choice>
         <choice>FermiDirac</choice>
       </attr>
+      <attr name="maxDelPsi0" label="Max correction for initial potential calculations" type="float">Maximal correction for initial potential calculations (V)</attr>
+      <attr name="maxDelPsi" label="Max correction for potential calculations" type="float">Maximal correction for potential calculations (V)</attr>
+      <attr name="maxDelFn" label="Max correction for quasi-Fermi levels for electrons calculations" type="float">Maximal correction for quasi-Fermi levels for electrons calculations (eV)</attr>
+      <attr name="maxDelFp" label="Max correction for quasi-Fermi levels for holes calculations" type="float">Maximal correction for quasi-Fermi levels for holes calculations (eV)</attr>
       <attr name="maxerrVi" label="Max initial potential update" type="float">Limit for the initial potential estimate updates.</attr>
       <attr name="maxerrV0" label="Max built-in potential update" type="float">Limit for the built-in potential updates.</attr>
       <attr name="maxerrV" label="Max potential update" type="float">Limit for the potential updates.</attr>

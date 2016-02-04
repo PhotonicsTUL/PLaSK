@@ -32,6 +32,12 @@ enum CalcType {
     CALC_FP             ///< Quasi-Fermi level for holes
 };
 
+/// Contact types
+enum ContType {
+    OHMIC,              ///< Ohmic contacts
+    SCHOTTKY            ///< Schottky contacts
+};
+
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
@@ -66,6 +72,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxDelFp;   ///< maximal correction for quasi-Fermi levels for holes calculations (eV)
 
     Stat stat;  ///< carriers statistics
+    ContType conttype; ///< type of contacts (ohmic/Schottky)
 
     //int loopno;                 ///< Number of completed loops
     //double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
@@ -158,11 +165,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
         switch (stat) {
             //case STAT_MB: return ( iNc * iFnEta * exp(iPsi-iEc0) );
             case STAT_MB:
-                this->writelog(LOG_INFO, "Maxwell-Boltzmann statistics");
+                //this->writelog(LOG_INFO, "Maxwell-Boltzmann statistics");
                 return ( iNc * pow(iFnEta,1./iT) * exp((iPsi-iEc0)/iT) );
             //case STAT_FD: return ( iNc * fermiDiracHalf(log(iFnEta) + iPsi - iEc0) );
             case STAT_FD:
-                this->writelog(LOG_INFO, "Fermi-Dirac statistics");
+                //this->writelog(LOG_INFO, "Fermi-Dirac statistics");
                 return ( iNc * fermiDiracHalf((log(iFnEta) + iPsi - iEc0)/iT) );
         }
         return NAN;
@@ -279,6 +286,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     bool mRaug;    ///< Auger recombination is taken into account
     bool mPol;     ///< polarization (GaN is the substrate)
     bool mFullIon; ///< dopant ionization = 100%
+
+    double mSchottkyP;  ///< Schottky barrier for p-type contact (eV)
+    double mSchottkyN;  ///< Schottky barrier for n-type contact (eV)
 
     double maxerrPsiI;  ///< Maximum estimated error for initial potential during all iterations (useful for single calculations managed by external python script)
     double maxerrPsi0;  ///< Maximum estimated error for potential at U = 0 V during all iterations (useful for single calculations managed by external python script)

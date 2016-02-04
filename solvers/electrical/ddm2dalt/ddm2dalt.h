@@ -66,10 +66,6 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DaltSolver: public SolverWithMesh<Ge
     double mPx;    ///< polarization (C/m^2)
 
     double dU;         ///< default voltage step (V)
-    double maxDelPsi0; ///< maximal correction for initial potential calculations (V)
-    double maxDelPsi;  ///< maximal correction for potential calculations (V)
-    double maxDelFn;   ///< maximal correction for quasi-Fermi levels for electrons calculations (eV)
-    double maxDelFp;   ///< maximal correction for quasi-Fermi levels for holes calculations (eV)
 
     Stat stat;  ///< carriers statistics
 
@@ -276,6 +272,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DaltSolver: public SolverWithMesh<Ge
 
     Algorithm algorithm;    ///< Factorization algorithm to use
 
+    double maxDelPsi0;  ///< Maximal correction for initial potential calculations (V)
+    double maxDelPsi;   ///< Maximal correction for potential calculations (V)
+    double maxDelFn;    ///< Maximal correction for quasi-Fermi levels for electrons calculations (eV)
+    double maxDelFp;    ///< Maximal correction for quasi-Fermi levels for holes calculations (eV)
     double maxerrPsiI;  ///< Maximum estimated error for initial potential during all iterations (useful for single calculations managed by external python script)
     double maxerrPsi0;  ///< Maximum estimated error for potential at U = 0 V during all iterations (useful for single calculations managed by external python script)
     double maxerrPsi;   ///< Maximum estimated error for potential during all iterations (useful for single calculations managed by external python script)

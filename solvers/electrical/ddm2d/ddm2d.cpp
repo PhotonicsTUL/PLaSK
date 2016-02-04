@@ -56,6 +56,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     maxDelFn(1e20),
     maxDelFp(1e20),
     stat(STAT_MB),
+    conttype(OHMIC),
     needPsi0(true),
     //loopno(0),
     //maxerr(0.05),
@@ -76,6 +77,8 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     mRaug(false),
     mPol(false),
     mFullIon(true),
+    mSchottkyP(0.),
+    mSchottkyN(0.),
     maxerrPsiI(1e-6),
     maxerrPsi0(1e-6),
     maxerrPsi(1e-6),
@@ -106,9 +109,15 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             this->readBoundaryConditions(manager, source, voltage_boundary);
         else if (param == "loop") {
             stat = source.enumAttribute<Stat>("stat")
-                .value("MaxwellBoltzmann", STAT_MB)
-                .value("FermiDirac", STAT_FD)
+                .value("Maxwell-Boltzmann", STAT_MB)
+                .value("Fermi-Dirac", STAT_FD)
                 .get(stat);
+            conttype = source.enumAttribute<ContType>("conttype")
+                .value("Ohmic", OHMIC)
+                .value("Schottky", SCHOTTKY)
+                .get(conttype);
+            mSchottkyP = source.getAttribute<double>("SchottkyP", mSchottkyP);
+            mSchottkyN = source.getAttribute<double>("SchottkyN", mSchottkyN);
             mRsrh = source.getAttribute<bool>("Rsrh", mRsrh);
             mRrad = source.getAttribute<bool>("Rrad", mRrad);
             mRaug = source.getAttribute<bool>("Raug", mRaug);
@@ -400,7 +409,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
             if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    this->writelog(LOG_DATA, "Recombination SRH");
+                    //this->writelog(LOG_DATA, "Recombination SRH");
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi / normAh  + p / normAe)
@@ -408,13 +417,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    this->writelog(LOG_DATA, "Recombination RAD");
+                    //this->writelog(LOG_DATA, "Recombination RAD");
                     double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNe * yn * p);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    this->writelog(LOG_DATA, "Recombination AUG");
+                    //this->writelog(LOG_DATA, "Recombination AUG");
                     double normCe = material->Ce(T) / mCx;
                     double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * ((normCe * (2. * n * p - normNi * normNi) + normCh * p * p)));
@@ -452,7 +461,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
             if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
-                    this->writelog(LOG_DATA, "Recombination SRH");
+                    //this->writelog(LOG_DATA, "Recombination SRH");
                     double normAe = material->Ae(T) / mAx;
                     double normAh = material->Ah(T) / mAx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi / normAe + n / normAh)
@@ -460,13 +469,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                     ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
                 }
                 if (mRrad) {
-                    this->writelog(LOG_DATA, "Recombination RAD");
+                    //this->writelog(LOG_DATA, "Recombination RAD");
                     double normB = material->B(T) / mBx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normB * normNh * yp * n);
                     ff += ((hx*0.5) * (hy*0.5) * normB * (n * p - normNi * normNi));
                 }
                 if (mRaug) {
-                    this->writelog(LOG_DATA, "Recombination AUG");
+                    //this->writelog(LOG_DATA, "Recombination AUG");
                     double normCe = material->Ce(T) / mCx;
                     double normCh = material->Ch(T) / mCx;
                     gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * ((normCh * (2. * n * p - normNi * normNi) + normCe * n * n)));
@@ -499,7 +508,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 double normNaIon = normNa;
                 if (!mFullIon)
                 {
-                    this->writelog(LOG_RESULT, "Full ionization false");
+                    //this->writelog(LOG_RESULT, "Full ionization false");
                     double gD(2.), gA(4.);
                     double normNdTmp = (normNc/gD)*exp(-normEd);
                     double normNaTmp = (normNv/gA)*exp(-normEa);
@@ -635,7 +644,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveFpKsi()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 {
-    this->writelog(LOG_DETAIL, "Saving electron concentration");
+    //this->writelog(LOG_DETAIL, "Saving electron concentration");
 
     for (auto e: this->mesh->elements)
     {
@@ -660,7 +669,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 {
-    this->writelog(LOG_DETAIL, "Saving hole concentration");
+    //this->writelog(LOG_DETAIL, "Saving hole concentration");
 
     for (auto e: this->mesh->elements)
     {
@@ -687,7 +696,7 @@ template <typename Geometry2DType>
 template <CalcType calctype>
 double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>,double>& vconst)
 {  
-    this->writelog(LOG_DEBUG, "Adding corrections");
+    //this->writelog(LOG_DEBUG, "Adding corrections");
 
     double err;
 
@@ -815,6 +824,19 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
         dvnPsi0[uprghtno] += epsi;
     }
     divideByElements(dvnPsi0);
+
+    if (conttype == SCHOTTKY) {
+        // Store boundary conditions for current mesh
+        auto vconst = voltage_boundary(this->mesh, this->geometry);
+        for (auto cond: vconst) {
+            for (auto i: cond.place) {
+                if (cond.value == 0)
+                    dvnPsi0[i] += mSchottkyN/mEx;
+                else if (cond.value != 0)
+                    dvnPsi0[i] += mSchottkyP/mEx;
+            }
+        }
+    }
 }
 
 template <typename Geometry2DType>
@@ -844,7 +866,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
 
         if (!mFullIon)
         {
-            this->writelog(LOG_RESULT, "Full ionization false");
+            //this->writelog(LOG_RESULT, "Full ionization false");
             double gD(2.), gA(4.);
             double iNdTmp = (iNc/gD)*exp(-iEd);
             double iNaTmp = (iNv/gA)*exp(-iEa);
