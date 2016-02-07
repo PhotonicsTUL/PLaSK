@@ -185,17 +185,17 @@ class NewSolverDialog(QtGui.QDialog):
         self.category.addItem("FILTER")
         self.category.insertSeparator(len(CATEGORIES))
         self.category.currentIndexChanged.connect(self.category_changed)
-        layout.addRow("Category:", self.category)
+        layout.addRow("C&ategory:", self.category)
 
         self.solver = QtGui.QComboBox()
         self.solver.setEditable(True)
         if MODELS:
             self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
             self.solver.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
-        layout.addRow("Solver:", self.solver)
+        layout.addRow("&Solver:", self.solver)
 
         self.name = QtGui.QLineEdit()
-        layout.addRow("Name:", self.name)
+        layout.addRow("&Name:", self.name)
 
         button_box = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)

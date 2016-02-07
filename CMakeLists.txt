@@ -99,6 +99,7 @@ option(LICENSE_CHECKING "Perform license check" OFF)
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
+option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
@@ -722,7 +723,7 @@ endif()
 
 # ----------===== Public headers for writing material databases =====--------
 
-if(NOT INSTALL_DEV)
+if(NOT INSTALL_DEV AND INSTALL_MATERIALS_DEV)
     install(FILES plask/material.hpp plask/math.h plask/memory.h plask/exceptions.h plask/parallel.h DESTINATION include/plask COMPONENT dev)
     install(FILES plask/material/material.h plask/material/db.h  DESTINATION include/plask/material COMPONENT dev)
     install(FILES plask/utils/format.h plask/utils/string.h plask/utils/system.h DESTINATION include/plask/utils COMPONENT dev)
