@@ -6,6 +6,8 @@
 
 namespace plask {
 
+const char* Extrusion::NAME = "extrusion";
+
 std::string Extrusion::getTypeName() const { return NAME; }
 
 void Extrusion::setLength(double new_length) {

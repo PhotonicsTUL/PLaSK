@@ -4,6 +4,8 @@
 
 namespace plask {
 
+const char* Cylinder::NAME = "cylinder";
+
 Cylinder::Cylinder(double radius, double height, const shared_ptr<Material>& material)
     : GeometryObjectLeaf<3>(material), radius(radius), height(height)
 {

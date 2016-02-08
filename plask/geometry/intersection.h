@@ -13,9 +13,7 @@ namespace plask {
 template <int dim>
 struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override { return NAME; }
 

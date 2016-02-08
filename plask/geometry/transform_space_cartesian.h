@@ -24,7 +24,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
-    static constexpr const char* NAME = "extrusion";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 

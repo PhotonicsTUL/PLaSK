@@ -24,7 +24,7 @@ struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryObjectLeaf<dim>::Box Box;
 
-    static constexpr const char* NAME = dim == 2 ? "circle" : "sphere";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 

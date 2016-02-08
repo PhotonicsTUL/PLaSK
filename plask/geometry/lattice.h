@@ -59,9 +59,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
         warmOverlaping();
     }
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     std::string getTypeName() const override { return NAME; }
 
@@ -133,7 +131,7 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
 
     using GeometryObjectTransform<3>::getChild;
 
-   static constexpr const char* NAME = "lattice";
+    static const char* NAME;
 
     /// Basis vectors
     DVec vec0, vec1;

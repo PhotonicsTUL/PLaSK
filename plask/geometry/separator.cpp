@@ -6,6 +6,11 @@ template < int dim >
 GeometryObject::Type GeometryObjectSeparator<dim>::getType() const { return GeometryObject::TYPE_SEPARATOR; }
 
 template < int dim >
+const char* GeometryObjectSeparator<dim>::NAME = dim == 2 ?
+            ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template < int dim >
 std::string GeometryObjectSeparator<dim>::getTypeName() const { return NAME; }
 
 template < int dim >

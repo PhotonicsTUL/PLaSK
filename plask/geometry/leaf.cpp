@@ -157,6 +157,11 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
 }
 
 template <int dim>
+const char* Block<dim>::NAME = dim == 2 ?
+            ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 std::string Block<dim>::getTypeName() const { return NAME; }
 
 template <int dim>

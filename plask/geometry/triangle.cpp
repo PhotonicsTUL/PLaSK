@@ -5,6 +5,8 @@
 
 namespace plask {
 
+const char* Triangle::NAME = "triangle";
+
 std::string Triangle::getTypeName() const {
     return NAME;
 }

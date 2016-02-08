@@ -6,6 +6,11 @@
 namespace plask {
 
 template <int dim>
+const char* Intersection<dim>::NAME = dim == 2 ?
+            ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
     return (this->hasChild() && this->inEnvelop(p)) ?
                 this->_child->getMaterial(p) :

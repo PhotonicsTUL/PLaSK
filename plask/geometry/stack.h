@@ -177,7 +177,7 @@ public:
 
     ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
 
-    static constexpr const char* NAME = "shelf";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override { return NAME; }
 
@@ -300,9 +300,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     using StackContainerBaseImpl<dim>::children;
     using StackContainerBaseImpl<dim>::stackHeights;
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override { return NAME; }
 

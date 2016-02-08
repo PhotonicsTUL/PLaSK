@@ -36,9 +36,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     using GeometryObjectContainer<dim>::children;
     using GeometryObjectContainer<dim>::shared_from_this;
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     TranslationContainer(): cache(nullptr) {}
 

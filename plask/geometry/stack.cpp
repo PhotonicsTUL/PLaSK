@@ -289,6 +289,8 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
 }
 
 
+const char* ShelfContainer2D::NAME = "shelf";
+
 PathHints::Hint ShelfContainer2D::addGap(double size) {
     return addUnsafe(plask::make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));
 }
@@ -353,6 +355,10 @@ void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const A
     dest_xml_object.attr(require_equal_heights_attr, false);
 }
 
+template <int dim>
+const char* StackContainer<dim>::NAME = dim == 2 ?
+            ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
 template <typename UpperClass>
 bool MultiStackContainer<UpperClass>::reduceHeight(double& height) const {

@@ -16,9 +16,7 @@ namespace plask {
 template <int dim>
 struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 
@@ -90,9 +88,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
 template <int dim>
 struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 

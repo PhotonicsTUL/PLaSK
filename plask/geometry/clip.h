@@ -12,9 +12,7 @@ namespace plask {
 template <int dim>
 struct PLASK_API Clip: public GeometryObjectTransform<dim> {
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override { return NAME; }
 

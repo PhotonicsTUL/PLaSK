@@ -30,9 +30,7 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
 
     virtual GeometryObject::Type getType() const override;
 
-    static constexpr const char* NAME = dim == 2 ?
-                ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 

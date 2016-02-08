@@ -5,6 +5,9 @@
 namespace plask {
 
 template <int dim>
+const char* Circle<dim>::NAME = dim == 2 ? "circle" : "sphere";
+
+template <int dim>
 std::string Circle<dim>::getTypeName() const {
     return NAME;
 }

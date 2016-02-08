@@ -12,6 +12,11 @@
 namespace plask {
 
 template <int dim>
+const char* ArrangeContainer<dim>::NAME = dim == 2 ?
+            ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 std::pair<int, int> ArrangeContainer<dim>::bounds(const typename ArrangeContainer<dim>::DVec &vec) const {
     if (!this->hasChild() || repeat_count == 0) return std::make_pair(1, 0);
     auto box = _child->getBoundingBox();
@@ -299,6 +304,7 @@ struct SegmentsIterator {
 };
 
 
+const char* Lattice::NAME = "lattice";
 
 void Lattice::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {

@@ -5,6 +5,11 @@
 namespace plask {
 
 template <int dim>
+const char* TranslationContainer<dim>::NAME = dim == 2 ?
+            ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 TranslationContainer<dim>::~TranslationContainer() {
     delete cache.load();
 }

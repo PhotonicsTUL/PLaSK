@@ -6,6 +6,11 @@
 namespace plask {
 
 template <int dim>
+const char* Translation<dim>::NAME = dim == 2 ?
+            ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 std::string Translation<dim>::getTypeName() const { return NAME; }
 
 template <int dim>

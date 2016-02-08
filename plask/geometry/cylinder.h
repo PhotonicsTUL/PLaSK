@@ -14,7 +14,7 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
 
     double radius, height;
 
-    static constexpr const char* NAME = "cylinder";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override { return NAME; }
 

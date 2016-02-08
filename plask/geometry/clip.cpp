@@ -8,6 +8,11 @@
 namespace plask {
 
 template <int dim>
+const char* Clip<dim>::NAME = dim == 2 ?
+            ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 shared_ptr<Material> Clip<dim>::getMaterial(const typename Clip<dim>::DVec &p) const {
     return (this->hasChild() && clipBox.contains(p)) ?
                 this->_child->getMaterial(p) :

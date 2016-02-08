@@ -5,6 +5,11 @@
 namespace plask {
 
 template <int dim>
+const char* Flip<dim>::NAME = dim == 2 ?
+            ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+
+template <int dim>
 std::string Flip<dim>::getTypeName() const { return NAME; }
 
 template <int dim>
@@ -50,6 +55,11 @@ template <int dim>
 void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
+
+template <int dim>
+const char* Mirror<dim>::NAME = dim == 2 ?
+            ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+            ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
 template <int dim>
 std::string Mirror<dim>::getTypeName() const { return NAME; }

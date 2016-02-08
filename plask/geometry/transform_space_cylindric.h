@@ -22,7 +22,7 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
             throw Exception("Child of Revolution must have bouding box with possitive tran. coordinates (when auto clipping is off).");
     }
 
-    static constexpr const char* NAME = "revolution";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 

@@ -21,7 +21,7 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryObjectLeaf<2>::Box Box;
 
-    static constexpr const char* NAME = "triangle";
+    static const char* NAME;
 
     virtual std::string getTypeName() const override;
 
