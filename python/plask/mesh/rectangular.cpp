@@ -774,19 +774,19 @@ void register_divide_generator() {
 
 
 template <int dim>
-shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object small, py::object large, py::object factor,
+shared_ptr<RectilinearMeshSmoothGenerator<dim>> RectilinearMeshSmoothGenerator__init__(py::object small_, py::object large, py::object factor,
                                                                                        double aspect,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
     auto result = plask::make_shared<RectilinearMeshSmoothGenerator<dim>>();
-    if (small != py::object()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small);
-    if (large != py::object()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, small);
+    if (small_ != py::object()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small_);
+    if (large != py::object()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, large);
     if (factor != py::object()) detail::SmoothGeneratorParamMethods<dim>::setFactor(*result, factor);
     result->aspect = aspect;
     result->warn_multiple = warn_multiple;
     result->warn_missing = warn_missing;
     result->warn_outside = warn_outside;
     return result;
-};
+}
 
 template <int dim>
 void register_smooth_generator() {
