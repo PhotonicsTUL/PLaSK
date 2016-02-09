@@ -23,6 +23,7 @@ if(MSVC)    # flags needed by Visual Studio:
     # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
     add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
+    add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
 else(MSVC)
 	if(MINGW)
 		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -289,7 +290,9 @@ add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
 
 # cppformat
-list(APPEND plask_src extlib/cppformat/format.cc)
+if (NOT MSVC)
+    list(APPEND plask_src extlib/cppformat/format.cc)
+endif (NOT MSVC)
 
 # ---------- PLaSK library --------------------------------------------
 
