@@ -278,21 +278,8 @@ class PrecisionHandler :
   }
 };
 
-template <typename T, typename U>
-struct is_same {
-  enum { value = 0 };
-};
-
+// Converts an integer argument to an integral type T for printf.
 template <typename T>
-struct is_same<T, T> {
-  enum { value = 1 };
-};
-
-// An argument visitor that converts an integer argument to T for printf,
-// if T is an integral type. If T is void, the argument is converted to
-// corresponding signed or unsigned type depending on the type specifier:
-// 'd' and 'i' - signed, other - unsigned)
-template <typename T = void>
 class ArgConverter : public fmt::internal::ArgVisitor<ArgConverter<T>, void> {
  private:
   fmt::internal::Arg &arg_;
@@ -313,25 +300,21 @@ class ArgConverter : public fmt::internal::ArgVisitor<ArgConverter<T>, void> {
   void visit_any_int(U value) {
     bool is_signed = type_ == 'd' || type_ == 'i';
     using fmt::internal::Arg;
-    typedef typename fmt::internal::Conditional<
-        is_same<T, void>::value, U, T>::type TargetType;
-    if (sizeof(TargetType) <= sizeof(int)) {
+    if (sizeof(T) <= sizeof(int)) {
       // Extra casts are used to silence warnings.
       if (is_signed) {
         arg_.type = Arg::INT;
-        arg_.int_value = static_cast<int>(static_cast<TargetType>(value));
+        arg_.int_value = static_cast<int>(static_cast<T>(value));
       } else {
         arg_.type = Arg::UINT;
-        typedef typename fmt::internal::MakeUnsigned<TargetType>::Type Unsigned;
-        arg_.uint_value = static_cast<unsigned>(static_cast<Unsigned>(value));
+        arg_.uint_value = static_cast<unsigned>(
+            static_cast<typename fmt::internal::MakeUnsigned<T>::Type>(value));
       }
     } else {
       if (is_signed) {
         arg_.type = Arg::LONG_LONG;
-        // glibc's printf doesn't sign extend arguments of smaller types:
-        //   std::printf("%lld", -42);  // prints "4294967254"
-        // but we don't have to do the same because it's a UB.
-        arg_.long_long_value = value;
+        arg_.long_long_value =
+            static_cast<typename fmt::internal::MakeUnsigned<U>::Type>(value);
       } else {
         arg_.type = Arg::ULONG_LONG;
         arg_.ulong_long_value =
@@ -633,7 +616,7 @@ void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
         return;
       case internal::Arg::NAMED_ARG:
         named_arg = static_cast<const NamedArg*>(args.values_[i].pointer);
-        map_.push_back(Pair(named_arg->name, *named_arg));
+        map_.insert(Pair(named_arg->name, *named_arg));
         break;
       default:
         /*nothing*/;
@@ -645,7 +628,7 @@ void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
     internal::Arg::Type arg_type = args.type(i);
     if (arg_type == internal::Arg::NAMED_ARG) {
       named_arg = static_cast<const NamedArg*>(args.args_[i].pointer);
-      map_.push_back(Pair(named_arg->name, *named_arg));
+      map_.insert(Pair(named_arg->name, *named_arg));
     }
   }
   for (unsigned i = ArgList::MAX_PACKED_ARGS;/*nothing*/; ++i) {
@@ -654,7 +637,7 @@ void fmt::internal::ArgMap<Char>::init(const ArgList &args) {
       return;
     case internal::Arg::NAMED_ARG:
       named_arg = static_cast<const NamedArg*>(args.args_[i].pointer);
-      map_.push_back(Pair(named_arg->name, *named_arg));
+      map_.insert(Pair(named_arg->name, *named_arg));
       break;
     default:
       /*nothing*/;
@@ -826,7 +809,7 @@ void fmt::internal::PrintfFormatter<Char>::format(
       break;
     default:
       --s;
-      ArgConverter<void>(arg, *s).visit(arg);
+      ArgConverter<int>(arg, *s).visit(arg);
     }
 
     // Parse type.
@@ -897,13 +880,6 @@ FMT_FUNC int fmt::fprintf(std::FILE *f, CStringRef format, ArgList args) {
   printf(w, format, args);
   std::size_t size = w.size();
   return std::fwrite(w.data(), 1, size, f) < size ? -1 : static_cast<int>(size);
-}
-
-FMT_FUNC int fmt::fprintf(std::ostream &os, CStringRef format, ArgList args) {
-  MemoryWriter w;
-  printf(w, format, args);
-  os.write(w.data(), w.size());
-  return static_cast<int>(w.size());
 }
 
 #ifndef FMT_HEADER_ONLY

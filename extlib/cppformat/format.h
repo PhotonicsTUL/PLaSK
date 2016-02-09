@@ -28,6 +28,14 @@
 #ifndef FMT_FORMAT_H_
 #define FMT_FORMAT_H_
 
+#if defined _MSC_VER && _MSC_VER <= 1500
+typedef unsigned int       uint32_t;
+typedef unsigned long long uint64_t;
+typedef long long          intmax_t;
+#else
+#include <stdint.h>
+#endif
+
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -36,8 +44,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <utility>
+#include <map>
 
 #ifndef FMT_USE_IOSTREAMS
 # define FMT_USE_IOSTREAMS 1
@@ -57,23 +64,50 @@
 # include <iterator>
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER <= 1500
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
-typedef __int64          intmax_t;
-#else
-#include <stdint.h>
-#endif
-
-#if !defined(FMT_HEADER_ONLY) && defined(_WIN32)
+#if !defined(FMT_HEADER_ONLY) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32))
 # ifdef FMT_EXPORT
 #  define FMT_API __declspec(dllexport)
-# elif defined(FMT_SHARED)
+# else
 #  define FMT_API __declspec(dllimport)
 # endif
-#endif
-#ifndef FMT_API
+#else
 # define FMT_API
+#endif
+
+#ifdef _MSC_VER
+# include <intrin.h>  // _BitScanReverse, _BitScanReverse64
+
+namespace fmt {
+namespace internal {
+# pragma intrinsic(_BitScanReverse)
+inline uint32_t clz(uint32_t x) {
+  unsigned long r = 0;
+  _BitScanReverse(&r, x);
+  return 31 - r;
+}
+# define FMT_BUILTIN_CLZ(n) fmt::internal::clz(n)
+
+# ifdef _WIN64
+#  pragma intrinsic(_BitScanReverse64)
+# endif
+
+inline uint32_t clzll(uint64_t x) {
+  unsigned long r = 0;
+# ifdef _WIN64
+  _BitScanReverse64(&r, x);
+# else
+  // Scan the high 32 bits.
+  if (_BitScanReverse(&r, static_cast<uint32_t>(x >> 32)))
+    return 63 - (r + 32);
+
+  // Scan the low 32 bits.
+  _BitScanReverse(&r, static_cast<uint32_t>(x));
+# endif
+  return 63 - r;
+}
+# define FMT_BUILTIN_CLZLL(n) fmt::internal::clzll(n)
+}
+}
 #endif
 
 #ifdef __GNUC__
@@ -215,67 +249,6 @@ typedef __int64          intmax_t;
 
 #ifndef FMT_ASSERT
 # define FMT_ASSERT(condition, message) assert((condition) && message)
-#endif
-
-
-#if FMT_GCC_VERSION >= 400 || FMT_HAS_BUILTIN(__builtin_clz)
-# define FMT_BUILTIN_CLZ(n) __builtin_clz(n)
-#endif
-
-#if FMT_GCC_VERSION >= 400 || FMT_HAS_BUILTIN(__builtin_clzll)
-# define FMT_BUILTIN_CLZLL(n) __builtin_clzll(n)
-#endif
-
-// Some compilers masquerade as both MSVC and GCC-likes or 
-// otherwise support __builtin_clz and __builtin_clzll, so
-// only define FMT_BUILTIN_CLZ using the MSVC intrinsics
-// if the clz and clzll builtins are not available.
-#if defined(_MSC_VER) && !defined(FMT_BUILTIN_CLZLL)
-# include <intrin.h>  // _BitScanReverse, _BitScanReverse64
-
-namespace fmt {
-namespace internal {
-# pragma intrinsic(_BitScanReverse)
-inline uint32_t clz(uint32_t x) {
-  unsigned long r = 0;
-  _BitScanReverse(&r, x);
-
-  assert(x != 0);
-  // Static analysis complains about using uninitialized data
-  // "r", but the only way that can happen is if "x" is 0, 
-  // which the callers guarantee to not happen.
-# pragma warning(suppress: 6102)
-  return 31 - r;
-}
-# define FMT_BUILTIN_CLZ(n) fmt::internal::clz(n)
-
-# ifdef _WIN64
-#  pragma intrinsic(_BitScanReverse64)
-# endif
-
-inline uint32_t clzll(uint64_t x) {
-  unsigned long r = 0;
-# ifdef _WIN64
-  _BitScanReverse64(&r, x);
-# else
-  // Scan the high 32 bits.
-  if (_BitScanReverse(&r, static_cast<uint32_t>(x >> 32)))
-    return 63 - (r + 32);
-
-  // Scan the low 32 bits.
-  _BitScanReverse(&r, static_cast<uint32_t>(x));
-# endif
-
-  assert(x != 0);
-  // Static analysis complains about using uninitialized data
-  // "r", but the only way that can happen is if "x" is 0, 
-  // which the callers guarantee to not happen.
-# pragma warning(suppress: 6102)
-  return 63 - r;
-}
-# define FMT_BUILTIN_CLZLL(n) fmt::internal::clzll(n)
-}
-}
 #endif
 
 namespace fmt {
@@ -629,8 +602,8 @@ void Buffer<T>::append(const U *begin, const U *end) {
 
 namespace internal {
 
-// A memory buffer for trivially copyable/constructible types with the first SIZE
-// elements stored in the object itself.
+// A memory buffer for POD types with the first SIZE elements stored in
+// the object itself.
 template <typename T, std::size_t SIZE, typename Allocator = std::allocator<T> >
 class MemoryBuffer : private Allocator, public Buffer<T> {
  private:
@@ -819,6 +792,13 @@ struct FMT_API BasicData {
 
 typedef BasicData<> Data;
 
+#if FMT_GCC_VERSION >= 400 || FMT_HAS_BUILTIN(__builtin_clz)
+# define FMT_BUILTIN_CLZ(n) __builtin_clz(n)
+#endif
+
+#if FMT_GCC_VERSION >= 400 || FMT_HAS_BUILTIN(__builtin_clzll)
+# define FMT_BUILTIN_CLZLL(n) __builtin_clzll(n)
+#endif
 
 #ifdef FMT_BUILTIN_CLZLL
 // Returns the number of decimal digits in n. Leading zeros are not counted
@@ -921,11 +901,11 @@ class UTF16ToUTF8 {
 };
 
 FMT_API void format_windows_error(fmt::Writer &out, int error_code,
-                                  fmt::StringRef message) FMT_NOEXCEPT;
+                                   fmt::StringRef message) FMT_NOEXCEPT;
 #endif
 
 FMT_API void format_system_error(fmt::Writer &out, int error_code,
-                                 fmt::StringRef message) FMT_NOEXCEPT;
+                                  fmt::StringRef message) FMT_NOEXCEPT;
 
 // A formatting argument value.
 struct Value {
@@ -968,8 +948,8 @@ struct Value {
   };
 };
 
-// A formatting argument. It is a trivially copyable/constructible type to
-// allow storage in internal::MemoryBuffer.
+// A formatting argument. It is a POD type to allow storage in
+// internal::MemoryBuffer.
 struct Arg : Value {
   Type type;
 };
@@ -1230,27 +1210,17 @@ class MakeValue : public Arg {
   static uint64_t type(const NamedArg<Char_> &) { return Arg::NAMED_ARG; }
 };
 
-template <typename Formatter>
-class MakeArg : public Arg {
-public:
-  MakeArg() {
-    type = Arg::NONE;
-  }
-  
-  template <typename T>
-  MakeArg(const T &value)
-  : Arg(MakeValue<Formatter>(value)) {
-    type = static_cast<Arg::Type>(MakeValue<Formatter>::type(value));
-  }
-};
-
 template <typename Char>
 struct NamedArg : Arg {
   BasicStringRef<Char> name;
 
+  typedef internal::MakeValue< BasicFormatter<Char> > MakeValue;
+
   template <typename T>
   NamedArg(BasicStringRef<Char> argname, const T &value)
-  : Arg(MakeArg< BasicFormatter<Char> >(value)), name(argname) {}
+  : Arg(MakeValue(value)), name(argname) {
+    type = static_cast<Arg::Type>(MakeValue::type(value));
+  }
 };
 
 #define FMT_DISPATCH(call) static_cast<Impl*>(this)->call
@@ -1672,7 +1642,7 @@ namespace internal {
 template <typename Char>
 class ArgMap {
  private:
-  typedef std::vector<std::pair<fmt::BasicStringRef<Char>, internal::Arg> > MapType;
+  typedef std::map<fmt::BasicStringRef<Char>, internal::Arg> MapType;
   typedef typename MapType::value_type Pair;
 
   MapType map_;
@@ -1681,13 +1651,8 @@ class ArgMap {
   FMT_API void init(const ArgList &args);
 
   const internal::Arg* find(const fmt::BasicStringRef<Char> &name) const {
-    // The list is unsorted, so just return the first matching name.
-    for (typename MapType::const_iterator it = map_.begin(), end = map_.end();
-         it != end; ++it) {
-      if (it->first == name)
-        return &it->second;
-    }
-    return 0;
+    typename MapType::const_iterator it = map_.find(name);
+    return it != map_.end() ? &it->second : 0;
   }
 };
 
@@ -1869,16 +1834,14 @@ class PrintfFormatter : private FormatterBase {
 
  public:
   explicit PrintfFormatter(const ArgList &args) : FormatterBase(args) {}
-  FMT_API void format(BasicWriter<Char> &writer,
-                      BasicCStringRef<Char> format_str);
+  FMT_API void format(BasicWriter<Char> &writer, BasicCStringRef<Char> format_str);
 };
 }  // namespace internal
 
-/** This template formats data and writes the output to a writer. */
+// A formatter.
 template <typename CharType>
 class BasicFormatter : private internal::FormatterBase {
  public:
-  /** The character type for the output. */
   typedef CharType Char;
 
  private:
@@ -1900,23 +1863,13 @@ class BasicFormatter : private internal::FormatterBase {
   internal::Arg parse_arg_name(const Char *&s);
 
  public:
-  /**
-   \rst
-   Constructs a ``BasicFormatter`` object. References to the arguments and
-   the writer are stored in the formatter object so make sure they have
-   appropriate lifetimes.
-   \endrst
-   */
   BasicFormatter(const ArgList &args, BasicWriter<Char> &w)
     : internal::FormatterBase(args), writer_(w) {}
 
-  /** Returns a reference to the writer associated with this formatter. */
   BasicWriter<Char> &writer() { return writer_; }
 
-  /** Formats stored arguments and writes the output to the writer. */
   void format(BasicCStringRef<Char> format_str);
 
-  // Formats a single argument and advances format_str, a format string pointer.
   const Char *format(const Char *&format_str, const internal::Arg &arg);
 };
 
@@ -1947,23 +1900,16 @@ inline uint64_t make_type(const T &arg) {
   return MakeValue< BasicFormatter<char> >::type(arg);
 }
 
-template <unsigned N, bool/*IsPacked*/= (N < ArgList::MAX_PACKED_ARGS)>
-struct ArgArray;
-
 template <unsigned N>
-struct ArgArray<N, true/*IsPacked*/> {
-  typedef Value Type[N > 0 ? N : 1];
-  
-  template <typename Formatter, typename T>
-  static Value make(const T &value) { return MakeValue<Formatter>(value); }
-};
+struct ArgArray {
+  // Computes the argument array size by adding 1 to N, which is the number of
+  // arguments, if N is zero, because array of zero size is invalid, or if N
+  // is greater than ArgList::MAX_PACKED_ARGS to accommodate for an extra
+  // argument that marks the end of the list.
+  enum { SIZE = N + (N == 0 || N >= ArgList::MAX_PACKED_ARGS ? 1 : 0) };
 
-template <unsigned N>
-struct ArgArray<N, false/*IsPacked*/> {
-  typedef Arg Type[N + 1]; // +1 for the list end Arg::NONE
-
-  template <typename Formatter, typename T>
-  static Arg make(const T &value) { return MakeArg<Formatter>(value); }
+  typedef typename Conditional<
+    (N < ArgList::MAX_PACKED_ARGS), Value, Arg>::type Type[SIZE];
 };
 
 #if FMT_USE_VARIADIC_TEMPLATES
@@ -1972,6 +1918,47 @@ inline uint64_t make_type(const Arg &first, const Args & ... tail) {
   return make_type(first) | (make_type(tail...) << 4);
 }
 
+inline void do_set_types(Arg *) {}
+
+template <typename T, typename... Args>
+inline void do_set_types(Arg *args, const T &arg, const Args & ... tail) {
+  args->type = static_cast<Arg::Type>(
+        MakeValue< BasicFormatter<char> >::type(arg));
+  do_set_types(args + 1, tail...);
+}
+
+template <typename... Args>
+inline void set_types(Arg *array, const Args & ... args) {
+  if (check(sizeof...(Args) > ArgList::MAX_PACKED_ARGS))
+    do_set_types(array, args...);
+  array[sizeof...(Args)].type = Arg::NONE;
+}
+
+template <typename... Args>
+inline void set_types(Value *, const Args & ...) {
+  // Do nothing as types are passed separately from values.
+}
+
+template <typename Formatter, typename Value>
+inline void store_args(Value *) {}
+
+template <typename Formatter, typename Arg, typename T, typename... Args>
+inline void store_args(Arg *args, const T &arg, const Args & ... tail) {
+  // Assign only the Value subobject of Arg and don't overwrite type (if any)
+  // that is assigned by set_types.
+  Value &value = *args;
+  value = MakeValue<Formatter>(arg);
+  store_args<Formatter>(args + 1, tail...);
+}
+
+template <typename Formatter, typename... Args>
+ArgList make_arg_list(typename ArgArray<sizeof...(Args)>::Type array,
+                      const Args & ... args) {
+  if (check(sizeof...(Args) >= ArgList::MAX_PACKED_ARGS))
+    set_types(array, args...);
+  store_args<Formatter>(array, args...);
+  return ArgList(make_type(args...), array);
+}
 #else
 
 struct ArgType {
@@ -2039,20 +2026,18 @@ class FormatBuf : public std::basic_streambuf<Char> {
 # define FMT_VARIADIC_VOID(func, arg_type) \
   template <typename... Args> \
   void func(arg_type arg0, const Args & ... args) { \
-    typedef fmt::internal::ArgArray<sizeof...(Args)> ArgArray; \
-    typename ArgArray::Type array{ \
-      ArgArray::template make<fmt::BasicFormatter<Char> >(args)...}; \
-    func(arg0, fmt::ArgList(fmt::internal::make_type(args...), array)); \
+    typename fmt::internal::ArgArray<sizeof...(Args)>::Type array; \
+    func(arg0, fmt::internal::make_arg_list< \
+      fmt::BasicFormatter<Char> >(array, args...)); \
   }
 
 // Defines a variadic constructor.
 # define FMT_VARIADIC_CTOR(ctor, func, arg0_type, arg1_type) \
   template <typename... Args> \
   ctor(arg0_type arg0, arg1_type arg1, const Args & ... args) { \
-    typedef fmt::internal::ArgArray<sizeof...(Args)> ArgArray; \
-    typename ArgArray::Type array{ \
-      ArgArray::template make<fmt::BasicFormatter<Char> >(args)...}; \
-    func(arg0, arg1, fmt::ArgList(fmt::internal::make_type(args...), array)); \
+    typename fmt::internal::ArgArray<sizeof...(Args)>::Type array; \
+    func(arg0, arg1, fmt::internal::make_arg_list< \
+      fmt::BasicFormatter<Char> >(array, args...)); \
   }
 
 #else
@@ -2946,14 +2931,15 @@ void format(BasicFormatter<Char> &f, const Char *&format_str, const T &value) {
   output << value;
 
   BasicStringRef<Char> str(&buffer[0], format_buf.size());
-  typedef internal::MakeArg< BasicFormatter<Char> > MakeArg;
-  format_str = f.format(format_str, MakeArg(str));
+  typedef internal::MakeValue< BasicFormatter<Char> > MakeValue;
+  internal::Arg arg = MakeValue(str);
+  arg.type = static_cast<internal::Arg::Type>(MakeValue::type(str));
+  format_str = f.format(format_str, arg);
 }
 
 // Reports a system error without throwing an exception.
 // Can be used to report errors from destructors.
-FMT_API void report_system_error(int error_code,
-                                 StringRef message) FMT_NOEXCEPT;
+FMT_API void report_system_error(int error_code, StringRef message) FMT_NOEXCEPT;
 
 #if FMT_USE_WINDOWS_H
 
@@ -2999,8 +2985,7 @@ class WindowsError : public SystemError {
 
 // Reports a Windows error without throwing an exception.
 // Can be used to report errors from destructors.
-FMT_API void report_windows_error(int error_code,
-                                  StringRef message) FMT_NOEXCEPT;
+FMT_API void report_windows_error(int error_code, StringRef message) FMT_NOEXCEPT;
 
 #endif
 
@@ -3271,11 +3256,10 @@ void arg(WStringRef, const internal::NamedArg<Char>&) FMT_DELETED_OR_UNDEFINED;
   template <typename... Args> \
   ReturnType func(FMT_FOR_EACH(FMT_ADD_ARG_NAME, __VA_ARGS__), \
       const Args & ... args) { \
-    typedef fmt::internal::ArgArray<sizeof...(Args)> ArgArray; \
-    typename ArgArray::Type array{ \
-      ArgArray::template make<fmt::BasicFormatter<Char> >(args)...}; \
+    typename fmt::internal::ArgArray<sizeof...(Args)>::Type array; \
     call(FMT_FOR_EACH(FMT_GET_ARG_NAME, __VA_ARGS__), \
-      fmt::ArgList(fmt::internal::make_type(args...), array)); \
+      fmt::internal::make_arg_list< \
+        fmt::BasicFormatter<Char> >(array, args...)); \
   }
 #else
 // Defines a wrapper for a function taking __VA_ARGS__ arguments
@@ -3390,18 +3374,6 @@ FMT_VARIADIC(int, fprintf, std::FILE *, CStringRef)
  */
 FMT_API void print(std::ostream &os, CStringRef format_str, ArgList args);
 FMT_VARIADIC(void, print, std::ostream &, CStringRef)
-
-/**
-  \rst
-  Prints formatted data to the stream *os*.
-
-  **Example**::
-
-    fprintf(cerr, "Don't %s!", "panic");
-  \endrst
- */
-FMT_API int fprintf(std::ostream &os, CStringRef format_str, ArgList args);
-FMT_VARIADIC(int, fprintf, std::ostream &, CStringRef)
 #endif
 
 namespace internal {
@@ -3492,6 +3464,7 @@ inline internal::Arg BasicFormatter<Char>::parse_arg_name(const Char *&s) {
   return arg;
 }
 
+// Should be after FormatSpec
 template <typename Char>
 const Char *BasicFormatter<Char>::format(
     const Char *&format_str, const internal::Arg &arg) {
