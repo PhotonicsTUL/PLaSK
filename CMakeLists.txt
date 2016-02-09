@@ -98,6 +98,9 @@ option(LICENSE_CHECKING "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
+#TODO if disabled, plask should find and use external cppformat lib.
+option(PLASK_EXPORTS_CPPFORMAT "Export cppformat symbols in libplask (affects only windows)" ON)
+
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
 
@@ -305,7 +308,7 @@ else()
     target_link_libraries(libplask dl)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif()
-set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS -DFMT_EXPORT")
+set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS")
 
 #if (NOT WIN32) #can be usefull if more threads libraries will be used
 #    target_link_libraries(sdsolver "pthread")

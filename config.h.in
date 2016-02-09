@@ -40,6 +40,9 @@
 // License check
 #cmakedefine LICENSE_CHECKING
 
+// Export cppformat symbols in libplask (affects only windows)
+#cmakedefine PLASK_EXPORTS_CPPFORMAT
+
 //
 // The following block is the standard way of creating macros which make exporting
 // from a DLL simpler. All files within this DLL are compiled with the PLASK_EXPORTS (/PLASK_SOLVERS_EXPORTS)
@@ -51,6 +54,9 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
+      #if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_EXPORT)
+        #define FMT_EXPORT
+      #endif
     #else
         #define PLASK_API __declspec(dllimport)
     #endif

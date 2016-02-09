@@ -1,12 +1,12 @@
 #ifndef PLASK__UTILS_FORMAT_H
 #define PLASK__UTILS_FORMAT_H
 
-#include <boost/lexical_cast.hpp>
-
 /** @file
 This file contains utils to format strings.
 */
 
+#include <plask/config.h>
+#include <boost/lexical_cast.hpp>
 #include <cppformat/format.h>
 
 namespace plask {
