@@ -33,6 +33,7 @@ for QT_API in (QT_API, 'PySide', 'PyQt4'):
             pass
         else:
             QtSignal = QtCore.Signal
+            QtSlot = QtCore.Slot
             break
     else:
         try:
@@ -47,8 +48,9 @@ for QT_API in (QT_API, 'PySide', 'PyQt4'):
             pass
         else:
             QtSignal = QtCore.pyqtSignal
+            QtSlot = QtCore.pyqtSlot
             break
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtGui', 'QT_API', 'QtSignal']
+__all__ = ['QtCore', 'QtGui', 'QT_API', 'QtSignal', 'QtSlot']

@@ -14,7 +14,7 @@ import sys
 
 import plask
 
-from ...qt import QtGui, QtCore
+from ...qt import QtGui, QtCore, QtSlot
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
@@ -27,6 +27,19 @@ try:
     from .plot_widget import PlotWidget
 except ImportError:
     PlotWidget = None
+
+
+class GeometryTreeView(QtGui.QTreeView):
+
+    def __init__(self, *args, **kwargs):
+        super(GeometryTreeView, self).__init__(*args, **kwargs)
+        self._current_index = None
+
+    @QtSlot()
+    def update_current_index(self):
+        if self._current_index is not None:
+            self.setCurrentIndex(self._current_index)
+            self._current_index = None
 
 
 class GeometryController(Controller):
@@ -127,9 +140,12 @@ class GeometryController(Controller):
         self.update_actions()
 
     def on_pick_object(self, event):
-        self.tree.setCurrentIndex(
-            self.model.index_for_node(self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
-        )
+        # This seems as an ugly hack, but in reality this is the only way to make sure
+        # that `setCurrentIndex` is called only once if there are multiple artists in
+        # the clicked spot.
+        self.tree._current_index = self.model.index_for_node(
+            self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
+        QtCore.QMetaObject.invokeMethod(self.tree, 'update_current_index', QtCore.Qt.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
         manager = plask.Manager(draft=True)
@@ -238,7 +254,7 @@ class GeometryController(Controller):
         return toolbar
 
     def _construct_tree(self, model):
-        self.tree = QtGui.QTreeView()
+        self.tree = GeometryTreeView()
         self.tree.setModel(model)
         self.properties_delegate = HTMLDelegate(self.tree)
         self.tree.setItemDelegateForColumn(1, self.properties_delegate)

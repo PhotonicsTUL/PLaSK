@@ -127,12 +127,6 @@
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
     <clip left="0" back="0">
       <align x="0" y="0" top="0">
-        <item top="{-h_start*(0.06940+0.07955)}">
-          <lattice ax="0" ay="{L}" az="0" bx="{L*sqrt(3)/2}" by="{L/2}" bz="0">
-            <segments>-1 -3; 4 -3; 4 -2; 3 0; 2 2; 1 3; -4 3; -4 2; -3 0; -2 -2 ^ 0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0</segments>
-            <cylinder material="air" radius="{0.5*d*L}" height="{(h_end-h_start)*(0.06940+0.07955)}"/>
-          </lattice>
-        </item>
         <item xcenter="0" ycenter="0">
           <stack>
             <stack name="top-dbr" repeat="24">
@@ -158,6 +152,12 @@
               <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.06940"/>
             </stack>
           </stack>
+        </item>
+        <item top="{-h_start*(0.06940+0.07955)}">
+          <lattice ax="0" ay="{L}" az="0" bx="{L*sqrt(3)/2}" by="{L/2}" bz="0">
+            <segments>-1 -3; 4 -3; 4 -2; 3 0; 2 2; 1 3; -4 3; -4 2; -3 0; -2 -2 ^ 0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0</segments>
+            <cylinder material="air" radius="{0.5*d*L}" height="{(h_end-h_start)*(0.06940+0.07955)}"/>
+          </lattice>
         </item>
       </align>
     </clip>
