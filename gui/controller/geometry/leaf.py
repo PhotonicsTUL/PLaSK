@@ -153,10 +153,10 @@ class GNTriangleController(GNLeafController):
         )
 
     def construct_form(self):
-        self.construct_group('Vertexes coordinates (other than: {}):'
+        self.construct_group('Vertices Coordinates (other than: {}):'
                              .format(', '.join('0' for _ in range(0, self.node.dim))))
-        self.points = (self.construct_point_controllers(row_name='first', change_cb=lambda point: self._on_point_set(0, point)),
-                      self.construct_point_controllers(row_name='second', change_cb=lambda point: self._on_point_set(1, point)))
+        self.points = (self.construct_point_controllers(row_name='First', change_cb=lambda point: self._on_point_set(0, point)),
+                      self.construct_point_controllers(row_name='Second', change_cb=lambda point: self._on_point_set(1, point)))
         super(GNTriangleController, self).construct_form()
 
     def fill_form(self):

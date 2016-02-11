@@ -222,6 +222,7 @@ class GNodeController(Controller):
                     second is line edit for its value"""
         if aligners_dir is None:
             aligners_dir = self.node.aligners_dir()
+            if aligners_dir is None: return
         if dim is None: dim = self.node.children_dim
         positions = []
         layout = QtGui.QGridLayout(None)

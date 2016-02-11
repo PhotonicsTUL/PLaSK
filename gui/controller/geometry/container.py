@@ -58,7 +58,8 @@ class GNShelfController(GNObjectController):
     
     def construct_form(self):
         self.construct_group('Shelf Settings')
-        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
+        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat',
+                                               display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;shelf <b>repeat</b>="" ...&gt;<br/>'
                                'Number of repetitive occurrences of stack content.'
                                ' This attribute allows to create periodic horizontal structures easily.'
@@ -100,7 +101,8 @@ class GNStackController(GNObjectController):
 
     def construct_form(self):
         self.construct_group('Stack Settings')
-        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat', display_property_name='number of repetitive occurrences')
+        self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat',
+                                               display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
                                 'Number of repetitive occurrences of stack content.'
                                 ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
@@ -112,7 +114,8 @@ class GNStackController(GNObjectController):
         self.pos_layout = self.construct_group('Default Items Positions')
         def setter(n, v): n.aligners = v
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
-            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions in stack')
+            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners,
+                                              'change default items positions in stack')
         )
         super(GNStackController, self).construct_form()
 
@@ -128,9 +131,10 @@ class GNContainerChildBaseController(GNChildController):
     def construct_form(self):
         self.construct_group('Position in Parent Container')
         def setter(n, v): n.in_parent = v
-        self.positions = self.construct_align_controllers(change_cb=lambda aligners:
-            self._set_node_by_setter_undoable(setter, aligners, self.child_node.in_parent, 'change item position', node=self.child_node)
-        )
+        self.positions = self.construct_align_controllers(
+            change_cb=lambda aligners:
+            self._set_node_by_setter_undoable(setter, aligners, self.child_node.in_parent, 'change item position',
+                                              node=self.child_node))
         self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()),
                                              node_property_name='path', node=self.child_node)
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
