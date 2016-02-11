@@ -49,6 +49,7 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
             k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
             stripex = reader.getAttribute<double>("vat", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
+            emission = reader.enumAttribute<Emission>("emission").value("front", FRONT).value("back", BACK).get(emission);
             reader.requireTagEnd();
         } else if (param == "root") {
             RootDigger::readRootDiggerConfig(reader, root);
@@ -600,17 +601,17 @@ void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,al
         const double n = real(mode.neff);
         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                      n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
-        R1 = abs((n-n1) / (n+n1));
-        R2 = abs((n-n2) / (n+n2));
+        R1 = (n-n1) / (n+n1); R1 *= R1;
+        R2 = (n-n2) / (n+n2); R2 *= R2;
     }
 
     if (emission == FRONT) {
         if (R1 == 1.)
-            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+            this->writelog(LOG_WARNING, "Mirror reflection on emission side equal to 1. Field will be infinite.");
         sum *= (1. - R1);
     } else {
         if (R2 == 1.)
-            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+            this->writelog(LOG_WARNING, "Mirror reflection on emission side equal to 1. Field will be infinite.");
         sum *= (1. - R2);
     }
 

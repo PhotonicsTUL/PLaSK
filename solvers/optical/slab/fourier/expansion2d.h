@@ -70,14 +70,16 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     void cleanupField() override;
 
-   LazyData<Vec<3,dcomplex>> getField(size_t l,
-                                      const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                      const cvector& E, const cvector& H) override;
+    LazyData<Vec<3,dcomplex>> getField(size_t l,
+                                       const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                       const cvector& E, const cvector& H) override;
 
     LazyData<Tensor3<dcomplex>> getMaterialNR(size_t l,
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
+    double integratePoyntingVert(const cvector& E, const cvector& H) override;
+    
   private:
 
     DataVector<Vec<3,dcomplex>> field;

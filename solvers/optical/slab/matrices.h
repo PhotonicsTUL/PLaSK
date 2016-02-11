@@ -148,13 +148,13 @@ class MatrixDiagonal {
 
     MatrixDiagonal(int n) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-        write_debug("allocating diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         *gc = 1;
     }
 
     MatrixDiagonal(int n, T val) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-        write_debug("allocating and filling diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, n, val);
         *gc = 1;
     }
@@ -168,7 +168,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+                write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
         }
         siz = M.siz; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
@@ -180,7 +180,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix {0}x{0} (%2$.3f MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+                write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
         }
     }
@@ -205,8 +205,9 @@ class MatrixDiagonal {
     inline T& operator()(int m, int n) {
         assert(m < siz);
         assert(n < siz);
-        if (m !=n) throw ComputationError("MatrixDiagonal::operator()", "wrong index");
-        else return data_[n];
+        // if (m !=n) throw ComputationError("MatrixDiagonal::operator()", "wrong index");
+        assert(m == n);
+        return data_[n];
     }
 
     inline int size() const { return siz; }
@@ -242,7 +243,8 @@ typedef MatrixDiagonal<dcomplex> cdiagonal;
 //**************************************************************************
 /// Multiplication operator of the matrices (using BLAS level3)
 inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
-    if (A.cols() != B.rows()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot multiply: A.cols != B.rows");
+    // if (A.cols() != B.rows()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot multiply: A.cols != B.rows");
+    assert(A.cols() == B.rows());
     cmatrix C(A.rows(), B.cols());
     zgemm('n', 'n', A.rows(), B.cols(), A.cols(), 1., A.data(), A.rows(), B.data(), B.rows(), 0., C.data(), C.rows());
     return C;
@@ -251,7 +253,8 @@ inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
 /// Multiplication operator of the matrix-vector product (using BLAS level3)
 inline cvector operator*(const cmatrix& A, const cvector& v) {
     int n = A.cols(), m = A.rows();
-    if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
+    // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
+    assert(n == v.size());
     cvector dst(m);
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
     return dst;
@@ -260,7 +263,8 @@ inline cvector operator*(const cmatrix& A, const cvector& v) {
 /// Multiplication by the diagonal matrix (right)
 template <typename T>
 inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
-    if (A.cols() != B.size()) throw ComputationError("operator*<cmatrix,cdiagonal>", "Cannot multiply: A.cols != B.size");
+    // if (A.cols() != B.size()) throw ComputationError("operator*<cmatrix,cdiagonal>", "Cannot multiply: A.cols != B.size");
+    assert(A.cols() == B.size());
     cmatrix C(A.rows(), B.size());
     int n = 0;
     int r = A.rows(), c = A.cols();
@@ -276,7 +280,8 @@ inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
 /// Multiplication by the diagonal matrix (left)
 template <typename T>
 inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
-    if (A.size() != B.rows()) throw ComputationError("operator*<cdiagonal,cmatrix>", "Cannot multiply: A.size != B.rows");
+    // if (A.size() != B.rows()) throw ComputationError("operator*<cdiagonal,cmatrix>", "Cannot multiply: A.size != B.rows");
+    assert(A.size() == B.rows());
     cmatrix C(A.size(), B.cols());
     int n = 0;
     int r = B.rows(), c = B.cols();
@@ -289,7 +294,8 @@ inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
 /// Multiplication of matrix by diagonal in-place (replacing A)
 template <typename T>
 inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
-    if (A.cols() != B.size()) throw ComputationError("mult_matrix_by_diagonal", "Cannot multiply: A.cols != B.size");
+    // if (A.cols() != B.size()) throw ComputationError("mult_matrix_by_diagonal", "Cannot multiply: A.cols != B.size");
+    assert(A.cols() == B.size());
     int n = 0;
     int r = A.rows(), c = A.cols();
     for (int j = 0; j < c; j++) {
@@ -302,7 +308,8 @@ inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
 /// Multiplication of diagonal by matrix in-place (replacing B)
 template <typename T>
 inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
-    if (A.size() != B.rows()) throw ComputationError("mult_diagonal_by_matrix", "Cannot multiply: A.size != B.rows");
+    // if (A.size() != B.rows()) throw ComputationError("mult_diagonal_by_matrix", "Cannot multiply: A.size != B.rows");
+    assert(A.size() == B.rows());
     int n = 0;
     int r = B.rows(), c = B.cols();
     for (int j = 0; j < c; j++)
@@ -313,32 +320,48 @@ inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
 
 // BLAS wrappers for multiplications without allocating additional storage
 inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvector& dst) {
-    int m, n;
-    if ((n = A.cols()) != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
-    if ((m = A.rows()) != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
+    int m = A.rows(),
+        n = A.cols();
+    // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
+    // if (m != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
+    assert(n == v.size());
+    assert(m == dst.size());
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
 }
 
 inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    int m, n, k;
-    if ((k = A.cols()) != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
-    if ((m = A.rows()) != dst.rows()) throw ComputationError("mult_matrix_by_matrix", "A.rows != dst.rows");
-    if ((n = B.cols()) != dst.cols()) throw ComputationError("mult_matrix_by_matrix", "B.cols != dst.cols");
+    int k = A.cols(), 
+        m = A.rows(), 
+        n = B.cols();
+    // if (k != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
+    // if (m != dst.rows()) throw ComputationError("mult_matrix_by_matrix", "A.rows != dst.rows");
+    // if (n != dst.cols()) throw ComputationError("mult_matrix_by_matrix", "B.cols != dst.cols");
+    assert(k == B.rows());
+    assert(m == dst.rows());
+    assert(n == dst.cols());
     zgemm('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 0., dst.data(), m);
 }
 
 inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& dst) {
-    int m, n;
-    if ((n = A.cols()) != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
-    if ((m = A.rows()) != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
+    int m = A.rows(),
+        n = A.cols();
+    // if (n != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
+    // if (m != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
+    assert(n == v.size());
+    assert(m == dst.size());
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 1., dst.data(), 1);
 }
 
 inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    int m, n, k;
-    if ((k = A.cols()) != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.cols != B.rows");
-    if ((m = A.rows()) != dst.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.rows != dst.rows");
-    if ((n = B.cols()) != dst.cols()) throw ComputationError("add_mult_matrix_by_matrix", "B.cols != dst.cols");
+    int k = A.cols(), 
+        m = A.rows(), 
+        n = B.cols();
+    // if (k != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
+    // if (m != dst.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.rows != dst.rows");
+    // if (n != dst.cols()) throw ComputationError("add_mult_matrix_by_matrix", "B.cols != dst.cols");
+    assert(k == B.rows());
+    assert(m == dst.rows());
+    assert(n == dst.cols());
     zgemm('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 1., dst.data(), m);
 }
 

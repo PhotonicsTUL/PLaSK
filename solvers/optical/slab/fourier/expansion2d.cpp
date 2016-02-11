@@ -352,7 +352,10 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
-    dcomplex k0 = SOLVER->k0, beta = SOLVER->klong, kx = SOLVER->ktran;
+    dcomplex k0 = SOLVER->k0, kx = SOLVER->ktran;
+    
+    dcomplex beta { SOLVER->klong.real(),
+                    SOLVER->klong.imag() - SOLVER->getMirrorLosses(SOLVER->klong.real()/k0.real()) };
     
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
@@ -710,6 +713,44 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             return result;
         }
     }
+}
+
+
+double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
+{
+    double P = 0.;
+    
+    int ord = SOLVER->getSize();
+
+    if (separated()) {
+        if (symmetric()) {
+            for (int i = 0; i <= ord; ++i) {
+                P += real(E[iE(i)] * conj(H[iH(i)]));
+            }
+            P = 2. * P - real(E[iE(0)] * conj(H[iH(0)]));
+        } else {
+            for (int i = -ord; i <= ord; ++i) {
+                P += real(E[iE(i)] * conj(H[iH(i)]));
+            }
+        }
+    } else {
+        if (symmetric()) {
+            for (int i = 0; i <= ord; ++i) {
+                P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
+            }
+            P = 2. * P + real(E[iEz(0)] * conj(H[iHx(0)]) + E[iEx(0)] * conj(H[iHz(0)]));
+        } else {
+            for (int i = -ord; i <= ord; ++i) {
+                P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
+            }
+        }
+    }
+    
+    double L = SOLVER->geometry->getExtrusion()->getLength();
+    if (!isinf(L))
+        P *= L * 1e-6;
+    
+    return P * (right - left) * 1e-6; // µm² -> m²
 }
 
 

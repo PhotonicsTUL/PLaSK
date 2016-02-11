@@ -125,7 +125,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const Mes
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);
-    return transfer->getFieldE(dst_mesh, method);
+    return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
 
@@ -137,7 +137,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const Mes
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);
-    return transfer->getFieldH(dst_mesh, method);
+    return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
 

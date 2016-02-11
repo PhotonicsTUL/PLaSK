@@ -181,8 +181,6 @@ void AdmittanceTransfer::storeY(size_t n)
 
 void AdmittanceTransfer::determineFields()
 {
-    //FIXME vertical fields are niehalo
-
     if (fields_determined == DETERMINED_RESONANT) return;
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
@@ -251,17 +249,13 @@ void AdmittanceTransfer::determineFields()
                     fields[n].E0[i] /= - y2[i];
             }
 
-            if (n != end+inc)
-            {
+            if (n != end+inc) { // not the last layer
                 int prev = solver->stack[n-inc];
-
                 // Ed[n-inc] = invTE[n-inc] * TE[n] * E0[n]
                 fields[n-inc].Ed = cvector(N);
                 mult_matrix_by_vector(diagonalizer->TE(curr), fields[n].E0, tv);
                 mult_matrix_by_vector(diagonalizer->invTE(prev), tv, fields[n-inc].Ed);
-            }
-            else
-            {
+            } else {
                 fields[n].H0 = cvector(N);
                 for (int i = 0; i < N; i++)
                     //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
@@ -275,17 +269,15 @@ void AdmittanceTransfer::determineFields()
             fields[n].Hd = cvector(N);
             mult_matrix_by_vector(Y, fields[n].Ed, fields[n].Hd);
 
-            if (n != start)
-            {
+            if (n != start) {
                 int next = solver->stack[n+inc];
-
                 // H0[n+inc] = invTH[n+inc] * TH[n] * Hd[n]
                 fields[n+inc].H0 = cvector(N);
                 mult_matrix_by_vector(diagonalizer->TH(curr), fields[n].Hd, tv);
                 mult_matrix_by_vector(diagonalizer->invTH(next), tv, fields[n+inc].H0);
             }
 
-            // The alternative method is to find the H0 from the following equation:
+            // An alternative method is to find the H0 from the following equation:
             // H0 = y1 * E0 + y2 * Ed
             // for (int i = 0; i < N; i++)
             //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
@@ -293,13 +285,37 @@ void AdmittanceTransfer::determineFields()
         }
     }
 
-    // Now fill the Y matrix with the one from interface(necessary for interfaceField*)
+    // Now fill the Y matrix with the one from the interface (necessary for interfaceField*)
     memcpy(Y.data(), getY(solver->interface-1).data(), NN*sizeof(dcomplex));
 
     needAllY = false;
     fields_determined = DETERMINED_RESONANT;
-}
 
+    // Finally normalize fields
+    if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
+        size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
+        int l = solver->stack[n];
+        
+        cvector hv(N0);
+        mult_matrix_by_vector(diagonalizer->TE(l), fields[n].Ed, tv);
+        mult_matrix_by_vector(diagonalizer->TH(l), fields[n].Hd, hv);
+
+        double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(tv, hv));
+
+        if (P < SMALL) {
+            writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
+                    (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
+        } else {
+            P = 1. / sqrt(P);
+            for (size_t i = 0; i < count; ++i) {
+                fields[i].E0 *= P;
+                fields[i].H0 *= P;
+                fields[i].Ed *= P;
+                fields[i].Hd *= P;
+            }
+        }
+    }
+}
 
 
 cvector AdmittanceTransfer::getFieldVectorE(double z, int n)

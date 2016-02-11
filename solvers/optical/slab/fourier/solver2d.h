@@ -418,6 +418,11 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
+        static bool warn = true;
+        if (warn && emission != EMISSION_TOP && emission != EMISSION_BOTTOM) {
+            writelog(LOG_WARNING, "Mode fields are not normalized");
+            warn = false;
+        }
         Mode mode(this);
         mode.lam0 = lam0;
         mode.k0 = k0; mode.beta = klong; mode.ktran = ktran;
@@ -444,7 +449,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     }
 
     /// Compute mirror losses for specified effective mode
-    double getMirrorLosses(dcomplex n) {
+    double getMirrorLosses(double n) {
+        double L = geometry->getExtrusion()->getLength();
+        if (isinf(L)) return 0.;
         const double lambda = real(2e3*M_PI / k0);
         double R1, R2;
         if (mirrors) {
@@ -452,10 +459,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         } else {
             const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                          n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
-            R1 = abs((n-n1) / (n+n1));
-            R2 = abs((n-n2) / (n+n2));
+            R1 = (n-n1) / (n+n1); R1 *= R1;
+            R2 = (n-n2) / (n+n2); R2 *= R2;
         }
-        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
+        return 0.5 * std::log(R1*R2) / L;
     }
 
     /**

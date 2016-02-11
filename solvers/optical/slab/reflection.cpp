@@ -358,10 +358,32 @@ void ReflectionTransfer::determineFields()
 
         mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
     }
-
+    
     allP = false;
     fields_determined = DETERMINED_RESONANT;
+
+    writelog(LOG_WARNING, "Reflection transfer cannot properly determine fields in the outer layers: "
+                          "fields not normalized");
+//     // Finally normalize fields
+//     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
+//         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
+//         
+//         double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(n, 0.),
+//                                                                              getFieldVectorH(n, 0.)));
+// 
+//         if (P < SMALL) {
+//             writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
+//                     (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
+//         } else {
+//             P = 1. / sqrt(P);
+//             for (size_t i = 0; i < count; ++i) {
+//                 fields[i].F *= P;
+//                 fields[i].B *= P;
+//             }
+//         }
+//     }
 }
+
 
 void ReflectionTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {

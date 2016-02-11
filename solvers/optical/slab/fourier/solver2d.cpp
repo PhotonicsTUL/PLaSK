@@ -80,6 +80,11 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             pml.order = reader.getAttribute<double>("shape", pml.order);
             reader.requireTagEnd();
         } else if (param == "mode") {
+            emission = reader.enumAttribute<Emission>("emission")
+                                .value("undefined", EMISSION_UNSPECIFIED)
+                                .value("top", EMISSION_TOP)
+                                .value("bottom", EMISSION_BOTTOM)
+                       .get(emission);
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
@@ -172,7 +177,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
                 throw Exception("{0}: Cannot search for effective index with polarization separation", getId());
             detlog.axis_arg_name = "neff";
             root = getRootDigger([this](const dcomplex& x) {
-                    this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0;
+                    this->klong = x * this->k0;
                     return transfer->determinant();
                 });
             break;
@@ -314,7 +319,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
         expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return transfer->getFieldE(dst_mesh, method);
+    return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
 
@@ -331,7 +336,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
         expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return transfer->getFieldH(dst_mesh, method);
+    return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
 

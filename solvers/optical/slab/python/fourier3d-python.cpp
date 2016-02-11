@@ -473,6 +473,11 @@ void export_FourierSolver3D()
                 "Transverse propagation constant of the light [1/µm].\n\n"
                 "Use this property only  if you are looking for anything else than\n"
                 "the transverse component of the propagation vector.\n");
+    RW_FIELD(emission, "Direction of the useful light emission.\n\n"
+                       "Necessary for the over-threshold model to correctly compute the output power.\n"
+                       "Currently the fields are normalized only if this parameter is set to\n"
+                       "``top`` or ``bottom``. Otherwise, it is ``undefined`` (default) and the fields\n"
+                       "are not normalized.");
     solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                 "Compute discontinuity matrix determinant.\n\n"
                 "Arguments can be given through keywords only.\n\n"
@@ -588,7 +593,7 @@ void export_FourierSolver3D()
         .def_readonly("k0", &FourierSolver3D::Mode::k0, "Mode normalized frequency [1/µm].")
         .def_readonly("klong", &FourierSolver3D::Mode::klong, "Mode longitudinal wavevector [1/µm].")
         .def_readonly("ktran", &FourierSolver3D::Mode::ktran, "Mode transverse wavevector [1/µm].")
-        .def_readwrite("power", &FourierSolver3D::Mode::power, "Total power emitted into the mode.")
+        .def_readwrite("power", &FourierSolver3D::Mode::power, "Total power emitted into the mode [mW].")
         .def("__str__", &FourierSolver3D_Mode_str)
         .def("__repr__", &FourierSolver3D_Mode_repr)
         .def("__getattr__", &FourierSolver3D_Mode__getattr__)
@@ -632,6 +637,12 @@ void export_FourierSolver3D()
             )
     ;
 
+    py_enum<FourierSolver3D::Emission>()
+        .value("UNDEFINED", FourierSolver3D::EMISSION_UNSPECIFIED)
+        .value("TOP", FourierSolver3D::EMISSION_TOP)
+        .value("BOTTOM", FourierSolver3D::EMISSION_BOTTOM)
+    ;
+    
     FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");
     FourierSolver3D_LongTranWrapper<PML>::register_("PMLs");
     FourierSolver3D_SymmetryLongTranWrapper::register_();

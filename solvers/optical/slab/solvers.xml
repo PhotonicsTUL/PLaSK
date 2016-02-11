@@ -28,6 +28,31 @@
       <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
     </tag>
 
+    <tag name="mode" label="Mode Properties">
+      Mode properties.
+      <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
+      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
+      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
+      <attr name="symmetry" label="Mode symmetry" type="choice">
+        Mode symmetry. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>Etran</choice>
+        <choice>Elong</choice>
+      </attr>
+      <attr name="polarization" label="Mode polarization" type="choice">
+        Mode polarization. Give an existing field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>Etran</choice>
+        <choice>Elong</choice>
+      </attr>
+      <attr name="emission" label="Direction of emission" type="choice">
+        Direction of the useful light emission. Necessary for the over-threshold model
+        to correctly compute the output power. Currently, the fields are normalized only
+        for top and bottom emission.
+        <choice>undefined</choice>
+        <choice>top</choice>
+        <choice>bottom</choice>
+      </attr>
+    </tag>
+
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
@@ -58,23 +83,6 @@
         <choice>auto</choice>
         <choice>reflection</choice>
         <choice>admittance</choice>
-      </attr>
-    </tag>
-
-    <tag name="mode" label="Mode Properties">
-      Mode properties.
-      <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry" label="Mode symmetry" type="choice">
-        Mode symmetry. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>Etran</choice>
-        <choice>Elong</choice>
-      </attr>
-      <attr name="polarization" label="Mode polarization" type="choice">
-        Mode polarization. Give an existing field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>Etran</choice>
-        <choice>Elong</choice>
       </attr>
     </tag>
 
@@ -169,6 +177,32 @@
       <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
     </tag>
 
+    <tag name="mode" label="Mode Properties">
+      Mode properties.
+      <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
+      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
+      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
+      <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice">
+        Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>Etran</choice>
+        <choice>Elong</choice>
+      </attr>
+      <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice">
+        Mode symmetry along transverse axis. Specify a symmetric field component here
+        (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>Etran</choice>
+        <choice>Elong</choice>
+      </attr>
+      <attr name="emission" label="Direction of emission" type="choice">
+        Direction of the useful light emission. Necessary for the over-threshold model
+        to correctly compute the output power. Currently, the fields are normalized only
+        for top and bottom emission.
+        <choice>undefined</choice>
+        <choice>top</choice>
+        <choice>bottom</choice>
+      </attr>
+    </tag>
+
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
@@ -213,23 +247,6 @@
         <choice>auto</choice>
         <choice>reflection</choice>
         <choice>admittance</choice>
-      </attr>
-    </tag>
-
-    <tag name="mode" label="Mode Properties">
-      Mode properties.
-      <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice">
-        Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>Etran</choice>
-        <choice>Elong</choice>
-      </attr>
-      <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice">
-        Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>Etran</choice>
-        <choice>Elong</choice>
       </attr>
     </tag>
 

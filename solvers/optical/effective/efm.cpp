@@ -899,7 +899,7 @@ struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<d
 
 const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-    this->writelog(LOG_DEBUG, "Getting light intensity");
+    this->writelog(LOG_DEBUG, "Getting light magnitude");
 
     if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
 

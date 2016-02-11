@@ -7,6 +7,8 @@
 
 namespace plask { namespace solvers { namespace slab {
 
+constexpr double Z0 = 376.73031346177; ///< Free space admittance
+
 struct SlabBase;
 
 /**
@@ -130,19 +132,21 @@ struct PLASK_SOLVER_API Transfer {
 
     /**
      * Compute electric field at the given mesh.
+     * \param power mode power
      * \param dst_mesh target mesh
      * \param method interpolation method
      * \param reflected is this method called from reflected calculations?
      */
-    LazyData<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
+    LazyData<Vec<3,dcomplex>> computeFieldE(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
 
     /**
      * Compute magnetic field at the given mesh.
+     * \param power mode power
      * \param dst_mesh target mesh
      * \param method interpolation method
      * \param reflected is this method called from reflected calculations?
      */
-    LazyData<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
+    LazyData<Vec<3,dcomplex>> computeFieldH(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
 
     /**
      * Compute light magnitude.
@@ -152,7 +156,8 @@ struct PLASK_SOLVER_API Transfer {
      * \param reflected is the field emitting?
      */
     LazyData<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected) {
-        auto E = computeFieldE(dst_mesh, method, reflected);
+        auto E = computeFieldE(1., dst_mesh, method, reflected);
+        power *= 0.5 / Z0; // because <M> = ½ E conj(E) / Z0
         return LazyData<double>(E.size(), [power,E](size_t i) { return power * abs2(E[i]); });
     }
 
@@ -160,22 +165,24 @@ struct PLASK_SOLVER_API Transfer {
 
     /**
      * Get electric field at the given mesh for resonant mode.
+     * \param power mode power
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getFieldE(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldE(dst_mesh, method, false);
+        return computeFieldE(power, dst_mesh, method, false);
     }
 
     /**
      * Get magnetic field at the given mesh for resonant mode.
+     * \param power mode power
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+    LazyData<Vec<3,dcomplex>> getFieldH(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldH(dst_mesh, method, false);
+        return computeFieldH(power, dst_mesh, method, false);
     }
 
     /**
@@ -199,7 +206,7 @@ struct PLASK_SOLVER_API Transfer {
     LazyData<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldE(dst_mesh, method, true);
+        return computeFieldE(1., dst_mesh, method, true);
     }
 
     /**
@@ -212,7 +219,7 @@ struct PLASK_SOLVER_API Transfer {
     LazyData<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldH(dst_mesh, method, true);
+        return computeFieldH(1., dst_mesh, method, true);
     }
 
     /**

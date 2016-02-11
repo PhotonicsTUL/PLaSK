@@ -143,9 +143,8 @@ void export_BesselSolverCyl()
            "Only one of the following arguments can be given through a keyword.\n"
            "It is the starting point for search of the specified parameter.\n\n"
            "Args:\n"
-           "    lam (complex): Wavelength.\n"
-           "    k0 (complex): Normalized frequency.\n"
-           "    m (int): HE/EH Mode angular number.\n"
+           "    lam (complex): Startring wavelength.\n"
+           "    m (int): HE/EH Mode angular number.\n",
            "lam", arg("m")=1
           );
     solver.def("set_mode", py::raw_function(BesselSolverCyl_setMode),
@@ -227,9 +226,6 @@ void export_BesselSolverCyl()
 //                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                "        present.\n"
 //                , (py::arg("lam"), "polarization", "side"));
-//     solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
-//                "Mirror reflectivities. If None then they are automatically estimated from the\n"
-//                "Fresnel equations.");
     solver.add_property("pml", py::make_function(&Solver_getPML<BesselSolverCyl>, py::with_custodian_and_ward_postcall<0,1>()),
                         &Solver_setPML<BesselSolverCyl>,
                         "Side Perfectly Matched Layers boundary conditions.\n\n"

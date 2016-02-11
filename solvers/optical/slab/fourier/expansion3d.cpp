@@ -879,4 +879,20 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 }
 
 
+double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
+{
+    double P = 0.;
+    
+    int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
+
+    for (int iy = -ordt; iy <= ordt; ++iy) {
+        for (int ix = -ordl; ix <= ordl; ++ix) {
+            P += real(E[iEx(ix,iy)] * conj(H[iHy(ix,iy)]) - E[iEy(ix,iy)] * conj(H[iHx(ix,iy)]));
+        }
+    }
+
+    return P * (front - back) * (right - left) * 1e-12; // µm² -> m²
+}
+
+
 }}} // namespace plask

@@ -141,6 +141,11 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 } else throw XMLUnexpectedElementException(reader, "<tran>, <long>, or </pmls>", node);
             }
         } else if (param == "mode") {
+            emission = reader.enumAttribute<Emission>("emission")
+                                .value("undefined", EMISSION_UNSPECIFIED)
+                                .value("top", EMISSION_TOP)
+                                .value("bottom", EMISSION_BOTTOM)
+                       .get(emission);
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
@@ -335,7 +340,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
         expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return transfer->getFieldE(dst_mesh, method);
+    return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
 
@@ -352,7 +357,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
         expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return transfer->getFieldH(dst_mesh, method);
+    return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
 

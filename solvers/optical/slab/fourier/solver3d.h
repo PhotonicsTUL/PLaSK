@@ -36,7 +36,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
 
-        Mode(FourierSolver3D* solver): solver(solver), power(1e-9) {}
+        Mode(FourierSolver3D* solver): solver(solver), 
+            power((solver->emission == EMISSION_TOP || solver->emission == EMISSION_BOTTOM)? 1e-9 : 1.) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
@@ -410,6 +411,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
+        static bool warn = true;
+        if (warn && emission != EMISSION_TOP && emission != EMISSION_BOTTOM) {
+            writelog(LOG_WARNING, "Mode fields are not normalized unless emission is set to 'top' or 'bottom'");
+            warn = false;
+        }
         Mode mode(this);
         mode.lam0 = lam0;
         mode.k0 = k0; mode.klong = klong; mode.ktran = ktran;

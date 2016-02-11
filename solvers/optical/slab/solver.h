@@ -24,6 +24,18 @@ struct PML {
  */
 struct PLASK_SOLVER_API SlabBase {
 
+    /// Directions of the possible emission
+    enum Emission {
+        EMISSION_UNSPECIFIED = 0,   ///< Side emission (fields not normalized)
+        EMISSION_TOP,               ///< Top emission
+        EMISSION_BOTTOM,            ///< Bottom emission
+        EMISSION_FRONT,             ///< Front emission
+        EMISSION_BACK               ///< Back emission
+    };
+
+    /// Direction of the light emission for fields normalization
+    Emission emission;
+    
   protected:
 
     /// Determinant logger
@@ -107,6 +119,7 @@ struct PLASK_SOLVER_API SlabBase {
   public:
 
     SlabBase():
+        emission(EMISSION_UNSPECIFIED),
         detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::METHOD_AUTO),
         interface(size_t(-1)),

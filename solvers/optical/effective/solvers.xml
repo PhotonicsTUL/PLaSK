@@ -17,6 +17,11 @@
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Mode wavelength.</attr>
       <attr name="vneff" label="Vertical effective index" type="float" unit="-">Initial vertical effective index of the in location in which the vertical solution is calculated; setting this value helps to find models in very long resonators.</attr>
       <attr name="vat" label="Vertical solution coord" type="float" unit="-">Horizontal position of at which the vertical part of the field is calculated.</attr>
+      <attr name="emission" label="Direction of emission" type="choice">
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly compute the output power.
+        <choice>front</choice>
+        <choice>back</choice>
+      </attr>
     </tag>
 
     <tag name="root" label="Parameters of the Horizontal Root-Finding Algorithm">
@@ -82,7 +87,7 @@
       Mode properties.
       <attr name="lam0" label="Approximate wavelength" type="float" unit="nm">Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength</attr>
       <attr name="emission" label="Direction of emission" type="choice">
-        Direction of the useful light emission. Necessary for the over-threshold model to correctly computethe output power.
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly compute the output power.
         <choice>top</choice>
         <choice>bottom</choice>
       </attr>

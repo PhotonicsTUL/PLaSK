@@ -19,7 +19,7 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion):
     // ...and eigenvalues determination
     evals = aligned_new_array<dcomplex>(N0);
     rwork = aligned_new_array<double>(2*N0);
-    lwork = N0*N0;
+    lwork = max(2, N0*N0);
     work = aligned_new_array<dcomplex>(lwork);
 
     // Nothing found so far
@@ -135,8 +135,9 @@ const_cvector Transfer::getInterfaceVector()
 }
 
 
-LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool reflected)
+LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(double power, const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool reflected)
 {
+    double fact = sqrt(2e-3 * power);
     double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
@@ -152,15 +153,17 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(const shared_ptr<const Mesh> &
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
-        auto dest = diagonalizer->source()->getField(layer, level, E, H);
+        auto dest = fact * diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();
     return destination;
 }
 
-LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
+LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
 {
+    
+    double fact = 1./Z0 * sqrt(2e-3 * power);
     double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
@@ -176,7 +179,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(const shared_ptr<const Mesh>& 
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
-        auto dest = diagonalizer->source()->getField(layer, level, E, H);
+        auto dest = fact * diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();

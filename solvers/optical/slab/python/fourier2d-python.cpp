@@ -200,7 +200,7 @@ static std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
         default: sym = "none";
     }
     dcomplex neff = self.beta / self.k0;
-    return format("<lam: {:.2f}nm, neff: {:.3f}{:+.3g}, ktran: {}/um, polarization: {}, symmetry: {}, power: {:.2g} mW>",
+    return format("<lam: {:.2f}nm, neff: {:.3f}{:+.3g}, ktran: {}/um, polarization: {}, symmetry: {}, `: {:.2g} mW>",
                   real(2e3*M_PI / self.k0),
                   real(neff),imag(neff),
                   (imag(self.ktran) == 0.)? format("{:.3g}",real(self.ktran)) : format("{:.3g}{:+.3g}",real(self.ktran),imag(self.ktran)),
@@ -300,6 +300,11 @@ void export_FourierSolver2D()
     RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, 
                 "Type of discrete cosine transform for symmetric expansion.");
+    RW_FIELD(emission, "Direction of the useful light emission.\n\n"
+                       "Necessary for the over-threshold model to correctly compute the output power.\n"
+                       "Currently the fields are normalized only if this parameter is set to\n"
+                       "``top`` or ``bottom``. Otherwise, it is ``undefined`` (default) and the fields\n"
+                       "are not normalized.");
     solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
                 "Compute discontinuity matrix determinant.\n\n"
                 "Arguments can be given through keywords only.\n\n"
@@ -421,7 +426,7 @@ void export_FourierSolver2D()
         .def_readonly("beta", &FourierSolver2D::Mode::beta, "Mode longitudinal wavevector [1/µm].")
         .add_property("neff", &FourierSolver2D_Mode_Neff, "Mode longitudinal effective index [-].")
         .def_readonly("ktran", &FourierSolver2D::Mode::ktran, "Mode transverse wavevector [1/µm].")
-        .def_readwrite("power", &FourierSolver2D::Mode::power, "Total power emitted into the mode.")
+        .def_readwrite("power", &FourierSolver2D::Mode::power, "Total power emitted into the mode [mW].")
         .def("__str__", &FourierSolver2D_Mode_str)
         .def("__repr__", &FourierSolver2D_Mode_repr)
         .def("__getattr__", &FourierSolver2D_Mode__getattr__)

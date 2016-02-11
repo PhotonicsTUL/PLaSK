@@ -153,10 +153,17 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (QE.isnan()) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: NaN in Q matrix");
 
             // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
-            // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
             int info;
-            zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N,  Te[layer].data(), N,
-                Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+            if (N < 2) {
+                dcomplex lwork[4];
+                double rwork[2];
+                zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N, Te[layer].data(), N,
+                      lwork, 2, rwork, info);
+            } else {
+                // We use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
+                zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N, Te[layer].data(), N,
+                      Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+            }
             if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute {0}-th eignevalue of QE", info);
 
             // Find the inverse of Te in the classical way (maybe to be optimized in future)

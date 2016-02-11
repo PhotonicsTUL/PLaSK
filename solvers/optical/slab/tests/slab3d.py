@@ -51,7 +51,7 @@ def pos(w, z=0):
     raise ValueError("wrong axis")
 
 
-shelf = geometry.Container3D()
+shelf = geometry.Align3D()
 
 if symmetric:
     stack = geometry.Stack3D(left=0, back=0)

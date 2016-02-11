@@ -344,6 +344,8 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
 
     /// Compute mirror losses for specified effective mode
     double getMirrorLosses(dcomplex n) {
+        double L = geometry->getExtrusion()->getLength();
+        if (isinf(L)) return 0.;
         const double lambda = real(2e3*M_PI / k0);
         double R1, R2;
         if (mirrors) {
@@ -354,7 +356,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
             R1 = abs((n-n1) / (n+n1));
             R2 = abs((n-n2) / (n+n2));
         }
-        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
+        return lambda * std::log(R1*R2) / (4e3 * M_PI * L);
     }
 
     /**

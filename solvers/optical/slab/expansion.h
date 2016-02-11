@@ -140,6 +140,14 @@ struct PLASK_SOLVER_API Expansion {
         field_interpolation = method;
         prepareField();
     }
+
+    /**
+     * Compute vertical component of the Poynting vector for specified fields
+     * \param E electric field coefficients vector
+     * \param H magnetic field coefficients vector
+     * \return integrated Poynting vector i.e. the total vertically emitted energy
+     */
+    virtual double integratePoyntingVert(const cvector& E, const cvector& H) = 0;
     
   protected:
 
