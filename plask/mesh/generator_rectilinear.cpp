@@ -402,6 +402,10 @@ void RectilinearMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, const Mana
     } else throw XMLUnexpectedElementException(reader, "proper generator configuration tag");
 }
 
+template struct PLASK_API RectilinearMeshRefinedGenerator<1>;
+template struct PLASK_API RectilinearMeshRefinedGenerator<2>;
+template struct PLASK_API RectilinearMeshRefinedGenerator<3>;
+
 
 template <typename GeneratorT>
 static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const Manager&)
@@ -454,6 +458,10 @@ shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, cons
     }
     return result;
 }
+
+template struct PLASK_API RectilinearMeshDivideGenerator<1>;
+template struct PLASK_API RectilinearMeshDivideGenerator<2>;
+template struct PLASK_API RectilinearMeshDivideGenerator<3>;
 
 static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("ordered.divide",   readRectilinearDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearDivideGenerator<2>);
@@ -509,7 +517,9 @@ static RegisterMeshGeneratorReader rectilinear_smoothgenerator_reader  ("ordered
 static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth", readRectilinearSmoothGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth", readRectilinearSmoothGenerator<3>);
 
-
+template struct PLASK_API RectilinearMeshSmoothGenerator<1>;
+template struct PLASK_API RectilinearMeshSmoothGenerator<2>;
+template struct PLASK_API RectilinearMeshSmoothGenerator<3>;
 
 
 

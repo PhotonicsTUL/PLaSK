@@ -380,6 +380,7 @@ inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, std::complex<double> >)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, int>)
 
 } //namespace plask
 

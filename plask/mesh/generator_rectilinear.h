@@ -302,6 +302,14 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
 };
 
+template <> shared_ptr<MeshD<1>> RectilinearMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <> shared_ptr<MeshD<2>> RectilinearMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <> shared_ptr<MeshD<3>> RectilinearMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry);
+
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<3>)
+
 /**
  * Dividing generator ensuring no rapid change of element size
  */
@@ -370,6 +378,10 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
     }
 };
 
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<3>)
+
 
 /**
  * Dense-edge genereator that has very dense sampling near edges and gradually gets wider towards the center.
@@ -434,6 +446,14 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
         this->fireChanged();
     }
 };
+
+template<> RectilinearMeshSmoothGenerator<1>::RectilinearMeshSmoothGenerator();
+template<> RectilinearMeshSmoothGenerator<2>::RectilinearMeshSmoothGenerator();
+template<> RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator();
+
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<3>)
 
 } // namespace plask
 
