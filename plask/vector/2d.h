@@ -21,7 +21,7 @@ namespace plask {
  * Vector in 2D space.
  */
 template <typename T>
-struct Vec<2,T> {
+struct PLASK_API Vec<2,T> {
 
     static const int DIMS = 2;
 
@@ -378,10 +378,8 @@ inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {
     return Vec<2,T>(c0__tran, c1__up);
 }
 
-/*
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, std::complex<double> >)
-*/
 
 } //namespace plask
 

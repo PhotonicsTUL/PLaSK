@@ -59,6 +59,9 @@
       //#endif
     #else
         #define PLASK_API __declspec(dllimport)
+      //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_SHARED)
+      //  #define FMT_SHARED
+      //#endif
     #endif
     #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
     #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
