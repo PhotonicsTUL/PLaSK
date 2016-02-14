@@ -97,7 +97,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
 
         std::exception_ptr error;
         #pragma omp parallel for
-        for (int i = 1; i < imn; ++i) {	//i can't be size_t since MSVC does not support omp newer than 2
+        for (plask::openmp_size_t i = 1; i < imn; ++i) {
             if (error) continue;
             try {
                 middle[i] = fun(dcomplex(re, im0+i*di));
@@ -141,7 +141,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
 
             std::exception_ptr error;
             #pragma omp parallel for
-            for (size_t i = 1; i < ren; ++i) {
+            for (plask::openmp_size_t i = 1; i < ren; ++i) {
                 if (error) continue;
                 try {
                     middle[i] = fun(dcomplex(re0+i*dr, im));

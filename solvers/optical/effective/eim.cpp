@@ -830,7 +830,7 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
         DataVector<double> results(rect_mesh->size());
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
-            for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
+            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                 double* data = results.data() + i1 * rect_mesh->axis0->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
@@ -839,7 +839,7 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
             }
         } else {
             #pragma omp parallel for
-            for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
+            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                 double* data = results.data() + i0 * rect_mesh->axis1->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];

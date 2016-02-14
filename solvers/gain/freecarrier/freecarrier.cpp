@@ -691,7 +691,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
             std::exception_ptr error;
             #pragma omp parallel for
-            for (int i = 0; i < regpoints[reg]->size(); ++i) {	//i can't be size_t since MSVC doesn't support omp newer than 2
+            for (plask::openmp_size_t i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
                 try {
                     double T = temps[i];

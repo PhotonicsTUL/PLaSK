@@ -102,5 +102,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "filters/filter.h"
 
+#include "utils/openmp.h"
+
 
 #endif // PLASK__PLASK_HPP

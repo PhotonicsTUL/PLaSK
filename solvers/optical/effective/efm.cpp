@@ -330,7 +330,7 @@ void EffectiveFrequencyCyl::stageOne()
             // Compute effective frequencies for all stripes
             std::exception_ptr error; // needed to handle exceptions from OMP loop
             #pragma omp parallel for
-            for (int i = 0; i < rsize; ++i) {	//i can't be size_t since MSVC does not support omp newer than 2
+            for (plask::openmp_size_t i = 0; i < rsize; ++i) {
                 if (error != std::exception_ptr()) continue; // just skip loops after error
                 try {
                     writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe {0}", i);
@@ -876,7 +876,7 @@ struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<d
 
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
-            for (int i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {	//i1 can't be size_t since MSVC does not support omp newer than 2
+            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                 double* data = results.data() + i1 * rect_mesh->axis0->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                     dcomplex f = valr[i0] * valz[i1];
@@ -885,7 +885,7 @@ struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<d
             }
         } else {
             #pragma omp parallel for
-            for (int i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {	//i0 can't be size_t since MSVC does not support omp newer than 2
+            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                 double* data = results.data() + i0 * rect_mesh->axis1->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                     dcomplex f = valr[i0] * valz[i1];

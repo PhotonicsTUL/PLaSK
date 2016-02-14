@@ -2,6 +2,7 @@
 #define PLASK__LAZYDATA_H
 
 #include "data.h"
+#include "utils/openmp.h"
 
 namespace plask {
 
@@ -39,7 +40,7 @@ struct LazyDataImpl {
         DataVector<T> res(this->size());
         std::exception_ptr error;
         #pragma omp parallel for
-        for (int i = 0; i < res.size(); ++i) {
+        for (openmp_size_t i = 0; i < res.size(); ++i) {
             if (error) continue;
             try {
                 res[i] = this->at(i);
