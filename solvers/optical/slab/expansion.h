@@ -59,7 +59,7 @@ struct PLASK_SOLVER_API Expansion {
             size_t nlayers = lcount();
             std::exception_ptr error;
             #pragma omp parallel for
-            for (size_t l = 0; l < nlayers; ++l) {
+            for (int l = 0; l < nlayers; ++l) {	//l can't be size_t since MSVC does not support omp newer than 2
                 if (error) continue;
                 try {
                     layerIntegrals(l, lam, glambda);
@@ -81,7 +81,7 @@ struct PLASK_SOLVER_API Expansion {
             for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
             std::exception_ptr error;
             #pragma omp parallel for
-            for (size_t l = 0; l < glayers.size(); ++l) {
+            for (int l = 0; l < glayers.size(); ++l) {	//l can't be size_t since MSVC does not support omp newer than 2
                 if (error) continue;
                 try {
                     layerIntegrals(glayers[l], lam, glambda);
