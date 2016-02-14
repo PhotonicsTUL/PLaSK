@@ -37,6 +37,20 @@ double InN_Si::Nf(double T) const {
 	return ( Nf_RT*(-T*T*3.802E-6 +T*3.819E-3 +0.1965) );
 }
 
+MI_PROPERTY(InN_Si, Na,
+            MIComment("-")
+            )
+double InN_Si::Na() const {
+    return ( 0. );
+}
+
+MI_PROPERTY(InN_Si, Nd,
+            MIComment("-")
+            )
+double InN_Si::Nd() const {
+    return ( ND );
+}
+
 double InN_Si::Dop() const {
     return ND;
 }

@@ -37,6 +37,20 @@ double InGaN_Si::Nf(double T) const {
     return ( mInN_Si.Nf(T)*In + mGaN_Si.Nf(T)*Ga );
 }
 
+MI_PROPERTY(InGaN_Si, Na,
+            MIComment("-")
+            )
+double InGaN_Si::Na() const {
+    return ( 0. );
+}
+
+MI_PROPERTY(InGaN_Si, Nd,
+            MIComment("-")
+            )
+double InGaN_Si::Nd() const {
+    return ( ND );
+}
+
 double InGaN_Si::Dop() const {
     return ND;
 }

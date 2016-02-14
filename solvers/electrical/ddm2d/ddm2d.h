@@ -235,10 +235,10 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
 
-//     /// Save locate stiffness matrix to global one
-//     inline void addCurvature(double& k44, double& k33, double& k22, double& k11,
-//                              double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
-//                              double ky, double width, const Vec<2,double>& midpoint);
+    /// Save locate stiffness matrix to global one
+    inline void addCurvature(double& k44, double& k33, double& k22, double& k11,
+                              double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
+                              double ky, double width, const Vec<2,double>& midpoint);
 
     /// Set stiffness matrix + load vector
     template <CalcType calctype, typename MatrixT>

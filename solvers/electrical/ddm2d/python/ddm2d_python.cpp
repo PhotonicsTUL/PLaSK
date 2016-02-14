@@ -51,6 +51,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("Rsrh", &__Class__::mRsrh, "True if SRH recombination is taken into account");
     solver.def_readwrite("Rrad", &__Class__::mRrad, "True if radiative recombination is taken into account");
     solver.def_readwrite("Raug", &__Class__::mRaug, "True if Auger recombination is taken into account");
+    solver.def_readwrite("Pol", &__Class__::mPol, "True if polarization effects are taken into account");
     solver.def_readwrite("FullIon", &__Class__::mFullIon, "True if dopants are completely ionized");
     solver.def_readwrite("SchottkyP", &__Class__::mSchottkyP, "Schottky barrier for p-type constact");
     solver.def_readwrite("SchottkyN", &__Class__::mSchottkyN, "Schottky barrier for n-type constact");

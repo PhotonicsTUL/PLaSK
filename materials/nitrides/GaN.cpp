@@ -77,9 +77,9 @@ double GaN::Eg(double T, double e, char point) const {
     else return NAN;
 }
 
-double GaN::VB(double T, double e, char point, char hole) const {
+/*double GaN::VB(double T, double e, char point, char hole) const {
     return 0.;
-}
+}*/
 
 double GaN::Dso(double T, double e) const {
     return 0.017;
@@ -116,6 +116,32 @@ Tensor2<double> GaN::Mlh(double T, double e) const {
     tMlh.c00 = 1.67;
     tMlh.c11 = 0.15;
     return tMlh;
+}
+
+MI_PROPERTY(GaN, CB,
+            MISource("-")
+           )
+double GaN::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point, 'H') + Eg(T,0.,point) );
+    return tCB;
+    /*if (!e) return tCB;
+    else return tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e;stary kod z GaAs*/
+}
+
+MI_PROPERTY(GaN, VB,
+            MISource("-"),
+            MIComment("no temperature dependence")
+           )
+double GaN::VB(double T, double e, char point, char hole) const {
+    double tVB(0.80);
+    if (e) {
+        /*double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
+        double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
+        if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
+        else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else throw NotImplemented("VB can be calculated only for holes: H, L"); stary kod z GaAs*/
+    }
+    return tVB;
 }
 
 bool GaN::isEqual(const Material &other) const {

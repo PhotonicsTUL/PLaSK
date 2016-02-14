@@ -41,6 +41,20 @@ double InN_Mg::Nf(double T) const {
     return ( Nf_RT );
 }
 
+MI_PROPERTY(InN_Mg, Na,
+            MIComment("-")
+            )
+double InN_Mg::Na() const {
+    return ( NA );
+}
+
+MI_PROPERTY(InN_Mg, Nd,
+            MIComment("-")
+            )
+double InN_Mg::Nd() const {
+    return ( 0. );
+}
+
 double InN_Mg::Dop() const {
     return NA;
 }

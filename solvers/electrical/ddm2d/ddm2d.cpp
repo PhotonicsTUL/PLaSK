@@ -50,6 +50,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     mBx(mRx/(mNx*mNx)),
     mCx(mRx/(mNx*mNx*mNx)),
     //mHx(((mKx*mTx)/(mXx*mXx))*1e12),
+    mPx((mXx*phys::qe*mNx)*1e-4), // polarization (C/m^2)
     dU(0.002),
     maxDelPsi0(2.),
     maxDelPsi(0.1*dU),
@@ -120,6 +121,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             mSchottkyN = source.getAttribute<double>("SchottkyN", mSchottkyN);
             mRsrh = source.getAttribute<bool>("Rsrh", mRsrh);
             mRrad = source.getAttribute<bool>("Rrad", mRrad);
+            mPol = source.getAttribute<bool>("Pol", mPol);
             mRaug = source.getAttribute<bool>("Raug", mRaug);
             mFullIon = source.getAttribute<bool>("FullIon", mFullIon);
             maxerrPsiI = source.getAttribute<double>("maxerrVi", maxerrPsiI);
@@ -286,30 +288,30 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, D
     }
 }
 
-// template <>
-// inline void DriftDiffusionModel2DSolver<Geometry2DCartesian>::addCurvature(double&, double&, double&, double&,
-//                             double&, double&, double&, double&, double&, double&,
-//                             double, double, const Vec<2,double>&)
-// {
-// }
-//
-// template <>
-// inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(double& k44, double& k33, double& k22, double& k11,
-//                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
-//                                double, double, const Vec<2,double>& midpoint)
-// {
-//         double r = midpoint.rad_r();
-//         k44 = r * k44;
-//         k33 = r * k33;
-//         k22 = r * k22;
-//         k11 = r * k11;
-//         k43 = r * k43;
-//         k21 = r * k21;
-//         k42 = r * k42;
-//         k31 = r * k31;
-//         k32 = r * k32;
-//         k41 = r * k41;
-// }
+template <>
+inline void DriftDiffusionModel2DSolver<Geometry2DCartesian>::addCurvature(double&, double&, double&, double&,
+                             double&, double&, double&, double&, double&, double&,
+                             double, double, const Vec<2,double>&)
+{
+}
+
+template <> // TODO czy to bedzie OK?
+inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(double& k44, double& k33, double& k22, double& k11,
+                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
+                                double, double, const Vec<2,double>& midpoint)
+{
+         double r = midpoint.rad_r();
+         k44 = r * k44;
+         k33 = r * k33;
+         k22 = r * k22;
+         k11 = r * k11;
+         k43 = r * k43;
+         k21 = r * k21;
+         k42 = r * k42;
+         k31 = r * k31;
+         k32 = r * k32;
+         k41 = r * k41;
+}
 
 template <typename Geometry2DType>
 template <CalcType calctype, typename MatrixT>
@@ -483,7 +485,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 }
             }
         }
-        else {
+        else { // CALC_PSI
             double normEps = material->eps(T) / mEpsRx;
 
             kk = 1. / (3.*(hx*0.5)*(hy*0.5));
@@ -495,27 +497,34 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
                 ff = 0.;
             }
             else {
+                gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
+
                 double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
                 double normNv = Neff(material->Mh(T, 0.), T) / mNx;
                 //double Ni = material->Ni(T) / mNx;
                 double normNd = material->Nd() / mNx;
                 double normNa = material->Na() / mNx;
-                double normEd = 0.050 / mEx;
-                double normEa = 0.150 / mEx;
-
-                gg = (1./9.) * (p + n) * (hx*0.5) * (hy*0.5);
                 double normNdIon = normNd;
                 double normNaIon = normNa;
-                if (!mFullIon)
-                {
+                if (!mFullIon) {
                     //this->writelog(LOG_RESULT, "Full ionization false");
                     double gD(2.), gA(4.);
+                    double normEd = material->EactD(T) / mEx;
+                    double normEa = material->EactA(T) / mEx;
                     double normNdTmp = (normNc/gD)*exp(-normEd);
                     double normNaTmp = (normNv/gA)*exp(-normEa);
                     normNdIon = normNd * (normNdTmp/(normNdTmp+n));
                     normNaIon = normNa * (normNaTmp/(normNaTmp+p));
                 }
                 ff = - (hx*0.5) * (hy*0.5) * (p - n + normNdIon - normNaIon);
+                if (mPol) {
+                    double eII = (3.188 - material->lattC(T,'a')) / material->lattC(T,'a'); // TODO wstawic stala podloza
+                    double eL = -2. * eII * material->c13(T) / material->c33(T); // TODO uzaleznic od kata teta
+                    double Ppz = material->e33(T) * eL + 2. * material->e13(T) * eII; // TODO sprawdzic czy OK
+                    double Ptot = material->Psp(T) + Ppz;
+                    double normPtot = Ptot / mPx;
+                    ff += normPtot;
+                }
             }
         }
 
@@ -536,7 +545,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         g31 = g42 = gg;
 
         // set stiffness matrix
-        //addCurvature(k44, k33, k22, k11, k43, k21, k42, k31, k32, k41, ky, elemwidth, midpoint); // TODO uncomment and correct after takng cylindrical structures into account
+        addCurvature(k44, k33, k22, k11, k43, k21, k42, k31, k32, k41, ky, hx, midpoint); // TODO uncomment and correct after takng cylindrical structures into account
 
         A(loleftno, loleftno) += k11 + g11;
         A(lorghtno, lorghtno) += k22 + g22;

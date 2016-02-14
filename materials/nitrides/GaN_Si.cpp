@@ -45,6 +45,20 @@ double GaN_Si::Nf(double T) const {
     return Nf_RT*(0.638+T*0.001217) ;
 }
 
+MI_PROPERTY(GaN_Si, Na,
+            MIComment("-")
+            )
+double GaN_Si::Na() const {
+    return ( 0. );
+}
+
+MI_PROPERTY(GaN_Si, Nd,
+            MIComment("-")
+            )
+double GaN_Si::Nd() const {
+    return ( ND );
+}
+
 double GaN_Si::Dop() const {
     return ND;
 }

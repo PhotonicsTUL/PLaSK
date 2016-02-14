@@ -25,6 +25,7 @@
       <attr name="Rsrh" label="SRH recombination" type="bool">Consider Shockley-Read-Hall recombination.</attr>
       <attr name="Rrad" label="Radiative recombination" type="bool">Consider radiative recombination.</attr>
       <attr name="Raug" label="Auger recombination" type="bool">Consider Auger recombination.</attr>
+      <attr name="Pol" label="Polarization effects" type="bool">Polarization effects.</attr>
       <attr name="FullIon" label="Complete ionization of dopants" type="bool">Complete ionization of dopants.</attr>
       <attr name="maxerrVi" label="Max initial potential update" type="float">Limit for the initial potential estimate updates.</attr>
       <attr name="maxerrV0" label="Max built-in potential update" type="float">Limit for the built-in potential updates.</attr>

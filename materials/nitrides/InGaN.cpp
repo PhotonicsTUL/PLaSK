@@ -69,9 +69,9 @@ double InGaN::Eg(double T, double e, char point) const {
     return (tEg);
 }
 
-double InGaN::VB(double T, double e, char point, char hole) const {
+/*double InGaN::VB(double T, double e, char point, char hole) const {
     return 0.3 * (mGaN.Eg(T,e,point) - Eg(T,e,point));
-}
+}*/
 
 double InGaN::Dso(double T, double e) const {
     return In*mInN.Dso(T,e) + Ga*mGaN.Dso(T,e);
@@ -102,6 +102,35 @@ Tensor2<double> InGaN::Mlh(double T, double e) const {
     double lMlh = In*mInN.Mlh(T,e).c00 + Ga*mGaN.Mlh(T,e).c00,
            vMlh = In*mInN.Mlh(T,e).c11 + Ga*mGaN.Mlh(T,e).c11;
     return ( Tensor2<double>(lMlh,vMlh) );
+}
+
+MI_PROPERTY(InGaN, CB,
+            MISource("-")
+            )
+double InGaN::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
+    /*if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );*/
+    return tCB;
+}
+
+MI_PROPERTY(InGaN, VB,
+            MISource("- "),
+            MISource("-"),
+            MIComment("-")
+            )
+double InGaN::VB(double T, double e, char point, char hole) const {
+    double tVB( In*mInN.VB(T,0.,point,hole) + Ga*mGaN.VB(T,0.,point,hole) /*- In * Ga * 1.4*/ );
+    return tVB;
+    /*if (!e) return tVB;
+    else
+    {
+        double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
+        double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
+        if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
+        else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else throw NotImplemented("VB can be calculated only for holes: H, L");
+    }*/
 }
 
 MI_PROPERTY(InGaN, lattC,

@@ -25,11 +25,13 @@ struct InGaN: public Semiconductor {
     double nr(double wl, double T, double n=0.) const override;
     double absp(double wl, double T) const override;
     double Eg(double T, double e, char point) const override;
-    double VB(double T, double e, char point, char hole) const override;
+    //double VB(double T, double e, char point, char hole) const override;
     double Dso(double T, double e) const override;
     Tensor2<double> Me(double T, double e, char point) const override;
     Tensor2<double> Mhh(double T, double e) const override;
     Tensor2<double> Mlh(double T, double e) const override;
+    double CB(double T, double e, char point) const override;
+    double VB(double T, double e, char point, char hole) const override;
     double lattC(double T, char x) const override;
 
 protected:

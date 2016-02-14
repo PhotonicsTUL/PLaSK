@@ -37,6 +37,20 @@ double InGaN_Mg::Nf(double T) const {
     return ( mInN_Mg.Nf(T)*In + mGaN_Mg.Nf(T)*Ga );
 }
 
+MI_PROPERTY(InGaN_Mg, Na,
+            MIComment("-")
+            )
+double InGaN_Mg::Na() const {
+    return ( NA );
+}
+
+MI_PROPERTY(InGaN_Mg, Nd,
+            MIComment("-")
+            )
+double InGaN_Mg::Nd() const {
+    return ( 0. );
+}
+
 double InGaN_Mg::Dop() const {
     return NA;
 }

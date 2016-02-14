@@ -46,6 +46,20 @@ double GaN_Mg::Nf(double T) const {
 	return  Nf_RT * (T*T*2.884E-4 -T*0.147 + 19.080);
 }
 
+MI_PROPERTY(GaN_Mg, Na,
+            MIComment("-")
+            )
+double GaN_Mg::Na() const {
+    return ( NA );
+}
+
+MI_PROPERTY(GaN_Mg, Nd,
+            MIComment("-")
+            )
+double GaN_Mg::Nd() const {
+    return ( 0. );
+}
+
 double GaN_Mg::Dop() const {
     return NA;
 }
