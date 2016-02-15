@@ -13,7 +13,7 @@ namespace plask {
 /// Sequence container that repeats its child over a line shifted by a vector.
 /// You can consider this as a one-dimentional lattice
 template <int dim>
-struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
+struct ArrangeContainer: public GeometryObjectTransform<dim>
 {
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectTransform<dim>::DVec DVec;

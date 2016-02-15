@@ -11,7 +11,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
+struct Intersection: public GeometryObjectTransform<dim> {
 
     static const char* NAME;
 

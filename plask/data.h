@@ -799,7 +799,7 @@ inline DataVector<RT> const_data_cast(const DataVector<T>& src) {
 /*
 PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<const double>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(PLASK_API DataVector<std::complex<double>>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<std::complex<double>>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<const std::complex<double>>)
 */
 

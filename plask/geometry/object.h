@@ -1019,7 +1019,7 @@ template <int dim> struct Translation;
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API GeometryObjectD: public GeometryObject {
+struct GeometryObjectD: public GeometryObject {
 
     static const int DIM = dim;
     typedef typename Primitive<dim>::Box Box;
@@ -1549,6 +1549,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
         return hasRoleAt(role_name, point, &path);
     }
 };
+
+template <int dims>
+shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec& point, const Predicate& predicate, const plask::PathHints* path) const;
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<3>)

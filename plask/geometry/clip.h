@@ -10,7 +10,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API Clip: public GeometryObjectTransform<dim> {
+struct Clip: public GeometryObjectTransform<dim> {
 
     static const char* NAME;
 
