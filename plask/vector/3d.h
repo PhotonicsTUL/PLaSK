@@ -413,11 +413,6 @@ inline constexpr Vec<3,T> vec(const T c0__lon, const T c1__tran, const T c2__up)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<3, double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<3, std::complex<double> >)
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-extern template struct PLASK_API Vec<3, double>;
-extern template struct PLASK_API Vec<3, std::complex<double> >;
-#endif
-
 } //namespace plask
 
 #endif // PLASK__VECTORCART3D_H
