@@ -1550,9 +1550,6 @@ struct GeometryObjectD: public GeometryObject {
     }
 };
 
-template <int dims>
-shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec& point, const Predicate& predicate, const plask::PathHints* path) const;
-
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<3>)
 
