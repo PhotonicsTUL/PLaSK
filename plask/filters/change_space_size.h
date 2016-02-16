@@ -8,7 +8,7 @@ namespace plask {
 
 /**
  * 3D mesh that wrap 2D mesh (sourceMesh).
- * It translates all points of oryginal mesh and complement lon. parameter of each point by pointsCount values.
+ * It translates all points of original mesh and complement lon. parameter of each point by pointsCount values.
  * Point with index I in sourceMesh is used to creates points I * pointsCount to I * (pointsCount + 1) - 1.
  */
 class PLASK_API CartesianMesh2DTo3DExtend: public MeshD<3> {
@@ -41,7 +41,7 @@ public:
 
 /**
  * 3D mesh that wrap 2D mesh.
- * It translates all points of oryginal mesh and complement lon. parameter of each point.
+ * It translates all points of original mesh and complement lon. parameter of each point.
  */
 class PLASK_API CartesianMesh2DTo3D: public MeshD<3> {
 

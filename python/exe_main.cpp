@@ -401,7 +401,7 @@ int main(int argc, const char *argv[])
                 plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
-                globals.update(manager->locals);
+                globals.update(manager->defs);
                 plask::python::PythonManager::export_dict(omanager, globals);
 
                 // Set default axes if all loaded geometries share the same

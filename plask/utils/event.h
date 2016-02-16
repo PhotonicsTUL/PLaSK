@@ -17,7 +17,7 @@ template <typename SourceType, typename FlagsType = unsigned char>
 class EventWithSourceAndFlags {
 
     /// Source of event.
-    SourceType& _source;
+    SourceType* _source;
 
     /// Event flags (which describes event properties).
     FlagsType _flags;
@@ -28,13 +28,13 @@ public:
      * Get source of event.
      * @return source of event
      */
-    const SourceType& source() const { return _source; }
+    const SourceType* source() const { return _source; }
 
     /**
      * Get source of event.
      * @return source of event
      */
-    SourceType& source() { return _source; }
+    SourceType* source() { return _source; }
 
     /**
      * Get source of event casted (using dynamic_cast) to given type T.
@@ -42,7 +42,11 @@ public:
      * @tparam T required type
      */
     template <typename T>
-    const T& source() const { return dynamic_cast<const T&>(source()); }
+    const T* source() const { 
+        const T* casted = dynamic_cast<const T*>(_source);
+        if (!casted && _source) throw std::bad_cast();
+        return casted;
+    }
 
     /**
      * Get source of event casted (using dynamic_cast) to given type T.
@@ -50,7 +54,11 @@ public:
      * @tparam T required type
      */
     template <typename T>
-    T& source() { return dynamic_cast<T&>(source()); }
+    T* source() {
+        T* casted = dynamic_cast<T*>(_source);
+        if (!casted && _source) throw std::bad_cast();
+        return casted;
+    }
 
     /**
      * Get event's flags.
@@ -84,7 +92,7 @@ public:
      * @param source source of event
      * @param flags falgs which describes event's properties
      */
-    explicit EventWithSourceAndFlags(SourceType& source, FlagsType flags = 0): _source(source), _flags(flags) {}
+    explicit EventWithSourceAndFlags(SourceType* source, FlagsType flags = 0): _source(source), _flags(flags) {}
 
     /// Virtual destructor for eventual subclassing
     virtual ~EventWithSourceAndFlags() {}

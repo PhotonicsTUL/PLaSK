@@ -58,7 +58,7 @@ class PythonXMLFilter {
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
         try {
-            return py::extract<std::string>(py::str(py_eval(str, xml_globals, manager->locals)));
+            return py::extract<std::string>(py::str(py_eval(str, xml_globals, manager->defs)));
         } catch (py::error_already_set) {
             throw Exception(getPythonExceptionMessage());
         }
@@ -160,20 +160,28 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     XMLReader reader(std::move(source));
 
     // Variables
-    manager->locals = vars.copy();
-    if (!manager->locals.has_key("self")) manager->locals["self"] = self;
+    if (vars.has_key("self"))
+        throw ValueError("Definition name 'self' is reserved");
+    manager->defs = vars.copy();
+    manager->defs["self"] = self;
 
     reader.setFilter(PythonXMLFilter(manager));
 
-    if (filter == py::object()) {
-        manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename));
-    } else {
-        py::list sections = py::list(filter);
-        auto filterfun = [sections](const std::string& section) -> bool {
-            return py::extract<bool>(sections.contains(section));
-        };
-        manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename), filterfun);
+    try {
+        if (filter == py::object()) {
+            manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename));
+        } else {
+            py::list sections = py::list(filter);
+            auto filterfun = [sections](const std::string& section) -> bool {
+                return py::extract<bool>(sections.contains(section));
+            };
+            manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename), filterfun);
+        }
+    } catch (...) {
+        py::delitem(manager->defs, py::str("self"));
+        throw;
     }
+    py::delitem(manager->defs, py::str("self"));
 
     manager->validatePositions();
 }
@@ -186,14 +194,17 @@ void PythonManager::loadDefines(XMLReader& reader)
         if (reader.getNodeName() != "define") throw XMLUnexpectedElementException(reader, "<define>");
         std::string name = reader.requireAttribute("name");
         std::string value = reader.requireAttribute("value");
-        if (!locals.has_key(name)) {
+        if (name == "self") {
+            throw XMLException(reader, "Definition name 'self' is reserved");
+        };
+        if (!defs.has_key(name)) {
             try {
-                locals[name] = (py_eval(value, xml_globals, locals));
+                defs[name] = (py_eval(value, xml_globals, defs));
             } catch (py::error_already_set) {
                 writelog(LOG_WARNING, "Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
                 PyErr_Clear();
-                locals[name] = value;
+                defs[name] = value;
             }
         }
         else if (parsed.find(name) != parsed.end())
@@ -318,11 +329,11 @@ void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 
 
 void PythonManager::export_dict(py::object self, py::dict dict) {
-    dict["PTH"] = self.attr("path");
-    dict["GEO"] = self.attr("geometry");
-    dict["MSH"] = self.attr("mesh");
-    dict["MSG"] = self.attr("meshgen");
-    dict["DEF"] = self.attr("define");
+    dict["PTH"] = self.attr("pth");
+    dict["GEO"] = self.attr("geo");
+    dict["MSH"] = self.attr("msh");
+    dict["MSG"] = self.attr("msg");
+    dict["DEF"] = self.attr("defs");
 
     PythonManager* ths = py::extract<PythonManager*>(self);
 
@@ -564,14 +575,14 @@ void register_manager() {
              "        If this parameter is given, only the listed sections of the XPL file are\n"
              "        read and the other ones are skipped.\n",
              (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
-        .def_readonly("path", &PythonManager::pathHints, "Dictionary of all named paths.")
-        .def_readonly("geometry", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects.")
-        .def_readonly("mesh", &PythonManager::meshes, "Dictionary of all named meshes.")
-        .def_readonly("meshgen", &PythonManager::generators, "Dictionary of all named mesh generators.")
-        .def_readonly("solver", &PythonManager::solvers, "Dictionary of all named solvers.")
+        .def_readonly("pth", &PythonManager::pathHints, "Dictionary of all named paths.")
+        .def_readonly("geo", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects.")
+        .def_readonly("msh", &PythonManager::meshes, "Dictionary of all named meshes.")
+        .def_readonly("msg", &PythonManager::generators, "Dictionary of all named mesh generators.")
+        .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers.")
         // .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file.")
-        .def_readwrite("define", &PythonManager::locals,
+        .def_readwrite("defs", &PythonManager::defs,
                        "Local defines.\n\n"
                        "This is a combination of the values specified in the :xml:tag:`<defines>`\n"
                        "section of the XPL file and the ones specified by the user in the\n"
@@ -581,11 +592,11 @@ void register_manager() {
              "Export loaded objects into a target dictionary.\n\n"
              "All the loaded solvers are exported with keys equal to their names and the other objects\n"
              "under the following keys:\n\n"
-             "* geometries and geometry objects (:attr:`~plask.Manager.geometry`): ``GEO``,\n\n"
-             "* paths to geometry objects (:attr:`~plask.Manager.path`): ``PTH``,\n\n"
-             "* meshes (:attr:`~plask.Manager.mesh`): ``MSH``,\n\n"
-             "* mesh generators (:attr:`~plask.Manager.meshgen`): ``MSG``,\n\n"
-             "* custom defines (:attr:`~plask.Manager.define`): ``DEF``.\n",
+             "* geometries and geometry objects (:attr:`~plask.Manager.geo`): ``GEO``,\n\n"
+             "* paths to geometry objects (:attr:`~plask.Manager.pth`): ``PTH``,\n\n"
+             "* meshes (:attr:`~plask.Manager.msh`): ``MSH``,\n\n"
+             "* mesh generators (:attr:`~plask.Manager.msg`): ``MSG``,\n\n"
+             "* custom defines (:attr:`~plask.Manager.defs`): ``DEF``.\n",
              py::arg("target"))
         .def_readwrite("draft_material", &Manager::draft,
                        "Flag indicating if unknown materials are allowed. If True then dummy material\n"

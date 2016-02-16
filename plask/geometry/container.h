@@ -360,6 +360,10 @@ protected:
         if (it != children.end()) aligners[it - children.begin()].align(*child);
     }
 
+    void align(TranslationT* child) {
+        align(static_pointer_cast<TranslationT>(child->shared_from_this()));
+    }
+
     void align(TranslationT& child) {
         align(static_pointer_cast<TranslationT>(child.shared_from_this()));
     }
@@ -373,7 +377,7 @@ public:
 
     /// Called by child.change signal
     void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) align(const_cast<TranslationT&>(evt.source<TranslationT>()));
+        if (evt.isResize()) align(const_cast<TranslationT*>(evt.source<TranslationT>()));
         ParentType::onChildChanged(evt);
     }
 

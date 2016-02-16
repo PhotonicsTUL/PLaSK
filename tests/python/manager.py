@@ -48,17 +48,17 @@ class Manager(unittest.TestCase):
 
 
     def testGeometry(self):
-        self.assertEqual( len(self.manager.geometry), 3 )
-        self.assertEqual( type(self.manager.geometry["Block-3"]), plask.geometry.Block2D )
-        self.assertEqual( list(self.manager.geometry["Stack-2"].get_leafs_bboxes()),
+        self.assertEqual( len(self.manager.geo), 3 )
+        self.assertEqual( type(self.manager.geo["Block-3"]), plask.geometry.Block2D )
+        self.assertEqual( list(self.manager.geo["Stack-2"].get_leafs_bboxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
-        self.assertEqual( type(self.manager.geometry.Space_1), plask.geometry.Cartesian2D )
-        self.assertEqual( len(self.manager.path), 1 )
-        with self.assertRaises(KeyError): self.manager.geometry["nonexistent"]
+        self.assertEqual( type(self.manager.geo.Space_1), plask.geometry.Cartesian2D )
+        self.assertEqual( len(self.manager.pth), 1 )
+        with self.assertRaises(KeyError): self.manager.geo["nonexistent"]
 
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.geometry), ["Block-3", "Space-1", "Stack-2"] )
+        self.assertEqual( list(self.manager.geo), ["Block-3", "Space-1", "Stack-2"] )
 
 
     def testExport(self):
@@ -68,19 +68,19 @@ class Manager(unittest.TestCase):
 
 
     def testMesh(self):
-        self.assertEqual( len(self.manager.mesh), 2 )
-        self.assertEqual( self.manager.mesh.lin.axis0 , [1, 2, 3] )
-        self.assertEqual( self.manager.mesh.lin.axis1 , [10, 20, 30] )
-        self.assertEqual( list(self.manager.mesh["reg"].axis1) , [1, 2, 3] )
-        self.assertEqual( list(self.manager.mesh["reg"].axis0) , [10, 20, 30] )
+        self.assertEqual( len(self.manager.msh), 2 )
+        self.assertEqual( self.manager.msh.lin.axis0 , [1, 2, 3] )
+        self.assertEqual( self.manager.msh.lin.axis1 , [10, 20, 30] )
+        self.assertEqual( list(self.manager.msh["reg"].axis1) , [1, 2, 3] )
+        self.assertEqual( list(self.manager.msh["reg"].axis0) , [10, 20, 30] )
 
 
     def testGenerators(self):
-        self.assertEqual( tuple(self.manager.meshgen.test.prediv), (4,4) )
-        self.assertEqual( tuple(self.manager.meshgen.test.postdiv), (2,3) )
-        self.assertEqual( self.manager.meshgen.test.warn_missing, False )
+        self.assertEqual( tuple(self.manager.msg.test.prediv), (4,4) )
+        self.assertEqual( tuple(self.manager.msg.test.postdiv), (2,3) )
+        self.assertEqual( self.manager.msg.test.warn_missing, False )
 
-        mesh = self.manager.meshgen.refined.generate(self.manager.geometry.Stack_2)
+        mesh = self.manager.msg.refined.generate(self.manager.geo.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
 
@@ -154,8 +154,8 @@ class Manager(unittest.TestCase):
             </connects>
         </plask>
         ''')
-        self.assertEqual( manager.solver.output.inWavelength(0), 2 )
-        self.assertEqual( manager.solver.input.inWavelength(0), 5 )
+        self.assertEqual( manager.solvers.output.inWavelength(0), 2 )
+        self.assertEqual( manager.solvers.input.inWavelength(0), 5 )
 
 
     def testMaterials(self):
@@ -210,13 +210,13 @@ class Manager(unittest.TestCase):
             <cartesian2d axes="xy">
               <stack>
               <rectangle name="block1" dx="5" dy="{sqrt(hh1)}" material="{mat}{'As'}"/>
-                <rectangle name="block2" dx="{self.geometry.block1.dims[0]}" dy="{h2}" material="GaAs"/>
+                <rectangle name="block2" dx="{self.geo.block1.dims[0]}" dy="{h2}" material="GaAs"/>
               </stack>
             </cartesian2d>
           </geometry>
         </plask>
         ''', {'hh1': 4})
-        self.assertEqual( str(manager.geometry.block1.material), 'AlAs' )
-        self.assertEqual( manager.geometry.block1.dims[1], 2 )
-        self.assertEqual( manager.geometry.block2.dims[0], 5 )
-        self.assertEqual( manager.geometry.block2.dims[1], 1 )
+        self.assertEqual( str(manager.geo.block1.material), 'AlAs' )
+        self.assertEqual( manager.geo.block1.dims[1], 2 )
+        self.assertEqual( manager.geo.block2.dims[0], 5 )
+        self.assertEqual( manager.geo.block2.dims[1], 1 )

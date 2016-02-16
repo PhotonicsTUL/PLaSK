@@ -715,7 +715,7 @@ class SolverOver: public Solver {
         this->geometry = geometry;
         if (this->geometry)
             this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChange);
-        onGeometryChange(Geometry::Event(*geometry, 0));
+        onGeometryChange(Geometry::Event(geometry.get(), 0));
     }
 };
 
@@ -752,7 +752,7 @@ private:
             this->mesh = mesh;
             if (this->mesh)
                 mesh_signal_connection = this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
-            onMeshChange(typename MeshT::Event(*mesh, 0));
+            onMeshChange(typename MeshT::Event(mesh.get(), 0));
         }
     }
 
@@ -832,7 +832,7 @@ private:
         this->mesh = mesh;
         if (this->mesh)
             mesh_signal_connection = this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
-        onMeshChange(typename MeshT::Event(*mesh, 0));
+        onMeshChange(typename MeshT::Event(mesh.get(), 0));
     }
 
     /**

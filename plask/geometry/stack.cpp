@@ -93,7 +93,7 @@ void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t i
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::onChildChanged(const GeometryObject::Event &evt) {
     if (evt.isResize()) updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
-    this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+    this->fireChanged(evt.originalSource(), evt.flagsForParent());
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -203,10 +203,10 @@ shared_ptr<typename StackContainer<dim>::TranslationT> StackContainer<dim>::newT
 template <int dim>
 void StackContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
     if (evt.isResize()) {
-        ParentClass::align(const_cast<TranslationT&>(evt.source<TranslationT>()));
+        ParentClass::align(const_cast<TranslationT*>(evt.source<TranslationT>()));
         this->updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
     }
-    this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+    this->fireChanged(evt.originalSource(), evt.flagsForParent());
 }
 
 template <int dim>

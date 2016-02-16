@@ -252,7 +252,11 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     void onGeometryChange(const Geometry::Event& evt) override {
         BaseT::onGeometryChange(evt);
-        if (!vbounds.empty()) setup_vbounds(); // update layers
+        if (this->geometry) {
+            if (!vbounds.empty()) setup_vbounds(); // update layers
+        } else {
+            vbounds.clear();
+        }
     }
 
     /// Detect layer sets and set them up

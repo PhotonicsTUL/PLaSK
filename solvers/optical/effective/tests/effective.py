@@ -165,7 +165,7 @@ class EffectiveFrequency(unittest.TestCase):
               </optical>
             </solvers>
           </plask>''')
-        self.solver = self.manager.solver.efm
+        self.solver = self.manager.solvers.efm
         self.solver.lam0 = 980.
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
@@ -174,7 +174,7 @@ class EffectiveFrequency(unittest.TestCase):
         axis0 = plask.mesh.Regular(0.001, 39.999, 100000)
         #axis0 = linspace(0.01, 3.99, 200)
         #axis1  = [ self.manager.geo.layers.bbox.lower.z-1e-6, 0.0025, self.manager.geo.layers.bbox.upper.z+-1e-6 ]
-        axis1  = plask.mesh.Ordered([self.manager.geometry.layers.bbox.upper.z+-1e-6])
+        axis1  = plask.mesh.Ordered([self.manager.geo.layers.bbox.upper.z+-1e-6])
         dr = axis0[1]-axis0[0]
         msh = mesh.Rectangular2D(axis0, axis1)
         self.solver.find_mode(980.1, 0)
@@ -206,14 +206,14 @@ class EffectiveFrequency(unittest.TestCase):
             pass
         else:
             def fun(g):
-                self.profile[self.manager.geometry['active']] = g
+                self.profile[self.manager.geo['active']] = g
                 m = self.solver.find_mode(980.1)
                 return imag(self.solver.modes[m].lam)
             threshold = brentq(fun, 0., 2000., xtol=1e-6)
             self.assertAlmostEqual( threshold, 1181.7, 1 )
 
     def testAbsorptionIntegral(self):
-        self.profile[self.manager.geometry['active']] = 1181.6834
+        self.profile[self.manager.geo['active']] = 1181.6834
         m = self.solver.find_mode(980.1)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.item.bbox
@@ -222,10 +222,10 @@ class EffectiveFrequency(unittest.TestCase):
         self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 2 )
 
     def testAbsorbedHeat(self):
-        self.profile[self.manager.geometry['active']] = 1181.6834
+        self.profile[self.manager.geo['active']] = 1181.6834
         m = self.solver.find_mode(980.1)
         self.solver.modes[m].power = 2.0
-        box = self.solver.geometry.get_object_bboxes(self.manager.geometry['active'])[0]
+        box = self.solver.geometry.get_object_bboxes(self.manager.geo['active'])[0]
         msh = mesh.Rectangular2D(mesh.Regular(0., 10., 1000), [0.5 * (box.lower.z + box.upper.z)])
         heat = self.solver.outHeat(msh).array[:,0]
         # 1e-15: µm³->m³ W->mW

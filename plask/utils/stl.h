@@ -96,16 +96,16 @@ std::ostream& printRange(std::ostream& out, ForwadIterator begin, ForwadIterator
  */
 template <typename T>
 struct AssignWithBackup {
-    T& oryginal;
+    T& original;
     T store;
 
     template <typename... ConstructorArgsT>
     AssignWithBackup(T& varible_to_back, ConstructorArgsT&&... newValueCtrArgs)
-    : oryginal(varible_to_back), store(std::forward<ConstructorArgsT>(newValueCtrArgs)...) {
+    : original(varible_to_back), store(std::forward<ConstructorArgsT>(newValueCtrArgs)...) {
         std::swap(varible_to_back, store);
     }
 
-    ~AssignWithBackup() { std::swap(oryginal, store); }
+    ~AssignWithBackup() { std::swap(original, store); }
 };
 
 /// Don't use this directly, use applyTuple instead.

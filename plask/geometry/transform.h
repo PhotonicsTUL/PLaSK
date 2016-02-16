@@ -43,7 +43,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     /// Called by child.change signal, call this change
     virtual void onChildChanged(const GeometryObject::Event& evt) {
-        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+        this->fireChanged(evt.originalSource(), evt.flagsForParent());
     }
 
     /// Connect onChildChanged to current child change signal

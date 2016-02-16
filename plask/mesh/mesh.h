@@ -156,7 +156,7 @@ struct PLASK_API Mesh: public Printable {
          * @param source source of event
          * @param flags flags which describes event's properties
          */
-        explicit Event(Mesh& source, unsigned char flags = 0):  EventWithSourceAndFlags<Mesh>(source, flags) {}
+        explicit Event(Mesh* source, unsigned char flags = 0): EventWithSourceAndFlags<Mesh>(source, flags) {}
     };
 
     /// Changed signal, fired when mesh was changed.
@@ -185,7 +185,7 @@ struct PLASK_API Mesh: public Printable {
      */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
-        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        EventT evt(this, std::forward<Args>(event_constructor_params_without_source)...);
         onChange(evt);
         changed(evt);
     }
@@ -332,7 +332,7 @@ class PLASK_API MeshGenerator {
      */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
-        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        EventT evt(this, std::forward<Args>(event_constructor_params_without_source)...);
         onChange(evt);
         changed(evt);
     }

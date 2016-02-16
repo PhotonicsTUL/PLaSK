@@ -71,7 +71,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     class PLASK_API Event: public EventWithSourceAndFlags<GeometryObject> {
 
-        const GeometryObject& _originalSource;
+        const GeometryObject* _originalSource;
 
     public:
 
@@ -146,25 +146,25 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         bool hasChangedBorders() const { return hasFlag(EVENT_BORDERS); }
 
         /**
-         * Get oryginal source of event which can differ from source if event was delegated.
-         * @return oryginal source of event
+         * Get original source of event which can differ from source if event was delegated.
+         * @return original source of event
          */
-        const GeometryObject& oryginalSource() const { return _originalSource; }
+        const GeometryObject* originalSource() const { return _originalSource; }
 
         /**
          * Construct event.
-         * @param source source and oryginal source of event
+         * @param source source and original source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(source) {}
+        explicit Event(GeometryObject* source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(source) {}
 
         /**
          * Construct event.
          * @param source source of event
-         * @param oryginalSource oryginal source of event
+         * @param originalSource original source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject& source, const GeometryObject& oryginalSource, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(oryginalSource) {}
+        explicit Event(GeometryObject* source, const GeometryObject* originalSource, unsigned char flags): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(originalSource) {}
 
     };
 
@@ -175,7 +175,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     struct PLASK_API ChildrenListChangedEvent: public Event {
 
-        ChildrenListChangedEvent(GeometryObject& source, unsigned char flags, const std::size_t beginIndex, const std::size_t endIndex)
+        ChildrenListChangedEvent(GeometryObject* source, unsigned char flags, const std::size_t beginIndex, const std::size_t endIndex)
             : Event(source, flags), beginIndex(beginIndex), endIndex(endIndex) {}
 
         /// Index of first child which was changed.
@@ -549,7 +549,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
-        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        EventT evt(this, std::forward<Args>(event_constructor_params_without_source)...);
         changed(evt);   //callChanged
     }
 

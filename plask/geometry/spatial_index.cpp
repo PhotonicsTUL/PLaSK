@@ -206,7 +206,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
 /**
  * Build cache.
  * @param input 1 + DIMS * 2 vectors sorted by:
- *  - 0 - in oryginal order,
+ *  - 0 - in original order,
  *  - dir*2 + 1 (for dim = 0 ... DIMS-1) - sorted by lower bound of bouding box in direction dir,
  *  - dir*2 + 2 (for dim = 0 ... DIMS-1) - sorted by upper bound of bouding box in direction dir.
  * Warning: this fynction change (destroy) inputs vectors.

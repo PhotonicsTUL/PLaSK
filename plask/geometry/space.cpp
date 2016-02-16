@@ -49,7 +49,7 @@ template <int dim>
 void GeometryD<dim>::onChildChanged(const GeometryObject::Event &evt) {
     if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
     //comipler should optimized out dim == 2 condition checking
-    fireChanged(evt.oryginalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
+    fireChanged(evt.originalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
 }
 
 template <int dim>

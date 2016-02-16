@@ -12,8 +12,8 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 //     py::dict profiles;
 
     /// Locals read from &lt;defines&gt; section and supplied by user
-    py::dict locals;
-
+    py::dict defs;
+    
     MaterialsDB* materialsDB;
 
     PythonManager(MaterialsDB* db=nullptr, bool draft=false): materialsDB(db? db : &MaterialsDB::getDefault()) {

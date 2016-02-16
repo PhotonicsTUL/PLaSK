@@ -52,9 +52,9 @@ struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, ValuePtr> {
 
     /// Remove source of event from cache map.
     void onEvent(typename Key::Event& evt) {
-        auto& src = evt.source();
-        src.changedDisconnectMethod(this, &CacheRemoveOnEachChange::onEvent);
-        this->map.erase(&src);
+        auto* src = evt.source();
+        src->changedDisconnectMethod(this, &CacheRemoveOnEachChange::onEvent);
+        this->map.erase(src);
     }
 
 };

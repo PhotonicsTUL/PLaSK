@@ -22,7 +22,7 @@ void GeometryObjectContainer<dim>::writeXML(XMLWriter::Element &parent_xml_objec
 
 template <int dim>
 void GeometryObjectContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
-    this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+    this->fireChanged(evt.originalSource(), evt.flagsForParent());
 }
 
 template <int dim>
