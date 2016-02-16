@@ -410,13 +410,8 @@ inline constexpr Vec<3,T> vec(const T c0__lon, const T c1__tran, const T c2__up)
     return Vec<3,T>(c0__lon, c1__tran, c2__up);
 }
 
-PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<3, double>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<3, std::complex<double> >)
-
-#if defined(PLASK_EXPORTS) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32))
-extern template struct PLASK_API Vec<3, double>;
-extern template struct PLASK_API Vec<3, std::complex<double> >;
-#endif
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<3, double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<3, std::complex<double> >)
 
 } //namespace plask
 

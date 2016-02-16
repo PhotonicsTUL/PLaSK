@@ -54,23 +54,23 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
-        //#define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __VA_ARGS__ ;
-        //#define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
+        //#define PLASK_API_EXTERN_TEMPLATE_INSTANTION_STRUCT(...) extern template struct __VA_ARGS__ ;
+        //#define PLASK_API_EXTERN_TEMPLATE_INSTANTION_CLASS(...) extern template class __VA_ARGS__ ;
+        #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(...)    // for structs which aren't PLASK_API
+        #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...)     // for classes which aren't PLASK_API
       //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_EXPORT)
       //  #define FMT_EXPORT
       //#endif
     #else
         #define PLASK_API __declspec(dllimport)
-        //#define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ;
-        //#define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
+        #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ; // for structs which aren't PLASK_API
+        #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;   // for classes which aren't PLASK_API
       //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_SHARED)
       //  #define FMT_SHARED
       //#endif
     #endif
+    #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)   // for structs which are PLASK_API
+    #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)    // for classes which are PLASK_API
 
     #if defined(PLASK_SOLVERS_EXPORTS)
         #define PLASK_SOLVER_API __declspec(dllexport)
@@ -106,6 +106,13 @@
     #define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
+#ifndef PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT
+    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(...) extern template struct __VA_ARGS__ ;
+#endif
+
+#ifndef PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS
+    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template struct __VA_ARGS__ ;
+#endif
 
 
 #ifndef PLASK_SOLVER_API

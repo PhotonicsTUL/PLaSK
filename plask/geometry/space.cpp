@@ -77,12 +77,12 @@ shared_ptr<Material> GeometryD<dim>::getMaterial(const Vec<dim, double> &p) cons
 }
 
 template <int dim>
-std::set<std::string> GeometryD<dim>::getRolesAt(const GeometryD<dim>::CoordsType &point, const PathHints *path) const {
+std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::CoordsType &point, const PathHints *path) const {
     return getChild()->getRolesAt(point, path);
 }
 
 template <int dim>
-std::set<std::string> GeometryD<dim>::getRolesAt(const GeometryD<dim>::CoordsType &point, const PathHints &path) const {
+std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::CoordsType &point, const PathHints &path) const {
     return getChild()->getRolesAt(point, &path);
 }
 
