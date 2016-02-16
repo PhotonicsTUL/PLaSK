@@ -76,6 +76,16 @@ shared_ptr<Material> GeometryD<dim>::getMaterial(const Vec<dim, double> &p) cons
     return getMaterialOrDefault(p);
 }
 
+template <int dim>
+std::set<std::string> GeometryD<dim>::getRolesAt(const GeometryD<dim>::CoordsType &point, const PathHints *path) const {
+    return getChild()->getRolesAt(point, path);
+}
+
+template <int dim>
+std::set<std::string> GeometryD<dim>::getRolesAt(const GeometryD<dim>::CoordsType &point, const PathHints &path) const {
+    return getChild()->getRolesAt(point, &path);
+}
+
 template <>
 void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
     dest_xml_object.attr("axes", axes.str());

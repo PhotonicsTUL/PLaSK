@@ -598,9 +598,7 @@ public:
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
-        return getChild()->getRolesAt(point, path);
-    }
+    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const;
 
     /**
      * Get a sum of roles sets of all objects which lies on path from this to leaf at given @p point.
@@ -608,9 +606,7 @@ public:
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints& path) const {
-        return getChild()->getRolesAt(point, &path);
-    }
+    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints& path) const;
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set) override;
 
