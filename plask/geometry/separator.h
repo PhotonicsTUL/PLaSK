@@ -21,7 +21,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
+struct GeometryObjectSeparator: public GeometryObjectD<dim> {
 
     typedef typename GeometryObjectD<dim>::DVec DVec;
     typedef typename GeometryObjectD<dim>::Box Box;
