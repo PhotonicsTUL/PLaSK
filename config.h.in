@@ -63,8 +63,10 @@
       //#endif
     #else
         #define PLASK_API __declspec(dllimport)
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ;
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;
+        //#define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ;
+        //#define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;
+        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
+        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
       //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_SHARED)
       //  #define FMT_SHARED
       //#endif
