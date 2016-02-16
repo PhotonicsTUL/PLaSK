@@ -249,7 +249,7 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
     # Set default axes if all loaded geometries share the same
-    lst = [ g.axes for g in manager.geometry.values() if isinstance(g, geometry.Geometry) ]
+    lst = [ g.axes for g in manager.geo.values() if isinstance(g, geometry.Geometry) ]
     same = lst and lst.count(lst[0]) == len(lst)
     if same: current_axes = lst[0]
 
