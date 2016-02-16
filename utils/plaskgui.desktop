@@ -1,6 +1,6 @@
 [Desktop Entry]
 Comment=
-Exec=plaskgui
+Exec=plaskgui %f
 GenericName=Photonic Laser Simulation Kit
 Icon=plaskgui
 MimeType=application/x-plask

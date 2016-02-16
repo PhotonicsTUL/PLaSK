@@ -89,141 +89,109 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
     std::exception_ptr error;
 
-    #ifdef OPENMP_FOUND
-        std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
-        for (boost::mutex& mutex: layer_locks) mutex.lock();
-        #ifndef NDEBUG
-            std::vector<bool> layer_accessed(diagonalizer->lcount, false);
-        #endif
-    #endif
-
-    #pragma omp parallel
-    {
-        #pragma omp for schedule(dynamic,1) nowait
-        for (int l = 0; l < diagonalizer->lcount; ++l) {
-            try {
-                bool worked = false;
-                if (!error) worked = diagonalizer->diagonalizeLayer(l);
-                #ifdef OPENMP_FOUND
-                    if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
-                    layer_locks[l].unlock();
-                #endif
-            } catch(...) {
-                error = std::current_exception();
-            }
-        }
-
-        #pragma omp single
-        if (!error) try {
-
+    #pragma omp parallel for schedule(dynamic,1)
+    for (int l = 0; l < diagonalizer->lcount; ++l) {
+        try {
+            bool worked = false;
+            if (!error) worked = diagonalizer->diagonalizeLayer(l);
             #ifdef OPENMP_FOUND
-                write_debug("{}: entering into single region of reflection search in thread {:d}", solver->getId(), omp_get_thread_num());
-                layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
-                #ifndef NDEBUG
-                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[start]);
-                    layer_accessed[solver->stack[start]] = true;
-                #endif
+                if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
             #endif
-
-            // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
-            if (!emitting) {
-                gamma = diagonalizer->Gamma(solver->stack[start]);
-                // Aply PML
-                // F(0) + B(0) = 0 ==> P(0) = -I
-                for (int i = 0; i < N; i++) {
-                    dcomplex g = gamma[i] * solver->vpml.factor;
-                    P(i,i) = - exp(-2. * I * g * solver->vpml.size);                // P = phas * (-I) * phas
-                }
-                assert(!P.isnan());
-
-                // Shift matrix by `pmldist`
-                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.dist);
-                assert(!phas.isnan());
-                mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
-            }
-
-            storeP(start);
-
-            for (int n = start; n != end; n += inc) {
-                gamma = diagonalizer->Gamma(solver->stack[n]);
-                assert(!gamma.isnan());
-
-                assert(!P.isnan());
-
-                if (n != start) {
-                    double H = solver->vbounds[n] - solver->vbounds[n-1];
-                    for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
-                    assert(!phas.isnan());
-                    mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
-                }
-
-                // Further calculations must be done only if the adjacent layers are not the same
-                if (solver->stack[n] != solver->stack[n+inc] || (emitting && n == start)) {
-                    // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
-                    assert(!diagonalizer->TE(solver->stack[n]).isnan());
-                    assert(!diagonalizer->invTE(solver->stack[n]).isnan());
-                    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
-                    if (solver->stack[n] != solver->stack[n+inc]) {
-                        mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);      // wrk = TE[n] * P
-                        #ifdef OPENMP_FOUND
-                            layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
-                            #ifndef NDEBUG
-                                if (!layer_accessed[solver->stack[n+inc]]) {
-                                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[n+inc]);
-                                    layer_accessed[solver->stack[n+inc]] = true;
-                                }
-                            #endif
-                        #endif
-                        mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
-                    } else {
-                        std::copy_n(P.data(), NN, temp.data());
-                    }
-
-                    // P = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
-                    assert(!diagonalizer->TH(solver->stack[n]).isnan());
-                    assert(!diagonalizer->invTH(solver->stack[n+inc]).isnan());
-                    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
-
-                    // multiply rows of P by -1 where necessary for properly outgoing wave
-                    if (emitting && n == start) {
-                        for (int i = 0; i < N; i++)
-                            if (real(gamma[i]) < -SMALL)
-                                for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
-                    }
-
-                    if (solver->stack[n] != solver->stack[n+inc]) {
-                        mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);      // wrk = TH[n] * P
-                        mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, P);// P = invTH[n+1] * wrk (= P)
-                    }
-
-                    // temp := temp-P, P := temp+P
-                    for (int i = 0; i < NN; i++) {
-                        dcomplex e = temp[i], h = P[i];
-                        temp[i] = e - h;
-                        P[i] = e + h;
-                    }
-
-                    // P = P * inv(temp)
-                    int info;
-                    zgetrf(N, N, temp.data(), N, ipiv, info);                                   // temp = LU(temp)
-                    if (info > 0) throw ComputationError(solver->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
-                    assert(info == 0);
-                    ztrsm('R', 'U', 'N', 'N', N, N, 1., temp.data(), N, P.data(), N);           // P = P * U^{-1}
-                    ztrsm('R', 'L', 'N', 'U', N, N, 1., temp.data(), N, P.data(), N);           // P = P * L^{-1}
-                    if (P.isnan()) throw ComputationError(solver->getId(), "findReflection: NaN in reflection matrix");
-                    // reorder columns (there is no such function in LAPACK)
-                    for (int j = N-1; j >= 0; j--) {
-                        int jp = ipiv[j]-1;
-                        for (int i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
-                    }
-                }
-                storeP(n+inc);
-            }
         } catch(...) {
-                error = std::current_exception();
+            error = std::current_exception();
         }
     }
     if (error) std::rethrow_exception(error);
+
+    #ifdef OPENMP_FOUND
+        write_debug("{}: entering into single region of reflection search", solver->getId());
+    #endif
+
+    // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
+    if (!emitting) {
+        gamma = diagonalizer->Gamma(solver->stack[start]);
+        // Aply PML
+        // F(0) + B(0) = 0 ==> P(0) = -I
+        for (int i = 0; i < N; i++) {
+            dcomplex g = gamma[i] * solver->vpml.factor;
+            P(i,i) = - exp(-2. * I * g * solver->vpml.size);                // P = phas * (-I) * phas
+        }
+        assert(!P.isnan());
+
+        // Shift matrix by `pmldist`
+        for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.dist);
+        assert(!phas.isnan());
+        mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
+    }
+
+    storeP(start);
+
+    for (int n = start; n != end; n += inc) {
+        gamma = diagonalizer->Gamma(solver->stack[n]);
+        assert(!gamma.isnan());
+
+        assert(!P.isnan());
+
+        if (n != start) {
+            double H = solver->vbounds[n] - solver->vbounds[n-1];
+            for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
+            assert(!phas.isnan());
+            mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
+        }
+
+        // Further calculations must be done only if the adjacent layers are not the same
+        if (solver->stack[n] != solver->stack[n+inc] || (emitting && n == start)) {
+            // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
+            assert(!diagonalizer->TE(solver->stack[n]).isnan());
+            assert(!diagonalizer->invTE(solver->stack[n]).isnan());
+            for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
+            if (solver->stack[n] != solver->stack[n+inc]) {
+                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);      // wrk = TE[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
+            } else {
+                std::copy_n(P.data(), NN, temp.data());
+            }
+
+            // P = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
+            assert(!diagonalizer->TH(solver->stack[n]).isnan());
+            assert(!diagonalizer->invTH(solver->stack[n+inc]).isnan());
+            for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
+
+            // multiply rows of P by -1 where necessary for properly outgoing wave
+            if (emitting && n == start) {
+                for (int i = 0; i < N; i++)
+                    if (real(gamma[i]) < -SMALL)
+                        for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
+            }
+
+            if (solver->stack[n] != solver->stack[n+inc]) {
+                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);      // wrk = TH[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, P);// P = invTH[n+1] * wrk (= P)
+            }
+
+            // temp := temp-P, P := temp+P
+            for (int i = 0; i < NN; i++) {
+                dcomplex e = temp[i], h = P[i];
+                temp[i] = e - h;
+                P[i] = e + h;
+            }
+
+            // P = P * inv(temp)
+            int info;
+            zgetrf(N, N, temp.data(), N, ipiv, info);                                   // temp = LU(temp)
+            if (info > 0) throw ComputationError(solver->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
+            assert(info == 0);
+            ztrsm('R', 'U', 'N', 'N', N, N, 1., temp.data(), N, P.data(), N);           // P = P * U^{-1}
+            ztrsm('R', 'L', 'N', 'U', N, N, 1., temp.data(), N, P.data(), N);           // P = P * L^{-1}
+            if (P.isnan()) throw ComputationError(solver->getId(), "findReflection: NaN in reflection matrix");
+            // reorder columns (there is no such function in LAPACK)
+            for (int j = N-1; j >= 0; j--) {
+                int jp = ipiv[j]-1;
+                for (int i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
+            }
+        }
+        storeP(n+inc);
+    }
 }
 
 

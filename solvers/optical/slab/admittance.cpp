@@ -52,116 +52,84 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
 
     std::exception_ptr error;
 
-    #ifdef OPENMP_FOUND
-        std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
-        for (boost::mutex& mutex: layer_locks) mutex.lock();
-        #ifndef NDEBUG
-            std::vector<bool> layer_accessed(diagonalizer->lcount, false);
-        #endif
-    #endif
-
-    #pragma omp parallel
-    {
-        #pragma omp for schedule(dynamic,1) nowait
-        for (int l = 0; l < diagonalizer->lcount; ++l) {
-            try {
-                bool worked = false;
-                if (!error) worked = diagonalizer->diagonalizeLayer(l);
-                #ifdef OPENMP_FOUND
-                    if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
-                    layer_locks[l].unlock();
-                #endif
-            } catch(...) {
-                error = std::current_exception();
-            }
-        }
-
-        #pragma omp single
-        if (!error) try {
-            // Now iteratively we find matrices Y[i]
-
-            // PML layer
+    #pragma omp parallel for schedule(dynamic,1)
+    for (int l = 0; l < diagonalizer->lcount; ++l) {
+        try {
+            bool worked = false;
+            if (!error) worked = diagonalizer->diagonalizeLayer(l);
             #ifdef OPENMP_FOUND
-                write_debug("{}: entering into single region of admittance search in thread {:d}", solver->getId(), omp_get_thread_num());
-                layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
-                #ifndef NDEBUG
-                    write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[start]);
-                    layer_accessed[solver->stack[start]] = true;
-                #endif
+                if (worked) write_debug("{}: layer {:d} diagonalized", solver->getId(), l);
             #endif
-            gamma = diagonalizer->Gamma(solver->stack[start]);
-            std::fill_n(y2.data(), N, dcomplex(1.));                    // we use y2 for tracking sign changes
-            for (int i = 0; i < N; i++) {
-                y1[i] = gamma[i] * solver->vpml.factor;
-                if (real(y1[i]) < -SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
-                if (imag(y1[i]) > SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
-            }
-            get_y1(y1, solver->vpml.size, y1);
-            std::fill_n(Y.data(), NN, dcomplex(0.));
-            for (int i = 0; i < N; i++) Y(i,i) = - y1[i] * y2[i];
-
-            // First layer
-            double H = solver->vpml.dist;
-            gamma = diagonalizer->Gamma(solver->stack[start]);
-            get_y1(gamma, H, y1);
-            get_y2(gamma, H, y2);
-	    // off-diagonal elements of Y are 0
-            for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / (y1[i] - Y(i,i)) - y1[i]; // Y = y2 * inv(y1-Y) * y2 - y1
-
-            // save the Y matrix for 1-st layer
-            storeY(start);
-
-            // Declare temporary matrixH) on 'work' array
-            cmatrix wrk(N, N, work);
-
-            for (int n = start+inc; n != end; n += inc)
-            {
-                #ifdef OPENMP_FOUND
-                    layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
-                    #ifndef NDEBUG
-                        if (!layer_accessed[solver->stack[n]]) {
-                            write_debug("{}: using diagonalized layer {:d}", solver->getId(), solver->stack[n]);
-                            layer_accessed[solver->stack[n]] = true;
-                        }
-                    #endif
-                #endif
-
-                gamma = diagonalizer->Gamma(solver->stack[n]);
-
-                H = solver->vbounds[n] - solver->vbounds[n-1];
-                get_y1(gamma, H, y1);
-                get_y2(gamma, H, y2);
-
-                // The main equation
-                // Y[n] = y2 * tE * inv(y1*tE - tH*Y[n-1]) * y2  -  y1
-
-                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n-inc]), Y, temp);    // wrk = tH * Y[n-1]
-                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n]), temp, wrk);   // ...
-
-                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n]), diagonalizer->TE(solver->stack[n-inc]), temp); // compute tE
-
-                for (int j = 0; j < N; j++)
-                    for (int i = 0; i < N; i++) Y(i,j) = y1[i]*temp(i,j) - wrk(i,j);    // Y[n] = y1 * tE - wrk
-
-                for (int i = 0; i < NN; i++) wrk[i] = 0.;
-                for (int j = 0, i = 0; j < N; j++, i += N+1) wrk[i] = y2[j];            // wrk = y2
-
-                invmult(Y, wrk);                                                        // wrk = inv(Y[n]) * (wrk = y2)
-                mult_matrix_by_matrix(temp, wrk, Y);                                    // Y[n] = tE * wrk
-
-                for (int j = 0; j < N; j++)
-                    for (int i = 0; i < N; i++) Y(i,j) *= y2[i];                        // Y[n] = y2 * Y[n]
-
-                for (int j = 0, i = 0; j < N; j++, i += N+1) Y[i] -= y1[j];             // Y[n] = Y[n] - y1
-
-                // Save the Y matrix for n-th layer
-                storeY(n);
-            }
         } catch(...) {
-                error = std::current_exception();
+            error = std::current_exception();
         }
     }
     if (error) std::rethrow_exception(error);
+
+    // Now iteratively we find matrices Y[i]
+
+    // PML layer
+    #ifdef OPENMP_FOUND
+        write_debug("{}: entering into single region of admittance search", solver->getId());
+    #endif
+    gamma = diagonalizer->Gamma(solver->stack[start]);
+    std::fill_n(y2.data(), N, dcomplex(1.));                    // we use y2 for tracking sign changes
+    for (int i = 0; i < N; i++) {
+        y1[i] = gamma[i] * solver->vpml.factor;
+        if (real(y1[i]) < -SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
+        if (imag(y1[i]) > SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
+    }
+    get_y1(y1, solver->vpml.size, y1);
+    std::fill_n(Y.data(), NN, dcomplex(0.));
+    for (int i = 0; i < N; i++) Y(i,i) = - y1[i] * y2[i];
+
+    // First layer
+    double H = solver->vpml.dist;
+    gamma = diagonalizer->Gamma(solver->stack[start]);
+    get_y1(gamma, H, y1);
+    get_y2(gamma, H, y2);
+    // off-diagonal elements of Y are 0
+    for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / (y1[i] - Y(i,i)) - y1[i]; // Y = y2 * inv(y1-Y) * y2 - y1
+
+    // save the Y matrix for 1-st layer
+    storeY(start);
+
+    // Declare temporary matrixH) on 'work' array
+    cmatrix wrk(N, N, work);
+
+    for (int n = start+inc; n != end; n += inc)
+    {
+        gamma = diagonalizer->Gamma(solver->stack[n]);
+
+        H = solver->vbounds[n] - solver->vbounds[n-1];
+        get_y1(gamma, H, y1);
+        get_y2(gamma, H, y2);
+
+        // The main equation
+        // Y[n] = y2 * tE * inv(y1*tE - tH*Y[n-1]) * y2  -  y1
+
+        mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n-inc]), Y, temp);    // wrk = tH * Y[n-1]
+        mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n]), temp, wrk);   // ...
+
+        mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n]), diagonalizer->TE(solver->stack[n-inc]), temp); // compute tE
+
+        for (int j = 0; j < N; j++)
+            for (int i = 0; i < N; i++) Y(i,j) = y1[i]*temp(i,j) - wrk(i,j);    // Y[n] = y1 * tE - wrk
+
+        for (int i = 0; i < NN; i++) wrk[i] = 0.;
+        for (int j = 0, i = 0; j < N; j++, i += N+1) wrk[i] = y2[j];            // wrk = y2
+
+        invmult(Y, wrk);                                                        // wrk = inv(Y[n]) * (wrk = y2)
+        mult_matrix_by_matrix(temp, wrk, Y);                                    // Y[n] = tE * wrk
+
+        for (int j = 0; j < N; j++)
+            for (int i = 0; i < N; i++) Y(i,j) *= y2[i];                        // Y[n] = y2 * Y[n]
+
+        for (int j = 0, i = 0; j < N; j++, i += N+1) Y[i] -= y1[j];             // Y[n] = Y[n] - y1
+
+        // Save the Y matrix for n-th layer
+        storeY(n);
+    }
 }
 
 
