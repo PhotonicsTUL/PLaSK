@@ -147,8 +147,9 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
     std::deque<std::string> args(tokenizer.begin(), tokenizer.end());
     args.push_front(plask::exePathAndName());
     int argc = args.size();
-    const char* argv[argc];
-    const char** dst = argv; for(const auto& src: args) { *(dst++) = src.c_str(); }
+    std::vector<const char*> argv_vec(argc);
+    std::vector<const char*>::iterator dst = argv_vec.begin(); for(const auto& src: args) { *(dst++) = src.c_str(); }
+    const char** argv = argv_vec.data();
 #else
 
 void showError(const std::string& msg, const std::string& cap) {
