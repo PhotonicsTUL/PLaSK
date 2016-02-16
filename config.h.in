@@ -54,17 +54,21 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
+        //#define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __VA_ARGS__ ;
+        //#define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
+        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
+        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
       //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_EXPORT)
       //  #define FMT_EXPORT
       //#endif
     #else
         #define PLASK_API __declspec(dllimport)
+        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ;
+        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;
       //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_SHARED)
       //  #define FMT_SHARED
       //#endif
     #endif
-    #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-    #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
 
     #if defined(PLASK_SOLVERS_EXPORTS)
         #define PLASK_SOLVER_API __declspec(dllexport)
