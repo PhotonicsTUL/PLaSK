@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction growingDirection = Primitive<dim>::DIRECTION_VERT>
-struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
+struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     static constexpr typename Primitive<dim>::Direction GROWING_DIR = growingDirection;
 
@@ -285,7 +285,7 @@ using StackContainerChildAligner =
 //TODO copy constructor
 //TODO remove some redundant code and use one from WithAligners
 template <int dim>
-struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
+struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
 
     typedef StackContainerChildAligner<dim> ChildAligner;
     static const ChildAligner& DefaultAligner();
@@ -589,9 +589,6 @@ protected:
 
 };
 
-PLASK_API_EXTERN_TEMPLATE_CLASS(MultiStackContainer<StackContainer<2>>)
-PLASK_API_EXTERN_TEMPLATE_CLASS(MultiStackContainer<StackContainer<3>>)
-PLASK_API_EXTERN_TEMPLATE_CLASS(MultiStackContainer<ShelfContainer2D>)
 
 }   // namespace plask
 

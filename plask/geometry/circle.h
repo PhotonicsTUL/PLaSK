@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct Circle: public GeometryObjectLeaf<dim> {
+struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
 
     double radius;  ///< radius of this circle
 

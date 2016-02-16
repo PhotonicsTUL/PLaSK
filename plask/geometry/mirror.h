@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct Flip: public GeometryObjectTransform<dim> {
+struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
     static const char* NAME;
 
@@ -86,7 +86,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
  */
 //TODO add checking of coordinates
 template <int dim>
-struct Mirror: public GeometryObjectTransform<dim> {
+struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
     static const char* NAME;
 

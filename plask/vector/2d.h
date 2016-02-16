@@ -382,6 +382,12 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, std::complex<double> >)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Vec<2, int>)
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+extern template struct PLASK_API Vec<2, double>;
+extern template struct PLASK_API Vec<2, std::complex<double> >;
+extern template struct PLASK_API Vec<2, int>;
+#endif
+
 } //namespace plask
 
 #endif // PLASK__VECTOR2D_H

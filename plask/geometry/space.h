@@ -178,7 +178,7 @@ protected:
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-class GeometryD: public Geometry {
+class PLASK_API GeometryD: public Geometry {
 
     /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
     boost::signals2::connection connection_with_child;
@@ -519,7 +519,7 @@ public:
      * \param path optional path hints filtering out some objects
      * \return resulted object or empty pointer
      */
-    shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints* path=0) {
+    inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints* path=0) {
         return getChild()->getMatchingAt(point, predicate, path);
     }
 
@@ -530,7 +530,7 @@ public:
      * \param path path hints filtering out some objects
      * \return resulted object or empty pointer
      */
-    shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints& path) {
+    inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints& path) {
         return getChild()->getMatchingAt(point, predicate, path);
     }
 
@@ -541,7 +541,7 @@ public:
      * \param point point
      * \return true only if this geometry contains the point @a point
      */
-    bool objectIncludes(const GeometryObject& object, const PathHints* path, const CoordsType& point) const {
+    inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const CoordsType& point) const {
         return getChild()->objectIncludes(object, path, point);
     }
 
@@ -552,7 +552,7 @@ public:
      * \param point point
      * \return true only if this geometry contains the point @a point
      */
-    bool objectIncludes(const GeometryObject& object, const PathHints& path, const CoordsType& point) const {
+    inline bool objectIncludes(const GeometryObject& object, const PathHints& path, const CoordsType& point) const {
         return getChild()->objectIncludes(object, path, point);
     }
 
@@ -562,7 +562,7 @@ public:
      * \param point point
      * \return true only if this geometry contains the point @a point
      */
-    bool objectIncludes(const GeometryObject& object, const CoordsType& point) const {
+    inline bool objectIncludes(const GeometryObject& object, const CoordsType& point) const {
         return getChild()->objectIncludes(object, point);
     }
 
@@ -575,7 +575,7 @@ public:
      * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
      *          @c nullptr if there is not such object
      */
-    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints* path = 0) const {
+    inline shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints* path = 0) const {
         return getChild()->hasRoleAt(role_name, point, path);
     }
 
@@ -598,7 +598,7 @@ public:
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
+    inline std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
         return getChild()->getRolesAt(point, path);
     }
 
