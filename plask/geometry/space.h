@@ -598,7 +598,7 @@ public:
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    inline std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
+    std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
         return getChild()->getRolesAt(point, path);
     }
 
