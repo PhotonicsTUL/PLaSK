@@ -170,6 +170,7 @@ class SourceWidget(QtGui.QWidget):
         prev_button = QtGui.QPushButton(self)
         prev_button.setText("&Previous")
         prev_button.pressed.connect(self.find_prev)
+
         self.find_toolbar.addWidget(next_button)
         self.find_toolbar.addWidget(prev_button)
         replace_button = QtGui.QPushButton(self)
@@ -188,8 +189,8 @@ class SourceWidget(QtGui.QWidget):
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
         self._add_shortcut(QtGui.QKeySequence(Qt.Key_Escape), self.hide_toolbars)
-        self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next)
-        self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
+        self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next, alt=QtGui.QKeySequence(Qt.Key_F3))
+        self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev, alt=Qt.SHIFT+Qt.Key_F3)
         self.find_edit.textEdited.connect(self.find_type)
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
@@ -217,10 +218,12 @@ class SourceWidget(QtGui.QWidget):
         self.toolbar.addAction(action)
         return action
 
-    def _add_shortcut(self, shortcut, slot):
+    def _add_shortcut(self, shortcut, slot, alt=None):
         action = QtGui.QAction(self)
         action.setShortcut(shortcut)
         action.triggered.connect(slot)
+        if alt is not None and action.shortcut() != alt:
+            self._add_shortcut(alt, slot)
         self.editor.addAction(action)
         return action
 

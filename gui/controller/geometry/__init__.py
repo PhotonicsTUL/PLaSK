@@ -188,6 +188,8 @@ class GeometryController(Controller):
             if not current_index.isValid(): return
             tree_element = current_index.internalPointer()
         self.plot_element(tree_element, set_limits=True)
+        self.geometry_view.toolbar.clear_history()
+        self.geometry_view.toolbar.push_current()
 
     def plot_refresh(self):
         self.plot_element(self.plotted_tree_element, set_limits=False)
@@ -389,13 +391,18 @@ class GeometryController(Controller):
 
     def zoom_to_current(self):
         if self.plotted_object is not None:
-            to_select = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
-                                                                      self.manager)
-            bboxes = self.plotted_object.get_object_bboxes(to_select)
+            obj = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
+                                                                self.manager)
+            bboxes = self.plotted_object.get_object_bboxes(obj)
             if not bboxes: return
             box = bboxes[0]
             for b in bboxes[1:]:
                 box += b
+            self.geometry_view.zoom_bbox(box)
+
+    def zoom_to_root(self):
+        if self.plotted_object is not None:
+            box = self.plotted_object.bbox
             self.geometry_view.zoom_bbox(box)
 
     def object_selected(self, new_selection, old_selection):

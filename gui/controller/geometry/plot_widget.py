@@ -46,8 +46,8 @@ class NavigationToolbar(NavigationToolbar2QT):
         ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
         ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
         (None, None, None, None, None),
-        ('Home', 'Reset original view', 'go-home', 'home', None),
-        ('Back', 'Back to  previous view', 'go-previous', 'back', None),
+        ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
+        ('Back', 'Back to previous view', 'go-previous', 'back', None),
         ('Forward', 'Forward to next view', 'go-next', 'forward', None),
         ('Zoom selected', 'Zoom to selected object', 'zoom-fit-best', 'zoom_current', None),
         (None, None, None, None, None),
@@ -113,6 +113,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         self._axes = 'tran', 'vert'
         self._axes_names = 'long', 'tran', 'vert'
 
+    def home(self):
+        if self.controller is not None:
+            self.controller.zoom_to_root()
+
     def mouse_move(self, event):
         if not event.inaxes or not self._active:
             if self._lastCursor != cursors.POINTER:
@@ -142,7 +146,11 @@ class NavigationToolbar(NavigationToolbar2QT):
         try: parent = self.parent()
         except TypeError: parent = self.parent
         parent.aspect_locked = not parent.aspect_locked
-        parent.axes.set_aspect('equal' if parent.aspect_locked else 'auto')
+        if parent.aspect_locked:
+            parent.axes.set_aspect('equal')
+        else:
+            parent.axes.set_aspect('auto')
+            self._update_view()
         parent.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.draw()
 
@@ -190,6 +198,24 @@ class NavigationToolbar(NavigationToolbar2QT):
             with BlockQtSignals(self.widgets['select_plane']):
                 self.widgets['select_plane'].setCurrentIndex(indx)
             self.set_message(self.mode)
+
+    def clear_history(self):
+        self._views.clear()
+        self._positions.clear()
+
+    def set_history_buttons(self):
+        if len(self._views) <= 1:
+            self._actions['back'].setEnabled(False)
+            self._actions['forward'].setEnabled(False)
+        elif self._views._pos == 0:
+            self._actions['back'].setEnabled(False)
+            self._actions['forward'].setEnabled(True)
+        elif self._views._pos == len(self._views)-1:
+            self._actions['back'].setEnabled(True)
+            self._actions['forward'].setEnabled(False)
+        else:
+            self._actions['back'].setEnabled(True)
+            self._actions['forward'].setEnabled(True)
 
 
 class PlotWidget(QtGui.QWidget):
