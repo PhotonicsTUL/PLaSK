@@ -786,7 +786,7 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (size_t idx = 0; idx < rect_mesh->tran()->size(); ++idx) {
+            for (plask::openmp_size_t idx = 0; idx < rect_mesh->tran()->size(); ++idx) {
                 double x = rect_mesh->tran()->at(idx);
                 bool negate = false;
                 if (x < 0. && solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
@@ -804,7 +804,7 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
             }
 
             #pragma omp for
-            for (size_t idy = 0; idy < rect_mesh->vert()->size(); ++idy) {
+            for (plask::openmp_size_t idy = 0; idy < rect_mesh->vert()->size(); ++idy) {
                 double y = rect_mesh->vert()->at(idy);
                 size_t iy = solver->mesh->vert()->findIndex(y);
                 if (iy >= solver->yend) iy = solver->yend-1;
