@@ -834,6 +834,10 @@ endif()
 if(UNIX)
     set(CPACK_GENERATOR "DEB;RPM")
 
+    if(NOT DEFINED CPACK_PACKAGE_NAME)
+        set(CPACK_PACKAGE_NAME plask)
+    endif()
+
     file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask\n/sbin/ldconfig\n")
     file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
     file(WRITE ${CMAKE_BINARY_DIR}/rpmpostin "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall \$RPM_INSTALL_PREFIX/lib/plask\n/sbin/ldconfig\n")
@@ -888,10 +892,6 @@ if(UNIX)
     endif()
 
     EXECUTE_PROCESS(COMMAND date -R OUTPUT_VARIABLE CURRENT_DATE)
-
-    if(NOT DEFINED CPACK_PACKAGE_NAME)
-        set(CPACK_PACKAGE_NAME plask)
-    endif()
 
     configure_file(${CMAKE_SOURCE_DIR}/changelog.Debian.in ${CMAKE_BINARY_DIR}/changelog.Debian)
     execute_process(COMMAND gzip -c -9 ${CMAKE_BINARY_DIR}/changelog.Debian WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
