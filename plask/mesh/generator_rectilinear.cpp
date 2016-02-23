@@ -277,7 +277,7 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::processAxis(shared_
                 ++i;
                 w_prev = w;
                 w = w_next;
-                w_next = (i == end)? INFINITY : result[i+2] - result[i+1];
+                w_next = (i < end)? result[i+2] - result[i+1] : INFINITY;
             }
         }
     }

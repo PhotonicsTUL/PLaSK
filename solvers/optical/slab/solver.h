@@ -327,7 +327,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         if (vbounds.empty()) setup_vbounds();
         if (index == 0 || index > vbounds.size())
             throw BadInput(this->getId(), "Cannot set interface to {0} (min: 1, max: {1})", index, vbounds.size());
-        double pos = vbounds[interface-1]; if (abs(pos) < 1e-12) pos = 0.;
+        double pos = vbounds[index-1]; if (abs(pos) < 1e-12) pos = 0.;
         Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, index);
         interface = index;
     }
