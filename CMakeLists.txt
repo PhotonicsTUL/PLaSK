@@ -243,6 +243,9 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 ## ---------- libraries for better stack printing ------------------------------
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    if(NOT MSVC)
+        add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
+    endif(NOT MSVC)
     if(WIN32)
         add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
         set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
