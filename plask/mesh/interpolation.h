@@ -365,7 +365,7 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(
     if (src_mesh->size() != src_vec.size())
         throw BadMesh("interpolate", "Mesh size ({1}) and values size ({0}) do not match", src_vec.size(), src_mesh->size());
     if (src_mesh == dst_mesh) return new LazyDataFromVectorImpl<typename std::remove_const<DstT>::type>(src_vec); // meshes are identical, so just return src_vec
-    if (verbose) writelog(LOG_DEBUG, "interpolate: Running {0} interpolation", interpolationMethodNames[method]);
+    if (verbose && method < __ILLEGAL_INTERPOLATION_METHOD__) writelog(LOG_DEBUG, "interpolate: Running {0} interpolation", interpolationMethodNames[method]);
     return __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, method, flags);
 }
 
