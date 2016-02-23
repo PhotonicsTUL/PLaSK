@@ -1,6 +1,10 @@
 #include "stack.h"
 #include "separator.h"
 
+#define PLASK_STACK2D_NAME ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_STACK3D_NAME ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+#define PLASK_SHELF_NAME "shelf"
+
 #define baseH_attr "shift"
 #define repeat_attr "repeat"
 #define require_equal_heights_attr "flat"
@@ -136,6 +140,10 @@ bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::f
     } else
         return false;
 }
+
+template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
 /*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, because signal doesn't have copy constructor
 StackContainer<dim>::StackContainer(const StackContainer& to_copy)
@@ -288,8 +296,13 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
     return result;
 }
 
+template <int dim>
+const char* StackContainer<dim>::NAME = dim == 2 ? PLASK_STACK2D_NAME : PLASK_STACK3D_NAME;
 
-const char* ShelfContainer2D::NAME = "shelf";
+template struct PLASK_API StackContainer<2>;
+template struct PLASK_API StackContainer<3>;
+
+const char* ShelfContainer2D::NAME = PLASK_SHELF_NAME;
 
 PathHints::Hint ShelfContainer2D::addGap(double size) {
     return addUnsafe(plask::make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));
@@ -354,11 +367,6 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vect
 void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
     dest_xml_object.attr(require_equal_heights_attr, false);
 }
-
-template <int dim>
-const char* StackContainer<dim>::NAME = dim == 2 ?
-            ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
 template <typename UpperClass>
 bool MultiStackContainer<UpperClass>::reduceHeight(double& height) const {
@@ -605,8 +613,8 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterObjectReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer<2>);
-static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer<3>);
+static GeometryReader::RegisterObjectReader stack2D_reader(PLASK_STACK2D_NAME, read_StackContainer<2>);
+static GeometryReader::RegisterObjectReader stack3D_reader(PLASK_STACK3D_NAME, read_StackContainer<3>);
 
 static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
@@ -663,14 +671,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
     return result;
 }
 
-static GeometryReader::RegisterObjectReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
-static GeometryReader::RegisterObjectReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
-
-template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
-
-template struct PLASK_API StackContainer<2>;
-template struct PLASK_API StackContainer<3>;
+static GeometryReader::RegisterObjectReader horizontalstack_reader(PLASK_SHELF_NAME, read_ShelfContainer2D);
+static GeometryReader::RegisterObjectReader horizontalstack2D_reader(PLASK_SHELF_NAME PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
 
 }   // namespace plask

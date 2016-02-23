@@ -3,12 +3,13 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_TRANSLATION2D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_TRANSLATION3D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
 namespace plask {
 
 template <int dim>
-const char* Translation<dim>::NAME = dim == 2 ?
-            ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Translation<dim>::NAME = dim == 2 ? PLASK_TRANSLATION2D_NAME : PLASK_TRANSLATION3D_NAME;
 
 template <int dim>
 std::string Translation<dim>::getTypeName() const { return NAME; }
@@ -126,8 +127,8 @@ shared_ptr<GeometryObject> read_translation3D(GeometryReader& reader) {
     return translation;
 }
 
-static GeometryReader::RegisterObjectReader translation2D_reader(Translation<2>::NAME, read_translation2D);
-static GeometryReader::RegisterObjectReader translation3D_reader(Translation<3>::NAME, read_translation3D);
+static GeometryReader::RegisterObjectReader translation2D_reader(PLASK_TRANSLATION2D_NAME, read_translation2D);
+static GeometryReader::RegisterObjectReader translation3D_reader(PLASK_TRANSLATION3D_NAME, read_translation3D);
 
 template struct PLASK_API Translation<2>;
 template struct PLASK_API Translation<3>;

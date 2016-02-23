@@ -5,12 +5,13 @@
 
 #include <limits>
 
+#define PLASK_CLIP2D_NAME ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_CLIP3D_NAME ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
 namespace plask {
 
 template <int dim>
-const char* Clip<dim>::NAME = dim == 2 ?
-            ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Clip<dim>::NAME = dim == 2 ? PLASK_CLIP2D_NAME : PLASK_CLIP3D_NAME;
 
 template <int dim>
 shared_ptr<Material> Clip<dim>::getMaterial(const typename Clip<dim>::DVec &p) const {
@@ -96,8 +97,8 @@ shared_ptr<GeometryObject> read_Clip3D(GeometryReader& reader) {
     return clip;
 }
 
-static GeometryReader::RegisterObjectReader Clip2D_reader(Clip<2>::NAME, read_Clip2D);
-static GeometryReader::RegisterObjectReader Clip3D_reader(Clip<3>::NAME, read_Clip3D);
+static GeometryReader::RegisterObjectReader Clip2D_reader(PLASK_CLIP2D_NAME, read_Clip2D);
+static GeometryReader::RegisterObjectReader Clip3D_reader(PLASK_CLIP3D_NAME, read_Clip3D);
 
 template struct PLASK_API Clip<2>;
 template struct PLASK_API Clip<3>;

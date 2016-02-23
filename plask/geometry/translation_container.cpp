@@ -2,12 +2,13 @@
 
 #include <cstdlib>  //abs
 
+#define PLASK_TRANSLATIONCONTAINER2D_NAME ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_TRANSLATIONCONTAINER3D_NAME ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
 namespace plask {
 
 template <int dim>
-const char* TranslationContainer<dim>::NAME = dim == 2 ?
-            ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* TranslationContainer<dim>::NAME = dim == 2 ? PLASK_TRANSLATIONCONTAINER2D_NAME : PLASK_TRANSLATIONCONTAINER3D_NAME;
 
 template <int dim>
 TranslationContainer<dim>::~TranslationContainer() {
@@ -108,8 +109,8 @@ shared_ptr<GeometryObject> read_TranslationContainer(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterObjectReader container2D_reader(TranslationContainer<2>::NAME, read_TranslationContainer<2>);
-static GeometryReader::RegisterObjectReader container3D_reader(TranslationContainer<3>::NAME, read_TranslationContainer<3>);
+static GeometryReader::RegisterObjectReader container2D_reader(PLASK_TRANSLATIONCONTAINER2D_NAME, read_TranslationContainer<2>);
+static GeometryReader::RegisterObjectReader container3D_reader(PLASK_TRANSLATIONCONTAINER3D_NAME, read_TranslationContainer<3>);
 static GeometryReader::RegisterObjectReader align_container2D_reader("align2d", read_TranslationContainer<2>);
 static GeometryReader::RegisterObjectReader align_container3D_reader("align3d", read_TranslationContainer<3>);
 

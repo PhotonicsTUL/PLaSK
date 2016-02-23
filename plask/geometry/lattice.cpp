@@ -7,14 +7,14 @@
 #include <set>
 #include <utility>
 
-
+#define PLASK_ARRANGE2D_NAME ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_ARRANGE3D_NAME ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+#define PLASK_LATTICE_NAME "lattice"
 
 namespace plask {
 
 template <int dim>
-const char* ArrangeContainer<dim>::NAME = dim == 2 ?
-            ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("arrange" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* ArrangeContainer<dim>::NAME = dim == 2 ? PLASK_ARRANGE2D_NAME : PLASK_ARRANGE3D_NAME;
 
 template <int dim>
 std::pair<int, int> ArrangeContainer<dim>::bounds(const typename ArrangeContainer<dim>::DVec &vec) const {
@@ -234,8 +234,8 @@ shared_ptr<GeometryObject> read_arrange3d(GeometryReader& reader) {
     return plask::make_shared<ArrangeContainer<3>>(child, vec, repeat, warn);
 }
 
-static GeometryReader::RegisterObjectReader arrange2d_reader(ArrangeContainer<2>::NAME, read_arrange2d);
-static GeometryReader::RegisterObjectReader arrange3d_reader(ArrangeContainer<3>::NAME, read_arrange3d);
+static GeometryReader::RegisterObjectReader arrange2d_reader(PLASK_ARRANGE2D_NAME, read_arrange2d);
+static GeometryReader::RegisterObjectReader arrange3d_reader(PLASK_ARRANGE3D_NAME, read_arrange3d);
 
 template struct PLASK_API ArrangeContainer<2>;
 template struct PLASK_API ArrangeContainer<3>;
@@ -304,7 +304,7 @@ struct SegmentsIterator {
 };
 
 
-const char* Lattice::NAME = "lattice";
+const char* Lattice::NAME = PLASK_LATTICE_NAME;
 
 void Lattice::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
@@ -476,7 +476,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterObjectReader lattice_reader(Lattice::NAME, read_lattice);
+static GeometryReader::RegisterObjectReader lattice_reader(PLASK_LATTICE_NAME, read_lattice);
 
 
 }

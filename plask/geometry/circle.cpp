@@ -2,10 +2,13 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_CIRCLE2D_NAME "circle"
+#define PLASK_CIRCLE3D_NAME "sphere"
+
 namespace plask {
 
 template <int dim>
-const char* Circle<dim>::NAME = dim == 2 ? "circle" : "sphere";
+const char* Circle<dim>::NAME = dim == 2 ? PLASK_CIRCLE2D_NAME : PLASK_CIRCLE3D_NAME;
 
 template <int dim>
 std::string Circle<dim>::getTypeName() const {
@@ -56,7 +59,7 @@ shared_ptr<GeometryObject> read_circle(GeometryReader& reader) {
 template struct PLASK_API Circle<2>;
 template struct PLASK_API Circle<3>;
 
-static GeometryReader::RegisterObjectReader circle_reader(Circle<2>::NAME, read_circle<2>);
-static GeometryReader::RegisterObjectReader sphere_reader(Circle<3>::NAME, read_circle<3>);
+static GeometryReader::RegisterObjectReader circle_reader(PLASK_CIRCLE2D_NAME, read_circle<2>);
+static GeometryReader::RegisterObjectReader sphere_reader(PLASK_CIRCLE3D_NAME, read_circle<3>);
 
 }   // namespace plask

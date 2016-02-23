@@ -3,12 +3,13 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_INTERSECTION2D_NAME ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_INTERSECTION3D_NAME ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
 namespace plask {
 
 template <int dim>
-const char* Intersection<dim>::NAME = dim == 2 ?
-            ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Intersection<dim>::NAME = dim == 2 ? PLASK_INTERSECTION2D_NAME : PLASK_INTERSECTION3D_NAME;
 
 template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
@@ -96,8 +97,8 @@ shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     return intersection;
 }
 
-static GeometryReader::RegisterObjectReader Intersection2D_reader(Intersection<2>::NAME, read_Intersection<2>);
-static GeometryReader::RegisterObjectReader Intersection3D_reader(Intersection<3>::NAME, read_Intersection<3>);
+static GeometryReader::RegisterObjectReader Intersection2D_reader(PLASK_INTERSECTION2D_NAME, read_Intersection<2>);
+static GeometryReader::RegisterObjectReader Intersection3D_reader(PLASK_INTERSECTION3D_NAME, read_Intersection<3>);
 
 template struct PLASK_API Intersection<2>;
 template struct PLASK_API Intersection<3>;

@@ -2,12 +2,17 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_FLIP2D_NAME ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_FLIP3D_NAME ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
+#define PLASK_MIRROR2D_NAME ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_MIRROR3D_NAME ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
+
 namespace plask {
 
 template <int dim>
-const char* Flip<dim>::NAME = dim == 2 ?
-            ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Flip<dim>::NAME = dim == 2 ? PLASK_FLIP2D_NAME : PLASK_FLIP3D_NAME;
 
 template <int dim>
 std::string Flip<dim>::getTypeName() const { return NAME; }
@@ -57,9 +62,7 @@ void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisName
 }
 
 template <int dim>
-const char* Mirror<dim>::NAME = dim == 2 ?
-            ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Mirror<dim>::NAME = dim == 2 ? PLASK_MIRROR2D_NAME : PLASK_MIRROR3D_NAME;
 
 template <int dim>
 std::string Mirror<dim>::getTypeName() const { return NAME; }
@@ -193,10 +196,10 @@ shared_ptr<GeometryObject> read_flip_like(GeometryReader& reader) {
     return plask::make_shared< GeometryType >(flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>(!reader.manager.draft));
 }
 
-static GeometryReader::RegisterObjectReader flip2D_reader(Flip<2>::NAME, read_flip_like<Flip<2>>);
-static GeometryReader::RegisterObjectReader flip3D_reader(Flip<3>::NAME, read_flip_like<Flip<3>>);
-static GeometryReader::RegisterObjectReader mirror2D_reader(Mirror<2>::NAME, read_flip_like<Mirror<2>>);
-static GeometryReader::RegisterObjectReader mirror3D_reader(Mirror<3>::NAME, read_flip_like<Mirror<3>>);
+static GeometryReader::RegisterObjectReader flip2D_reader(PLASK_FLIP2D_NAME, read_flip_like<Flip<2>>);
+static GeometryReader::RegisterObjectReader flip3D_reader(PLASK_FLIP3D_NAME, read_flip_like<Flip<3>>);
+static GeometryReader::RegisterObjectReader mirror2D_reader(PLASK_MIRROR2D_NAME, read_flip_like<Mirror<2>>);
+static GeometryReader::RegisterObjectReader mirror3D_reader(PLASK_MIRROR3D_NAME, read_flip_like<Mirror<3>>);
 
 template struct PLASK_API Flip<2>;
 template struct PLASK_API Flip<3>;

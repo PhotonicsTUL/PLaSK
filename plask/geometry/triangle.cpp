@@ -3,9 +3,11 @@
 
 #include "../manager.h"
 
+#define PLASK_TRIANGLE_NAME "triangle"
+
 namespace plask {
 
-const char* Triangle::NAME = "triangle";
+const char* Triangle::NAME = PLASK_TRIANGLE_NAME;
 
 std::string Triangle::getTypeName() const {
     return NAME;
@@ -78,6 +80,6 @@ shared_ptr<GeometryObject> read_triangle(GeometryReader& reader) {
     return triangle;
 }
 
-static GeometryReader::RegisterObjectReader triangle_reader(Triangle::NAME, read_triangle);
+static GeometryReader::RegisterObjectReader triangle_reader(PLASK_TRIANGLE_NAME, read_triangle);
 
 }   // namespace plask

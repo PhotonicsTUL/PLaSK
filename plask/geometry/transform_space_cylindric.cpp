@@ -2,9 +2,11 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_REVOLUTION_NAME "revolution"
+
 namespace plask {
 
-const char* Revolution::NAME = "revolution";
+const char* Revolution::NAME = PLASK_REVOLUTION_NAME;
 
 std::string Revolution::getTypeName() const { return NAME; }
 
@@ -88,6 +90,6 @@ shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     }*/
 }
 
-static GeometryReader::RegisterObjectReader revolution_reader(Revolution::NAME, read_revolution);
+static GeometryReader::RegisterObjectReader revolution_reader(PLASK_REVOLUTION_NAME, read_revolution);
 
 }   // namespace plask

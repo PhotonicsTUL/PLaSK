@@ -4,9 +4,11 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_EXTRUSION_NAME "extrusion"
+
 namespace plask {
 
-const char* Extrusion::NAME = "extrusion";
+const char* Extrusion::NAME = PLASK_EXTRUSION_NAME;
 
 std::string Extrusion::getTypeName() const { return NAME; }
 
@@ -77,6 +79,6 @@ shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     return plask::make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(!reader.manager.draft), length);
 }
 
-static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(Extrusion::NAME, read_cartesianExtend);
+static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(PLASK_EXTRUSION_NAME, read_cartesianExtend);
 
 }   // namespace plask

@@ -2,9 +2,11 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_CYLINDER_NAME "cylinder"
+
 namespace plask {
 
-const char* Cylinder::NAME = "cylinder";
+const char* Cylinder::NAME = PLASK_CYLINDER_NAME;
 
 Cylinder::Cylinder(double radius, double height, const shared_ptr<Material>& material)
     : GeometryObjectLeaf<3>(material), radius(radius), height(height)
@@ -48,6 +50,6 @@ shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterObjectReader cylinder_reader(Cylinder::NAME, read_cylinder);
+static GeometryReader::RegisterObjectReader cylinder_reader(PLASK_CYLINDER_NAME, read_cylinder);
 
 }   // namespace plask

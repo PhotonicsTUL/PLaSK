@@ -2,6 +2,9 @@
 #include "reader.h"
 #include "../manager.h"
 
+#define PLASK_BLOCK2D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
+#define PLASK_BLOCK3D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
+
 namespace plask {
 
 template <int dim>
@@ -157,9 +160,7 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
 }
 
 template <int dim>
-const char* Block<dim>::NAME = dim == 2 ?
-            ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-            ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+const char* Block<dim>::NAME = dim == 2 ? PLASK_BLOCK2D_NAME : PLASK_BLOCK3D_NAME;
 
 template <int dim>
 std::string Block<dim>::getTypeName() const { return NAME; }
@@ -177,9 +178,9 @@ bool Block<dim>::contains(const typename Block<dim>::DVec &p) const {
 template struct PLASK_API Block<2>;
 template struct PLASK_API Block<3>;
 
-static GeometryReader::RegisterObjectReader block2D_reader(Block<2>::NAME, read_block2D);
+static GeometryReader::RegisterObjectReader block2D_reader(PLASK_BLOCK2D_NAME, read_block2D);
 static GeometryReader::RegisterObjectReader rectangle_reader("rectangle", read_block2D);
-static GeometryReader::RegisterObjectReader block3D_reader(Block<3>::NAME, read_block3D);
+static GeometryReader::RegisterObjectReader block3D_reader(PLASK_BLOCK3D_NAME, read_block3D);
 static GeometryReader::RegisterObjectReader cuboid_reader("cuboid", read_block3D);
 
 shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation) {
