@@ -51,9 +51,9 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         {
         }
 
-        virtual std::string getClassName() const;
+        virtual std::string getClassName() const override;
 
-        virtual void loadConfiguration(XMLReader&, Manager&);
+        virtual void loadConfiguration(XMLReader&, Manager&) override;
 
         void compute(ComputationType type);
         void compute_initial();
@@ -136,8 +136,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
         plask::DataVector<const double> averageLi(plask::LazyData<double> initLi, const plask::RectangularMesh<2>& mesh_Li);
 
-        virtual void onInitialize();
-        virtual void onInvalidate();
+        virtual void onInitialize() override;
+        virtual void onInvalidate() override;
 
         struct ConcentrationDataImpl: public LazyDataImpl<double>
         {
@@ -149,7 +149,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
                                   shared_ptr<const plask::MeshD<2>> dest_mesh,
                                   InterpolationMethod interp);
             double at(size_t i) const;
-            size_t size() const { return destination_mesh->size(); }
+            size_t size() const override { return destination_mesh->size(); }
         };
 
         /// Provide concentration from inside to the provider (outConcentration).

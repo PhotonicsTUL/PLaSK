@@ -48,10 +48,10 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize();
+    virtual void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate();
+    virtual void onInvalidate() override;
 
   public:
 
@@ -85,11 +85,11 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     /// Get calculations elapsed time
     double getElapsTime() const { return elapstime; }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodDynamicThermal3DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "thermal.Dynamic3D"; }
+    virtual std::string getClassName() const override { return "thermal.Dynamic3D"; }
 
     ~FiniteElementMethodDynamicThermal3DSolver();
 
@@ -101,8 +101,8 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
         InterpolationFlags flags;
         LazyData<double> temps;
         ThermalConductivityData(const FiniteElementMethodDynamicThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);
-        Tensor2<double> at(std::size_t i) const;
-        std::size_t size() const;
+        Tensor2<double> at(std::size_t i) const override;
+        std::size_t size() const override;
     };
 
     const LazyData<double> getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;

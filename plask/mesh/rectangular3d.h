@@ -926,7 +926,7 @@ private:
             : mesh(mesh), level(level), index_f(index_f), index_s(index_f_size == 0 ? 0 : index_s), index_f_size(index_f_size) {
         }
 
-        virtual void increment() {
+        virtual void increment() override {
             ++index_f;
             if (index_f == index_f_size) {
                 index_f = 0;
@@ -934,7 +934,7 @@ private:
             }
         }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
             return index_f == static_cast<const BoundaryIteratorImpl&>(other).index_f && index_s == static_cast<const BoundaryIteratorImpl&>(other).index_s;
         }
 
@@ -946,9 +946,9 @@ private:
         FixedIndex0IteratorImpl(const RectangularMesh& mesh, std::size_t level_index0, std::size_t index_1, std::size_t index_2)
             : BoundaryIteratorImpl(mesh, level_index0, index_1, mesh.axis1->size(), index_2) {}
 
-        virtual std::size_t dereference() const { return this->mesh.index(this->level, this->index_f, this->index_s); }
+        virtual std::size_t dereference() const override { return this->mesh.index(this->level, this->index_f, this->index_s); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new FixedIndex0IteratorImpl(*this);
         }
     };
@@ -959,9 +959,9 @@ private:
         FixedIndex1IteratorImpl(const RectangularMesh& mesh, std::size_t level_index1, std::size_t index_0, std::size_t index_2)
             : BoundaryIteratorImpl(mesh, level_index1, index_0, mesh.axis0->size(), index_2) {}
 
-        virtual std::size_t dereference() const { return this->mesh.index(this->index_f, this->level, this->index_s); }
+        virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->level, this->index_s); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new FixedIndex1IteratorImpl(*this);
         }
     };
@@ -972,9 +972,9 @@ private:
         FixedIndex2IteratorImpl(const RectangularMesh& mesh, std::size_t level_index2, std::size_t index_0, std::size_t index_1)
             : BoundaryIteratorImpl(mesh, level_index2, index_0, mesh.axis0->size(), index_1) {}
 
-        virtual std::size_t dereference() const { return this->mesh.index(this->index_f, this->index_s, this->level); }
+        virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->index_s, this->level); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new FixedIndex2IteratorImpl(*this);
         }
     };
@@ -995,7 +995,7 @@ private:
             : mesh(mesh), level(level), index_f(index_f), index_s(index_f_begin == index_f_end ? 0 : index_s), index_f_begin(index_f_begin), index_f_end(index_f_end) {
         }
 
-        virtual void increment() {
+        virtual void increment() override {
             ++index_f;
             if (index_f == index_f_end) {
                 index_f = index_f_begin;
@@ -1003,7 +1003,7 @@ private:
             }
         }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
             return index_f == static_cast<const BoundaryInRangeIteratorImpl&>(other).index_f && index_s == static_cast<const BoundaryInRangeIteratorImpl&>(other).index_s;
         }
 
@@ -1017,19 +1017,19 @@ private:
 
         FixedIndex0Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis0(level_axis0) {}
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index0(mesh_index) == level_axis0;
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, this->mesh.axis2->size()));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return this->mesh.axis1->size() * this->mesh.axis2->size();
         }
     };
@@ -1045,25 +1045,25 @@ private:
               beginAxis1(beginAxis1), endAxis1(endAxis1), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index0(mesh_index) == level_axis0
                     && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1)
                     && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, beginAxis2));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, endAxis2));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return (endAxis1 - beginAxis1) * (endAxis2 - beginAxis2);
         }
 
-        bool empty() const {
+        bool empty() const override {
             return beginAxis1 == endAxis1 || beginAxis2 == endAxis2;
         }
     };
@@ -1078,19 +1078,19 @@ private:
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index1(mesh_index) == level_axis1;
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, this->mesh.axis2->size()));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return this->mesh.axis0->size() * this->mesh.axis2->size();
         }
     };
@@ -1106,25 +1106,25 @@ private:
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index1(mesh_index) == level_axis1
                     && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
                     && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, beginAxis2));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, endAxis2));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return (endAxis0 - beginAxis0) * (endAxis2 - beginAxis2);
         }
 
-        bool empty() const {
+        bool empty() const override {
             return beginAxis0 == endAxis0 || beginAxis2 == endAxis2;
         }
     };
@@ -1140,19 +1140,19 @@ private:
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index2(mesh_index) == level_axis2;
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, this->mesh.axis1->size()));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return this->mesh.axis0->size() * this->mesh.axis1->size();
         }
     };
@@ -1168,25 +1168,25 @@ private:
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis1(beginAxis1), endAxis1(endAxis1)
               {}
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index2(mesh_index) == level_axis2
                     && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
                     && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1);
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, beginAxis1));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, endAxis1));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return (endAxis0 - beginAxis0) * (endAxis1 - beginAxis1);
         }
 
-        bool empty() const {
+        bool empty() const override {
             return beginAxis0 == endAxis0 || beginAxis1 == endAxis1;
         }
     };

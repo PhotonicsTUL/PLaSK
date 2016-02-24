@@ -55,10 +55,10 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     void solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize();
+    virtual void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate();
+    virtual void onInvalidate() override;
 
   public:
 
@@ -94,11 +94,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     /// Get max absolute correction for temperature
     double getErr() const { return toterr; }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodThermal2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const;
+    virtual std::string getClassName() const override;
 
     ~FiniteElementMethodThermal2DSolver();
 

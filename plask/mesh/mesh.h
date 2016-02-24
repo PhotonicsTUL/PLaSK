@@ -363,7 +363,7 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
   protected:
     WeakCache<GeometryObject, MeshType, CacheRemoveOnEachChange> cache;
 
-    void onChange(const Event&) { clearCache(); }
+    void onChange(const Event&) override { clearCache(); }
 
     template <typename RequiredType>
     static shared_ptr<RequiredType> cast(const shared_ptr<MeshType>& res) {

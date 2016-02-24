@@ -20,18 +20,18 @@ struct InGaN_Mg: public InGaN {
     static constexpr const char* NAME = "InGaN:Mg";
 
     InGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    virtual std::string name() const;
-    virtual std::string str() const;
-    virtual Tensor2<double> mob(double T) const;
-    virtual double Nf(double T) const; //TODO change to cm^(-3)
+    virtual std::string name() const override;
+    virtual std::string str() const override;
+    virtual Tensor2<double> mob(double T) const override;
+    virtual double Nf(double T) const override; //TODO change to cm^(-3)
     virtual double Na() const override;
     virtual double Nd() const override;
     virtual double Dop() const;
-    virtual Tensor2<double> cond(double T) const;
-    virtual double absp(double wl, double T) const;
+    virtual Tensor2<double> cond(double T) const override;
+    virtual double absp(double wl, double T) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const;
+    virtual bool isEqual(const Material& other) const override;
 
 protected:
     double NA,

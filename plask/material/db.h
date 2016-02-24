@@ -160,11 +160,11 @@ struct PLASK_API MaterialsDB {
          * @param m1_weight weight of first composition
          * @return constructed material
          */
-        shared_ptr<Material> operator()(double m1_weight) const {
+        shared_ptr<Material> operator()(double m1_weight) const override {
             return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING, 0.0);
         }
 
-        virtual shared_ptr<Material> singleMaterial() const {
+        virtual shared_ptr<Material> singleMaterial() const override {
             return material1composition == material2composition ? (*constructor)(material1composition, Material::NO_DOPING, 0.0) : shared_ptr<Material>();
         }
     };
@@ -197,12 +197,12 @@ struct PLASK_API MaterialsDB {
          * @param m1_weight weight of first composition and dopant
          * @return constructed material
          */
-        shared_ptr<Material> operator()(double m1_weight) const {
+        shared_ptr<Material> operator()(double m1_weight) const override {
             return (*constructor)(mixedComposition(m1_weight), dopAmountType,
                                   m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
-        virtual shared_ptr<Material> singleMaterial() const {
+        virtual shared_ptr<Material> singleMaterial() const override {
             return (material1composition == material2composition) && (m1DopAmount == m2DopAmount) ?
                         (*constructor)(material1composition, dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
@@ -235,11 +235,11 @@ struct PLASK_API MaterialsDB {
          * @param m1_weight weight of first composition and dopant
          * @return constructed material
          */
-        shared_ptr<Material> operator()(double m1_weight) const {
+        shared_ptr<Material> operator()(double m1_weight) const override {
             return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
-        virtual shared_ptr<Material> singleMaterial() const {
+        virtual shared_ptr<Material> singleMaterial() const override {
             return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
     };

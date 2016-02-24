@@ -77,12 +77,12 @@ struct Data2DLog: public DataLog<ArgT, ValT> {
         //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
     }
 
-    virtual Data2DLog& operator()(const ArgT& arg, const ValT& val) {
+    virtual Data2DLog& operator()(const ArgT& arg, const ValT& val) override {
         writelog(LOG_DATA, "{0}: {5}: {1}={3} {2}={4}", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), chart_name);
         return *this;
     }
 
-    virtual Data2DLog& operator()(const ArgT& arg, const ValT& val, int counter) {
+    virtual Data2DLog& operator()(const ArgT& arg, const ValT& val, int counter) override {
         writelog(LOG_DATA, "{0}: {6}: {1}={3} {2}={4} ({5})", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), counter+1, chart_name);
         return *this;
     };

@@ -18,13 +18,13 @@ struct AlN_Si: public AlN {
     static constexpr const char* NAME = "AlN:Si";
 
     AlN_Si(DopingAmountType Type, double Val);
-	virtual std::string name() const;
-    virtual std::string str() const;
-    virtual Tensor2<double> mob(double T) const;
+    virtual std::string name() const override;
+    virtual std::string str() const override;
+    virtual Tensor2<double> mob(double T) const override;
 	virtual double Nf(double T) const; //TODO change to cm^(-3)
     virtual double Dop() const;
-    virtual Tensor2<double> cond(double T) const;
-    virtual double absp(double wl, double T) const;
+    virtual Tensor2<double> cond(double T) const override;
+    virtual double absp(double wl, double T) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const;

@@ -24,15 +24,15 @@ struct GeometryObjectBBox {
 template <int DIMS>
 struct EmptyLeafCacheNode: public SpatialIndexNode<DIMS> {
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const {
+    virtual bool contains(const Vec<DIMS>& p) const override {
         return false;
     }
 
-    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const {
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const override {
         return GeometryObject::Subtree();
     }
 };
@@ -57,7 +57,7 @@ struct LeafCacheNode: public SpatialIndexNode<DIMS> {
             children.push_back(c);
     }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
             shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
@@ -65,12 +65,12 @@ struct LeafCacheNode: public SpatialIndexNode<DIMS> {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const {
+    virtual bool contains(const Vec<DIMS>& p) const override {
         for (auto child: children) if (child->contains(p)) return true;
         return false;
     }
 
-    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const {
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const override {
         GeometryObject::Subtree result;
         for (auto child = children.rbegin(); child != children.rend(); ++child) {
             GeometryObject::Subtree child_path = (*child)->getPathsAt(point, all);
@@ -116,15 +116,15 @@ struct InternalCacheNode: public SpatialIndexNode<DIMS> {
         : offset(offset), lo(lo), hi(hi)
     {}
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
         return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const {
+    virtual bool contains(const Vec<DIMS>& p) const override {
         return p[dir] < offset ? lo->contains(p) : hi->contains(p);
     }
 
-    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &p, bool all) const {
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &p, bool all) const override {
         return p[dir] < offset ? lo->getPathsAt(caller, p, all) : hi->getPathsAt(caller, p, all);
     }
 

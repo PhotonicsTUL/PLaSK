@@ -557,7 +557,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     typedef PropertyT PropertyTag;
 
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
@@ -686,7 +686,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyT::EnumType EnumType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
@@ -915,7 +915,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     typedef SpaceT SpaceType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
@@ -1121,7 +1121,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyT::EnumType EnumType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");

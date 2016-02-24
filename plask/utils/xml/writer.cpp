@@ -20,11 +20,11 @@ struct OStreamOutput: public XMLWriter::Output {
         ostream.open(std::forward<StreamCtorArgT>(stream_open_arg)...);
     }
 
-    void write(const char *buffer, std::size_t n) {
+    void write(const char *buffer, std::size_t n) override {
         ostream.write(buffer, n);
     }
 
-    void put(char c) {
+    void put(char c) override {
         ostream.put(c);
     }
 
@@ -39,7 +39,7 @@ struct CFileOutput: public XMLWriter::Output {
 
     CFileOutput(FILE* file): file(file) {}
 
-    void write(const char *buffer, std::size_t n) {
+    void write(const char *buffer, std::size_t n) override {
         if (std::fwrite(buffer, 1, n, file) != n)
             throw XMLWriterException("XML writter can't write to C file descriptor.");
     }

@@ -230,7 +230,7 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
     explicit GeometryObjectTransformSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryObjectTransform<this_dim, ChildType>(child) {}
 
     /// @return TYPE_SPACE_CHANGER
-    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_SPACE_CHANGER; }
+    virtual GeometryObject::Type getType() const override { return GeometryObject::TYPE_SPACE_CHANGER; }
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         std::vector< shared_ptr<const GeometryObject> > v = getChild()->getLeafs();

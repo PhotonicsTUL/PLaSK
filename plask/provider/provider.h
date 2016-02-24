@@ -444,7 +444,7 @@ template <typename ValueT, typename... ArgsT>
 struct SingleValueProvider: public Provider {
 
     static constexpr const char* NAME = "undefined value";
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     /// Type of provided value.
     typedef ValueT ProvidedType;
@@ -466,7 +466,7 @@ template <typename ValueT, typename EnumT, typename... ArgsT>
 struct MultiValueProvider: public Provider {
 
     static constexpr const char* NAME = "undefined value";
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     /// Type of provided value.
     typedef ValueT ProvidedType;
@@ -498,7 +498,7 @@ template <typename ValueT, typename SpaceT, typename... ExtraArgs>
 struct FieldProvider: public Provider {
 
     static constexpr const char* NAME = "undefined field";
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     /// Type of value provided by this (returned by operator()).
     typedef LazyData<ValueT> ProvidedType;
@@ -549,7 +549,7 @@ template <typename ValueT, typename SpaceT, typename EnumT, typename... ExtraArg
 struct MultiFieldProvider: public Provider {
 
     static constexpr const char* NAME = "undefined field";
-    virtual const char* name() const { return NAME; }
+    virtual const char* name() const override { return NAME; }
 
     /// Type of value provided by this (returned by operator()).
     typedef LazyData<ValueT> ProvidedType;

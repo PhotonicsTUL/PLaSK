@@ -142,7 +142,7 @@ struct PLASK_API Geometry: public GeometryObject {
         return getBorder(direction, higher).type() == border::Strategy::EXTEND;
     }
 
-    virtual Type getType() const { return TYPE_GEOMETRY; }
+    virtual Type getType() const override { return TYPE_GEOMETRY; }
 
     /**
      * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2D geometries).

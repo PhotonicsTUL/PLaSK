@@ -59,6 +59,8 @@ public:
 
     //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
+    virtual ~DataSourceImpl() {}
+
     virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     inline std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
@@ -118,6 +120,8 @@ public:
    // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    virtual ~DataSourceImpl() {}
 
     virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 

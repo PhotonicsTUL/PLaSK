@@ -942,9 +942,9 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         BoundaryIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): mesh(mesh), line(line), index(index) {}
 
-        virtual void increment() { ++index; }
+        virtual void increment() override { ++index; }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -955,9 +955,9 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         VerticalIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
 
-        virtual std::size_t dereference() const { return this->mesh.index(this->line, this->index); }
+        virtual std::size_t dereference() const override { return this->mesh.index(this->line, this->index); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new VerticalIteratorImpl(*this);
         }
     };
@@ -967,9 +967,9 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         HorizontalIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
 
-        virtual std::size_t dereference() const { return this->mesh.index(this->index, this->line); }
+        virtual std::size_t dereference() const override { return this->mesh.index(this->index, this->line); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new HorizontalIteratorImpl(*this);
         }
     };
@@ -984,19 +984,19 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index0(mesh_index) == line;
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, 0));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, this->mesh.axis1->size()));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return this->mesh.axis1->size();
         }
     };
@@ -1013,19 +1013,19 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index0(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, beginInLineIndex));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, endInLineIndex));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return endInLineIndex - beginInLineIndex;
         }
     };
@@ -1040,19 +1040,19 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index1(mesh_index) == line;
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, 0));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0->size()));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return this->mesh.axis0->size();
         }
     };
@@ -1067,19 +1067,19 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
             : BoundaryWithMeshLogicImpl<RectangularMesh<2>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool contains(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const override {
             return this->mesh.index1(mesh_index) == line && in_range(this->mesh.index0(mesh_index), beginInLineIndex, endInLineIndex);
         }
 
-        Iterator begin() const {
+        Iterator begin() const override {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, beginInLineIndex));
         }
 
-        Iterator end() const {
+        Iterator end() const override {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, endInLineIndex));
         }
 
-        std::size_t size() const {
+        std::size_t size() const override {
             return endInLineIndex - beginInLineIndex;
         }
     };

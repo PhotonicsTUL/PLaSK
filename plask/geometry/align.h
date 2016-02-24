@@ -280,15 +280,15 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
 
     PositionAlignerImpl(double translation): AlignerImpl<direction>(translation) {}
 
-    virtual double getAlign(double low, double hi) const {
+    virtual double getAlign(double low, double hi) const override {
         return this->coordinate;
     }
 
-    bool useBounds() const { return false; }
+    bool useBounds() const override { return false; }
 
-    virtual void print(std::ostream& out) const { out << "align object position along axis " << direction << " to " << this->coordinate; }
+    virtual void print(std::ostream& out) const override { out << "align object position along axis " << direction << " to " << this->coordinate; }
 
-    virtual std::string key(const AxisNames& axis_names) const { return axis_names[direction]; }
+    virtual std::string key(const AxisNames& axis_names) const override { return axis_names[direction]; }
 };
 
 }   // namespace details
@@ -635,7 +635,7 @@ struct AlignerCustomImpl: public AlignerImpl<direction> {
 
     AlignerCustomImpl(double coordinate): AlignerImpl<direction>(coordinate) {}
 
-    virtual double getAlign(double low, double hi) const {
+    virtual double getAlign(double low, double hi) const override {
         return strategy(low, hi, this->coordinate);
     }
 
@@ -643,9 +643,9 @@ struct AlignerCustomImpl: public AlignerImpl<direction> {
         return new AlignerImpl<direction, strategy, name_tag>(this->coordinate);
     }*/
 
-    virtual void print(std::ostream& out) const { out << "align " << name_tag::value << " to " << this->coordinate; }
+    virtual void print(std::ostream& out) const override { out << "align " << name_tag::value << " to " << this->coordinate; }
 
-    virtual std::string key(const AxisNames& axis_names) const { return name_tag::value; }
+    virtual std::string key(const AxisNames& axis_names) const override { return name_tag::value; }
 };
 
 }   // namespace details

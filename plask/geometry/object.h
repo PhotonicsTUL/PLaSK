@@ -1025,7 +1025,7 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     typedef typename Primitive<dim>::Box Box;
     typedef typename Primitive<dim>::DVec DVec;
 
-    int getDimensionsCount() const { return dim; }
+    int getDimensionsCount() const override { return dim; }
 
     using GeometryObject::getPathsTo;
 

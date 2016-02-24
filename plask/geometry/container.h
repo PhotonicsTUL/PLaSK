@@ -376,12 +376,12 @@ public:
     WithAligners(Args&&... args): ParentType(std::forward<Args>(args)...) {}
 
     /// Called by child.change signal
-    void onChildChanged(const GeometryObject::Event& evt) {
+    void onChildChanged(const GeometryObject::Event& evt) override {
         if (evt.isResize()) align(const_cast<TranslationT*>(evt.source<TranslationT>()));
         ParentType::onChildChanged(evt);
     }
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override {
         auto dst = this->children.begin();
         auto al_dst = aligners.begin();
         auto al_src = aligners.begin();
@@ -402,12 +402,12 @@ public:
             return false;
     }
 
-    virtual void removeAtUnsafe(std::size_t index) {
+    virtual void removeAtUnsafe(std::size_t index) override {
         ParentType::removeAtUnsafe(index);
         aligners.erase(aligners.begin() + index);
     }
 
-    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const override {
         aligners[child_index].writeToXML(dest_xml_child_tag, axes);
     }
 

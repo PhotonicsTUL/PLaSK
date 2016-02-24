@@ -240,37 +240,37 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
 
-        virtual std::size_t dereference() const {
+        virtual std::size_t dereference() const override {
             throw Exception("Dereference of empty boundary iterator.");
         }
 
-        virtual void increment() {}
+        virtual void increment() override {}
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
             return true;
         }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
             return new IteratorImpl;
         }
 
     };
 
-    virtual bool contains(std::size_t mesh_index) const { return false; }
+    virtual bool contains(std::size_t mesh_index) const override { return false; }
 
-    virtual typename BoundaryLogicImpl::const_iterator begin() const {
+    virtual typename BoundaryLogicImpl::const_iterator begin() const override {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
     }
 
-    virtual typename BoundaryLogicImpl::const_iterator end() const {
+    virtual typename BoundaryLogicImpl::const_iterator end() const override {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
     }
 
-    std::size_t size() const {
+    std::size_t size() const override {
         return 0;
     }
 
-    virtual bool empty() const { return true; }
+    virtual bool empty() const override { return true; }
 };
 
 /**

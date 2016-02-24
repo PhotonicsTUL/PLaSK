@@ -145,7 +145,7 @@ class PLASK_API XMLReader {
         template <typename... Args>
         StreamDataSource(Args&&... params): input(std::forward<Args>(params)...) {}
 
-        std::size_t read(char* buff, std::size_t buf_size);
+        std::size_t read(char* buff, std::size_t buf_size) override;
 
     };
 
@@ -162,7 +162,7 @@ class PLASK_API XMLReader {
 
         ~CFileDataSource() { fclose(desc); }
 
-        std::size_t read(char* buff, std::size_t buf_size);
+        std::size_t read(char* buff, std::size_t buf_size) override;
 
     };
 

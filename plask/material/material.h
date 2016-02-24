@@ -902,9 +902,9 @@ struct PLASK_API LiquidCrystal: public Material {
  * Empty material, which can actually be instantiated
  */
 struct PLASK_API EmptyMaterial : public Material {
-    virtual std::string name() const { return ""; }
-    virtual Material::Kind kind() const { return Material::NONE; }
-    virtual bool isEqual(const Material&) const { return true; } // all empty materials are always equal
+    virtual std::string name() const override { return ""; }
+    virtual Material::Kind kind() const override { return Material::NONE; }
+    virtual bool isEqual(const Material&) const override { return true; } // all empty materials are always equal
 };
 
 } // namespace plask

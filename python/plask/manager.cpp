@@ -101,7 +101,7 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
 
     XMLPythonDataSource(const py::object& file): file(file) {}
 
-    virtual size_t read(char* buff, size_t buf_size) {
+    virtual size_t read(char* buff, size_t buf_size) override {
         size_t read = 0, len;
         do {
             py::object readobj = file.attr("read")(buf_size-read);

@@ -58,25 +58,25 @@ protected:
 
         SolidMaterial(shared_ptr<Material> material): material(material) {}
 
-        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const override {
             return material;
         }
 
-        virtual shared_ptr<Material> singleMaterial() const {
+        virtual shared_ptr<Material> singleMaterial() const override {
             return material;
         }
 
-        SolidMaterial* clone() const {
+        SolidMaterial* clone() const override {
             return new SolidMaterial(material);
         }
 
-        virtual shared_ptr<Material> getRepresentativeMaterial() const {
+        virtual shared_ptr<Material> getRepresentativeMaterial() const override {
             return material;
         }
 
-        virtual bool isUniform(Primitive<3>::Direction direction) const { return true; }
+        virtual bool isUniform(Primitive<3>::Direction direction) const override { return true; }
 
-        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
     };
 
     struct PLASK_API MixedCompositionMaterial: public MaterialProvider {
@@ -85,26 +85,26 @@ protected:
 
         MixedCompositionMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
 
-        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const override {
             Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates, we can also cache lower and height
             return (*materialFactory)((p.vert() - b.lower.vert()) / b.height());
         }
 
-        virtual shared_ptr<Material> singleMaterial() const {
+        virtual shared_ptr<Material> singleMaterial() const override {
             return shared_ptr<Material>();
         }
 
-        MixedCompositionMaterial* clone() const {
+        MixedCompositionMaterial* clone() const override {
             return new MixedCompositionMaterial(materialFactory);
         }
 
-        virtual shared_ptr<Material> getRepresentativeMaterial() const {
+        virtual shared_ptr<Material> getRepresentativeMaterial() const override {
             return (*materialFactory)(0.5);
         }
 
-        virtual bool isUniform(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
+        virtual bool isUniform(Primitive<3>::Direction direction) const override { return direction != Primitive<3>::DIRECTION_VERT; }
 
-        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
     };
 
     std::unique_ptr<MaterialProvider> materialProvider;

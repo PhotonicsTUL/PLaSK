@@ -615,7 +615,7 @@ class MemoryBuffer : private Allocator, public Buffer<T> {
   }
 
  protected:
-  void grow(std::size_t size);
+  void grow(std::size_t size) override;
 
  public:
   explicit MemoryBuffer(const Allocator &alloc = Allocator())
