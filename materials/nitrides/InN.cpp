@@ -78,14 +78,15 @@ Tensor2<double> InN::Mlh(double T, double e) const {
     return (tMlh);
 }
 
-MI_PROPERTY(InN, CB,
-            MISource("-")
-           )
-double InN::CB(double T, double e, char point) const {
-    double tCB( VB(T,0.,point, 'H') + Eg(T,0.,point) );
-    /*if (!e) return tCB;
-    else return tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e;stary kod z GaAs*/
-}
+// commented out since no return leads to UB - Piotr Beling [25.02.2016]
+//MI_PROPERTY(InN, CB,
+//            MISource("-")
+//           )
+//double InN::CB(double T, double e, char point) const {
+//    double tCB( VB(T,0.,point, 'H') + Eg(T,0.,point) );
+//    /*if (!e) return tCB;
+//    else return tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e;stary kod z GaAs*/
+//}
 
 MI_PROPERTY(InN, VB,
             MISource("-"),
