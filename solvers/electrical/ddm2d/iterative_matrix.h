@@ -21,7 +21,7 @@ namespace plask { namespace solvers { namespace drift_diffusion {
 struct DCGError: public std::exception {
     const char* msg;
     DCGError(const char* msg): msg(msg) {}
-    const char* what() const noexcept { return msg; }
+    const char* what() const noexcept override { return msg; }
 
 };
 

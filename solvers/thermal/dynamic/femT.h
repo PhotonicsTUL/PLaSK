@@ -104,8 +104,8 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
         InterpolationFlags flags;
         LazyData<double> temps;
         ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
-        Tensor2<double> at(std::size_t i) const;
-        std::size_t size() const;
+        Tensor2<double> at(std::size_t i) const override;
+        std::size_t size() const override;
     };
 
     const LazyData<double> getTemperatures(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) const;

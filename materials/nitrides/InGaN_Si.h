@@ -32,7 +32,7 @@ struct InGaN_Si: public InGaN {
     virtual double absp(double wl, double T) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const;
+    virtual bool isEqual(const Material& other) const override;
 
 protected:
     double ND,

@@ -22,7 +22,7 @@ class RootMuller: public RootDigger {
                const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
 
 
-    dcomplex find(dcomplex start) const;
+    dcomplex find(dcomplex start) const override;
 };
 
 }}} // namespace plask::solvers::slab

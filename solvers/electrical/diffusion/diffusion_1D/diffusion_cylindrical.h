@@ -148,7 +148,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
             ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
                                   shared_ptr<const plask::MeshD<2>> dest_mesh,
                                   InterpolationMethod interp);
-            double at(size_t i) const;
+            double at(size_t i) const override;
             size_t size() const override { return destination_mesh->size(); }
         };
 

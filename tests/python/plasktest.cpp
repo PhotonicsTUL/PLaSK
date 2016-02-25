@@ -28,13 +28,13 @@ std::vector<MyVec> getVecs() {
 
 struct MyMaterial : public plask::Material {
 
-    virtual std::string name() const { return "MyMaterial"; }
+    virtual std::string name() const override { return "MyMaterial"; }
 
-    virtual Material::Kind kind() const { return Material::NONE; }
+    virtual Material::Kind kind() const override { return Material::NONE; }
 
-    virtual double VB(double T, double e, char P, char h) const { return 0.5*T; }
+    virtual double VB(double T, double e, char P, char h) const override { return 0.5*T; }
 
-    virtual double chi(double T, double e, char P) const { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
+    virtual double chi(double T, double e, char P) const override { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
 
 };
 
@@ -108,11 +108,11 @@ py::list testBoundary(const plask::RectangularMesh<2>& mesh, const plask::shared
 struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectangularMesh<2>> {
     bool mesh_changed;
     SpaceTest() : mesh_changed(false) {}
-    virtual std::string getClassName() const { return "SpaceTest"; }
+    virtual std::string getClassName() const override { return "SpaceTest"; }
     void initialize() {
         initCalculation();
     }
-    virtual void onMeshChange(const typename plask::RectangularMesh<2>::Event&) {
+    virtual void onMeshChange(const typename plask::RectangularMesh<2>::Event&) override {
         mesh_changed = true;
     }
     bool getMeshChanged() {
@@ -135,7 +135,8 @@ constexpr const char* VectorialField::UNIT;
 
 
 struct SimpleSolver : plask::Solver {
-    virtual std::string getClassName() const { return "SimpleSolver"; }
+
+    virtual std::string getClassName() const override { return "SimpleSolver"; }
 
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
 
@@ -168,7 +169,7 @@ struct SimpleSolver : plask::Solver {
 
 struct InOutSolver : plask::Solver {
 
-    virtual std::string getClassName() const { return "InOut"; }
+    virtual std::string getClassName() const override { return "InOut"; }
 
     plask::ReceiverFor<plask::Wavelength> inWavelength;
     plask::ProviderFor<plask::Wavelength>::WithValue outWavelength;

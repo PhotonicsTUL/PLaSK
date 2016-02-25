@@ -686,7 +686,7 @@ class FixedBuffer : public fmt::Buffer<Char> {
   FixedBuffer(Char *array, std::size_t size) : fmt::Buffer<Char>(array, size) {}
 
  protected:
-  FMT_API void grow(std::size_t size);
+  FMT_API void grow(std::size_t size) override;
 };
 
 template <typename Char>
@@ -1994,7 +1994,7 @@ class FormatBuf : public std::basic_streambuf<Char> {
     this->setp(start_, start_ + buffer_.capacity());
   }
 
-  int_type overflow(int_type ch = traits_type::eof()) {
+  int_type overflow(int_type ch = traits_type::eof()) override {
     if (!traits_type::eq_int_type(ch, traits_type::eof())) {
       size_t size = this->pptr() - start_;
       buffer_.resize(size);
