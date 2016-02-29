@@ -158,12 +158,12 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
 }; // class FiniteElementMethodDiffusion2DSolver
 
-template <>
+template <> inline
 double FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::jacobian(double) {
     return 1;
 }
 
-template <>
+template <> inline
 double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(double r) {
     return 2*M_PI * r;
 } // 2*M_PI from integral over full angle, 
