@@ -784,4 +784,16 @@ const double patterson_weights_data[] = {
     9.45715933950007e-07
 };
 
+const double* patterson_weights[] = {
+    patterson_weights_data,
+    patterson_weights_data + 1,
+    patterson_weights_data + 3,
+    patterson_weights_data + 7,
+    patterson_weights_data + 15,
+    patterson_weights_data + 31,
+    patterson_weights_data + 63,
+    patterson_weights_data + 127,
+    patterson_weights_data + 255
+};
+
 }}} // namespace plask::solvers::effective
