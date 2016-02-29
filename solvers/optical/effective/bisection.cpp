@@ -7,7 +7,7 @@ namespace plask { namespace solvers { namespace effective {
     try { \
         result = fun(dcomplex(re, im)); \
     } catch (...) { \
-        _Pragma("omp critical") \
+        PLASK_PRAGMA(omp critical) \
         error = std::current_exception();\
     }
 
