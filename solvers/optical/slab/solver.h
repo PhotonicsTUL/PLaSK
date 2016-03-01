@@ -13,9 +13,9 @@ namespace plask { namespace solvers { namespace slab {
 struct PML {
     dcomplex factor;  ///< PML factor
     double size;      ///< Size of the PMLs
-    double dist;     ///< Distance of the PMLs from defined computational domain
+    double dist;      ///< Distance of the PMLs from defined computational domain
     double order;     ///< Order of the PMLs
-    PML(): factor(1.,0.), size(1.), dist(0.5), order(2) {}
+    PML(): factor(1.,0.), size(1.), dist(0.5), order(1) {}
     PML(dcomplex factor, double size, double dist, double order): factor(factor), size(size), dist(dist), order(order) {}
 };
 

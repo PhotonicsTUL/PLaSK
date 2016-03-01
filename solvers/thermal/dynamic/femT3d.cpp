@@ -18,7 +18,7 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
     elapstime(0.),
     lumping(true),
     rebuildfreq(0),
-    logfreq(50)
+    logfreq(500)
 {
     temperatures.reset();
     mHeatFluxes.reset();

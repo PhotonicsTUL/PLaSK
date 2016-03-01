@@ -294,17 +294,19 @@ class GridController(Controller):
     def _change(self, setter, value, old_value, label):
         if value != old_value:
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, self.grid_model, setter, value, old_value, "change grid's {}".format(label)
+                self.section_model, lambda v: setter(self.grid_model, v),
+                value, old_value, "change grid's {}".format(label)
             ))
 
-    def _change_attr(self, attr, value, label = None):
+    def _change_attr(self, attr, value, label=None):
         old_value = getattr_by_path(self.grid_model, attr, default=None)
         if value != old_value:
             if label is None:
                 label = attr
                 while not isinstance(label, basestring): label = label[0]
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, self.grid_model, lambda n, v, attr=attr: setattr_by_path(n, attr, v), value, old_value, "change grid's {}".format(label)
+                self.section_model, lambda v: setattr_by_path(self.grid_model, attr, v),
+                value, old_value, "change grid's {}".format(label)
             ))
 
     def fill_form(self):

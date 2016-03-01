@@ -110,11 +110,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             this->readBoundaryConditions(manager, source, voltage_boundary);
         else if (param == "loop") {
             stat = source.enumAttribute<Stat>("stat")
+                .value("MB", STAT_MB)
+                .value("FD", STAT_FD)
                 .value("Maxwell-Boltzmann", STAT_MB)
                 .value("Fermi-Dirac", STAT_FD)
                 .get(stat);
             conttype = source.enumAttribute<ContType>("conttype")
-                .value("Ohmic", OHMIC)
+                .value("ohmic", OHMIC)
                 .value("Schottky", SCHOTTKY)
                 .get(conttype);
             mSchottkyP = source.getAttribute<double>("SchottkyP", mSchottkyP);

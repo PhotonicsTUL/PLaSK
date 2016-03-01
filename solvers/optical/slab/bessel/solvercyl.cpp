@@ -15,6 +15,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWith
     detlog.global_prefix = this->getId();
     detlog.axis_arg_name = "lam";
     pml.dist = 20.;
+    pml.size = 0.;
     this->writelog(LOG_WARNING, "This is an EXPERIMENTAL solver! Calculation results may not be reliable!");
 }
 

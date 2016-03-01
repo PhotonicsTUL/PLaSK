@@ -106,6 +106,7 @@
         </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="unit" type="xs:string" use="optional"/>
+      <xs:attribute name="default" type="xs:string" use="optional"/>
     </xs:complexType>
   </xs:element>
 
@@ -113,6 +114,7 @@
     <xs:complexType mixed="true">
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="label" type="xs:string" use="required"/>
+      <xs:attribute name="values" type="xs:string" use="optional"/>
     </xs:complexType>
   </xs:element>
 

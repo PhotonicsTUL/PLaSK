@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#coding: utf8
 from __future__ import print_function
 
 import sys
@@ -115,26 +116,38 @@ def make_rst(dirname):
                     for attr in attrs:
                         doc = u' '.join(line.strip() for line in html2rst(attr.text.strip()).split('\n'))
                         req = 'required' in attr.attrib and attr.attrib['required'].lower() in ('yes', 'true')
-                        typ = attr.attrib.get('type', None)
-                        unit = attr.attrib.get('unit', None)
+                        typ = attr.attrib.get('type')
+                        unit = attr.attrib.get('unit')
+                        default = attr.attrib.get('default')
                         if typ == 'choice':
                             choices = [ch.text.strip() for ch in attr.findall(xns+'choice')]
                             if len(choices) == 0:
-                                typ = u'(choice)'
-                            if len(choices) == 1:
-                                typ = u"('\\ *{}*\\ ')".format(choices[0])
+                                typ = u'choice'
+                            elif len(choices) == 1:
+                                typ = u"'\\ *{}*\\ '".format(choices[0])
                             elif len(choices) == 2:
-                                typ = u"('\\ *{}*\\ ' or '\\ *{}*\\ ')".format(choices[0], choices[1])
+                                typ = u"'\\ *{}*\\ ' or '\\ *{}*\\ '".format(choices[0], choices[1])
                             else:
-                                typ = u"({}, or '\\ *{}*\\ ')".format(
+                                typ = u"{}, or '\\ *{}*\\ '".format(
                                     u', '.join(u"'\\ *{}*\\ '".format(ch) for ch in choices[:-1]), choices[-1])
                         elif typ is not None:
                             if unit is None:
-                                typ = u'({})'.format(html2rst(typ))
+                                typ = u'{}'.format(html2rst(typ))
                             else:
-                                typ = html2rst(u'({} [{}])'.format(typ, unit))
+                                typ = html2rst(u'{} [{}]'.format(typ, unit))
                         else:
                             typ = ''
+                        if default is not None:
+                            try: float(default)
+                            except ValueError: default = u"is '\\ *" + default + u"*\\ '"
+                            if typ:
+                                typ = typ + u", default {}".format(default)
+                            else:
+                                typ = u"default {}".format(default)
+                            if unit is not None:
+                                typ += u" " + html2rst(unit)
+                        if typ:
+                            typ = u'(' + typ + u')'
                         out(u'{}   :attr {}{}: {} {}'.format(u'   '*level, u'required ' if req else u'', attr.attrib['name'], doc, typ))
 
                 write_tags(tag, level+1)

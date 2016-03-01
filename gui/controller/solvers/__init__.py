@@ -20,7 +20,7 @@ from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from .. import Controller, select_index_from_info
 from ..table import table_with_manipulators
 from ..defines import get_defines_completer
-from .confsolver import SolverAutoWidget
+from .autosolver import SolverAutoWidget
 
 
 def _solvers_key(slv):

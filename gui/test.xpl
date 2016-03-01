@@ -199,38 +199,40 @@
 </grids>
 
 <solvers>
-  <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
-    <config matrix-elem="10"/>
-  </gain>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <temperature>
-    <condition value="300." place="bottom"/>
-  </temperature>
+      <condition place="bottom" value="300."/>
+    </temperature>
+    <heatflux/>
+    <convection/>
+    <radiation/>
   </thermal>
+  <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
+    <config matrix-elem="10"/>
+  </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <matrix itererr="2"/>
     <junction beta0="{beta_def}" beta1="{beta_def - 1.2}" js0="{js_def}" js1="{js_def + 0.1}"/>
     <voltage>
-    <condition value="2.0">
-      <place object="p-contact" side="bottom"/>
-    </condition>
-    <condition value="0.0">
-      <place object="n-contact" side="top"/>
-    </condition>
-  </voltage>
+      <condition value="2.0">
+        <place side="bottom" object="p-contact"/>
+      </condition>
+      <condition value="0.0">
+        <place side="top" object="n-contact"/>
+      </condition>
+    </voltage>
   </electrical>
   <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">
     <geometry ref="GeoO"/>
     <mesh ref="diffusion"/>
-    <config accuracy="0.005" fem-method="parabolic"/>
   </electrical>
-  <gain name="GAIN" solver="FermiCyl" lib="simple">
+  <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="8"/>
+    <config lifetime="0.5" matrix-elem="8" strained="12"/>
   </gain>
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
@@ -249,6 +251,9 @@
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
   </optical>
+  <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
+    <voltage/>
+  </electrical>
 </solvers>
 
 <connects>

@@ -6,6 +6,8 @@ namespace plask { namespace solvers { namespace electrical3d {
 
 FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, plask::RectangularMesh<3>>(name),
+    pcond(5.),
+    ncond(50.),
     algorithm(ALGORITHM_CHOLESKY),
     loopno(0),
     default_junction_conductivity(5.),

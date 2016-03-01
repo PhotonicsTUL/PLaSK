@@ -13,7 +13,7 @@
 
     <tag name="config" label="Gain Parameters">
       Some important gain parameters.
-      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps" default="0.1">
         Average carriers lifetime. This parameter is used for gain spectrum broadening.
       </attr>
       <attr name="matrix-elem" label="Momentum matrix element"
@@ -21,7 +21,7 @@
         Value of the squared matrix element in gain computations.
         If it is not set it is estimated automatically.
       </attr>
-      <attr name="strained" label="Strained" type="bool">
+      <attr name="strained" label="Strained" type="bool" default="no">
         Boolean attribute indicated if the solver should consider strain in the active region.
         If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
@@ -32,7 +32,7 @@
             Setting this to True stongly increases computation speed, but makes the results
             less accurate for high gains.
       </attr-->
-      <attr name="T0" label="Reference temperature" type="float" unit="K">
+      <attr name="T0" label="Reference temperature" type="float" unit="K" default="300">
         Reference temperature. This is the temperature used for initial computation of the energy levels.
       </attr>
     </tag>
@@ -56,7 +56,7 @@
 
     <tag name="config" label="Gain Parameters">
       Some important gain parameters.
-      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps">
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps" default="0.1">
         Average carriers lifetime. This parameter is used for gain spectrum broadening.
       </attr>
       <attr name="matrix-elem" label="Momentum matrix element"
@@ -64,7 +64,7 @@
         Value of the squared matrix element in gain computations.
         If it is not set it is estimated automatically.
       </attr>
-      <attr name="strained" label="Strained" type="bool">
+      <attr name="strained" label="Strained" type="bool" default="no">
         Boolean attribute indicated if the solver should consider strain in the active region.
         If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
@@ -75,7 +75,7 @@
             Setting this to True stongly increases computation speed, but makes the results
             less accurate for high gains.
       </attr-->
-      <attr name="T0" label="Reference temperature" type="float" unit="K">
+      <attr name="T0" label="Reference temperature" type="float" unit="K" default="300">
         Reference temperature. This is the temperature used for initial computation of the energy levels.
       </attr>
     </tag>

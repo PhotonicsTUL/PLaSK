@@ -94,7 +94,6 @@ class DefinesModel(TableModel):
             if col == 0: return 'Name'
             if col == 1: return 'Value'
             if col == 2: return 'Comment'
-        return None
 
     def stubs(self):
         return "DEF = dict()\n" + "\n".join("{} = None".format(d.name) for d in self.entries)

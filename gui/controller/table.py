@@ -10,7 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore, QtGui
+from ..qt import QtGui
+from ..qt.QtCore import Qt
 
 from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill
@@ -44,7 +45,7 @@ class TableActions(object):
         if not index.isValid(): return
         index = index.row()
         if 1 <= index < len(self.model.entries):
-            self.model.swap_neighbour_entries(index-1, index)
+            self.model.swap_entries(index-1, index)
             #self.table.selectRow(index-1)
 
     def move_down(self):
@@ -52,7 +53,7 @@ class TableActions(object):
         if not index.isValid(): return
         index = index.row()
         if 0 <= index < len(self.model.entries)-1:
-            self.model.swap_neighbour_entries(index, index+1)
+            self.model.swap_entries(index, index+1)
             #self.table.selectRow(index+1)
 
     @staticmethod
@@ -61,7 +62,7 @@ class TableActions(object):
         action.setStatusTip(tip)
         if shortcut is not None:
             action.setShortcut(shortcut)
-            action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         action.triggered.connect(to_call)
         return action
 
@@ -70,22 +71,22 @@ class TableActions(object):
         self.add_action = TableActions.make_action('list-add', '&Add',
                                                     'Add new entry to the list', parent,
                                                     self.add_entry,
-                                                    QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
+                                                    Qt.CTRL + Qt.Key_Plus)
 
         self.remove_action = TableActions.make_action('list-remove', '&Remove',
                                                        'Remove selected entry from the list',
                                                        parent, self.remove_entry,
-                                                       QtCore.Qt.SHIFT + QtCore.Qt.Key_Delete)
+                                                       Qt.SHIFT + Qt.Key_Delete)
 
         self.move_up_action = TableActions.make_action('go-up', 'Move &up',
                                                         'Change order of entries: move current entry up',
                                                         parent, self.move_up,
-                                                        QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
+                                                        Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
 
         self.move_down_action = TableActions.make_action('go-down', 'Move &down',
                                                           'Change order of entries: move current entry down',
                                                           parent, self.move_down,
-                                                          QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
+                                                          Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
@@ -111,9 +112,11 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
     vbox.addWidget(toolbar)
     vbox.addWidget(table)
 
-    external = QtGui.QGroupBox()
     if title is not None:
+        external = QtGui.QGroupBox()
         external.setTitle(title)
+    else:
+        external = QtGui.QWidget()
     vbox.setContentsMargins(0, 0, 0, 0)
     vbox.setSpacing(0)
 
@@ -146,7 +149,7 @@ class TableController(Controller):
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
         for col in range(model.columnCount()):
-            label = model.headerData(col, QtCore.Qt.Horizontal, QtCore.Qt.DisplayRole)
+            label = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
             table_edit_shortcut(self.table, col, label[0].lower())
 
     def get_widget(self):

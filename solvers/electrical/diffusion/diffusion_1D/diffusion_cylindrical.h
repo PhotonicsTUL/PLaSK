@@ -25,8 +25,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
-        double relative_accuracy;                   ///< Relative accuracy
         InterpolationMethod interpolation_method;   ///< Selected interpolation method
+        double relative_accuracy;                   ///< Relative accuracy
         int max_mesh_changes;                  // maksymalna liczba zmian dr
         int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
         FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
@@ -37,13 +37,14 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
             plask::SolverWithMesh<Geometry2DType,plask::RegularMesh1D>(name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE),
+            relative_accuracy(0.01),
+            max_mesh_changes(5),
+            max_iterations(20),
+            fem_method(FEM_PARABOLIC),
+            minor_concentration(5.0e+15),
             do_initial(false),
             mesh2(new plask::RectangularMesh<2>())
         {
-            relative_accuracy = 0.01;
-            max_mesh_changes = 5;
-            max_iterations = 20;
-            minor_concentration = 5.0e+15;
             inTemperature = 300.;
         }
 

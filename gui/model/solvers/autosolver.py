@@ -9,11 +9,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 import os
 from lxml import etree
 
 from ...utils.xml import AttributeReader, print_interior
 from . import Solver, SOLVERS
+from .bconds import BCONDS, SchemaBoundaryConditions
 
 try:
     unicode = unicode
@@ -32,10 +34,11 @@ except ImportError:
 
 
 class Attr(object):
-    def __init__(self, name, label, help):
+    def __init__(self, name, label, help, default=None):
         self.name = name
         self.label = label
         self.help = help
+        self.default = default
 
 
 class AttrMulti(Attr):
@@ -43,14 +46,14 @@ class AttrMulti(Attr):
 
 
 class AttrChoice(Attr):
-    def __init__(self, name, label, help, choices):
-        super(AttrChoice, self).__init__(name, label, help)
+    def __init__(self, name, label, help, choices, default=None):
+        super(AttrChoice, self).__init__(name, label, help, default)
         self.choices = choices
 
 
 class AttrBool(AttrChoice):
-    def __init__(self, name, label, help):
-        super(AttrBool, self).__init__(name, label, help, ('yes', 'no'))
+    def __init__(self, name, label, help, default=None):
+        super(AttrBool, self).__init__(name, label, help, ('yes', 'no'), default)
 
 
 class AttrGeometryObject(Attr):
@@ -66,15 +69,16 @@ def read_attr(attr, xns):
         al = attr.attrib['label']
         ah = attr.text
         at = attr.attrib.get('type', '')
-        au = attr.attrib.get('unit', None)
+        au = attr.attrib.get('unit')
+        ad = attr.attrib.get('default')
         if au is not None:
             al += u' [{}]'.format(au)
             at += u' [{}]'.format(au)
         if at == u'choice':
             ac = tuple(ch.text.strip() for ch in attr.findall(xns+'choice'))
-            return AttrChoice(an, al, ah, ac)
+            return AttrChoice(an, al, ah, ac, ad)
         elif at == u'bool':
-            return AttrBool(an, al, ah)
+            return AttrBool(an, al, ah, ad)
         elif at == u'geometry object':
             return AttrGeometryObject(an, al, ah)
         elif at == u'geometry path':
@@ -85,25 +89,31 @@ def read_attr(attr, xns):
             if an.endswith('#'):
                 return AttrMulti(an, al, ah)
             else:
-                return Attr(an, al, ah)
+                return Attr(an, al, ah, ad)
 
 
-class ConfSolver(Solver):
-    """Model for solver with its configuration specified in a simple Python dictionary
+class SchemaTag(object):
+    def __init__(self, name, label, attrs):
+        self.name = name
+        self.label = label
+        self.attrs = attrs
+
+
+class AutoSolver(Solver):
+    """Model for solver with its configuration specified in a scheme file solvers.xml
        and automatically generated controller widget"""
 
-    def __init__(self, category, config, lib=None, solver='', mesh_type=None, name='', parent=None, info_cb=None):
-        super(ConfSolver, self).__init__(category, solver, name, parent, info_cb)
+    def __init__(self, category, schema, lib=None, solver='', mesh_type=None, name='', parent=None, info_cb=None):
+        super(AutoSolver, self).__init__(category, solver, name, parent, info_cb)
         self.lib = lib
-        self.config = config
+        self.schema = schema
         self.mesh_type = mesh_type
         self.set_fresh_data()
 
     def set_fresh_data(self):
-        self.data = dict((tag,
-                          dict((a.name, '') for a in attrs) if type(attrs) in (tuple, list) else
-                          ''  # TODO add proper support for boundary conditions
-                         ) for (tag, _, attrs) in self.config)
+        self.data = dict((schema.name,
+                          dict((a.name, None) for a in schema.attrs) if isinstance(schema, SchemaTag) else [])
+                         for schema in self.schema)
 
     def get_xml_element(self):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
@@ -113,9 +123,10 @@ class ConfSolver(Solver):
             etree.SubElement(element, 'geometry', {'ref': self.geometry})
         if self.mesh:
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
-        for tag,_,_ in self.config:
+        for schema in self.schema:
+            tag = schema.name
             data = self.data[tag]
-            if type(data) is dict:
+            if isinstance(schema, SchemaTag):
                 attrs = dict((item for item in data.items() if item[1] and item[0][-1] != '#'))
                 if attrs:
                     if '/' in tag:
@@ -131,6 +142,8 @@ class ConfSolver(Solver):
                         etree.SubElement(el, tag, attrs)
                     else:
                         etree.SubElement(element, tag, attrs)
+            elif isinstance(schema, SchemaBoundaryConditions):
+                element.append(schema.to_xml(data))
             else:
                 if data:
                     if not isinstance(data, str): data = data.encode('utf8')
@@ -143,7 +156,7 @@ class ConfSolver(Solver):
 
     def set_xml_element(self, element):
         self.set_fresh_data()
-        super(ConfSolver, self).set_xml_element(element)
+        super(AutoSolver, self).set_xml_element(element)
         el = element.find('geometry')
         if el is not None:
             self.geometry = el.attrib.get('ref')
@@ -153,27 +166,29 @@ class ConfSolver(Solver):
             if el is not None:
                 self.mesh = el.attrib.get('ref')
                 #TODO report missing or mismatching mesh
-        for tag,_,_ in self.config:
-            el = element.find(tag)
+        for schema in self.schema:
+            el = element.find(schema.name)
             if el is not None:
-                try:
-                    data = self.data[tag]
-                except KeyError:
-                    pass
-                else:
-                    if type(data) is dict:
+                if isinstance(schema, SchemaTag):
+                    try:
+                        data = self.data[schema.name]
+                    except KeyError:
+                        pass
+                    else:
                         with AttributeReader(el) as attrs:
                             for name in attrs:
                                 if name+'#' in data:
                                     data[name+'0'] = attrs[name]
                                 else:
                                     data[name] = attrs[name]
-                    else:
-                        self.data[tag] = print_interior(el)
+                elif isinstance(schema, SchemaBoundaryConditions):
+                    self.data[schema.name] = schema.from_xml(el)
+                else:
+                    self.data[schema.name] = print_interior(el)
 
     def get_controller(self, document):
-        from ...controller.solvers.confsolver import ConfSolverController
-        return ConfSolverController(document, self)
+        from ...controller.solvers.autosolver import AutoSolverController
+        return AutoSolverController(document, self)
 
     def stub(self):
         if self.lib is not None:
@@ -182,19 +197,19 @@ class ConfSolver(Solver):
             return "import {1}.{2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
 
 
-class ConfSolverFactory(object):
+class AutoSolverFactory(object):
 
-    def __init__(self, category, lib, solver, config, mesh_type, providers, receivers):
+    def __init__(self, category, lib, solver, schema, mesh_type, providers, receivers):
         self.category = category
         self.solver = solver
-        self.config = config
+        self.schema = schema
         self.mesh_type = mesh_type
         self.lib = lib
         self.providers = providers
         self.receivers = receivers
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
-        result = ConfSolver(self.category, self.config, self.lib, self.solver, self.mesh_type, name, parent, info_cb)
+        result = AutoSolver(self.category, self.schema, self.lib, self.solver, self.mesh_type, name, parent, info_cb)
         if element is not None:
             result.set_xml_element(element)
         if self.lib is not None and result.lib != self.lib:
@@ -242,18 +257,24 @@ def _load_xml(filename):
         else:
             mesh_type = None
 
-        config = []
+        schema = []
 
         for tag in _iter_tags(solver, xns):
             tn, tl = tag.attrib['name'], tag.attrib['label']
             attrs = []
             for attr in tag.findall(xns+'attr'):
                 attrs.append(read_attr(attr, xns))
-            config.append((tn, tl, attrs))
+            schema.append(SchemaTag(tn, tl, attrs))
 
-        #TODO Handle boundary conditions properly
-        for bcond in solver.findall(xns+'bcond'):
-            config.append((bcond.attrib['name'], bcond.attrib['label'] + ' boundary conditions', None))
+        try:
+            BCond = BCONDS[mesh_type]
+        except KeyError:
+            pass
+        else:
+            for bcond in solver.findall(xns+'bcond'):
+                values = bcond.attrib.get('values')
+                if values is not None: values = values.split(',')
+                schema.append(BCond(bcond.attrib['name'], bcond.attrib['label'], mesh_type, values))
 
         flow = solver.find(xns+'flow')
         if flow is not None:
@@ -265,7 +286,7 @@ def _load_xml(filename):
             providers = []
             receivers = []
 
-        SOLVERS[cat,name] = ConfSolverFactory(cat, lib, name, config, mesh_type, providers, receivers)
+        SOLVERS[cat,name] = AutoSolverFactory(cat, lib, name, schema, mesh_type, providers, receivers)
 
 
 # Find XML files with solvers configuration

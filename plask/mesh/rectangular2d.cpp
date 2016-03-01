@@ -106,7 +106,7 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary
     auto side = boundary_desc.getAttribute("side");
     auto line = boundary_desc.getAttribute("line");
     if (side && line) {
-        throw XMLConflictingAttributesException(boundary_desc, "size", "line");
+        throw XMLConflictingAttributesException(boundary_desc, "side", "line");
     } else if (side) {
         if (*side == "bottom")
             return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getBottomBoundary, &getBottomOfBoundary);

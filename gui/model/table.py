@@ -47,7 +47,7 @@ class TableModelEditMethods(object):
 
     def insert(self, index=None, value=None):
         if self.is_read_only(): return
-        if not value:
+        if value is None:
             value = self.create_default_entry()
             if value is None: return
         if index is None or index < 0: index = 0
@@ -82,14 +82,14 @@ class TableModelEditMethods(object):
         self._exec_command(TableModelEditMethods.RemoveEntryCommand(self, index))
 
 
-    class SwapNeighbourEntriesCommand(QtGui.QUndoCommand):
+    class SwapEntriesCommand(QtGui.QUndoCommand):
 
         def __init__(self, table, index1, index2, QUndoCommand_parent = None):
             if index2 < index1:
                 self.index1, self.index2 = index2, index1
             else:
                 self.index1, self.index2 = index1, index2
-            super(TableModelEditMethods.SwapNeighbourEntriesCommand, self).__init__('swap entries at rows {} and {}'.format(index1+1, index2+1), QUndoCommand_parent)
+            super(TableModelEditMethods.SwapEntriesCommand, self).__init__('swap entries at rows {} and {}'.format(index1+1, index2+1), QUndoCommand_parent)
             self.table = table
 
         def redo(self):
@@ -102,9 +102,9 @@ class TableModelEditMethods(object):
         def undo(self):
             self.redo()
 
-    def swap_neighbour_entries(self, index1, index2):
+    def swap_entries(self, index1, index2):
         if self.is_read_only(): return
-        self._exec_command(TableModelEditMethods.SwapNeighbourEntriesCommand(self, index1, index2))
+        self._exec_command(TableModelEditMethods.SwapEntriesCommand(self, index1, index2))
 
 
     def set_and_fire(self, col, row, value):

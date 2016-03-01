@@ -10,28 +10,28 @@
 
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
-      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>
+      <attr name="maxerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
     </tag>
 
     <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
-      <attr name="algorithm" label="Solution algorithm" type="choice">
+      <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
         Algorithm used for solving set of linear positive-definite equations.
         <choice>cholesky</choice>
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
-      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
+      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
     <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
-      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>
-      <attr name="heat" label="Heat generation method" type="choice">
+      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m" default="5.0">Initial vertical conductivity of the junctions.</attr>
+      <attr name="heat" label="Heat generation method" type="choice" default="joules">
         Method of determination of the heat generated in the junction.
         <choice>joules</choice>
         <choice>wavelength</choice>
@@ -41,8 +41,8 @@
 
     <tag name="contacts" label="Properties of the Contacts">
       Properties of the contact layers.
-      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>
-      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>
+      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
+      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
 
     <bcond name="voltage" label="Voltage"/>
@@ -62,28 +62,28 @@
 
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
-      <attr name="maxerr" label="Maximum current density error" type="float" unit="%">Maximum allowed current density error.</attr>
+      <attr name="maxerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
     </tag>
 
     <tag name="matrix" label="Matrix Solver">
       Configuration of the matrix solver.
-      <attr name="algorithm" label="Solution algorithm" type="choice">
+      <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
         Algorithm used for solving set of linear positive-definite equations.
         <choice>cholesky</choice>
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int">Maximum number of iterations for the iterative algorithm.</attr>
-      <attr name="logfreq" label="Progress logging frequency" type="int">Number of iterations after which the progress is logged.</attr>
+      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
     <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
-      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m">Initial vertical conductivity of the junctions.</attr>
-      <attr name="heat" label="Heat generation method" type="choice">
+      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m" default="5.0">Initial vertical conductivity of the junctions.</attr>
+      <attr name="heat" label="Heat generation method" type="choice" default="joules">
         Method of determination of the heat generated in the junction.
         <choice>joules</choice>
         <choice>wavelength</choice>
@@ -93,8 +93,8 @@
 
     <tag name="contacts" label="Properties of the Contacts">
       Properties of the contact layers.
-      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m">p-contact conductivity.</attr>
-      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m">n-contact conductivity.</attr>
+      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
+      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
 
     <bcond name="voltage" label="Voltage"/>

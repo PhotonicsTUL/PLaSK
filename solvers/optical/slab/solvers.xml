@@ -13,37 +13,39 @@
         If this parameter is None, material parameters are computed each time, the wavelenght
         changes even slightly (this is most accurate, but can be very inefficient.
       </attr>
-      <attr name="update-gain" label="Always update gain" type="bool">
+      <attr name="update-gain" label="Always update gain" type="bool" default="no">
         If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
-      <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
-      <attr name="refine" label="Averaging points" type="int">Number of refinement points for refractive index averaging.</attr>
-      <attr name="oversampling" label="Oversampling" type="float">Factor by which the number of coefficients is increased for FFT.</attr>
-      <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
+      <attr name="size" label="Expansion size" type="int" default="12">Expansion size.</attr>
+      <attr name="refine" label="Averaging points" type="int" default="32">Number of refinement points for refractive index averaging.</attr>
+      <attr name="oversampling" label="Oversampling" type="float" default="1">Factor by which the number of coefficients is increased for FFT.</attr>
+      <attr name="dct" label="Symmetric transform type" type="choice" default="2">Type of discrete cosine transform for symmetric expansion.
         <choice>1</choice>
         <choice>2</choice>
       </attr>
-      <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
-      <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
+      <attr name="smooth" label="Smoothing parameter" type="float" default="2.5e-4">Smoothing parameter for material boundaries (increases convergence).</attr>
+      <attr name="group-layers" label="Layers grouping" type="bool" default="yes">Should similar layers be grouped for better performance.</attr>
     </tag>
 
     <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry" label="Mode symmetry" type="choice">
+      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Transverse wave-vector component.</attr>
+      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Longitudinal wave-vector component.</attr>
+      <attr name="symmetry" label="Mode symmetry" type="choice" default="none">
         Mode symmetry. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>none</choice>
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
-      <attr name="polarization" label="Mode polarization" type="choice">
+      <attr name="polarization" label="Mode polarization" type="choice" default="none">
         Mode polarization. Give an existing field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>none</choice>
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
-      <attr name="emission" label="Direction of emission" type="choice">
+      <attr name="emission" label="Direction of emission" type="choice" default="undefined">
         Direction of the useful light emission. Necessary for the over-threshold model
         to correctly compute the output power. Currently, the fields are normalized only
         for top and bottom emission.
@@ -63,22 +65,22 @@
 
     <tag name="pml" label="Horizontal PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
+      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="0.500">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="1.000">PML size.</attr>
     </tag>
 
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
-      <attr name="method" label="Transfer method" type="choice">
+      <attr name="method" label="Transfer method" type="choice" default="auto">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
         <choice>auto</choice>
         <choice>reflection</choice>
@@ -88,20 +90,20 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice">
+      <attr name="method" label="Root finding method" type="choice" default="broyden">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>
         <choice>brent</choice>
       </attr>
-      <attr name="tolx" label="Tolerance on argument" type="float">Maximum change of the argument which is allowed for convergent solution.</attr>
-      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
-      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
-      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
-      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
-      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
-      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
-      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+      <attr name="tolx" label="Tolerance on argument" type="float" default="1e-6">Maximum change of the argument which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float" default="1e-7">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float" default="1e-5">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step" type="float" default="0.1">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int" default="500">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex" default="0.001">Initial range size (Muller method only).</attr>
     </tag>
 
     <tag name="mirrors" label="Mirror Losses">
@@ -129,11 +131,11 @@
         If this parameter is None, material parameters are computed each time,
         the wavelenght changes even slightly (this is most accurate, but can be very inefficient.
       </attr>
-      <attr name="update-gain" label="Always update gain" type="bool">
+      <attr name="update-gain" label="Always update gain" type="bool" default="no">
         If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
-      <attr name="size" label="Expansion sizes" type="int">
+      <attr name="size" label="Expansion sizes" type="int" default="12">
         Expansion sizes along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal expansion size’ (&lt;tt&gt;size-long&lt;/tt&gt;) and ‘Transverse expansion size’ (&lt;tt&gt;size-tran&lt;/tt&gt;)
       </attr>
@@ -145,7 +147,7 @@
         Expansion size along transverse axis.
         You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
       </attr>
-      <attr name="refine" label="Averaging points" type="int">
+      <attr name="refine" label="Averaging points" type="int" default="16">
         Number of refinement points for refractive index averaging along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) and ‘Transverse averaging points’ (&lt;tt&gt;refine-tran&lt;/tt&gt;) .
       </attr>
@@ -157,7 +159,7 @@
         Number of refinement points for refractive index averaging along transverse axis.
         You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
       </attr>
-      <attr name="oversampling" label="Oversampling" type="float">
+      <attr name="oversampling" label="Oversampling" type="float" default="1">
         Factor by which the number of coefficients is increased for FFT along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal oversampling’ (&lt;tt&gt;oversampling-long&lt;/tt&gt;) and ‘Transverse oversampling’ (&lt;tt&gt;oversampling-tran&lt;/tt&gt;) .
       </attr>
@@ -169,31 +171,33 @@
         Factor by which the number of coefficients is increased for FFT along transverse direction.
         You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
       </attr>
-      <attr name="dct" label="Symmetric transform type" type="choice">Type of discrete cosine transform for symmetric expansion.
+      <attr name="dct" label="Symmetric transform type" type="choice" default="2">Type of discrete cosine transform for symmetric expansion.
         <choice>1</choice>
         <choice>2</choice>
       </attr>
-      <attr name="smooth" label="Smoothing parameter" type="float">Smoothing parameter for material boundaries (increases convergence).</attr>
-      <attr name="group-layers" label="Layers grouping" type="bool">Should similar layers be grouped for better performance.</attr>
+      <attr name="smooth" label="Smoothing parameter" type="float" default="2.5e-4">Smoothing parameter for material boundaries (increases convergence).</attr>
+      <attr name="group-layers" label="Layers grouping" type="bool" default="yes">Should similar layers be grouped for better performance.</attr>
     </tag>
 
     <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="1/µm">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="1/µm">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice">
+      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Transverse wave-vector component.</attr>
+      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Longitudinal wave-vector component.</attr>
+      <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice" default="none">
         Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>none</choice>
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
-      <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice">
+      <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice" default="none">
         Mode symmetry along transverse axis. Specify a symmetric field component here
         (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+        <choice>none</choice>
         <choice>Etran</choice>
         <choice>Elong</choice>
       </attr>
-      <attr name="emission" label="Direction of emission" type="choice">
+      <attr name="emission" label="Direction of emission" type="choice" default="undefined">
         Direction of the useful light emission. Necessary for the over-threshold model
         to correctly compute the output power. Currently, the fields are normalized only
         for top and bottom emission.
@@ -213,10 +217,10 @@
 
     <tag name="pmls" label="Longitudinal and Transverse PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="0.500">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="1.000">PML size.</attr>
       <tag name="long" label="Longitudinal PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
@@ -235,14 +239,14 @@
 
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
-      <attr name="method" label="Transfer method" type="choice">
+      <attr name="method" label="Transfer method" type="choice" default="auto">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
         <choice>auto</choice>
         <choice>reflection</choice>
@@ -252,20 +256,20 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice">
+      <attr name="method" label="Root finding method" type="choice" default="broyden">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>
         <choice>brent</choice>
       </attr>
-      <attr name="tolx" label="Tolerance on argument" type="float">Maximum change of the argument which is allowed for convergent solution.</attr>
-      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
-      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
-      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
-      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
-      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
-      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
-      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+      <attr name="tolx" label="Tolerance on argument" type="float" default="1e-6">Maximum change of the argument which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float" default="1e-7">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float" default="1e-5">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step" type="float" default="0.1">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int" default="500">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex" default="0.001">Initial range size (Muller method only).</attr>
     </tag>
 
     <flow>
@@ -293,18 +297,18 @@
         If this parameter is None, material parameters are computed each time, the wavelenght
         changes even slightly (this is most accurate, but can be very inefficient.
       </attr>
-      <attr name="update-gain" label="Always update gain" type="bool">
+      <attr name="update-gain" label="Always update gain" type="bool" default="no">
         If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
-      <attr name="size" label="Expansion size" type="int">Expansion size.</attr>
-      <attr name="group-layers" label="Layers grouping" type="bool">
+      <attr name="size" label="Expansion size" type="int" default="12">Expansion size.</attr>
+      <attr name="group-layers" label="Layers grouping" type="bool" default="yes">
         Should similar layers be grouped for better performance.
       </attr>
-      <attr name="integrals-error" label="Maximum integrals error" type="float">
+      <attr name="integrals-error" label="Maximum integration error" type="float" default="1e-6">
         Maximum error for Bessel functions integrals.
       </attr>
-      <attr name="integrals-points" label="Maximum integrals points" type="int">
+      <attr name="integrals-points" label="Maximum integration points" type="int" default="1000">
         Maximum number of points each element is sampled for computing Bessel functions integrals.
       </attr>
     </tag>
@@ -319,22 +323,22 @@
 
     <tag name="pml" label="Radial PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
+      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="20.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="0.000">PML size.</attr>
     </tag>
 
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
-      <attr name="method" label="Transfer method" type="choice">
+      <attr name="method" label="Transfer method" type="choice" default="auto">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
         <choice>auto</choice>
         <choice>reflection</choice>
@@ -344,20 +348,20 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice">
+      <attr name="method" label="Root finding method" type="choice" default="broyden">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>
         <choice>brent</choice>
       </attr>
-      <attr name="tolx" label="Tolerance on argument" type="float">Maximum change of the argument which is allowed for convergent solution.</attr>
-      <attr name="tolf-min" label="Sufficient determinant value" type="float">Minimum value of the determinant sufficient to assume convergence.</attr>
-      <attr name="tolf-max" label="Required determinant value" type="float">Maximum value of the determinant required to assume convergence.</attr>
-      <attr name="maxstep" label="Maximum Broyden iteration step">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
-      <attr name="maxiter" label="Maximum number of iterations" type="int">Maximum number of root finding iterations.</attr>
-      <attr name="alpha" label="Broyden decrease factor" type="float">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
-      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float">Minimum decrease ratio of one step (Broyden method only).</attr>
-      <attr name="initial-range" label="Initial Muller range size" type="complex">Initial range size (Muller method only).</attr>
+      <attr name="tolx" label="Tolerance on argument" type="float" default="1e-6">Maximum change of the argument which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float" default="1e-7">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float" default="1e-5">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step" type="float" default="0.1">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int" default="500">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex" default="0.001">Initial range size (Muller method only).</attr>
     </tag>
 
     <flow>

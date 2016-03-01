@@ -9,18 +9,24 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from copy import deepcopy
+from lxml.etree import fromstring as xml_from_string
 
 from ...qt import QtGui
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
+from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditor, TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.confsolver import Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.autosolver import SchemaTag, Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
 from . import Controller
+from .bconds import BoundaryConditionsDialog
+
 
 def attr_list_to_text(model, group, attr):
     attr = attr[:-1]
@@ -49,39 +55,57 @@ def text_to_attr_list(model, group, attr, text):
 
 class SolverAutoWidget(VerticalScrollArea):
 
-    def _change_attr(self, group, attr, value, label = None):
-        def set_solver_attr(node, value):
+    def _change_attr(self, group, attr, value, label=None):
+        node = self.controller.solver_model
+        def set_solver_attr(value):
             if attr is None:
                 node.data[group] = value
             else:
                 node.data[group][attr] = value
-        node = self.controller.solver_model
         model = self.controller.section_model
         old_value = node.data[group] if attr is None else node.data[group][attr]
+        value = empty_to_none(value)
         if value != old_value:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, node, set_solver_attr, value, old_value, u"change solver's {}".format('attribute' if label is None else label)
+                model, set_solver_attr, value, old_value, u"change solver's {}".format('attribute' if label is None else label)
             ))
 
-    def _change_multi_attr(self, group, attr, text, label = None):
-        def set_solver_attr(node, value):
-            text_to_attr_list(node, group, attr, value)
+    def _change_multi_attr(self, group, attr, text, label=None):
         node = self.controller.solver_model
+        def set_solver_attr(value):
+            text_to_attr_list(node, group, attr, value)
         model = self.controller.section_model
         old_text = attr_list_to_text(node, group, attr)
+        text = empty_to_none(text)
         if text != old_text:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, node, set_solver_attr, text, old_text, u"change solver's {}".format('attribute' if label is None else label)
+                model, set_solver_attr, text, old_text, u"change solver's {}".format('attribute' if label is None else label)
             ))
 
     def _change_node_field(self, field_name, value):
-        def set_solver_field(node, value): setattr(node, field_name, value)
         node = self.controller.solver_model
+        def set_solver_field(value):
+            setattr(node, field_name, value)
         model = self.controller.section_model
         old_value = getattr(node, field_name)
+        value = empty_to_none(value)
         if value != old_value:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, node, set_solver_field, value, old_value, "change solver's {}".format(field_name)
+                model, set_solver_field, value, old_value, "change solver's {}".format(field_name)
+            ))
+
+    def _change_boundary_condition(self, schema, data):
+        node = self.controller.solver_model
+        def set_value(value):
+            node.data[schema.name] = value
+            self.controls[schema.name].setText("     View / Edit  ({})".format(len(value)))
+        model = self.controller.section_model
+        old_data = node.data[schema.name]
+        if data != old_data:
+            model.undo_stack.push(UndoCommandWithSetter(
+                model, set_value, data, old_data,
+                u"change solver's {}"
+                    .format(schema.name if schema.label is None else schema.label.lower())
             ))
 
     def __init__(self, controller, parent=None):
@@ -102,20 +126,16 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.geometry = ComboBox()
         self.geometry.setEditable(True)
-        #self.geometry.textChanged.connect(self.controller.fire_changed)
-        #self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
         self.geometry.editingFinished.connect(lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
         self.geometry.setCompleter(defines)
         self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                  u'Name of the existing geometry for use by this solver.')
-        #TODO make sure the list is up-to date; add some graphical thumbnail
+        #TODO add some graphical thumbnail
         layout.addRow("Geometry:", self.geometry)
 
         if controller.model.mesh_type is not None:
             self.mesh = ComboBox()
             self.mesh.setEditable(True)
-            #self.mesh.textChanged.connect(self.controller.fire_changed)
-            #self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
             self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(defines)
             self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
@@ -128,56 +148,66 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controls = {}
 
-        for group, desc, items in controller.model.config:
+        for schema in controller.model.schema:
+            group = schema.name
             gname = group.split('/')[-1]
-            label = QtGui.QLabel(desc)
+            label = QtGui.QLabel(schema.label)
             font = label.font()
             font.setBold(True)
             label.setFont(font)
             layout.addRow(label)
-            if type(items) in (tuple, list):
-                for item in items:
-                    if isinstance(item, AttrChoice):
+            if isinstance(schema, SchemaTag):
+                for attr in schema.attrs:
+                    if isinstance(attr, AttrChoice):
                         edit = ComboBox()
                         edit.setEditable(True)
-                        edit.addItems([''] + list(item.choices))
-                        #edit.textChanged.connect(self.controller.fire_changed)
-                        #edit.currentIndexChanged.connect(self.controller.fire_changed)
-                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name, label=item.label:
+                        edit.addItems([''] + list(attr.choices))
+                        edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
                                                          self._change_attr(group, name, edit.currentText(), label))
                         edit.setCompleter(defines)
-                    elif isinstance(item, (AttrGeometryObject, AttrGeometryPath)):
+                        if attr.default is not None:
+                            edit.lineEdit().setPlaceholderText(attr.default)
+                    elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath)):
                         edit = ComboBox()
                         edit.setEditable(True)
-                        #edit.textChanged.connect(self.controller.fire_changed)
-                        #edit.currentIndexChanged.connect(self.controller.fire_changed)
-                        edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name:
+                        edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
                                                     self._change_attr(group, name, edit.currentText()))
                         edit.setCompleter(defines)
+                        if attr.default is not None:
+                            edit.lineEdit().setPlaceholderText(attr.default)
                     else:
-                        if item.name[-1] == '#':
+                        if attr.name[-1] == '#':
                             edit = TextEditWithCB()
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             #edit.textChanged.connect(self.controller.fire_changed)
-                            edit.focus_out_cb = lambda edit=edit, group=group, name=item.name, label=item.label:\
+                            edit.focus_out_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
                                                     self._change_multi_attr(group, name, edit.toPlainText(), label)
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
                             #edit.textEdited.connect(self.controller.fire_changed)
-                            edit.editingFinished.connect(lambda edit=edit, group=group, name=item.name, label=item.label:
+                            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
                                                          self._change_attr(group, name, edit.text(), label))
+                            if attr.default is not None:
+                                edit.setPlaceholderText(attr.default)
 
-                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, item.name, item.help))
-                    self.controls[group, item.name] = edit
-                    layout.addRow(item.label + ':', edit)
+                    edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;<br/>{}'.format(
+                        gname, attr.name, '' if attr.default is None else attr.default, attr.help))
+                    self.controls[group, attr.name] = edit
+                    layout.addRow(attr.label + ':', edit)
+            elif isinstance(schema, SchemaBoundaryConditions):
+                edit = QtGui.QPushButton("View / Edit")
+                edit.sizePolicy().setHorizontalStretch(1)
+                edit.pressed.connect(lambda schema=schema: self.edit_boundary_conditions(schema))
+                self.controls[group] = edit
+                layout.addRow(edit)
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QtGui.QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
                                                      default_font=font)
-                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, desc))
+                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit
                 layout.addRow(edit)
                 #edit.textChanged.connect(self.controller.fire_changed)
@@ -196,9 +226,10 @@ class SolverAutoWidget(VerticalScrollArea):
             with BlockQtSignals(self.mesh):
                 self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
                 self.mesh.setEditText(model.mesh)
-        for group, _, items in model.config:
-            if type(items) in (tuple, list):
-                for item in items:
+        for schema in model.schema:
+            group = schema.name
+            if isinstance(schema, SchemaTag):
+                for item in schema.attrs:
                     attr = item.name
                     edit = self.controls[group, attr]
                     with BlockQtSignals(edit):
@@ -218,20 +249,29 @@ class SolverAutoWidget(VerticalScrollArea):
                                 edit.setEditText(value)
                             else:
                                 edit.setText(value)
+            elif isinstance(schema, SchemaBoundaryConditions):
+                self.controls[group].setText("     View / Edit  ({})".format(len(model.data[group])))
             else:
                 edit = self.controls[group]
                 with BlockQtSignals(edit):
                     edit.setPlainText(model.data[group])
 
+    def edit_boundary_conditions(self,  schema):
+        data = deepcopy(self.controller.model.data[schema.name])
+        dialog = BoundaryConditionsDialog(self.controller, schema, data)
+        result = dialog.exec_()
+        if result == QtGui.QDialog.Accepted:
+            self._change_boundary_condition(schema, data)
 
-class ConfSolverController(Controller):
+
+class AutoSolverController(Controller):
     """
     Class for solvers defined in configuration dictionary
         :param document:
         :param model: model of solver to configure TODO should be section model?
     """
     def __init__(self, document, model):
-        super(ConfSolverController, self).__init__(document, model)
+        super(AutoSolverController, self).__init__(document, model)
         try:
             widget_class = self.model.widget
             if widget_class is None: raise AttributeError
@@ -246,7 +286,7 @@ class ConfSolverController(Controller):
     @property
     def solver_model(self):
         """
-            :return ConfSolver: model of edited solver
+            :return AutoSolver: model of edited solver
         """
         return self.model
 
