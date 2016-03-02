@@ -101,7 +101,9 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
                 npy_intp size = *innersizeptr;
                 char *src = dataptrarray[0], *dst = dataptrarray[1];
                 for(i = 0; i < size; i++, src += innerstride, dst += itemsize) {
+#ifndef _MSC_VER
                     #pragma omp task firstprivate(src) firstprivate(dst)
+#endif
                     {
                         if (!error) try {
                             *((T*)dst) = f(*((T*)src));
@@ -112,7 +114,9 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
                     }
                 }
             } while (iternext(iter));
+#ifndef _MSC_VER
             #pragma omp taskwait
+#endif
         }
         if (error) std::rethrow_exception(error);
         ret = NpyIter_GetOperandArray(iter)[1];
