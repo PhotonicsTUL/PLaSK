@@ -240,7 +240,7 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QIcon.fromTheme('document-open-recent'))
         self.update_recent_list()
 
-        self.menu = QtGui.QMenu('&File')
+        self.menu = QtGui.QMenu('&PLaSK')
 
         self.menu.addAction(new_action)
         self.menu.addAction(open_action)

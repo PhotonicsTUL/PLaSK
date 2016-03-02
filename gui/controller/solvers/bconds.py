@@ -144,8 +144,8 @@ class BoundaryConditionsDialog(QtGui.QDialog):
         self.table.setColumnWidth(1, 250)
         self.table.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
 
-        table_edit_shortcut(self.table, 0, Qt.Key_P)
-        table_edit_shortcut(self.table, 1, Qt.Key_D)
+        table_edit_shortcut(self.table, 0, QtGui.QKeySequence(Qt.Key_P))
+        table_edit_shortcut(self.table, 1, QtGui.QKeySequence(Qt.Key_D))
         used_shortcuts = ['p', 'd']
 
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
@@ -156,7 +156,7 @@ class BoundaryConditionsDialog(QtGui.QDialog):
             label = schema.keys[i-2].lower()
             for l in label:
                 if l not in used_shortcuts:
-                    table_edit_shortcut(self.table, i, l)
+                    table_edit_shortcut(self.table, i, QtGui.QKeySequence(l))
                     used_shortcuts.append(l)
                     break
 
