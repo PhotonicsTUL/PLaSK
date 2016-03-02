@@ -94,9 +94,13 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
         dataptrarray = NpyIter_GetDataPtrArray(iter);
         npy_intp i;
         std::exception_ptr error;
+#ifndef _MSC_VER
         #pragma omp parallel
+#endif
         {
+#ifndef _MSC_VER
             #pragma omp single nowait
+#endif
             do {
                 npy_intp size = *innersizeptr;
                 char *src = dataptrarray[0], *dst = dataptrarray[1];
@@ -108,7 +112,9 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
                         if (!error) try {
                             *((T*)dst) = f(*((T*)src));
                         } catch (...) {
+#ifndef _MSC_VER
                             #pragma omp critical
+#endif
                             error = std::current_exception();
                         }
                     }
