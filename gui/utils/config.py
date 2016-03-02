@@ -13,9 +13,9 @@
 import sys
 import os
 from collections import OrderedDict
-from ..qt import QtCore, QtGui
-
 from numpy import log10, ceil
+
+from ..qt import QtCore, QtGui
 
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 

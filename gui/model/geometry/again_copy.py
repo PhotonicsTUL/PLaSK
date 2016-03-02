@@ -10,7 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from . import construct_geometry_object
-from .reader import GNReadConf
 
 from .node import GNode
 from .. import Info

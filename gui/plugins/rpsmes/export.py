@@ -10,11 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import gui
-from gui.qt import QtGui, QtCore
-from gui.xpldocument import XPLDocument
-
 import os
+
+import gui
+from gui.qt import QtGui
+from gui.xpldocument import XPLDocument
 
 try:
     import plask

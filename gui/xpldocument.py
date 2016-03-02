@@ -12,7 +12,6 @@
 
 import shutil
 from lxml import etree
-from .utils.qundo import UndoCommandWithSetter
 
 try:
     unicode = unicode

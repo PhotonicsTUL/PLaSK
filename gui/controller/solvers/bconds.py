@@ -11,17 +11,21 @@
 # GNU General Public License for more details.
 from collections import OrderedDict
 
-from ...qt import QtGui, QtCore
 from ...qt.QtCore import Qt
+
+from ...qt import QtGui, QtCore
 from ...utils.str import none_to_empty, empty_to_none
-from ...utils.widgets import HTMLDelegate, ComboBox, table_last_col_fill
+from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators
-
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 
 
-class RectangularPlaceSide(QtGui.QWidget):
+class PlaceDetailsEditor(QtGui.QWidget):
+    pass
+
+
+class RectangularPlaceSide(PlaceDetailsEditor):
     Model = RectangularBC.PlaceSide
 
     def __init__(self, controller, defines=None, parent=None):
@@ -41,15 +45,21 @@ class RectangularPlaceSide(QtGui.QWidget):
         if defines is not None:
             self.object.setCompleter(defines)
             self.path.setCompleter(defines)
-        label = QtGui.QLabel(" Object:")
+        label = QtGui.QLabel(" Obj&ect:")
+        label.setBuddy(self.object)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.object)
-        label = QtGui.QLabel(" Path:")
+        label = QtGui.QLabel(" &Path:")
+        label.setBuddy(self.path)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.path)
         self.setLayout(layout)
+
+    def showEvent(self, event):
+        super(RectangularPlaceSide, self).showEvent(event)
+        self.object.setFocus()
 
     def load_data(self, data):
         self.object.clear()
@@ -64,7 +74,7 @@ class RectangularPlaceSide(QtGui.QWidget):
         data.path = empty_to_none(self.path.currentText())
 
 
-class RectangularPlaceLine(QtGui.QWidget):
+class RectangularPlaceLine(PlaceDetailsEditor):
     Model = RectangularBC.PlaceLine
 
     def __init__(self, controller, defines=None, parent=None):
@@ -80,22 +90,29 @@ class RectangularPlaceLine(QtGui.QWidget):
         self.start.sizePolicy().setHorizontalStretch(1)
         self.stop.sizePolicy().setHorizontalStretch(1)
         if defines is not None:
-            self.at.setCompleter(defines)
+            self.position.setCompleter(defines)
             self.start.setCompleter(defines)
             self.stop.setCompleter(defines)
-        label = QtGui.QLabel(" Pos:")
+        label = QtGui.QLabel(" &Pos:")
+        label.setBuddy(self.position)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.position)
-        label = QtGui.QLabel(" From:")
+        label = QtGui.QLabel(" &From:")
+        label.setBuddy(self.start)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.start)
-        label = QtGui.QLabel(" To:")
+        label = QtGui.QLabel(" &To:")
+        label.setBuddy(self.stop)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.stop)
         self.setLayout(layout)
+
+    def showEvent(self, event):
+        super(RectangularPlaceLine, self).showEvent(event)
+        self.position.setFocus()
 
     def load_data(self, data):
         self.position.setText(str(none_to_empty(data.at)))
@@ -127,11 +144,21 @@ class BoundaryConditionsDialog(QtGui.QDialog):
         self.table.setColumnWidth(1, 250)
         self.table.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
 
+        table_edit_shortcut(self.table, 0, Qt.Key_P)
+        table_edit_shortcut(self.table, 1, Qt.Key_D)
+        used_shortcuts = ['p', 'd']
+
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
         defines_completer = get_defines_completer(controller.document.defines.model, self)
         for i in range(2, model.columnCount()):
             self.table.setColumnWidth(i, 150)
             self.table.setItemDelegateForColumn(i, self.defines_delegate)
+            label = schema.keys[i-2].lower()
+            for l in label:
+                if l not in used_shortcuts:
+                    table_edit_shortcut(self.table, i, l)
+                    used_shortcuts.append(l)
+                    break
 
         self.place_delegate = PlaceDelegate(self.table)
         self.table.setItemDelegateForColumn(0, self.place_delegate)

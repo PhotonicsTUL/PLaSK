@@ -10,18 +10,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from ...qt import QtCore, QtGui
 from .. import Controller
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.qsignals import BlockQtSignals
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT
-
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
-
 from .indenter import indent, unindent, autoindent
 
 

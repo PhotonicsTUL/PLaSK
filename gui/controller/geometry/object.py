@@ -14,7 +14,7 @@
 from .node import GNodeController
 from ...model.geometry.reader import axes_to_str
 from ...utils.qsignals import BlockQtSignals
-from ...utils.str import empty_to_none, none_to_empty
+from ...utils.str import none_to_empty
 
 
 AXES = {
@@ -29,7 +29,6 @@ class GNObjectController(GNodeController):
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def construct_form(self, roles=True):
-        from .geometry import GNGeometryController
         self.construct_group('Basic Settings')
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'

@@ -12,7 +12,7 @@
 
 from ..qt import QtGui
 
-from ..utils.widgets import fire_edit_end, InfoListView
+from ..utils.widgets import fire_edit_end
 from . import Controller
 from .source import SourceEditController
 

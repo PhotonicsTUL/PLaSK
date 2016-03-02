@@ -12,9 +12,9 @@
 
 import sys
 
-from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from ...qt import QtCore, QtGui
 from ...utils.qthread import BackgroundTask, Lock
 from ...utils.config import CONFIG
 try:

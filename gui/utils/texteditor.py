@@ -12,9 +12,9 @@
 
 import math
 
-from ..qt import QtCore, QtGui
 from ..qt.QtCore import Qt
 
+from ..qt import QtCore, QtGui
 from .widgets import EDITOR_FONT
 from .config import CONFIG
 

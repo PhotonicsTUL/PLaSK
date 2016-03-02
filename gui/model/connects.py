@@ -10,12 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore
 from lxml import etree
 
+from ..qt import QtCore
 from .table import TableModel
 from .info import Info
-
 from ..utils.xml import OrderedTagReader, AttributeReader
 
 PROPS = [

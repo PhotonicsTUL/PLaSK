@@ -12,9 +12,9 @@
 
 from matplotlib.ticker import MaxNLocator
 
-import plask
 from ...qt.QtCore import Qt
 
+import plask
 from ...utils.config import CONFIG
 from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
 

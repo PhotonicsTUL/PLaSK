@@ -17,7 +17,6 @@ from .defines import DefinesCompletionDelegate
 
 from ..model.connects import ConnectsModel
 from ..model.solvers import SOLVERS
-from ..utils.widgets import table_edit_shortcut
 
 
 class FlowDelegate(DefinesCompletionDelegate):

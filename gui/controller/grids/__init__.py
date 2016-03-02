@@ -10,10 +10,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
 from ...qt.QtCore import Qt
 from ...qt.QtGui import QSplitter
 
+from ...qt import QtGui
 from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut

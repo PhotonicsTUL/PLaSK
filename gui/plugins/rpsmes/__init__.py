@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 from importlib import import_module
+
 import gui
 
 import_dan_operation = import_module('.import', package=__name__).import_dan_operation  # import is not good module name

@@ -11,9 +11,9 @@
 # GNU General Public License for more details.
 
 import collections
-import sys
 
 from ..qt.QtCore import Qt
+
 from ..qt import QtCore, QtGui, QtSignal
 from ..utils.config import CONFIG
 

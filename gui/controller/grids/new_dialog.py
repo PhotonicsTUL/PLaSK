@@ -10,8 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from ...qt.QtGui import QStringListModel
+
 from ...qt import QtGui
-from ...qt.QtGui import QLabel, QStringListModel
 from ...model.grids import Grid
 from ...model.grids.types import construct_grid, meshes_types, generators_types,\
     generator_methods, xml_name

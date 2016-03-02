@@ -15,7 +15,6 @@ OPERATIONS = []
 
 import sys
 import os
-import ctypes
 import subprocess
 import pkgutil
 

@@ -12,17 +12,15 @@
 # GNU General Public License for more details.
 
 import re
-
-from ..qt import QtCore, QtGui
-from ..qt.QtCore import Qt
-
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
-from ..utils.widgets import EDITOR_FONT
+from ..qt.QtCore import Qt
+
+from ..qt import QtCore, QtGui
 from .table import TableModel, TableModelEditMethods
 from .info import Info
-from ..utils.xml import OrderedTagReader, AttributeReader, require_no_attributes, require_no_children
+from ..utils.xml import AttributeReader, require_no_attributes, require_no_children
 
 try:
     import plask

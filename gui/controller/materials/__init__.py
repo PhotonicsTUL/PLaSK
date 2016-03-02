@@ -12,22 +12,20 @@
 
 import itertools
 
-from ...qt import QtCore, QtGui, QtSignal
 from ...qt.QtCore import Qt
 
+from ...qt import QtCore, QtGui, QtSignal
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.python27 import syntax
 from ..script import scheme
-
 from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
-from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, ComboBox
+from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
 from .. import Controller, select_index_from_info
 from ..defines import DefinesCompletionDelegate
 from ..table import table_and_manipulators, table_with_manipulators, TableActions
 from ..defines import get_defines_completer
-
 from .plot import show_material_plot
 
 

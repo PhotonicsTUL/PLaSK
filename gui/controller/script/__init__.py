@@ -12,27 +12,23 @@
 
 import sys
 from copy import copy
-from time import sleep
+
+from ...qt.QtCore import Qt
 
 from ...qt import QtCore, QtGui
-from ...qt.QtCore import Qt
 from ...utils.qsignals import BlockQtSignals
-
 from ...utils.qthread import BackgroundTask
-
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
-
 from .brackets import get_selections as get_bracket_selections, update_brackets_colors
 from .indenter import indent, unindent, autoindent
-
 from ..source import SourceEditController, SourceWidget
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.widgets import EDITOR_FONT
 from ...utils.texteditor import TextEditor
-
 from ...external.highlighter import SyntaxHighlighter, load_syntax
+
 if sys.version_info >= (3, 0, 0):
     from ...external.highlighter.python32 import syntax
 else:

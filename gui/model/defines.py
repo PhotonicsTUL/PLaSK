@@ -10,12 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore
 from collections import OrderedDict
 from lxml import etree
 
+from ..qt import QtCore
 from .table import TableModel
 from .info import Info
+
 #from guis import DefinesEditor
 from ..utils.xml import OrderedTagReader, AttributeReader
 

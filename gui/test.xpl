@@ -204,6 +204,9 @@
     <mesh ref="default"/>
     <temperature>
       <condition place="bottom" value="300."/>
+      <condition value="270.">
+        <place line="horizontal" at="10" start="0" stop="15"/>
+      </condition>
     </temperature>
     <heatflux/>
     <convection/>

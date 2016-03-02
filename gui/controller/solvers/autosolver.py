@@ -10,18 +10,17 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from copy import deepcopy
-from lxml.etree import fromstring as xml_from_string
 
 from ...qt import QtGui
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
 from ...utils.str import empty_to_none
-from ...utils.texteditor import TextEditor, TextEditorWithCB
+from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.autosolver import SchemaTag, Attr, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.autosolver import SchemaTag, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
 from . import Controller

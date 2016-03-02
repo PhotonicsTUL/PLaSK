@@ -10,9 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from lxml.etree import ElementTree, SubElement
+from lxml.etree import SubElement
 
-from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader, attr_to_xml, xml_to_attr
+from ...utils.xml import OrderedTagReader, UnorderedTagReader, attr_to_xml, xml_to_attr
 from ...utils.validators import can_be_float, can_be_int
 from . import Grid
 

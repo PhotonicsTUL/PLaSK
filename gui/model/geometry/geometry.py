@@ -1,7 +1,7 @@
 from .constructor import geometry_object_names, construct_geometry_object
 from .object import GNObject
 from .transform import GNExtrusion, GNRevolution
-from ...utils.xml import xml_to_attr, attr_to_xml
+from ...utils.xml import attr_to_xml
 from ...utils.compat import next
 from ...utils.validators import can_be_float
 

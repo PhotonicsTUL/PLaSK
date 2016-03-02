@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 from lxml import etree
 from copy import deepcopy
-import operator
+
 try:
     from cStringIO import StringIO
 except ImportError:

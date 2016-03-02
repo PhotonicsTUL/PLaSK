@@ -10,10 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore, QtGui
-from ..qt.QtCore import Qt
 import weakref
 
+from ..qt.QtCore import Qt
+
+from ..qt import QtCore, QtGui
 from ..utils.signal import Signal
 
 

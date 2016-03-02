@@ -10,12 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
 from ...qt.QtCore import Qt
 
+from ...qt import QtGui
 from ...utils.qthread import BackgroundTask
 from ...utils.config import CONFIG
-
 from ...model.script.completer import CompletionsModel, get_completions
 
 

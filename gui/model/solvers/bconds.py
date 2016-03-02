@@ -11,8 +11,8 @@
 # GNU General Public License for more details.
 
 from lxml import etree
+
 from ...qt.QtCore import Qt, QAbstractTableModel, QModelIndex
-from ...qt.QtGui import QBrush, QPalette
 
 try:
     unicode = unicode
@@ -122,9 +122,9 @@ class RectangularBC(SchemaBoundaryConditions):
                 path = place.attrib.get('path')
                 return RectangularBC.PlaceSide(side, of, path)
             elif line is not None:
-                at = place.attib['at']
-                start = place.attib['start']
-                stop = place.attib['stop']
+                at = place.attrib['at']
+                start = place.attrib['start']
+                stop = place.attrib['stop']
                 return RectangularBC.PlaceLine(line, at, start, stop)
             else:
                 raise TypeError("Exactly one of 'side' and 'line' attributes must be given")

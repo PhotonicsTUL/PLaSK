@@ -12,12 +12,7 @@
 
 # coding utf:8
 
-import sys
-
-from gui.qt import QtCore, QtGui
-
-from gui.launch import LAUNCHERS
-from gui.utils.config import CONFIG
+from gui.qt import QtGui
 
 try:
     import paramiko

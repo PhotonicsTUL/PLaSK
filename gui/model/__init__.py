@@ -13,12 +13,13 @@
 import os
 from lxml import etree
 
+from ..qt.QtCore import Qt
+
 from .info import InfoSource, Info
 from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
-
 from ..qt import QtGui
-from ..qt.QtCore import Qt
+
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
         """

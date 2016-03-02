@@ -13,7 +13,7 @@
 from .object import GNObjectController
 from .node import GNodeController
 from ...utils.qsignals import BlockQtSignals
-from ...utils.str import empty_to_none, none_to_empty
+from ...utils.str import none_to_empty
 
 
 class GNAgainController(GNodeController):

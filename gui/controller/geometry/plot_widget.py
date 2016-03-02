@@ -1,10 +1,4 @@
 # coding=utf-8
-import plask
-from plask._plot_geometry import plane_to_axes
-
-from ...qt import QtGui
-from ...qt.QtCore import Qt
-
 import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -12,6 +6,11 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import ColorConverter
 
+from ...qt.QtCore import Qt
+
+import plask
+from plask._plot_geometry import plane_to_axes
+from ...qt import QtGui
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG
 

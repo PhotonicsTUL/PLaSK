@@ -11,16 +11,15 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
-from ...qt.QtCore import Qt
-
 import itertools
-
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.widgets import Cursor
 
+from ...qt.QtCore import Qt
+
+from ...qt import QtGui
 from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex

@@ -14,10 +14,9 @@
 from ...qt import QtGui
 
 from .object import GNObjectController
-from .node import GNodeController, GNChildController, controller_to_aligners, aligners_to_controllers
+from .node import GNodeController, GNChildController, aligners_to_controllers
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...model.geometry.reader import GNAligner
 
 
 class GNGapController(GNodeController):

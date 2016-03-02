@@ -12,9 +12,9 @@
 
 import shlex
 
-from ..qt import QtGui
 from ..qt.QtCore import Qt
 
+from ..qt import QtGui
 from .local import Launcher as LocalLauncher
 
 

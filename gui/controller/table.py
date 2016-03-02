@@ -10,9 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui
 from ..qt.QtCore import Qt
 
+from ..qt import QtGui
 from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill
 

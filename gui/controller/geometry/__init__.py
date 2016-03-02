@@ -13,13 +13,11 @@
 import sys
 
 import plask
-
 from ...qt import QtGui, QtCore, QtSlot
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
-
 from .. import Controller
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea
 
