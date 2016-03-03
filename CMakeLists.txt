@@ -61,7 +61,11 @@ include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
-set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
+if(MSVC)   #CMAKE_CONFIGURATION_TYPES?
+    set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/plask")
+else()
+    set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -648,9 +652,9 @@ if(BUILD_TESTING)
     endif()
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} -C ${CTEST_CONFIGURATION_TYPE} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} -C ${CTEST_CONFIGURATION_TYPE} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)
