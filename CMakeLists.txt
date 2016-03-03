@@ -644,7 +644,7 @@ if(BUILD_TESTING)
 
     if (NOT CTEST_CONFIGURATION_TYPE)
        set(CTEST_CONFIGURATION_TYPE ${CMAKE_BUILD_TYPE})
-       message("Setting CTEST Configuration Type to ${CTEST_CONFIGURATION_TYPE}")
+       message(STATUS "Setting CTEST Configuration Type to ${CTEST_CONFIGURATION_TYPE}")
     endif()
 
     if (RUN_TESTS)

@@ -233,11 +233,13 @@ latex_elements = {
 #'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-'preamble': r'''
+'preamble': r"""
 \usepackage{enumitem}
 \setlistdepth{99}
 \setlist[itemize]{labelsep=0.5em}
-''',
+\DeclareUnicodeCharacter{2264}{\ensuremath{\le}}
+\DeclareUnicodeCharacter{2265}{\ensuremath{\ge}}
+""",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

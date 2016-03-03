@@ -24,14 +24,15 @@ set(I18NSPHINXOPTS ${PAPEROPT_${SPHINX_PAPER}} ${SPHINX_OPTIONS} ${CMAKE_CURRENT
 
 find_program(MAKE make)
 
-file(GLOB svg_files *.svg)
+file(GLOB_RECURSE svg_files *.svg)
 
 # Make PDFs out from SVG
 find_program(INKSCAPE inkscape)
 if (INKSCAPE)
     foreach(svg ${svg_files})
         get_filename_component(base ${svg} NAME_WE)
-        set(pdf ${CMAKE_CURRENT_SOURCE_DIR}/${base}.pdf)
+        get_filename_component(directory ${svg} DIRECTORY)
+        set(pdf ${directory}/${base}.pdf)
         add_custom_command(OUTPUT ${pdf}
             COMMAND ${INKSCAPE} -f ${svg} -A ${pdf}
             DEPENDS ${svg}

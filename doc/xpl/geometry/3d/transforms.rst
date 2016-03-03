@@ -146,8 +146,8 @@ Transforms always contain a single geometry object (possibly container) as their
       Points described by the :xml:tag:`segments  [in <lattice>]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. The first polygon (``-2 -2; -2 3; 2 3; 2 -2``) is the red rectangle. The second one (``-1 -1; -1 1; 1 1; 1 -1``) is green. Since the green polygin lies inside the red one, it is subtracted from it (XOR operation). Points lying at polygoin edges (both red and green rectangles) are always included in the final lattice. The last segment (``1 4``) comprises of only one point. It is also added to final figure (XOR operation).
 
 
-   .. _fig-lattice-finall:
-   .. figure:: lattice_finall.*
+   .. _fig-lattice-final:
+   .. figure:: lattice_final.*
       :scale: 100%
       :align: center
 
