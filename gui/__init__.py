@@ -11,12 +11,17 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-OPERATIONS = []
-
 import sys
 import os
 import subprocess
 import pkgutil
+
+if __name__ == '__main__':
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import gui
+    gui.main()
+
+OPERATIONS = []
 
 try:
     unicode = unicode
@@ -299,11 +304,12 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setCornerWidget(source_button, QtCore.Qt.TopRightCorner)
 
         self.opened.connect(new_window, Qt.QueuedConnection)
-        self.menu.addSeparator()
-        action_check_update = QtGui.QAction(self)
-        action_check_update.setText("Check for Updates Now...")
-        action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True))
-        self.menu.addAction(action_check_update)
+        if pysparkle is not None:
+            self.menu.addSeparator()
+            action_check_update = QtGui.QAction(self)
+            action_check_update.setText("Check for Updates Now...")
+            action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True))
+            self.menu.addAction(action_check_update)
 
         geometry = CONFIG['session/geometry']
         if geometry is None:
@@ -668,9 +674,15 @@ def new_window():
             else:
                 proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
             version, err = proc.communicate()
-            _, ver = version.strip().split()
-        pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
-                              config=ConfigProxy('updates'), shutdown=close_all_windows)
+            try:
+                _, ver = version.strip().split()
+            except ValueError:
+                ver = None
+        if ver is not None:
+            pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
+                                  config=ConfigProxy('updates'), shutdown=close_all_windows)
+        else:
+            pysparkle = None
 
 
 def main():

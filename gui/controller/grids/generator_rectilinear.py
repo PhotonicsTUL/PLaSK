@@ -103,8 +103,13 @@ class RectilinearRefinedGeneratorController(GridController):
             return self.document.geometry.model.names(filter=lambda x: not isinstance(x, GNGeometryBase))
         self.refinements.setItemDelegateForColumn(1-one, ComboBoxDelegate(object_names,
                                                                           self.refinements, editable=True))
-        self.refinements.setItemDelegateForColumn(2-one, ComboBoxDelegate(self.document.geometry.model.paths,
-                                                                          self.refinements, editable=True))
+        try:
+            paths = self.document.geometry.model.paths
+        except AttributeError:
+            pass
+        else:
+            self.refinements.setItemDelegateForColumn(2-one, ComboBoxDelegate(paths,
+                                                                              self.refinements, editable=True))
         defines_delegate = DefinesCompletionDelegate(self.document.defines.model, self.refinements)
         self.refinements.setItemDelegateForColumn(3-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(4-one, defines_delegate)

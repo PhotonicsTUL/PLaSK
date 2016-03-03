@@ -63,10 +63,14 @@ class RectangularPlaceSide(PlaceDetailsEditor):
 
     def load_data(self, data):
         self.object.clear()
-        self.object.addItems([''] + list(self.controller.document.geometry.model.names()))
+        try: self.object.addItems([''] + list(self.controller.document.geometry.model.names()))
+        except AttributeError: pass
+        self.object.setCurrentIndex(self.object.findText(data.object))
         self.object.setEditText(none_to_empty(data.object))
         self.path.clear()
-        self.path.addItems([''] + list(self.controller.document.geometry.model.paths()))
+        try: self.path.addItems([''] + list(self.controller.document.geometry.model.paths()))
+        except AttributeError: pass
+        self.path.setCurrentIndex(self.object.findText(data.path))
         self.path.setEditText(none_to_empty(data.path))
 
     def save_data(self, data):

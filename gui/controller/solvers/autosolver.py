@@ -238,11 +238,17 @@ class SolverAutoWidget(VerticalScrollArea):
                         else:
                             value = model.data[group][attr]
                             if isinstance(item, AttrGeometryObject):
-                                edit.clear()
-                                edit.addItems([''] + list(self.controller.document.geometry.model.names()))
-                            if isinstance(item, AttrGeometryPath):
-                                edit.clear()
-                                edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
+                                try:
+                                    edit.clear()
+                                    edit.addItems([''] + list(self.controller.document.geometry.model.names()))
+                                except AttributeError:
+                                    pass
+                            elif isinstance(item, AttrGeometryPath):
+                                try:
+                                    edit.clear()
+                                    edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
+                                except AttributeError:
+                                    pass
                             if type(edit) in (ComboBox, QtGui.QComboBox):
                                 edit.setCurrentIndex(edit.findText(value))
                                 edit.setEditText(value)
