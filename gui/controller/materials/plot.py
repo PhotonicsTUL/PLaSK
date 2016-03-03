@@ -134,8 +134,8 @@ class MaterialPlot(QtGui.QWidget):
         self.logy_action = QtGui.QAction("Logarithmic &Value", self.canvas)
         self.logy_action.setCheckable(True)
         self.logy_action.triggered.connect(self.update_scale)
-        self.canvas.addAction(self.logx_action)
         self.canvas.addAction(self.logy_action)
+        self.canvas.addAction(self.logx_action)
         self.canvas.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         self.info = QtGui.QTextEdit(self)
