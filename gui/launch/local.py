@@ -408,7 +408,9 @@ class Launcher(object):
 
         program = CONFIG['launcher_local/program']
         if not (program and os.path.isfile(program) and os.access(program, os.X_OK)):
-            program = which('plask') or 'plask'
+            program = 'plask'
+            if os.name == 'nt': program += '.exe'
+            program = which(program) or program
 
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",

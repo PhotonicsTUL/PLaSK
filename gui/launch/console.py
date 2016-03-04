@@ -86,7 +86,9 @@ class Launcher(object):
 
         program = CONFIG['launcher_local/program']
         if not (program and os.path.isfile(program) and os.access(program, os.X_OK)):
-            program = which('plask') or 'plask'
+            program = 'plask'
+            if os.name == 'nt': program += '.exe'
+            program = which(program) or program
 
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
@@ -104,11 +106,12 @@ class Launcher(object):
         loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                    [self.loglevel.currentIndex()]
 
-        command = ' '.join(quote(s) for s in [program, '-x', '-l{}'.format(loglevel)] + list(defs) +
-                           ['--', filename] + list(args))
         if os.name == 'nt':
-            subprocess.call('start ' + command, cwd=dirname, shell=True)
+            subprocess.Popen([program, '-x', '-l{}'.format(loglevel)] + list(defs) + ['--', filename] + list(args),
+                             cwd=dirname)
         elif os.name == 'posix':
+            command = ' '.join(quote(s) for s in [program, '-x', '-l{}'.format(loglevel)] + list(defs) +
+                               ['--', filename] + list(args))
             term = CONFIG['launcher_console/terminal']
             subprocess.Popen([term, '-e', command], cwd=dirname)
         else:
