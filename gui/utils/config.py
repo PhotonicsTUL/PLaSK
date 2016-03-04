@@ -82,6 +82,7 @@ DEFAULTS = {
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/blocking_jedi': False,
+    'workarounds/console_launcher': False,
 }
 
 
@@ -111,123 +112,138 @@ def Path(entry, title, mask, help=None):
 
 
 CONFIG_WIDGETS = OrderedDict([
-    ("General Settings", [
-        "General Settings",
-        ("Create backup files on save",
-         CheckBox('main_window/make_backup',
-                  "Create backup files on save. "
-                  "It is recommended to keep this option on, to keep the backup of the "
-                  "edited files in case the new one becomes corrupt or you accidentally "
-                  "remove some important parts.")),
-        ("Icons theme (requires restart)",
-         Combo('main_window/icons_theme',
-               ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
-               "Main window icons theme.")),
-        ("Automatically check for updates",
-         CheckBox('updates/automatic_check',
-                  "If this option is checked, PLaSK will automatically check for a new version on startup.")),
-    ]),
-    ("Window Display", [
-        "Geometry View",
-        ("Selection frame color", Color('geometry/selected_color',
-                                        "Color of a frame around the selected object.")),
-        ("Selection frame opacity", FloatSpinBox('geometry/selected_alpha',
+    ("General Settings", OrderedDict([
+        ("General Settings", [
+            ("Create backup files on save",
+             CheckBox('main_window/make_backup',
+                      "Create backup files on save. "
+                      "It is recommended to keep this option on, to keep the backup of the "
+                      "edited files in case the new one becomes corrupt or you accidentally "
+                      "remove some important parts.")),
+            ("Icons theme (requires restart)",
+             Combo('main_window/icons_theme',
+                   ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
+                   "Main window icons theme.")),
+            ("Automatically check for updates",
+             CheckBox('updates/automatic_check',
+                      "If this option is checked, PLaSK will automatically check for a new version on startup.")),
+        ])
+    ])),
+    ("Window Display", OrderedDict([
+        ("Geometry View", [
+            ("Selection frame color", Color('geometry/selected_color',
+                                            "Color of a frame around the selected object.")),
+            ("Selection frame opacity", FloatSpinBox('geometry/selected_alpha',
+                                                     step=0.1, min=0.0, max=1.0,
+                                                     help="Opacity of a frame around "
+                                                          "the selected object.")),
+            ("Selection frame width", FloatSpinBox('geometry/selected_width',
+                                                   step=0.1, min=0.1,
+                                                   help="Width of a frame around "
+                                                        "the selected object.")),
+            ("Show local origin", CheckBox('geometry/show_origin',
+                                           "Show local origin of the selected object")),
+            ("Origin mark color", Color('geometry/origin_color',
+                                        "Color of a local origin mark.")),
+            ("Origin mark opacity", FloatSpinBox('geometry/origin_alpha',
                                                  step=0.1, min=0.0, max=1.0,
-                                                 help="Opacity of a frame around "
-                                                      "the selected object.")),
-        ("Selection frame width", FloatSpinBox('geometry/selected_width',
+                                                 help="Opacity of a local origin mark.")),
+            ("Origin mark size", FloatSpinBox('geometry/origin_size',
+                                              step=0.1, min=0.1,
+                                              help="Size of a local origin mark.")),
+            ("Origin mark width", FloatSpinBox('geometry/origin_width',
                                                step=0.1, min=0.1,
-                                               help="Width of a frame around "
-                                                    "the selected object.")),
-        ("Show local origin", CheckBox('geometry/show_origin',
-                                       "Show local origin of the selected object")),
-        ("Origin mark color", Color('geometry/origin_color',
-                                    "Color of a local origin mark.")),
-        ("Origin mark opacity", FloatSpinBox('geometry/origin_alpha',
-                                             step=0.1, min=0.0, max=1.0,
-                                             help="Opacity of a local origin mark.")),
-        ("Origin mark size", FloatSpinBox('geometry/origin_size',
-                                          step=0.1, min=0.1,
-                                          help="Size of a local origin mark.")),
-        ("Origin mark width", FloatSpinBox('geometry/origin_width',
-                                           step=0.1, min=0.1,
-                                           help="Line width of the local origin mark.")),
-        ("Info lines color", Color('geometry/extra_color',
-                                   "Color of info lines for the selected object.")),
-        ("Info lines opacity", FloatSpinBox('geometry/extra_alpha',
-                                            step=0.1, min=0.0, max=1.0,
-                                            help="Opacity of info lines for the selected object.")),
-        ("Info lines width", FloatSpinBox('geometry/extra_width',
-                                          step=0.1, min=0.1,
-                                          help="Width of info lines for the selected object.")),
-
-        "Mesh Preview",
-        ("Mesh color", Color('mesh/mesh_color', "Mesh color in the preview plot.")),
-        ("Mesh line width", FloatSpinBox('mesh/line_width', step=0.1, min=0.1,
-                                         help="Mesh lines width in the preview plot.")),
-
-        "Text Editor",
-        ("Editor font", Font('editor/font', "Font in text editors.")),
-        ("Help font", Font('editor/help_font', "Font in script on-line help.")),
-        ("Current line color", Color('editor/current_line_color',
-                                     "Background color of the current line.")),
-        ("Find result color", Color('editor/match_color',
-                                    "Background color of strings matching current search.")),
-        ("Replaced result color", Color('editor/replace_color',
-                                        "Background color of strings right after replace.")),
-        ("Word highlight color", Color('editor/selection_color',
-                                       "Highlight color for the current word.")),
-        ("Matching bracket color", Color('editor/matching_bracket_color',
-                                         "Highlight color for matching brackets "
-                                         "in script editor.")),
-        ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
-                                          "Highlight color for unmatched brackets "
-                                          "in script editor.")),
-        "Launcher",
-        ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
-
-    ]),
-    ("Syntax Highlighting", [
-        "Python Syntax",
-        ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
-        ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
-        ("Builtin", Syntax('syntax/python_builtin', "Python syntax highlighting.")),
-        ("Keyword", Syntax('syntax/python_keyword', "Python syntax highlighting.")),
-        ("Number", Syntax('syntax/python_number', "Python syntax highlighting.")),
-        ("Class member", Syntax('syntax/python_member', "Python syntax highlighting.")),
-        ("PLaSK function", Syntax('syntax/python_plask', "Python syntax highlighting.")),
-        ("PLaSK provider", Syntax('syntax/python_provider', "Python syntax highlighting.")),
-        ("PLaSK receiver", Syntax('syntax/python_receiver', "Python syntax highlighting.")),
-        ("Log level", Syntax('syntax/python_log', "Python syntax highlighting.")),
-        ("Solver", Syntax('syntax/python_solver', "Python syntax highlighting.")),
-        ("XPL Definition", Syntax('syntax/python_define', "Python syntax highlighting.")),
-        ("PLaSK dictionary", Syntax('syntax/python_loaded', "Python syntax highlighting.")),
-        ("Pylab identifier", Syntax('syntax/python_pylab', "Python syntax highlighting.")),
-        "XML Syntax",
-        ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
-        ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
-        ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
-        ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
-        ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
-    ]),
-    ("Workarounds", [
-        "Script Completion",
-        ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
-                                            "Do not show completion pop-up after you type a dot. This still allows "
-                                            "to show the pop-up manually by pressing Ctrl+Space.")),
-        ("Run in a single thread", CheckBox('workarounds/blocking_jedi',
-                                            "Do not run script completion in background. This may cause the GUI stop "
-                                            "responding for the couple of seconds when showing completion pop-up, but "
-                                            "may be helpful if the program often crashes on completion.")),
-        ("Disable completion", CheckBox('workarounds/no_jedi',
-                                        "Disable script completion and on-line help.")),
-        "Launcher",
-        ("PLaSK executable", Path('launcher_local/program', "PLaSK executable"
-                                  "PLaSK ({});;Any program ({})"
-                                  .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
-                                  "Full patch to PLaSK executable (leave empty for default)")),
-    ])
+                                               help="Line width of the local origin mark.")),
+            ("Info lines color", Color('geometry/extra_color',
+                                       "Color of info lines for the selected object.")),
+            ("Info lines opacity", FloatSpinBox('geometry/extra_alpha',
+                                                step=0.1, min=0.0, max=1.0,
+                                                help="Opacity of info lines for the selected object.")),
+            ("Info lines width", FloatSpinBox('geometry/extra_width',
+                                              step=0.1, min=0.1,
+                                              help="Width of info lines for the selected object.")),
+        ]),
+        ("Mesh Preview", [
+            ("Mesh color", Color('mesh/mesh_color', "Mesh color in the preview plot.")),
+            ("Mesh line width", FloatSpinBox('mesh/line_width', step=0.1, min=0.1,
+                                             help="Mesh lines width in the preview plot.")),
+        ]),
+        ("Text Editor", [
+            ("Editor font", Font('editor/font', "Font in text editors.")),
+            ("Help font", Font('editor/help_font', "Font in script on-line help.")),
+            ("Current line color", Color('editor/current_line_color',
+                                         "Background color of the current line.")),
+            ("Find result color", Color('editor/match_color',
+                                        "Background color of strings matching current search.")),
+            ("Replaced result color", Color('editor/replace_color',
+                                            "Background color of strings right after replace.")),
+            ("Word highlight color", Color('editor/selection_color',
+                                           "Highlight color for the current word.")),
+            ("Matching bracket color", Color('editor/matching_bracket_color',
+                                             "Highlight color for matching brackets "
+                                             "in script editor.")),
+            ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
+                                              "Highlight color for unmatched brackets "
+                                              "in script editor.")),
+        ]),
+        ("Launcher", [
+            ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
+        ]),
+    ])),
+    ("Syntax Highlighting", OrderedDict([
+        ("Python Syntax", [
+            ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
+            ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
+            ("Builtin", Syntax('syntax/python_builtin', "Python syntax highlighting.")),
+            ("Keyword", Syntax('syntax/python_keyword', "Python syntax highlighting.")),
+            ("Number", Syntax('syntax/python_number', "Python syntax highlighting.")),
+            ("Class member", Syntax('syntax/python_member', "Python syntax highlighting.")),
+            ("PLaSK function", Syntax('syntax/python_plask', "Python syntax highlighting.")),
+            ("PLaSK provider", Syntax('syntax/python_provider', "Python syntax highlighting.")),
+            ("PLaSK receiver", Syntax('syntax/python_receiver', "Python syntax highlighting.")),
+            ("Log level", Syntax('syntax/python_log', "Python syntax highlighting.")),
+            ("Solver", Syntax('syntax/python_solver', "Python syntax highlighting.")),
+            ("XPL Definition", Syntax('syntax/python_define', "Python syntax highlighting.")),
+            ("PLaSK dictionary", Syntax('syntax/python_loaded', "Python syntax highlighting.")),
+            ("Pylab identifier", Syntax('syntax/python_pylab', "Python syntax highlighting.")),
+        ]),
+        ("XML Syntax", [
+            ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
+            ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
+            ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
+            ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
+            ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
+        ]),
+    ])),
+    ("Workarounds", OrderedDict([
+        ("Script Completion", [
+            ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
+                                                "Do not show completion pop-up after you type a dot. This still allows "
+                                                "to show the pop-up manually by pressing Ctrl+Space.")),
+            ("Run in a single thread", CheckBox('workarounds/blocking_jedi',
+                                                "Do not run script completion in background. This may cause the GUI stop "
+                                                "responding for the couple of seconds when showing completion pop-up, but "
+                                                "may be helpful if the program often crashes on completion.")),
+            ("Disable completion", CheckBox('workarounds/no_jedi',
+                                            "Disable script completion and on-line help.")),
+        ]),
+        ("Launcher", [
+            ("PLaSK executable", Path('launcher_local/program', "PLaSK executable"
+                                      "PLaSK ({});;Any program ({})"
+                                      .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
+                                      "Full patch to PLaSK executable (leave empty for default)")),
+            ("Prefer console launcher", CheckBox('workarounds/console_launcher',
+                                                 "Select console launcher by default."))
+        ]),
+    ]))
 ])
+
+if os.name == 'posix':
+    DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
+    CONFIG_WIDGETS.setdefault('Other', OrderedDict()).setdefault("Launcher", []).extend([
+         ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
+                                   "Full patch to terminal program on your system")),
+    ])
 
 
 def parse_highlight(string):
@@ -479,20 +495,17 @@ class ConfigDialog(QtGui.QDialog):
 
         self.items = []
 
-        for cat, items in CONFIG_WIDGETS.items():
+        for cat, tabs in CONFIG_WIDGETS.items():
             # page = QtGui.QToolBox()
             page = QtGui.QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
-            tab = None
-            for item in items:
-                if isinstance(item, str):
-                    tab = QtGui.QWidget(page)
-                    tab_layout = QtGui.QFormLayout()
-                    tab.setLayout(tab_layout)
-                    # page.addItem(tab, item)
-                    page.addTab(tab, item)
-                else:
+            for label, items in tabs.items():
+                tab = QtGui.QWidget(page)
+                tab_layout = QtGui.QFormLayout()
+                tab.setLayout(tab_layout)
+                page.addTab(tab, label)
+                for item in items:
                     widget = item[1](self)
                     self.items.append(widget)
                     tab_layout.addRow(item[0], widget)

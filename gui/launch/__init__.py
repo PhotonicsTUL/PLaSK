@@ -11,18 +11,18 @@
 # GNU General Public License for more details.
 
 import shlex
-
 from ..qt import QtGui
 from ..qt.QtCore import Qt
-from ..utils.qsignals import BlockQtSignals
+from ..utils.config import CONFIG
 
 from .local import Launcher as LocalLauncher
+from .console import Launcher as ConsoleLauncher
 
 
 _launch_args = ''
 _defs_visible = False
 
-LAUNCHERS = [LocalLauncher()]
+LAUNCHERS = [LocalLauncher(), ConsoleLauncher()]
 
 current_launcher = None
 
@@ -71,15 +71,15 @@ class LaunchDialog(QtGui.QDialog):
         self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
         global current_launcher
         if current_launcher is None:
-            current_launcher = combo.currentIndex()
-        else:
-            with BlockQtSignals(combo):
-                combo.setCurrentIndex(current_launcher)
+            if CONFIG['workarounds/console_launcher']:
+                current_launcher = combo.findText(ConsoleLauncher.name)
+            else:
+                current_launcher = combo.findText(LocalLauncher.name)
         for i, widget in enumerate(self.launcher_widgets):
             widget.setVisible(i == current_launcher)
             self.layout.addWidget(widget)
 
-        combo.currentIndexChanged.emit(current_launcher)
+        combo.setCurrentIndex(current_launcher)
 
         self.setFixedWidth(5*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
         self.setFixedHeight(self.sizeHint().height())

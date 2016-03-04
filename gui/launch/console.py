@@ -21,19 +21,10 @@ try:
 except ImportError:
     from pipes import quote
 
-from gui import XPLDocument
-from gui.qt import QtGui
-from gui.launch import LAUNCHERS
-from gui.utils.config import CONFIG, CONFIG_WIDGETS, DEFAULTS as CONFIG_DEFAULTS, Path as ConfigPath
+from .. import XPLDocument
+from ..qt import QtGui
+from ..utils.config import CONFIG
 
-
-if os.name == 'posix':
-    CONFIG_DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
-    CONFIG_WIDGETS.setdefault('Other', []).extend(
-        ["Local Console Launcher",
-         ("Terminal program", ConfigPath('launcher_console/terminal', "Terminal program", "Executable (*)",
-                                         "Full patch to terminal program on your system"))]
-    )
 
 def which(program):
     if os.path.split(program)[0]:
@@ -132,5 +123,3 @@ class Launcher(object):
         if dirname:
             self.dirname = dirname
             self.diredit.setText(dirname)
-
-LAUNCHERS.append(Launcher())
