@@ -228,7 +228,7 @@ CONFIG_WIDGETS = OrderedDict([
                                             "Disable script completion and on-line help.")),
         ]),
         ("Launcher", [
-            ("PLaSK executable", Path('launcher_local/program', "PLaSK executable"
+            ("PLaSK executable", Path('launcher_local/program', "PLaSK executable",
                                       "PLaSK ({});;Any program ({})"
                                       .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
                                       "Full patch to PLaSK executable (leave empty for default)")),
