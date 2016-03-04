@@ -12,9 +12,10 @@
 
 import shlex
 
-from ..qt.QtCore import Qt
-
 from ..qt import QtGui
+from ..qt.QtCore import Qt
+from ..utils.qsignals import BlockQtSignals
+
 from .local import Launcher as LocalLauncher
 
 
@@ -23,6 +24,7 @@ _defs_visible = False
 
 LAUNCHERS = [LocalLauncher()]
 
+current_launcher = None
 
 class LaunchDialog(QtGui.QDialog):
 
@@ -36,7 +38,7 @@ class LaunchDialog(QtGui.QDialog):
 
         combo = QtGui.QComboBox()
         combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
-        combo.currentIndexChanged.connect(self.launcher_changed)
+        combo.currentIndexChanged.connect(self.launcher_changed, Qt.QueuedConnection)
         self.layout.addWidget(combo)
 
         if window.document.defines is not None:
@@ -67,11 +69,17 @@ class LaunchDialog(QtGui.QDialog):
         self.layout.addWidget(self.args)
 
         self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
-        for widget in self.launcher_widgets:
-            widget.setVisible(False)
+        global current_launcher
+        if current_launcher is None:
+            current_launcher = combo.currentIndex()
+        else:
+            with BlockQtSignals(combo):
+                combo.setCurrentIndex(current_launcher)
+        for i, widget in enumerate(self.launcher_widgets):
+            widget.setVisible(i == current_launcher)
             self.layout.addWidget(widget)
-        self.current = combo.currentIndex()
-        self.launcher_widgets[self.current].setVisible(True)
+
+        combo.currentIndexChanged.emit(current_launcher)
 
         self.setFixedWidth(5*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
         self.setFixedHeight(self.sizeHint().height())
@@ -89,9 +97,10 @@ class LaunchDialog(QtGui.QDialog):
         self.adjustSize()
 
     def launcher_changed(self, index):
-        self.launcher_widgets[self.current].setVisible(False)
-        self.current = index
-        self.launcher_widgets[self.current].setVisible(True)
+        global current_launcher
+        self.launcher_widgets[current_launcher].setVisible(False)
+        current_launcher = index
+        self.launcher_widgets[current_launcher].setVisible(True)
         self.setFixedHeight(self.sizeHint().height())
         self.adjustSize()
 
@@ -119,5 +128,5 @@ def launch_plask(window):
                 value = '='.join(items[1:]).strip()
                 if value:
                     launch_defs.append('{}={}'.format(name, value))
-        launcher = LAUNCHERS[dialog.current]
+        launcher = LAUNCHERS[current_launcher]
         launcher.launch(window, shlex.split(_launch_args), launch_defs)

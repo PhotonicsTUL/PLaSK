@@ -106,8 +106,8 @@ def Syntax(entry, help=None):
 def Font(entry, help=None):
     return lambda parent: ConfigDialog.Font(entry, help=help, parent=parent)
 
-def Path(entry, help=None):
-    return lambda parent: ConfigDialog.Path(entry, help=help, parent=parent)
+def Path(entry, title, mask, help=None):
+    return lambda parent: ConfigDialog.Path(entry, title, mask, help=help, parent=parent)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -222,7 +222,9 @@ CONFIG_WIDGETS = OrderedDict([
         ("Disable completion", CheckBox('workarounds/no_jedi',
                                         "Disable script completion and on-line help.")),
         "Launcher",
-        ("PLaSK executable", Path('launcher_local/program',
+        ("PLaSK executable", Path('launcher_local/program', "PLaSK executable"
+                                  "PLaSK ({});;Any program ({})"
+                                  .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
                                   "Full patch to PLaSK executable (leave empty for default)")),
     ])
 ])
@@ -431,7 +433,7 @@ class ConfigDialog(QtGui.QDialog):
             CONFIG[self.entry] = self.current_font.toString().split(',')
 
     class Path(QtGui.QWidget):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, title,  mask, parent=None, help=None):
             super(ConfigDialog.Path, self).__init__(parent)
             layout = QtGui.QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
@@ -447,18 +449,15 @@ class ConfigDialog(QtGui.QDialog):
             layout.addWidget(self.select)
             self.setLayout(layout)
             self.entry = entry
+            self.title = title
+            self.mask = mask
             if help is not None:
                 self.setWhatsThis(help)
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
             if not dirname:
                 dirname = os.path.dirname(sys.executable)
-            filename = QtGui.QFileDialog.getOpenFileName(self, "Select PLaSK executable",
-                                                         dirname,
-                                                         "PLaSK ({});;"
-                                                         "Any program ({})"
-                                                         .format(_plask_binary,
-                                                                 '*.exe' if sys.platform == 'win32' else '*'))
+            filename = QtGui.QFileDialog.getOpenFileName(self, "Select {}".format(self.title), dirname, self.mask)
             if type(filename) == tuple: filename = filename[0]
             if filename: self.edit.setText(filename)
         def save(self):

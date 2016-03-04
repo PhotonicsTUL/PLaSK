@@ -18,9 +18,9 @@ import re
 import subprocess
 from time import strftime
 
+from ..qt import QtCore, QtGui
 from ..qt.QtCore import Qt
 
-from ..qt import QtCore, QtGui
 from ..utils.config import CONFIG
 
 

@@ -35,6 +35,8 @@ namespace py = boost::python;
 //******************************************************************************
 py::dict globals;
 
+bool endwait = false;
+
 //******************************************************************************
 
 // static PyThreadState* mainTS;   // state of the main thread
@@ -182,6 +184,10 @@ void endPlask() {
     // PyEval_RestoreThread(mainTS);
     fixMatplotlibBug();
     // Py_Finalize(); // Py_Finalize is not supported by Boost
+    if (endwait) {
+        std::cerr << "\nPress Enter to close the window...";
+        std::getchar();
+    }
 }
 
 
@@ -268,6 +274,9 @@ int main(int argc, const char *argv[])
             }
             --argc; ++argv;
 #endif
+        } else if (arg == "-x") {
+            endwait = true;
+            --argc; ++argv;
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
             --argc; ++argv;
@@ -485,6 +494,11 @@ int main(int argc, const char *argv[])
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (std::runtime_error& err) {
                 plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+                endPlask();
+                return 3;
+            }
+            catch (...) {
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "Unrecognized exception");
                 endPlask();
                 return 3;
             }
