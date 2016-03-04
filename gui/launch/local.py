@@ -276,17 +276,22 @@ class PlaskThread(QtCore.QThread):
     def __init__(self, program, fname, dirname, lines, mutex, main_window, args, defs):
         super(PlaskThread, self).__init__()
         self.main_window = main_window
+        if CONFIG['workarounds/disable_omp']:
+            env = os.environ.copy()
+            env['OMP_NUM_THREADS'] = '1'
+        else:
+            env = None
         try:
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
             self.proc = subprocess.Popen([program, '-ldebug', '-u'] + list(defs) + ['--', fname] + list(args),
-                                         cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT)
         else:
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + ['--', fname] + list(args),
                                          startupinfo=si,
-                                         cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT)
         sys.stdout.flush()
         fd, fb = os.path.split(fname)
         sep = os.path.sep

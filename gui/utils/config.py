@@ -83,6 +83,7 @@ DEFAULTS = {
     'workarounds/no_jedi': False,
     'workarounds/blocking_jedi': False,
     'workarounds/console_launcher': False,
+    'workarounds/disable_omp': False,
 }
 
 
@@ -233,7 +234,9 @@ CONFIG_WIDGETS = OrderedDict([
                                       .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
                                       "Full patch to PLaSK executable (leave empty for default)")),
             ("Prefer console launcher", CheckBox('workarounds/console_launcher',
-                                                 "Select console launcher by default."))
+                                                 "Select console launcher by default.")),
+            ("Disable OpenMP", CheckBox('workarounds/disable_omp',
+                                        "Disable parallel computations with OpenMP.")),
         ]),
     ]))
 ])

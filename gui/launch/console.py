@@ -106,14 +106,20 @@ class Launcher(object):
         loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                    [self.loglevel.currentIndex()]
 
+        if CONFIG['workarounds/disable_omp']:
+            env = os.environ.copy()
+            env['OMP_NUM_THREADS'] = '1'
+        else:
+            env = None
+
         if os.name == 'nt':
             subprocess.Popen([program, '-x', '-l{}'.format(loglevel)] + list(defs) + ['--', filename] + list(args),
-                             cwd=dirname)
+                             cwd=dirname, env=env)
         elif os.name == 'posix':
             command = ' '.join(quote(s) for s in [program, '-x', '-l{}'.format(loglevel)] + list(defs) +
                                ['--', filename] + list(args))
             term = CONFIG['launcher_console/terminal']
-            subprocess.Popen([term, '-e', command], cwd=dirname)
+            subprocess.Popen([term, '-e', command], cwd=dirname, env=env)
         else:
             raise NotImplemented("Launching terminal in this system")
 
