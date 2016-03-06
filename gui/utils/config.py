@@ -17,6 +17,17 @@ from numpy import log10, ceil
 
 from ..qt import QtCore, QtGui
 
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str, bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 
 if sys.platform == 'win32':
@@ -243,7 +254,8 @@ CONFIG_WIDGETS = OrderedDict([
 
 if os.name == 'posix':
     DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
-    CONFIG_WIDGETS.setdefault('Other', OrderedDict()).setdefault("Launcher", []).extend([
+    CONFIG_WIDGETS.setdefault('General Settings', OrderedDict()).setdefault("Launcher", []).extend([
+         "Console Launcher",
          ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
                                    "Full patch to terminal program on your system")),
     ])
@@ -509,9 +521,16 @@ class ConfigDialog(QtGui.QDialog):
                 tab.setLayout(tab_layout)
                 page.addTab(tab, label)
                 for item in items:
-                    widget = item[1](self)
-                    self.items.append(widget)
-                    tab_layout.addRow(item[0], widget)
+                    if isinstance(item, basestring):
+                        label = QtGui.QLabel(item)
+                        font = label.font()
+                        font.setBold(True)
+                        label.setFont(font)
+                        tab_layout.addRow(label)
+                    else:
+                        widget = item[1](self)
+                        self.items.append(widget)
+                        tab_layout.addRow(item[0], widget)
 
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
@@ -524,7 +543,7 @@ class ConfigDialog(QtGui.QDialog):
         vlayout.addWidget(buttons)
         self.setLayout(vlayout)
 
-        self.resize(600, 600)
+        self.resize(800, 600)
 
     def apply(self):
         for item in self.items:
