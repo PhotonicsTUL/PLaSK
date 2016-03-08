@@ -29,7 +29,7 @@ class Info(object):
     def __str__(self):
         return self.text
 
-    def __init__(self, text, level=None, **kwargs):
+    def __init__(self, text, level=NONE, **kwargs):
         object.__init__(self)
         self.text = text
         self.level = int(level)
@@ -113,6 +113,9 @@ class InfoListModel(QtCore.QAbstractListModel):
                 return self.entries[row].text
         if role == Qt.DecorationRole:
             return info_level_icon(self.entries[index.row()].level)
+        if role == Qt.TextAlignmentRole:
+            try: return self.entries[index.row()].align
+            except AttributeError: return None
         # if role == Qt.FontRole:
         #     font = QtGui.QFont()
         #     font.setUnderline(True)

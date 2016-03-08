@@ -19,6 +19,7 @@ try:
 except ImportError:
     paramiko = None
 
+
 class Launcher(object):
     name = "Remote Batch Job"
 

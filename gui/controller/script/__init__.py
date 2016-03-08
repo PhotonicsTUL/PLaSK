@@ -254,6 +254,9 @@ class ScriptController(SourceEditController):
         source.editor.setReadOnly(self.model.is_read_only())
         window.editor = source.editor
 
+        self.model.editor = source.editor
+        source.editor.cursorPositionChanged.connect(self.model.refresh_info)
+
         source.toolbar.addSeparator()
         unindent_action = QtGui.QAction(QtGui.QIcon.fromTheme('format-indent-less'), 'Unin&dent', source)
         unindent_action.triggered.connect(lambda: unindent(source.editor))

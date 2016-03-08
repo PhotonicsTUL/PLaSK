@@ -50,7 +50,6 @@ try:
 except ImportError:
     matplotlib = None
 
-
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
 from .model.info import InfoListModel, Info
@@ -333,7 +332,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def _update_info_color(self):
         pal = self.info_table.palette()
-        if self.info_model.rowCount() > 0:
+        if any(info.level != Info.NONE for info in self.info_model.entries):
             pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         else:
             pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))

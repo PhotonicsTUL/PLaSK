@@ -12,8 +12,10 @@
 
 from lxml import etree
 
+from ...qt.QtCore import Qt
 from ...utils.xml import require_no_children, require_no_attributes
 from .. import SectionModel
+from ..info import Info
 from .completer import prepare_completions
 
 
@@ -23,6 +25,7 @@ class ScriptModel(SectionModel):
         SectionModel.__init__(self, 'script', info_cb)
         self._code = ''
         prepare_completions()
+        self.editor = None
 
     def set_xml_element(self, element, undoable=True):
         #TODO undo support (??)
@@ -47,3 +50,8 @@ class ScriptModel(SectionModel):
         self._code = text.expandtabs()
         self.fire_changed()
 
+    def create_info(self):
+        if self.editor is None: return []
+        cursor = self.editor.textCursor()
+        return [Info('{}:{}   '.format(cursor.blockNumber()+self.line_in_file+1, cursor.columnNumber()+1),
+                     align=Qt.AlignRight)]
