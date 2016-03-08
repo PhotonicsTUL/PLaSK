@@ -130,14 +130,12 @@ class TableModelEditMethods(object):
         def undo(self):
             self.table.set_and_fire(self.col, self.row, self.old_value)
 
-
     def setData(self, index, value, role=Qt.EditRole):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
         self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
-
 
     class SetEntriesCommand(QtGui.QUndoCommand):
 

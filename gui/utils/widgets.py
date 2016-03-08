@@ -139,80 +139,83 @@ class ComboBoxDelegate(QtGui.QItemDelegate):
             return super(ComboBoxDelegate, self).eventFilter(combo, event)
 
 
-#class CheckBoxDelegate(QtGui.QStyledItemDelegate):
+class CheckBoxDelegate(QtGui.QStyledItemDelegate):
 
-    #def createEditor(self, parent, option, index):
-        #'''
-        #Important, otherwise an editor is created if the user clicks in this cell.
-        #'''
-        #return None
+    def createEditor(self, parent, option, index):
+        """
+        Important, otherwise an editor is created if the user clicks in this cell.
+        """
+        return None
 
-    #def paint(self, painter, option, index):
-        #'''
-        #Paint a checkbox without the solver_label.
-        #'''
-        #checked = bool(index.model().data(index, QtCore.Qt.DisplayRole))
-        #check_box_style_option = QtGui.QStyleOptionButton()
+    def paint(self, painter, option, index):
+        """
+        Paint a checkbox without the label.
+        """
+        if not index.model().data(index, Qt.UserRole):
+            return
 
-        #if (index.flags() & QtCore.Qt.ItemIsEditable) > 0:
-            #check_box_style_option.state |= QtGui.QStyle.State_Enabled
-        #else:
-            #check_box_style_option.state |= QtGui.QStyle.State_ReadOnly
+        checked = bool(index.model().data(index, Qt.DisplayRole))
+        check_box_style_option = QtGui.QStyleOptionButton()
 
-        #if checked:
-            #check_box_style_option.state |= QtGui.QStyle.State_On
-        #else:
-            #check_box_style_option.state |= QtGui.QStyle.State_Off
+        if index.flags() & Qt.ItemIsEditable:
+            check_box_style_option.state |= QtGui.QStyle.State_Enabled
+        else:
+            check_box_style_option.state |= QtGui.QStyle.State_ReadOnly
 
-        #check_box_style_option.rect = self.getCheckBoxRect(option)
+        if checked:
+            check_box_style_option.state |= QtGui.QStyle.State_On
+        else:
+            check_box_style_option.state |= QtGui.QStyle.State_Off
 
-        #QtGui.QApplication.style().drawControl(QtGui.QStyle.CE_CheckBox, check_box_style_option, painter)
+        check_box_style_option.rect = self.getCheckBoxRect(option)
+        if not (index.model().flags(index) & Qt.ItemIsEditable):
+            check_box_style_option.state |= QtGui.QStyle.State_ReadOnly
 
+        QtGui.QApplication.style().drawControl(QtGui.QStyle.CE_CheckBox, check_box_style_option, painter)
 
-    #def editorEvent(self, event, model, option, index):
-        #'''
-        #Change the data in the model and the state of the checkbox
-        #if the user presses the left mousebutton or presses
-        #Key_Space or Key_Select and this cell is editable. Otherwise do nothing.
-        #'''
-        #if not (index.flags() & QtCore.Qt.ItemIsEditable) > 0:
-            #return False
+    def editorEvent(self, event, model, option, index):
+        """
+        Change the data in the model and the state of the checkbox
+        if the user presses the left mousebutton or presses
+        Key_Space or Key_Select and this cell is editable. Otherwise do nothing.
+        """
+        if not (index.flags() & Qt.ItemIsEditable):
+            return False
 
-        ## Do not change the checkbox-state
-        #if event.type() == QtGui.QEvent.MouseButtonRelease or event.type() == QtCore.QEvent.MouseButtonDblClick:
-            #if event.button() != QtCore.Qt.LeftButton or not self.getCheckBoxRect(option).contains(event.pos()):
-                #return False
-            #if event.type() == QtCore.QEvent.MouseButtonDblClick:
-                #return True
-        #elif event.type() == QtCore.QEvent.KeyPress:
-            #if event.key() != QtCore.Qt.Key_Space and event.key() != QtCore.Qt.Key_Select:
-                #return False
-        #else:
-            #return False
+        # Do not change the checkbox-state
+        if event.type() == QtCore.QEvent.MouseButtonRelease or event.type() == QtCore.QEvent.MouseButtonDblClick:
+            if event.button() != Qt.LeftButton or not self.getCheckBoxRect(option).contains(event.pos()):
+                return False
+            if event.type() == QtCore.QEvent.MouseButtonDblClick:
+                return True
+        elif event.type() == QtCore.QEvent.KeyPress:
+            if event.key() != Qt.Key_Space and event.key() != Qt.Key_Select:
+                return False
+        else:
+            return False
 
-        ## Change the checkbox-state
-        #self.setModelData(None, model, index)
-        #return True
+        # Change the checkbox-state
+        self.setModelData(None, model, index)
+        return True
 
-    #def setModelData (self, editor, model, index):
-        #'''
-        #The user wanted to change the old state in the opposite.
-        #'''
-        #newValue = not bool(index.model().data(index, QtCore.Qt.DisplayRole))
-        #model.setData(index, newValue, QtCore.Qt.EditRole)
+    def setModelData(self, editor, model, index):
+        """
+        The user wanted to change the old state in the opposite.
+        """
+        new_value = not bool(index.model().data(index, Qt.DisplayRole))
+        model.setData(index, new_value, Qt.EditRole)
 
-
-    #def getCheckBoxRect(self, option):
-        #check_box_style_option = QtGui.QStyleOptionButton()
-        #check_box_rect = QtGui.QApplication.style().subElementRect(QtGui.QStyle.SE_CheckBoxIndicator,
-                                                                   #check_box_style_option, None)
-        #check_box_point = QtCore.QPoint (option.rect.x() +
-                             #option.rect.width() / 2 -
-                             #check_box_rect.width() / 2,
-                             #option.rect.y() +
-                             #option.rect.height() / 2 -
-                             #check_box_rect.height() / 2)
-        #return QtCore.QRect(check_box_point, check_box_rect.size())
+    def getCheckBoxRect(self, option):
+        check_box_style_option = QtGui.QStyleOptionButton()
+        check_box_rect = QtGui.QApplication.style().subElementRect(QtGui.QStyle.SE_CheckBoxIndicator,
+                                                                   check_box_style_option, None)
+        check_box_point = QtCore.QPoint (option.rect.x() +
+                                         option.rect.width() / 2 -
+                                         check_box_rect.width() / 2,
+                                         option.rect.y() +
+                                         option.rect.height() / 2 -
+                                         check_box_rect.height() / 2)
+        return QtCore.QRect(check_box_point, check_box_rect.size())
 
 
 class VerticalScrollArea(QtGui.QScrollArea):

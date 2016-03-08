@@ -20,7 +20,7 @@ from ...external.highlighter.python27 import syntax
 from ..script import scheme
 from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
-from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut
+from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate
 from ...utils.qsignals import BlockQtSignals
 from .. import Controller, select_index_from_info
 from ..defines import DefinesCompletionDelegate
@@ -324,7 +324,9 @@ class MaterialsController(Controller):
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
                                                                               self.model,
                                                                               self.materials_table))
-        table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
+        self.materials_table.setItemDelegateForColumn(2, CheckBoxDelegate(self.materials_table))
+
+
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
         library_action = TableActions.make_action('material-library', 'Add &Library',
@@ -364,7 +366,14 @@ class MaterialsController(Controller):
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.materials_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.materials_table.setColumnWidth(0, 140)
+        self.materials_table.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+
+        check_box_style_option = QtGui.QStyleOptionButton()
+        check_box_rect = QtGui.QApplication.style().subElementRect(QtGui.QStyle.SE_CheckBoxIndicator,
+                                                                   check_box_style_option, None)
+        self.materials_table.setColumnWidth(2, check_box_rect.width()+8)
+
         table_edit_shortcut(self.materials_table, 0, 'n')
         table_edit_shortcut(self.materials_table, 1, 'b')
         material_selection_model = self.materials_table.selectionModel()
