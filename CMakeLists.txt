@@ -14,6 +14,21 @@ set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible featu
 
 # ---------- Common options --------------------------------------------
 
+# helps writting multiple-configuration cmake code, set CONF_SUFFIX and CONF_PATH
+macro(use_conf conf)
+    if(CMAKE_CONFIGURATION_TYPES)   #multiple configuration env
+        set(CONF_SUFFIX "_${conf}")
+        set(CONF_PATH "${conf}/")
+        set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/${CONF_TYPE}/plask")
+        set(PLASK_PYTHON_PATH "${PLASK_PATH}_${CONF_TYPE}/python/plask")
+    else(CMAKE_CONFIGURATION_TYPES)
+        set(CONF_SUFFIX "")
+        set(CONF_PATH "")
+        set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
+        set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
+    endif(CMAKE_CONFIGURATION_TYPES)
+endmacro()
+
 if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   #increase a number of sections in obj. file, required by plask
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   #disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
@@ -61,11 +76,16 @@ include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
-if(MSVC)   #CMAKE_CONFIGURATION_TYPES?
-    set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/plask")
+if(CMAKE_CONFIGURATION_TYPES)   #or if(MSVC)
+    set(PLASK_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES})
 else()
-    set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
+    set(PLASK_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
 endif()
+
+foreach( CONF_TYPE ${PLASK_CONFIGURATION_TYPES} )
+    use_conf(${CONF_TYPE})
+    set(PLASK_PATH${CONF_SUFFIX} "${CMAKE_BINARY_DIR}/lib${CONF_PATH}/plask")
+endforeach()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -161,7 +181,13 @@ if(WIN32)
 endif()
 
 if(BUILD_PYTHON)
-    set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
+    if(CMAKE_CONFIGURATION_TYPES)   #or if(MSVC) --- if to remove
+        foreach( CONF_TYPE ${CMAKE_CONFIGURATION_TYPES} )
+            set(PLASK_PYTHON_PATH_${CONF_TYPE} "${PLASK_PATH}_${CONF_TYPE}/python/plask")
+        endforeach()
+    else()
+        set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
+    endif() # -- to remove - end
 
     if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
         unset(PYTHON_INCLUDE_DIR CACHE)
@@ -245,7 +271,7 @@ if(DETECT_FORTRAN_NAME_MANGLING)
 endif(DETECT_FORTRAN_NAME_MANGLING)
 
 ## ---------- libraries for better stack printing ------------------------------
-if(PRINT_STACKTRACE_ON_EXCEPTION)
+if(PRINT_STACKTRACE_ON_EXCEPTION)   #TODO in PLASK_CONFIGURATION_TYPES loop
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(NOT MSVC)
         add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
@@ -351,24 +377,32 @@ configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/plask_l
 
 if(BUILD_PYTHON)
 
-    foreach(py_file ${python_plask_py})
-        get_filename_component(py_file_base ${py_file} NAME)
-        list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_base})
-        add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
-                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
-                           DEPENDS ${py_file})
-        list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
-        list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
-    endforeach()
+    foreach( CONF_TYPE ${PLASK_CONFIGURATION_TYPES} )
+        use_conf(${CONF_TYPE})
+        set(python_plask_py_copied "")
+        set(python_plask_pyc "")
+        set(python_plask_pyo "")
+        foreach(py_file ${python_plask_py})
+            get_filename_component(py_file_base ${py_file} NAME)
+            list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_base})
+            add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
+                               DEPENDS ${py_file})
+            list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
+            list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
+        endforeach()
 
-    add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
+        add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
 
-    if(WIN32)
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
-        install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
-        install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
-    endif()
+        if(WIN32)
+            add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
+            add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
+            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core CONFIGURATIONS ${CONF_TYPE})
+            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core CONFIGURATIONS ${CONF_TYPE})
+        endif()
+
+        install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core CONFIGURATIONS ${CONF_TYPE})
+    endforeach( CONF_TYPE ${PLASK_CONFIGURATION_TYPES} )
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
@@ -433,7 +467,6 @@ if(BUILD_PYTHON)
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
     endif()
 
-    install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     if (INSTALL_DEV)
         install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
