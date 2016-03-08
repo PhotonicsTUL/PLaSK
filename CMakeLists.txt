@@ -415,7 +415,7 @@ if(BUILD_PYTHON)
 
     set(plask_stubs _plask geometry mesh material flow)
     foreach(stub ${plask_stubs})
-        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
+        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/python/plask/${stub}.py)
         list(APPEND plask_stubs_modules plask.${stub})
     endforeach()
     file(REMOVE ${plask_stubs_files}) # wrong stubs can make build fail
@@ -424,7 +424,7 @@ if(BUILD_PYTHON)
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${material_targets}
-                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/python
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/python
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
     endif()
