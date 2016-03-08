@@ -29,21 +29,24 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::Kind kind;
     Material::ConductivityType condtype;
 
+    bool complex;
+    
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
         mobe, mobh, Ae, Ah, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
-    PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base) :
+    PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool complex) :
         MaterialsDB::MaterialConstructor(name),
         base(base, db),
-        kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
+        kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
+        complex(complex)
     {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override;
 
-    bool isSimple() const override { return true; }
+    bool isSimple() const override { return !complex; }
 };
 
 class PythonEvalMaterial : public Material
@@ -256,6 +259,11 @@ class PythonEvalMaterial : public Material
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
     material->self = py::object(shared_ptr<Material>(material));
+    if (complex) {
+        for (auto item: Material::completeComposition(composition)) {
+            material->self.attr(item.first.c_str()) = item.second;
+        }
+    }
     material->self.attr("base") = py::object(material->base);
     if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("dc") = doping_amount;
     else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("cc") = doping_amount;
@@ -265,8 +273,9 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string material_name = reader.requireAttribute("name");
     std::string base_name = reader.requireAttribute("base");
-    shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name);
-
+    bool complex = reader.getAttribute<bool>("complex", false);
+    
+    shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, complex);
     constructor->self = constructor;
 
     auto trim = [](const char* s) -> const char* {
@@ -383,7 +392,10 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 
-    materialsDB.addSimple(constructor);
+    if (complex)
+        materialsDB.addComplex(constructor);
+    else
+        materialsDB.addSimple(constructor);
 }
 
 }} // namespace plask::python

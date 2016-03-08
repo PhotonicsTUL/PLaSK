@@ -232,4 +232,24 @@ class Material(unittest.TestCase):
         mat = material.get('Mat')
         self.assertEqual( Mat().thermk(), (135., 135.) )        
         self.assertEqual( mat.thermk(), (135., 135.) )        
+
+
+    def testXplComplex(self):
+        cond = material.get('Al(0.2)GaAs:Si=1e18').cond()
+        plask.loadxpl('''
+          <plask>
+            <materials>
+              <material name="AlGaAs_my" base="GaAs" complex="yes">
+                <thermk>10*self.Ga</thermk>
+              </material>
+              <material name="AlGaAs:Si" base="AlGaAs:Si" complex="yes">
+                <thermk>2*self.Al</thermk>
+              </material>
+            </materials>
+          </plask>
+        ''')
+        self.assertEqual( material.get('Al(0.2)GaAs_my').thermk(), (8.0, 8.0) )
+        algas = material.get('Al(0.2)GaAs:Si=1e18')
+        self.assertEqual( algas.thermk(), (0.4, 0.4) )
+        self.assertEqual( algas.cond(), cond )
   

@@ -44,7 +44,7 @@ Material::Composition plask::MaterialsDB::MixedCompositionOnlyFactory::mixedComp
     return result;
 }
 
-//if part_value is not empty append separator and part_value to name
+// if part_value is not empty append separator and part_value to name
 std::string& appendPart(std::string& name, const std::string& part_value, char separator) {
     if (!part_value.empty()) {
         name += separator;
@@ -53,7 +53,7 @@ std::string& appendPart(std::string& name, const std::string& part_value, char s
     return name;
 }
 
-//Append to name dopant, if it is not empty, return name
+// Append to name dopant, if it is not empty, return name
 std::string& appendDopant(std::string& name, const std::string& dopant_name) {
     return appendPart(name, dopant_name, ':');
 }
@@ -170,7 +170,8 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
             } else
                 throw NoSuchMaterial(db_Key);
         }
-        throw NoSuchMaterial(composition, dopant_name);
+        // throw NoSuchMaterial(composition, dopant_name);
+        throw NoSuchMaterial(db_Key + " (complex)");
     }
     return it->second;
 }
