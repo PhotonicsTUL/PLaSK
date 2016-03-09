@@ -34,11 +34,11 @@ else:
     bytes = str
 
 try:
-    _DEBUG = eval(os.environ['PLASKGUI_DEBUG'].title())
+    _DEBUG = bool(eval(os.environ['PLASKGUI_DEBUG'].title()))
 except KeyError:
     _DEBUG = False
 
-from .qt import QtGui, QtCore, QtSignal
+from .qt import QtGui, QtCore, QtSignal, QT_API
 from .qt.QtCore import Qt
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
@@ -658,27 +658,29 @@ class PlaskApplication(QtGui.QApplication):
         return ok
 
 
+try:
+    VERSION = plask.version
+except NameError:
+    try:
+        si = subprocess.STARTUPINFO()
+        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+    except AttributeError:
+        proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
+    else:
+        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+    version, err = proc.communicate()
+    try:
+        _, VERSION = version.strip().split()
+    except ValueError:
+        VERSION = None
+
+
 def new_window():
     global pysparkle
     if pysparkle is None:
-        try:
-            ver = plask.version
-        except NameError:
-            try:
-                si = subprocess.STARTUPINFO()
-                si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-                si.wShowWindow = subprocess.SW_HIDE
-            except AttributeError:
-                proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
-            else:
-                proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-            version, err = proc.communicate()
-            try:
-                _, ver = version.strip().split()
-            except ValueError:
-                ver = None
-        if ver is not None:
-            pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", ver,
+        if VERSION is not None:
+            pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
                                   config=ConfigProxy('updates'), shutdown=close_all_windows)
         else:
             pysparkle = None
@@ -701,6 +703,7 @@ def main():
             sys.stderr.write(msg)
             sys.stderr.flush()
         sys.excepthook = excepthook
+        sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
 
     global APPLICATION, pysparkle
 

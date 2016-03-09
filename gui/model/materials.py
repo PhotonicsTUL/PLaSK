@@ -153,6 +153,7 @@ MATERIALS_PROPERTES = OrderedDict((
                  (u'h', u'layer thickness', 'µm')])),
     ('VB', (u'Valance band level offset <i>VB</i>', u'eV',
             [(u'T', u'temperature', 'K'), (u'e', u'lateral strain', '-'),
+             (u'point', u'point in the Brillouin zone', '-'),
              (u'hole', u'hole type (\'H\' or \'L\')', '-')])),
 ))
 
@@ -383,8 +384,9 @@ class MaterialsModel(TableModel):
             if role == Qt.UserRole:
                 return True
             if role == Qt.ToolTipRole:
-                return "Check this box if material is complex. Its name must then consist of compound symbols " \
-                       "with optional label and dopant."
+                return "Check this box if material is complex (i.e. material, which you can specify composition of).\n" \
+                       "Its name must then consist of compound elements symbols with optional label and dopant, " \
+                       "separated by '_' and ':' respectively"
         return super(MaterialsModel, self).data(index, role)
 
     def flags(self, index):

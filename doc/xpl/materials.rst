@@ -354,6 +354,7 @@ This section contains specification of custom materials that can be used togethe
          Valance band level offset *VB* [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap),
          ``hole`` — hole type (``'H'`` or ``'L'``).
 
 .. xml:tag:: <library>

@@ -379,6 +379,8 @@ class MaterialsController(Controller):
         material_selection_model = self.materials_table.selectionModel()
         material_selection_model.selectionChanged.connect(self.material_selected)
 
+        self.model.infoChanged.connect(self.update_materials_table)
+
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         table_last_col_fill(self.properties_table, 4, [80, 320, 50])
@@ -410,6 +412,12 @@ class MaterialsController(Controller):
             del self.propedit.highlighter
             self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
                                                           default_font=EDITOR_FONT)
+
+    def update_materials_table(self, model):
+        if model == self.model and model.rowCount():
+            index0 = model.index(0, 0)
+            index1 = model.index(model.rowCount()-1, model.columnCount()-1)
+            model.dataChanged.emit(index0, index1)
 
     def add_external(self, what):
         index = self.materials_table.selectionModel().currentIndex()
@@ -466,6 +474,7 @@ class MaterialsController(Controller):
         if top_left.row() in (i.row() for i in self.properties_table.selectedIndexes()):
             with BlockQtSignals(self.propedit):
                 self.propedit.setPlainText(self.selected_material.get(1, top_left.row()))
+        self.properties_table.resizeRowsToContents()  # ensure all documentation is visible
 
     def get_widget(self):
         return self.splitter
