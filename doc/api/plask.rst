@@ -55,8 +55,6 @@ Functions
    plot_mesh
    plot_boundary
 
-   LAM
-
 Descriptions
 ============
 

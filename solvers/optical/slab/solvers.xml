@@ -55,7 +55,7 @@
       </attr>
     </tag>
 
-    <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
+    <tag name="interface" label="Matching Interface Position in the Stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
