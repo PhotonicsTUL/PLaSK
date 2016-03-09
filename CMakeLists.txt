@@ -516,7 +516,7 @@ endif(BUILD_PYTHON)
 if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
-    string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin")
+    string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
 endif()
 
 macro(add_python_test test test_file)
