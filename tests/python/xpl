@@ -1,6 +1,8 @@
 import sys, unittest, traceback
 import os.path
 
+import plask
+
 class PlaskTestResult(unittest.TextTestResult):
     '''Format test failures/exceptions if IDE-friendly form'''
 
@@ -47,17 +49,27 @@ if __name__ == '__main__':
     __name__ = os.path.basename(sys.argv[1])
     if '.' in __name__:
         __name__ = '.'.join(__name__.split('.')[:-1])
-    exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
+    
+    __manager__ = plask.Manager()
+    __manager__.load(sys.argv[1])
+    __globals = globals().copy()
+    __manager__.export(__globals)
+    __globals.update(__manager__.defs)
+    __locals = dict()
+    script = "#coding: utf8\n" + "\n"*(__manager__._scriptline-1) + __manager__.script
+    
+    exec(compile(script, sys.argv[1], 'exec'), __globals, __locals)
+    
     tests = sys.argv[2:]
     if not tests:
-        for m in dict(globals()).values():
+        for m in __locals.values():
             try:
                 if issubclass(m, unittest.TestCase):
                     tests.append(m)
             except TypeError:
                 pass
     else:
-        tests = [globals()[m] for m in tests]
+        tests = [__locals[m] for m in tests]
 
     errors = 0
 

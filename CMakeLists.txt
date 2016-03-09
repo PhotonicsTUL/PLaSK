@@ -524,6 +524,11 @@ macro(add_python_test test test_file)
              COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
 endmacro()
 
+macro(add_xpl_test test test_file)
+    add_test(NAME xpl/${test}
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/xpl ${test_file})
+endmacro()
+
 macro(add_solver_test test test_file)
     add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
     if(WIN32)

@@ -52,6 +52,7 @@ class ScriptModel(SectionModel):
 
     def create_info(self):
         if self.editor is None: return []
+        line_in_file = 0 if self.line_in_file is None else self.line_in_file
         cursor = self.editor.textCursor()
-        return [Info('{}:{}   '.format(cursor.blockNumber()+self.line_in_file+1, cursor.columnNumber()+1),
+        return [Info('{}:{}   '.format(cursor.blockNumber()+line_in_file+1, cursor.columnNumber()+1),
                      align=Qt.AlignRight)]

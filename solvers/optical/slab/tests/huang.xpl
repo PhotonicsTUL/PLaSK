@@ -26,7 +26,7 @@
 <geometry>
   <cartesian2d name="grating" axes="xy" left="periodic" right="periodic" bottom="Subs">
     <clip left="{-L/2}" right="{L/2}">
-      <stack trancenter="0">
+      <stack xcenter="0">
         <rectangle name="bar" material="Hi" dx="{fill*L}" dy="{tg}"/>
         <rectangle material="Lo" dx="{2*L}" dy="{tl}"/>
       </stack>
@@ -50,63 +50,20 @@
 </solvers>
 
 <script><![CDATA[
-lams = linspace(1000., 2200., 1201)
+class GratingTest(unittest.TestCase):
 
-R_TE = solver.compute_reflectivity(lams, 'El', 'top')
-R_TM = solver.compute_reflectivity(lams, 'Et', 'top')
+    def testComputations(self):
+        l_te = array([1500., 1600.])
+        solver.lam0 = 1500.
+        r_te = solver.compute_reflectivity(l_te, 'El', 'top')
+        self.assertAlmostEqual( r_te[0], 99.934, 2 )
+        self.assertAlmostEqual( r_te[1], 98.878, 2 )
 
-plot(lams, R_TE/100., 'r', label='TE')
-plot(lams, R_TM/100., 'b', label='TM')
-legend(loc='best')
-xlabel("Wavelength [nm]")
-ylabel("Reflectivity")
-ylim(-0.01,1.01)
-axhline(1.000, color='#888888')
-axhline(0.990, ls=':', color='#888888')
-axhline(0.998, ls=':', color='#888888')
-tight_layout(0)
-
-figure()
-field = solver.reflected(1060., 'El', 'top').outLightMagnitude(MSH.plot)
-plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w', periods=3)
-gca().set_aspect('equal')
-tight_layout(0)
-gcf().canvas.set_window_title("TE @ 1060 nm")
-
-figure()
-field = solver.reflected(1510., 'El', 'top').outLightMagnitude(MSH.plot)
-plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w', periods=3)
-gca().set_aspect('equal')
-tight_layout(0)
-gcf().canvas.set_window_title("TE @ 1510 nm")
-
-figure()
-field = solver.reflected(1298., 'Et', 'top').outLightMagnitude(MSH.plot)
-plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w', periods=3)
-gca().set_aspect('equal')
-tight_layout(0)
-gcf().canvas.set_window_title("TM @ 1298 nm")
-
-figure()
-field = solver.reflected(1330., 'Et', 'top').outLightMagnitude(MSH.plot)
-plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w', periods=3)
-gca().set_aspect('equal')
-tight_layout(0)
-gcf().canvas.set_window_title("TM @ 1330 nm")
-
-figure()
-field = solver.reflected(1600., 'Et', 'top').outLightMagnitude(MSH.plot)
-plot_field(field, 256, vmin=0.)
-plot_geometry(GEO.grating, color='w', periods=3)
-gca().set_aspect('equal')
-tight_layout(0)
-gcf().canvas.set_window_title("TM @ 1600 nm")
-
-show()
+        l_tm = array([1298., 1344.])
+        solver.lam0 = 1500.
+        r_tm = solver.compute_reflectivity(l_tm, 'Et', 'top')
+        self.assertAlmostEqual( r_tm[0], 99.097, 2 )
+        self.assertAlmostEqual( r_tm[1], 26.911, 2 )
 
 ]]></script>
 

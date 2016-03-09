@@ -602,8 +602,9 @@ void register_manager() {
                        "Flag indicating if unknown materials are allowed. If True then dummy material\n"
                        "is created if the proper one cannot be found in the database.\n"
                        "Otherwise an exception is raised.")
-        .def("_roots_len", &Manager::getRootsCount, "number of roots geometries")
-        .def("_root", &Manager::getRootAt, py::arg("index"), "root geometry with given index")
+        .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
+        .def("_roots_len", &Manager::getRootsCount, "Number of root geometries.")
+        .def("_root", &Manager::getRootAt, py::arg("index"), "Get root geometry with given index.")
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");

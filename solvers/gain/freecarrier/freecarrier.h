@@ -125,20 +125,25 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
                 materials.push_back(material);
                 thicknesses.push_back(thck);
             }
+            double substra = solver->strained? solver->materialSubstrate->lattC(solver->T0, 'a') : 0.;
             if (materials.size() > 2) {
                 Material* material = materials[0].get();
-                double el0 = material->CB(solver->T0, 0., 'G'),
-                       hh0 = material->VB(solver->T0, 0., 'G',  'H'),
-                       lh0 = material->VB(solver->T0, 0., 'G',  'L');
+                double e;
+                if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
+                double el0 = material->CB(solver->T0, e, 'G'),
+                       hh0 = material->VB(solver->T0, e, 'G',  'H'),
+                       lh0 = material->VB(solver->T0, e, 'G',  'L');
                 material = materials[1].get();
-                double el1 = material->CB(solver->T0, 0., 'G'),
-                       hh1 = material->VB(solver->T0, 0., 'G',  'H'),
-                       lh1 = material->VB(solver->T0, 0., 'G',  'L');
+                if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
+                double el1 = material->CB(solver->T0, e, 'G'),
+                       hh1 = material->VB(solver->T0, e, 'G',  'H'),
+                       lh1 = material->VB(solver->T0, e, 'G',  'L');
                 for (size_t i = 2; i < materials.size(); ++i) {
                     material = materials[i].get();
-                    double el2 = material->CB(solver->T0, 0., 'G');
-                    double hh2 = material->VB(solver->T0, 0., 'G',  'H');
-                    double lh2 = material->VB(solver->T0, 0., 'G',  'L');
+                    if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
+                    double el2 = material->CB(solver->T0, e, 'G');
+                    double hh2 = material->VB(solver->T0, e, 'G',  'H');
+                    double lh2 = material->VB(solver->T0, e, 'G',  'L');
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
                         if (i != 2 && i != materials.size()-1 &&
                             !((el0 < el1 && el1 > el2) && (hh0 > hh1 && hh1 < hh2) && (lh0 > lh1 && lh1 < lh2)))
