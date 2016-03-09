@@ -29,6 +29,7 @@
     <thermk>4.0, 4.0</thermk>
     <cond>1e-06, 0.2</cond>
     <cp>380</cp>
+    <lattC>5.654</lattC>
     <dens>5000</dens>
     <A>7e7+(T-300)*1.4e5</A>
     <B>1.1e-10-(T-300)*-2.2e-13</B>
@@ -53,7 +54,7 @@
     <C>1.130976e-28-(T-300)*1.028743e-30+(T-300)**2*8.694142e-32</C>
     <D>10</D>
     <VB>0.14676+0.000033*(T-300)-0.75</VB>
-    <Eg>0.87-0.0002*(T-300)</Eg>
+    <Eg>0.87-0.0002*(T-300)-100.*e</Eg>
     <Dso>0.3548</Dso>
     <Me>0.052</Me>
     <Mhh>0.477</Mhh>
@@ -136,7 +137,7 @@
             <rectangle role="n-contact" material="Au" dr="50" dz="0.005"/>
           </stack>
         </shelf>
-        <rectangle material="GaAs:Si=3e+18" dr="{r_substr}" dz="0.500"/>
+        <rectangle role="substrate" material="GaAs:Si=3e+18" dr="{r_substr}" dz="0.500"/>
       </stack>
     </clip>
   </cylindrical2d>
@@ -178,17 +179,9 @@
 </grids>
 
 <solvers>
-  <gain name="GAIN1" solver="FermiCyl" lib="simple">
-    <geometry ref="main"/>
-    <config lifetime="0.1" matrix-elem="10"/>
-  </gain>
   <gain name="GAIN2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="main"/>
-    <config lifetime="0.1" matrix-elem="10"/>
-  </gain>
-  <gain name="GAIN3" solver="FermiNewCyl" lib="complex">
-    <geometry ref="main"/>
-    <config adjust-layers="yes" lifetime="0.1" matrix-elem="10"/>
+    <config lifetime="0.1" matrix-elem="10" strained="yes"/>
   </gain>
 </solvers>
 
@@ -204,19 +197,9 @@ vbq = material.get('InAlGaAs-QW').VB()
 
 pos = GEO.main.get_object_bboxes(GEO.QW1)[0].center
 
-colors = rc.axes.color_cycle
-
 conc = 5e18
 
-GAIN1.inCarriersConcentration = conc
 GAIN2.inCarriersConcentration = conc
-GAIN3.inCarriersConcentration = conc
-
-levels1 = GAIN1.determine_levels(300., conc)[0]
-levels1['el'] = [-l for l in levels1['el']]
-
-cc = logspace(16, 20, 65)
-fc, fv = zip(*((l['Fc']+cbq, l['Fv']+vbq) for l in (GAIN1.determine_levels(300., c)[0] for c in cc)))
 
 levels2 = GAIN2.get_energy_levels()[0]
 
@@ -241,15 +224,13 @@ except AttributeError:
     pass
 else:
     figure()
-    plot(CE, els, color=colors[0], label="Electrons")
-    for l in levels1['el']:
-        axvline(l+cbo, ls=':', color='0.75')
+    plot(CE, els, color='c', label="Electrons")
 #     for l in levels3['el']:
 #         axvline(l+coff, ls=':', color='0.35')
     for l in levels2['el']:
-        axvline(l, ls=':', color=colors[0])
+        axvline(l, ls=':', color='c')
     for w in range(1, nqw+1):
-        plot(CE, GAIN2.det_El(CE, well=w), color=colors[0], ls='--')
+        plot(CE, GAIN2.det_El(CE, well=w), color='c', ls='--')
     plot_edges('CB')
     xlim(CE[0], CE[-1])
     legend(loc='best')
@@ -261,15 +242,13 @@ else:
     gcf().canvas.set_window_title("Electrons")
 
     figure()
-    plot(VE, hhs, color=colors[1], label="Heavy holes")
-    for l in levels1['hh']:
-        axvline(l+vbo, ls=':', color='0.75')
+    plot(VE, hhs, color='r', label="Heavy holes")
 #     for l in levels3['hh']:
 #         axvline(l+voff, ls=':', color='0.35')
     for l in levels2['hh']:
-        axvline(l, ls=':', color=colors[1])
+        axvline(l, ls=':', color='r')
     for w in range(1, nqw+1):
-        plot(VE, GAIN2.det_Hh(VE, well=w), color=colors[1], ls='--')
+        plot(VE, GAIN2.det_Hh(VE, well=w), color='r', ls='--')
     plot_edges('VB')
     xlim(VE[0], VE[-1])
     axhline(0., color='k')
@@ -279,15 +258,13 @@ else:
     gcf().canvas.set_window_title("Heavy Holes")
 
     figure()
-    plot(VE, lhs, color=colors[2], label="Light holes")
-    for l in levels1['lh']:
-        axvline(l+vbo, ls=':', color='0.75')
+    plot(VE, lhs, color='y', label="Light holes")
 #     for l in levels3['lh']:
 #         axvline(l+voff, ls=':', color='0.35')
     for l in levels2['lh']:
-        axvline(l, ls=':', color=colors[2])
+        axvline(l, ls=':', color='y')
     for w in range(1, nqw+1):
-        plot(VE, GAIN2.det_Lh(VE, well=w), color=colors[2], ls='--')
+        plot(VE, GAIN2.det_Lh(VE, well=w), color='y', ls='--')
     plot_edges('VB')
     xlim(VE[0], VE[-1])
     axhline(0., color='k')
@@ -297,13 +274,13 @@ else:
     gcf().canvas.set_window_title("Light Holes")
 
 
-def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh_color=colors[1], lh_color=colors[2]):
+def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color='c', hh_color='r', lh_color='y'):
     box = GEO.main.get_object_bboxes(GEO.active)[0]
     zz = linspace(box.lower.z-0.002, box.upper.z+0.002, 1001)
     CC = [GEO.main.get_material(0.,z).CB() for z in zz]
     VV = [GEO.main.get_material(0.,z).VB() for z in zz]
-    plot(1e3*zz, CC, color=colors[0])
-    plot(1e3*zz, VV, color=colors[1])
+    plot(1e3*zz, CC, color='c')
+    plot(1e3*zz, VV, color='r')
     xlim(1e3*zz[0], 1e3*zz[-1])
     xlabel("$z$ [nm]")
     ylabel("Band Edges [eV]")
@@ -320,22 +297,6 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
 
 yl = -0.8, 0.9
 
-# figure()
-# plot_bands(levels1, co=cbo, vo=vbo, title=u"Levels: Michał old")
-# yl = ylim()
-# twiny()
-# plot(cc, fc)
-# plot(cc, fv)
-# ylim(*yl)
-# xlabel(u'Carriers concentation [1/cm³]')
-# xscale('log')
-# xlim(1e16, 1e20)
-# 
-# # figure()
-# # plot_bands(levels3, co=coff, vo=voff, title=u"Levels: Michał new")
-# 
-# #ffc, ffv = zip(*(GAIN2.get_fermi_levels(c) for c in cc))
-# 
 figure()
 plot_bands(levels2, title=u"Levels: Maciek")
 ff = linspace(yl[0], yl[1], 1001)
@@ -348,10 +309,11 @@ else:
     twiny()
     plot(nn, ff)
     plot(pp, ff)
-#     plot(cc, ffc, color=colors[0], ls='--', lw=1.5)
-#     plot(cc, ffv, color=colors[1], ls='--', lw=1.5)
-    plot(cc, fc, color='0.75')
-    plot(cc, fv, color='0.75')
+#     plot(cc, ffc, color='c', ls='--', lw=1.5)
+#     plot(cc, ffv, color='r', ls='--', lw=1.5)
+#     cc = logspace(16, 20, 65)
+#     plot(cc, fc, color='0.75')
+#     plot(cc, fv, color='0.75')
     ylim(*yl)
     xlabel(u'Carriers concentation [1/cm³]')
     xscale('log')
@@ -370,25 +332,17 @@ class Spec(object):
     def __call__(self):
         self.result = self.solver.spectrum(0., z+0.001)(lams)
 
-spec1 = Spec(GAIN1)
 spec2 = Spec(GAIN2)
-spec3 = Spec(GAIN3)
 
 t2 = timeit(spec2, number=1)
-t1 = timeit(spec1, number=1)
-t3 = timeit(spec3, number=1)
 
 plot(lams, spec2.result, label=u"Maciek")
-plot(lams, spec1.result, '--', label=u"Michał old")
-plot(lams, spec3.result, label=u"Michał new")
 legend(loc='best').draggable()
 xlabel("Wavelength [nm]")
 ylabel("Gain [1/cm]")
 tight_layout(0.1)
 
 print("Maciek: {:.3f} s".format(t2))
-print("Michał old: {:.3f} s".format(t1))
-print("Michał new: {:.3f} s".format(t3))
 
 show()
 

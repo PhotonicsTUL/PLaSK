@@ -228,12 +228,11 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
         throw Exception("{0}: Quantum-well at the edge of the structure.", this->getId());
 
-    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
-    for (auto& region: regions) region.summarize(this);
-
     if (strained && !materialSubstrate)
         throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
 
+    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
+    for (auto& region: regions) region.summarize(this);
 }
 
 
@@ -443,7 +442,7 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
             {
                 std::stringstream str; std::string sep = "";
                 for (auto l: params.levels[EL]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated electron levels for active region {:d} [eV]: {}", reg++, str.str());
+                this->writelog(LOG_DETAIL, "Estimated electron levels for active region {:d} [eV]: {}", ++reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
                 for (auto l: params.levels[HH]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
