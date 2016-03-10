@@ -19,6 +19,7 @@ from ...utils.validators import can_be_float, can_be_int, can_be_bool
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 from ...utils.compat import next
 
+
 class GNZero(GNode):
 
     def __init__(self, parent=None, dim=None, parent_index=None):
@@ -32,6 +33,9 @@ class GNZero(GNode):
         result = GNZero()
         result.set_xml_element(element, conf)
         return result
+
+    def add_parent_options(self):
+        return []
 
 
 class GNGap(GNode):
@@ -78,6 +82,9 @@ class GNGap(GNode):
         result = GNGap()
         result.set_xml_element(element, conf)
         return result
+
+    def add_parent_options(self):
+        return []
 
 
 class GNContainerBase(GNObject):
