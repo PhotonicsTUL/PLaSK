@@ -69,8 +69,8 @@ def create_undo_actions(toolbar, model, widget):
             if len(items) == 0:
                 return
             for n,i in enumerate(items):
-                if n < 9: nr = " &{} ".format(n+1)
-                else: nr = "{} ".format(n+1)
+                if n < 9: nr = " &{}  ".format(n+1)
+                else: nr = "{}  ".format(n+1)
                 menu.addAction(nr+self.prefix+undo_stack.text(i), lambda i=i: undo_stack.setIndex(i+self.redo))
             menu.exec_(self.button.mapToGlobal(pos))
 
