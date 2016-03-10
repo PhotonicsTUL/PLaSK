@@ -217,7 +217,7 @@ class GeometryController(Controller):
         menu.addAction("&Remove", lambda: self.remove_node(index))
         u, d = self.model.can_move_node_up_down(index)
         if u: menu.addAction("Move &up", lambda: self.move_up(index))
-        if d: menu.addAction("Move &down", lambda: self.move_down(index))
+        if d: menu.addAction("Move d&own", lambda: self.move_down(index))
 
         parent = index.parent()
         if parent.isValid():
