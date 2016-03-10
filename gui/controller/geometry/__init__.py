@@ -172,6 +172,15 @@ class GeometryController(Controller):
             a.triggered[()].connect(lambda n=n: self.append_geometry_node(n))
             self.add_menu.addAction(a)
 
+    def fill_more_menu(self):
+        self.more_menu.clear()
+
+        current_index = self.tree.selectionModel().currentIndex()
+        if current_index.isValid():
+            reparent = self._get_reparent_menu(current_index)
+            if reparent is not None and not reparent.isEmpty():
+                self.more_menu.addMenu(reparent).setText("&Insert into")
+
     def update_actions(self):
         has_selected_object = not self.tree.selectionModel().selection().isEmpty()
         self.remove_action.setEnabled(has_selected_object)
@@ -185,10 +194,8 @@ class GeometryController(Controller):
         parent = self.tree.selectionModel().currentIndex().parent()
         self.duplicate_action.setEnabled(parent.isValid() and parent.internalPointer().accept_new_child())
 
-
-        #hasCurrent = self.tree.selectionModel().currentIndex().isValid()
-        #self.insertRowAction.setEnabled(hasCurrent)
-        #self.insertColumnAction.setEnabled(hasCurrent)
+        self.fill_more_menu()
+        self.more_menu.parent().setEnabled(not self.more_menu.isEmpty())
 
     def append_geometry_node(self, type_name):
         self.tree.model().append_geometry(type_name)
@@ -198,6 +205,32 @@ class GeometryController(Controller):
                                           QtGui.QItemSelectionModel.Rows)
         self.tree.setCurrentIndex(new_index)
         self.update_actions()
+
+    def on_tree_context_menu(self, pos):
+        index = self.tree.indexAt(pos)
+        if not index.isValid(): return
+
+        menu = QtGui.QMenu(self.tree)
+        add_child_menu = self._get_add_child_menu(index)
+        if add_child_menu:
+            menu.addMenu(add_child_menu).setText("&Add item")
+        menu.addAction("&Remove", lambda: self.remove_node(index))
+        u, d = self.model.can_move_node_up_down(index)
+        if u: menu.addAction("Move &up", lambda: self.move_up(index))
+        if d: menu.addAction("Move &down", lambda: self.move_down(index))
+
+        parent = index.parent()
+        if parent.isValid():
+            parent_node = parent.internalPointer()
+            if parent_node.accept_new_child():
+                menu.addAction("&Duplicate", lambda: self.duplicate(index))
+
+        reparent_menu = self._get_reparent_menu(index)
+        if reparent_menu and not reparent_menu.isEmpty():
+            if not menu.isEmpty(): menu.addSeparator()
+            menu.addMenu(reparent_menu).setText("&Insert into")
+
+        menu.exec_(self.tree.mapToGlobal(pos))
 
     def remove_node(self, index):
         model = self.tree.model()
@@ -237,32 +270,6 @@ class GeometryController(Controller):
 
     def duplicate_current(self):
         return self.duplicate(self.tree.selectionModel().currentIndex())
-
-    def on_tree_context_menu(self, pos):
-        index = self.tree.indexAt(pos)
-        if not index.isValid(): return
-
-        menu = QtGui.QMenu(self.tree)
-        add_child_menu = self._get_add_child_menu(index)
-        if add_child_menu:
-            menu.addMenu(add_child_menu).setText("&Add item")
-        menu.addAction("&Remove", lambda: self.remove_node(index))
-        u, d = self.model.can_move_node_up_down(index)
-        if u: menu.addAction("Move &up", lambda: self.move_up(index))
-        if d: menu.addAction("Move &down", lambda: self.move_down(index))
-
-        parent = index.parent()
-        if parent.isValid():
-            parent_node = parent.internalPointer()
-            if parent_node.accept_new_child():
-                menu.addAction("&Duplicate", lambda: self.duplicate(index))
-
-        reparent_menu = self._get_reparent_menu(index)
-        if reparent_menu and not reparent_menu.isEmpty():
-            if not menu.isEmpty(): menu.addSeparator()
-            menu.addMenu(reparent_menu).setText("&Insert into")
-
-        menu.exec_(self.tree.mapToGlobal(pos))
 
     def on_pick_object(self, event):
         # This seems as an ugly hack, but in reality this is the only way to make sure
@@ -350,14 +357,14 @@ class GeometryController(Controller):
 
         self.add_menu = QtGui.QMenu()
 
-        addButton = QtGui.QToolButton()
-        addButton.setText('Add')
-        addButton.setIcon(QtGui.QIcon.fromTheme('list-add'))
-        addButton.setToolTip('Add new geometry object to the tree')
-        addButton.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
-        addButton.setMenu(self.add_menu)
-        addButton.setPopupMode(QtGui.QToolButton.InstantPopup)
-        toolbar.addWidget(addButton)
+        add_button = QtGui.QToolButton()
+        add_button.setText('Add')
+        add_button.setIcon(QtGui.QIcon.fromTheme('list-add'))
+        add_button.setToolTip('Add new geometry object to the tree')
+        add_button.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
+        add_button.setMenu(self.add_menu)
+        add_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        toolbar.addWidget(add_button)
 
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', toolbar)
         self.remove_action.setStatusTip('Remove selected node from the tree')
@@ -385,6 +392,13 @@ class GeometryController(Controller):
         toolbar.addAction(self.duplicate_action)
 
         toolbar.addSeparator()
+
+        more_button = QtGui.QToolButton(toolbar)
+        more_button.setText('...')
+        self.more_menu = QtGui.QMenu(more_button)
+        more_button.setMenu(self.more_menu)
+        more_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        toolbar.addWidget(more_button)
 
         self.plot_auto_refresh = True
 
