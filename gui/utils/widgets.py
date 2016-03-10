@@ -68,8 +68,10 @@ def create_undo_actions(toolbar, model, widget):
                     range(undo_stack.index()-1, -1, -1)
             if len(items) == 0:
                 return
-            for i in items:
-                menu.addAction(self.prefix+undo_stack.text(i), lambda i=i: undo_stack.setIndex(i+self.redo))
+            for n,i in enumerate(items):
+                if n < 9: nr = " &{} ".format(n+1)
+                else: nr = "{} ".format(n+1)
+                menu.addAction(nr+self.prefix+undo_stack.text(i), lambda i=i: undo_stack.setIndex(i+self.redo))
             menu.exec_(self.button.mapToGlobal(pos))
 
     toolbar._undo_menu = SetupMenu(undo, 0)
