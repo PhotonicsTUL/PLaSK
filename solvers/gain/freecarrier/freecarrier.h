@@ -411,6 +411,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
 
+    bool getStrained() const { return strained; }
+    void setStrained(bool value) { strained = value; this->invalidate(); }
+    
     /**
      * Reg gain spectrum object for future use
      */

@@ -181,12 +181,14 @@
 <solvers>
   <gain name="GAIN2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="main"/>
-    <config lifetime="0.1" matrix-elem="10" strained="yes"/>
+    <config lifetime="0.1" matrix-elem="10" strained="no"/>
   </gain>
 </solvers>
 
 <script><![CDATA[
 from __future__ import print_function
+
+print(GAIN2.strained)
 
 coff = material.get('GaAs').CB()
 voff = material.get('GaAs').VB()
@@ -333,10 +335,14 @@ class Spec(object):
         self.result = self.solver.spectrum(0., z+0.001)(lams)
 
 spec2 = Spec(GAIN2)
-
 t2 = timeit(spec2, number=1)
 
-plot(lams, spec2.result, label=u"Maciek")
+GAIN2.strained = True
+spec2s = Spec(GAIN2)
+spec2s()
+
+plot(lams, spec2.result, label=u"no strain")
+plot(lams, spec2s.result, label=u"strained")
 legend(loc='best').draggable()
 xlabel("Wavelength [nm]")
 ylabel("Gain [1/cm]")

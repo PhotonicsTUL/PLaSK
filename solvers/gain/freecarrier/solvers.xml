@@ -22,7 +22,7 @@
         If it is not set it is estimated automatically.
       </attr>
       <attr name="strained" label="Strained" type="bool" default="no">
-        Boolean attribute indicated if the solver should consider strain in the active region.
+        Boolean attribute indicating if the solver should consider strain in the active region.
         If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
         the quantum wells.
@@ -65,7 +65,7 @@
         If it is not set it is estimated automatically.
       </attr>
       <attr name="strained" label="Strained" type="bool" default="no">
-        Boolean attribute indicated if the solver should consider strain in the active region.
+        Boolean attribute indicating if the solver should consider strain in the active region.
         If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
         the quantum wells.

@@ -136,6 +136,12 @@ BOOST_PYTHON_MODULE(freecarrier)
             "    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
+        RW_PROPERTY(strained, getStrained, setStrained,
+                    "Boolean attribute indicating if the solver should consider strain in the active\n"
+                    "region.\n\n"
+                    "If set to ``True`` then there must a layer with the role *substrate* in\n"
+                    "the geometry. The strain is computed by comparing the atomic lattice constants\n"
+                    "of the substrate and the quantum wells.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
@@ -199,6 +205,12 @@ BOOST_PYTHON_MODULE(freecarrier)
             "    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
+        RW_PROPERTY(strained, getStrained, setStrained,
+                    "Boolean attribute indicating if the solver should consider strain in the active\n"
+                    "region.\n\n"
+                    "If set to ``True`` then there must a layer with the role *substrate* in\n"
+                    "the geometry. The strain is computed by comparing the atomic lattice constants\n"
+                    "of the substrate and the quantum wells.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
