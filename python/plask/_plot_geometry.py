@@ -439,8 +439,8 @@ _geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
 def _draw_Mirror(env, geometry_object, transform, clipbox, plask_real_path):
     #TODO modify clip-box?
     _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
-    if geometry_object.axis_nr in env.axes: # in 3D this must not be true
-        _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path + [1])
+    if geometry_object.axis_nr in env.axes:  # in 3D this must not be true
+        _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path)
 
 _geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
 _geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror

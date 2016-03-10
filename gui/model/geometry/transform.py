@@ -204,7 +204,7 @@ class GNAxisBaseTransform(GNTransform):
 
     def create_info(self, res, names):
         super(GNAxisBaseTransform, self).create_info(res, names)
-        if not self.axis: self._require(res, 'axis')
+        if self.axis is None: self._require(res, 'axis')
 
     def major_properties(self):
         res = super(GNAxisBaseTransform, self).major_properties()
