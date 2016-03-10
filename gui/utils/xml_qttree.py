@@ -12,6 +12,7 @@
 
 from ..qt import QtCore
 
+
 class ETreeModel(QtCore.QAbstractItemModel):
     """
         Implementation of QtCore.QAbstractItemModel which display etree Element.

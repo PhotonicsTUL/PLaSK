@@ -31,19 +31,25 @@
 <geometry>
   <cartesian2d name="geo2d" length="1000">
     <stack>
-      <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
-        <stack name="STOS">
-          <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
-          <item left="0">
-            <rectangle material="In(0.5)GaN:Si=1e18" dtran="0.2" dvert="0.1"/>
-          </item>
-        </stack>
-      </arrange>
-      <again ref="Pilars"/>
       <shelf flat="no">
-        <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.2"/>
+        <stack name="new">
+          <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
+            <stack name="STOS">
+              <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
+              <item left="0">
+                <rectangle material="In(0.5)GaN:Si=1e18" dtran="0.2" dvert="0.1"/>
+              </item>
+            </stack>
+          </arrange>
+          <again ref="Pilars"/>
+          <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.1"/>
+          <rectangle material="Al(0.5)GaN:Si=2e18" dtran="1" dvert="0.2"/>
+        </stack>
         <gap total="2"/>
-        <triangle material="AlOx" atran="-1" avert="0" btran="0" bvert="0.2"/>
+        <stack>
+          <triangle material="AlOx" atran="-0.8" avert="0" btran="0" bvert="0.2"/>
+          <rectangle material="AlN" dtran="0.8" dvert="0.1"/>
+        </stack>
       </shelf>
       <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>
@@ -52,8 +58,7 @@
   <cartesian2d name="simple">
     <stack>
       <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
-      <rectangle material="Al(0.73)GaAs:Si=1e18" dtran="1" dvert="1"/>
-      <shelf/>
+      <rectangle material="Al(0.73)GaN:Si=1e18" dtran="1" dvert="1"/>
     </stack>
   </cartesian2d>
   <cylindrical2d name="GeoTE" axes="rz">

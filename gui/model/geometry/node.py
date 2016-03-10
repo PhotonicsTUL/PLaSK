@@ -36,7 +36,7 @@ class GNode(object):
         self.children = []
         self.in_parent = None   # configuration inside parent (container)
         self.path = None        # path inside parent (container)
-        self._parent = None     # needed to set_parent works fine
+        self._parent = None     # needed for set_parent working fine
         self.set_parent(parent, parent_index)
 
     def _attributes_from_xml(self, attribute_reader, conf):
@@ -136,15 +136,36 @@ class GNode(object):
         Get types of children that can be added to self.
         :return:
         """
-        from .types import geometry_types_2d_core_leafs, geometry_types_2d_core_containers, geometry_types_2d_core_transforms,\
-                           geometry_types_3d_core_leafs, geometry_types_3d_core_containers, geometry_types_3d_core_transforms,\
-                           geometry_types_other
+        from .types import geometry_types_2d_core_leafs, geometry_types_2d_core_containers,\
+            geometry_types_2d_core_transforms, geometry_types_3d_core_leafs, geometry_types_3d_core_containers, \
+            geometry_types_3d_core_transforms, geometry_types_other
         result = []
         if self.children_dim is None or self.children_dim == 2:
-            result.extend((geometry_types_2d_core_leafs, geometry_types_2d_core_containers, geometry_types_2d_core_transforms))
+            result.extend((geometry_types_2d_core_leafs,
+                           geometry_types_2d_core_containers,
+                           geometry_types_2d_core_transforms))
         if self.children_dim is None or self.children_dim == 3:
-            result.extend((geometry_types_3d_core_leafs, geometry_types_3d_core_containers, geometry_types_3d_core_transforms))
+            result.extend((geometry_types_3d_core_leafs,
+                           geometry_types_3d_core_containers,
+                           geometry_types_3d_core_transforms))
         result.append(geometry_types_other)
+        return result
+
+    def add_parent_options(self):
+        """
+        Get types of children that can be added to self.
+        :return:
+        """
+        from .types import geometry_types_2d_core_containers,\
+            geometry_types_2d_core_transforms, geometry_types_3d_core_containers, \
+            geometry_types_3d_core_transforms_3d
+        result = []
+        if self.dim == 2 or (self.dim is None and self.parent is not None and self.parent.children_dim == 2):
+            result.extend((geometry_types_2d_core_containers,
+                           geometry_types_2d_core_transforms))
+        if self.dim == 3 or (self.dim is None and self.parent is not None and self.parent.children_dim == 3):
+            result.extend((geometry_types_3d_core_containers,
+                           geometry_types_3d_core_transforms_3d))
         return result
 
     def accept_as_child(self, node):
@@ -162,11 +183,11 @@ class GNode(object):
     def index_in_parent(self):
         return self._parent.children.index(self)
 
-    def clear_in_parent_params(self, new_potential_parent = None):
-        if new_potential_parent is not None:
-            if type(new_potential_parent) != type(self._parent): self.in_parent = None
+    def clear_parent_params(self, new_parent=None):
+        if new_parent is not None:
+            if type(new_parent) != type(self._parent): self.in_parent = None
             from .container import GNContainerBase
-            if not isinstance(new_potential_parent, GNContainerBase): self.path = None
+            if not isinstance(new_parent, GNContainerBase): self.path = None
         else:
             self.in_parent = None
             #self.path = None
@@ -176,22 +197,22 @@ class GNode(object):
         #    self.children.
     #    self.children.insert(index, child)
     #    if child._parent != self:
-    #        child.clear_in_parent_params()
+    #        child.clear_parent_params()
     #        child._parent = self
 
-    def set_parent(self, parent, index=None, remove_from_old_parent_children=True, try_prevent_in_parent_params=True):
+    def set_parent(self, parent, index=None, remove_from_old_parent=True, clear_parent_params=True):
         """
         Move self to new parent.
         :param GNode parent: new parent of self
         :param int index: required index on new parent list (None to default)
-        :param remove_from_old_parent_children: if True self will be removed from its current parent children list
-        :param try_prevent_in_parent_params: if True, in_parent and path attributes of self will be tried to prevent
+        :param remove_from_old_parent: if True self will be removed from its current parent children list
+        :param clear_parent_params: if True, in_parent and path attributes of self will be cleared
         """
         if self._parent == parent:
             if index is None or parent is None: return
             # parent is not None here
             if index < 0: index = len(parent.children) + 1 - index
-            if remove_from_old_parent_children: # move inside the current parent:
+            if remove_from_old_parent: # move inside the current parent:
                 old_index = self._parent.children.index(self)
                 parent.children.insert(index, self)
                 if old_index >= index: old_index += 1
@@ -199,10 +220,10 @@ class GNode(object):
             else:
                 parent.children.insert(index, self)
         else:
-            if self._parent is not None:
-                if remove_from_old_parent_children: self._parent.children.remove(self)
-            if try_prevent_in_parent_params:
-                self.clear_in_parent_params(parent)
+            if self._parent is not None and remove_from_old_parent:
+                self._parent.children.remove(self)
+            if clear_parent_params:
+                self.clear_parent_params(parent)
             else:
                 self.in_parent = None
                 self.path = None

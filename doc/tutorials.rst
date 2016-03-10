@@ -10,6 +10,7 @@ Tutorials and Examples
    tutorial1
    tutorial2
    tutorial3
+   tutorial5
    castle
 
 .. .. _sec-tutorial-LI-of-VCSEL:
@@ -18,8 +19,13 @@ Tutorials and Examples
 .. ---------------------------------------------------
 .. 
 .. overthreshold
+
+
+.. Finding Threshold Current of Photonic Crystal VCSEL
+.. ---------------------------------------------------
 .. 
-.. 
+.. combining 2D and 3D geometries with filters
+
 .. .. _sec-tutorial-threshold-of-array:
 .. 
 .. Searching the Threshold of a Gallium-Nitride Array
@@ -30,17 +36,3 @@ Tutorials and Examples
 .. paths
 .. 
 .. filters
-.. 
-.. 
-.. Optical Analysis of Photonic Crystal Slab Waveguide
-.. ---------------------------------------------------
-.. 
-.. 3D
-.. 
-.. lattice
-.. 
-.. 
-.. Finding Threshold Current of Photonic Crystal VCSEL
-.. ---------------------------------------------------
-.. 
-.. combining 2D and 3D geometries with filters

@@ -43,6 +43,39 @@ def table_last_col_fill(table, cols_count, col_size=0):
     table.horizontalHeader().setStretchLastSection(True)
 
 
+def create_undo_actions(toolbar, model, widget):
+    undo = model.create_undo_action(widget)
+    redo = model.create_redo_action(widget)
+    toolbar.addAction(undo)
+    toolbar.addAction(redo)
+
+    class SetupMenu(object):
+        def __init__(self, action, redo):
+            self.button = toolbar.widgetForAction(action)
+            self.button.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.button.customContextMenuRequested.connect(self)
+            self.redo = redo
+            self.prefix = ('Undo ', 'Redo ')[redo]
+        def __call__(self, pos):
+            try:
+                undo_stack = model.undo_stack
+            except AttributeError:
+                return
+            if undo_stack is None or undo_stack.count() == 0:
+                return
+            menu = QtGui.QMenu()
+            items = range(undo_stack.index(), undo_stack.count()) if self.redo else \
+                    range(undo_stack.index()-1, -1, -1)
+            if len(items) == 0:
+                return
+            for i in items:
+                menu.addAction(self.prefix+undo_stack.text(i), lambda i=i: undo_stack.setIndex(i+self.redo))
+            menu.exec_(self.button.mapToGlobal(pos))
+
+    toolbar._undo_menu = SetupMenu(undo, 0)
+    toolbar._redo_menu = SetupMenu(redo, 1)
+
+
 class HTMLDelegate(QtGui.QStyledItemDelegate):
 
     def paint(self, painter, option, index):

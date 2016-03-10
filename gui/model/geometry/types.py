@@ -104,6 +104,7 @@ geometry_types_3d_core_transforms = OrderedDict((
     ('intersection3d', GNIntersection.from_xml_3d),
     ('lattice', GNLattice.from_xml_3d),
 ))
+geometry_types_3d_core_transforms_3d = geometry_types_3d_core_transforms.copy()
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_extrusion)
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_revolution)
 

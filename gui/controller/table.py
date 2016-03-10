@@ -14,7 +14,7 @@ from ..qt.QtCore import Qt
 
 from ..qt import QtGui
 from . import Controller, select_index_from_info
-from ..utils.widgets import table_edit_shortcut, table_last_col_fill
+from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions
 
 
 class TableActions(object):
@@ -98,8 +98,7 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
 
     if add_undo_action is None: add_undo_action = hasattr(model, 'undo_stack')
     if add_undo_action:
-        toolbar.addAction(model.create_undo_action(table))
-        toolbar.addAction(model.create_redo_action(table))
+        create_undo_actions(toolbar, model, table)
         toolbar.addSeparator()
 
     table.table_manipulators_actions = TableActions(table, model)
@@ -159,8 +158,7 @@ class TableController(Controller):
         layout = QtGui.QVBoxLayout()
         toolbar = QtGui.QToolBar(widget)
         toolbar.setStyleSheet("QToolBar { border: 0px }")
-        toolbar.addAction(self.model.create_undo_action(widget))
-        toolbar.addAction(self.model.create_redo_action(widget))
+        create_undo_actions(toolbar, self.model, widget)
         toolbar.addSeparator()
         actions = self.get_table_edit_actions()
         for a in actions:

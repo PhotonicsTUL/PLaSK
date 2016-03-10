@@ -9,17 +9,18 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 import sys
 
-import plask
+import plask  # TODO: make preview optional
+
 from ...qt import QtGui, QtCore, QtSlot
+from ...qt.QtCore import Qt
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
 from .. import Controller
-from ...utils.widgets import HTMLDelegate, VerticalScrollArea
+from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions
 
 try:
     from .plot_widget import PlotWidget
@@ -46,11 +47,6 @@ class GeometryController(Controller):
     def _add_child(self, type_constructor, parent_index):
         parent = parent_index.internalPointer()
         pos = parent.new_child_pos()
-        #self.model.beginInsertRows(parent_index, pos, pos)
-        #new_node = type_constructor(None, None)
-        #new_node.set_parent(parent)
-        #construct_using_constructor(type_constructor, parent)
-        #self.model.endInsertRows()
         self.model.insert_node(parent, type_constructor(None, None))
         self.tree.setExpanded(parent_index, True)
         new_index = self.model.index(pos, 0, parent_index)
@@ -78,6 +74,92 @@ class GeometryController(Controller):
                 result.addAction(a)
         return result
 
+    def _reparent(self, index, type_constructor):
+        parent_index = index.parent()
+        if not parent_index.isValid(): return
+        new_index = self.model.reparent(index, type_constructor)
+        self.tree.setExpanded(new_index, True)
+        self.tree.selectionModel().select(new_index,
+                                          QtGui.QItemSelectionModel.Clear | QtGui.QItemSelectionModel.Select |
+                                          QtGui.QItemSelectionModel.Rows)
+        self.tree.setCurrentIndex(new_index)
+        self.update_actions()
+
+    def _get_reparent_menu(self, index):
+        parent_index = index.parent()
+        if not parent_index.isValid(): return
+        node = index.internalPointer()
+        if node is None: return
+        first = True
+        result = QtGui.QMenu()
+        for section in node.add_parent_options():
+            if not first:
+                result.addSeparator()
+            first = False
+            for type_name, type_constructor in section.items():
+                if type_name.endswith('2d') or type_name.endswith('3d'):
+                    type_name = type_name[:-2]
+                a = QtGui.QAction(gname(type_name, True), result)
+                a.triggered[()].connect(lambda type_constructor=type_constructor, index=index:
+                                        self._reparent(index, type_constructor))
+                result.addAction(a)
+        return result
+
+    def __init__(self, document, model=None):
+        if model is None: model = GeometryModel()
+        Controller.__init__(self, document, model)
+
+        self.manager = None
+        self.plotted_object = None
+
+        self.plotted_tree_element = None
+        self.model.changed.connect(self.on_model_change)
+
+        self._current_index = None
+        self._last_index = None
+        self._current_controller = None
+
+        self._lims = None
+
+        tree_with_buttons = QtGui.QGroupBox()
+        vbox = QtGui.QVBoxLayout()
+        tree_with_buttons.setLayout(vbox)
+
+        tree_with_buttons.setTitle("Geometry Tree")
+        vbox.setContentsMargins(0, 0, 0, 0)
+        vbox.setSpacing(0)
+
+        vbox.addWidget(self._construct_toolbar())
+        vbox.addWidget(self._construct_tree(model))
+        tree_selection_model = self.tree.selectionModel()   # workaround of segfault in pySide,
+        # see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
+        tree_selection_model.selectionChanged.connect(self.object_selected)
+        self.update_actions()
+
+        self.checked_plane = '12'
+
+        self.vertical_splitter = QtGui.QSplitter()
+        self.vertical_splitter.setOrientation(QtCore.Qt.Vertical)
+
+        self.vertical_splitter.addWidget(tree_with_buttons)
+
+        self.parent_for_editor_widget = VerticalScrollArea()
+        self.vertical_splitter.addWidget(self.parent_for_editor_widget)
+
+        self.main_splitter = QtGui.QSplitter()
+        self.main_splitter.addWidget(self.vertical_splitter)
+
+        if PlotWidget is not None:
+            self.geometry_view = PlotWidget(self, picker=True)
+            self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
+            # self.status_bar = QtGui.QLabel()
+            # self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
+            # self.geometry_view.layout().addWidget(self.status_bar)
+            self.main_splitter.addWidget(self.geometry_view)
+
+        self.document.window.config_changed.connect(self.reconfig)
+
     def fill_add_menu(self):
         self.add_menu.clear()
         current_index = self.tree.selectionModel().currentIndex()
@@ -100,6 +182,10 @@ class GeometryController(Controller):
         self.move_up_action.setEnabled(u)
         self.move_down_action.setEnabled(d)
 
+        parent = self.tree.selectionModel().currentIndex().parent()
+        self.duplicate_action.setEnabled(parent.isValid() and parent.internalPointer().accept_new_child())
+
+
         #hasCurrent = self.tree.selectionModel().currentIndex().isValid()
         #self.insertRowAction.setEnabled(hasCurrent)
         #self.insertColumnAction.setEnabled(hasCurrent)
@@ -113,11 +199,13 @@ class GeometryController(Controller):
         self.tree.setCurrentIndex(new_index)
         self.update_actions()
 
-    def remove_node(self):
-        index = self.tree.selectionModel().currentIndex()
+    def remove_node(self, index):
         model = self.tree.model()
         if model.removeRow(index.row(), index.parent()):
             self.update_actions()
+
+    def remove_current_node(self):
+        self.remove_node(self.tree.selectionModel().currentIndex())
 
     def _swap_neighbour_nodes(self, parent_index, row1, row2):
         if self.model.is_read_only(): return
@@ -129,13 +217,52 @@ class GeometryController(Controller):
         self.model.endMoveRows()
         self.fire_changed()
 
+    def move_up(self, index):
+        self.model.move_node_up(index)
+        self.update_actions()
+
     def move_current_up(self):
-        self.model.move_node_up(self.tree.selectionModel().currentIndex())
+        self.move_up(self.tree.selectionModel().currentIndex())
+
+    def move_down(self, index):
+        self.model.move_node_down(index)
         self.update_actions()
 
     def move_current_down(self):
-        self.model.move_node_down(self.tree.selectionModel().currentIndex())
+        self.move_down(self.tree.selectionModel().currentIndex())
+
+    def duplicate(self, index):
+        self.model.duplicate(index)
         self.update_actions()
+
+    def duplicate_current(self):
+        return self.duplicate(self.tree.selectionModel().currentIndex())
+
+    def on_tree_context_menu(self, pos):
+        index = self.tree.indexAt(pos)
+        if not index.isValid(): return
+
+        menu = QtGui.QMenu(self.tree)
+        add_child_menu = self._get_add_child_menu(index)
+        if add_child_menu:
+            menu.addMenu(add_child_menu).setText("&Add item")
+        menu.addAction("&Remove", lambda: self.remove_node(index))
+        u, d = self.model.can_move_node_up_down(index)
+        if u: menu.addAction("Move &up", lambda: self.move_up(index))
+        if d: menu.addAction("Move &down", lambda: self.move_down(index))
+
+        parent = index.parent()
+        if parent.isValid():
+            parent_node = parent.internalPointer()
+            if parent_node.accept_new_child():
+                menu.addAction("&Duplicate", lambda: self.duplicate(index))
+
+        reparent_menu = self._get_reparent_menu(index)
+        if reparent_menu and not reparent_menu.isEmpty():
+            if not menu.isEmpty(): menu.addSeparator()
+            menu.addMenu(reparent_menu).setText("&Insert into")
+
+        menu.exec_(self.tree.mapToGlobal(pos))
 
     def on_pick_object(self, event):
         # This seems as an ugly hack, but in reality this is the only way to make sure
@@ -210,12 +337,15 @@ class GeometryController(Controller):
             # self.status_bar.setText('')
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
+    #def _construct_plot_dock(self):
+    #    self.geometry_view = PlotWidget()
+    #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
+
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
         toolbar.setStyleSheet("QToolBar { border: 0px }")
 
-        toolbar.addAction(self.model.create_undo_action(toolbar))
-        toolbar.addAction(self.model.create_redo_action(toolbar))
+        create_undo_actions(toolbar, self.model, toolbar)
         toolbar.addSeparator()
 
         self.add_menu = QtGui.QMenu()
@@ -232,7 +362,7 @@ class GeometryController(Controller):
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', toolbar)
         self.remove_action.setStatusTip('Remove selected node from the tree')
         self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
-        self.remove_action.triggered.connect(self.remove_node)
+        self.remove_action.triggered.connect(self.remove_current_node)
         toolbar.addAction(self.remove_action)
 
         self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', toolbar)
@@ -241,11 +371,18 @@ class GeometryController(Controller):
         self.move_up_action.triggered.connect(self.move_current_up)
         toolbar.addAction(self.move_up_action)
 
-        self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', toolbar)
+        self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move d&own', toolbar)
         self.move_down_action.setStatusTip('Change order of entries: move current entry down')
         self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
         self.move_down_action.triggered.connect(self.move_current_down)
         toolbar.addAction(self.move_down_action)
+
+        self.duplicate_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-copy'), '&Duplicate', toolbar)
+        self.duplicate_action.setStatusTip('Duplicate current entry and insert it '
+                                           'into default position of the same container')
+        self.duplicate_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.duplicate_action.triggered.connect(self.duplicate_current)
+        toolbar.addAction(self.duplicate_action)
 
         toolbar.addSeparator()
 
@@ -268,71 +405,16 @@ class GeometryController(Controller):
         self.tree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
         self.tree.setDefaultDropAction(QtCore.Qt.MoveAction)
 
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.on_tree_context_menu)
+
         return self.tree
 
-    #def _construct_plot_dock(self):
-    #    self.geometry_view = PlotWidget()
-    #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
-
-    def __init__(self, document, model=None):
-        if model is None: model = GeometryModel()
-        Controller.__init__(self, document, model)
-
-        self.manager = None
-        self.plotted_object = None
-
-        self.plotted_tree_element = None
-        self.model.changed.connect(self.on_model_change)
-
-        self._current_index = None
-        self._last_index = None
-        self._current_controller = None
-
-        self._lims = None
-
-        tree_with_buttons = QtGui.QGroupBox()
-        vbox = QtGui.QVBoxLayout()
-        tree_with_buttons.setLayout(vbox)
-
-        tree_with_buttons.setTitle("Geometry Tree")
-        vbox.setContentsMargins(0, 0, 0, 0)
-        vbox.setSpacing(0)
-
-        vbox.addWidget(self._construct_toolbar())
-        vbox.addWidget(self._construct_tree(model))
-        tree_selection_model = self.tree.selectionModel()   # workaround of segfault in pySide,
-        # see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
-        tree_selection_model.selectionChanged.connect(self.object_selected)
-        self.update_actions()
-
-        self.checked_plane = '12'
-
-        self.vertical_splitter = QtGui.QSplitter()
-        self.vertical_splitter.setOrientation(QtCore.Qt.Vertical)
-
-        self.vertical_splitter.addWidget(tree_with_buttons)
-
-        self.parent_for_editor_widget = VerticalScrollArea()
-        self.vertical_splitter.addWidget(self.parent_for_editor_widget)
-
-        self.main_splitter = QtGui.QSplitter()
-        self.main_splitter.addWidget(self.vertical_splitter)
-
-        if PlotWidget is not None:
-            self.geometry_view = PlotWidget(self, picker=True)
-            self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
-            # self.status_bar = QtGui.QLabel()
-            # self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
-            # self.geometry_view.layout().addWidget(self.status_bar)
-            self.main_splitter.addWidget(self.geometry_view)
-
-        self.document.window.config_changed.connect(self.reconfig)
-
     def show_selection(self):
+        if self._current_index is None: return
         node = self._current_index.internalPointer()
         if isinstance(node, GNGeometryBase):
-            self.geometry_view.clean_selectors()    #TODO: show borders
+            self.geometry_view.clean_selectors()  # TODO: show borders
             self.geometry_view.canvas.draw()
         else:
             selected = self.model.fake_root.get_corresponding_object(node, self.manager)
