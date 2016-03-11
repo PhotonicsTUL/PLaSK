@@ -108,12 +108,12 @@ macro(make_default)
     endif()
 
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml)
-        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/solvers/${SOLVER_DIR}.xml
                             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
-                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml
+                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/solvers/${SOLVER_DIR}.xml
                             )
         string(REPLACE "/" "_" SOLVER_MODULE ${SOLVER_DIR})
-        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
+        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/solvers/${SOLVER_DIR}.xml)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT GUI)
     endif()
 

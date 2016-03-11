@@ -3,6 +3,11 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 
+foreach(CONF ${MAKE_CONFIGURATION_TYPES})   # does not use double Debug, Release, etc. in path (on is already included in ${PLASK_PATH})
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+endforeach()
+
 # List of all material groups
 file(GLOB materials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ *)
 
