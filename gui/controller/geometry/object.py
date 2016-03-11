@@ -22,6 +22,7 @@ AXES = {
     3: ('', 'x,y,z', 'z,x,y', 'p,r,z', 'l,t,v', 'long,tran,vert')
 }
 
+
 class GNObjectController(GNodeController):
 
     #def __init__(self, document, model, node):
@@ -29,7 +30,8 @@ class GNObjectController(GNodeController):
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def construct_form(self, roles=True):
-        self.construct_group('Basic Settings')
+        from .container import GNContainerChildBaseController
+        self.construct_group('Basic Settings', 1 if isinstance(self, GNContainerChildBaseController) else 0)
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'
