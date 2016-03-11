@@ -30,8 +30,7 @@ class GNObjectController(GNodeController):
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def construct_form(self, roles=True):
-        from .container import GNContainerChildBaseController
-        self.construct_group('Basic Settings', 1 if isinstance(self, GNContainerChildBaseController) else 0)
+        self.construct_group('Basic Settings', 0)
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                                 'Object name for further reference.'
