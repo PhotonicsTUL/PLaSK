@@ -11,9 +11,8 @@
 # GNU General Public License for more details.
 import cgi
 from collections import OrderedDict
-
-from lxml import etree
 from copy import deepcopy
+from lxml import etree
 
 try:
     from cStringIO import StringIO
@@ -143,8 +142,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
         def redo(self):
             self.model.beginInsertRows(self.parent_index, self.row, self.row)
-            self.child_node.set_parent(self.parent_node, index=self.row, remove_from_old_parent=False,
-                                       clear_parent_params=True)
+            self.child_node.set_parent(self.parent_node, index=self.row, remove_from_old_parent=False)
             self.model.endInsertRows()
             if self.next_remove is not None:
                 self.next_remove.redo()  # this also will call fire_changed()
@@ -205,6 +203,8 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.child_node = child_node
             self.new_parent = new_parent
             new_child = deepcopy(child_node, memo={id(child_node._parent): child_node._parent})
+            new_parent.path, new_parent.in_parent = new_child.path, new_child.in_parent
+            new_child.path = new_child.in_parent = None
             new_child.set_parent(self.new_parent, self.new_parent.new_child_pos(), remove_from_old_parent=False)
             super(GeometryModel.ReparentCommand, self).__init__(
                 "insert {} into {}".format(gname(child_node.tag_name(full_name=False)),
@@ -224,7 +224,8 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             del self.children_list[self.row]
             self.model.endRemoveRows()
             self.model.beginInsertRows(parent_index, self.row, self.row)
-            self.new_parent.set_parent(self.parent_node, index=self.row, remove_from_old_parent=False)
+            self.new_parent.set_parent(self.parent_node, index=self.row, remove_from_old_parent=False,
+                                       check_parent_params=False)
             self.model.endInsertRows()
             self.model.fire_changed()
 

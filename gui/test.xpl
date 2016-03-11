@@ -47,7 +47,9 @@
         </stack>
         <gap total="2"/>
         <stack>
-          <triangle material="AlOx" atran="-0.8" avert="0" btran="0" bvert="0.2"/>
+          <item path="tadam" right="0.8">
+            <triangle material="AlOx" atran="-0.4" avert="0" btran="0" bvert="0.2"/>
+          </item>
           <rectangle material="AlN" dtran="0.8" dvert="0.1"/>
         </stack>
       </shelf>

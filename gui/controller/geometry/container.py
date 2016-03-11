@@ -128,7 +128,7 @@ class GNStackController(GNObjectController):
 class GNContainerChildBaseController(GNChildController):
 
     def construct_form(self):
-        self.construct_group('Position in Parent Container')
+        self.construct_group('Position in Container')
         def setter(n, v): n.in_parent = v
         self.positions = self.construct_align_controllers(
             change_cb=lambda aligners:
