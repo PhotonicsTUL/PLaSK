@@ -41,6 +41,13 @@ class GeometryTreeView(QtGui.QTreeView):
             self._current_index = None
 
 
+class SearchEdit(QtGui.QLineEdit):
+    def focusOutEvent(self, event):
+        super(SearchEdit, self).focusOutEvent(event)
+        pal = self.parent().palette()
+        self.setPalette(pal)
+
+
 class GeometryController(Controller):
     # TODO use ControllerWithSubController (?)
 
@@ -148,6 +155,12 @@ class GeometryController(Controller):
 
         self.main_splitter = QtGui.QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
+
+        search_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
+        search_action.setShortcut(QtGui.QKeySequence.Find)
+        search_action.triggered.connect(lambda: self.search_box.setFocus())
+        self.main_splitter.addAction(search_action)
+
 
         if PlotWidget is not None:
             self.geometry_view = PlotWidget(self, picker=True)
@@ -400,8 +413,20 @@ class GeometryController(Controller):
         more_button.setPopupMode(QtGui.QToolButton.InstantPopup)
         toolbar.addWidget(more_button)
 
-        self.plot_auto_refresh = True
+        toolbar.addSeparator()
+        spacer = QtGui.QWidget()
+        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        toolbar.addWidget(spacer)
+        self.search_box = SearchEdit()
+        # self.search_box.setAlignment(Qt.AlignRight)
+        self.search_box.setPlaceholderText("Name search")
+        self.search_box.returnPressed.connect(self.search)
+        toolbar.addWidget(self.search_box)
+        find_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find'), '&Find', toolbar)
+        find_action.triggered.connect(self.search)
+        toolbar.addAction(find_action)
 
+        self.plot_auto_refresh = True
         return toolbar
 
     def _construct_tree(self, model):
@@ -474,6 +499,21 @@ class GeometryController(Controller):
                 # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
 
         return True
+
+    def search(self):
+        text = self.search_box.text()
+        if not text:
+            return
+        found = self.model.match(self.model.index(0, 0), Qt.UserRole+2, text, 1,
+                                 Qt.MatchRecursive | Qt.MatchStartsWith | Qt.MatchCaseSensitive)
+        if found:
+            self.tree.setCurrentIndex(found[0])
+            self.search_box.setText("")
+            self.tree.setFocus()
+        else:
+            pal = self.search_box.palette()
+            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
+            self.search_box.setPalette(pal)
 
     def current_root(self):
         try:
