@@ -421,10 +421,16 @@ class GeometryController(Controller):
         # self.search_box.setAlignment(Qt.AlignRight)
         self.search_box.setPlaceholderText("Name search")
         self.search_box.returnPressed.connect(self.search)
-        toolbar.addWidget(self.search_box)
+        self.search_combo = QtGui.QComboBox()
+        self.search_combo.setEditable(True)
+        self.search_combo.setLineEdit(self.search_box)
+        self.search_combo.currentIndexChanged.connect(lambda i: self.search())
+        toolbar.addWidget(self.search_combo)
         find_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find'), '&Find', toolbar)
         find_action.triggered.connect(self.search)
         toolbar.addAction(find_action)
+
+        self.model.dataChanged.connect(lambda i,j: self._fill_search_combo())
 
         self.plot_auto_refresh = True
         return toolbar
@@ -448,6 +454,10 @@ class GeometryController(Controller):
         self.tree.customContextMenuRequested.connect(self.on_tree_context_menu)
 
         return self.tree
+
+    def _fill_search_combo(self):
+        self.search_combo.clear()
+        self.search_combo.addItems([''] + list(self.model.names()))
 
     def show_selection(self):
         if self._current_index is None: return
@@ -504,8 +514,8 @@ class GeometryController(Controller):
         text = self.search_box.text()
         if not text:
             return
-        found = self.model.match(self.model.index(0, 0), Qt.UserRole+2, text, 1,
-                                 Qt.MatchRecursive | Qt.MatchStartsWith | Qt.MatchCaseSensitive)
+        found = self.model.match(self.model.index(0,0), Qt.UserRole+2, text, 1,
+                                 Qt.MatchRecursive | Qt.MatchCaseSensitive)
         if found:
             self.tree.setCurrentIndex(found[0])
             self.search_box.setText("")
@@ -567,6 +577,7 @@ class GeometryController(Controller):
                                               QtGui.QItemSelectionModel.Rows)
             self.tree.setCurrentIndex(new_index)
             self.plot()
+        self._fill_search_combo()
         self.update_actions()
         self.tree.setFocus()
 

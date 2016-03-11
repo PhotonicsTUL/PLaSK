@@ -576,10 +576,13 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         for root in self.roots:
             for node in root.traverse_dfs():
                 node.create_info(res, names)
-        for name, indexes in names.items():
-            if len(indexes) > 1:
-                res.append(Info('{} objects have the same name "{}".'.format(len(indexes), name),
-                                Info.ERROR, nodes=indexes, property='name'))
+            if root.name is None:
+                res.append(Info('{} geometry does not have a name.'.format(gname(root.tag_name(full_name=False))),
+                                Info.ERROR, nodes=(root,), property='name'))
+        for name, nodes in names.items():
+            if len(nodes) > 1:
+                res.append(Info('{} objects have the same name "{}".'.format(len(nodes), name),
+                                Info.ERROR, nodes=nodes, property='name'))
         if self._message is not None:
             if self._message['level'] >= Info.WARNING:
                 res.insert(0, Info(**self._message))
