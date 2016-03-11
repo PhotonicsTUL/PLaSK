@@ -56,12 +56,18 @@ endif()
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
 include_directories(extlib)     # place for local external libraries
-include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
+include_directories(${CMAKE_BINARY_DIR}/include) # for include plask/config.h
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
-set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask")
+foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # uses by MSVC
+    STRING(TOUPPER "${CONF}" CONF)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF} ${CMAKE_CFG_INTDIR}/bin)
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF} ${CMAKE_CFG_INTDIR}/lib)
+    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF} ${CMAKE_CFG_INTDIR}/lib)
+endforeach()
+set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -415,7 +421,7 @@ if(BUILD_PYTHON)
 
     set(plask_stubs _plask geometry mesh material flow)
     foreach(stub ${plask_stubs})
-        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/python/plask/${stub}.py)
+        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python/plask/${stub}.py)
         list(APPEND plask_stubs_modules plask.${stub})
     endforeach()
     file(REMOVE ${plask_stubs_files}) # wrong stubs can make build fail
@@ -424,7 +430,7 @@ if(BUILD_PYTHON)
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${material_targets}
-                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INTDIR}/plask/python
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
     endif()
@@ -516,7 +522,7 @@ endif(BUILD_PYTHON)
 if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
-    string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
+    string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
 endif()
 
 macro(add_python_test test test_file)

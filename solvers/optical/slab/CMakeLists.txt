@@ -33,7 +33,7 @@ endif()
 
 #find_package(Eigen3)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/include/plask/optical/slab/config.h)
 
 
 
