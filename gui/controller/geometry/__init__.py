@@ -425,6 +425,7 @@ class GeometryController(Controller):
         self.search_combo.setEditable(True)
         self.search_combo.setLineEdit(self.search_box)
         self.search_combo.currentIndexChanged.connect(lambda i: self.search())
+        self.search_combo.setMinimumWidth(self.search_box.sizeHint().width())
         toolbar.addWidget(self.search_combo)
         find_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find'), '&Find', toolbar)
         find_action.triggered.connect(self.search)
