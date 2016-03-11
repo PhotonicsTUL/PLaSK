@@ -347,7 +347,14 @@ add_executable(plask-license-sign ${license_sign_src})
 target_link_libraries(plask-license-sign libplask)
 
 # Copy example license file for easier development
-configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/plask_license.xml COPYONLY)
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install licence for all configurations
+        configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/${CONF}/plask_license.xml COPYONLY)
+    endforeach()
+else()
+    configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/plask_license.xml COPYONLY)
+endif()
+
 
 # ---------- Python --------------------------------------------
 
