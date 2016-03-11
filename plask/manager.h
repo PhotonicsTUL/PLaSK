@@ -19,11 +19,12 @@ This file contains:
 #include "material/db.h"
 #include "geometry/path.h"
 #include "geometry/space.h"
-#include "geometry/reader.h"
 
 namespace plask {
 
 class Solver;
+
+class GeometryReader;
 
 /**
  * Geometry manager features:
@@ -232,7 +233,7 @@ private:
          * Set axes names to one read from tag attribute, same as SetAxisNames(reader.manager, reader.source).
          * @param reader geometry reader
          */
-        SetAxisNames(GeometryReader& reader): SetAxisNames(reader.manager, reader.source) {}
+        SetAxisNames(GeometryReader& reader);
 
         /// Revert axes names to old one.
         ~SetAxisNames() { manager.axisNames = old; }
@@ -517,21 +518,6 @@ private:
      * @return index of @p geom in root vector, equal to size() if not found
      */
     std::size_t getRootIndex(const Geometry* geom) const;
-
-    /**
-     * Get number of roots geometries.
-     * @return number of roots geometries
-     */
-    std::size_t getRootsCount() const { return roots.size(); }
-
-    /**
-     * Get root with given @p index.
-     * @param index index of root, from range <code>[0, <code>getRoorsCount())</code>
-     * @return root with given @p index
-     */
-    shared_ptr<Geometry> getRootAt(std::size_t index) const { return roots.at(index); }
-
-
 };
 
 // Specialization for most types

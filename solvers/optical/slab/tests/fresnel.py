@@ -176,3 +176,10 @@ class FresnelTest(unittest.TestCase):
         # show_plots(solver, 'tran', 'Tran 3D')
 
 
+if __name__ == '__main__':
+    errors = 0
+    suite = unittest.TestLoader().loadTestsFromTestCase(FresnelTest)
+    runner = unittest.TextTestRunner()
+    result = runner.run(suite)
+    errors += len(result.errors) + len(result.failures)
+    sys.exit(errors)

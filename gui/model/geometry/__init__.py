@@ -30,6 +30,7 @@ from ...qt.QtCore import Qt
 from .. import SectionModel, Info
 from .reader import GNReadConf
 from .constructor import construct_geometry_object, construct_by_name
+from ..info import info_level_icon
 from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries, gname
 from .node import GNFakeRoot
@@ -341,6 +342,17 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                                 .format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
                         # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
+        if role == Qt.DecorationRole and index.column() == 0:
+            node = self.node_for_index(index)
+            if node is self.fake_root: return
+            for info in self._info:
+                try:
+                    nodes = info.nodes
+                except AttributeError:
+                    continue
+                else:
+                    if node in nodes:
+                        return info_level_icon(info.level)
 
     def flags(self, index):
         if not index.isValid():

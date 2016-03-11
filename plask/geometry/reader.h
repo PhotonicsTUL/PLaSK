@@ -1,16 +1,17 @@
 #ifndef PLASK__GEOMETRY_READER_H
 #define PLASK__GEOMETRY_READER_H
 
+#include <functional>
+
 #include "../utils/xml/reader.h"
 #include "../axes.h"
 #include "../material/db.h"
-#include "space.h"
-#include <functional>
 #include "../mesh/boundary_conditions.h"
+#include "../manager.h"
+#include "space.h"
+
 
 namespace plask {
-
-struct Manager;
 
 /**
  * Allow to read geometry from XML.
@@ -287,7 +288,7 @@ inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild(bool r
     auto before_cast = readExactlyOneChild(required);
     if (!required && !before_cast) return shared_ptr<RequiredObjectType>();
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(before_cast);
-    if (!result) throw UnexpectedGeometryObjectTypeException();
+    if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 

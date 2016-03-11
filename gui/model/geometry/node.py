@@ -445,7 +445,7 @@ class GNode(object):
                 try:
                     object = object[real_index]
                 except TypeError:  # geometry manager has no child:
-                    object = object._root(real_index)
+                    object = object._roots[real_index]
             node = node.children[index]
         return object, node
 

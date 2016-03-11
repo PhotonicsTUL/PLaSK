@@ -120,6 +120,7 @@ Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryObjectD<2>> childGeo
 }
 
 shared_ptr< GeometryObjectD<2> > Geometry2DCartesian::getChild() const {
+    if (!extrusion) throw NoChildException();
     auto child = extrusion->getChild();
     if (!child) throw NoChildException();
     return child;
@@ -207,6 +208,7 @@ Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> chil
 }
 
 shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChild() const {
+    if (!revolution) throw NoChildException();
     auto child = revolution->getChild();
     if (!child) throw NoChildException();
     return child;

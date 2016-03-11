@@ -540,6 +540,17 @@ static void register_manager_dict(const std::string name) {
     ;
 }
 
+struct ManagerRoots {
+    const Manager& manager;
+    ManagerRoots(const Manager& manager): manager(manager) {}
+    shared_ptr<Geometry> getitem(int i) const {
+        if (i < 0) i += manager.roots.size();
+        if (i < 0 || i >= manager.roots.size()) throw IndexError("geometry roots index out of range");
+        return manager.roots[i];
+    }
+    size_t len() const { return manager.roots.size(); }
+    static ManagerRoots init(const PythonManager& manager) { return ManagerRoots(manager); }
+};
 
 void register_manager() {
     py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
@@ -603,8 +614,8 @@ void register_manager() {
                        "is created if the proper one cannot be found in the database.\n"
                        "Otherwise an exception is raised.")
         .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
-        .def("_roots_len", &Manager::getRootsCount, "Number of root geometries.")
-        .def("_root", &Manager::getRootAt, py::arg("index"), "Get root geometry with given index.")
+        .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
+                      "Root geometries.")
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
@@ -612,6 +623,12 @@ void register_manager() {
     register_manager_dict<shared_ptr<Mesh>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
     register_manager_dict<shared_ptr<Solver>>("Solvers");
+    
+    py::scope scope(manager);
+    py::class_<ManagerRoots>("_Roots", py::no_init)
+        .def("__getitem__", &ManagerRoots::getitem)
+        .def("__len__", &ManagerRoots::len)
+    ;
 }
 
 }} // namespace plask::python

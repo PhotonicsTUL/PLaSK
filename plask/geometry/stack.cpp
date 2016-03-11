@@ -667,7 +667,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
         total_size_gap->setSize(required_total_size - result->getHeight());
     }
     height_reader.setBaseHeight(result, false);
-    if (requireEqHeights) result->ensureFlat();
+    if (requireEqHeights && !reader.manager.draft) result->ensureFlat();
     return result;
 }
 

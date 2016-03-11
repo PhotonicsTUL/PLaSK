@@ -135,7 +135,7 @@ class InfoSource(object):
             :param info_cb: call when list of errors has been changed with parameters: section name, list of errors
         """
         object.__init__(self)
-        self._info = []    #model Infos: Errors, Warnings and Informations
+        self._info = []      # model Infos: Errors, Warnings and Informations
         self.infoChanged = Signal()
         if info_cb: self.infoChanged.connect(info_cb)
 

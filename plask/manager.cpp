@@ -12,6 +12,8 @@
 
 namespace plask {
 
+Manager::SetAxisNames::SetAxisNames(GeometryReader& reader): SetAxisNames(reader.manager, reader.source) {}
+    
 void Manager::ExternalSourcesFromFile::operator()(Manager &manager, MaterialsDB& materialsDB, const std::string &url, const std::string &section) {
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {
@@ -558,6 +560,7 @@ static std::string geomName(const Manager& m, const Geometry* g, const std::map<
 }
 
 void Manager::validatePositions() const {
+    if (this->draft) return;
     validatePositions(
     [this] (const Geometry* g1, const Geometry* g2, std::vector<const GeometryObject*>&& objs, const std::map<const GeometryObject*, const char*>& names) {
         bool single = objs.size() < 2;
