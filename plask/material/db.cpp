@@ -116,7 +116,7 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
         boost::filesystem::directory_iterator end;
         while (iter != end) {
             boost::filesystem::path p = iter->path();
-            if (boost::filesystem::is_regular_file(p))
+            if (boost::filesystem::is_regular_file(p) && p.extension() == DynamicLibrary::DEFAULT_EXTENSION)
                 DynamicLibraries::defaultLoad(p.string(), DynamicLibrary::DONT_CLOSE);
             ++iter;
         }
