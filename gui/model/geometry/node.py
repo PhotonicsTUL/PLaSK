@@ -151,18 +151,23 @@ class GNode(object):
         result.append(geometry_types_other)
         return result
 
-    def add_parent_options(self):
+    def add_parent_options(self, current_parent=None):
         """
         Get types of children that can be added to self.
         :return:
         """
-        from .types import geometry_types_2d_core_containers,\
-            geometry_types_2d_core_transforms, geometry_types_3d_core_containers, \
-            geometry_types_3d_core_transforms_3d
+        from .types import geometry_types_2d_core_containers, geometry_types_2d_core_transforms,\
+            geometry_types_3d_core_containers, geometry_types_3d_core_transforms_3d, \
+            geometry_types_3d_core_extrusion, geometry_types_3d_core_revolution
+        from .geometry import GNCartesian, GNCylindrical
         result = []
         if self.dim == 2 or (self.dim is None and self.parent is not None and self.parent.children_dim == 2):
             result.extend((geometry_types_2d_core_containers,
                            geometry_types_2d_core_transforms))
+            if isinstance(current_parent, GNCartesian):
+                result.append(geometry_types_3d_core_extrusion)
+            elif isinstance(current_parent, GNCylindrical):
+                result.append(geometry_types_3d_core_revolution)
         if self.dim == 3 or (self.dim is None and self.parent is not None and self.parent.children_dim == 3):
             result.extend((geometry_types_3d_core_containers,
                            geometry_types_3d_core_transforms_3d))

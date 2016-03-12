@@ -41,13 +41,6 @@ class GeometryTreeView(QtGui.QTreeView):
             self._current_index = None
 
 
-class SearchCombo(QtGui.QComboBox):
-    def focusOutEvent(self, event):
-        super(SearchCombo, self).focusOutEvent(event)
-        pal = self.parent().palette()
-        self.setPalette(pal)
-
-
 class GeometryController(Controller):
     # TODO use ControllerWithSubController (?)
 
@@ -99,7 +92,7 @@ class GeometryController(Controller):
         if node is None: return
         first = True
         result = QtGui.QMenu()
-        for section in node.add_parent_options():
+        for section in node.add_parent_options(parent_index.internalPointer()):
             if not first:
                 result.addSeparator()
             first = False
@@ -417,7 +410,7 @@ class GeometryController(Controller):
         spacer = QtGui.QWidget()
         spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
-        self.search_combo = SearchCombo()
+        self.search_combo = QtGui.QComboBox()
         self.search_combo.setEditable(True)
         self.search_combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         search_box = self.search_combo.lineEdit()
@@ -521,9 +514,11 @@ class GeometryController(Controller):
             self.search_combo.setEditText("")
             self.tree.setFocus()
         else:
+            red = QtGui.QPalette()
+            red.setColor(QtGui.QPalette.Text, QtGui.QColor("#a00"))
             pal = self.search_combo.palette()
-            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
-            self.search_combo.setPalette(pal)
+            self.search_combo.setPalette(red)
+            QtCore.QTimer.singleShot(500, lambda: self.search_combo.setPalette(pal))
 
     def current_root(self):
         try:
