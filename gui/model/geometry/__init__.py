@@ -342,9 +342,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                                 .format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
                         # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
-        if role == Qt.UserRole+2:
-            try: return self.node_for_index(index).name
-            except AttributeError: return None
         if role == Qt.DecorationRole and index.column() == 0:
             node = self.node_for_index(index)
             if node is self.fake_root: return

@@ -41,9 +41,9 @@ class GeometryTreeView(QtGui.QTreeView):
             self._current_index = None
 
 
-class SearchEdit(QtGui.QLineEdit):
+class SearchCombo(QtGui.QComboBox):
     def focusOutEvent(self, event):
-        super(SearchEdit, self).focusOutEvent(event)
+        super(SearchCombo, self).focusOutEvent(event)
         pal = self.parent().palette()
         self.setPalette(pal)
 
@@ -417,15 +417,15 @@ class GeometryController(Controller):
         spacer = QtGui.QWidget()
         spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
-        self.search_box = SearchEdit()
-        # self.search_box.setAlignment(Qt.AlignRight)
-        self.search_box.setPlaceholderText("Name search")
-        self.search_box.returnPressed.connect(self.search)
-        self.search_combo = QtGui.QComboBox()
+        self.search_combo = SearchCombo()
         self.search_combo.setEditable(True)
-        self.search_combo.setLineEdit(self.search_box)
+        self.search_combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        search_box = self.search_combo.lineEdit()
+        # search_box.setAlignment(Qt.AlignRight)
+        search_box.setPlaceholderText("Name search")
+        search_box.returnPressed.connect(self.search)
         self.search_combo.currentIndexChanged.connect(lambda i: self.search())
-        self.search_combo.setMinimumWidth(self.search_box.sizeHint().width())
+        self.search_combo.setMinimumWidth(search_box.sizeHint().width())
         toolbar.addWidget(self.search_combo)
         find_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find'), '&Find', toolbar)
         find_action.triggered.connect(self.search)
@@ -512,19 +512,18 @@ class GeometryController(Controller):
         return True
 
     def search(self):
-        text = self.search_box.text()
+        text = self.search_combo.currentText()
         if not text:
             return
-        found = self.model.match(self.model.index(0,0), Qt.UserRole+2, text, 1,
-                                 Qt.MatchRecursive | Qt.MatchCaseSensitive)
-        if found:
-            self.tree.setCurrentIndex(found[0])
-            self.search_box.setText("")
+        found = self.model.index_for_node(self.model.find_by_name(text))
+        if found and found.isValid():
+            self.tree.setCurrentIndex(found)
+            self.search_combo.setEditText("")
             self.tree.setFocus()
         else:
-            pal = self.search_box.palette()
+            pal = self.search_combo.palette()
             pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
-            self.search_box.setPalette(pal)
+            self.search_combo.setPalette(pal)
 
     def current_root(self):
         try:
