@@ -536,11 +536,12 @@ if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
     string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
+    #string(REPLACE "/" "\\" plask_bin_path "$<TARGET_FILE_DIR:plask>")
 endif()
 
 macro(add_python_test test test_file)
     add_test(NAME python/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_xpl_test test test_file)
