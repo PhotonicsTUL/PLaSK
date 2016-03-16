@@ -96,11 +96,11 @@ macro(make_default)
         endif()
         if(BUILD_GUI)
             string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
-            set(SOLVER_STUB ${CMAKE_BINARY_DIR}/share/plask/stubs/${SOLVER_DIR}.py)
+            set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
             add_custom_command(OUTPUT ${SOLVER_STUB}
                                COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                                DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
-                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
+                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
                               )
             install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
             add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})

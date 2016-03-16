@@ -433,7 +433,13 @@ if(BUILD_PYTHON)
     endforeach()
     file(REMOVE ${plask_stubs_files}) # wrong stubs can make build fail
     if(BUILD_GUI)
-        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs)
+        if(CMAKE_CONFIGURATION_TYPES)
+            foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install licence for all configurations
+                file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CONF}/share/plask/stubs)
+            endforeach()
+        else()
+            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs)
+        endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${material_targets}
