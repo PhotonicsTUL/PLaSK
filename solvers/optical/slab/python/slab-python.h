@@ -58,7 +58,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 template <typename SolverT>
 static py::object Solver_getLam0(const SolverT& self) {
-    if (self.lam0) return *self.lam0;
+    if (self.lam0) return py::object(*self.lam0);
     else return py::object();
 }
     
@@ -296,7 +296,7 @@ inline void export_base(Class solver) {
                         "*admittance* Admittance Transfer Method\n"
                         "============ ====================================\n"
                        );
-    solver.add_property("lam0", Solver_setLam0<Solver>, Solver_setLam0<Solver>,
+    solver.add_property("lam0", Solver_getLam0<Solver>, Solver_setLam0<Solver>,
                         "Reference wavelength.\n\n"
                         "This is a wavelength at which refractive index is retrieved from the structure.\n"
                         "If this parameter is None, material parameters are computed each time,\n"

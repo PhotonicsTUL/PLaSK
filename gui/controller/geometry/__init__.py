@@ -139,7 +139,7 @@ class GeometryController(Controller):
         self.checked_plane = '12'
 
         self.vertical_splitter = QtGui.QSplitter()
-        self.vertical_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.vertical_splitter.setOrientation(Qt.Vertical)
 
         self.vertical_splitter.addWidget(tree_with_buttons)
 
@@ -283,7 +283,7 @@ class GeometryController(Controller):
         # the clicked spot.
         self.tree._current_index = self.model.index_for_node(
             self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
-        QtCore.QMetaObject.invokeMethod(self.tree, 'update_current_index', QtCore.Qt.QueuedConnection)
+        QtCore.QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
         manager = plask.Manager(draft=True)
@@ -352,7 +352,7 @@ class GeometryController(Controller):
 
     #def _construct_plot_dock(self):
     #    self.geometry_view = PlotWidget()
-    #    self.document.window.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
+    #    self.document.window.addDockWidget(Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -367,33 +367,33 @@ class GeometryController(Controller):
         add_button.setText('Add')
         add_button.setIcon(QtGui.QIcon.fromTheme('list-add'))
         add_button.setToolTip('Add new geometry object to the tree')
-        add_button.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
+        add_button.setShortcut(Qt.CTRL + Qt.Key_Plus)
         add_button.setMenu(self.add_menu)
         add_button.setPopupMode(QtGui.QToolButton.InstantPopup)
         toolbar.addWidget(add_button)
 
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', toolbar)
         self.remove_action.setStatusTip('Remove selected node from the tree')
-        self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
+        self.remove_action.setShortcut(Qt.SHIFT + Qt.Key_Delete)
         self.remove_action.triggered.connect(self.remove_current_node)
         toolbar.addAction(self.remove_action)
 
         self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', toolbar)
         self.move_up_action.setStatusTip('Change order of entries: move current entry up')
-        self.move_up_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
+        self.move_up_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
         self.move_up_action.triggered.connect(self.move_current_up)
         toolbar.addAction(self.move_up_action)
 
         self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move d&own', toolbar)
         self.move_down_action.setStatusTip('Change order of entries: move current entry down')
-        self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
+        self.move_down_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
         self.move_down_action.triggered.connect(self.move_current_down)
         toolbar.addAction(self.move_down_action)
 
         self.duplicate_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-copy'), '&Duplicate', toolbar)
         self.duplicate_action.setStatusTip('Duplicate current entry and insert it '
                                            'into default position of the same container')
-        self.duplicate_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_D)
+        self.duplicate_action.setShortcut(Qt.CTRL + Qt.Key_D)
         self.duplicate_action.triggered.connect(self.duplicate_current)
         toolbar.addAction(self.duplicate_action)
 
@@ -442,7 +442,7 @@ class GeometryController(Controller):
         self.tree.acceptDrops()
         self.tree.showDropIndicator()
         self.tree.setDragDropMode(QtGui.QAbstractItemView.DragDrop)
-        self.tree.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.tree.setDefaultDropAction(Qt.MoveAction)
 
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.on_tree_context_menu)

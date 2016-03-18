@@ -1,5 +1,5 @@
-Optical Analysis of Photonic Crystal Slab Waveguide
----------------------------------------------------
+Optical Analysis of Photonic-Crystal VCSEL
+------------------------------------------
 
 Analyzed structure
 ^^^^^^^^^^^^^^^^^^
