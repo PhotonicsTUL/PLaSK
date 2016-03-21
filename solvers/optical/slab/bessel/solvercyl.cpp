@@ -126,6 +126,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const Mes
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);
+    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -138,6 +139,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const Mes
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);
+    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -150,6 +152,7 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
     setLam0(modes[num].lam0);
     setK0(modes[num].k0);
     setM(modes[num].m);
+    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

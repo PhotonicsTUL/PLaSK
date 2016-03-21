@@ -199,11 +199,10 @@ static std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
         case Expansion::E_LONG: sym = "E" + axes->getNameForLong(); break;
         default: sym = "none";
     }
-    dcomplex neff = self.beta / self.k0;
-    return format("<lam: {:.2f}nm, neff: {:.3f}{:+.3g}, ktran: {}/um, polarization: {}, symmetry: {}, `: {:.2g} mW>",
+    return format("<lam: {:.2f}nm, neff: {}, ktran: {}/um, polarization: {}, symmetry: {}, power: {:.2g} mW>",
                   real(2e3*M_PI / self.k0),
-                  real(neff),imag(neff),
-                  (imag(self.ktran) == 0.)? format("{:.3g}",real(self.ktran)) : format("{:.3g}{:+.3g}",real(self.ktran),imag(self.ktran)),
+                  str(self.beta/self.k0, "{:.3f}{:+.3g}j"),
+                  str(self.ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
                   pol,
                   sym,
                   self.power

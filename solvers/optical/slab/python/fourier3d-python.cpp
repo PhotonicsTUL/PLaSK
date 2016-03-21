@@ -43,18 +43,17 @@ std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
 }
 
 std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
-    dcomplex lam = 2e3*M_PI / self.k0;
-    return format("<lam: ({:.3f}{:+.3g}j) nm, klong: {}/um, ktran: {}/um, symmetry: ({}), power: {:.2g}mW>",
-                  real(lam), imag(lam),
-                  (imag(self.klong) == 0.)? format("{:.3g}",real(self.klong)) : format("{:.3g}{:+.3g}",real(self.klong),imag(self.klong)),
-                  (imag(self.ktran) == 0.)? format("{:.3g}",real(self.ktran)) : format("{:.3g}{:+.3g}",real(self.ktran),imag(self.ktran)),
+    return format("<lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({}), power: {:.2g}mW>",
+                  str(2e3*M_PI/self.k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                  str(self.klong, "{:.3f}{:+.3g}j", "{:.3f}"),
+                  str(self.ktran, "{:.3f}{:+.3g}j", "{:.3f}"),
                   FourierSolver3D_Mode_symmetry(self),
                   self.power
                  );
 }
 std::string FourierSolver3D_Mode_repr(const FourierSolver3D::Mode& self) {
     return format("Fourier3D.Mode(lam={0}, klong={1}, ktran={2}, symmetry=({3}), power={4})",
-                  str(2e3*M_PI / self.k0),
+                  str(2e3*M_PI/self.k0),
                   str(self.klong),
                   str(self.ktran),
                   FourierSolver3D_Mode_symmetry(self),

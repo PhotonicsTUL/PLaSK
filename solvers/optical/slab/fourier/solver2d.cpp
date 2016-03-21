@@ -311,7 +311,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
@@ -319,6 +320,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
         expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -328,7 +330,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
@@ -336,6 +339,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
         expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -345,7 +349,8 @@ LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const Mesh
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
         setK0(modes[num].k0);
         klong = modes[num].beta;
         ktran = modes[num].ktran;
@@ -353,6 +358,7 @@ LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const Mesh
         expansion.polarization = modes[num].polarization;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

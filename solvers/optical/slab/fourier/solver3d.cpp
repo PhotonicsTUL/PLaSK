@@ -332,7 +332,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
@@ -340,6 +341,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
         expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -349,7 +351,8 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
@@ -357,6 +360,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
         expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -366,7 +370,8 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     assert(num < modes.size());
     assert(transfer);
     ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
+        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
         setK0(modes[num].k0);
         klong = modes[num].klong;
         ktran = modes[num].ktran;
@@ -374,6 +379,7 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
         expansion.symmetry_tran = modes[num].symmetry_tran;
         transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
+    logCurrentMode();
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

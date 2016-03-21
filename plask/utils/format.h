@@ -25,17 +25,23 @@ inline std::string str(T x) {
 /**
  * Convert double number to pretty string
  * @param x value to convert
+ * @param fmt format to use
  */
-inline std::string str(double x) {
-    return format("{:.9g}", x);
+inline std::string str(double x, const char* fmt="{:.9g}") {
+    return format(fmt, x);
 }
 
 /**
  * Convert complex number to pretty string
  * @param x value to convert
+ * @param fmt format to use
+ * @param rfmt format used if Im(x) == 0
  */
-inline std::string str(std::complex<double> x) {
-    return format("{:.9g}{:+0.9g}j", real(x), imag(x));
+inline std::string str(std::complex<double> x, const char* fmt="{:.9g}{:+0.9g}j", const char* rfmt=nullptr) {
+    if (!rfmt || imag(x) != 0.)
+        return format(fmt, real(x), imag(x));
+    else
+        return format(rfmt, real(x));
 }
 
 }   // namespace plask

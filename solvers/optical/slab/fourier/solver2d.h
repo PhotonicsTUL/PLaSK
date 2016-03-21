@@ -465,6 +465,16 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return 0.5 * std::log(R1*R2) / L;
     }
 
+    void logCurrentMode() {
+        writelog(LOG_DEBUG, "Current mode <lam: {:.2f}nm, neff: {}, ktran: {}/um, polarization: {}, symmetry: {}>",
+                 real(2e3*M_PI/k0),
+                 str(klong/k0, "{:.3f}{:+.3g}j"),
+                 str(ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
+                 (expansion.polarization == Expansion::E_LONG)? "El" : (expansion.polarization == Expansion::E_TRAN)? "Et" : "none",
+                 (expansion.symmetry == Expansion::E_LONG)? "El" : (expansion.symmetry == Expansion::E_TRAN)? "Et" : "none"
+                );
+    }
+    
     /**
      * Compute electric field
      * \param num mode number

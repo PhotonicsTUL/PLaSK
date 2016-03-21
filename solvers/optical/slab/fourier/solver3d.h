@@ -431,15 +431,25 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     size_t nummodes() const override { return modes.size(); }
 
-     /**
-      * Return mode effective index
-      * \param n mode number
-      */
-     dcomplex getEffectiveIndex(size_t n) {
-         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
-         return modes[n].klong / modes[n].k0;
-     }
+    /**
+     * Return mode effective index
+     * \param n mode number
+     */
+    dcomplex getEffectiveIndex(size_t n) {
+        if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+        return modes[n].klong / modes[n].k0;
+    }
 
+    void logCurrentMode() {
+        writelog(LOG_DEBUG, "Current mode <lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({})>",
+                 str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 str(klong, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 str(ktran, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 (expansion.symmetry_long == Expansion::E_LONG)? "El" : (expansion.symmetry_long == Expansion::E_TRAN)? "Et" : "none",
+                 (expansion.symmetry_tran == Expansion::E_LONG)? "El" : (expansion.symmetry_tran == Expansion::E_TRAN)? "Et" : "none"
+                );
+    }
+     
     LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
     LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
