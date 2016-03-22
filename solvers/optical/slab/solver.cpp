@@ -233,9 +233,11 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
                                         (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                         InterpolationMethod interp)
 {
-    setExpansionDefaults();
+    Expansion& expansion = getExpansion();
+    setExpansionDefaults(false);
+    if (isnan(expansion.lam0) || always_recompute_gain) expansion.setK0(k0);
     this->initCalculation();
-    initTransfer(getExpansion(), false);
+    initTransfer(expansion, false);
     computeIntegrals();
 
     //TODO maybe there is a more efficient way to implement this

@@ -100,9 +100,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         modes.clear();
     }
 
-    void setExpansionDefaults() override {
+    void setExpansionDefaults(bool with_k0=true) override {
         expansion.setLam0(getLam0());
-        expansion.setK0(getK0());
+        if (with_k0) expansion.setK0(getK0());
         expansion.setKlong(getKlong());
         expansion.setKtran(getKtran());
         expansion.setSymmetryLong(getSymmetryLong());

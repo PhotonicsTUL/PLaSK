@@ -244,6 +244,36 @@ py::tuple Solver_getMatrices(Solver& self, size_t layer) {
 #endif
 
 
+template <typename SolverT>
+py::object Solver_computeReflectivity(SolverT* self,
+                                      py::object wavelength,
+                                      Expansion::Component polarization,
+                                      Transfer::IncidentDirection incidence
+                                     )
+{
+    self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getReflection(polarization, incidence);
+    }, wavelength);
+}
+
+template <typename SolverT>
+py::object Solver_computeTransmittivity(SolverT* self,
+                                        py::object wavelength,
+                                        Expansion::Component polarization,
+                                        Transfer::IncidentDirection incidence
+                                       )
+{
+    self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
+
+
 
 
 template <typename Class>

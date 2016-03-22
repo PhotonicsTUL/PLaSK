@@ -202,8 +202,10 @@ struct PLASK_SOLVER_API SlabBase {
     /// Clear computed modes
     virtual void clearModes() = 0;
 
-    /// Set expansion parameters from default values
-    virtual void setExpansionDefaults() = 0;
+    /** Set expansion parameters from default values
+     * \param with_k0 Change k0
+     */
+    virtual void setExpansionDefaults(bool with_k0=true) = 0;
 };
 
 /**

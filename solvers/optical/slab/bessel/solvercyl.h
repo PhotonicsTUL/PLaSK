@@ -74,9 +74,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         modes.clear();
     }
 
-    void setExpansionDefaults() override {
+    void setExpansionDefaults(bool with_k0=true) override {
         expansion.setLam0(getLam0());
-        expansion.setK0(getK0());
+        if (with_k0) expansion.setK0(getK0());
         expansion.setM(getM());
     }
     
