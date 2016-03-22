@@ -70,7 +70,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Computed modes
     std::vector<Mode> modes;
 
-    void clear_modes() override {
+    void clearModes() override {
         modes.clear();
     }
 

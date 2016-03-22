@@ -12,6 +12,17 @@ namespace plask { namespace solvers { namespace slab {
 ExpansionPW2D::ExpansionPW2D(FourierSolver2D* solver): Expansion(solver), initialized(false),
     symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}
 
+void ExpansionPW2D::setPolarization(Component pol) {
+    if (pol != polarization) {
+        if (separated() == (pol != E_UNSPECIFIED))
+            solver->clearFields();
+        else
+            SOLVER->invalidate();
+        polarization = pol;
+    }
+}
+    
+
 size_t ExpansionPW2D::lcount() const {
     return SOLVER->getLayersPoints().size();
 }
@@ -29,7 +40,7 @@ void ExpansionPW2D::init()
     if (refine == 0) refine = 1;
 
     if (symmetry != E_UNSPECIFIED && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
-        throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric() structure");
+        throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
         if (right <= 0) {
@@ -167,7 +178,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
         
     auto mesh = plask::make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
 

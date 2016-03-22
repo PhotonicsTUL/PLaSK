@@ -233,9 +233,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
                                         (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                         InterpolationMethod interp)
 {
-    if (!this->lam0 and isnan(real(this->k0)))
-        throw BadInput(this->getId(), "Getting refractive index requires setting the wavelength (either 'lam0' or 'lam')");
-    
+    setExpansionDefaults();
     this->initCalculation();
     initTransfer(getExpansion(), false);
     computeIntegrals();

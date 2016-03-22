@@ -200,7 +200,7 @@ struct PLASK_SOLVER_API SlabBase {
     virtual void computeIntegrals() = 0;
 
     /// Clear computed modes
-    virtual void clear_modes() = 0;
+    virtual void clearModes() = 0;
 
     /// Set expansion parameters from default values
     virtual void setExpansionDefaults() = 0;
@@ -217,13 +217,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->clear_modes();
+        this->clearModes();
         this->recompute_integrals = true;
     }
 
     /// Reset structure if input is changed
     void onGainChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->clear_modes();
+        this->clearModes();
         this->recompute_gain_integrals = true;
     }
 

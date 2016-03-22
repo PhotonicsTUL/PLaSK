@@ -119,12 +119,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         }
     }
     
-    void setPolarization(Component pol) {
-        if (pol != polarization) {
-            polarization = pol;
-            solver->clearFields();
-        }
-    }
+    void setPolarization(Component pol);
 
     /// Get \f$ \varepsilon_{zz} \f$
     dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }

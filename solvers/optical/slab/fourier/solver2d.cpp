@@ -5,6 +5,8 @@ namespace plask { namespace solvers { namespace slab {
 
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver<Geometry2DCartesian>>(name),
     beta(0.), ktran(0.),
+    symmetry(Expansion::E_UNSPECIFIED),
+    polarization(Expansion::E_UNSPECIFIED),
     size(12),
     dct(2),
     expansion(this),
@@ -160,33 +162,34 @@ void FourierSolver2D::onInvalidate()
 
 size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 {
-    initCalculation();
-    initTransfer(expansion, false);
-    expansion.setLam0(this->lam0);
     expansion.setSymmetry(symmetry);
     expansion.setPolarization(polarization);
+    expansion.setLam0(this->lam0);
+    initCalculation();
+    initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver2D::WHAT_WAVELENGTH:
             expansion.setBeta(beta);
             expansion.setKtran(ktran);
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
             break;
         case FourierSolver2D::WHAT_K0:
             expansion.setBeta(beta);
             expansion.setKtran(ktran);
             detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { this->setK0(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); });
             break;
         case FourierSolver2D::WHAT_NEFF:
             if (expansion.separated())
                 throw Exception("{0}: Cannot search for effective index with polarization separation", getId());
             expansion.setK0(k0);
             expansion.setKtran(ktran);
+            clearFields();
             detlog.axis_arg_name = "neff";
             root = getRootDigger([this](const dcomplex& x) {
-                    this->beta = x * this->k0;
+                    expansion.beta = x * expansion.k0;
                     return transfer->determinant();
                 });
             break;
@@ -196,7 +199,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
             expansion.setK0(k0);
             expansion.setBeta(beta);
             detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { this->beta = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.beta = x; return transfer->determinant(); });
             break;
     }
     root->find(start);
@@ -209,10 +212,12 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 {
     size_t idx;
 
-    double kt = real(ktran), kl = real(beta);
+    double kt = real(expansion.ktran), kl = real(expansion.beta);
 
-    if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+std::cerr << (2e3*M_PI/expansion.k0) << "/" << expansion.lam0 << " " << expansion.beta << "x" << expansion.ktran << " " <<expansion.symmetry << " " << expansion.polarization << "\n";
+    
+    if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
+    clearFields();
     initCalculation();
     initTransfer(expansion, true);
 
@@ -268,7 +273,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     double kt = real(ktran), kl = real(beta);
 
     if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    clearFields();
     initCalculation();
     initTransfer(expansion, true);
 

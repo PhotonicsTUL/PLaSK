@@ -94,7 +94,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     /// Computed modes
     std::vector<Mode> modes;
 
-    void clear_modes() override {
+    void clearModes() override {
         modes.clear();
     }
     
@@ -329,7 +329,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
@@ -346,7 +345,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
@@ -363,7 +361,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                 Transfer::IncidentDirection incident,
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
-        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
@@ -548,7 +545,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             parent->expansion.setBeta(parent->beta);
             parent->expansion.setKtran(parent->ktran);
             parent->expansion.setSymmetry(parent->symmetry);
-            parent->expansion.setPolarization(parent->polarization);
+            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+                parent->expansion.setPolarization(polarization);
+            else
+                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
         
@@ -558,7 +558,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             parent->expansion.setBeta(parent->beta);
             parent->expansion.setKtran(parent->ktran);
             parent->expansion.setSymmetry(parent->symmetry);
-            parent->expansion.setPolarization(parent->polarization);
+            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+                parent->expansion.setPolarization(polarization);
+            else
+                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
         
@@ -568,7 +571,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             parent->expansion.setBeta(parent->beta);
             parent->expansion.setKtran(parent->ktran);
             parent->expansion.setSymmetry(parent->symmetry);
-            parent->expansion.setPolarization(parent->polarization);
+            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+                parent->expansion.setPolarization(polarization);
+            else
+                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
         

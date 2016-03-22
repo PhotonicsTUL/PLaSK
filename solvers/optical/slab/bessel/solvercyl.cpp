@@ -109,10 +109,11 @@ void BesselSolverCyl::onInvalidate()
 
 size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
+    expansion.setLam0(this->lam0);
     expansion.setM(m);
     initCalculation();
     initTransfer(expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
     root->find(start);
     return insertMode();
 }

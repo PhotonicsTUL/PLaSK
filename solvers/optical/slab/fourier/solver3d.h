@@ -96,7 +96,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Computed modes
     std::vector<Mode> modes;
 
-    void clear_modes() override {
+    void clearModes() override {
         modes.clear();
     }
 
@@ -323,6 +323,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection incident,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
+        setExpansionDefaults();
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
@@ -339,6 +340,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection incident,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
+        setExpansionDefaults();
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);

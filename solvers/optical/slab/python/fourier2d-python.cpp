@@ -4,6 +4,46 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
+py::object FourierSolver2D_computeReflectivity(FourierSolver2D* self,
+                                               py::object wavelength,
+                                               Expansion::Component polarization,
+                                               Transfer::IncidentDirection incidence
+                                              )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setBeta(self->getBeta());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetry(self->getSymmetry());
+    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+        self->expansion.setPolarization(polarization);
+    else
+        self->expansion.setPolarization(self->getPolarization());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getReflection(polarization, incidence);
+    }, wavelength);
+}
+
+py::object FourierSolver2D_computeTransmittivity(FourierSolver2D* self,
+                                                 py::object wavelength,
+                                                 Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incidence
+                                                )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setBeta(self->getBeta());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetry(self->getSymmetry());
+    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+        self->expansion.setPolarization(polarization);
+    else
+        self->expansion.setPolarization(self->getPolarization());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
 
 static py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
@@ -350,7 +390,7 @@ void export_FourierSolver2D()
                 "    k0 (complex): Normalized frequency.\n"
                 "    neff (complex): Longitudinal effective index.\n"
                 "    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
+    solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity,
                 "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                 "Args:\n"
                 "    lam (float or array of floats): Incident light wavelength.\n"
@@ -360,7 +400,7 @@ void export_FourierSolver2D()
                 "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 "        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
+    solver.def("compute_transmittivity", &FourierSolver2D_computeTransmittivity,
                 "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                 "Args:\n"
                 "    lam (float or array of floats): Incident light wavelength.\n"

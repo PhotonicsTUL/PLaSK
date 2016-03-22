@@ -235,7 +235,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
         
     size_t nr = raxis->size(), N = SOLVER->size;
     double ib = 1. / rbounds[rbounds.size()-1];

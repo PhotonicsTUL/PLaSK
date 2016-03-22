@@ -287,7 +287,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
         
     auto mesh = plask::make_shared<RectangularMesh<3>>
                            (plask::make_shared<RegularAxis>(long_mesh),

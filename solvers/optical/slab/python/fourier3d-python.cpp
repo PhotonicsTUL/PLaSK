@@ -3,6 +3,41 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
+    
+py::object FourierSolver3D_computeReflectivity(FourierSolver3D* self,
+                                               py::object wavelength,
+                                               Expansion::Component polarization,
+                                               Transfer::IncidentDirection incidence
+                                              )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setKlong(self->getKlong());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetryLong(self->getSymmetryLong());
+    self->expansion.setSymmetryTran(self->getSymmetryTran());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getReflection(polarization, incidence);
+    }, wavelength);
+}
+
+py::object FourierSolver3D_computeTransmittivity(FourierSolver3D* self,
+                                                 py::object wavelength,
+                                                 Expansion::Component polarization,
+                                                 Transfer::IncidentDirection incidence
+                                                )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setKlong(self->getKlong());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetryLong(self->getSymmetryLong());
+    self->expansion.setSymmetryTran(self->getSymmetryTran());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
 
 template <NPY_TYPES type>
 static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
@@ -533,7 +568,7 @@ void export_FourierSolver3D()
                 "    k0 (complex): Normalized frequency.\n"
                 "    klong (complex): Longitudinal wavevector.\n"
                 "    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver3D>,
+    solver.def("compute_reflectivity", &FourierSolver3D_computeReflectivity,
             "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
             "Args:\n"
             "    lam (float or array of floats): Incident light wavelength.\n"
@@ -543,7 +578,7 @@ void export_FourierSolver3D()
             "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
             "        present.\n"
             , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
+    solver.def("compute_transmittivity", &FourierSolver3D_computeTransmittivity,
             "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
             "Args:\n"
             "    lam (float or array of floats): Incident light wavelength.\n"

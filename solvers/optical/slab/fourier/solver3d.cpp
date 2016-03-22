@@ -6,6 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver<Geometry3D>>(name),
     size_long(12), size_tran(12),
     klong(0.), ktran(0.),
+    symmetry_long(Expansion::E_UNSPECIFIED), symmetry_tran(Expansion::E_UNSPECIFIED),
     dct(2),
     expansion(this),
     refine_long(16), refine_tran(16),
@@ -186,11 +187,11 @@ void FourierSolver3D::onInvalidate()
 
 size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
-    initCalculation();
-    initTransfer(expansion, false);
-    expansion.setLam0(this->lam0);
     expansion.setSymmetryLong(symmetry_long);
     expansion.setSymmetryTran(symmetry_tran);
+    expansion.setLam0(this->lam0);
+    initCalculation();
+    initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
