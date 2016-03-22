@@ -322,8 +322,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto temperatures = inTemperature(iMesh);
+    //auto iMesh = (this->mesh)->getMidpointsMesh();
+    //auto temperatures = inTemperature(iMesh);
+    auto iMeshN = this->mesh;
+    auto temperaturesN = inTemperature(iMeshN);
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
@@ -348,9 +350,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         Vec <2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        double T(300.); //TODO
+        double T;//(300.); //TODO
         // average temperature on the element
-        T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
+        T = 0.25 * (temperaturesN[loleftno] + temperaturesN[lorghtno] + temperaturesN[upleftno] + temperaturesN[uprghtno]); // in (K)
         double normT(T/mTx); // normalised temperature
 
         double n, p;
@@ -657,6 +659,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 {
     //this->writelog(LOG_DETAIL, "Saving electron concentration");
 
+    //auto iMesh = (this->mesh)->getMidpointsMesh();
+    //auto temperatures = inTemperature(iMesh);
+    auto iMeshE = (this->mesh)->getMidpointsMesh();
+    auto temperaturesE = inTemperature(iMeshE);
+
     for (auto e: this->mesh->elements)
     {
         size_t i = e.getIndex();
@@ -667,10 +674,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
             dveN[i] = 0.;
             continue;
         }
-        double T(300.); // TODO
-        double normNc = Neff(material->Me(T, 0., '*'), T) / mNx;
-        double normEc0 = material->CB(T, 0., '*') / mEx;
-        double normT = T / mTx;
+        //double T(300.); // TODO
+        double normNc = Neff(material->Me(temperaturesE[i], 0., '*'), temperaturesE[i]) / mNx;
+        double normEc0 = material->CB(temperaturesE[i], 0., '*') / mEx;
+        double normT = temperaturesE[i] / mTx;
 
         dveN[i] = calcN(normNc, dveFnEta[i], dvePsi[i], normEc0, normT);
     }
@@ -681,6 +688,11 @@ template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 {
     //this->writelog(LOG_DETAIL, "Saving hole concentration");
+
+    //auto iMesh = (this->mesh)->getMidpointsMesh();
+    //auto temperatures = inTemperature(iMesh);
+    auto iMeshE = (this->mesh)->getMidpointsMesh();
+    auto temperaturesE = inTemperature(iMeshE);
 
     for (auto e: this->mesh->elements)
     {
@@ -693,10 +705,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
             continue;
         }
 
-        double T(300.); // TODO
-        double normNv = Neff(material->Mh(T, 0.), T) / mNx;
-        double normEv0 = material->VB(T, 0., '*') / mEx;
-        double normT = T / mTx;
+        //double T(300.); // TODO
+        double normNv = Neff(material->Mh(temperaturesE[i], 0.), temperaturesE[i]) / mNx;
+        double normEv0 = material->VB(temperaturesE[i], 0., '*') / mEx;
+        double normT = temperaturesE[i] / mTx;
 
         dveP[i] = calcP(normNv, dveFpKsi[i], dvePsi[i], normEv0, normT);
     }
@@ -790,14 +802,21 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
 
     dvnPsi0.reset(size, 0.);
 
+    //auto iMesh = (this->mesh)->getMidpointsMesh();
+    //auto temperatures = inTemperature(iMesh);
+    auto iMeshE = (this->mesh)->getMidpointsMesh();
+    auto temperaturesE = inTemperature(iMeshE);
+
     for (auto el: this->mesh->elements) {
+        size_t i = el.getIndex();
         // point and material in the middle of the element
         Vec < 2,double> midpoint = el.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
         // average temperature on the element
         // double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // LP_09.2015
-        double T(300.); // Temperature in the current element
+        //double T(300.); // Temperature in the current element
+        double T = temperaturesE[i]; // Temperature in the current element
 
         KeyT key = std::make_pair(material.get(), unsigned(0.5+T*100.)); // temperature precision 0.01 K
         auto found = cache.find(key);
@@ -1351,10 +1370,14 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConduct
 
     DataVector<double> dvnEc(size, 0.);
 
-    double T(300.); // TODO
+    auto iMeshE = (this->mesh)->getMidpointsMesh();
+    auto temperaturesE = inTemperature(iMeshE);
+
+    //double T(300.); // TODO
+    double T;
 
     for (auto e: this->mesh->elements) {
-        //size_t i = e.getIndex();
+        size_t i = e.getIndex();
         size_t loleftno = e.getLoLoIndex();
         size_t lorghtno = e.getUpLoIndex();
         size_t upleftno = e.getLoUpIndex();
@@ -1362,6 +1385,8 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConduct
 
         Vec <2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
+
+        T = temperaturesE[i]; // Temperature in the current element
 
         dvnEc[loleftno] += material->CB(T, 0., '*') - dvnPsi[loleftno] * mEx;
         dvnEc[lorghtno] += material->CB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
@@ -1383,10 +1408,14 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValence
 
     DataVector<double> dvnEv(size, 0.);
 
-    double T(300.); // TODO
+    auto iMeshE = (this->mesh)->getMidpointsMesh();
+    auto temperaturesE = inTemperature(iMeshE);
+
+    //double T(300.); // TODO
+    double T;
 
     for (auto e: this->mesh->elements) {
-        //size_t i = e.getIndex();
+        size_t i = e.getIndex();
         size_t loleftno = e.getLoLoIndex();
         size_t lorghtno = e.getUpLoIndex();
         size_t upleftno = e.getLoUpIndex();
@@ -1394,6 +1423,8 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValence
 
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
+
+        T = temperaturesE[i]; // Temperature in the current element
 
         dvnEv[loleftno] += material->VB(T, 0., '*') - dvnPsi[loleftno] * mEx;
         dvnEv[lorghtno] += material->VB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
