@@ -34,7 +34,7 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 
     void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB) override;
 
-    static void export_dict(py::object self, py::dict dict);
+    static void export_dict(py::object self, py::object dict);
 
     void loadScript(XMLReader& reader) override;
 

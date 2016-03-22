@@ -22,11 +22,6 @@ from ._plask import *
 try: from ._plask import _print_stack # for debug only
 except ImportError: pass
 
-try:
-    from ._plask import __globals
-except ImportError:
-    pass
-
 def print_exc():
     """Print last exception to PLaSK log."""
     _plask._print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
@@ -233,11 +228,8 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
     """
 
     if destination is None:
-        try:
-            destination = __globals
-        except NameError:
-            import __main__
-            destination = __main__.__dict__
+        import __main__
+        destination = __main__.__dict__
     if update:
         try:
             manager = destination['__manager__']

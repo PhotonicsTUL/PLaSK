@@ -33,7 +33,7 @@ namespace py = boost::python;
 #endif
 
 //******************************************************************************
-py::dict globals;
+py::object globals;
 
 bool endwait = false;
 
@@ -59,7 +59,7 @@ namespace plask { namespace python {
 }}
 
 //******************************************************************************
-static void from_import_all(const char* name, py::dict& dest)
+static void from_import_all(const char* name, py::object& dest)
 {
     py::object module = py::import(name);
     py::dict module_dict = py::dict(module.attr("__dict__"));
@@ -138,8 +138,8 @@ static py::object initPlask(int argc, const char* argv[])
     // mainTS = PyEval_SaveThread();
     //PyEval_ReleaseLock();
 
-    globals = py::dict(py::import("__main__").attr("__dict__"));
-    _plask.attr("__globals") = globals;
+    PyObject* __main__ = PyImport_AddModule("__main__");
+    globals = py::object(py::handle<>(py::borrowed(PyModule_GetDict(__main__))));
 
     return _plask;
 }
@@ -410,7 +410,7 @@ int main(int argc, const char *argv[])
                 plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
-                globals.update(manager->defs);
+                PyDict_Update(globals.ptr(), manager->defs.ptr());
                 plask::python::PythonManager::export_dict(omanager, globals);
 
                 // Set default axes if all loaded geometries share the same

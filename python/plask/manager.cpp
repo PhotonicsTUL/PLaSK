@@ -328,7 +328,7 @@ void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 
 
 
-void PythonManager::export_dict(py::object self, py::dict dict) {
+void PythonManager::export_dict(py::object self, py::object dict) {
     dict["PTH"] = self.attr("pth");
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
