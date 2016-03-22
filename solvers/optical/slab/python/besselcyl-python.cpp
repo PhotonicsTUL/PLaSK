@@ -16,6 +16,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
+    auto* expansion = &self->expansion;
 
     enum What {
         WHAT_NOTHING = 0,
@@ -24,29 +25,27 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     };
     What what = WHAT_NOTHING;
     py::object array;
-    int m = 1;
+    int m = self->getM();
 
-    BesselSolverCyl::ParamGuard guard(self);
-
-    boost::optional<dcomplex> lambda;
+    boost::optional<dcomplex> k0;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
-            if (what == WHAT_K0 || lambda)
+            if (what == WHAT_K0 || k0)
                 throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
-                lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+                k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
-            if (what == WHAT_WAVELENGTH || lambda)
+            if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
-                lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+                k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "m") {
             m = py::extract<int>(kwargs[*i]);
         } else if (*i == "dispersive") {
@@ -54,21 +53,22 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
         } else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
-    if (lambda) self->setWavelength(*lambda);
-
-    self->setM(m);
+    
+    if (k0) expansion->setK0(*k0);
+    expansion->setM(m);
 
     switch (what) {
         case WHAT_NOTHING:
+            if (!k0) expansion->setK0(self->getK0());
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI / x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setK0(x); return self->getDeterminant(); },
                 array
             );
     }
@@ -79,23 +79,27 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
+    auto* expansion = &self->expansion;
 
-    boost::optional<dcomplex> lambda, neff, ktran;
+    int m = self->getM();
+
+    boost::optional<dcomplex> k0, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
-            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+            if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
-            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-            lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+            if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "m") {
-            self->setM(py::extract<int>(kwargs[*i]));
+            m = py::extract<int>(kwargs[*i]);
         } else
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    if (lambda) self->setWavelength(*lambda);
+    if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
+    expansion->setM(m);
 
     return self->setMode();
 }

@@ -91,7 +91,7 @@ struct PLASK_SOLVER_API SlabBase {
     size_t interface;
 
     /// Reference wavelength used for getting material parameters [nm]
-    boost::optional<double> lam0;
+    double lam0;
 
     /// Normalized frequency [1/µm]
     dcomplex k0;
@@ -123,6 +123,7 @@ struct PLASK_SOLVER_API SlabBase {
         detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::METHOD_AUTO),
         interface(size_t(-1)),
+        lam0(NAN),
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
@@ -131,33 +132,17 @@ struct PLASK_SOLVER_API SlabBase {
         
     /// Get lam0
     double getLam0() const {
-        if (lam0) return *lam0;
-        else return NAN;
+        return lam0;
     }
     /// Set lam0
     void setLam0(double lam) {
-        if (!lam0 || lam != *lam0) {
-            lam0 = lam;
-            this->recompute_integrals = true;
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
-        if (isnan(real(k0)) || isnan(imag(k0))) {
+        lam0 = lam;
+        if (!isnan(lam) && (isnan(real(k0)) || isnan(imag(k0))))
             k0 = 2e3*M_PI / lam;
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
     }
     /// Clear lam0
     void clearLam0() {
-        if (lam0) {
-            lam0.reset();
-            this->recompute_integrals = true;
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
-    }
-    /// Set lam0
-    void setLam0(boost::optional<double> lam) {
-        if (lam) setLam0(*lam);
-        else clearLam0();
+        lam0 = NAN;
     }
 
     /// Get current k0
@@ -165,12 +150,8 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Set current k0
     void setK0(dcomplex k) {
-        if (k != k0) {
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            k0 = k;
-            if (k0 == 0.) k0 = 1e-12;
-            if (!lam0) this->recompute_integrals = true;
-        }
+        k0 = k;
+        if (k0 == 0.) k0 = 1e-12;
     }
 
     /// Get current wavelength
@@ -178,14 +159,14 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Set current wavelength
     void setWavelength(dcomplex lambda) {
-        dcomplex k = 2e3*M_PI / lambda;
-        if (k != k0) {
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            k0 = k;
-            if (!lam0) this->recompute_integrals = true;
-        }
+        k0 = 2e3*M_PI / lambda;
     }
 
+    /// Reset determined fields
+    void clearFields() {
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    
     /**
      * Get layer number for vertical coordinate. Alter this coordinate to the layer local one.
      * The bottom infinite layer has always negative coordinate.
@@ -219,8 +200,12 @@ struct PLASK_SOLVER_API SlabBase {
     virtual void computeIntegrals() = 0;
 
     /// Clear computed modes
-    virtual void clear_modes() = 0;
+    virtual void clearModes() = 0;
 
+    /** Set expansion parameters from default values
+     * \param with_k0 Change k0
+     */
+    virtual void setExpansionDefaults(bool with_k0=true) = 0;
 };
 
 /**
@@ -234,13 +219,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->clear_modes();
+        this->clearModes();
         this->recompute_integrals = true;
     }
 
     /// Reset structure if input is changed
     void onGainChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->clear_modes();
+        this->clearModes();
         this->recompute_gain_integrals = true;
     }
 

@@ -254,6 +254,7 @@ void ExpansionPW3D::init()
 void ExpansionPW3D::reset() {
     coeffs.clear();
     initialized = false;
+    k0 = klong = ktran = lam0 = NAN;
 }
 
 template <typename T1, typename T2>
@@ -286,7 +287,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
         
     auto mesh = plask::make_shared<RectangularMesh<3>>
                            (plask::make_shared<RegularAxis>(long_mesh),
@@ -552,8 +553,6 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
-    dcomplex k0 = SOLVER->k0, klong = SOLVER->klong, ktran = SOLVER->ktran;
-    
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
     char symx = symmetric_long()? 2 * int(symmetry_long) - 3 : 0,
@@ -661,7 +660,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
     size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
            nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
 
-    const dcomplex kx = SOLVER->klong, ky = SOLVER->ktran;
+    const dcomplex kx = klong, ky = ktran;
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
@@ -708,7 +707,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                                 (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
                                  + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                         }
-                    field[iez].vert() /= SOLVER->k0;
+                    field[iez].vert() /= k0;
                 }
             }
         }
@@ -734,7 +733,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                                 (- (bl*double(jl)-kx) * fey*E[iEy(jl,jt)]
                                  + (bt*double(jt)-ky) * fex*E[iEx(jl,jt)]);
                         }
-                    field[ihz].vert() /= SOLVER->k0;
+                    field[ihz].vert() /= k0;
                 }
             }
         }

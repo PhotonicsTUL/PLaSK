@@ -27,7 +27,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         if (param == "expansion") {
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
-            lam0 = reader.getAttribute<double>("lam0");
+            lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
             max_itegration_points = reader.getAttribute<size_t>("integrals-points", max_itegration_points);
@@ -109,10 +109,11 @@ void BesselSolverCyl::onInvalidate()
 
 size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
-    setM(m);
+    expansion.setLam0(this->lam0);
+    expansion.setM(m);
     initCalculation();
     initTransfer(expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
     root->find(start);
     return insertMode();
 }
@@ -122,11 +123,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    setLam0(modes[num].lam0);
-    setK0(modes[num].k0);
-    setM(modes[num].m);
-    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
+    applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -135,11 +132,7 @@ LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    setLam0(modes[num].lam0);
-    setK0(modes[num].k0);
-    setM(modes[num].m);
-    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
+    applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -148,11 +141,7 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    setLam0(modes[num].lam0);
-    setK0(modes[num].k0);
-    setM(modes[num].m);
-    writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", m, str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)"));
+    applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

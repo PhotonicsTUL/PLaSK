@@ -4,10 +4,12 @@
 namespace plask { namespace solvers { namespace slab {
 
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver<Geometry2DCartesian>>(name),
-    klong(0.), ktran(0.),
+    beta(0.), ktran(0.),
+    symmetry(Expansion::E_UNSPECIFIED),
+    polarization(Expansion::E_UNSPECIFIED),
     size(12),
-    expansion(this),
     dct(2),
+    expansion(this),
     refine(32),
     oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
@@ -31,7 +33,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
             dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
-            lam0 = reader.getAttribute<double>("lam0");
+            lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             reader.requireTagEnd();
         } else if (param == "interface") {
@@ -87,7 +89,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                        .get(emission);
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
-            klong = reader.getAttribute<dcomplex>("k-long", klong);
+            beta = reader.getAttribute<dcomplex>("k-long", beta);
             if (reader.hasAttribute("symmetry")) {
                 std::string repr = reader.requireAttribute("symmetry");
                 Expansion::Component val;
@@ -160,30 +162,44 @@ void FourierSolver2D::onInvalidate()
 
 size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 {
+    expansion.setSymmetry(symmetry);
+    expansion.setPolarization(polarization);
+    expansion.setLam0(this->lam0);
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver2D::WHAT_WAVELENGTH:
+            expansion.setBeta(beta);
+            expansion.setKtran(ktran);
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
             break;
         case FourierSolver2D::WHAT_K0:
+            expansion.setBeta(beta);
+            expansion.setKtran(ktran);
             detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { this->setK0(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); });
             break;
         case FourierSolver2D::WHAT_NEFF:
-            if (expansion.polarization != Expansion::E_UNSPECIFIED)
+            if (expansion.separated())
                 throw Exception("{0}: Cannot search for effective index with polarization separation", getId());
+            expansion.setK0(k0);
+            expansion.setKtran(ktran);
+            clearFields();
             detlog.axis_arg_name = "neff";
             root = getRootDigger([this](const dcomplex& x) {
-                    this->klong = x * this->k0;
+                    expansion.beta = x * expansion.k0;
                     return transfer->determinant();
                 });
             break;
         case FourierSolver2D::WHAT_KTRAN:
+            if (expansion.separated())
+                throw Exception("{0}: Cannot search for transverse wavevector with symmetry", getId());
+            expansion.setK0(k0);
+            expansion.setBeta(beta);
             detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.beta = x; return transfer->determinant(); });
             break;
     }
     root->find(start);
@@ -196,10 +212,12 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 {
     size_t idx;
 
-    double kt = real(ktran), kl = real(klong);
+    double kt = real(expansion.ktran), kl = real(expansion.beta);
 
-    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+std::cerr << (2e3*M_PI/expansion.k0) << "/" << expansion.lam0 << " " << expansion.beta << "x" << expansion.ktran << " " <<expansion.symmetry << " " << expansion.polarization << "\n";
+    
+    if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
+    clearFields();
     initCalculation();
     initTransfer(expansion, true);
 
@@ -252,10 +270,10 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
 {
     size_t idx;
 
-    double kt = real(ktran), kl = real(klong);
+    double kt = real(ktran), kl = real(beta);
 
-    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
+    clearFields();
     initCalculation();
     initTransfer(expansion, true);
 
@@ -310,17 +328,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
-        setK0(modes[num].k0);
-        klong = modes[num].beta;
-        ktran = modes[num].ktran;
-        expansion.symmetry = modes[num].symmetry;
-        expansion.polarization = modes[num].polarization;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -329,17 +337,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
-        setK0(modes[num].k0);
-        klong = modes[num].beta;
-        ktran = modes[num].ktran;
-        expansion.symmetry = modes[num].symmetry;
-        expansion.polarization = modes[num].polarization;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -348,17 +346,7 @@ LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const Mesh
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry != expansion.symmetry || modes[num].polarization != expansion.polarization) {
-        setK0(modes[num].k0);
-        klong = modes[num].beta;
-        ktran = modes[num].ktran;
-        expansion.symmetry = modes[num].symmetry;
-        expansion.polarization = modes[num].polarization;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

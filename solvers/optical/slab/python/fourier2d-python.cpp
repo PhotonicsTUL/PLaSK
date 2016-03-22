@@ -4,6 +4,48 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
+template <>
+py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
+                                                       py::object wavelength,
+                                                       Expansion::Component polarization,
+                                                       Transfer::IncidentDirection incidence
+                                                      )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setBeta(self->getBeta());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetry(self->getSymmetry());
+    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+        self->expansion.setPolarization(polarization);
+    else
+        self->expansion.setPolarization(self->getPolarization());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getReflection(polarization, incidence);
+    }, wavelength);
+}
+
+template <>
+py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
+                                                         py::object wavelength,
+                                                         Expansion::Component polarization,
+                                                         Transfer::IncidentDirection incidence
+                                                        )
+{
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setBeta(self->getBeta());
+    self->expansion.setKtran(self->getKtran());
+    self->expansion.setSymmetry(self->getSymmetry());
+    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+        self->expansion.setPolarization(polarization);
+    else
+        self->expansion.setPolarization(self->getPolarization());
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
 
 static py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
@@ -35,6 +77,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
+    auto* expansion = &self->expansion;
 
     enum What {
         WHAT_NOTHING = 0,
@@ -46,28 +89,27 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     What what = WHAT_NOTHING;
     py::object array;
 
-    FourierSolver2D::ParamGuard guard(self);
+    boost::optional<dcomplex> k0, neff, ktran;
 
     AxisNames* axes = getCurrentAxes();
-    boost::optional<dcomplex> lambda, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
-            if (what == WHAT_K0 || lambda)
+            if (what == WHAT_K0 || k0)
                 throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
-                lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+                k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
-            if (what == WHAT_WAVELENGTH || lambda)
+            if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
-                lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+                k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "neff") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
@@ -86,31 +128,35 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
-    if (lambda) self->setWavelength(*lambda);
-    if (neff) self->setKlong(*neff * self->getK0());
-    if (ktran) self->setKtran(*ktran);
+    if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
+    if (neff) { if (what != WHAT_WAVELENGTH && what != WHAT_K0) expansion->setBeta(*neff * expansion->k0); }
+    else expansion->setBeta(self->getBeta());
+    if (ktran) expansion->setKtran(*ktran); else expansion->setKtran(self->getKtran());
+    expansion->setLam0(self->getLam0());
+    expansion->setSymmetry(self->getSymmetry());
+    expansion->setPolarization(self->getPolarization());
 
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+                [self, neff](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI/x); if (neff) self->expansion.setBeta(*neff * self->expansion.k0); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+                [self, neff](dcomplex x) -> dcomplex { self->expansion.setK0(x); if (neff) self->expansion.setBeta(*neff * x); return self->getDeterminant(); },
                 array
             );
         case WHAT_NEFF:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setKlong(x * self->getK0()); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setBeta(x * self->getK0()); return self->getDeterminant(); },
                 array
             );
         case WHAT_KTRAN:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setKtran(x); return self->getDeterminant(); },
                 array
             );
     }
@@ -121,17 +167,18 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
+    auto* expansion = &self->expansion;
 
     AxisNames* axes = getCurrentAxes();
-    boost::optional<dcomplex> lambda, neff, ktran;
+    boost::optional<dcomplex> k0, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
-            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+            if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
-            if (lambda) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-            lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+            if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+            k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "neff") {
             neff.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran()) {
@@ -140,7 +187,12 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    if (lambda) self->setWavelength(*lambda);
+    if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
+    if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getK0());
+    if (ktran) expansion->setKtran(*ktran); else expansion->setKtran(self->getKtran());
+    expansion->setLam0(self->getLam0());
+    expansion->setSymmetry(self->getSymmetry());
+    expansion->setPolarization(self->getPolarization());
 
     return self->setMode();
 }
@@ -227,15 +279,23 @@ static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) 
 }
 
 static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver2D::ParamGuard guard(&self);
-    self.setWavelength(lam);
+    self.expansion.setK0(2e3*M_PI/lam);
+    self.expansion.setBeta(self.getBeta());
+    self.expansion.setKtran(self.getKtran());
+    self.expansion.setSymmetry(self.getSymmetry());
+    self.expansion.setPolarization(self.getPolarization());
+    self.expansion.setLam0(self.getLam0());
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
 static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver2D::ParamGuard guard(&self);
-    self.setWavelength(lam);
+    self.expansion.setK0(2e3*M_PI/lam);
+    self.expansion.setBeta(self.getBeta());
+    self.expansion.setKtran(self.getKtran());
+    self.expansion.setSymmetry(self.getSymmetry());
+    self.expansion.setPolarization(self.getPolarization());
+    self.expansion.setLam0(self.getLam0());
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
@@ -287,7 +347,7 @@ void export_FourierSolver2D()
                 "Normalized frequency of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength,e.g. the effective index of lateral wavevector.\n");
-    RW_PROPERTY(klong, getKlong, setKlong,
+    RW_PROPERTY(klong, getBeta, setBeta,
                 "Longitudinal propagation constant of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the longitudinal component of the propagation vector and the effective index.\n");
@@ -332,7 +392,7 @@ void export_FourierSolver2D()
                 "    k0 (complex): Normalized frequency.\n"
                 "    neff (complex): Longitudinal effective index.\n"
                 "    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
+    solver.def("compute_reflectivity", &Solver_computeReflectivity<FourierSolver2D>,
                 "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                 "Args:\n"
                 "    lam (float or array of floats): Incident light wavelength.\n"
@@ -342,7 +402,7 @@ void export_FourierSolver2D()
                 "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 "        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity<FourierSolver2D>,
                 "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                 "Args:\n"
                 "    lam (float or array of floats): Incident light wavelength.\n"

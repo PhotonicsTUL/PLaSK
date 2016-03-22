@@ -3,7 +3,7 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
-
+    
 template <NPY_TYPES type>
 static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     npy_intp dims[] = { data.size()/(2*minor), minor, 2 };
@@ -243,6 +243,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
+    auto* expansion = &self->expansion;
 
     enum What {
         WHAT_NOTHING = 0,
@@ -254,11 +255,11 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     What what = WHAT_NOTHING;
     py::object array;
 
-    FourierSolver3D::ParamGuard guard(self);
+    dcomplex klong = self->getKlong(), ktran = self->getKtran();
+    boost::optional<dcomplex> wavelength, k0;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
-    boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
@@ -277,46 +278,55 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_KLONG; array = kwargs[*i];
             } else
-                self->setKlong(py::extract<dcomplex>(kwargs[*i]));
+                klong = py::extract<dcomplex>(kwargs[*i]);
         } else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran()) {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError("Only one key may be an array");
                 what = WHAT_KTRAN; array = kwargs[*i];
             } else
-                self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+                ktran = py::extract<dcomplex>(kwargs[*i]);
         } else if (*i == "dispersive") {
             throw TypeError("Dispersive argument has been removed: set solver.lam0 attribute");
         } else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
-    if ((wavelength && k0) || (wavelength && what == WHAT_K0) || (k0 && what == WHAT_WAVELENGTH))
-        throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-    
-    if (wavelength) self->setWavelength(*wavelength);
-    if (k0) self->setK0(*k0);
+    if (wavelength) {
+        if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+        expansion->setK0(2e3*M_PI / (*wavelength));
+    } else if (k0)
+        expansion->setK0(*k0);
+    else
+        expansion->setK0(self->getK0());
+
+    expansion->setKlong(klong);
+    expansion->setKtran(ktran);
+    expansion->setLam0(self->getLam0());
+    expansion->setSymmetryLong(self->getSymmetryLong());
+    expansion->setSymmetryTran(self->getSymmetryTran());
+
 
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI/x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setK0(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_KLONG:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setKlong(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setKlong(x); return self->getDeterminant(); },
                 array
             );
         case WHAT_KTRAN:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setKtran(x); return self->getDeterminant(); },
                 array
             );
     }
@@ -328,28 +338,38 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
+    boost::optional<dcomplex> wavelength, k0;
+    dcomplex klong = self->getKlong(), ktran = self->getKtran();
+
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
-    boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam") {
             wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "k0")
             k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
         else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
-            self->setKlong(py::extract<dcomplex>(kwargs[*i]));
+            klong = py::extract<dcomplex>(kwargs[*i]);
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
-            self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+            ktran = py::extract<dcomplex>(kwargs[*i]);
         else
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    if (wavelength && k0)
-        throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
-    
-    if (wavelength) self->setWavelength(*wavelength);
-    if (k0) self->setK0(*k0);
+    if (wavelength) {
+        if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
+        self->expansion.setK0(2e3*M_PI / (*wavelength));
+    } else if (k0)
+        self->expansion.setK0(*k0);
+    else
+        self->expansion.setK0(self->getK0());
 
+    self->expansion.setKlong(klong);
+    self->expansion.setKtran(ktran);
+    self->expansion.setLam0(self->getLam0());
+    self->expansion.setSymmetryLong(self->getSymmetryLong());
+    self->expansion.setSymmetryTran(self->getSymmetryTran());
+    
     return self->setMode();
 }
 
@@ -380,15 +400,23 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 }
 
 static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver3D::ParamGuard guard(&self);
-    self.setWavelength(lam);
+    self.expansion.setK0(2e3*M_PI/lam);
+    self.expansion.setKlong(self.getKlong());
+    self.expansion.setKtran(self.getKtran());
+    self.expansion.setSymmetryLong(self.getSymmetryLong());
+    self.expansion.setSymmetryTran(self.getSymmetryTran());
+    self.expansion.setLam0(self.getLam0());
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
 }
 
 static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    FourierSolver3D::ParamGuard guard(&self);
-    self.setWavelength(lam);
+    self.expansion.setK0(2e3*M_PI/lam);
+    self.expansion.setKlong(self.getKlong());
+    self.expansion.setKtran(self.getKtran());
+    self.expansion.setSymmetryLong(self.getSymmetryLong());
+    self.expansion.setSymmetryTran(self.getSymmetryTran());
+    self.expansion.setLam0(self.getLam0());
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.minor(), 2);
 }
@@ -505,7 +533,7 @@ void export_FourierSolver3D()
                 "    k0 (complex): Normalized frequency.\n"
                 "    klong (complex): Longitudinal wavevector.\n"
                 "    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver3D>,
+    solver.def("compute_reflectivity", &Solver_computeReflectivity<FourierSolver3D>,
             "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
             "Args:\n"
             "    lam (float or array of floats): Incident light wavelength.\n"
@@ -515,7 +543,7 @@ void export_FourierSolver3D()
             "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
             "        present.\n"
             , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity<FourierSolver3D>,
             "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
             "Args:\n"
             "    lam (float or array of floats): Incident light wavelength.\n"

@@ -28,7 +28,13 @@ struct PLASK_SOLVER_API Expansion {
     /// Solver which performs calculations (and is the interface to the outside world)
     SlabBase* solver;
 
-    Expansion(SlabBase* solver): solver(solver) {}
+    /// Frequency for which the actual computations are performed
+    dcomplex k0;
+    
+    /// Material parameters wavelength
+    double lam0;
+    
+    Expansion(SlabBase* solver): solver(solver), k0(NAN), lam0(NAN) {}
 
   private:
       double glambda;
@@ -44,14 +50,41 @@ struct PLASK_SOLVER_API Expansion {
     virtual void layerIntegrals(size_t layer, double lam, double glam) = 0;
     
   public:
-  
+
+    /// Set lam0
+    void setLam0(double lam) {
+        if (lam != lam0) {  // if lam0 == NAN, this is always unequal
+            lam0 = lam;
+            solver->recompute_integrals = true;
+            solver->clearFields();
+        }
+    }
+    /// Clear lam0
+    void clearLam0() {
+        if (!isnan(lam0)) {
+            lam0 = NAN;
+            solver->recompute_integrals = true;
+            solver->clearFields();
+        }
+    }
+
+    /// Set current k0
+    void setK0(dcomplex k) {
+        if (k != k0) {
+            k0 = k;
+            if (k0 == 0.) k0 = 1e-12;
+            if (isnan(lam0)) solver->recompute_integrals = true;
+            solver->clearFields();
+        }
+    }
+
     /// Compute all expansion coefficients
     void computeIntegrals() {
-        double lambda = real(2e3*M_PI/solver->k0);
+        double lambda = real(2e3*M_PI/k0);
         if (solver->recompute_integrals) {
             double lam;
-            if (solver->lam0) {
-                lam = *solver->lam0;
+            if (!isnan(lam0)) {
+                lam = lam0;
                 glambda = (solver->always_recompute_gain)? lambda : lam;
             } else{
                 lam = glambda = lambda;
@@ -73,7 +106,7 @@ struct PLASK_SOLVER_API Expansion {
             solver->recompute_gain_integrals = false;
         } else if (solver->recompute_gain_integrals || 
                    (solver->always_recompute_gain && !is_zero(lambda - glambda))) {
-            double lam = (solver->lam0)? *solver->lam0 : lambda;
+            double lam = isnan(lam0)? lambda : solver->lam0;
             glambda = (solver->always_recompute_gain)? lambda : lam;
             std::vector<size_t> glayers;
             size_t nlayers = lcount();

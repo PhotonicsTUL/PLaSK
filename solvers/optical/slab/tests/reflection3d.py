@@ -123,3 +123,7 @@ class Reflection3D_Test(unittest.TestCase):
         self.solver.pmls[1].size = 2.
         self.assertEqual( self.solver.pmls.y.size, 2. )
         self.assertEqual( self.solver.initialized, False )
+
+
+if __name__ == '__main__':
+    unittest.main()

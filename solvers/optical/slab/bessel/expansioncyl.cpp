@@ -31,7 +31,6 @@ size_t ExpansionBessel::matrixSize() const {
 
 void ExpansionBessel::computeBesselZeros()
 {
-    unsigned m = SOLVER->m;
     size_t N = SOLVER->size;
     size_t n = 0;
     factors.resize(N);
@@ -70,7 +69,6 @@ void ExpansionBessel::init()
     computeBesselZeros();
 
     // Estimate necessary number of integration points
-    unsigned m = SOLVER->m;
     double k = factors[factors.size()-1];
 
     double expected = cyl_bessel_j(m+1, k) * rbounds[rbounds.size()-1];
@@ -224,7 +222,7 @@ void ExpansionBessel::reset()
 
 void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
 {
-    if (isnan(real(SOLVER->k0)) || isnan(imag(SOLVER->k0)))
+    if (isnan(real(k0)) || isnan(imag(k0)))
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
@@ -237,11 +235,10 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength specified: set solver lam0 parameter");
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
         
     size_t nr = raxis->size(), N = SOLVER->size;
     double ib = 1. / rbounds[rbounds.size()-1];
-    int m = int(SOLVER->m);
 
     auto mesh = plask::make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
 
@@ -491,8 +488,6 @@ cmatrix ExpansionBessel::muDp() {
 void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 {
     size_t N = SOLVER->size;
-    int m = int(SOLVER->m);
-    dcomplex k0 = SOLVER->k0;
     dcomplex ik0 = 1. / k0;
     double b = rbounds[rbounds.size()-1];
     
@@ -545,12 +540,11 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                                     const cvector& E, const cvector& H)
 {
     size_t N = SOLVER->size;
-    int m = SOLVER->m;
 
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     double b = rbounds[rbounds.size()-1];
-    const dcomplex fz = dcomplex(0,2) / SOLVER->k0;
+    const dcomplex fz = dcomplex(0,2) / k0;
 
     auto src_mesh = plask::make_shared<RectangularMesh<2>>(raxis, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     auto ieps = interpolate(src_mesh, iepsilons[l], dest_mesh, field_interpolation,

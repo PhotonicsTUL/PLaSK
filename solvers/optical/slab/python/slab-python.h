@@ -58,7 +58,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 template <typename SolverT>
 static py::object Solver_getLam0(const SolverT& self) {
-    if (self.lam0) return py::object(*self.lam0);
+    if (!isnan(self.lam0)) return py::object(self.lam0);
     else return py::object();
 }
     
@@ -242,6 +242,36 @@ py::tuple Solver_getMatrices(Solver& self, size_t layer) {
     return py::make_tuple(py::object(RE), py::object(RH));
 }
 #endif
+
+
+template <typename SolverT>
+py::object Solver_computeReflectivity(SolverT* self,
+                                      py::object wavelength,
+                                      Expansion::Component polarization,
+                                      Transfer::IncidentDirection incidence
+                                     )
+{
+    self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getReflection(polarization, incidence);
+    }, wavelength);
+}
+
+template <typename SolverT>
+py::object Solver_computeTransmittivity(SolverT* self,
+                                        py::object wavelength,
+                                        Expansion::Component polarization,
+                                        Transfer::IncidentDirection incidence
+                                       )
+{
+    self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        self->expansion.setK0(2e3*M_PI/lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
 
 
 

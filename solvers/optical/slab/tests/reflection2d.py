@@ -47,3 +47,7 @@ class Reflection2D_Test(unittest.TestCase):
         #show()
         #self.assertAlmostEqual( self.solver.modes[nm].neff, 3.197, 3 )  # DCT 1
         self.assertAlmostEqual( self.solver.modes[nm].neff, 3.199, 3 )  # DCT 2
+
+
+if __name__ == '__main__':
+    unittest.main()

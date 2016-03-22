@@ -20,44 +20,36 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
-        BesselSolverCyl* solver;        ///< Solver this mode belongs to
-        boost::optional<double> lam0;   ///< Wavelength for which integrals are computed
+        double lam0;                    ///< Wavelength for which integrals are computed
         dcomplex k0;                    ///< Stored mode frequency
         int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
 
-//         Mode(BesselSolverCyl* solver): solver(solver), power(1e-9) {}
-        Mode(BesselSolverCyl* solver): solver(solver), power(1.) {}
+        Mode(const ExpansionBessel& expansion): lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1.) {}
 
         bool operator==(const Mode& other) const {
-            return m == other.m && is_zero(k0 - other.k0);
+            return m == other.m && is_zero(k0 - other.k0) && is_zero(lam0 - other.lam0) &&
+                   ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
-    };
 
-    struct ParamGuard {
-        BesselSolverCyl* solver;
-        boost::optional<double> lam0;
-        dcomplex k0;
-        int m;
-        ParamGuard(BesselSolverCyl* solver): solver(solver),
-            lam0(solver->lam0), k0(solver->k0), m(solver->m) {}
-        ~ParamGuard() {
-            solver->setLam0(lam0);
-            solver->setM(m);
-            solver->setK0(k0);
+        bool operator==(const ExpansionBessel& other) const {
+            return m == other.m && is_zero(k0 - other.k0) && is_zero(lam0 - other.lam0) &&
+                   ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
+        }
+
+        template <typename T>
+        bool operator!=(const T& other) const {
+            return !(*this == other);
         }
     };
 
   protected:
 
     /// Angular dependency index
-    unsigned m;
+    int m;
 
     /// Maximum order of the orthogonal base
     size_t size;
-
-    /// Class responsible for computing expansion coefficients
-    ExpansionBessel expansion;
 
     void onInitialize() override;
 
@@ -72,13 +64,22 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
   public:
 
+    /// Class responsible for computing expansion coefficients
+    ExpansionBessel expansion;
+
     /// Computed modes
     std::vector<Mode> modes;
 
-    void clear_modes() override {
+    void clearModes() override {
         modes.clear();
     }
 
+    void setExpansionDefaults(bool with_k0=true) override {
+        expansion.setLam0(getLam0());
+        if (with_k0) expansion.setK0(getK0());
+        expansion.setM(getM());
+    }
+    
     /// Expected integration estimate error
     double integral_error;
 
@@ -117,13 +118,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Get order of the orthogonal base
     unsigned getM() const { return m; }
     /// Set order of the orthogonal base
-    void setM(unsigned n) {
-        if (n != m) {
-            m = n;
-            recompute_integrals = true;
-            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
-    }
+    void setM(unsigned n) { m = n; }
 
     /**
      * Return mode wavelength
@@ -143,10 +138,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      * \return electric field coefficients
      */
     cvector getFieldVectorE(size_t num, double z) {
-        ParamGuard guard(this);
-        setLam0(modes[num].lam0);
-        setK0(modes[num].k0);
-        setM(modes[num].m);
+        applyMode(modes[num]);
         return transfer->getFieldVectorE(z);
     }
 
@@ -157,10 +149,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      * \return magnetic field coefficients
      */
     cvector getFieldVectorH(size_t num, double z) {
-        ParamGuard guard(this);
-        setLam0(modes[num].lam0);
-        setK0(modes[num].k0);
-        setM(modes[num].m);
+        applyMode(modes[num]);
         return transfer->getFieldVectorH(z);
     }
 
@@ -175,10 +164,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
-        Mode mode(this);
-        mode.k0 = k0;
-        mode.m = m;
-        mode.lam0 = lam0;
+        Mode mode(expansion);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);
@@ -191,6 +177,13 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     }
 
     size_t nummodes() const override { return modes.size(); }
+
+    void applyMode(const Mode& mode) {
+        writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", mode.m, str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)"));
+        expansion.setLam0(mode.lam0);
+        expansion.setK0(mode.k0);
+        expansion.setM(mode.m);
+    }
 
     /**
      * Return mode modal loss
