@@ -150,6 +150,7 @@ void ExpansionPW2D::reset() {
     initialized = false;
 }
 
+
 void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 {
     auto geometry = SOLVER->getGeometry();
@@ -352,10 +353,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
-    dcomplex k0 = SOLVER->k0, kx = SOLVER->ktran;
-    
-    dcomplex beta { SOLVER->klong.real(),
-                    SOLVER->klong.imag() - SOLVER->getMirrorLosses(SOLVER->klong.real()/k0.real()) };
+    dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
     
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
@@ -405,10 +403,10 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
             // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = -order; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - kx;
+                    dcomplex gi = b * double(i) - ktran;
                     size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
-                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                         size_t je = iE(j), jh = iH(j);
                         RE(ih, je) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
                         RH(ie, jh) = f *                              k02 * muxx(l,ij);
@@ -419,10 +417,10 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 }
             } else {                                        // Ex & Hz
                 for (int i = -order; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - kx;
+                    dcomplex gi = b * double(i) - ktran;
                     size_t ie = iE(i), ih = iH(i);
                     for (int j = -order; j <= order; ++j) {
-                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                         size_t je = iE(j), jh = iH(j);
                         RE(ih, je) = f *                               k02 * epsxx(l,ij);
                         RH(ie, jh) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
@@ -465,10 +463,10 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
         } else {
             // Full asymmetric()
             for (int i = -order; i <= order; ++i) {
-                dcomplex gi = b * double(i) - kx;
+                dcomplex gi = b * double(i) - ktran;
                 size_t iex = iEx(i), iez = iEz(i), ihx = iHx(i), ihz = iHz(i);
                 for (int j = -order; j <= order; ++j) {
-                    int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                    int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     size_t jex = iEx(j), jez = iEz(j), jhx = iHx(j), jhz = iHz(j);
                     RE(ihz, jex) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
                     RE(ihx, jex) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
@@ -521,9 +519,8 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
 {
     Component sym = (which_field == FIELD_E)? symmetry : Component(2-symmetry);
 
-    const dcomplex beta = SOLVER->klong;
-    const dcomplex kx = SOLVER->ktran;
-
+    dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
+    
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
@@ -557,9 +554,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iE(i)-dz].vert() += iepsyy(l,i-j) * (b*double(j)-kx) * H[iH(j)];
+                                field[iE(i)-dz].vert() += iepsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
                         }
-                        field[iE(i)-dz].vert() /= SOLVER->k0;
+                        field[iE(i)-dz].vert() /= k0;
                     }
                 }
             }
@@ -582,9 +579,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                     } else {
                         field[iE(i)-dz].vert() = 0.;
                         for (int j = -order; j <= order; ++j)
-                            field[iE(i)-dz].vert() -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-kx) * H[iHz(j)]);
+                            field[iE(i)-dz].vert() -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
                     }
-                    field[iE(i)-dz].vert() /= SOLVER->k0;
+                    field[iE(i)-dz].vert() /= k0;
                 }
             }
         }
@@ -612,9 +609,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iH(i)-dz].vert() -= imuyy(l,i-j) * (b*double(j)-kx) * E[iE(j)];
+                                field[iH(i)-dz].vert() -= imuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
                         }
-                        field[iH(i)-dz].vert() /= SOLVER->k0;
+                        field[iH(i)-dz].vert() /= k0;
                     }
                 }
             }
@@ -638,9 +635,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                     } else {
                         field[iH(i)-dz].vert() = 0.;
                         for (int j = -order; j <= order; ++j)
-                            field[iE(i)-dz].vert() += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-kx) * E[iEz(j)]);
+                            field[iE(i)-dz].vert() += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     }
-                    field[iH(i)].vert() /= SOLVER->k0;
+                    field[iH(i)].vert() /= k0;
                 }
             }
         }
@@ -654,7 +651,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
         double L = right - left;
         if (!symmetric()) {
             dcomplex B = 2*M_PI * I / L;
-            dcomplex ikx = I * kx;
+            dcomplex ikx = I * ktran;
             result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
             for (int k = -order; k <= order; ++k) {
                 size_t j = (k>=0)? k : k + N;
@@ -707,7 +704,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                       InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
                                       false).claim();
-            dcomplex ikx = I * kx;
+            dcomplex ikx = I * ktran;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(- ikx * dest_mesh->at(i).c0);
             return result;

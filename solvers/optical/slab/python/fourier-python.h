@@ -18,9 +18,9 @@ py::object FourierSolver_computeReflectivity(SolverT* self,
                                              Transfer::IncidentDirection incidence
                                             )
 {
-    typename SolverT::ParamGuard guard(self);
+    self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam);
+        self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -32,9 +32,9 @@ py::object FourierSolver_computeTransmittivity(SolverT* self,
                                                Transfer::IncidentDirection incidence
                                               )
 {
-    typename SolverT::ParamGuard guard(self);
+    self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam);
+        self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }

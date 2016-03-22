@@ -66,7 +66,8 @@ class SolverAutoWidget(VerticalScrollArea):
         value = empty_to_none(value)
         if value != old_value:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, set_solver_attr, value, old_value, u"change solver's {}".format('attribute' if label is None else label)
+                model, set_solver_attr, value, old_value,
+                u"change solver's {}".format('attribute' if label is None else label.strip())
             ))
 
     def _change_multi_attr(self, group, attr, text, label=None):
@@ -78,7 +79,8 @@ class SolverAutoWidget(VerticalScrollArea):
         text = empty_to_none(text)
         if text != old_text:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, set_solver_attr, text, old_text, u"change solver's {}".format('attribute' if label is None else label)
+                model, set_solver_attr, text, old_text,
+                u"change solver's {}".format('attribute' if label is None else label.strip())
             ))
 
     def _change_node_field(self, field_name, value):
@@ -104,7 +106,7 @@ class SolverAutoWidget(VerticalScrollArea):
             model.undo_stack.push(UndoCommandWithSetter(
                 model, set_value, data, old_data,
                 u"change solver's {}"
-                    .format(schema.name if schema.label is None else schema.label.lower())
+                    .format(schema.name if schema.label is None else schema.label.strip().lower())
             ))
 
     def __init__(self, controller, parent=None):
@@ -162,7 +164,7 @@ class SolverAutoWidget(VerticalScrollArea):
                         edit.setEditable(True)
                         edit.addItems([''] + list(attr.choices))
                         edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
-                                                         self._change_attr(group, name, edit.currentText(), label))
+                                                     self._change_attr(group, name, edit.currentText(), label))
                         edit.setCompleter(defines)
                         if attr.default is not None:
                             edit.lineEdit().setPlaceholderText(attr.default)
@@ -180,7 +182,7 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             #edit.textChanged.connect(self.controller.fire_changed)
                             edit.focus_out_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
-                                                    self._change_multi_attr(group, name, edit.toPlainText(), label)
+                                self._change_multi_attr(group, name, edit.toPlainText(), label)
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)

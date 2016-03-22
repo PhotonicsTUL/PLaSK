@@ -58,7 +58,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 template <typename SolverT>
 static py::object Solver_getLam0(const SolverT& self) {
-    if (self.lam0) return py::object(*self.lam0);
+    if (!isnan(self.lam0)) return py::object(self.lam0);
     else return py::object();
 }
     

@@ -27,48 +27,53 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     };
 
     struct Mode {
-        FourierSolver2D* solver;                ///< Solver this mode belongs to
         Expansion::Component symmetry;          ///< Mode horizontal symmetry
         Expansion::Component polarization;      ///< Mode polarization
-        boost::optional<double> lam0;           ///< Wavelength for which integrals are computed
+        double lam0;                            ///< Wavelength for which integrals are computed
         dcomplex k0;                            ///< Stored mode frequency
         dcomplex beta;                          ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
 
-        Mode(FourierSolver2D* solver): solver(solver), power(1e-9) {}
+        Mode(const ExpansionPW2D& expansion):
+            symmetry(expansion.symmetry),
+            polarization(expansion.polarization),
+            lam0(expansion.lam0),
+            k0(expansion.k0),
+            beta(expansion.beta),
+            ktran(expansion.ktran),
+            power(1.) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetric() || symmetry == other.symmetry)
-                && (!solver->expansion.separated() || polarization == other.polarization)
+                && symmetry == other.symmetry && polarization == other.polarization &&
+                ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
         }
-    };
 
-    struct ParamGuard {
-        FourierSolver2D* solver;
-        boost::optional<double> lam0;
-        dcomplex k0, klong, ktran;
-        ParamGuard(FourierSolver2D* solver, bool recomp=false): solver(solver),
-            lam0(solver->lam0), k0(solver->k0), klong(solver->klong), ktran(solver->ktran) {}
-        ~ParamGuard() {
-            solver->klong = klong; solver->ktran = ktran;
-            solver->setLam0(lam0);
-            solver->setK0(k0);
+        bool operator==(const ExpansionPW2D& other) const {
+            return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
+                && symmetry == other.symmetry && polarization == other.polarization &&
+                ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
+            ;
+        }
+
+        template <typename T>
+        bool operator!=(const T& other) const {
+            return !(*this == other);
         }
     };
 
   protected:
 
-    dcomplex klong,                             ///< Longitudinal wavevector [1/µm]
-             ktran;                             ///< Transverse wavevector [1/µm]
+    dcomplex beta,                     ///< Longitudinal wavevector [1/µm]
+             ktran;                     ///< Transverse wavevector [1/µm]
+
+    Expansion::Component symmetry;      ///< Indicates symmetry if `symmetric`
+    Expansion::Component polarization;  ///< Indicates polarization if `separated`
 
     /// Maximum order of the orthogonal base
     size_t size;
-
-    /// Class responsible for computing expansion coefficients
-    ExpansionPW2D expansion;
 
     void onInitialize() override;
 
@@ -83,11 +88,23 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
   public:
 
+    /// Class responsible for computing expansion coefficients
+    ExpansionPW2D expansion;
+
     /// Computed modes
     std::vector<Mode> modes;
 
     void clear_modes() override {
         modes.clear();
+    }
+    
+    void setExpansionDefaults() override {
+        expansion.setLam0(getLam0());
+        expansion.setK0(getK0());
+        expansion.setBeta(getBeta());
+        expansion.setKtran(getKtran());
+        expansion.setSymmetry(getSymmetry());
+        expansion.setPolarization(getPolarization());
     }
     
     /// Mesh multiplier for finer computation of the refractive indices
@@ -133,7 +150,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void setDCT(int n) {
         if (n != 1 && n != 2)
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
-        dct = n;
+        if (dct != n) {
+            dct = n;
+            if (expansion.symmetric()) invalidate();
+        }
     }
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
@@ -143,7 +163,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        if (k != 0. && expansion.symmetric()) {
+        if (k != 0. && (expansion.symmetric() || expansion.symmetry != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
             expansion.symmetry = Expansion::E_UNSPECIFIED;
             invalidate();
@@ -153,51 +173,53 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     }
 
     /// Set longitudinal wavevector
-    void setKlong(dcomplex k)  {
-        if (k != 0. && expansion.separated()) {
+    void setBeta(dcomplex k)  {
+        if (k != 0. && (expansion.separated() || expansion.polarization != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting polarizations separation");
             expansion.polarization = Expansion::E_UNSPECIFIED;
             invalidate();
         }
-        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        klong = k;
+        if (k != beta && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        beta = k;
     }
 
     /// Get longitudinal wavevector
-    dcomplex getKlong() const { return klong; }
+    dcomplex getBeta() const { return beta; }
 
     /// Return current mode symmetry
-    Expansion::Component getSymmetry() const { return expansion.symmetry; }
+    Expansion::Component getSymmetry() const { return symmetry; }
 
     /// Set new mode symmetry
-    void setSymmetry(Expansion::Component symmetry) {
+    void setSymmetry(Expansion::Component sym) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
-        if ((expansion.symmetric() && symmetry == Expansion::E_UNSPECIFIED) ||
-            (!expansion.symmetric() && symmetry != Expansion::E_UNSPECIFIED))
+        if ((symmetry == Expansion::E_UNSPECIFIED) != (sym == Expansion::E_UNSPECIFIED))
             invalidate();
-        if (ktran != 0. && symmetry != Expansion::E_UNSPECIFIED) {
+        if (ktran != 0. && sym != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
+            expansion.setKtran(0.);
         }
-        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        expansion.symmetry = symmetry;
+        symmetry = sym;
     }
 
     /// Return current mode polarization
-    Expansion::Component getPolarization() const { return expansion.polarization; }
+    Expansion::Component getPolarization() const { return polarization; }
 
     /// Set new mode polarization
-    void setPolarization(Expansion::Component polarization) {
-        if ((expansion.separated() && polarization == Expansion::E_UNSPECIFIED) ||
-            (!expansion.separated() && polarization != Expansion::E_UNSPECIFIED))
+    void setPolarization(Expansion::Component pol) {
+        if ((polarization == Expansion::E_UNSPECIFIED) != (pol == Expansion::E_UNSPECIFIED))
             invalidate();
-        if (klong != 0. && polarization != Expansion::E_UNSPECIFIED) {
-            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
-            klong = 0.;
+        if (beta != 0. && pol != Expansion::E_UNSPECIFIED) {
+            Solver::writelog(LOG_WARNING, "Resetting beta to 0.");
+            beta = 0.;
+            expansion.setBeta(0.);
         }
-        expansion.polarization = polarization;
+        polarization = pol;
     }
+
+    /// Get info if the expansion is symmetric
+    bool symmetric() const { return expansion.symmetric(); }
 
     /// Get info if the expansion is separated
     bool separated() const { return expansion.separated(); }
@@ -307,7 +329,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
@@ -324,7 +346,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
@@ -341,7 +363,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                 Transfer::IncidentDirection incident,
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
-        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+        if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
         initCalculation();
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
@@ -354,13 +376,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \return electric field coefficients
      */
     cvector getFieldVectorE(size_t num, double z) {
-        ParamGuard guard(this);
-        if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
-            setK0(modes[num].k0);
-            klong = modes[num].beta;
-            ktran = modes[num].ktran;
-            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
+        applyMode(modes[num]);
         return transfer->getFieldVectorE(z);
     }
     
@@ -371,13 +387,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \return magnetic field coefficients
      */
     cvector getFieldVectorH(size_t num, double z) {
-        ParamGuard guard(this);
-        if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
-            setK0(modes[num].k0);
-            klong = modes[num].beta;
-            ktran = modes[num].ktran;
-            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
+        applyMode(modes[num]);
         return transfer->getFieldVectorH(z);
     }
 
@@ -423,10 +433,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             writelog(LOG_WARNING, "Mode fields are not normalized");
             warn = false;
         }
-        Mode mode(this);
-        mode.lam0 = lam0;
-        mode.k0 = k0; mode.beta = klong; mode.ktran = ktran;
-        mode.symmetry = expansion.symmetry; mode.polarization = expansion.polarization;
+        Mode mode(expansion);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);
@@ -465,14 +472,23 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return 0.5 * std::log(R1*R2) / L;
     }
 
-    void logCurrentMode() {
+    void applyMode(const Mode& mode) {
         writelog(LOG_DEBUG, "Current mode <lam: {:.2f}nm, neff: {}, ktran: {}/um, polarization: {}, symmetry: {}>",
-                 real(2e3*M_PI/k0),
-                 str(klong/k0, "{:.3f}{:+.3g}j"),
-                 str(ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
-                 (expansion.polarization == Expansion::E_LONG)? "El" : (expansion.polarization == Expansion::E_TRAN)? "Et" : "none",
-                 (expansion.symmetry == Expansion::E_LONG)? "El" : (expansion.symmetry == Expansion::E_TRAN)? "Et" : "none"
+                 real(2e3*M_PI/mode.k0),
+                 str(mode.beta/mode.k0, "{:.3f}{:+.3g}j"),
+                 str(mode.ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
+                 (mode.polarization == Expansion::E_LONG)? "El" : (mode.polarization == Expansion::E_TRAN)? "Et" : "none",
+                 (mode.symmetry == Expansion::E_LONG)? "El" : (mode.symmetry == Expansion::E_TRAN)? "Et" : "none"
                 );
+        if (mode != expansion) {
+            expansion.setLam0(mode.lam0);
+            expansion.setK0(mode.k0);
+            expansion.beta = mode.beta;
+            expansion.ktran = mode.ktran;
+            expansion.symmetry = mode.symmetry;
+            expansion.polarization = mode.polarization;
+            clearFields();
+        }
     }
     
     /**
@@ -527,20 +543,32 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         static size_t size() { return 1; }
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver2D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setBeta(parent->beta);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetry(parent->symmetry);
+            parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
         
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver2D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setBeta(parent->beta);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetry(parent->symmetry);
+            parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
         
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver2D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setBeta(parent->beta);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetry(parent->symmetry);
+            parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
         

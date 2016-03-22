@@ -13,6 +13,9 @@ struct FourierSolver2D;
 
 struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
+    dcomplex beta,                      ///< Longitudinal wavevector [1/µm]
+             ktran;                     ///< Transverse wavevector [1/µm]
+
     shared_ptr<RegularAxis> xmesh;      ///< Horizontal axis for structure sampling
 
     size_t N;                           ///< Number of expansion coefficients
@@ -94,6 +97,34 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
+
+    void setBeta(dcomplex b) {
+        if (b != beta) {
+            beta = b;
+            solver->clearFields();
+        }
+    }
+    
+    void setKtran(dcomplex k) {
+        if (k != ktran) {
+            ktran = k;
+            solver->clearFields();
+        }
+    }
+    
+    void setSymmetry(Component sym) {
+        if (sym != symmetry) {
+            symmetry = sym;
+            solver->clearFields();
+        }
+    }
+    
+    void setPolarization(Component pol) {
+        if (pol != polarization) {
+            polarization = pol;
+            solver->clearFields();
+        }
+    }
 
     /// Get \f$ \varepsilon_{zz} \f$
     dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }

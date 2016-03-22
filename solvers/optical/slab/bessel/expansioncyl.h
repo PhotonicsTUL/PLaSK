@@ -13,6 +13,8 @@ struct BesselSolverCyl;
 
 struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
+    int m;                              ///< Angular dependency index
+
     bool initialized;                   ///< Expansion is initialized
 
     /// Horizontal axis with separate integration intervals.
@@ -197,6 +199,14 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
   public:
       
+    void setM(unsigned n) {
+        if (n != m) {
+            m = n;
+            solver->recompute_integrals = true;
+            solver->clearFields();
+        }
+    }
+    
     /// Get \f$ X_s \f$ index
     size_t idxs(size_t i) { return 2 * i; }
 

@@ -6,8 +6,8 @@ namespace plask { namespace solvers { namespace slab {
 FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver<Geometry3D>>(name),
     size_long(12), size_tran(12),
     klong(0.), ktran(0.),
-    expansion(this),
     dct(2),
+    expansion(this),
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
 {
@@ -90,7 +90,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
             dct = dc;
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
-            lam0 = reader.getAttribute<double>("lam0");
+            lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             reader.requireTagEnd();
         } else if (param == "interface") {
@@ -188,23 +188,36 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
     initCalculation();
     initTransfer(expansion, false);
+    expansion.setLam0(this->lam0);
+    expansion.setSymmetryLong(symmetry_long);
+    expansion.setSymmetryTran(symmetry_tran);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
+            expansion.setKlong(klong);
+            expansion.setKtran(ktran);
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { this->setWavelength(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_K0:
+            expansion.setKlong(klong);
+            expansion.setKtran(ktran);
             detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { this->setK0(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_KLONG:
+            expansion.setK0(this->k0);
+            expansion.setKtran(ktran);
+            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
             detlog.axis_arg_name = "klong";
-            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_KTRAN:
+            expansion.setK0(this->k0);
+            expansion.setKlong(klong);
+            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
             detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); });
             break;
     }
     root->find(start);
@@ -331,17 +344,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
-        setK0(modes[num].k0);
-        klong = modes[num].klong;
-        ktran = modes[num].ktran;
-        expansion.symmetry_long = modes[num].symmetry_long;
-        expansion.symmetry_tran = modes[num].symmetry_tran;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
@@ -350,17 +353,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const Mes
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
-        setK0(modes[num].k0);
-        klong = modes[num].klong;
-        ktran = modes[num].ktran;
-        expansion.symmetry_long = modes[num].symmetry_long;
-        expansion.symmetry_tran = modes[num].symmetry_tran;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
@@ -369,17 +362,7 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
 {
     assert(num < modes.size());
     assert(transfer);
-    ParamGuard guard(this);
-    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran ||
-        modes[num].symmetry_long != expansion.symmetry_long || modes[num].symmetry_tran != expansion.symmetry_tran) {
-        setK0(modes[num].k0);
-        klong = modes[num].klong;
-        ktran = modes[num].ktran;
-        expansion.symmetry_long = modes[num].symmetry_long;
-        expansion.symmetry_tran = modes[num].symmetry_tran;
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    }
-    logCurrentMode();
+    applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 

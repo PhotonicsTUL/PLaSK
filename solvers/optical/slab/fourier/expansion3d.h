@@ -12,6 +12,9 @@ struct FourierSolver3D;
 
 struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
+    dcomplex klong,                     ///< Longitudinal wavevector
+             ktran;                     ///< Transverse wavevector
+    
     RegularAxis long_mesh,              ///< Horizontal axis for structure sampling in longitudinal direction
                 tran_mesh;              ///< Horizontal axis for structure sampling in transverse direction
 
@@ -114,6 +117,34 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
+
+    void setKlong(dcomplex k) {
+        if (k != klong) {
+            klong = k;
+            solver->clearFields();
+        }
+    }
+    
+    void setKtran(dcomplex k) {
+        if (k != ktran) {
+            ktran = k;
+            solver->clearFields();
+        }
+    }
+    
+    void setSymmetryLong(Component sym) {
+        if (sym != symmetry_long) {
+            symmetry_long = sym;
+            solver->clearFields();
+        }
+    }
+    
+    void setSymmetryTran(Component sym) {
+        if (sym != symmetry_tran) {
+            symmetry_tran = sym;
+            solver->clearFields();
+        }
+    }
 
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(size_t lay, int l, int t) {

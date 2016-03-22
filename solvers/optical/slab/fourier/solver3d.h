@@ -27,37 +27,40 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     };
 
     struct Mode {
-        FourierSolver3D* solver;                ///< Solver this mode belongs to
         Expansion::Component symmetry_long;     ///< Mode symmetry in long direction
         Expansion::Component symmetry_tran;     ///< Mode symmetry in tran direction
-        boost::optional<double> lam0;           ///< Wavelength for which integrals are computed
+        double lam0;                            ///< Wavelength for which integrals are computed
         dcomplex k0;                            ///< Stored mode frequency
         dcomplex klong;                         ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
 
-        Mode(FourierSolver3D* solver): solver(solver), 
-            power((solver->emission == EMISSION_TOP || solver->emission == EMISSION_BOTTOM)? 1e-9 : 1.) {}
+        Mode(const ExpansionPW3D& expansion): 
+            symmetry_long(expansion.symmetry_long),
+            symmetry_tran(expansion.symmetry_tran),
+            lam0(expansion.lam0),
+            k0(expansion.k0),
+            klong(expansion.klong),
+            ktran(expansion.ktran),
+            power(1.) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetric_long() || symmetry_long == other.symmetry_long)
-                && (!solver->expansion.symmetric_tran() || symmetry_tran == other.symmetry_tran)
+                && symmetry_long == other.symmetry_long && symmetry_tran == other.symmetry_tran &&
+                ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
         }
-    };
 
-    struct ParamGuard {
-        FourierSolver3D* solver;
-        boost::optional<double> lam0;
-        dcomplex k0, klong, ktran;
-        bool recomp;
-        ParamGuard(FourierSolver3D* solver): solver(solver),
-            lam0(solver->lam0), k0(solver->k0), klong(solver->klong), ktran(solver->ktran) {}
-        ~ParamGuard() {
-            solver->setLam0(lam0);
-            solver->klong = klong; solver->ktran = ktran;
-            solver->setK0(k0);
+        bool operator==(const ExpansionPW3D& other) const {
+            return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
+                && symmetry_long == other.symmetry_long && symmetry_tran == other.symmetry_tran &&
+                ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
+            ;
+        }
+
+        template <typename T>
+        bool operator!=(const T& other) const {
+            return !(*this == other);
         }
     };
 
@@ -71,9 +74,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     dcomplex klong,                             ///< Longitudinal wavevector [1/µm]
              ktran;                             ///< Transverse wavevector [1/µm]
 
-    /// Class responsoble for computing expansion coefficients
-    ExpansionPW3D expansion;
-
+    Expansion::Component symmetry_long,         ///< Symmetry along longitudinal axis
+                         symmetry_tran;         ///< Symmetry along transverse axis
+    
     void onInitialize() override;
 
     void onInvalidate() override;
@@ -87,6 +90,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
   public:
 
+    /// Class responsoble for computing expansion coefficients
+    ExpansionPW3D expansion;
+
     /// Computed modes
     std::vector<Mode> modes;
 
@@ -94,6 +100,15 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         modes.clear();
     }
 
+    void setExpansionDefaults() override {
+        expansion.setLam0(getLam0());
+        expansion.setK0(getK0());
+        expansion.setKlong(getKlong());
+        expansion.setKtran(getKtran());
+        expansion.setSymmetryLong(getSymmetryLong());
+        expansion.setSymmetryTran(getSymmetryTran());
+    }
+    
     /// Mesh multiplier for finer computation of the refractive indices in the longitudinal direction
     size_t refine_long;
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
@@ -149,52 +164,55 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     /// Return current mode symmetry
-    Expansion::Component getSymmetryLong() const { return expansion.symmetry_long; }
+    Expansion::Component getSymmetryLong() const { return symmetry_long; }
 
     /// Set new mode symmetry
     void setSymmetryLong(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
-        if ((expansion.symmetric_long() && symmetry == Expansion::E_UNSPECIFIED) ||
-            (!expansion.symmetric_long() && symmetry != Expansion::E_UNSPECIFIED))
+        if ((symmetry_long == Expansion::E_UNSPECIFIED) != (symmetry == Expansion::E_UNSPECIFIED))
             invalidate();
         if (klong != 0. && symmetry != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
             klong = 0.;
+            expansion.setKlong(0.);
         }
-        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        expansion.symmetry_long = symmetry;
+        symmetry_long = symmetry;
     }
 
     /// Return current mode symmetry
-    Expansion::Component getSymmetryTran() const { return expansion.symmetry_tran; }
+    Expansion::Component getSymmetryTran() const { return symmetry_tran; }
 
     /// Set new mode symmetry
     void setSymmetryTran(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
-        if ((expansion.symmetric_tran() && symmetry == Expansion::E_UNSPECIFIED) ||
-            (!expansion.symmetric_tran() && symmetry != Expansion::E_UNSPECIFIED))
+        if ((symmetry_tran == Expansion::E_UNSPECIFIED) != (symmetry == Expansion::E_UNSPECIFIED))
             invalidate();
         if (ktran != 0. && symmetry != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
+            expansion.setKtran(0.);
         }
-        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        expansion.symmetry_tran = symmetry;
+        symmetry_tran = symmetry;
     }
+
+    /// Get info if the expansion is symmetric
+    bool symmetricLong() const { return expansion.symmetric_long(); }
+
+    /// Get info if the expansion is symmetric
+    bool symmetricTran() const { return expansion.symmetric_tran(); }
 
     /// Get longitudinal wavevector
     dcomplex getKlong() const { return klong; }
 
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
-        if (k != 0. && expansion.symmetric_long()) {
+        if (k != 0. && (expansion.symmetric_long() || symmetry_long != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
-            expansion.symmetry_long = Expansion::E_UNSPECIFIED;
+            symmetry_long = Expansion::E_UNSPECIFIED;
             invalidate();
         }
-        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
     }
 
@@ -203,12 +221,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        if (k != 0. && expansion.symmetric_tran()) {
+        if (k != 0. && (expansion.symmetric_tran() || symmetry_tran != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting transverse mode symmetry");
-            expansion.symmetry_tran = Expansion::E_UNSPECIFIED;
+            symmetry_tran = Expansion::E_UNSPECIFIED;
             invalidate();
         }
-        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;
     }
 
@@ -218,7 +235,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     void setDCT(int n) {
         if (n != 1 && n != 2)
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
-        dct = n;
+        if (dct != n) {
+            dct = n;
+            if (expansion.symmetric_long() || expansion.symmetric_tran()) invalidate();
+        }
     }
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
@@ -347,13 +367,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \return electric field coefficients
      */
     cvector getFieldVectorE(size_t num, double z) {
-        ParamGuard guard(this);
-        if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-            setK0(modes[num].k0);
-            klong = modes[num].klong;
-            ktran = modes[num].ktran;
-            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
+        applyMode(modes[num]);
         return transfer->getFieldVectorE(z);
     }
     
@@ -364,13 +378,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \return magnetic field coefficients
      */
     cvector getFieldVectorH(size_t num, double z) {
-        ParamGuard guard(this);
-        if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-            setK0(modes[num].k0);
-            klong = modes[num].klong;
-            ktran = modes[num].ktran;
-            transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        }
+        applyMode(modes[num]);
         return transfer->getFieldVectorH(z);
     }
     
@@ -384,6 +392,12 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
         initCalculation();
         initTransfer(expansion, true);
+        expansion.setLam0(lam0);
+        expansion.setK0(k0);
+        expansion.setKlong(klong);
+        expansion.setKtran(ktran);
+        expansion.setSymmetryLong(symmetry_long);
+        expansion.setSymmetryTran(symmetry_tran);
         return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
     }
     
@@ -416,10 +430,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             writelog(LOG_WARNING, "Mode fields are not normalized unless emission is set to 'top' or 'bottom'");
             warn = false;
         }
-        Mode mode(this);
-        mode.lam0 = lam0;
-        mode.k0 = k0; mode.klong = klong; mode.ktran = ktran;
-        mode.symmetry_long = expansion.symmetry_long; mode.symmetry_tran = expansion.symmetry_tran;
+        Mode mode(expansion);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);
@@ -440,14 +451,23 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         return modes[n].klong / modes[n].k0;
     }
 
-    void logCurrentMode() {
+    void applyMode(const Mode& mode) {
         writelog(LOG_DEBUG, "Current mode <lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({})>",
-                 str(2e3*M_PI/k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
-                 str(klong, "({:.3f}{:+.3g}j)", "{:.3f}"),
-                 str(ktran, "({:.3f}{:+.3g}j)", "{:.3f}"),
-                 (expansion.symmetry_long == Expansion::E_LONG)? "El" : (expansion.symmetry_long == Expansion::E_TRAN)? "Et" : "none",
-                 (expansion.symmetry_tran == Expansion::E_LONG)? "El" : (expansion.symmetry_tran == Expansion::E_TRAN)? "Et" : "none"
+                 str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 str(mode.klong, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 str(mode.ktran, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 (mode.symmetry_long == Expansion::E_LONG)? "El" : (mode.symmetry_long == Expansion::E_TRAN)? "Et" : "none",
+                 (mode.symmetry_tran == Expansion::E_LONG)? "El" : (mode.symmetry_tran == Expansion::E_TRAN)? "Et" : "none"
                 );
+        if (mode != expansion) {
+            expansion.setLam0(mode.lam0);
+            expansion.setK0(mode.k0);
+            expansion.klong = mode.klong;
+            expansion.ktran = mode.ktran;
+            expansion.symmetry_long = mode.symmetry_long;
+            expansion.symmetry_tran = mode.symmetry_tran;
+            clearFields();
+        }
     }
      
     LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
@@ -484,23 +504,35 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         static size_t size() { return 1; }
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver3D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setKlong(parent->klong);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetryLong(parent->symmetry_long);
+            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
         
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver3D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setKlong(parent->klong);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetryLong(parent->symmetry_long);
+            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
         
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            FourierSolver3D::ParamGuard guard(parent);
-            parent->setWavelength(wavelength);
+            parent->expansion.setLam0(parent->lam0);
+            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setKlong(parent->klong);
+            parent->expansion.setKtran(parent->ktran);
+            parent->expansion.setSymmetryLong(parent->symmetry_long);
+            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
-        
+
         /**
          * Construct proxy.
          * \param wavelength incident light wavelength
