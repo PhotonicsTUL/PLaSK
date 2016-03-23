@@ -165,7 +165,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void setKtran(dcomplex k)  {
         if (k != 0. && (expansion.symmetric() || expansion.symmetry != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
-            expansion.symmetry = Expansion::E_UNSPECIFIED;
+            symmetry = Expansion::E_UNSPECIFIED;
             invalidate();
         }
         if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
