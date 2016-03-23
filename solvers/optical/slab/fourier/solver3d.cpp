@@ -191,7 +191,6 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     expansion.setSymmetryLong(symmetry_long);
     expansion.setSymmetryTran(symmetry_tran);
     expansion.setLam0(this->lam0);
-std::cerr << expansion.lam0 << " " << expansion.symmetry_long << "x" << expansion.symmetry_long << "\n";   
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
@@ -200,9 +199,7 @@ std::cerr << expansion.lam0 << " " << expansion.symmetry_long << "x" << expansio
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x);
-std::cerr << (2e3*M_PI/expansion.k0) << "/" << expansion.lam0 << " " << expansion.klong << "x" << expansion.ktran << " " << expansion.symmetry_long << "x" << expansion.symmetry_long << "\n";   
-                return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);

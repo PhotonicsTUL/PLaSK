@@ -104,23 +104,24 @@ if __name__ == "__main__":
     msh = mesh.Rectangular3D([0.], mesh.Regular(0., 7., 201), mesh.Regular(box.lower.z, box.upper.z, 1001))
     mshr = mesh.Rectangular3D([0.], mesh.Regular(0., 7., 201), [z0])
 
-    #lams = linspace(979., 981., 201)
+    #lams = linspace(977., 981., 201)
     #dets = vcsel.solver.get_determinant(lam=lams)
     #plot(lams, abs(dets))
     #yscale('log')
 
-    m = vcsel.solver.find_mode(lam=979.75)
-    print(vcsel.solver.modes[m])
-    print_log(LOG_DEBUG, 'END')
+    modes = vcsel.solver.find_mode(lam=979.75), vcsel.solver.find_mode(lam=978.48), 
+    
+    for m in modes:
+        print(vcsel.solver.modes[m])
 
-    figure()
-    plot_field(vcsel.solver.outLightMagnitude(m, msh, 'fourier'), plane='yz')
+        figure()
+        plot_field(vcsel.solver.outLightMagnitude(m, msh, 'fourier'), plane='yz')
 
-    figure()
-    plot_profile(vcsel.solver.outLightMagnitude(m, mshr, 'fourier') / vcsel.solver.modes[m].power)
-    axvline(box.upper.y, ls=':', color='k')
-    axvline(box.upper[1] + vcsel.solver.pmls[1].dist, ls=':', color='k')
-    axvline(box.upper[1] + vcsel.solver.pmls[1].dist + vcsel.solver.pmls[1].size, ls=':', color='k')
-    xlim(mshr.axis1[0], mshr.axis1[-1])
+        figure()
+        plot_profile(vcsel.solver.outLightMagnitude(m, mshr, 'fourier') / vcsel.solver.modes[m].power)
+        axvline(box.upper.y, ls=':', color='k')
+        axvline(box.upper[1] + vcsel.solver.pmls[1].dist, ls=':', color='k')
+        axvline(box.upper[1] + vcsel.solver.pmls[1].dist + vcsel.solver.pmls[1].size, ls=':', color='k')
+        xlim(mshr.axis1[0], mshr.axis1[-1])
 
     show()
