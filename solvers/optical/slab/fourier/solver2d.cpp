@@ -147,6 +147,7 @@ void FourierSolver2D::onInitialize()
     this->ensureInterface();
     Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver ({0} layers in the stack, interface after {1} layer{2})",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    setExpansionDefaults();
     expansion.init();
     this->recompute_integrals = true;
 }

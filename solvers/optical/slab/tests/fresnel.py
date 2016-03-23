@@ -107,6 +107,7 @@ class FresnelTest(unittest.TestCase):
         # show_plots(solver, 'tran', 'Separated Tran 2D', True)
 
         solver.polarization = None
+        #solver.initialize()
         with Refl(solver, 'long', 'El') as refl:
             for a in angles:
                 R, T = refl(a)
@@ -177,9 +178,4 @@ class FresnelTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    errors = 0
-    suite = unittest.TestLoader().loadTestsFromTestCase(FresnelTest)
-    runner = unittest.TextTestRunner()
-    result = runner.run(suite)
-    errors += len(result.errors) + len(result.failures)
-    sys.exit(errors)
+    unittest.main()

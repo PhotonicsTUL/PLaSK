@@ -1,4 +1,4 @@
-#include <plask/utils/minimal_winows.h>
+#include <plask/utils/minimal_windows.h>
 //#define BOOST_USE_WINDOWS_H
 
 #include <Python.h>

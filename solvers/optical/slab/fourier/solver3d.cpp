@@ -172,6 +172,7 @@ void FourierSolver3D::onInitialize()
     this->ensureInterface();
     Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack, interface after {1} layer{2})",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    setExpansionDefaults();
     expansion.init();
     this->recompute_integrals = true;
 }
@@ -190,6 +191,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     expansion.setSymmetryLong(symmetry_long);
     expansion.setSymmetryTran(symmetry_tran);
     expansion.setLam0(this->lam0);
+std::cerr << expansion.lam0 << " " << expansion.symmetry_long << "x" << expansion.symmetry_long << "\n";   
     initCalculation();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
@@ -198,7 +200,9 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x);
+std::cerr << (2e3*M_PI/expansion.k0) << "/" << expansion.lam0 << " " << expansion.klong << "x" << expansion.ktran << " " << expansion.symmetry_long << "x" << expansion.symmetry_long << "\n";   
+                return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);

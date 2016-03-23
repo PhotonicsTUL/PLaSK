@@ -454,7 +454,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     void applyMode(const Mode& mode) {
-        writelog(LOG_DEBUG, "Current mode <lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({})>",
+        writelog(LOG_DEBUG, "Current mode <lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({},{})>",
                  str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
                  str(mode.klong, "({:.3f}{:+.3g}j)", "{:.3f}"),
                  str(mode.ktran, "({:.3f}{:+.3g}j)", "{:.3f}"),

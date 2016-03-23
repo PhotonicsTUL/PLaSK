@@ -1,5 +1,5 @@
-#ifndef PLASK__UTILS_MINIMAL_WINOWS_H
-#define PLASK__UTILS_MINIMAL_WINOWS_H
+#ifndef PLASK__UTILS_MINIMAL_WINDOWS_H
+#define PLASK__UTILS_MINIMAL_WINDOWS_H
 
 // This file includes minimal possible version of windows.h.
 
@@ -37,5 +37,5 @@
 #define BOOST_USE_WINDOWS_H
 #endif
 
-#endif // __PLASK__MINIMAL_WINOWS_H
+#endif // __PLASK__MINIMAL_WINDOWS_H
 

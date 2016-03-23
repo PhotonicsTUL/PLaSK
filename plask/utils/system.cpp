@@ -3,7 +3,7 @@
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #   define PLASK_SYSTEM_WINDOWS
-#   include <plask/utils/minimal_winows.h>
+#   include <plask/utils/minimal_windows.h>
 //#   include <windows.h>
 //#   define BOOST_USE_WINDOWS_H
 #else

@@ -9,7 +9,7 @@
 #include <plask/parallel.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#   include <plask/utils/minimal_winows.h>
+#   include <plask/utils/minimal_windows.h>
 //#   define BOOST_USE_WINDOWS_H
 #else
 #   include <unistd.h>

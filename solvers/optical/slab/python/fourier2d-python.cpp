@@ -4,6 +4,15 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
+inline static std::string polarization_str(Expansion::Component val) {
+    AxisNames* axes = getCurrentAxes();
+    switch (val) {
+        case Expansion::E_TRAN: return "E"+axes->getNameForTran();
+        case Expansion::E_LONG: return "E"+axes->getNameForLong();
+        default: return "none";
+    }
+}
+
 template <>
 py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                                        py::object wavelength,
@@ -15,9 +24,14 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
     self->expansion.setBeta(self->getBeta());
     self->expansion.setKtran(self->getKtran());
     self->expansion.setSymmetry(self->getSymmetry());
-    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+    if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
+        if (!self->isInitialized()) {
+            self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
+                           polarization_str(polarization));
+            self->setPolarization(polarization);
+        }
         self->expansion.setPolarization(polarization);
-    else
+    } else
         self->expansion.setPolarization(self->getPolarization());
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
@@ -36,9 +50,14 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
     self->expansion.setBeta(self->getBeta());
     self->expansion.setKtran(self->getKtran());
     self->expansion.setSymmetry(self->getSymmetry());
-    if (self->expansion.beta == 0. && (!self->expansion.initialized || self->expansion.separated()))
+    if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
+        if (!self->isInitialized()) {
+            self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
+                           polarization_str(polarization));
+            self->setPolarization(polarization);
+        }
         self->expansion.setPolarization(polarization);
-    else
+    } else
         self->expansion.setPolarization(self->getPolarization());
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);

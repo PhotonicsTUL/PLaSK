@@ -77,7 +77,7 @@ class VCSEL(unittest.TestCase):
               </optical>
             </solvers>
           </plask>''')
-        self.solver = self.manager.solver.fourier3d
+        self.solver = self.manager.solvers.fourier3d
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
         self.solver.refine = 32

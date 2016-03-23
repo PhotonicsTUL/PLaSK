@@ -3,7 +3,7 @@
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define PLASK__UTILS_PLUGIN_WINAPI
-#   include "../minimal_winows.h"
+#   include "../minimal_windows.h"
 #else
 #   define PLASK__UTILS_PLUGIN_DLOPEN
 #   include <dlfcn.h>

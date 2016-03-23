@@ -176,7 +176,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void setBeta(dcomplex k)  {
         if (k != 0. && (expansion.separated() || expansion.polarization != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting polarizations separation");
-            expansion.polarization = Expansion::E_UNSPECIFIED;
+            polarization = Expansion::E_UNSPECIFIED;
             invalidate();
         }
         if (k != beta && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
