@@ -248,10 +248,11 @@ void ReflectionTransfer::determineFields()
 
     // Assign the space for the field vectors
     fields.resize(count);
+
     // Obtain the physical fields at the last layer
     allP = true; interface_field = nullptr;
-
     auto E = getInterfaceVector();
+
     cvector temp(work, N);
 
     for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)

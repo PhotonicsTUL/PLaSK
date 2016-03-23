@@ -153,8 +153,6 @@ void AdmittanceTransfer::determineFields()
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
 
-    needAllY = true;
-
     int N = diagonalizer->matrixSize();
     int N0 = diagonalizer->source()->matrixSize();
     size_t count = solver->stack.size();
@@ -171,6 +169,8 @@ void AdmittanceTransfer::determineFields()
     cvector tv(N0);
 
     // Obtain the physical fields at the last layer
+    needAllY = true;
+    interface_field = nullptr;
     auto E = getInterfaceVector();
 
     // Declare temporary matrix on 'work' array
