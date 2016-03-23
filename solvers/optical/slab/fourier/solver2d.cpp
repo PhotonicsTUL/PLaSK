@@ -214,8 +214,6 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 
     double kt = real(expansion.ktran), kl = real(expansion.beta);
 
-std::cerr << (2e3*M_PI/expansion.k0) << "/" << expansion.lam0 << " " << expansion.beta << "x" << expansion.ktran << " " <<expansion.symmetry << " " << expansion.polarization << "\n";
-    
     if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
     clearFields();
     initCalculation();
