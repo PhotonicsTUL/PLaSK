@@ -152,7 +152,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
         if (dct != n) {
             dct = n;
-            if (expansion.symmetric()) invalidate();
+            if (symmetric()) invalidate();
         }
     }
     /// True if DCT == 2
@@ -163,7 +163,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        if (k != 0. && (expansion.symmetric() || expansion.symmetry != Expansion::E_UNSPECIFIED)) {
+        if (k != 0. && (symmetric() || symmetry != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
             symmetry = Expansion::E_UNSPECIFIED;
             invalidate();
@@ -174,7 +174,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Set longitudinal wavevector
     void setBeta(dcomplex k)  {
-        if (k != 0. && (expansion.separated() || expansion.polarization != Expansion::E_UNSPECIFIED)) {
+        if (k != 0. && (separated() || polarization != Expansion::E_UNSPECIFIED)) {
             Solver::writelog(LOG_WARNING, "Resetting polarizations separation");
             polarization = Expansion::E_UNSPECIFIED;
             invalidate();
@@ -219,10 +219,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     }
 
     /// Get info if the expansion is symmetric
-    bool symmetric() const { return expansion.symmetric(); }
+    bool symmetric() const { return symmetry != Expansion::E_UNSPECIFIED; }
 
     /// Get info if the expansion is separated
-    bool separated() const { return expansion.separated(); }
+    bool separated() const { return polarization != Expansion::E_UNSPECIFIED; }
 
     Expansion& getExpansion() override { return expansion; }
 
