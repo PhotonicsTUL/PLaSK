@@ -31,12 +31,14 @@ for dirname, _, files in os.walk(source):
 
         for solver in root.findall(xns+'solver'):
             cat = solver.attrib.get('category', category)
-            dat = solver.attrib.get('lib', library), solver.attrib['name']
+            dat = solver.attrib.get('lib', library), solver.attrib['name'], \
+                  solver.attrib.get('obsolete', '').lower() not in ('yes', 'true', '1')
             data.append(dat)
 
 out = open(os.path.join(target, '__init__.py'), 'w')
 
-lib0, cls0 = data[0]
+for lib0,cls0,ok0 in data:
+    if not ok0: break
 
 out.write("# Automatically generated. All your changes will be lost on recompilation!\n\n")
 out.write('''"""
@@ -61,12 +63,14 @@ Solver classes
 
 ''' % locals())
 
-for lib,cls in data:
-    out.write('   %(lib)s.%(cls)s\n' % locals())
+for lib,cls,ok in data:
+    if ok:
+        out.write('   %(lib)s.%(cls)s\n' % locals())
 
 out.write('"""\n')
 
-for lib,cls in data:
+for lib,cls,ok in data:
+  if ok:
     out.write('''\n\ndef %(cls)s(name=''):
     """
     Create %(cls)s solver.
@@ -79,5 +83,8 @@ for lib,cls in data:
     """
     import %(category)s.%(lib)s
     return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals())
-
-    
+  else:
+    out.write('''\n\ndef %(cls)s(name=''):
+    "obsolete"
+    import %(category)s.%(lib)s
+    return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals())

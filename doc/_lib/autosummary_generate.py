@@ -165,16 +165,21 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
 
             def get_members(obj, typ, include_public=[]):
                 items = []
+                public = []
                 for name in dir(obj):
                     try:
-                        documenter = get_documenter(safe_getattr(obj, name),
-                                                    obj)
+                        member = safe_getattr(obj, name)
+                        documenter = get_documenter(member, obj)
                     except AttributeError:
                         continue
                     if documenter.objtype == typ:
                         items.append(name)
-                public = [x for x in items
-                          if x in include_public or not x.startswith('_')]
+                        try:
+                            docstring = member.__doc__.strip()
+                        except:
+                            docstring = ''
+                        if name in include_public or not (name.startswith('_') or docstring == 'obsolete'):
+                            public.append(name)
                 return public, items
 
             ns = {}
