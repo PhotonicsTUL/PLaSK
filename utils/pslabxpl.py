@@ -236,13 +236,13 @@ def export_simulation(sim, materials=None):
     return xpl
 
 
-def save_xpl(source, xplname, materials=None):
+def save_xpl(xplname, source, materials=None):
     """
     Export PSlab geometry as PLaSK geometry XML element.
 
     Args:
-        source: PSlab simulation or geometry object.
         xplname (str): XPL filename
+        source: PSlab simulation or geometry object.
         materials (dict): Dictionary mapping epsilon to material names
     """
 
