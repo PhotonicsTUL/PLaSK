@@ -74,5 +74,3 @@ Descriptions
 .. autofunction::   plot_geometry
 .. autofunction::   plot_mesh
 .. autofunction::   plot_boundary
-
-.. autofunction::   LAM
