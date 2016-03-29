@@ -147,7 +147,7 @@ def export_geometry(geo, materials=None):
     laya = dict((k, str(v)) for k,v in laya.items())
     stack.attrib.update(align)
 
-    new_material_name = _UniqueId('', fmt='02d')
+    new_material_name = _UniqueId('material', fmt='02d')
     new_layer_name = _UniqueId('layer')
 
     previous_layers = {}

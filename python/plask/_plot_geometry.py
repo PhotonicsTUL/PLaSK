@@ -13,7 +13,7 @@ import matplotlib.artist
 from numpy import array
 
 import collections
-from zlib import adler32
+from zlib import crc32
 
 from .pylab import _get_2d_axes
 
@@ -84,7 +84,7 @@ class _MaterialToColor(object):
         s = str(material)
         if s == 'air':
             return self._air_color
-        i = adler32(s.encode('utf8'))      # maybe crc32?
+        i = crc32(s.encode('utf8'))      # maybe crc32?
         h, s, v = (i & 0xff), (i >> 8) & 0xff, (i >> 16) & 0xff
         h, s, v = (h + 12.) / 279., (s + 153.) / 408., (v + 153.) / 408.
         return colorsys.hsv_to_rgb(h, s, v)
