@@ -564,6 +564,8 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
     assert(!(symx && klong != 0.));
     assert(!(symy && ktran != 0.));
 
+    assert(!isnan(k0.real()) && !isnan(k0.imag()));
+    
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
 

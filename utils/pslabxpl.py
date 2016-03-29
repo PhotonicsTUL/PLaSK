@@ -147,7 +147,7 @@ def export_geometry(geo, materials=None):
     laya = dict((k, str(v)) for k,v in laya.items())
     stack.attrib.update(align)
 
-    new_material_name = _UniqueId('material', fmt='02d')
+    new_material_name = _UniqueId('', fmt='02d')
     new_layer_name = _UniqueId('layer')
 
     previous_layers = {}
@@ -178,44 +178,72 @@ def export_geometry(geo, materials=None):
         return mat
 
     layers, heights, idxs = geo.generateStack(True)
-    for i,h in zip(idxs, heights):
-        layer = previous_layers.get((i,h))
-        if layer is None:
-            if not layers[i].objects:
-                item = etree.SubElement(stack, "item")
-                item.attrib.update(lalign)
-                layer = etree.SubElement(item, "block")
-                layer.attrib['dz'] = str(h)
-                layer.attrib.update(laya)
-                layer.attrib['material'] = parse_material(layers[i])
-            else:
-                layer = etree.SubElement(stack, "align")
-                layer.attrib['z'] = "0."
-                layer.attrib.update(align)
-                item = etree.SubElement(layer, "item")
-                item.attrib.update(lalign)
-                block = etree.SubElement(item, "block")
-                block.attrib['dz'] = str(h)
-                block.attrib.update(laya)
-                block.attrib['material'] = parse_material(layers[i])
-                for obj in layers[i].objects:
-                    try:
-                        conv = CONVERTERS[type(obj)]
-                    except KeyError:
-                        warn("Object type not recognized: {s}".format(type(obj)))
-                    else:
-                        if conv is None: continue
-                        item, leaf = conv(obj, h)
-                        leaf.attrib['material'] = parse_material(obj)
-                        layer.append(item)
-            previous_layers[(i,h)] = layer
+
+    ss = zip(idxs, heights)
+    sn = len(ss)
+    segments = []
+
+    i = 0
+    while i < sn:
+        seg = [ss[i]]
+        c = 1
+        for j in range(i+1, sn):
+            sl = j - i
+            if ss[j:j+sl] == ss[i:j]:
+                seg = ss[i:j]
+                for j in range(j, sn, sl):
+                    if ss[j:j+sl] != seg:
+                        break
+                    c += 1
+                break
+        segments.append((c, seg))
+        i += c * len(seg)
+
+    for c,sub in segments:
+        if c == 1 or (c == 2 and len(sub) <= 2):
+            current = stack
+            sub = c * sub
         else:
-            if 'name' not in layer.attrib:
-                layer.attrib['name'] = new_layer_name()
-            item = etree.SubElement(stack, "item")
-            item.attrib.update(lalign)
-            again = etree.SubElement(item, "again")
-            again.attrib['ref'] = layer.attrib['name']
+            current = etree.SubElement(stack, "stack")
+            current.attrib['repeat'] = str(c)
+        for i,h in sub:
+            layer = previous_layers.get((i,h))
+            if layer is None:
+                if not layers[i].objects:
+                    item = etree.SubElement(current, "item")
+                    item.attrib.update(lalign)
+                    layer = etree.SubElement(item, "block")
+                    layer.attrib['dz'] = str(h)
+                    layer.attrib.update(laya)
+                    layer.attrib['material'] = parse_material(layers[i])
+                else:
+                    layer = etree.SubElement(current, "align")
+                    layer.attrib['z'] = "0."
+                    layer.attrib.update(align)
+                    item = etree.SubElement(layer, "item")
+                    item.attrib.update(lalign)
+                    block = etree.SubElement(item, "block")
+                    block.attrib['dz'] = str(h)
+                    block.attrib.update(laya)
+                    block.attrib['material'] = parse_material(layers[i])
+                    for obj in layers[i].objects:
+                        try:
+                            conv = CONVERTERS[type(obj)]
+                        except KeyError:
+                            warn("Object type not recognized: {s}".format(type(obj)))
+                        else:
+                            if conv is None: continue
+                            item, leaf = conv(obj, h)
+                            leaf.attrib['material'] = parse_material(obj)
+                            layer.append(item)
+                previous_layers[(i,h)] = layer
+            else:
+                if 'name' not in layer.attrib:
+                    layer.attrib['name'] = new_layer_name()
+                item = etree.SubElement(current, "item")
+                item.attrib.update(lalign)
+                again = etree.SubElement(item, "again")
+                again.attrib['ref'] = layer.attrib['name']
 
     return root
 
@@ -231,8 +259,39 @@ def export_simulation(sim, materials=None):
     Returns:
         etree.Element: Root XML element <plask>
     """
-    xpl = export_geometry(sim.geometry, materials)
-    #TODO
+    geo = sim.geometry
+    xpl = export_geometry(geo, materials)
+    solver = etree.SubElement(etree.SubElement(xpl, "solvers"), "optical")
+    solver.attrib['name'] = "FOURIER"
+    geometry = etree.SubElement(solver, "geometry")
+    geometry.attrib['ref'] = "pslab"
+    expansion = etree.SubElement(solver, "expansion")
+    mode = etree.SubElement(solver, "mode")
+    if isinstance(geo, pg.Geometry2D):
+        solver.attrib['solver'] = "Fourier2D"
+        expansion.attrib['size'] = str(sim.size)
+        if geo.symmetry is not None:
+            mode.attrib['symmetry'] = "Ex" if geo.symmetry == 'HE' else "Ey"
+    elif isinstance(geo, pg.Geometry3D):
+        solver.attrib['solver'] = "Fourier3D"
+        d0, d1 = ('long', 'tran') if geo.A1[1] != 0. else ('tran', 'long')
+        if isinstance(sim.size, (tuple, list)):
+            expansion.attrib['size-'+d0] = str(sim.size[0])
+            expansion.attrib['size-'+d1] = str(sim.size[1])
+        else:
+            expansion.attrib['size'] = str(sim.size)
+        if geo.symmetry is not None:
+            if isinstance(geo.symmetry, (tuple, list)):
+                s0, s1 = geo.symmetry
+            else:
+                s0 = s1 = geo.symmetry
+            mode.attrib['symmetry-'+d0] = "Ex" if s0 == 'HE' else "Ey"
+            mode.attrib['symmetry-'+d1] = "Ex" if s1 == 'HE' else "Ey"
+    interface = etree.SubElement(solver, "interface")
+    try:
+        interface.attrib['index'] = str(geo.interface)
+    except AttributeError:
+        pass
     return xpl
 
 

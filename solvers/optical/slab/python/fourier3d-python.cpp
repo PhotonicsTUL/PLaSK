@@ -291,6 +291,8 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
+    self->initCalculation();
+    
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
         expansion->setK0(2e3*M_PI / (*wavelength));

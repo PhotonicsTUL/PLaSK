@@ -54,6 +54,8 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
     
+    self->initCalculation();
+
     if (k0) expansion->setK0(*k0);
     expansion->setM(m);
 

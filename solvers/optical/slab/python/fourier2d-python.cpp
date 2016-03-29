@@ -155,6 +155,8 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     expansion->setSymmetry(self->getSymmetry());
     expansion->setPolarization(self->getPolarization());
 
+    self->initCalculation();
+
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
