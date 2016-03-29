@@ -99,13 +99,14 @@ def export_geometry(geo, materials=None):
                 break
         geometry.attrib['top'] = geometry.attrib['bottom'] = "extend"
         geometry.attrib['right'] = "extend" if has_pml else "periodic"
+        inner = geometry
         if geo.symmetry is not None:
             geometry.attrib['left'] = "mirror"
-            geometry = etree.SubElement(geometry, "clip")
-            geometry.attrib['left'] = "0."
+            inner = etree.SubElement(geometry, "clip")
+            inner.attrib['left'] = "0."
         elif has_pml:
             geometry.attrib['left'] = "extend" if has_pml else "periodic"
-        stack = etree.SubElement(geometry, "stack")
+        stack = etree.SubElement(inner, "stack")
         align = {'y': "0."}
         lalign = {'ycenter': "0."}
 
@@ -134,10 +135,12 @@ def export_geometry(geo, materials=None):
         geometry.attrib['back'] = "mirror" if sym[0] is not None else "extend" if has_pml else "periodic"
         geometry.attrib['left'] = "mirror" if sym[1] is not None else "extend" if has_pml else "periodic"
         if sym[0] is not None or sym[1] is not None:
-            geometry = etree.SubElement(geometry, "clip")
-            if sym[0] is not None: geometry.attrib['back'] = "0."
-            if sym[1] is not None: geometry.attrib['left'] = "0."
-        stack = etree.SubElement(geometry, "stack")
+            inner = etree.SubElement(geometry, "clip")
+            if sym[0] is not None: inner.attrib['back'] = "0."
+            if sym[1] is not None: inner.attrib['left'] = "0."
+        else:
+            inner = geometry
+        stack = etree.SubElement(inner, "stack")
         align = {'x': "0.", 'y': "0."}
         lalign = {'xcenter': "0.", 'ycenter': "0."}
 
@@ -287,11 +290,10 @@ def export_simulation(sim, materials=None):
                 s0 = s1 = geo.symmetry
             mode.attrib['symmetry-'+d0] = "Ex" if s0 == 'HE' else "Ey"
             mode.attrib['symmetry-'+d1] = "Ex" if s1 == 'HE' else "Ey"
-    interface = etree.SubElement(solver, "interface")
-    try:
-        interface.attrib['index'] = str(geo.interface)
-    except AttributeError:
-        pass
+    try: interface = str(geo.interface)
+    except AttributeError: pass
+    else: etree.SubElement(solver, "interface").attrib['index'] = interface
+    etree.SubElement(solver, "pmls").attrib['dist'] = "0."
     return xpl
 
 

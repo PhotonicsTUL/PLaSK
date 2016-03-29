@@ -15,6 +15,7 @@ import sys
 import os
 import subprocess
 import pkgutil
+import webbrowser
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -218,20 +219,26 @@ class MainWindow(QtGui.QMainWindow):
         launch_action.setStatusTip('Launch current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
-        goto_action = QtGui.QAction('&Go to Line...', self)
+        goto_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-jump'),
+                                    '&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
-                               'Examine &Material Parameters...', self)
+                                             'Examine &Material Parameters...', self)
         plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
 
         settings_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-properties'),
-                                    'GUI Se&ttings...', self)
+                                        'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
+
+        help_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-contents'),
+                                    'Open &Help...', self)
+        help_action.setStatusTip('Open on-line help in a web browser')
+        help_action.triggered.connect(self.open_help)
 
         exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('application-exit'),
                                     'E&xit', self)
@@ -265,6 +272,8 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     self.menu.addSeparator()
         self.menu.addSeparator()
+        self.menu.addAction(help_action)
+        self._pysparkle_place = self.menu.addSeparator()
         self.menu.addAction(settings_action)
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
@@ -302,13 +311,7 @@ class MainWindow(QtGui.QMainWindow):
         source_button.setDefaultAction(self.showsource_action)
         self.tabs.setCornerWidget(source_button, QtCore.Qt.TopRightCorner)
 
-        self.opened.connect(new_window, Qt.QueuedConnection)
-        if pysparkle is not None:
-            self.menu.addSeparator()
-            action_check_update = QtGui.QAction(self)
-            action_check_update.setText("Check for Updates Now...")
-            action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True))
-            self.menu.addAction(action_check_update)
+        self.opened.connect(self.init_pysparkle, Qt.QueuedConnection)
 
         geometry = CONFIG['session/geometry']
         if geometry is None:
@@ -486,6 +489,9 @@ class MainWindow(QtGui.QMainWindow):
             return msgbox.exec_() == QtGui.QMessageBox.Yes
         return True
 
+    def open_help(self):
+        webbrowser.open("http://fizyka.p.lodz.pl/en/plask-user-guide/")
+
     def show_settings(self):
         dialog = ConfigDialog(self)
         dialog.exec_()
@@ -601,6 +607,19 @@ class MainWindow(QtGui.QMainWindow):
             if not self.showsource_action.isEnabled(): return None
         return self.showsource_action.isChecked()
 
+    def init_pysparkle(self):
+        global pysparkle
+        if pysparkle is None:
+            if VERSION is not None:
+                pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
+                                      config=ConfigProxy('updates'), shutdown=close_all_windows)
+                action_check_update = QtGui.QAction(QtGui.QIcon.fromTheme('software-update-available'),
+                                                    "Check for &Updates Now...", self)
+                action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
+                self.menu.insertAction(self._pysparkle_place, action_check_update)
+            else:
+                pysparkle = None
+
 
 class GotoDialog(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -674,16 +693,6 @@ except NameError:
         _, VERSION = version.strip().split()
     except ValueError:
         VERSION = None
-
-
-def new_window():
-    global pysparkle
-    if pysparkle is None:
-        if VERSION is not None:
-            pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
-                                  config=ConfigProxy('updates'), shutdown=close_all_windows)
-        else:
-            pysparkle = None
 
 
 def main():
