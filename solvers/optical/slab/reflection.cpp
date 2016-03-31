@@ -472,7 +472,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
-        H = (n < count-1)? solver->vbounds[n] - solver->vbounds[n-1] : 0.;
+        H = (n < count-1 && n > 0)? solver->vbounds[n] - solver->vbounds[n-1] : 0.;
         for (int i = 0; i < N; i++) {
                 dcomplex phas = exp(-I*gamma[i]*H);
                 dcomplex t = B2[i] / phas;

@@ -251,7 +251,8 @@ py::object Solver_computeReflectivity(SolverT* self,
                                       Transfer::IncidentDirection incidence
                                      )
 {
-    self->setExpansionDefaults(false);
+    if (self->initCalculation())
+        self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getReflection(polarization, incidence);
@@ -265,7 +266,8 @@ py::object Solver_computeTransmittivity(SolverT* self,
                                         Transfer::IncidentDirection incidence
                                        )
 {
-    self->setExpansionDefaults(false);
+    if (self->initCalculation())
+        self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getTransmission(polarization, incidence);

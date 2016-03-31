@@ -20,19 +20,21 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                                        Transfer::IncidentDirection incidence
                                                       )
 {
-    self->expansion.setLam0(self->getLam0());
-    self->expansion.setBeta(self->getBeta());
-    self->expansion.setKtran(self->getKtran());
-    self->expansion.setSymmetry(self->getSymmetry());
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
         if (!self->isInitialized()) {
             self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
                            polarization_str(polarization));
             self->setPolarization(polarization);
+            self->initCalculation();
+        } else {
+            self->expansion.setLam0(self->getLam0());
+            self->expansion.setBeta(self->getBeta());
+            self->expansion.setKtran(self->getKtran());
+            self->expansion.setSymmetry(self->getSymmetry());
+            self->expansion.setPolarization(polarization);
         }
-        self->expansion.setPolarization(polarization);
-    } else
-        self->expansion.setPolarization(self->getPolarization());
+    } else if (self->initCalculation())
+        self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getReflection(polarization, incidence);
@@ -46,19 +48,21 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
                                                          Transfer::IncidentDirection incidence
                                                         )
 {
-    self->expansion.setLam0(self->getLam0());
-    self->expansion.setBeta(self->getBeta());
-    self->expansion.setKtran(self->getKtran());
-    self->expansion.setSymmetry(self->getSymmetry());
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
         if (!self->isInitialized()) {
             self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
                            polarization_str(polarization));
             self->setPolarization(polarization);
+            self->initCalculation();
+        } else {
+            self->expansion.setLam0(self->getLam0());
+            self->expansion.setBeta(self->getBeta());
+            self->expansion.setKtran(self->getKtran());
+            self->expansion.setSymmetry(self->getSymmetry());
+            self->expansion.setPolarization(polarization);
         }
-        self->expansion.setPolarization(polarization);
-    } else
-        self->expansion.setPolarization(self->getPolarization());
+    } else if (self->initCalculation())
+        self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
         return 100. * self->getTransmission(polarization, incidence);
@@ -208,6 +212,8 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
+    self->initCalculation();
+    
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getK0());
     if (ktran) expansion->setKtran(*ktran); else expansion->setKtran(self->getKtran());
@@ -300,23 +306,21 @@ static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) 
 }
 
 static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    self.expansion.setK0(2e3*M_PI/lam);
-    self.expansion.setBeta(self.getBeta());
-    self.expansion.setKtran(self.getKtran());
-    self.expansion.setSymmetry(self.getSymmetry());
-    self.expansion.setPolarization(self.getPolarization());
-    self.expansion.setLam0(self.getLam0());
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
 static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    self.expansion.setK0(2e3*M_PI/lam);
-    self.expansion.setBeta(self.getBeta());
-    self.expansion.setKtran(self.getKtran());
-    self.expansion.setSymmetry(self.getSymmetry());
-    self.expansion.setPolarization(self.getPolarization());
-    self.expansion.setLam0(self.getLam0());
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }

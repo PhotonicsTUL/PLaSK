@@ -100,6 +100,8 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
+    self->initCalculation();
+
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     expansion->setM(m);
 

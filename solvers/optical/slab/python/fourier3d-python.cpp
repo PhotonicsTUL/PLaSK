@@ -307,7 +307,6 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     expansion->setSymmetryLong(self->getSymmetryLong());
     expansion->setSymmetryTran(self->getSymmetryTran());
 
-
     switch (what) {
         case WHAT_NOTHING:
             return py::object(self->getDeterminant());
@@ -358,6 +357,8 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError("set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
+    self->initCalculation();
+    
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
         self->expansion.setK0(2e3*M_PI / (*wavelength));
@@ -402,23 +403,21 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 }
 
 static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    self.expansion.setK0(2e3*M_PI/lam);
-    self.expansion.setKlong(self.getKlong());
-    self.expansion.setKtran(self.getKtran());
-    self.expansion.setSymmetryLong(self.getSymmetryLong());
-    self.expansion.setSymmetryTran(self.getSymmetryTran());
-    self.expansion.setLam0(self.getLam0());
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
 }
 
 static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    self.expansion.setK0(2e3*M_PI/lam);
-    self.expansion.setKlong(self.getKlong());
-    self.expansion.setKtran(self.getKtran());
-    self.expansion.setSymmetryLong(self.getSymmetryLong());
-    self.expansion.setSymmetryTran(self.getSymmetryTran());
-    self.expansion.setLam0(self.getLam0());
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.minor(), 2);
 }
