@@ -37,16 +37,14 @@
             </stack>
             <stack name="cavity">
               <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
-              <stack name="active">
-                <align name="qw" xcenter="0" ycenter="0" bottom="0">
-                  <cuboid material="QW" dx="{totalx}" dy="{totaly}" dz="0.00800"/>
-                  <cylinder name="gain" role="gain" material="QW" radius="{R}" height="0.00800"/>
-                </align>
-                <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
-                <again ref="qw"/>
-                <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
-                <again ref="qw"/>
-              </stack>
+              <align name="qw" xcenter="0" ycenter="0" bottom="0">
+                <cuboid material="QW" dx="{totalx}" dy="{totaly}" dz="0.00800"/>
+                <cylinder name="gain" role="gain" material="QW" radius="{R}" height="0.00800"/>
+              </align>
+              <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
+              <again ref="qw"/>
+              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
+              <again ref="qw"/>
               <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
             </stack>
             <stack name="bottom-dbr" repeat="29">
