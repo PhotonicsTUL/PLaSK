@@ -22,9 +22,11 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
         if (!self->isInitialized()) {
-            self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
-                           polarization_str(polarization));
-            self->setPolarization(polarization);
+            if (self->getPolarization() != polarization) {
+                self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
+                               polarization_str(polarization));
+                self->setPolarization(polarization);
+            }
             self->initCalculation();
         } else {
             self->expansion.setLam0(self->getLam0());
@@ -50,9 +52,11 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
         if (!self->isInitialized()) {
-            self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
-                           polarization_str(polarization));
-            self->setPolarization(polarization);
+            if (self->getPolarization() != polarization) {
+                self->writelog(LOG_WARNING, "Changing polarization to {0} (manually initialize solver to disable)",
+                               polarization_str(polarization));
+                self->setPolarization(polarization);
+            }
             self->initCalculation();
         } else {
             self->expansion.setLam0(self->getLam0());
