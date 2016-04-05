@@ -11,6 +11,7 @@
   <define name="Y" value="{(6.1+d)*L}"/>
   <define name="h_start" value="0"/>
   <define name="h_end" value="24"/>
+  <define name="f" value="0"/>
 </defines>
 
 <materials>
@@ -290,6 +291,8 @@ print_log('data', "łóżko")
 print_log('info', "informacja")
 
 # OPTICAL.find_mode
+
+print f
 
 class A(object):
     

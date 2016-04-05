@@ -83,8 +83,8 @@ When you finish defining all the layers, press F4 and check if the source code o
 
 .. code-block:: xml
 
-   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror"
-                right="extend" bottom="GaAs">
+   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend"
+                left="mirror" right="extend" bottom="GaAs">
      <stack>
        <stack name="top-dbr" repeat="24">
          <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.06940"/>

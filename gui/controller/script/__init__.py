@@ -341,10 +341,10 @@ class ScriptController(SourceEditController):
             current_syntax['scanner'][None] = copy(syntax['scanner'][None])
             defines = [e.name for e in self.document.defines.model.entries]
             if defines:
-                current_syntax['scanner'][None].insert(-1, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
+                current_syntax['scanner'][None].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
-                current_syntax['scanner'][None].insert(-1, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
+                current_syntax['scanner'][None].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
         else:
             current_syntax = syntax
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),

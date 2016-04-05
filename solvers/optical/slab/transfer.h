@@ -53,10 +53,16 @@ struct PLASK_SOLVER_API Transfer {
     /// Solver containing this transfer
     SlabBase* solver;
 
+#ifndef NDEBUG
+  public:
+#endif
+    
     /// Init diagonalization
     void initDiagonalization();
 
+#ifdef NDEBUG
   public:
+#endif
 
     /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
     std::unique_ptr<Diagonalizer> diagonalizer;

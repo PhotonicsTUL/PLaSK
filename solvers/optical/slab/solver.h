@@ -41,9 +41,6 @@ struct PLASK_SOLVER_API SlabBase {
     /// Determinant logger
     Data2DLog<dcomplex,dcomplex> detlog;
 
-    /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
-    std::unique_ptr<Transfer> transfer;
-
     /// Create and return rootdigger of a desired type
     std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
 
@@ -71,9 +68,18 @@ struct PLASK_SOLVER_API SlabBase {
         reader.requireTagEnd();
     }
 
+#ifndef NDEBUG
+  public:
+#endif
+    
+    /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
+    std::unique_ptr<Transfer> transfer;
+
     void initTransfer(Expansion& expansion, bool emitting);
 
+#ifdef NDEBUG
   public:
+#endif
 
     /// Layer boundaries
     OrderedAxis vbounds;

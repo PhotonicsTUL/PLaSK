@@ -241,6 +241,34 @@ py::tuple Solver_getMatrices(Solver& self, size_t layer) {
     self.getMatrices(layer, RE, RH);
     return py::make_tuple(py::object(RE), py::object(RH));
 }
+
+template <typename Solver>
+py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
+    self.initCalculation();
+    if (!self.transfer) {
+        self.initTransfer(self.getExpansion(), false);
+        self.transfer->initDiagonalization();
+        self.transfer->diagonalizer->diagonalizeLayer(layer);
+    } else if (!self.transfer->diagonalizer->isDiagonalized(layer)) {
+        self.transfer->diagonalizer->diagonalizeLayer(layer);
+    }
+    cdiagonal gamma = self.transfer->diagonalizer->Gamma(layer);
+    cmatrix TE = self.transfer->diagonalizer->TE(layer),
+            TH = self.transfer->diagonalizer->TH(layer);
+    return py::make_tuple(py::object(gamma), py::object(TE), py::object(TH));
+}
+
+template <typename Solver>
+py::tuple Solver_getTMatrixes(Solver& self, size_t layer) {
+    self.initCalculation();
+    if (!self.transfer) {
+        self.initTransfer(self.getExpansion(), false);
+        self.transfer->initDiagonalization();
+        self.transfer->diagonalizer->diagonalizeLayer(layer);
+    } else if (!self.transfer->diagonalizer->isDiagonalized(layer)) {
+        self.transfer->diagonalizer->diagonalizeLayer(layer);
+    }
+}
 #endif
 
 
@@ -343,6 +371,7 @@ inline void export_base(Class solver) {
                        );
 #ifndef NDEBUG
     solver.def("get_matrices", Solver_getMatrices<Solver>);
+    solver.def("get_diagonalized", Solver_getDiagonalized<Solver>);
 #endif
 }
 

@@ -644,24 +644,26 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
             hshift *= 2
             hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
             hmirror = mirror
+            periods[0] = 2*periods[0] - 1
         else:
             hmirror = False
         if geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror':
             vshift *= 2
             vmirrortransform = matplotlib.transforms.Affine2D.from_values(1., 0, 0, -1., 0, 0)
             vmirror = mirror
+            periods[1] = 2*periods[1] - 1
             if hmirror:
                 vhmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, -1., 0, 0)
         else:
             vmirror = False
         if geometry.borders[dirs[0][0]] == 'periodic' or geometry.borders[dirs[0][1]] == 'periodic':
-            hstart = int((periods[0]-1) / 2)
-            hrange = range(-hstart, hstart + min(periods[0], 1))
+            hstart = -int((periods[0]-1) / 2)
+            hrange = range(hstart, hstart + max(periods[0], 1))
         else:
             hrange = (0,)
         if geometry.borders[dirs[1][0]] == 'periodic' or geometry.borders[dirs[1][1]] == 'periodic':
-            vstart = int((periods[1]-1) / 2)
-            vrange = range(-vstart, vstart + min(periods[1], 1))
+            vstart = -int((periods[1]-1) / 2)
+            vrange = range(vstart, vstart + max(periods[1], 1))
         else:
             vrange = (0,)
     except AttributeError:  # we draw non-Geometry object

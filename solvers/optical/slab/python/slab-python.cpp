@@ -16,13 +16,33 @@ struct CMatrix_Python {
     
     static PyObject* convert(const cmatrix& self) {
         npy_intp dims[2] = { self.rows(), self.cols() };
-        npy_intp strides[2] = {sizeof(dcomplex), self.rows() * sizeof(dcomplex)};
+        npy_intp strides[2] = { sizeof(dcomplex), self.rows() * sizeof(dcomplex) };
         
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {CMatrix_Python(self)};
+        py::incref(oself.ptr());        
+        PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
+        return arr;
+    }
+};
+
+struct CDiagonal_Python {
+    cdiagonal data;
+    CDiagonal_Python(const cdiagonal& data): data(data) {}
+    CDiagonal_Python(const CDiagonal_Python& src): data(src.data) {}
+    
+    static PyObject* convert(const cdiagonal& self) {
+        npy_intp dims[1] = {self.size()};
+        npy_intp strides[1] = {sizeof(dcomplex)};
+        
+        PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, NPY_CDOUBLE, strides,
+                                    (void*)self.data(), 0, 0, NULL);
+        if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
+        // Make sure the data vector stays alive as long as the array
+        py::object oself {CDiagonal_Python(self)};
         py::incref(oself.ptr());        
         PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
         return arr;
@@ -38,8 +58,11 @@ BOOST_PYTHON_MODULE(slab)
     py::class_<CMatrix_Python>("_cmatrix", py::no_init);
     py::delattr(py::scope(), "_cmatrix");
     py::to_python_converter<cmatrix, CMatrix_Python>();
+    py::class_<CDiagonal_Python>("_cdiagonal", py::no_init);
+    py::delattr(py::scope(), "_cdiagonal");
+    py::to_python_converter<cdiagonal, CDiagonal_Python>();
 #endif
-    
+
     py::to_python_converter<Expansion::Component, PythonComponentConventer>();
     py::converter::registry::push_back(&PythonComponentConventer::convertible, &PythonComponentConventer::construct,
                                        py::type_id<Expansion::Component>());

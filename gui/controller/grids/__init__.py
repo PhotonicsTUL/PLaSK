@@ -229,7 +229,7 @@ class GridsController(Controller):
             except KeyError:
                 geometry = None
             if model.is_mesh:
-                mesh = manager.mesh[model.name]
+                mesh = manager.msh[model.name]
             elif model.is_generator:
                 if geometry is None:
                     if ignore_no_geometry:
@@ -237,7 +237,7 @@ class GridsController(Controller):
                     else:
                         raise ValueError("You must select geometry to preview generators")
                 else:
-                    mesh = manager.meshgen[model.name](geometry)
+                    mesh = manager.msg[model.name](geometry)
             else:
                 mesh = None
             if model != self.plotted_model:
