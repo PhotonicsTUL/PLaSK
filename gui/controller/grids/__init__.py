@@ -223,7 +223,7 @@ class GridsController(Controller):
             try:
                 selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
                 if selected_geometry:
-                    geometry = manager.geometry[selected_geometry]
+                    geometry = manager.geo[selected_geometry]
                 else:
                     geometry = None
             except KeyError:
