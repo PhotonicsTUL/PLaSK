@@ -254,6 +254,7 @@ class OutputWindow(QtGui.QDockWidget):
                                                "Please try once again or contact the program authors.",
                                                QtGui.QMessageBox.Ok)
                     event.ignore()
+                    event.ignore()
             else:
                 event.ignore()
 
@@ -287,11 +288,12 @@ class PlaskThread(QtCore.QThread):
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
             self.proc = subprocess.Popen([program, '-ldebug', '-u'] + list(defs) + ['--', fname] + list(args),
-                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT)
+                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
+                                         bufsize=0)
         else:
             self.proc = subprocess.Popen([program, '-ldebug', '-u', '-w'] + list(defs) + ['--', fname] + list(args),
-                                         startupinfo=si,
-                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT)
+                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
+                                         bufsize=0, startupinfo=si)
         sys.stdout.flush()
         fd, fb = os.path.split(fname)
         sep = os.path.sep

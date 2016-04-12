@@ -27,6 +27,7 @@ namespace py = boost::python;
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
     inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
+    extern int Py_UnbufferedStdioFlag;
 #else
     extern "C" void init_plask(void);
 #   define PLASK_MODULE init_plask
@@ -261,6 +262,9 @@ int main(int argc, const char *argv[])
             setbuf(stdout, NULL);
             setbuf(stderr, NULL);
             color_log = false;
+#if PY_VERSION_HEX >= 0x03000000
+            Py_UnbufferedStdioFlag = 1;
+#endif
             --argc; ++argv;
         } else if (arg == "-p") {
             python_logger = true;
@@ -392,7 +396,7 @@ int main(int argc, const char *argv[])
                 for (const char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
                     try {
-                        locals[keyval.first] = (plask::python::py_eval(keyval.second, 
+                        locals[keyval.first] = (plask::python::py_eval(keyval.second,
                                                                        plask::python::xml_globals, locals));
                     } catch (py::error_already_set) {
                         plask::writelog(plask::LOG_WARNING,
