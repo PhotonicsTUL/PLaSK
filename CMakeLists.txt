@@ -517,6 +517,8 @@ if(BUILD_PYTHON)
                     DESTINATION share/icons/hicolor/16x16/mimetypes COMPONENT GUI)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/apps/plask.svg
                     DESTINATION share/icons/hicolor/scalable/apps COMPONENT GUI)
+            install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/apps/plaskgui.svg
+                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT GUI)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/mimetypes/application-x-plask.svg
                     DESTINATION share/icons/hicolor/scalable/mimetypes COMPONENT GUI)
         endif()
