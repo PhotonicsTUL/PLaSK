@@ -208,12 +208,16 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     """Plot scalar real fields as two-dimensional color map"""
     #TODO documentation
 
-    data = field.array
-
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
+        if fill and not levels:
+            xaxis = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
+            yaxis = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
+            field = field.interpolate(plask.mesh.Rectangular2D(xaxis, yaxis), 'linear')
+        else:
+            xaxis = field.mesh.axis0
+            yaxis = field.mesh.axis1
+        data = field.array
         ax = 0, 1
-        xaxis = field.mesh.axis0
-        yaxis = field.mesh.axis1
         if len(data.shape) == 3:
             if comp is None:
                 raise TypeError("Specify vector component to plot")
@@ -222,6 +226,12 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
                 data = data[:,:,comp]
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
+        if fill and not levels:
+            axis0 = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
+            axis1 = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
+            axis2 = plask.mesh.Regular(field.mesh.axis2[0], field.mesh.axis2[-1], len(field.mesh.axis2))
+            field = field.interpolate(plask.mesh.Rectangular3D(axis0, axis1, axis2), 'linear')
+        data = field.array
         ax = _get_2d_axes(plane)
         if data.shape[3-sum(ax)] != 1:
             raise ValueError("Field mesh must have dimension {} equal to 1".format(3-sum(ax)))
@@ -244,7 +254,10 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
     if fill:
-        result = contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
+        if levels:
+            result = contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
+        else:
+            result = imshow(data, extent=(xaxis[0], xaxis[-1], yaxis[0], yaxis[-1]), origin='lower', **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
             result = contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
