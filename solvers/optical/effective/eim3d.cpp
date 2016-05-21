@@ -284,7 +284,7 @@
 //
 // void EffectiveIndex3D::updateCache()
 // {
-//     bool fresh = !initCalculation();
+//     bool fresh = initCalculation();
 //
 //     if (fresh || inTemperature.changed() || (need_gain && inGain.changed())) {
 //         // we need to update something

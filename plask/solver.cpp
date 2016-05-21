@@ -21,9 +21,9 @@ bool Solver::initCalculation() {
         writelog(LOG_INFO, "Initializing solver");
         onInitialize();
         initialized = true;
-        return false;
-    } else {
         return true;
+    } else {
+        return false;
     }
 }
 

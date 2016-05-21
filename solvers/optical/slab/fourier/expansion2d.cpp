@@ -528,7 +528,7 @@ void ExpansionPW2D::cleanupField()
 
 LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
-    Component sym = (which_field == FIELD_E)? symmetry : Component(2-symmetry);
+    Component sym = (which_field == FIELD_E)? symmetry : Component((3-symmetry) % 3);
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
     

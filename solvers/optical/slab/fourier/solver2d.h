@@ -329,7 +329,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -345,7 +345,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection incident,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -361,7 +361,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                 Transfer::IncidentDirection incident,
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -540,41 +540,26 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         static size_t size() { return 1; }
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setBeta(parent->beta);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetry(parent->symmetry);
-            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+            if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
-            else
-                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
         
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setBeta(parent->beta);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetry(parent->symmetry);
-            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+            if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
-            else
-                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
         
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setBeta(parent->beta);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetry(parent->symmetry);
-            if (!parent->expansion.initialized && parent->expansion.beta == 0.)
+            if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
-            else
-                parent->expansion.setPolarization(parent->polarization);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
         

@@ -216,7 +216,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         else:
             xaxis = field.mesh.axis0
             yaxis = field.mesh.axis1
-        data = field.array
+        data = field.array.real
         ax = 0, 1
         if len(data.shape) == 3:
             if comp is None:
@@ -231,7 +231,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             axis1 = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
             axis2 = plask.mesh.Regular(field.mesh.axis2[0], field.mesh.axis2[-1], len(field.mesh.axis2))
             field = field.interpolate(plask.mesh.Rectangular3D(axis0, axis1, axis2), 'linear')
-        data = field.array
+        data = field.array.real
         ax = _get_2d_axes(plane)
         if data.shape[3-sum(ax)] != 1:
             raise ValueError("Field mesh must have dimension {} equal to 1".format(3-sum(ax)))

@@ -290,7 +290,7 @@ void EffectiveIndex2D::onInvalidate()
 
 void EffectiveIndex2D::updateCache()
 {
-    bool fresh = !initCalculation();
+    bool fresh = initCalculation();
 
     if (fresh) {
         // we need to update something

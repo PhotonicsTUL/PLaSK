@@ -241,7 +241,7 @@ void EffectiveFrequencyCyl::onInvalidate()
 
 void EffectiveFrequencyCyl::updateCache()
 {
-    bool fresh = !initCalculation();
+    bool fresh = initCalculation();
 
     if (fresh || cache_outdated || k0 != old_k0) {
         // we need to update something

@@ -656,8 +656,8 @@ void ExpansionPW3D::cleanupField()
 
 LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
-    Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long);
-    Component symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);
+    Component syml = (which_field == FIELD_E)? symmetry_long : Component((3-symmetry_long) % 3);
+    Component symt = (which_field == FIELD_E)? symmetry_tran : Component((3-symmetry_tran) % 3);
 
     size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
            nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;

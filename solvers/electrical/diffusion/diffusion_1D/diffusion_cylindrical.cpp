@@ -94,7 +94,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(ComputationType type)
 {
-    initial_computation = type == COMPUTATION_INITIAL || (!this->initCalculation() && do_initial);
+    initial_computation = type == COMPUTATION_INITIAL || (this->initCalculation() && do_initial);
     threshold_computation = type == COMPUTATION_THRESHOLD;
     overthreshold_computation = type == COMPUTATION_OVERTHRESHOLD;
 

@@ -403,7 +403,7 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 }
 
 static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (self.initCalculation()) {
+    if (!self.initCalculation()) {
         self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
     } else
@@ -413,7 +413,7 @@ static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, dou
 }
 
 static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (self.initCalculation()) {
+    if (!self.initCalculation()) {
         self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
     } else

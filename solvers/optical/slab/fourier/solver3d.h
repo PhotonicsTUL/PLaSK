@@ -323,8 +323,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection incident,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
-        setExpansionDefaults();
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -340,8 +339,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection incident,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
-        setExpansionDefaults();
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -357,7 +355,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                 Transfer::IncidentDirection incident,
                                                 const shared_ptr<const MeshD<3>>& dst_mesh,
                                                 InterpolationMethod method) {
-        initCalculation();
+        assert(initialized);
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -506,32 +504,20 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         static size_t size() { return 1; }
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setKlong(parent->klong);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetryLong(parent->symmetry_long);
-            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
         
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setKlong(parent->klong);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetryLong(parent->symmetry_long);
-            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
         
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            parent->expansion.setLam0(parent->lam0);
+            if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
-            parent->expansion.setKlong(parent->klong);
-            parent->expansion.setKtran(parent->ktran);
-            parent->expansion.setSymmetryLong(parent->symmetry_long);
-            parent->expansion.setSymmetryTran(parent->symmetry_tran);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
 

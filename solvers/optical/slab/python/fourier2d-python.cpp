@@ -35,7 +35,7 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
             self->expansion.setSymmetry(self->getSymmetry());
             self->expansion.setPolarization(polarization);
         }
-    } else if (self->initCalculation())
+    } else if (!self->initCalculation())
         self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);
@@ -65,7 +65,7 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
             self->expansion.setSymmetry(self->getSymmetry());
             self->expansion.setPolarization(polarization);
         }
-    } else if (self->initCalculation())
+    } else if (!self->initCalculation())
         self->setExpansionDefaults();
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*M_PI/lam);

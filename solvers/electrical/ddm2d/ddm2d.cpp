@@ -994,7 +994,7 @@ template <typename Geometry2DType>
 template <typename MatrixT>
 double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 {
-    bool was_initialized = this->initCalculation();
+    bool was_initialized = !this->initCalculation();
     needPsi0 |= !was_initialized;
 
     //heats.reset(); // LP_09.2015
