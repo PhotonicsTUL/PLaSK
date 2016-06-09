@@ -113,6 +113,8 @@ When you finish defining all the layers, press F4 and check if the source code o
 
 In the code above, we have added a name ``interface`` to one of the barriers in the cavity, as it will be helpful later when we define an optical solver.
 
+Photonic crystal
+~~~~~~~~~~~~~~~~
 
 .. [Dems-2010]
    M. Dems, I.-S. Chung, P. Nyakas, S. Bischoff, K. Panajotov,

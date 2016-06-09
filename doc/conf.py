@@ -123,6 +123,7 @@ import sphinx.ext.autosummary
 def process_generate_options(app):
     genfiles = app.config.autosummary_generate
     ext = app.config.source_suffix
+    if isinstance(ext, list): ext = ext[0]
     if genfiles and not hasattr(genfiles, '__len__'):
         env = app.builder.env
         genfiles = [x + ext for x in env.found_docs

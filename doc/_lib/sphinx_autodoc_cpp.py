@@ -18,6 +18,11 @@ import traceback
 from sphinx.ext import autodoc
 from sphinx.util.docstrings import prepare_docstring
 
+try:
+    from sphinx.util.inspect import safe_repr
+except ImportError:
+    from sphinx.util.inspect import object_description as safe_repr
+
 
 #: extended signature RE: with explicit module name separated by ::
 py_ext_sig_re = re.compile(
@@ -167,7 +172,7 @@ class PlaskDocMixin(object):
         elif isinstance(self, autodoc.AttributeDocumenter):
             if not self._datadescriptor:
                 try:
-                    objrepr = autodoc.safe_repr(self.object)
+                    objrepr = safe_repr(self.object)
                 except ValueError:
                     pass
                 else:

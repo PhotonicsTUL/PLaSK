@@ -263,7 +263,7 @@ void AdmittanceTransfer::determineFields()
     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
         int l = solver->stack[n];
-        
+
         cvector hv(N0);
         mult_matrix_by_vector(diagonalizer->TE(l), fields[n].Ed, tv);
         mult_matrix_by_vector(diagonalizer->TH(l), fields[n].Hd, hv);
