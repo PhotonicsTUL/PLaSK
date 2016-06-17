@@ -97,6 +97,7 @@ macro(make_default)
         if(BUILD_GUI)
             string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
             set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
+            #message("plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}")
             add_custom_command(OUTPUT ${SOLVER_STUB}
                                COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                                DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py

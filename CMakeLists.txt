@@ -119,6 +119,9 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
+set(ECM_ENABLE_SANITIZERS "" CACHE STRING "semicolon-separated list of sanitizers to use: leak (requires address), undefined, (and up to one of:) address, memory, thread")
+include(ECMEnableSanitizers)    # Sanitizers, this module is also included in debian package: extra-cmake-modules
+
 # ---------- Profiler --------------------------------------------
 string(TOLOWER "${USE_PROFILER}" USE_PROFILER)
 if(USE_PROFILER STREQUAL "gnu")
