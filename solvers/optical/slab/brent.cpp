@@ -5,7 +5,7 @@ namespace plask { namespace solvers { namespace slab {
 #define carg(x) realaxis? dcomplex(x, imag(start)) : dcomplex(real(start), x)
 #define fun(x) abs(val_function(carg(x)))
 
-double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
+double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis, int& counter)
 {
     const double C = 0.5 * (3. - sqrt(5.));
     const double G = 2. / (sqrt(5.) - 1.);
@@ -49,7 +49,8 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
             b = x; fv = fx;
             x = a; fx = fw;
             a = u; fw = fun(a);
-            log_value.count(a, fw);
+            counter++;
+            log_value.count(carg(b), fw);
             if (fw > fx) {
                 bounded = true;
                 break;
@@ -63,6 +64,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
             a = x; fw = fx;
             x = b; fx = fv;
             b = u; fv = fun(b);
+            counter++;
             log_value.count(carg(b), fv);
             if (fv > fx) {
                 bounded = true;
@@ -147,6 +149,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
                 v = u; fv = fu;
             }
         }
+        counter++;
         log_value.count(carg(x), fx);
     }
     throw ComputationError(solver.getId(), "Brent: {0}: maximum number of iterations reached", log_value.chart_name);
@@ -156,15 +159,21 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootBrent::find(dcomplex xstart) const
+dcomplex RootBrent::find(dcomplex xstart)
 {
     double f0 = NAN;
+    dcomplex xprev = NAN;
+    double tolx2 = params.tolx * params.tolx;
 
-    xstart.real(axisBrent(xstart, f0, true));
-    xstart.imag(axisBrent(xstart, f0, false));
-    // xstart.real(axisBrent(xstart, f0, true));
+    int counter = 0;
 
-    if (f0 > params.tolf_min)
+    while (counter < params.maxiter && !(f0 <= params.tolf_min || abs2(xstart - xprev) <= tolx2)) {
+        xprev = xstart;
+        xstart.real(axisBrent(xstart, f0, true, counter));
+        xstart.imag(axisBrent(xstart, f0, false, counter));
+    }
+
+    if (f0 > params.tolf_max)
         ComputationError(solver.getId(),
                          "Brent: {0}: After real and imaginary minimum search, determinant still not small enough",
                          log_value.chart_name);

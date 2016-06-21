@@ -50,20 +50,15 @@ struct RootDigger {
     // Solver method computing the value to zero
     function_type val_function;
 
-    // Value writelog
-    Data2DLog<dcomplex,dcomplex>& log_value;
-
   public:
 
     // Rootdigger parameters
     Params params;
 
     // Constructor
-    RootDigger(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
-               const Params& pars) :
+    RootDigger(SlabBase& solver, const function_type& val_fun, const Params& pars) :
         solver(solver),
         val_function(val_fun),
-        log_value(log_value),
         params(pars)
     {};
 
@@ -72,7 +67,7 @@ struct RootDigger {
      * \param start initial point to start search from
      * \return found solution
      */
-    virtual dcomplex find(dcomplex start) const = 0;
+    virtual dcomplex find(dcomplex start) = 0;
 };
 
 }}} // namespace plask::solvers::slab

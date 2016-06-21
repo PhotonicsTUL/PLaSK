@@ -52,11 +52,11 @@ SlabSolver<BaseT>::~SlabSolver()
 }
 
 
-std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_type& func) {
+std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_type& func, const char* name) {
     typedef std::unique_ptr<RootDigger> Res;
-    if (root.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*this, func, detlog, root));
-    else if (root.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*this, func, detlog, root));
-    else if (root.method == RootDigger::ROOT_BRENT) return Res(new RootBrent(*this, func, detlog, root));
+    if (root.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*this, func, root, name));
+    else if (root.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*this, func, root, name));
+    else if (root.method == RootDigger::ROOT_BRENT) return Res(new RootBrent(*this, func, root, name));
     throw BadInput(getId(), "Wrong root finding method");
     return Res();
 }

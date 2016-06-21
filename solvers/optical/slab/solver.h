@@ -35,14 +35,11 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Direction of the light emission for fields normalization
     Emission emission;
-    
+
   protected:
 
-    /// Determinant logger
-    Data2DLog<dcomplex,dcomplex> detlog;
-
     /// Create and return rootdigger of a desired type
-    std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
+    std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func, const char* name);
 
     /// Selected transfer method
     Transfer::Method transfer_method;
@@ -71,7 +68,7 @@ struct PLASK_SOLVER_API SlabBase {
 #ifndef NDEBUG
   public:
 #endif
-    
+
     /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
     std::unique_ptr<Transfer> transfer;
 
@@ -101,7 +98,7 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Normalized frequency [1/µm]
     dcomplex k0;
-    
+
     /// Parameters for vertical PMLs (if used)
     PML vpml;
 
@@ -126,7 +123,6 @@ struct PLASK_SOLVER_API SlabBase {
 
     SlabBase():
         emission(EMISSION_UNSPECIFIED),
-        detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::METHOD_AUTO),
         interface(size_t(-1)),
         lam0(NAN),
@@ -135,7 +131,7 @@ struct PLASK_SOLVER_API SlabBase {
         recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
 
     virtual ~SlabBase() {}
-        
+
     /// Get lam0
     double getLam0() const {
         return lam0;
@@ -172,7 +168,7 @@ struct PLASK_SOLVER_API SlabBase {
     void clearFields() {
         if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    
+
     /**
      * Get layer number for vertical coordinate. Alter this coordinate to the layer local one.
      * The bottom infinite layer has always negative coordinate.
@@ -294,7 +290,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Getter for group_layers
     bool getGroupLayers() const { return group_layers; }
-    
+
     /// Setter for group_layers
     void setGroupLayers(bool value) {
         bool changed = group_layers != value;

@@ -5,7 +5,7 @@ namespace plask { namespace solvers { namespace slab {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootBroyden::find(dcomplex start) const
+dcomplex RootBroyden::find(dcomplex start)
 {
     writelog(LOG_DETAIL, "Searching for the root with Broyden method starting from " + str(start));
     log_value.resetCounter();
@@ -21,7 +21,7 @@ dcomplex RootBroyden::find(dcomplex start) const
 
 //**************************************************************************
 // Return Jacobian of F(x)
-void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
+void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji)
 {
     double xr0 = real(x), xi0 = imag(x);
     double hr = EPS*abs(xr0), hi = EPS*abs(xi0);
@@ -43,7 +43,7 @@ void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) cons
 // functional f decreased sufficiently
 // g - (approximate) gradient of 1/2(F*F), stpmax - maximum allowed step
 // return true if performed step or false if could not find sufficient function decrease
-bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax) const
+bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax)
 {
     if (double absp=abs(p) > stpmax) p *= stpmax/absp; // Ensure step <= stpmax
 
@@ -110,7 +110,7 @@ bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, dou
 //**************************************************************************
 // Search for the root of char_val using globally convergent Broyden method
 // starting from point x
-dcomplex RootBroyden::Broyden(dcomplex x) const
+dcomplex RootBroyden::Broyden(dcomplex x)
 {
     // Compute the initial guess of the function (and check for the root)
     dcomplex F = val_function(x);

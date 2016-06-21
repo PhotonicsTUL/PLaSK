@@ -14,7 +14,6 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
 {
     pml_tran.factor = {1., -2.};
     pml_long.factor = {1., -2.};
-    detlog.global_prefix = this->getId();
     smooth = 0.00025;
 }
 
@@ -198,28 +197,24 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
         case FourierSolver3D::WHAT_WAVELENGTH:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); }, "k0");
             break;
         case FourierSolver3D::WHAT_KLONG:
             expansion.setK0(this->k0);
             expansion.setKtran(ktran);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            detlog.axis_arg_name = "klong";
-            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); }, "klong");
             break;
         case FourierSolver3D::WHAT_KTRAN:
             expansion.setK0(this->k0);
             expansion.setKlong(klong);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); }, "ktran");
             break;
     }
     root->find(start);

@@ -2,7 +2,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-    
+
 BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
     m(1),
     size(12),
@@ -12,8 +12,6 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWith
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
-    detlog.global_prefix = this->getId();
-    detlog.axis_arg_name = "lam";
     pml.dist = 20.;
     pml.size = 0.;
     this->writelog(LOG_WARNING, "This is an EXPERIMENTAL solver! Calculation results may not be reliable!");
@@ -114,7 +112,7 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m)
     expansion.setM(m);
     initCalculation();
     initTransfer(expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
     root->find(start);
     return insertMode();
 }

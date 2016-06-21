@@ -15,14 +15,19 @@ class RootMuller: public RootDigger {
         plask::writelog(level, prefix + msg, std::forward<Args>(args)...);
     }
 
+  protected:
+
+    // Value writelog
+    Data2DLog<dcomplex,dcomplex> log_value;
+
   public:
 
     // Constructor
-    RootMuller(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
-               const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
+    RootMuller(SlabBase& solver, const function_type& val_fun, const Params& pars, const char* name):
+        RootDigger(solver, val_fun, pars), log_value(solver.getId(), "modal", name, "det") {}
 
 
-    dcomplex find(dcomplex start) const override;
+    dcomplex find(dcomplex start) override;
 };
 
 }}} // namespace plask::solvers::slab

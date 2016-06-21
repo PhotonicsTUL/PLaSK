@@ -17,16 +17,19 @@ class RootBrent: public RootDigger {
 
   protected:
 
-    double axisBrent(dcomplex start, double& fx, bool real) const;
+    // Value writelog
+    Data2DLog<dcomplex,double> log_value;
+
+    double axisBrent(dcomplex start, double& fx, bool real, int& counter);
 
   public:
 
     // Constructor
-    RootBrent(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
-               const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
+    RootBrent(SlabBase& solver, const function_type& val_fun, const Params& pars, const char* name):
+        RootDigger(solver, val_fun, pars), log_value(solver.getId(), "modal", name, "det") {}
 
 
-    dcomplex find(dcomplex start) const override;
+    dcomplex find(dcomplex start) override;
 };
 
 }}} // namespace plask::solvers::slab

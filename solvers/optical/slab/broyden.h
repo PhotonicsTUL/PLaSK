@@ -12,13 +12,13 @@ class RootBroyden: public RootDigger {
     static constexpr double EPS = 1e6 * SMALL; ///< precision for computing Jacobian
 
     // Return Jacobian of F(x)
-    void fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const;
+    void fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji);
 
     // Search for the new point x along direction p for which f decreased sufficiently
-    bool lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax) const;
+    bool lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax);
 
     // Search for the root of char_val using globally convergent Broyden method
-    dcomplex Broyden(dcomplex x) const;
+    dcomplex Broyden(dcomplex x);
 
     // Write log message
     template <typename... Args>
@@ -27,13 +27,18 @@ class RootBroyden: public RootDigger {
         plask::writelog(level, prefix + msg, std::forward<Args>(args)...);
     }
 
+  protected:
+
+    // Value writelog
+    Data2DLog<dcomplex,dcomplex> log_value;
+
   public:
 
     // Constructor
-    RootBroyden(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
-               const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
+    RootBroyden(SlabBase& solver, const function_type& val_fun, const Params& pars, const char* name):
+        RootDigger(solver, val_fun, pars), log_value(solver.getId(), "modal", name, "det") {}
 
-    dcomplex find(dcomplex start) const override;
+    dcomplex find(dcomplex start) override;
 };
 
 }}} // namespace plask::solvers::slab

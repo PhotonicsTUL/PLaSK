@@ -14,7 +14,6 @@ FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver
     oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
 {
-    detlog.global_prefix = this->getId();
     smooth = 0.00025;
 }
 
@@ -173,14 +172,12 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
         case FourierSolver2D::WHAT_WAVELENGTH:
             expansion.setBeta(beta);
             expansion.setKtran(ktran);
-            detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
             break;
         case FourierSolver2D::WHAT_K0:
             expansion.setBeta(beta);
             expansion.setKtran(ktran);
-            detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); }, "k0");
             break;
         case FourierSolver2D::WHAT_NEFF:
             if (expansion.separated())
@@ -188,19 +185,17 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
             expansion.setK0(k0);
             expansion.setKtran(ktran);
             clearFields();
-            detlog.axis_arg_name = "neff";
             root = getRootDigger([this](const dcomplex& x) {
                     expansion.beta = x * expansion.k0;
                     return transfer->determinant();
-                });
+                }, "neff");
             break;
         case FourierSolver2D::WHAT_KTRAN:
             if (expansion.separated())
                 throw Exception("{0}: Cannot search for transverse wavevector with symmetry", getId());
             expansion.setK0(k0);
             expansion.setBeta(beta);
-            detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { expansion.beta = x; return transfer->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { expansion.beta = x; return transfer->determinant(); }, "ktran");
             break;
     }
     root->find(start);

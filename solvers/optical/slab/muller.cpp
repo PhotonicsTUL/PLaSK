@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootMuller::find(dcomplex start) const
+dcomplex RootMuller::find(dcomplex start)
 {
     dcomplex first = start - 0.5 * params.initial_dist;
     dcomplex second = start + 0.5 * params.initial_dist;
