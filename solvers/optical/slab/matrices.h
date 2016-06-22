@@ -20,50 +20,49 @@ class Matrix {
   protected:
     int r, c;
 
-    T* data_;               ///< The data of the matrix
-    int* gc;                ///< the reference count for the garbage collector
+    T* data_;         ///< The data of the matrix
+    int* gc;          ///< the reference count for the garbage collector
 
   public:
 
     Matrix() : gc(nullptr) {}
 
-    Matrix(int m, int n) : r(m), c(n) {
-        data_ = aligned_new_array<T>(m*n); gc = new int;
+    Matrix(int m, int n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new int(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
-        *gc = 1;
     }
 
-    Matrix(int m, int n, T val) : r(m), c(n) {
-        data_ = aligned_new_array<T>(m*n); gc = new int;
+    Matrix(int m, int n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new int(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
-        *gc = 1;
     }
 
     Matrix(const Matrix<T>& M) : r(M.r), c(M.c), data_(M.data_), gc(M.gc) {
-        if (gc) (*gc)++;
+        if (gc)
+            #pragma omp atomic update
+            (*gc)++;
     }
 
     Matrix<T>& operator=(const Matrix<T>& M) {
         if (gc) {
-            (*gc)--;
-            if (*gc == 0) {
+            unsigned g;
+            #pragma omp atomic capture
+            g = --(*gc);
+            if (g == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
                 write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
             }
         }
-        r = M.r; c = M.c; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
+        r = M.r; c = M.c; data_ = M.data_; gc = M.gc;
+        if (gc)
+            #pragma omp atomic update
+            (*gc)++;
         return *this;
     }
 
-    Matrix(const MatrixDiagonal<T>& M) {
-        r = c = M.size();
-        data_ = aligned_new_array<T>(r*c); gc = new int;
+    Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()), data_(aligned_new_array<T>(M.size()*M.size())), gc(new int(1))  {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, r*c*sizeof(T)/1048576., (void*)data_);
-        int size = r*c;
-        std::fill_n(data_, size, 0);
+        std::fill_n(data_, r*c, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
-        *gc = 1;
     }
 
     Matrix(int m, int n, T* existing_data) : r(m), c(n), gc(nullptr) {
@@ -73,8 +72,10 @@ class Matrix {
 
     ~Matrix() {
         if (gc) {
-            (*gc)--;
-            if (*gc == 0) {
+            unsigned g;
+            #pragma omp atomic capture
+            g = --(*gc);
+            if (g == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
                 write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
             }
@@ -139,46 +140,51 @@ class MatrixDiagonal {
   protected:
     int siz;
 
+    T* data_;               //< The data of the matrix
     int* gc;                //< the reference count for the garbage collector
-    T* data_;                //< The data of the matrix
 
   public:
 
     MatrixDiagonal() : gc(nullptr) {}
 
-    MatrixDiagonal(int n) : siz(n) {
-        data_ = aligned_new_array<T>(n); gc = new int;
+    MatrixDiagonal(int n) : siz(n), data_(aligned_new_array<T>(n)), gc(new int(1)) {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
-        *gc = 1;
     }
 
-    MatrixDiagonal(int n, T val) : siz(n) {
-        data_ = aligned_new_array<T>(n); gc = new int;
+    MatrixDiagonal(int n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new int(1)) {
         write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, n, val);
-        *gc = 1;
     }
 
-    MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), gc(M.gc), data_(M.data_) {
-        if (gc) (*gc)++;
+    MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), data_(M.data_), gc(M.gc) {
+        if (gc)
+            #pragma omp atomic update
+            (*gc)++;
     }
 
     MatrixDiagonal<T>& operator=(const MatrixDiagonal<T>& M) {
         if (gc) {
-            (*gc)--;
-            if (*gc == 0) {
+            unsigned g;
+            #pragma omp atomic capture
+            g = --(*gc);
+            if (g == 0) {
                 delete gc; aligned_delete_array(siz, data_);
                 write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
         }
-        siz = M.siz; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
+        siz = M.siz; data_ = M.data_; gc = M.gc;
+        if (gc)
+            #pragma omp atomic update
+            (*gc)++;
         return *this;
     }
 
     ~MatrixDiagonal() {
         if (gc) {
-            (*gc)--;
-            if (*gc == 0) {
+            unsigned g;
+            #pragma omp atomic capture
+            g = --(*gc);
+            if (g == 0) {
                 delete gc; aligned_delete_array(siz, data_);
                 write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
             }
@@ -330,8 +336,8 @@ inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvec
 }
 
 inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    int k = A.cols(), 
-        m = A.rows(), 
+    int k = A.cols(),
+        m = A.rows(),
         n = B.cols();
     // if (k != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
     // if (m != dst.rows()) throw ComputationError("mult_matrix_by_matrix", "A.rows != dst.rows");
@@ -353,8 +359,8 @@ inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvecto
 }
 
 inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    int k = A.cols(), 
-        m = A.rows(), 
+    int k = A.cols(),
+        m = A.rows(),
         n = B.cols();
     // if (k != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
     // if (m != dst.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.rows != dst.rows");
