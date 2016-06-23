@@ -145,22 +145,17 @@ class GNLatticeController(GNObjectController):
         )
 
     def _segments_changed(self):
+        segments = (seg for seg in (val.strip() for val in self.segments.get_values()) if seg)
+        self._set_node_property_undoable('segments', ' ^ '.join(segments))
         return True
-        # if event.key() == Qt.Key_Return or event.text() in ('^', ';'):
-        #     pos = self.segments.textCursor().position()
-        #     self._set_node_property_undoable('segments', self.segments.toPlainText())
-        #     cursor = self.segments.textCursor()
-        #     cursor.setPosition(pos)
-        #     self.segments.setTextCursor(cursor)
-        # return True
 
     def construct_form(self):
         self.construct_group('Lattice Settings')
         self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments',
                                                        change_cb=self._segments_changed)
-        self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
-                                 u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
-                                 u'Each vertex consists of two space-separated integers.')
+        self.segments.setToolTip(u'One or more polygons formed by two or more vertices separated by ``;`` characters.\n'
+                                 u'Each vertex consists of two space-separated integers. Every polygon should be put\n'
+                                 u'in a separate line: it either adds or removes nodes from the lattice.')
         self.construct_group('Lattice vectors')
         self.vectors = (self.construct_point_controllers(row_name='first', change_cb=lambda vec: self._on_point_set(0, vec)),
                         self.construct_point_controllers(row_name='second', change_cb=lambda vec: self._on_point_set(1, vec)))

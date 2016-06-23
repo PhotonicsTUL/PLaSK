@@ -97,16 +97,20 @@ class TreeFragmentModel(InfoSource):
 class SectionModel(TreeFragmentModel):
     """Base class for model of section (defines, geometry, ...)."""
 
-    def __init__(self, name, info_cb=None):
+    def __init__(self, name, info_cb=None, undo_stack=None):
         """
             :param str name: name of section
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
+            :param undo_stack: undo stack for model; if None it is creates
         """
         super(SectionModel, self).__init__(info_cb=info_cb)
         self.name = name
         self.externalSource = None
         self.line_in_file = None
-        self.undo_stack = QtGui.QUndoStack()
+        if undo_stack is None:
+            self.undo_stack = QtGui.QUndoStack()
+        else:
+            self.undo_stack = undo_stack
 
     def create_undo_action(self, parent):
         """

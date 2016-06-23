@@ -320,6 +320,9 @@ class ScriptController(SourceEditController):
         window.setCentralWidget(source)
         return window
 
+    def _modification_changed(self, changed):
+        self.model.undo_stack.cleanChanged.emit(changed)
+
     def save_state(self):
         try:
             CONFIG['session/scriptwindow'] = self.source_widget.saveState()

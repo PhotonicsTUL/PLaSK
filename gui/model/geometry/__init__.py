@@ -345,14 +345,15 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if role == Qt.DecorationRole and index.column() == 0:
             node = self.node_for_index(index)
             if node is self.fake_root: return
-            for info in self._info:
-                try:
-                    nodes = info.nodes
-                except AttributeError:
-                    continue
-                else:
-                    if node in nodes:
-                        return info_level_icon(info.level)
+            if self._info is not None:
+                for info in self._info:
+                    try:
+                        nodes = info.nodes
+                    except AttributeError:
+                        continue
+                    else:
+                        if node in nodes:
+                            return info_level_icon(info.level)
 
     def flags(self, index):
         if not index.isValid():

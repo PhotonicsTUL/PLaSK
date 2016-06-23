@@ -13,8 +13,10 @@
 import collections
 
 from ..qt.QtCore import Qt
-
 from ..qt import QtCore, QtGui, QtSignal
+
+from .qsignals import BlockQtSignals
+
 from ..utils.config import CONFIG
 
 
@@ -351,7 +353,7 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         if self.key_cb is not None: self.key_cb(event)
 
 
-class MultiLineEdit(QtGui.QWidget):
+class MultiLineEdit(QtGui.QScrollArea):
     """
     Widget showing multiple lines
     """
@@ -361,8 +363,19 @@ class MultiLineEdit(QtGui.QWidget):
         self.persistent = persistent
         self.movable = movable
         self.change_cb = change_cb
+        widget = QtGui.QWidget()
         layout = QtGui.QVBoxLayout()
-        self.setLayout(layout)
+        widget.setLayout(layout)
+        self.setWidget(widget)
+        self.setWidgetResizable(True)
+
+    def _remove_row(self, row):
+        layout = self.widget().layout()
+        if self.sender().parent() == layout.itemAt(layout.count()-1).widget():
+            return
+        self.widget().layout().removeWidget(row)
+        self.updateGeometry()
+        if self.change_cb is not None: self.change_cb()
 
     def make_row(self, value=None):
         edit = QtGui.QLineEdit()
@@ -376,14 +389,11 @@ class MultiLineEdit(QtGui.QWidget):
         layout.addWidget(edit)
         # if self.movable:
         #     up = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), "Move Up", row)
-        #     up.triggered.connect(lambda: self.layout().removeWidget(row))
+        #     up.triggered.connect(lambda: self.widget().layout().removeWidget(row))
         if self.persistent:
             button = QtGui.QToolButton(row)
             button.setIcon(QtGui.QIcon.fromTheme('list-remove'))
-            def removed():
-                self.layout().removeWidget(row)
-                self.updateGeometry()
-            button.triggered.connect(removed)
+            button.pressed.connect(lambda: self._remove_row(row))
             layout.addWidget(button)
         row.setLayout(layout)
         return row
@@ -391,7 +401,7 @@ class MultiLineEdit(QtGui.QWidget):
     def edited(self):
         empty = not self.sender().text()
         row = self.sender().parent()
-        layout = self.layout()
+        layout = self.widget().layout()
         last = layout.indexOf(row) == layout.count() - 1
         if empty and not (last or self.persistent):
             layout.removeWidget(row)
@@ -403,26 +413,30 @@ class MultiLineEdit(QtGui.QWidget):
         if self.change_cb is not None: self.change_cb()
 
     def set_values(self, values):
-        layout = self.layout()
-        print(self.sizeHint())
-        while layout.count() > 0:
-            item = layout.takeAt(0)
-            layout.removeItem(item)
+        values = tuple(values)
+        layout = self.widget().layout()
+        for i in range(layout.count()-1, len(values)+1, -1):
+            item = layout.takeAt(i)
             item.widget().setParent(None)
             del item
-        for value in values:
-            layout.addWidget(self.make_row(value))
-        layout.addWidget(self.make_row())
+        for i, value in enumerate(values):
+            if i < layout.count():
+                layout.itemAt(i).widget().edit.setText(value)
+            else:
+                row = self.make_row(value)
+                layout.addWidget(row)
+        if len(values) < layout.count():
+            layout.itemAt(len(values)).widget().edit.setText("")
+        else:
+            row = self.make_row()
+            layout.addWidget(row)
         self.updateGeometry()
-        print(self.sizeHint())
-        import sys
-        sys.stdout.flush()
 
     def get_values(self):
         values = []
-        layout = self.layout()
+        layout = self.widget().layout()
         for i in range(layout.count()-1):
-            values.append(layout.takeAt(i).widget().edit.text())
+            values.append(layout.itemAt(i).widget().edit.text())
         return values
 
 

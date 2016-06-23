@@ -113,7 +113,7 @@ template<typename MatrixT>
 void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
     auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 

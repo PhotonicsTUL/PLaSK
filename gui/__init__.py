@@ -318,19 +318,24 @@ class MainWindow(QtGui.QMainWindow):
 
         self.opened.connect(self.init_pysparkle, Qt.QueuedConnection)
 
-        geometry = CONFIG['session/geometry']
-        if geometry is None:
-            desktop = QtGui.QDesktopWidget()
-            screen = desktop.availableGeometry(desktop.primaryScreen())
-            self.setFixedSize(screen.width()*0.8, screen.height()*0.9)
-        else:
-            self.setGeometry(geometry)
-
         fs = int(1.3 * QtGui.QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
         menu_button.setStyleSheet("QPushButton {{ font-size: {}pt; font-weight: bold; }}".format(fs))
 
         self.config_changed.connect(update_textedit_colors)
+
+        desktop = QtGui.QDesktopWidget()
+        screen = desktop.availableGeometry(desktop.primaryScreen())
+        self.resize(screen.width()*0.8, screen.height()*0.9)
+        geometry = CONFIG['session/geometry']
+        if geometry is not None:
+            if geometry.right()+1 >= screen.width() and \
+               geometry.bottom()+1 >= screen.height() and False:
+                self.showMaximized()
+            else:
+                geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
+                geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
+                self.setGeometry(geometry)
 
         self.show()
 
@@ -651,6 +656,7 @@ class PlaskApplication(QtGui.QApplication):
     def __init__(self, argv):
         self._opened_windows = []
         super(PlaskApplication, self).__init__(argv)
+        self.setAttribute(Qt.AA_DontShowIconsInMenus, False)
 
     def commitData(self, session_manager):
         self._opened_windows = WINDOWS.copy()
