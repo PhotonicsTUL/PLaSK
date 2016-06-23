@@ -144,19 +144,20 @@ class GNLatticeController(GNObjectController):
             'change {} lattice vector'.format('first' if index == 0 else 'second')
         )
 
-    def _segments_keypress(self, event):
-        if event.key() == Qt.Key_Return or event.text() in ('^', ';'):
-            pos = self.segments.textCursor().position()
-            self._set_node_property_undoable('segments', self.segments.toPlainText())
-            cursor = self.segments.textCursor()
-            cursor.setPosition(pos)
-            self.segments.setTextCursor(cursor)
+    def _segments_changed(self):
         return True
+        # if event.key() == Qt.Key_Return or event.text() in ('^', ';'):
+        #     pos = self.segments.textCursor().position()
+        #     self._set_node_property_undoable('segments', self.segments.toPlainText())
+        #     cursor = self.segments.textCursor()
+        #     cursor.setPosition(pos)
+        #     self.segments.setTextCursor(cursor)
+        # return True
 
     def construct_form(self):
         self.construct_group('Lattice Settings')
         self.segments = self.construct_multi_line_edit('Segments:', node_property_name='segments',
-                                                       key_cb=self._segments_keypress)
+                                                       change_cb=self._segments_changed)
         self.segments.setToolTip(u'One or more polygons separated by ``^`` characters.\n'
                                  u'Each polygon is formed by two or more vertices separated by ``;`` characters.\n'
                                  u'Each vertex consists of two space-separated integers.')
@@ -170,4 +171,4 @@ class GNLatticeController(GNObjectController):
         for i in range(0, self.node.dim):
             self.vectors[0][i].setText(none_to_empty(self.node.vectors[0][i]))
             self.vectors[1][i].setText(none_to_empty(self.node.vectors[1][i]))
-        self.segments.setPlainText(none_to_empty(self.node.segments))
+        self.segments.set_values(s.strip() for s in none_to_empty(self.node.segments).split('^'))

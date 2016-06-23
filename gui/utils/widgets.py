@@ -202,7 +202,7 @@ class CheckBoxDelegate(QtGui.QStyledItemDelegate):
         else:
             check_box_style_option.state |= QtGui.QStyle.State_Off
 
-        check_box_style_option.rect = self.getCheckBoxRect(option)
+        check_box_style_option.rect = self.get_check_box_rect(option)
         if not (index.model().flags(index) & Qt.ItemIsEditable):
             check_box_style_option.state |= QtGui.QStyle.State_ReadOnly
 
@@ -219,7 +219,7 @@ class CheckBoxDelegate(QtGui.QStyledItemDelegate):
 
         # Do not change the checkbox-state
         if event.type() == QtCore.QEvent.MouseButtonRelease or event.type() == QtCore.QEvent.MouseButtonDblClick:
-            if event.button() != Qt.LeftButton or not self.getCheckBoxRect(option).contains(event.pos()):
+            if event.button() != Qt.LeftButton or not self.get_check_box_rect(option).contains(event.pos()):
                 return False
             if event.type() == QtCore.QEvent.MouseButtonDblClick:
                 return True
@@ -240,7 +240,8 @@ class CheckBoxDelegate(QtGui.QStyledItemDelegate):
         new_value = not bool(index.model().data(index, Qt.DisplayRole))
         model.setData(index, new_value, Qt.EditRole)
 
-    def getCheckBoxRect(self, option):
+    @staticmethod
+    def get_check_box_rect(option):
         check_box_style_option = QtGui.QStyleOptionButton()
         check_box_rect = QtGui.QApplication.style().subElementRect(QtGui.QStyle.SE_CheckBoxIndicator,
                                                                    check_box_style_option, None)
@@ -336,7 +337,7 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         key_cb - when kay is pressed
     """
 
-    def __init__(self, focus_out_cb = None, key_cb = None, **kwargs):
+    def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
         super(TextEditWithCB, self).__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
         self.key_cb = key_cb
@@ -350,16 +351,89 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         if self.key_cb is not None: self.key_cb(event)
 
 
+class MultiLineEdit(QtGui.QWidget):
+    """
+    Widget showing multiple lines
+    """
+
+    def __init__(self, movable=False, persistent=False, change_cb=None):
+        super(MultiLineEdit, self).__init__()
+        self.persistent = persistent
+        self.movable = movable
+        self.change_cb = change_cb
+        layout = QtGui.QVBoxLayout()
+        self.setLayout(layout)
+
+    def make_row(self, value=None):
+        edit = QtGui.QLineEdit()
+        edit.editingFinished.connect(self.edited)
+        if value is not None:
+            edit.setText(value)
+        row = QtGui.QWidget(self)
+        row.edit = edit
+        layout = QtGui.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(edit)
+        # if self.movable:
+        #     up = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), "Move Up", row)
+        #     up.triggered.connect(lambda: self.layout().removeWidget(row))
+        if self.persistent:
+            button = QtGui.QToolButton(row)
+            button.setIcon(QtGui.QIcon.fromTheme('list-remove'))
+            def removed():
+                self.layout().removeWidget(row)
+                self.updateGeometry()
+            button.triggered.connect(removed)
+            layout.addWidget(button)
+        row.setLayout(layout)
+        return row
+
+    def edited(self):
+        empty = not self.sender().text()
+        row = self.sender().parent()
+        layout = self.layout()
+        last = layout.indexOf(row) == layout.count() - 1
+        if empty and not (last or self.persistent):
+            layout.removeWidget(row)
+            row.setParent(None)
+            self.updateGeometry()
+        if not empty and last:
+            layout.addWidget(self.make_row())
+            self.updateGeometry()
+        if self.change_cb is not None: self.change_cb()
+
+    def set_values(self, values):
+        layout = self.layout()
+        print(self.sizeHint())
+        while layout.count() > 0:
+            item = layout.takeAt(0)
+            layout.removeItem(item)
+            item.widget().setParent(None)
+            del item
+        for value in values:
+            layout.addWidget(self.make_row(value))
+        layout.addWidget(self.make_row())
+        self.updateGeometry()
+        print(self.sizeHint())
+        import sys
+        sys.stdout.flush()
+
+    def get_values(self):
+        values = []
+        layout = self.layout()
+        for i in range(layout.count()-1):
+            values.append(layout.takeAt(i).widget().edit.text())
+        return values
+
+
 def fire_edit_end(widget=None):
     """
     Try to call event which cause updating model by widget which is focused (or widget given as parameter).
     :param QtGui.QWidget widget: QtGui.QApplication.focusWidget() will be used by default
     """
     if widget is None: widget = QtGui.QApplication.focusWidget()
-    try:
-        widget.editingFinished.emit()
+    try: widget.editingFinished.emit()
     except: pass
-    try:
-        widget.focus_out_cb()
+    try: widget.focus_out_cb()
     except: pass
 

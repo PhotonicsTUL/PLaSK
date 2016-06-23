@@ -278,15 +278,20 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
 
-        menu_button = QtGui.QPushButton(self)
+        if os.name == 'nt':
+            menu_button = QtGui.QToolButton(self)
+            menu_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+            menu_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            menu_button.setAutoFillBackground(True)
+            font = menu_button.font()
+            font.setBold(True)
+            menu_button.setFont(font)
+        else:
+            menu_button = QtGui.QPushButton(self)
         menu_button.setText("PLaSK")
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
-        if os.name == 'nt':
-            menu_button.setAutoFillBackground(True)
-            #menu_button.setIcon(QtGui.QIcon(QtGui.QIcon.fromTheme('plask').pixmap(16,16)))
-        else:
-            menu_button.setIcon(QtGui.QIcon.fromTheme('plask-logo'))
+        menu_button.setIcon(QtGui.QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
         menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
