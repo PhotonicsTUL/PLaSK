@@ -24,8 +24,8 @@ set(SOLVER_LINK_LIBRARIES camos)
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 #
-find_package(Eigen3)
-set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+#find_package(Eigen3)
+#set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 
 
 # Uncomment and edit the line below if you need some special linker flags.
