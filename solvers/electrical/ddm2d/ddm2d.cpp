@@ -320,7 +320,7 @@ template <CalcType calctype, typename MatrixT>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}{{2}})", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
     //auto iMesh = (this->mesh)->getMidpointsMesh();
     //auto temperatures = inTemperature(iMesh);

@@ -436,14 +436,9 @@ class SourceEditController(Controller):
         self.line_numbers = line_numbers
         self.fresh = False
         self.visible = False
-        self.edited = False  # True only if text has been edited after last save_data_in_model
         self.source_widget = None
         self.document.window.config_changed.connect(self.reconfig)
         self.highlighter = None
-
-    def _on_text_edit(self):
-        self.edited = True
-        self.document.set_changed()
 
     def create_source_widget(self, parent):
         source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
@@ -486,15 +481,20 @@ class SourceEditController(Controller):
             self.fresh = False
 
     def save_data_in_model(self):
-        if not self.get_source_widget().editor.isReadOnly() and self.edited:
+        if not self.get_source_widget().editor.isReadOnly() and \
+                self.get_source_widget().editor.document().isModified():
             try: self.model.changed -= self.refresh_editor
             except AttributeError: pass
             try:
                 self.model.set_text(self.get_source_widget().editor.toPlainText() + '\n')
-                self.edited = False
             finally:
                 try: self.model.changed += self.refresh_editor
                 except AttributeError: pass
+            self.get_source_widget().editor.document().setModified(False)
+
+    def _modification_changed(self, changed):
+        if changed:
+            self.document.set_changed()
 
     def on_edit_enter(self):
         self.visible = True
@@ -503,13 +503,14 @@ class SourceEditController(Controller):
         except AttributeError: pass
         try: self.model.changed += self.refresh_editor
         except AttributeError: pass
-        self.source_widget.editor.textChanged.connect(self._on_text_edit)
+        #self._clean_state = self.model.undo_stack.isClean()
+        self.source_widget.editor.modificationChanged.connect(self._modification_changed)
 
     # When the editor is turned off, the model should be updated
     def on_edit_exit(self):
         if not self.try_save_data_in_model():
             return False
-        self.source_widget.editor.textChanged.disconnect(self._on_text_edit)
+        self.source_widget.editor.modificationChanged.disconnect(self._modification_changed)
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
         return True

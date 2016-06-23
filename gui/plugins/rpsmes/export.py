@@ -143,8 +143,8 @@ else:
                         if not (samex or samey):
                             #TODO
                             plask.print_log(plask.LOG_WARNING,
-                                      "Boundary no %d for %s is not straight line. "
-                                      "Skipping it. Add it manually." % (i,name))
+                                            "Boundary no %d for %s is not straight line. "
+                                            "Skipping it. Add it manually." % (i,name))
                         else:
                             lines.append("%s %s %s %s %s %s_boundary" % (_pad(min(xx)), _pad(min(yy)), _pad(max(xx)), _pad(max(yy)), _pad(value), name))
             outl("%s boundary_conditions_%s" % (_pad(len(lines),59),name))
@@ -179,9 +179,9 @@ else:
             controller = parent.document.geometry.controllers[0]
             current_model = controller.current_root()
             name = controller.current_root().name
-            geom = manager.geometry[str(name)]
+            geom = manager.geo[str(name)]
             filename = u'{}_{}'.format(os.path.splitext(parent.document.filename)[0], name)
-            write_dan(filename, manager.solver.values(), geom)
+            write_dan(filename, manager.solvers.values(), geom)
         except Exception as err:
             msgbox = QtGui.QMessageBox()
             msgbox.setWindowTitle("RPSMES Export Error")

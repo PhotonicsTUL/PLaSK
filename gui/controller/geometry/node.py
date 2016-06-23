@@ -19,7 +19,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import ComboBox, TextEditWithCB
+from ...utils.widgets import ComboBox, TextEditWithCB, MultiLineEdit
 from ...utils import getattr_by_path
 
 
@@ -126,15 +126,17 @@ class GNodeController(Controller):
         return res
 
     def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
-                                  change_cb=None, key_cb=None):
-        res = TextEditWithCB(key_cb=key_cb)
-        res.setTabChangesFocus(True)
-        res.setFixedHeight(int(3.5 * QtGui.QFontMetrics(res.font()).height()))
+                                  change_cb=None, sep='\n'):
+        res = MultiLineEdit(change_cb=change_cb)
+        # res = TextEditWithCB(key_cb=key_cb)
+        # res.setTabChangesFocus(True)
+        # res.setFixedHeight(int(3.5 * QtGui.QFontMetrics(res.font()).height()))
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
-            res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
+            res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, sep.join(res.get_values()),
+                                                                        display_property_name)
         return res
 
     def construct_combo_box(self, row_name=None, items=(), editable=True, node_property_name=None,

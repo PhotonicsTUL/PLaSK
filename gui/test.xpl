@@ -27,6 +27,7 @@
     <D>10+0.016670*(T-300)</D>
   </material>
   <material name="name" base="semiconductor"/>
+  <material name="name2" base="semiconductor"/>
 </materials>
 
 <geometry>
@@ -133,7 +134,7 @@
     </stack>
   </cartesian3d>
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
-    <clip left="0" back="0">
+    <clip>
       <align x="0" y="0" top="0">
         <item xcenter="0" ycenter="0">
           <stack>
@@ -285,7 +286,7 @@ from scipy import optimize
 import sys
 print_log('result', sys.executable)
 
-print mesaRadius + 0 # 0
+print mesaRadius + 0
 
 print_log('data', "łóżko")
 print_log('info', "informacja")

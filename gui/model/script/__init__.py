@@ -12,17 +12,34 @@
 
 from lxml import etree
 
-from ...qt.QtCore import Qt
+from ...qt.QtCore import Qt, QObject
+from ...qt import QtSignal
 from ...utils.xml import require_no_children, require_no_attributes
 from .. import SectionModel
 from ..info import Info
 from .completer import prepare_completions
 
 
+class _UndoStack(QObject):
+
+    cleanChanged = QtSignal(bool)
+
+    def __init__(self, model):
+        super(_UndoStack, self).__init__()
+        self.model = model
+
+    def isClean(self):
+        return self.model.editor is None or not self.model.editor.document().isModified()
+
+    def setClean(self):
+        if self.model.editor is not None:
+            self.model.editor.document().setModified(False)
+
+
 class ScriptModel(SectionModel):
 
     def __init__(self, info_cb=None):
-        SectionModel.__init__(self, 'script', info_cb)
+        SectionModel.__init__(self, 'script', info_cb, undo_stack=_UndoStack(self))
         self._code = ''
         prepare_completions()
         self.editor = None
