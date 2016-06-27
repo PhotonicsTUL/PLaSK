@@ -4,7 +4,6 @@
 #include <plask/geometry/path.h>
 #include <plask/geometry/object.h>
 
-
 namespace plask { namespace python {
 
 template <typename... Args>
@@ -75,10 +74,10 @@ void register_geometry_path()
     set_to_python_list_conventer<shared_ptr<GeometryObject>>();
 
     py::class_<PathHints, shared_ptr<PathHints>>("PathHints",
-                          "Hint used for resolving ambiguities in a geometry tree.\n\n"
-                          "PathHints is used to resolve ambiguities if any object is present in the"
-                          "geometry\n tree more than once. It contains a set of PathHint objects holding\n"
-                          "weak references to containers and their items.")
+                          u8"Hint used for resolving ambiguities in a geometry tree.\n\n"
+                          u8"PathHints is used to resolve ambiguities if any object is present in the"
+                          u8"geometry\n tree more than once. It contains a set of PathHint objects holding\n"
+                          u8"weak references to containers and their items.")
         .def("__repr__", &PathHints__repr__)
         .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, py::arg("hint"),
              "Append hint to the path.\n\n"
@@ -99,9 +98,9 @@ void register_geometry_path()
     detail::PathHints_from_None();
 
     py::class_<Path, shared_ptr<Path>>("Path",
-                     "Sequence of objects in the geometry tree, used for resolving ambiguities.\n\n"
-                     "Path is used to specify unique instance of every object in the geometry,\n"
-                     "even if this object is inserted to the geometry tree in more than one place.\n\n",
+                     u8"Sequence of objects in the geometry tree, used for resolving ambiguities.\n\n"
+                     u8"Path is used to specify unique instance of every object in the geometry,\n"
+                     u8"even if this object is inserted to the geometry tree in more than one place.\n\n",
                      py::no_init)
         .def("__init__", py::make_constructor(Path__init__<const PathHints::Hint&>))
         .def("__init__", py::make_constructor(Path__init__<const GeometryObject&>))
@@ -116,17 +115,17 @@ void register_geometry_path()
              (py::arg("subtree"), py::arg("hints")=py::object()), py::return_self<>())
         .def("append", (Path& (Path::*)(const Path&, const PathHints*))&Path::append,
              (py::arg("path"), py::arg("hints")=py::object()), py::return_self<>(),
-             "Append an object/hint/subtree/path list to this path.\n\n"
-             "Args:\n"
-             "object (GeometryObject): Geometry object to append to the path. It must be\n"
-             "                         an item of a container already present in it.\n"
-             "hint (PathHint): Hint returned by a addition of an object to the container\n"
-             "                 already present in the path.\n"
-             "subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
-             "                   with it."
-             "path (Path): Another path to join with the exising one. There must be some\n"
-             "             connection between the two paths."
-             "hints (PathHint, optional): Optional hints used for resolving ambiguities.\n"
+             u8"Append an object/hint/subtree/path list to this path.\n\n"
+             u8"Args:\n"
+             u8"object (GeometryObject): Geometry object to append to the path. It must be\n"
+             u8"                         an item of a container already present in it.\n"
+             u8"hint (PathHint): Hint returned by a addition of an object to the container\n"
+             u8"                 already present in the path.\n"
+             u8"subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
+             u8"                   with it."
+             u8"path (Path): Another path to join with the exising one. There must be some\n"
+             u8"             connection between the two paths."
+             u8"hints (PathHint, optional): Optional hints used for resolving ambiguities.\n"
             )
         .def(py::self += py::other<Path>())
         .def(py::self += py::other<PathHints::Hint>())
@@ -137,10 +136,10 @@ void register_geometry_path()
     ;
     py::implicitly_convertible<Path,PathHints>();
 
-    py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", "A selected part of a geometry tree.", py::no_init)
+    py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", u8"A selected part of a geometry tree.", py::no_init)
         .def("__nonzero__", &Subtree__nonzero__)
-        .add_property("brached", &GeometryObject::Subtree::hasBranches, "Bool indicating whether the subtree has more than one branch.")
-        .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree.")
+        .add_property("brached", &GeometryObject::Subtree::hasBranches, u8"Bool indicating whether the subtree has more than one branch.")
+        .add_property("last_path", &GeometryObject::Subtree::getLastPath, u8"Last (topmost) branch of the subtree.")
         .def("__eq__", __is__<GeometryObject::Subtree>)
         .def("__hash__", __hash__<GeometryObject::Subtree>)
     ;

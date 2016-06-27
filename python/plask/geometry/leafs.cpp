@@ -161,16 +161,16 @@ void register_geometry_leafs()
     init_GeometryObjectLeaf<3>();
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> block2D("Rectangle",
-        "Rectangle(width, height, material)\n"
-        "Rectangle(dims, material)\n\n"
-        "Rectangular block (2D geometry object).\n\n"
-        "Sides of the rectangle are always parallel to the axes and its origin is located\n"
-        "in the lower left corner.\n\n"
-        "Args:\n"
-        "    width (float): Rectangle width.\n"
-        "    height (float): Rectangle height.\n"
-        "    material (Material): Rectangle material.\n"
-        "    dims (plask.vec): 2D vector representing dimensions of the rectangle.\n",
+        u8"Rectangle(width, height, material)\n"
+        u8"Rectangle(dims, material)\n\n"
+        u8"Rectangular block (2D geometry object).\n\n"
+        u8"Sides of the rectangle are always parallel to the axes and its origin is located\n"
+        u8"in the lower left corner.\n\n"
+        u8"Args:\n"
+        u8"    width (float): Rectangle width.\n"
+        u8"    height (float): Rectangle height.\n"
+        u8"    material (Material): Rectangle material.\n"
+        u8"    dims (plask.vec): 2D vector representing dimensions of the rectangle.\n",
         py::no_init
         ); block2D
         .def("__init__", py::make_constructor(&Rectangle_constructor_wh, py::default_call_policies(), (py::arg("width"), py::arg("height"), py::arg("material"))))
@@ -184,17 +184,17 @@ void register_geometry_leafs()
     scope.attr("Block2D") = block2D;
 
     py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> block3D("Cuboid",
-        "Cuboid(depth, width, height, material)\n"
-        "Cuboid(dims, material)\n\n"
-        "Cuboidal block (3D geometry object).\n\n"
-        "Sides of the cuboid are always parallel to the axes and its origin is located\n"
-        "in the lower left back corner.\n\n"
-        "Args:\n"
-        "    depth (float): Cuboid depth.\n"
-        "    width (float): Cuboid width.\n"
-        "    height (float): Cuboid height.\n"
-        "    material (Material): Cuboid material.\n"
-        "    dims (plask.vec): 3D vector representing dimensions of the cuboid.\n",
+        u8"Cuboid(depth, width, height, material)\n"
+        u8"Cuboid(dims, material)\n\n"
+        u8"Cuboidal block (3D geometry object).\n\n"
+        u8"Sides of the cuboid are always parallel to the axes and its origin is located\n"
+        u8"in the lower left back corner.\n\n"
+        u8"Args:\n"
+        u8"    depth (float): Cuboid depth.\n"
+        u8"    width (float): Cuboid width.\n"
+        u8"    height (float): Cuboid height.\n"
+        u8"    material (Material): Cuboid material.\n"
+        u8"    dims (plask.vec): 3D vector representing dimensions of the cuboid.\n",
         py::no_init
         ); block3D
         .def("__init__", py::make_constructor(&Cuboid_constructor_dwh, py::default_call_policies(), (py::arg("depth"), py::arg("width"), py::arg("height"), py::arg("material"))))
@@ -209,22 +209,22 @@ void register_geometry_leafs()
     scope.attr("Block3D") = block3D;
 
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
-        "Triangle(a0, a1, b0, b1, material)\n"
-        "Triangle(a, b, material)\n"
-        "Triangle (2D geometry object).\n\n"
-        "Three triangle vertices are located at points (0, 0), *a*, and *b*.\n\n"
-        "Args:\n"
-        "    plask.vec a: Local coordinates of the first triangle vertex.\n"
-        "    plask.vec b: Local coordinates of the second triangle vertex.\n"
-        "    a0 (double): Horizontal component of the local coordinates of the first\n"
-        "                 triangle vertex.\n"
-        "    a1 (double): Vertical component of the local coordinates of the first\n"
-        "                 triangle vertex.\n"
-        "    b0 (double): Horizontal component of the local coordinates of the second\n"
-        "                 triangle vertex.\n"
-        "    b1 (double): Vertical component of the local coordinates of the second\n"
-        "                 triangle vertex.\n"
-        "    material (Material): Triangle material.\n",
+        u8"Triangle(a0, a1, b0, b1, material)\n"
+        u8"Triangle(a, b, material)\n"
+        u8"Triangle (2D geometry object).\n\n"
+        u8"Three triangle vertices are located at points (0, 0), *a*, and *b*.\n\n"
+        u8"Args:\n"
+        u8"    plask.vec a: Local coordinates of the first triangle vertex.\n"
+        u8"    plask.vec b: Local coordinates of the second triangle vertex.\n"
+        u8"    a0 (double): Horizontal component of the local coordinates of the first\n"
+        u8"                 triangle vertex.\n"
+        u8"    a1 (double): Vertical component of the local coordinates of the first\n"
+        u8"                 triangle vertex.\n"
+        u8"    b0 (double): Horizontal component of the local coordinates of the second\n"
+        u8"                 triangle vertex.\n"
+        u8"    b1 (double): Vertical component of the local coordinates of the second\n"
+        u8"                 triangle vertex.\n"
+        u8"    material (Material): Triangle material.\n",
         py::no_init
         ); triangle
         .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("a"), "b", "material")))
@@ -240,11 +240,11 @@ void register_geometry_leafs()
     ;
 
     py::class_<Circle<2>, shared_ptr<Circle<2>>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> ("Circle",
-        "Circle(radius, material)\n\n"
-        "Circle (2D geometry object).\n\n"
-        "Args:\n"
-        "    radius (float): Circle radius.\n"
-        "    material (Material): Circle material.\n",
+        u8"Circle(radius, material)\n\n"
+        u8"Circle (2D geometry object).\n\n"
+        u8"Args:\n"
+        u8"    radius (float): Circle radius.\n"
+        u8"    material (Material): Circle material.\n",
         py::no_init
         )
         .def("__init__", py::make_constructor(&Circle_constructor<2>, py::default_call_policies(), (py::arg("radius"), "material")))
@@ -252,11 +252,11 @@ void register_geometry_leafs()
     ;
 
     py::class_<Circle<3>, shared_ptr<Circle<3>>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Sphere",
-        "Sphere(radius, material)\n\n"
-        "Sphere (3D geometry object).\n\n"
-        "Args:\n"
-        "    radius (float): Sphere radius.\n"
-        "    material (Material): Sphere material.\n",
+        u8"Sphere(radius, material)\n\n"
+        u8"Sphere (3D geometry object).\n\n"
+        u8"Args:\n"
+        u8"    radius (float): Sphere radius.\n"
+        u8"    material (Material): Sphere material.\n",
         py::no_init
         )
         .def("__init__", py::make_constructor(&Circle_constructor<3>, py::default_call_policies(), (py::arg("radius"), "material")))
@@ -264,15 +264,15 @@ void register_geometry_leafs()
     ;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
-        "Cylinder(radius, height, material)\n\n"
-        "Vertical cylinder (3D geometry object).\n\n"
-        "The cylinder base always lies in the horizontal (longitudinal-transverse)\n"
-        "plane and it height spans in the vertical\n"
-        "direction.\n\n"
-        "Args:\n"
-        "    radius (float): Cylinder radius.\n"
-        "    height (float): Cylinder height.\n"
-        "    material (Material): Cylinder material.\n",
+        u8"Cylinder(radius, height, material)\n\n"
+        u8"Vertical cylinder (3D geometry object).\n\n"
+        u8"The cylinder base always lies in the horizontal (longitudinal-transverse)\n"
+        u8"plane and it height spans in the vertical\n"
+        u8"direction.\n\n"
+        u8"Args:\n"
+        u8"    radius (float): Cylinder radius.\n"
+        u8"    height (float): Cylinder height.\n"
+        u8"    material (Material): Cylinder material.\n",
         py::no_init
         )
         .def("__init__", py::make_constructor(&Cylinder_constructor, py::default_call_policies(), (py::arg("radius"), "height", "material")))

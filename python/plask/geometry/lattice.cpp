@@ -10,27 +10,27 @@ template <> inline const char* ArangeName<3>() { return "Arange3D"; }
 
 template <int dim> inline const char* ArangeDoc();
 template <> inline const char* ArangeDoc<2>() { return
-    "Arange2D(item, step, count)\n"
-    "Container that repeats its item, shifting each repetition by the specified step.\n\n"
-    "Args:\n"
-    "    item (GeometryObject2D): Object to repeat.\n"
-    "    step (vec): 2D vector, by which each repetition is shifted from the previous\n"
-    "                one.\n"
-    "    count (int): Number of item repetitions.\n"
-    "    warning (bool): Boolean value indicating is overlapping warnings\n"
-    "                    are displayed.\n"
+    u8"Arange2D(item, step, count)\n"
+    u8"Container that repeats its item, shifting each repetition by the specified step.\n\n"
+    u8"Args:\n"
+    u8"    item (GeometryObject2D): Object to repeat.\n"
+    u8"    step (vec): 2D vector, by which each repetition is shifted from the previous\n"
+    u8"                one.\n"
+    u8"    count (int): Number of item repetitions.\n"
+    u8"    warning (bool): Boolean value indicating is overlapping warnings\n"
+    u8"                    are displayed.\n"
     ;
 }
 template <> inline const char* ArangeDoc<3>() { return
-    "Arange3D(item, step, count)\n"
-    "Container that repeats its item, shifting each repetition by the specified step.\n\n"
-    "Args:\n"
-    "    item (GeometryObject3D): Object to repeat.\n"
-    "    step (vec): 3D vector, by which each repetition is shifted from the previous\n"
-    "                one.\n"
-    "    count (int): Number of item repetitions.\n"
-    "    warning (bool): Boolean value indicating is overlapping warnings\n"
-    "                    are displayed.\n"
+    u8"Arange3D(item, step, count)\n"
+    u8"Container that repeats its item, shifting each repetition by the specified step.\n\n"
+    u8"Args:\n"
+    u8"    item (GeometryObject3D): Object to repeat.\n"
+    u8"    step (vec): 3D vector, by which each repetition is shifted from the previous\n"
+    u8"                one.\n"
+    u8"    count (int): Number of item repetitions.\n"
+    u8"    warning (bool): Boolean value indicating is overlapping warnings\n"
+    u8"                    are displayed.\n"
     ;
 }
 

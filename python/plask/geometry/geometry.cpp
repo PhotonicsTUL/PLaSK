@@ -34,40 +34,40 @@ void initGeometry() {
     py::scope scope = geometry_module;
 
     scope.attr("__doc__") =
-        "PLaSK geometry classes.\n\n"
+        u8"PLaSK geometry classes.\n\n"
 
-        "Classes and functions defined in this module can be used to create and modify\n"
-        "geometry description in PLaSK. See :ref:`sec-geometry-python` for more details.\n\n"
+        u8"Classes and functions defined in this module can be used to create and modify\n"
+        u8"geometry description in PLaSK. See :ref:`sec-geometry-python` for more details.\n\n"
 
-        "Example:\n"
-        "    To create a simple stack with two identical rectangles and check its total\n"
-        "    size, use the following commands:\n\n"
+        u8"Example:\n"
+        u8"    To create a simple stack with two identical rectangles and check its total\n"
+        u8"    size, use the following commands:\n\n"
 
-        "    >>> rectangle = geometry.Block2D(4, 2, 'GaAs')\n"
-        "    >>> stack = geometry.Stack2D()\n"
-        "    >>> stack.prepend(rectangle)\n"
-        "    <plask.geometry.PathHint at 0x40a52f8>\n"
-        "    >>> stack.prepend(rectangle)\n"
-        "    <plask.geometry.PathHint at 0x40a50d8>\n"
-        "    >>> stack.bbox\n"
-        "    plask.geometry.Box2D(0, 0, 4, 4)\n\n"
+        u8"    >>> rectangle = geometry.Block2D(4, 2, 'GaAs')\n"
+        u8"    >>> stack = geometry.Stack2D()\n"
+        u8"    >>> stack.prepend(rectangle)\n"
+        u8"    <plask.geometry.PathHint at 0x40a52f8>\n"
+        u8"    >>> stack.prepend(rectangle)\n"
+        u8"    <plask.geometry.PathHint at 0x40a50d8>\n"
+        u8"    >>> stack.bbox\n"
+        u8"    plask.geometry.Box2D(0, 0, 4, 4)\n\n"
 
-        "    Now, to create a Cartesian two-dimensional geometry over it:\n\n"
+        u8"    Now, to create a Cartesian two-dimensional geometry over it:\n\n"
 
-        "    >>> geometry.Cartesian2D(stack)\n"
-        "    <plask.geometry.Cartesian2D object at (0x571acd0)>\n\n"
+        u8"    >>> geometry.Cartesian2D(stack)\n"
+        u8"    <plask.geometry.Cartesian2D object at (0x571acd0)>\n\n"
 
-        "    You may also modify any existing geometry object:\n\n"
+        u8"    You may also modify any existing geometry object:\n\n"
 
-        "    >>> rectangle.height = 3\n"
-        "    >>> stack.bbox\n"
-        "    plask.geometry.Box2D(0, 0, 4, 6)\n\n"
+        u8"    >>> rectangle.height = 3\n"
+        u8"    >>> stack.bbox\n"
+        u8"    plask.geometry.Box2D(0, 0, 4, 6)\n\n"
 
-        "See also:\n"
-        "    Section :ref:`sec-geometry` for detailed information of geometry.\n\n"
+        u8"See also:\n"
+        u8"    Section :ref:`sec-geometry` for detailed information of geometry.\n\n"
 
-        "    XPL section :xml:tag:`geometry` for reference of the geometry definition\n"
-        "    in the XPL file.\n"
+        u8"    XPL section :xml:tag:`geometry` for reference of the geometry definition\n"
+        u8"    in the XPL file.\n"
     ;
 
     // This must be the first one

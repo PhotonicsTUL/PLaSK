@@ -69,60 +69,60 @@ static std::string Box3D__repr__(const Box3D& self) {
 void register_geometry_primitive()
 {
     py::class_<Box2D, shared_ptr<Box2D>>("Box2D",
-        "Box2D()\n"
-        "Box2D(lower, upper)\n"
-        "Box2D(left, bottom, right, top)\n\n"
-        "Rectangular two-dimensional box.\n\n"
-        "This class holds a rectangular box with its sides along the axes. It provides\n"
-        "some basic geometric operations and is used mainly to represent 2D geometry\n"
-        "bounding boxes.\n\n"
-        "Args:\n"
-        "    lower (plask.vec): Lower left corner of the box.\n"
-        "    upper (plask.ver): Upper right corner of the box.\n"
-        "    left (float): Left edge of the box.\n"
-        "    bottom (float): Bottom edge of the box.\n"
-        "    right (float): Right edge of the box.\n"
-        "    top (float): Top edge of the box.\n\n",
+        u8"Box2D()\n"
+        u8"Box2D(lower, upper)\n"
+        u8"Box2D(left, bottom, right, top)\n\n"
+        u8"Rectangular two-dimensional box.\n\n"
+        u8"This class holds a rectangular box with its sides along the axes. It provides\n"
+        u8"some basic geometric operations and is used mainly to represent 2D geometry\n"
+        u8"bounding boxes.\n\n"
+        u8"Args:\n"
+        u8"    lower (plask.vec): Lower left corner of the box.\n"
+        u8"    upper (plask.ver): Upper right corner of the box.\n"
+        u8"    left (float): Left edge of the box.\n"
+        u8"    bottom (float): Bottom edge of the box.\n"
+        u8"    right (float): Right edge of the box.\n"
+        u8"    top (float): Top edge of the box.\n\n",
         py::no_init)
         .def("__init__", py::make_constructor(&Box2D_constructor_default))
         .def("__init__", py::make_constructor(&Box2D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box2D_constructor_4numbers, py::default_call_policies(), (py::arg("left"), py::arg("bottom"), py::arg("right"), py::arg("top"))))
-        .def_readonly("lower", &Box2D::lower, "Lower left corner of the box.")
-        .def_readonly("upper", &Box2D::upper, "Upper right corner of the box.")
-        .add_property("left", &Box2D::getLeft, "Left edge of the box.")
-        .add_property("right",  &Box2D::getRight, "Right edge of the box.")
-        .add_property("top",  &Box2D::getTop, "Top edge of the box.")
-        .add_property("bottom",  &Box2D::getBottom, "Bottom edge of the box.")
-        .add_property("width", &Box2D::width, "Width of the box.")
-        .add_property("height", &Box2D::height, "Height of the box.")
-        .add_property("size", &Box2D::size, "Size of the box.")
-        .add_property("center", &Box2D::center, "Center of the box.")
-        .def("__nonzero__", &Box2D::isValid, "Return True if the box is valid.")
+        .def_readonly("lower", &Box2D::lower, u8"Lower left corner of the box.")
+        .def_readonly("upper", &Box2D::upper, u8"Upper right corner of the box.")
+        .add_property("left", &Box2D::getLeft, u8"Left edge of the box.")
+        .add_property("right",  &Box2D::getRight, u8"Right edge of the box.")
+        .add_property("top",  &Box2D::getTop, u8"Top edge of the box.")
+        .add_property("bottom",  &Box2D::getBottom, u8"Bottom edge of the box.")
+        .add_property("width", &Box2D::width, u8"Width of the box.")
+        .add_property("height", &Box2D::height, u8"Height of the box.")
+        .add_property("size", &Box2D::size, u8"Size of the box.")
+        .add_property("center", &Box2D::center, u8"Center of the box.")
+        .def("__nonzero__", &Box2D::isValid, u8"Return True if the box is valid.")
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("contains", &Box2D::contains, py::args("point"),
-            "Check if the point is inside the box.\n\n"
-            "Args:\n"
-            "    point (plask.vec): Point to test.\n")
-        .def("__contains__", &Box2D::contains, py::args("point"), "Check if the point is inside the box.")
+            u8"Check if the point is inside the box.\n\n"
+            u8"Args:\n"
+            u8"    point (plask.vec): Point to test.\n")
+        .def("__contains__", &Box2D::contains, py::args("point"), u8"Check if the point is inside the box.")
         .def("intersects", &Box2D::intersects, py::args("other"),
-            "Check if this and the other box have common points.\n\n"
-            "Args:\n"
-            "    other (plask.geometry.Box2D): Box to check common points with.\n")
+            u8"Check if this and the other box have common points.\n\n"
+            u8"Args:\n"
+            u8"    other (plask.geometry.Box2D): Box to check common points with.\n")
         .def("intersection", &Box2D::intersection, py::args("other"),
-            "Get the biggest box which is included in both this and the other box.\n\n"
-            "Args:\n"
-            "    other (plask.geometry.Box2D): Box to make intersection with.\n")
+            u8"Get the biggest box which is included in both this and the other box.\n\n"
+            u8"Args:\n"
+            u8"    other (plask.geometry.Box2D): Box to make intersection with.\n")
         .def("__mult__", &Box2D::intersection)
         .def("extension", &Box2D::extension, py::args("other"),
-             "Get the minimal box which include both this and other box.\n\n"
-             "Args:\n"
-             "    other (plask.geometry.Box2D): Box.\n")
+             u8"Get the minimal box which include both this and other box.\n\n"
+             u8"Args:\n"
+             u8"    other (plask.geometry.Box2D): Box.\n")
         .def("__add__", &Box2D::extension)
         .def("translated", &Box2D::translated, py::args("trans"),
-            "Get translated copy of this box.\n\n"
-            "Args:\n"
-            "   trans (plask.vec): Translation vector.")
+            u8"Get translated copy of this box.\n\n"
+            u8"Args:\n"
+            u8"   trans (plask.vec): Translation vector.")
         .def("__str__", &Box2D__str__)
         .def("__repr__", &Box2D__repr__)
     ;
@@ -131,63 +131,63 @@ void register_geometry_primitive()
 
 
     py::class_<Box3D, shared_ptr<Box3D>>("Box3D",
-        "Box3D()\n"
-        "Box3D(lower, upper)\n"
-        "Box3D(back, left, bottom, front, right, top)\n\n"
-        "Cuboidal three-dimensional box.\n\n"
-        "This class holds a cuboidal box with its sides along the axes. It provides\n"
-        "some basic geometric operations and is used mainly to represent 3D geometry\n"
-        "bounding boxes.\n\n"
-        "Args:\n"
-        "    lower (plask.vec): Back lower left corner of the box.\n"
-        "    upper (plask.ver): Front upper right corner of the box.\n"
-        "    back (float): Back edge of the box.\n"
-        "    left (float): Left edge of the box.\n"
-        "    bottom (float): Bottom edge of the box.\n"
-        "    front (float): Front edge of the box.\n"
-        "    right (float): Right edge of the box.\n"
-        "    top (float): Top edge of the box.\n",
+        u8"Box3D()\n"
+        u8"Box3D(lower, upper)\n"
+        u8"Box3D(back, left, bottom, front, right, top)\n\n"
+        u8"Cuboidal three-dimensional box.\n\n"
+        u8"This class holds a cuboidal box with its sides along the axes. It provides\n"
+        u8"some basic geometric operations and is used mainly to represent 3D geometry\n"
+        u8"bounding boxes.\n\n"
+        u8"Args:\n"
+        u8"    lower (plask.vec): Back lower left corner of the box.\n"
+        u8"    upper (plask.ver): Front upper right corner of the box.\n"
+        u8"    back (float): Back edge of the box.\n"
+        u8"    left (float): Left edge of the box.\n"
+        u8"    bottom (float): Bottom edge of the box.\n"
+        u8"    front (float): Front edge of the box.\n"
+        u8"    right (float): Right edge of the box.\n"
+        u8"    top (float): Top edge of the box.\n",
         py::no_init)
         .def("__init__", py::make_constructor(&Box3D_constructor_default))
         .def("__init__", py::make_constructor(&Box3D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box3D_constructor_4numbers, py::default_call_policies(), (py::arg("back"), py::arg("left"), py::arg("bottom"), py::arg("front"), py::arg("right"), py::arg("top"))))
-        .def_readonly("lower", &Box3D::lower, "Closer lower left corner of the box.")
-        .def_readonly("upper", &Box3D::upper, "Farther upper right corner of the box.")
-        .add_property("front", &Box3D::getFront, "Front edge of the box.")
-        .add_property("back", &Box3D::getBack, "Back edge of the box.")
-        .add_property("left", &Box3D::getLeft, "Left edge of the box.")
-        .add_property("right",  &Box3D::getRight, "Right edge of the box.")
-        .add_property("top",  &Box3D::getTop, "Top edge of the box.")
-        .add_property("bottom",  &Box3D::getBottom, "Bottom edge of the box.")
-        .add_property("depth", &Box3D::depth, "Depth of the box.")
-        .add_property("width", &Box3D::width, "Width of the box.")
-        .add_property("height", &Box3D::height, "Height of the box.")
-        .add_property("size", &Box3D::size, "Size of the box.")
-        .add_property("center", &Box3D::center, "Center of the box.")
-        .def("__nonzero__", &Box3D::isValid, "Return True if the box is valid.")
+        .def_readonly("lower", &Box3D::lower, u8"Closer lower left corner of the box.")
+        .def_readonly("upper", &Box3D::upper, u8"Farther upper right corner of the box.")
+        .add_property("front", &Box3D::getFront, u8"Front edge of the box.")
+        .add_property("back", &Box3D::getBack, u8"Back edge of the box.")
+        .add_property("left", &Box3D::getLeft, u8"Left edge of the box.")
+        .add_property("right",  &Box3D::getRight, u8"Right edge of the box.")
+        .add_property("top",  &Box3D::getTop, u8"Top edge of the box.")
+        .add_property("bottom",  &Box3D::getBottom, u8"Bottom edge of the box.")
+        .add_property("depth", &Box3D::depth, u8"Depth of the box.")
+        .add_property("width", &Box3D::width, u8"Width of the box.")
+        .add_property("height", &Box3D::height, u8"Height of the box.")
+        .add_property("size", &Box3D::size, u8"Size of the box.")
+        .add_property("center", &Box3D::center, u8"Center of the box.")
+        .def("__nonzero__", &Box3D::isValid, u8"Return True if the box is valid.")
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("contains", &Box3D::contains, py::args("point"),
-            "Check if the point is inside the box.\n\n"
-            "Args:\n"
-            "    point (plask.vec): Point to test.\n")
+            u8"Check if the point is inside the box.\n\n"
+            u8"Args:\n"
+            u8"    point (plask.vec): Point to test.\n")
         .def("__contains__", &Box3D::contains, py::args("point"), "Check if the point is inside the box.")
         .def("intersects", &Box3D::intersects,
-            "Check if this and the other box have common points."
-            "Args:\n"
-            "    other (plask.geometry.Box3D): Box to check common points with.\n")
+            u8"Check if this and the other box have common points."
+            u8"Args:\n"
+            u8"    other (plask.geometry.Box3D): Box to check common points with.\n")
         .def("intersection", &Box3D::intersection, py::args("other"),
-            "Get the biggest box which is included in both this and the other box.\n\n"
-            "Args:\n"
-            "    other (plask.geometry.Box3D): Box to make intersection with.\n")
+            u8"Get the biggest box which is included in both this and the other box.\n\n"
+            u8"Args:\n"
+            u8"    other (plask.geometry.Box3D): Box to make intersection with.\n")
         .def("extension", &Box3D::extension, py::args("other"),
-            "Get the minimal box which include both this and other box.\n\n"
-            "Args:\n"
-            "    other (plask.geometry.Box3D): Box.\n")
+            u8"Get the minimal box which include both this and other box.\n\n"
+            u8"Args:\n"
+            u8"    other (plask.geometry.Box3D): Box.\n")
         .def("translated", &Box3D::translated, py::args("trans"),
-            "Get translated copy of this box.\n\n"
-            "Args:\n"
-            "   trans (plask.vec): Translation vector.")
+            u8"Get translated copy of this box.\n\n"
+            u8"Args:\n"
+            u8"   trans (plask.vec): Translation vector.")
         .def("__str__", &Box3D__str__)
         .def("__repr__", &Box3D__repr__)
     ;

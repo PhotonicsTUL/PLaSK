@@ -4,7 +4,6 @@
 
 #include <plask/geometry/stack.h>
 
-
 namespace plask { namespace python {
 
 template <typename StackT>
