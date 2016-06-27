@@ -168,208 +168,208 @@ void register_geometry_container_stack()
              u8"                      Exactly one alignment for horizontal axis must be given.\n")
         .add_property("default_aligner", py::make_getter(&StackContainer<2>::default_aligner, py::return_value_policy<py::return_by_value>()),
                       py::make_setter(&StackContainer<2>::default_aligner, py::return_value_policy<py::return_by_value>()),
-                      "Default alignment for new stack items.")
+                      u8"Default alignment for new stack items.")
     ;
 
     py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>("SingleStack3D",
-        "SingleStack3D(shift=0, **alignments)\n\n"
-        "Container that organizes its items in a vertical stack (3D version).\n\n"
-        "The bottom side of the first object is located at the `shift` position in\n"
-        "container local coordinates. Each consecutive object is placed on the top of\n"
-        "the previous one.\n\n"
-        "Args:\n"
-        "    shift (float): Position in the local coordinates of the bottom of the stack.\n"
-        "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-        "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-        "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-        "                       names. The corresponding value is the position of the\n"
-        "                       given edge/center/origin of the item. This alignment can\n"
-        "                       be overriden while adding the objects to the stack.\n"
-        "                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
-        "See also:\n"
-        "    Function :func:`plask.geometry.Stack3D`.\n", py::no_init)
+        u8"SingleStack3D(shift=0, **alignments)\n\n"
+        u8"Container that organizes its items in a vertical stack (3D version).\n\n"
+        u8"The bottom side of the first object is located at the `shift` position in\n"
+        u8"container local coordinates. Each consecutive object is placed on the top of\n"
+        u8"the previous one.\n\n"
+        u8"Args:\n"
+        u8"    shift (float): Position in the local coordinates of the bottom of the stack.\n"
+        u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+        u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+        u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+        u8"                       names. The corresponding value is the position of the\n"
+        u8"                       given edge/center/origin of the item. This alignment can\n"
+        u8"                       be overriden while adding the objects to the stack.\n"
+        u8"                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
+        u8"See also:\n"
+        u8"    Function :func:`plask.geometry.Stack3D`.\n", py::no_init)
         .def("__init__", raw_constructor(Stack__init__<3>))
         .def("append", py::raw_function(&Stack_push_back<StackContainer<3>>),
-             "append(item, **alignments)\n\n"
-             "Append a new object to the stack.\n\n"
-             "This method adds a new item to the stack and places it at its top.\n\n"
-             "Args:\n"
-             "    item (GeometryObject3D): Object to append to the stack.\n"
-             "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-             "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-             "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-             "                       names. The corresponding value is the position of the\n"
-             "                       given edge/center/origin of the item. By default the\n"
-             "                       object is aligned according to the specification in the\n"
-             "                       stack constructor.\n")
+             u8"append(item, **alignments)\n\n"
+             u8"Append a new object to the stack.\n\n"
+             u8"This method adds a new item to the stack and places it at its top.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject3D): Object to append to the stack.\n"
+             u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+             u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+             u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+             u8"                       names. The corresponding value is the position of the\n"
+             u8"                       given edge/center/origin of the item. By default the\n"
+             u8"                       object is aligned according to the specification in the\n"
+             u8"                       stack constructor.\n")
         .def("prepend", py::raw_function(&Stack_push_front<StackContainer<3>>),
-             "prepend(item, **alignments)\n\n"
-             "Prepend a new object to the stack.\n\n"
-             "This method adds a new item to the stack and places it at its bottom.\n\n"
-             "Args:\n"
-             "    item (GeometryObject3D): Object to prepend to the stack.\n"
-             "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-             "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-             "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-             "                       names. The corresponding value is the position of the\n"
-             "                       given edge/center/origin of the item. By default the\n"
-             "                       object is aligned according to the specification in the\n"
-             "                       stack constructor.\n")
+             u8"prepend(item, **alignments)\n\n"
+             u8"Prepend a new object to the stack.\n\n"
+             u8"This method adds a new item to the stack and places it at its bottom.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject3D): Object to prepend to the stack.\n"
+             u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+             u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+             u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+             u8"                       names. The corresponding value is the position of the\n"
+             u8"                       given edge/center/origin of the item. By default the\n"
+             u8"                       object is aligned according to the specification in the\n"
+             u8"                       stack constructor.\n")
         .def("insert", py::raw_function(&Stack_insert<StackContainer<3>>),
-             "insert(item, **alignments)\n\n"
-             "Insert a new object to the stack.\n\n"
-             "This method adds a new item to the stack and places it at the position\n"
-             "specified by `index`.\n\n"
-             "Args:\n"
-             "    item (GeometryObject3D): Object to insert to the stack.\n"
-             "    index (int): Index of the inserted item in the stack.\n"
-             "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-             "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-             "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-             "                       names. The corresponding value is the position of the\n"
-             "                       given edge/center/origin of the item. By default the\n"
-             "                       object is aligned according to the specification in the\n"
-             "                       stack constructor.\n")
+             u8"insert(item, **alignments)\n\n"
+             u8"Insert a new object to the stack.\n\n"
+             u8"This method adds a new item to the stack and places it at the position\n"
+             u8"specified by `index`.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject3D): Object to insert to the stack.\n"
+             u8"    index (int): Index of the inserted item in the stack.\n"
+             u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+             u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+             u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+             u8"                       names. The corresponding value is the position of the\n"
+             u8"                       given edge/center/origin of the item. By default the\n"
+             u8"                       object is aligned according to the specification in the\n"
+             u8"                       stack constructor.\n")
         .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
-             "Set zero below the item with the given index.\n\n"
-             "This method shifts the local coordinates of the stack vertically. The vertical\n"
-             "coordinate of the stack origin is placed at the bootom egde of the item with\n"
-             "the specified index.\n\n"
-             "Args:\n"
-             "    index (int): Index of the item to align the zero with.\n")
+             u8"Set zero below the item with the given index.\n\n"
+             u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
+             u8"coordinate of the stack origin is placed at the bootom egde of the item with\n"
+             u8"the specified index.\n\n"
+             u8"Args:\n"
+             u8"    index (int): Index of the item to align the zero with.\n")
         .def("move_item", py::raw_function(&Container_move<StackContainer<3>>),
-             "move_item(path, **alignments)\n\n"
-             "Move horizontally item existing in the stack, setting its position according\n"
-             "to the new aligner.\n\n"
-             "Args:\n"
-             "    path (Path): Path returned by :meth:`~plask.geometry.Align2D.append`\n"
-             "                 specifying the object to move.\n"
-             "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-             "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-             "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-             "                       names. The corresponding value is the position of the\n"
-             "                       given edge/center/origin of the item. Exactly one\n"
-             "                       alignment for each horizontal axis must be given.\n")
+             u8"move_item(path, **alignments)\n\n"
+             u8"Move horizontally item existing in the stack, setting its position according\n"
+             u8"to the new aligner.\n\n"
+             u8"Args:\n"
+             u8"    path (Path): Path returned by :meth:`~plask.geometry.Align2D.append`\n"
+             u8"                 specifying the object to move.\n"
+             u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+             u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+             u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+             u8"                       names. The corresponding value is the position of the\n"
+             u8"                       given edge/center/origin of the item. Exactly one\n"
+             u8"                       alignment for each horizontal axis must be given.\n")
         .add_property("default_aligner", py::make_getter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()),
-                      py::make_setter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()), "Default alignment for new stack items")
+                      py::make_setter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()), u8"Default alignment for new stack items")
     ;
 
     // Multi-stack constainer
 
     py::class_<MultiStackContainer<plask::StackContainer<2>>, shared_ptr<MultiStackContainer<plask::StackContainer<2>>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
-        "MultiStack2D(repeat=1, shift=0, **alignment)\n\n"
-        "Stack container that repeats it contents (2D version).\n\n"
-        "The bottom side of the first object is located at the `shift` position in\n"
-        "container local coordinates. Each consecutive object is placed on the top of\n"
-        "the previous one. Then the whole stack is repeated *repeat* times.\n\n"
-        "Args:\n"
-        "    repeat (int): Number of the stack contents repetitions.\n"
-        "    shift (float): Position in the local coordinates of the bottom of the stack.\n"
-        "    alignment (dict): Horizontal alignment specifications. This dictionary can\n"
-        "                      contain only one item. Its key can be ``left``, ``right``,\n"
-        "                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
-        "                      name. The corresponding value is the position of the given\n"
-        "                      edge/center/origin of the item. This alignment can be\n"
-        "                      overriden while adding the objects to the stack.\n"
-        "                      By default the alignment is ``{'left': 0}``.\n"
-        "See also:\n"
-        "   Function :func:`plask.geometry.Stack2D`.\n", py::no_init)
+        u8"MultiStack2D(repeat=1, shift=0, **alignment)\n\n"
+        u8"Stack container that repeats it contents (2D version).\n\n"
+        u8"The bottom side of the first object is located at the `shift` position in\n"
+        u8"container local coordinates. Each consecutive object is placed on the top of\n"
+        u8"the previous one. Then the whole stack is repeated *repeat* times.\n\n"
+        u8"Args:\n"
+        u8"    repeat (int): Number of the stack contents repetitions.\n"
+        u8"    shift (float): Position in the local coordinates of the bottom of the stack.\n"
+        u8"    alignment (dict): Horizontal alignment specifications. This dictionary can\n"
+        u8"                      contain only one item. Its key can be ``left``, ``right``,\n"
+        u8"                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
+        u8"                      name. The corresponding value is the position of the given\n"
+        u8"                      edge/center/origin of the item. This alignment can be\n"
+        u8"                      overriden while adding the objects to the stack.\n"
+        u8"                      By default the alignment is ``{'left': 0}``.\n"
+        u8"See also:\n"
+        u8"   Function :func:`plask.geometry.Stack2D`.\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<2>))
         .add_property("repeat", &MultiStackContainer<plask::StackContainer<2>>::getRepeatCount, &MultiStackContainer<plask::StackContainer<2>>::setRepeatCount,
-                      "Number of repeats of the stack contents.")
+                      u8"Number of repeats of the stack contents.")
     ;
 
     py::class_<MultiStackContainer<plask::StackContainer<3>>, shared_ptr<MultiStackContainer<StackContainer<3>>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
-        "MultiStack3D(repeat=1, shift=0, **alignments)\n\n"
-        "Stack container that repeats it contents (3D version).\n\n"
-        "The bottom side of the first object is located at the `shift` position in\n"
-        "container local coordinates. Each consecutive object is placed on the top of\n"
-        "the previous one. Then the whole stack is repeated *repeat* times.\n\n"
-        "Args:\n"
-        "    repeat (int): Number of the stack contents repetitions.\n"
-        "    shift (float): Position in the local coordinates of the bottom of the stack.\n"
-        "    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
-        "                       can be ``left``, ``right``, ``back``, ``front``,\n"
-        "                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
-        "                       names. The corresponding value is the position of the\n"
-        "                       given edge/center/origin of the item. This alignment can\n"
-        "                       be overriden while adding the objects to the stack.\n"
-        "                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
-        "See also:\n"
-        "   Function :func:`plask.geometry.Stack3D`.\n", py::no_init)
+        u8"MultiStack3D(repeat=1, shift=0, **alignments)\n\n"
+        u8"Stack container that repeats it contents (3D version).\n\n"
+        u8"The bottom side of the first object is located at the `shift` position in\n"
+        u8"container local coordinates. Each consecutive object is placed on the top of\n"
+        u8"the previous one. Then the whole stack is repeated *repeat* times.\n\n"
+        u8"Args:\n"
+        u8"    repeat (int): Number of the stack contents repetitions.\n"
+        u8"    shift (float): Position in the local coordinates of the bottom of the stack.\n"
+        u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
+        u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
+        u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
+        u8"                       names. The corresponding value is the position of the\n"
+        u8"                       given edge/center/origin of the item. This alignment can\n"
+        u8"                       be overriden while adding the objects to the stack.\n"
+        u8"                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
+        u8"See also:\n"
+        u8"   Function :func:`plask.geometry.Stack3D`.\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<3>))
         .add_property("repeat", &MultiStackContainer<plask::StackContainer<3>>::getRepeatCount, &MultiStackContainer<StackContainer<3>>::setRepeatCount,
-                      "Number of repeats of the stack contents.")
+                      u8"Number of repeats of the stack contents.")
     ;
 
     // Shelf (horizontal stack)
 
     py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>("Shelf2D",
-        "Shelf2D(shift=0)\n\n"
-        "2D container that organizes its items one next to another.\n\n"
-        "The objects are placed in this container like books on a bookshelf.\n"
-        "The left side of the first object is located at the `shift` position in\n"
-        "container local coordinates. Each consecutive object is placed to the right of\n"
-        "the previous one. All the items are vertically aligned according to its bottom\n"
-        "edge.\n\n"
-        "Args:\n"
-        "    shift (float): Position in the local coordinates of the left side of the\n"
-        "                   shelf.\n\n"
-        "See also:\n"
-        "   Function :func:`plask.geometry.Shelf`.\n",
+        u8"Shelf2D(shift=0)\n\n"
+        u8"2D container that organizes its items one next to another.\n\n"
+        u8"The objects are placed in this container like books on a bookshelf.\n"
+        u8"The left side of the first object is located at the `shift` position in\n"
+        u8"container local coordinates. Each consecutive object is placed to the right of\n"
+        u8"the previous one. All the items are vertically aligned according to its bottom\n"
+        u8"edge.\n\n"
+        u8"Args:\n"
+        u8"    shift (float): Position in the local coordinates of the left side of the\n"
+        u8"                   shelf.\n\n"
+        u8"See also:\n"
+        u8"   Function :func:`plask.geometry.Shelf`.\n",
         py::init<double>((py::arg("shift")=0.)))
         .def("append", &ShelfContainer2D::push_back, (py::arg("item")),
-             "Append a new object to the shelf.\n\n"
-             "This method adds a new item to the shelf and places it at its right.\n\n"
-             "Args:\n"
-             "    item (GeometryObject2D): Object to append to the stack.\n")
+             u8"Append a new object to the shelf.\n\n"
+             u8"This method adds a new item to the shelf and places it at its right.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject2D): Object to append to the stack.\n")
         .def("prepend", &ShelfContainer2D::push_front, (py::arg("item")),
-             "Prepend a new object to the shelf.\n\n"
-             "This method adds a new item to the shelf and places it at its left.\n\n"
-             "Args:\n"
-             "    item (GeometryObject2D): Object to append to the stack.\n")
+             u8"Prepend a new object to the shelf.\n\n"
+             u8"This method adds a new item to the shelf and places it at its left.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject2D): Object to append to the stack.\n")
         .def("insert", &ShelfContainer2D::insert, (py::arg("item"), "pos"),
-             "Insert a new object to the shelf.\n\n"
-             "This method adds a new item to the shelf and places it at the position\n"
-             "specified by `index`.\n\n"
-             "Args:\n"
-             "    item (GeometryObject2D): Object to insert to the shelf.\n"
-             "    index (int): Index of the inserted item in the stack.\n")
+             u8"Insert a new object to the shelf.\n\n"
+             u8"This method adds a new item to the shelf and places it at the position\n"
+             u8"specified by `index`.\n\n"
+             u8"Args:\n"
+             u8"    item (GeometryObject2D): Object to insert to the shelf.\n"
+             u8"    index (int): Index of the inserted item in the stack.\n")
         .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
-             "Set zero to the left of the item with the given index.\n\n"
-             "This method shifts the local coordinates of the shelf horizontally.\n"
-             "The horizontal coordinate of the shelf origin is placed at the left egde\n"
-             "of the item with the specified index.\n\n"
-             "Args:\n"
-             "    index (int): Index of the item to align the zero with.\n")
+             u8"Set zero to the left of the item with the given index.\n\n"
+             u8"This method shifts the local coordinates of the shelf horizontally.\n"
+             u8"The horizontal coordinate of the shelf origin is placed at the left egde\n"
+             u8"of the item with the specified index.\n\n"
+             u8"Args:\n"
+             u8"    index (int): Index of the item to align the zero with.\n")
         .def("append_gap", &ShelfContainer2D::addGap, py::arg("size"),
-             "Add a gap to the end of the shelf.\n\n"
-             "This method adds a gap to the end of the shelf. All consecutive items will be\n"
-             "separated by the specified width from the previous ones.\n\n"
-             "Args:\n"
-             "    size (float): Size of the gap [µm].\n")
+             u8"Add a gap to the end of the shelf.\n\n"
+             u8"This method adds a gap to the end of the shelf. All consecutive items will be\n"
+             u8"separated by the specified width from the previous ones.\n\n"
+             u8"Args:\n"
+             u8"    size (float): Size of the gap [µm].\n")
         .add_property("flat", &ShelfContainer2D::isFlat,
-            "True if all items has the same height (the shelf top edge is flat).")
+            u8"True if all items has the same height (the shelf top edge is flat).")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
 
     py::class_<MultiStackContainer<plask::ShelfContainer2D>, shared_ptr<MultiStackContainer<ShelfContainer2D>>, py::bases<ShelfContainer2D>, boost::noncopyable>("MultiShelf2D",
-        "MultiShelf2D(repeat=1, shift=0)\n\n"
-        "Shelf container that repeats its contents.\n\n"
-        "The objects are placed in this container like books on a bookshelf.\n"
-        "The left side of the first object is located at the `shift` position in\n"
-        "container local coordinates. Each consecutive object is placed to the right\n"
-        "of the previous one. Then the whole shelf is repeated *repeat* times. All the"
-        "items\n are vertically aligned according to its bottom edge.\n\n"
-        "Args:\n"
-        "    repeat (int): Number of the shelf contents repetitions.\n"
-        "    shift (float): Position in the local coordinates of the left side of the\n"
-        "                   shelf.\n\n"
-        "See also:\n"
-        "   Function :func:`plask.geometry.Shelf`.\n",
+        u8"MultiShelf2D(repeat=1, shift=0)\n\n"
+        u8"Shelf container that repeats its contents.\n\n"
+        u8"The objects are placed in this container like books on a bookshelf.\n"
+        u8"The left side of the first object is located at the `shift` position in\n"
+        u8"container local coordinates. Each consecutive object is placed to the right\n"
+        u8"of the previous one. Then the whole shelf is repeated *repeat* times. All the"
+        u8"items\n are vertically aligned according to its bottom edge.\n\n"
+        u8"Args:\n"
+        u8"    repeat (int): Number of the shelf contents repetitions.\n"
+        u8"    shift (float): Position in the local coordinates of the left side of the\n"
+        u8"                   shelf.\n\n"
+        u8"See also:\n"
+        u8"   Function :func:`plask.geometry.Shelf`.\n",
         py::init<size_t, double>((py::arg("repeat")=1, py::arg("shift")=0.)))
         .add_property("repeat", &MultiStackContainer<plask::ShelfContainer2D>::getRepeatCount, &MultiStackContainer<ShelfContainer2D>::setRepeatCount,
-                      "Number of repeats of the shelf contents.")
+                      u8"Number of repeats of the shelf contents.")
     ;
 
 
