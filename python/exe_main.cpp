@@ -27,7 +27,7 @@ namespace py = boost::python;
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
     inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
-    extern int Py_UnbufferedStdioFlag;
+	PyAPI_DATA(int) Py_UnbufferedStdioFlag;
 #else
     extern "C" void init_plask(void);
 #   define PLASK_MODULE init_plask

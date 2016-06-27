@@ -38,14 +38,18 @@ class Matrix {
 
     Matrix(const Matrix<T>& M) : r(M.r), c(M.c), data_(M.data_), gc(M.gc) {
         if (gc)
+#ifndef _MSC_VER
             #pragma omp atomic update
+#endif
             (*gc)++;
     }
 
     Matrix<T>& operator=(const Matrix<T>& M) {
         if (gc) {
             unsigned g;
+#ifndef _MSC_VER
             #pragma omp atomic capture
+#endif
             g = --(*gc);
             if (g == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
@@ -54,7 +58,9 @@ class Matrix {
         }
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc;
         if (gc)
+#ifndef _MSC_VER
             #pragma omp atomic update
+#endif
             (*gc)++;
         return *this;
     }
@@ -73,7 +79,9 @@ class Matrix {
     ~Matrix() {
         if (gc) {
             unsigned g;
+#ifndef _MSC_VER
             #pragma omp atomic capture
+#endif
             g = --(*gc);
             if (g == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
@@ -158,14 +166,18 @@ class MatrixDiagonal {
 
     MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), data_(M.data_), gc(M.gc) {
         if (gc)
+#ifndef _MSC_VER
             #pragma omp atomic update
+#endif
             (*gc)++;
     }
 
     MatrixDiagonal<T>& operator=(const MatrixDiagonal<T>& M) {
         if (gc) {
             unsigned g;
+#ifndef _MSC_VER
             #pragma omp atomic capture
+#endif
             g = --(*gc);
             if (g == 0) {
                 delete gc; aligned_delete_array(siz, data_);
@@ -174,7 +186,9 @@ class MatrixDiagonal {
         }
         siz = M.siz; data_ = M.data_; gc = M.gc;
         if (gc)
+#ifndef _MSC_VER
             #pragma omp atomic update
+#endif
             (*gc)++;
         return *this;
     }
@@ -182,7 +196,9 @@ class MatrixDiagonal {
     ~MatrixDiagonal() {
         if (gc) {
             unsigned g;
+#ifndef _MSC_VER
             #pragma omp atomic capture
+#endif
             g = --(*gc);
             if (g == 0) {
                 delete gc; aligned_delete_array(siz, data_);
