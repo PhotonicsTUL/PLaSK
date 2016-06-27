@@ -97,7 +97,7 @@ BOOST_PYTHON_MODULE(freecarrier)
 {
     plask_import_array();
 
-    {CLASS(FreeCarrierGainSolver<Geometry2DCartesian>, "FreeCarrier2D", "Quantum-well gain using free-carrier approximation for two-dimensional Cartesian geometry.")
+    {CLASS(FreeCarrierGainSolver<Geometry2DCartesian>, "FreeCarrier2D", u8"Quantum-well gain using free-carrier approximation for two-dimensional Cartesian geometry.")
 #ifndef NDEBUG
         solver.def("det_El", &FreeCarrier_detEl<Geometry2DCartesian>, (arg("E"), arg("reg")=0, arg("well")=0));
         solver.def("det_Hh", &FreeCarrier_detHh<Geometry2DCartesian>, (arg("E"), arg("reg")=0, arg("well")=0));
@@ -110,63 +110,63 @@ BOOST_PYTHON_MODULE(freecarrier)
 //                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
 //                  "less accurate for high temperatures.");
         solver.def("get_energy_levels", &FreeCarrier_getLevels<Geometry2DCartesian>, arg("T")=py::object(),
-            "Get energy levels in quantum wells.\n\n"
-            "Compute energy levels in quantum wells for electrons, heavy holes and\n"
-            "light holes.\n\n"
-            "Args:\n"
-            "    T (float or ``None``): Temperature to get the levels. If this argument is\n"
-            "                           ``None``, the estimates for temperature :py:attr:`T0`\n"
-            "                           are returned.\n\n"
-            "Returns:\n"
-            "    list: List with dictionaries with keys `el`, `hh`, and `lh` with levels for\n"
-            "          electrons, heavy holes and light holes. Each list element corresponds\n"
-            "          to one active region.\n"
+            u8"Get energy levels in quantum wells.\n\n"
+            u8"Compute energy levels in quantum wells for electrons, heavy holes and\n"
+            u8"light holes.\n\n"
+            u8"Args:\n"
+            u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
+            u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
+            u8"                           are returned.\n\n"
+            u8"Returns:\n"
+            u8"    list: List with dictionaries with keys `el`, `hh`, and `lh` with levels for\n"
+            u8"          electrons, heavy holes and light holes. Each list element corresponds\n"
+            u8"          to one active region.\n"
         );
         solver.def("get_fermi_levels", &FreeCarrier_getFermiLevels<Geometry2DCartesian>, (arg("n"), arg("T")=py::object(), arg("reg")=0),
-            "Get quasi-Fermi levels.\n\n"
-            "Compute quasi-Fermi levels in specified active region.\n"
-            "Args:\n"
-            "    n (float): Carriers concentration to determine the levels for\n"
-            "               [1/cm\\ :sup:`3`\\ ].\n"
-            "    T (float or ``None``): Temperature to get the levels. If this argument is\n"
-            "                           ``None``, the estimates for temperature :py:attr:`T0`\n"
-            "                           are returned.\n\n"
-            "    reg (int): Active region number.\n"
-            "Returns:\n"
-            "    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
+            u8"Get quasi-Fermi levels.\n\n"
+            u8"Compute quasi-Fermi levels in specified active region.\n"
+            u8"Args:\n"
+            u8"    n (float): Carriers concentration to determine the levels for\n"
+            u8"               [1/cm\\ :sup:`3`\\ ].\n"
+            u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
+            u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
+            u8"                           are returned.\n\n"
+            u8"    reg (int): Active region number.\n"
+            u8"Returns:\n"
+            u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
         RW_PROPERTY(strained, getStrained, setStrained,
-                    "Boolean attribute indicating if the solver should consider strain in the active\n"
-                    "region.\n\n"
-                    "If set to ``True`` then there must a layer with the role *substrate* in\n"
-                    "the geometry. The strain is computed by comparing the atomic lattice constants\n"
-                    "of the substrate and the quantum wells.");
+                    u8"Boolean attribute indicating if the solver should consider strain in the active\n"
+                    u8"region.\n\n"
+                    u8"If set to ``True`` then there must a layer with the role *substrate* in\n"
+                    u8"the geometry. The strain is computed by comparing the atomic lattice constants\n"
+                    u8"of the substrate and the quantum wells.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         solver.def("spectrum", &__Class__::getGainSpectrum, py::arg("point"), py::with_custodian_and_ward_postcall<0,1>(),
-                   "Get gain spectrum at given point.\n\n"
-                   "Args:\n"
-                   "    point (vec): Point to get gain at.\n"
-                   "    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
-                   "Returns:\n"
-                   "    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
+                   u8"Get gain spectrum at given point.\n\n"
+                   u8"Args:\n"
+                   u8"    point (vec): Point to get gain at.\n"
+                   u8"    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
+                   u8"Returns:\n"
+                   u8"    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCartesian>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCartesian>,plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>, boost::noncopyable>("Spectrum",
-            "Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
+            u8"Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FreeCarrierGainSpectrum__call__<Geometry2DCartesian>, py::arg("lam"),
-                 "Get gain at specified wavelength.\n\n"
-                 "Args:\n"
-                 "    lam (float): Wavelength to get the gain at.\n"
+                 u8"Get gain at specified wavelength.\n\n"
+                 u8"Args:\n"
+                 u8"    lam (float): Wavelength to get the gain at.\n"
             )
         ;
     }
 
-    {CLASS(FreeCarrierGainSolver<Geometry2DCylindrical>, "FreeCarrierCyl", "Quantum-well gain using free-carrier approximation for cylindrical geometry.")
+    {CLASS(FreeCarrierGainSolver<Geometry2DCylindrical>, "FreeCarrierCyl", u8"Quantum-well gain using free-carrier approximation for cylindrical geometry.")
 #ifndef NDEBUG
         solver.def("det_El", &FreeCarrier_detEl<Geometry2DCylindrical>, (arg("E"), arg("reg")=0, arg("well")=0));
         solver.def("det_Hh", &FreeCarrier_detHh<Geometry2DCylindrical>, (arg("E"), arg("reg")=0, arg("well")=0));
@@ -179,58 +179,58 @@ BOOST_PYTHON_MODULE(freecarrier)
 //                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
 //                  "less accurate for high temperatures.");
         solver.def("get_energy_levels", &FreeCarrier_getLevels<Geometry2DCylindrical>, arg("T")=py::object(),
-            "Get energy levels in quantum wells.\n\n"
-            "Compute energy levels in quantum wells for electrons, heavy holes and\n"
-            "light holes.\n\n"
-            "Args:\n"
-            "    T (float or ``None``): Temperature to get the levels. If this argument is\n"
-            "                           ``None``, the estimates for temperature :py:attr:`T0`\n"
-            "                           are returned.\n\n"
-            "Returns:\n"
-            "    list: List with dictionaries with keys `el`, `hh`, and `lh` with levels for\n"
-            "          electrons, heavy holes and light holes. Each list element corresponds\n"
-            "          to one active region.\n"
+            u8"Get energy levels in quantum wells.\n\n"
+            u8"Compute energy levels in quantum wells for electrons, heavy holes and\n"
+            u8"light holes.\n\n"
+            u8"Args:\n"
+            u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
+            u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
+            u8"                           are returned.\n\n"
+            u8"Returns:\n"
+            u8"    list: List with dictionaries with keys `el`, `hh`, and `lh` with levels for\n"
+            u8"          electrons, heavy holes and light holes. Each list element corresponds\n"
+            u8"          to one active region.\n"
         );
         solver.def("get_fermi_levels", &FreeCarrier_getFermiLevels<Geometry2DCylindrical>, (arg("n"), arg("T")=py::object(), arg("reg")=0),
-            "Get quasi-Fermi levels.\n\n"
-            "Compute quasi-Fermi levels in specified active region.\n"
-            "Args:\n"
-            "    n (float): Carriers concentration to determine the levels for\n"
-            "               [1/cm\\ :sup:`3`\\ ].\n"
-            "    T (float or ``None``): Temperature to get the levels. If this argument is\n"
-            "                           ``None``, the estimates for temperature :py:attr:`T0`\n"
-            "                           are returned.\n\n"
-            "    reg (int): Active region number.\n"
-            "Returns:\n"
-            "    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
+            u8"Get quasi-Fermi levels.\n\n"
+            u8"Compute quasi-Fermi levels in specified active region.\n"
+            u8"Args:\n"
+            u8"    n (float): Carriers concentration to determine the levels for\n"
+            u8"               [1/cm\\ :sup:`3`\\ ].\n"
+            u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
+            u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
+            u8"                           are returned.\n\n"
+            u8"    reg (int): Active region number.\n"
+            u8"Returns:\n"
+            u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
         RW_PROPERTY(strained, getStrained, setStrained,
-                    "Boolean attribute indicating if the solver should consider strain in the active\n"
-                    "region.\n\n"
-                    "If set to ``True`` then there must a layer with the role *substrate* in\n"
-                    "the geometry. The strain is computed by comparing the atomic lattice constants\n"
-                    "of the substrate and the quantum wells.");
+                    u8"Boolean attribute indicating if the solver should consider strain in the active\n"
+                    u8"region.\n\n"
+                    u8"If set to ``True`` then there must a layer with the role *substrate* in\n"
+                    u8"the geometry. The strain is computed by comparing the atomic lattice constants\n"
+                    u8"of the substrate and the quantum wells.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         solver.def("spectrum", &__Class__::getGainSpectrum, py::arg("point"), py::with_custodian_and_ward_postcall<0,1>(),
-                   "Get gain spectrum at given point.\n\n"
-                   "Args:\n"
-                   "    point (vec): Point to get gain at.\n"
-                   "    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
-                   "Returns:\n"
-                   "    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
+                   u8"Get gain spectrum at given point.\n\n"
+                   u8"Args:\n"
+                   u8"    point (vec): Point to get gain at.\n"
+                   u8"    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
+                   u8"Returns:\n"
+                   u8"    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCylindrical>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCylindrical>,plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>, boost::noncopyable>("Spectrum",
-            "Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
+            u8"Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FreeCarrierGainSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"),
-                 "Get gain at specified wavelength.\n\n"
-                 "Args:\n"
-                 "    lam (float): Wavelength to get the gain at.\n"
+                 u8"Get gain at specified wavelength.\n\n"
+                 u8"Args:\n"
+                 u8"    lam (float): Wavelength to get the gain at.\n"
             )
         ;
     }
