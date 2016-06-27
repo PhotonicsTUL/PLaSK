@@ -63,9 +63,9 @@ static bool Subtree__nonzero__(const GeometryObject::Subtree& self) { return !se
 void register_geometry_path()
 {
     py::class_<PathHints::Hint>("PathHint",
-                                "PathHint stores weak references to container and its child with translation.\n\n"
-                                "It may only be used as an intermediate object to either add it to Path,\n"
-                                "PathHints, or to retrieve the container, child, or translation objects.",
+                                u8"PathHint stores weak references to container and its child with translation.\n\n"
+                                u8"It may only be used as an intermediate object to either add it to Path,\n"
+                                u8"PathHints, or to retrieve the container, child, or translation objects.",
                                 py::no_init)
         .def("__add__", &Hint__add__)
         .def("__eq__", Hint__eq__)
@@ -85,9 +85,9 @@ void register_geometry_path()
              "    hint (PathHint): Hint to add.")
         .def(py::self += py::other<PathHints::Hint>())
         .def("get_items", (std::set<shared_ptr<GeometryObject>> (PathHints::*)(const GeometryObject& container) const)&PathHints::getChildren, py::arg("container"),
-             "Get all items in a container present in the Hints.\n\n"
-             "Args:\n"
-             "    container (GeometryObject): Container to get items from.")
+             u8"Get all items in a container present in the Hints.\n\n"
+             u8"Args:\n"
+             u8"    container (GeometryObject): Container to get items from.")
         .def("cleanup",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects.")
         .def(py::self == py::other<PathHints>())
         .def("__hash__", __hash__<PathHints>)

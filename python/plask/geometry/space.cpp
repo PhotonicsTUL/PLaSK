@@ -406,26 +406,26 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
-        "Geometry in 2D Cartesian space.\n\n"
-        "Cartesian2D(root, length=infty, **borders)\n\n"
-        "Create a space around a two-dimensional geometry object with a given length.\n\n"
-        "Args:\n"
-        "    root (GeometryObject2D Extrusion): Root object of the geometry.\n"
-        "        If this parameters is an extrusion, the `length` should be skipped,\n"
-        "        as it is read directly from extrusion.\n"
-        "    length (float): Length of the geometry.\n"
-        "        This information is required by some solvers. Furthermore it is\n"
-        "        necessary if you want to use :mod:`plask.filters` to translate the\n"
-        "        data between this geometry and the :class:`Cartesian3D` geometry.\n\n"
-        "    borders (dict): Optional borders specification.\n"
-        "        Borders are given as additional constructor keyword arguments. Available\n"
-        "        keys are *left*, *right*, *top*, and *bottom* and their values must be\n"
-        "        strings specifying the border (either a material name or *mirror*,\n"
-        "        *periodic*, or *extend*).\n\n"
-        "Example:\n"
-        "    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
-        "    >>> geometry.Cartesian2D(block, length=10, left='mirror', bottom='AlAs')\n"
-        "    <plask.geometry.Cartesian2D object at (0x3dd6c70)>",
+        u8"Geometry in 2D Cartesian space.\n\n"
+        u8"Cartesian2D(root, length=infty, **borders)\n\n"
+        u8"Create a space around a two-dimensional geometry object with a given length.\n\n"
+        u8"Args:\n"
+        u8"    root (GeometryObject2D Extrusion): Root object of the geometry.\n"
+        u8"        If this parameters is an extrusion, the `length` should be skipped,\n"
+        u8"        as it is read directly from extrusion.\n"
+        u8"    length (float): Length of the geometry.\n"
+        u8"        This information is required by some solvers. Furthermore it is\n"
+        u8"        necessary if you want to use :mod:`plask.filters` to translate the\n"
+        u8"        data between this geometry and the :class:`Cartesian3D` geometry.\n\n"
+        u8"    borders (dict): Optional borders specification.\n"
+        u8"        Borders are given as additional constructor keyword arguments. Available\n"
+        u8"        keys are *left*, *right*, *top*, and *bottom* and their values must be\n"
+        u8"        strings specifying the border (either a material name or *mirror*,\n"
+        u8"        *periodic*, or *extend*).\n\n"
+        u8"Example:\n"
+        u8"    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
+        u8"    >>> geometry.Cartesian2D(block, length=10, left='mirror', bottom='AlAs')\n"
+        u8"    <plask.geometry.Cartesian2D object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCartesian__init__, 1))
         .add_property("item", &Geometry2DCartesian::getChild,
@@ -634,7 +634,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
-//              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
@@ -666,9 +666,9 @@ void register_calculation_spaces() {
                       "    :class:`plask.geometry.Box2D`\n"
                      )
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial,
-                       "This material is returned by :meth:`~plask.geometry.Cylindrical2D.get_material`\n"
-                       "for the points that do not belong to any object in the geometry tree.\n"
-                       "any object in the geometry tree.\n"
+                       u8"This material is returned by :meth:`~plask.geometry.Cylindrical2D.get_material`\n"
+                       u8"for the points that do not belong to any object in the geometry tree.\n"
+                       u8"any object in the geometry tree.\n"
                       )
         .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
                       "Dictionary specifying the geometry borders.")
@@ -856,7 +856,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
-//              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
