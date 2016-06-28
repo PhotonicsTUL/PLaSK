@@ -176,7 +176,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
         ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
-            double n = region.materials.size();
+            size_t n = region.materials.size();
             U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
             M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
             double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
@@ -413,7 +413,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
 
     bool getStrained() const { return strained; }
     void setStrained(bool value) { strained = value; this->invalidate(); }
-    
+
     /**
      * Reg gain spectrum object for future use
      */
