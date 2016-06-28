@@ -80,49 +80,49 @@ BOOST_PYTHON_MODULE(fem3d)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    {CLASS(FiniteElementMethodElectrical3DSolver, "Shockley3D", "Finite element thermal solver for 3D Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
-        RECEIVER(inWavelength, "It is required only if :attr:`heat` is eual to *wavelength*.");
-        RECEIVER(inTemperature, "");
-        PROVIDER(outVoltage, "");
-        PROVIDER(outCurrentDensity, "");
-        PROVIDER(outHeat, "");
-        PROVIDER(outConductivity, "");
-        BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-        RW_FIELD(maxerr, "Limit for the potential updates");
-        RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
-        RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
-        RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
-        RW_PROPERTY(pcond, getPcond, setPcond, "Conductivity of the p-contact");
-        RW_PROPERTY(ncond, getNcond, setNcond, "Conductivity of the n-contact");
-        solver.add_property("pnjcond", &getCondJunc, &setCondJunc, "Effective conductivity of the p-n junction");
-        solver.add_property("outPotential", outPotential, "Removed: use :attr:`outVoltage` instead.");
-        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+    {CLASS(FiniteElementMethodElectrical3DSolver, "Shockley3D", u8"Finite element thermal solver for 3D Geometry.")
+        METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
+        METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region [mA]", py::arg("nact")=0);
+        RO_PROPERTY(err, getErr, u8"Maximum estimated error");
+        RECEIVER(inWavelength, u8"It is required only if :attr:`heat` is eual to *wavelength*.");
+        RECEIVER(inTemperature, u8"");
+        PROVIDER(outVoltage, u8"");
+        PROVIDER(outCurrentDensity, u8"");
+        PROVIDER(outHeat, u8"");
+        PROVIDER(outConductivity, u8"");
+        BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
+        RW_FIELD(maxerr, u8"Limit for the potential updates");
+        RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, u8"Chosen matrix factorization algorithm");
+        solver.def_readwrite("heat", &__Class__::heatmet, u8"Chosen method used for computing heats");
+        RW_PROPERTY(beta, getBeta, setBeta, u8"Junction coefficient [1/V]");
+        RW_PROPERTY(Vt, getVt, setVt, u8"Junction thermal voltage [V]");
+        RW_PROPERTY(js, getJs, setJs, u8"Reverse bias current density [A/m²]");
+        RW_PROPERTY(pcond, getPcond, setPcond, u8"Conductivity of the p-contact");
+        RW_PROPERTY(ncond, getNcond, setNcond, u8"Conductivity of the n-contact");
+        solver.add_property("pnjcond", &getCondJunc, &setCondJunc, u8"Effective conductivity of the p-n junction");
+        solver.add_property("outPotential", outPotential, u8"Removed: use :attr:`outVoltage` instead.");
+        RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
         METHOD(get_electrostatic_energy, getTotalEnergy,
-            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
-            "Return:\n"
-            "    Total electrostatic energy [J].\n"
+            u8"Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
+            u8"Return:\n"
+            u8"    Total electrostatic energy [J].\n"
         );
         METHOD(get_capacitance, getCapacitance,
-            "Get the structure capacitance.\n\n"
-            "Return:\n"
-            "    Total capacitance [pF].\n\n"
-            "Note:\n"
-            "    This method can only be used it there are exactly two boundary conditions\n"
-            "    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
-            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
-            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
+            u8"Get the structure capacitance.\n\n"
+            u8"Return:\n"
+            u8"    Total capacitance [pF].\n\n"
+            u8"Note:\n"
+            u8"    This method can only be used it there are exactly two boundary conditions\n"
+            u8"    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
+            u8"    obtain the stored energy :math:`W` and compute the capacitance as:\n"
+            u8"    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
         );
         METHOD(get_total_heat, getTotalHeat,
-               "Get the total heat produced by the current flowing in the structure.\n\n"
-               "Return:\n"
-               "    Total produced heat [mW].\n"
+               u8"Get the total heat produced by the current flowing in the structure.\n\n"
+               u8"Return:\n"
+               u8"    Total produced heat [mW].\n"
         );
     }
 

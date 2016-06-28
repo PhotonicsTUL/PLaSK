@@ -102,73 +102,73 @@ inline static void register_electrical_solver(const char* name, const char* geon
     typedef FiniteElementMethodElectrical2DSolver<GeometryT>  __Class__;
     ExportSolver<FiniteElementMethodElectrical2DSolver<GeometryT>> solver(name, format(
 
-        "{0}(name=\"\")\n\n"
+        u8"{0}(name=\"\")\n\n"
 
-        "Finite element thermal solver for 2D {1} geometry."
+        u8"Finite element thermal solver for 2D {1} geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
-    METHOD(compute, compute, "Run electrical calculations", py::arg("loops")=0);
-    METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-    RO_PROPERTY(err, getErr, "Maximum estimated error");
-    RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
-    RECEIVER(inTemperature, "");
-    PROVIDER(outVoltage, "");
-    PROVIDER(outCurrentDensity, "");
-    PROVIDER(outHeat, "");
-    PROVIDER(outConductivity, "");
-    BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-    RW_FIELD(maxerr, "Limit for the potential updates");
-    RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
+    METHOD(compute, compute, u8"Run electrical calculations", py::arg("loops")=0);
+    METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region [mA]", py::arg("nact")=0);
+    RO_PROPERTY(err, getErr, u8"Maximum estimated error");
+    RECEIVER(inWavelength, u8"It is required only if :attr:`heat` is equal to *wavelength*.");
+    RECEIVER(inTemperature, u8"");
+    PROVIDER(outVoltage, u8"");
+    PROVIDER(outCurrentDensity, u8"");
+    PROVIDER(outHeat, u8"");
+    PROVIDER(outConductivity, u8"");
+    BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
+    RW_FIELD(maxerr, u8"Limit for the potential updates");
+    RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
     solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
     solver.add_property("beta", &Shockley_getBeta<__Class__>, &Shockley_setBeta<__Class__>,
-                        "Junction coefficient [1/V].\n\n"
-                        "In case there is more than one junction you may set $\\beta$ parameter for any\n"
-                        "of them by using ``beta#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``beta`` is an alias for ``beta0``.\n"
+                        u8"Junction coefficient [1/V].\n\n"
+                        u8"In case there is more than one junction you may set $\\beta$ parameter for any\n"
+                        u8"of them by using ``beta#`` property, where # is the junction number (specified\n"
+                        u8"by a role ``junction#`` or ``active#``).\n\n"
+                        u8"``beta`` is an alias for ``beta0``.\n"
                        );
     solver.add_property("Vt", &Shockley_getVt<__Class__>, &Shockley_setVt<__Class__>,
-                        "Junction thermal voltage [V].\n\n"
-                        "In case there is more than one junction you may set $V_t$ parameter for any\n"
-                        "of them by using ``Vt#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``Vt`` is an alias for ``Vt0``.\n"
+                        u8"Junction thermal voltage [V].\n\n"
+                        u8"In case there is more than one junction you may set $V_t$ parameter for any\n"
+                        u8"of them by using ``Vt#`` property, where # is the junction number (specified\n"
+                        u8"by a role ``junction#`` or ``active#``).\n\n"
+                        u8"``Vt`` is an alias for ``Vt0``.\n"
                        );
     solver.add_property("js", &Shockley_getJs<__Class__>, &Shockley_setJs<__Class__>,
-                        "Reverse bias current density [A/m\\ :sup:`2`\\ ].\n\n"
-                        "In case there is more than one junction you may set $j_s$ parameter for any\n"
-                        "of them by using ``js#`` property, where # is the junction number (specified\n"
-                        "by a role ``junction#`` or ``active#``).\n\n"
-                        "``js`` is an alias for ``js0``.\n"
+                        u8"Reverse bias current density [A/m\\ :sup:`2`\\ ].\n\n"
+                        u8"In case there is more than one junction you may set $j_s$ parameter for any\n"
+                        u8"of them by using ``js#`` property, where # is the junction number (specified\n"
+                        u8"by a role ``junction#`` or ``active#``).\n\n"
+                        u8"``js`` is an alias for ``js0``.\n"
                        );
     solver.def("__getattr__",  &Shockley__getattr__<__Class__>);
     solver.def("__setattr__",  &Shockley__setattr__<__Class__>);
-    RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
-    RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, "Effective conductivity of the p-n junction");
+    RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
+    RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
+    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, u8"Effective conductivity of the p-n junction");
     solver.add_property("outPotential", outPotential, "Removed: use :attr:`outVoltage` instead.");
-    RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-    RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-    RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+    RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
+    RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
+    RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     METHOD(get_electrostatic_energy, getTotalEnergy,
-           "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
-           "Return:\n"
-           "    Total electrostatic energy [J].\n"
+           u8"Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
+           u8"Return:\n"
+           u8"    Total electrostatic energy [J].\n"
     );
     METHOD(get_capacitance, getCapacitance,
-           "Get the structure capacitance.\n\n"
-           "Return:\n"
-           "    Total capacitance [pF].\n\n"
-           "Note:\n"
-           "    This method can only be used it there are exactly two boundary conditions\n"
-           "    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
-           "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
-           "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
+           u8"Get the structure capacitance.\n\n"
+           u8"Return:\n"
+           u8"    Total capacitance [pF].\n\n"
+           u8"Note:\n"
+           u8"    This method can only be used it there are exactly two boundary conditions\n"
+           u8"    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
+           u8"    obtain the stored energy :math:`W` and compute the capacitance as:\n"
+           u8"    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
     );
     METHOD(get_total_heat, getTotalHeat,
-           "Get the total heat produced by the current flowing in the structure.\n\n"
-           "Return:\n"
-           "    Total produced heat [mW].\n"
+           u8"Get the total heat produced by the current flowing in the structure.\n\n"
+           u8"Return:\n"
+           u8"    Total produced heat [mW].\n"
     );
 }
 

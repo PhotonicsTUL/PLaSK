@@ -12,25 +12,25 @@ using namespace plask::python;
 using namespace plask::solvers::effective;
 
 #define ROOTDIGGER_ATTRS_DOC \
-    ".. rubric:: Attributes:\n\n" \
-    ".. autosummary::\n\n" \
-    "   ~optical.effective.RootParams.alpha\n" \
-    "   ~optical.effective.RootParams.lambd\n" \
-    "   ~optical.effective.RootParams.initial_range\n" \
-    "   ~optical.effective.RootParams.maxiter\n" \
-    "   ~optical.effective.RootParams.maxstep\n" \
-    "   ~optical.effective.RootParams.method\n" \
-    "   ~optical.effective.RootParams.tolf_max\n" \
-    "   ~optical.effective.RootParams.tolf_min\n" \
-    "   ~optical.effective.RootParams.tolx\n\n" \
-    ":rtype: RootParams\n"
+    u8".. rubric:: Attributes:\n\n" \
+    u8".. autosummary::\n\n" \
+    u8"   ~optical.effective.RootParams.alpha\n" \
+    u8"   ~optical.effective.RootParams.lambd\n" \
+    u8"   ~optical.effective.RootParams.initial_range\n" \
+    u8"   ~optical.effective.RootParams.maxiter\n" \
+    u8"   ~optical.effective.RootParams.maxstep\n" \
+    u8"   ~optical.effective.RootParams.method\n" \
+    u8"   ~optical.effective.RootParams.tolf_max\n" \
+    u8"   ~optical.effective.RootParams.tolf_min\n" \
+    u8"   ~optical.effective.RootParams.tolx\n\n" \
+    u8":rtype: RootParams\n"
 
 #define SEARCH_ARGS_DOC \
-    "    start (complex): Start of the search range (0 means automatic).\n" \
-    "    end (complex): End of the search range (0 means automatic).\n" \
-    "    resteps (integer): Number of steps on the real axis during the search.\n" \
-    "    imsteps (integer): Number of steps on the imaginary axis during the search.\n" \
-    "    eps (complex): required precision of the search.\n" \
+    u8"    start (complex): Start of the search range (0 means automatic).\n" \
+    u8"    end (complex): End of the search range (0 means automatic).\n" \
+    u8"    resteps (integer): Number of steps on the real axis during the search.\n" \
+    u8"    imsteps (integer): Number of steps on the imaginary axis during the search.\n" \
+    u8"    eps (complex): required precision of the search.\n" \
 
 static py::object EffectiveIndex2D_getSymmetry(const EffectiveIndex2D::Mode& self) {
     switch (self.symmetry) {
@@ -224,89 +224,89 @@ BOOST_PYTHON_MODULE(effective)
     if (!plask_import_array()) throw(py::error_already_set());
 
     {CLASS(EffectiveIndex2D, "EffectiveIndex2D",
-        "Calculate optical modes and optical field distribution using the effective index\n"
-        "method in two-dimensional Cartesian space.\n")
-        solver.add_property("mesh", &EffectiveIndex2D::getMesh, &Optical_setMesh<EffectiveIndex2D>, "Mesh provided to the solver.");
-        solver.add_property("polarization", &EffectiveIndex2D_getPolarization, &EffectiveIndex2D_setPolarization, "Polarization of the searched modes.");
-        RW_FIELD(outdist, "Distance outside outer borders where material is sampled.");
+        u8"Calculate optical modes and optical field distribution using the effective index\n"
+        u8"method in two-dimensional Cartesian space.\n")
+        solver.add_property("mesh", &EffectiveIndex2D::getMesh, &Optical_setMesh<EffectiveIndex2D>, u8"Mesh provided to the solver.");
+        solver.add_property("polarization", &EffectiveIndex2D_getPolarization, &EffectiveIndex2D_setPolarization, u8"Polarization of the searched modes.");
+        RW_FIELD(outdist, u8"Distance outside outer borders where material is sampled.");
         RO_FIELD(root,
-                 "Configuration of the root searching algorithm for horizontal component of the\n"
-                 "mode.\n\n"
+                 u8"Configuration of the root searching algorithm for horizontal component of the\n"
+                 u8"mode.\n\n"
                  ROOTDIGGER_ATTRS_DOC
                 );
         RO_FIELD(stripe_root,
-                 "Configuration of the root searching algorithm for vertical component of the mode\n"
-                 "in a single stripe.\n\n"
+                 u8"Configuration of the root searching algorithm for vertical component of the mode\n"
+                 u8"in a single stripe.\n\n"
                  ROOTDIGGER_ATTRS_DOC
                 );
-        RW_FIELD(emission, "Emission direction.");
-        METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes.");
+        RW_FIELD(emission, u8"Emission direction.");
+        METHOD(set_simple_mesh, setSimpleMesh, u8"Set simple mesh based on the geometry objects bounding boxes.");
         // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(search_vneff, searchVNeffs,
-               "Find the effective indices in the vertical direction within the specified range\n"
-               "using global method.\n\n"
-               "Args:\n"
+               u8"Find the effective indices in the vertical direction within the specified range\n"
+               u8"using global method.\n\n"
+               u8"Args:\n"
                SEARCH_ARGS_DOC"\n"
-               "Returns:\n"
-               "    list of floats: List of the found effective indices in the vertical\n"
-               "    direction.\n",
+               u8"Returns:\n"
+               u8"    list of floats: List of the found effective indices in the vertical\n"
+               u8"    direction.\n",
                arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("find_mode", &EffectiveIndex2D_findMode,
-                   "Compute the mode near the specified effective index.\n\n"
-                   "Args:\n"
-                   "    neff (complex): Starting point of the root search.\n"
-                   "    symmetry ('+' or '-'): Symmetry of the mode to search. If this parameter\n"
-                   "                           is not specified, the default symmetry is used:\n"
-                   "                           positive mode symmetry fir symmetrical geometries\n"
-                   "                           and no symmetry for asymmetrical geometries.\n\n"
-                   "Returns:\n"
-                   "    integer: Index in the :attr:`modes` list of the found mode.\n",
+                   u8"Compute the mode near the specified effective index.\n\n"
+                   u8"Args:\n"
+                   u8"    neff (complex): Starting point of the root search.\n"
+                   u8"    symmetry ('+' or '-'): Symmetry of the mode to search. If this parameter\n"
+                   u8"                           is not specified, the default symmetry is used:\n"
+                   u8"                           positive mode symmetry fir symmetrical geometries\n"
+                   u8"                           and no symmetry for asymmetrical geometries.\n\n"
+                   u8"Returns:\n"
+                   u8"    integer: Index in the :attr:`modes` list of the found mode.\n",
                    (arg("neff"), arg("symmetry")=py::object()));
         solver.def("find_modes", &EffectiveIndex2D_findModes,
-                   "Find the modes within the specified range using global method.\n\n"
-                   "Args:\n"
+                   u8"Find the modes within the specified range using global method.\n\n"
+                   u8"Args:\n"
                    SEARCH_ARGS_DOC"\n"
-                   "Returns:\n"
-                   "    list of integers: List of the indices in the :attr:`modes` list of the found\n"
-                   "    modes.\n",
+                   u8"Returns:\n"
+                   u8"    list of integers: List of the indices in the :attr:`modes` list of the found\n"
+                   u8"    modes.\n",
                    (arg("start")=0., arg("end")=0., arg("symmetry")=py::object(), arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9)));
         METHOD(set_mode, setMode,
-               "Set the current mode the specified effective index.\n\n"
-               "Args:\n"
-               "    neff (complex): Mode effective index.\n"
-               "    symmetry ('+' or '-'): Symmetry of the mode to search.\n",
+               u8"Set the current mode the specified effective index.\n\n"
+               u8"Args:\n"
+               u8"    neff (complex): Mode effective index.\n"
+               u8"    symmetry ('+' or '-'): Symmetry of the mode to search.\n",
                "neff", arg("symmetry")=py::object());
         METHOD(clear_modes, clearModes,
                "Clear all computed modes.\n");
         solver.def("get_total_absorption", (double (EffectiveIndex2D::*)(size_t))&EffectiveIndex2D::getTotalAbsorption,
-               "Get total energy absorbed by from a mode in unit time.\n\n"
-               "Args:\n"
-               "    num (int): number of the mode.\n\n"
-               "Returns:\n"
-               "    Total absorbed energy [mW].\n",
+               u8"Get total energy absorbed by from a mode in unit time.\n\n"
+               u8"Args:\n"
+               u8"    num (int): number of the mode.\n\n"
+               u8"Returns:\n"
+               u8"    Total absorbed energy [mW].\n",
                py::arg("num")=0);
-        RW_PROPERTY(vat, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominant mode).");
-        RW_FIELD(vneff, "Effective index in the vertical direction.");
+        RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");
+        RW_FIELD(vneff, u8"Effective index in the vertical direction.");
         solver.add_property("mirrors", EffectiveIndex2D_getMirrors, EffectiveIndex2D_setMirrors,
-                    "Mirror reflectivities. If None then they are automatically estimated from the"
-                    "Fresnel equations.\n");
-        solver.def("get_vert_determinant", EffectiveIndex2D_getVertDeterminant,
-                   "Get vertical modal determinant for debugging purposes.\n\n"
-                   "Args:\n"
-                   "    neff (complex of numeric array of complex): Vertical effective index value\n"
-                   "    to compute the determinant at.\n\n"
-                   "Returns:\n"
-                   "    complex or list of complex: Determinant at the vertical effective index\n"
-                   "    *neff* or an array matching its size.",
+                    u8"Mirror reflectivities. If None then they are automatically estimated from the"
+                    u8"Fresnel equations.\n");
+        solver.def(u8"get_vert_determinant", EffectiveIndex2D_getVertDeterminant,
+                   u8"Get vertical modal determinant for debugging purposes.\n\n"
+                   u8"Args:\n"
+                   u8"    neff (complex of numeric array of complex): Vertical effective index value\n"
+                   u8"    to compute the determinant at.\n\n"
+                   u8"Returns:\n"
+                   u8"    complex or list of complex: Determinant at the vertical effective index\n"
+                   u8"    *neff* or an array matching its size.",
                    "neff");
         solver.def("get_determinant", &EffectiveIndex2D_getDeterminant,
-                   "Get modal determinant.\n\n"
-                   "Args:\n"
-                   "    neff (complex of numeric array of complex): effective index value\n"
-                   "    to compute the determinant at.\n\n"
-                   "Returns:\n"
-                   "    complex or list of complex: Determinant at the effective index *neff* or\n"
-                   "    an array matching its size.",
+                   u8"Get modal determinant.\n\n"
+                   u8"Args:\n"
+                   u8"    neff (complex of numeric array of complex): effective index value\n"
+                   u8"    to compute the determinant at.\n\n"
+                   u8"Returns:\n"
+                   u8"    complex or list of complex: Determinant at the effective index *neff* or\n"
+                   u8"    an array matching its size.",
                    (py::arg("neff") , py::arg("polarization")=py::object()));
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Current wavelength.");
         RECEIVER(inTemperature, "");
@@ -316,28 +316,28 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
-                 "List of the computed modes.\n\n"
-                 ".. rubric:: Item Attributes\n\n"
-                 ".. autosummary::\n\n"
-                 "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
-                 "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
-                 "   ~optical.effective.EffectiveIndex2D.Mode.power\n"
-                 "   ~optical.effective.EffectiveIndex2D.Mode.total_absorption\n"
-                 ":rtype: Mode\n");
+                 u8"List of the computed modes.\n\n"
+                 u8".. rubric:: Item Attributes\n\n"
+                 u8".. autosummary::\n\n"
+                 u8"   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
+                 u8"   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
+                 u8"   ~optical.effective.EffectiveIndex2D.Mode.power\n"
+                 u8"   ~optical.effective.EffectiveIndex2D.Mode.total_absorption\n"
+                 u8":rtype: Mode\n");
 
         py::scope scope = solver;
 
         register_vector_of<EffectiveIndex2D::Mode>("Modes");
 
-        py::class_<EffectiveIndex2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
-            .def_readonly("neff", &EffectiveIndex2D::Mode::neff, "Mode effective index.")
-            .add_property("symmetry", &EffectiveIndex2D_getSymmetry, "Mode symmetry ('positive', 'negative', or None).")
-            .def_readwrite("power", &EffectiveIndex2D::Mode::power, "Total power emitted into the mode [mW].")
-            .add_property("loss", &EffectiveIndex2D::Mode::loss, "Mode losses [1/cm].")
+        py::class_<EffectiveIndex2D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
+            .def_readonly("neff", &EffectiveIndex2D::Mode::neff, u8"Mode effective index.")
+            .add_property("symmetry", &EffectiveIndex2D_getSymmetry, u8"Mode symmetry ('positive', 'negative', or None).")
+            .def_readwrite("power", &EffectiveIndex2D::Mode::power, u8"Total power emitted into the mode [mW].")
+            .add_property("loss", &EffectiveIndex2D::Mode::loss, u8"Mode losses [1/cm].")
             .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
-                          "Cumulated absorption for the mode [mW].\n\n"
-                          "This property combines gain in active region and absorption in the whole\n"
-                          "structure.")
+                          u8"Cumulated absorption for the mode [mW].\n\n"
+                          u8"This property combines gain in active region and absorption in the whole\n"
+                          u8"structure.")
             .def("__str__", &EffectiveIndex2D_Mode_str)
             .def("__repr__", &EffectiveIndex2D_Mode_repr)
         ;
@@ -349,88 +349,88 @@ BOOST_PYTHON_MODULE(effective)
     }
 
     {CLASS(EffectiveFrequencyCyl, "EffectiveFrequencyCyl",
-        "Calculate optical modes and optical field distribution using the effective\n"
-        "frequency method in two-dimensional cylindrical space.\n")
+        u8"Calculate optical modes and optical field distribution using the effective\n"
+        u8"frequency method in two-dimensional cylindrical space.\n")
         solver.add_property("mesh", &EffectiveFrequencyCyl::getMesh, &Optical_setMesh<EffectiveFrequencyCyl>, "Mesh provided to the solver.");
-        RW_FIELD(k0, "Reference normalized frequency.");
-        RW_FIELD(vlam, "'Vertical wavelength' used as a helper for searching vertical modes.");
-        solver.add_property("lam0", &EffectiveFrequencyCyl_getLambda0, &EffectiveFrequencyCyl_setLambda0, "Reference wavelength.");
-        RW_FIELD(outdist, "Distance outside outer borders where material is sampled.");
+        RW_FIELD(k0, u8"Reference normalized frequency.");
+        RW_FIELD(vlam, u8"'Vertical wavelength' used as a helper for searching vertical modes.");
+        solver.add_property("lam0", &EffectiveFrequencyCyl_getLambda0, &EffectiveFrequencyCyl_setLambda0, u8"Reference wavelength.");
+        RW_FIELD(outdist, u8"Distance outside outer borders where material is sampled.");
         RO_FIELD(root,
-                 "Configuration of the root searching algorithm for horizontal component of the\n"
-                 "mode.\n\n"
+                 u8"Configuration of the root searching algorithm for horizontal component of the\n"
+                 u8"mode.\n\n"
                  ROOTDIGGER_ATTRS_DOC
                 );
         RO_FIELD(stripe_root,
-                 "Configuration of the root searching algorithm for vertical component of the mode\n"
-                 "in a single stripe.\n\n"
+                 u8"Configuration of the root searching algorithm for vertical component of the mode\n"
+                 u8"in a single stripe.\n\n"
                  ROOTDIGGER_ATTRS_DOC
                 );
 //         RW_PROPERTY(asymptotic, getAsymptotic, setAsymptotic,
 //                     "Flag indicating whether the solver uses asymptotic exponential field\n"
 //                     "in the outermost layer.")
-        RW_PROPERTY(emission, getEmission, setEmission, "Emission direction.");
-        METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes.");
-        // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
+        RW_PROPERTY(emission, getEmission, setEmission, u8"Emission direction.");
+        METHOD(set_simple_mesh, setSimpleMesh, u8"Set simple mesh based on the geometry objects bounding boxes.");
+        // METHOD(set_horizontal_mesh, setHorizontalMesh, u8"Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         solver.def("find_mode", &EffectiveFrequencyCyl_findMode,
-                   "Compute the mode near the specified wavelength.\n\n"
-                   "Args:\n"
-                   "    lam (complex): Initial wavelength to for root finging algorithm.\n"
-                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
-                   "Returns:\n"
-                   "    integer: Index in the :attr:`modes` list of the found mode.\n",
+                   u8"Compute the mode near the specified wavelength.\n\n"
+                   u8"Args:\n"
+                   u8"    lam (complex): Initial wavelength to for root finging algorithm.\n"
+                   u8"    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
+                   u8"Returns:\n"
+                   u8"    integer: Index in the :attr:`modes` list of the found mode.\n",
                    (arg("lam"), arg("m")=0));
         METHOD(find_modes, findModes,
-               "Find the modes within the specified range using global method.\n\n"
-               "Args:\n"
-               "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
+               u8"Find the modes within the specified range using global method.\n\n"
+               u8"Args:\n"
+               u8"    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
                SEARCH_ARGS_DOC"\n"
-               "Returns:\n"
-               "    list of integers: List of the indices in the :attr:`modes` list of the found\n"
-               "    modes.\n",
+               u8"Returns:\n"
+               u8"    list of integers: List of the indices in the :attr:`modes` list of the found\n"
+               u8"    modes.\n",
                arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("get_vert_determinant", &EffectiveFrequencyCyl_getVertDeterminant,
-                   "Get vertical modal determinant for debugging purposes.\n\n"
-                   "Args:\n"
-                   "    vlam (complex of numeric array of complex): Vertical wavelength value\n"
-                   "    to compute the determinant at.\n\n"
-                   "Returns:\n"
-                   "    complex or list of complex: Determinant at the vertical wavelength *vlam* or\n"
-                   "    an array matching its size.\n",
+                   u8"Get vertical modal determinant for debugging purposes.\n\n"
+                   u8"Args:\n"
+                   u8"    vlam (complex of numeric array of complex): Vertical wavelength value\n"
+                   u8"    to compute the determinant at.\n\n"
+                   u8"Returns:\n"
+                   u8"    complex or list of complex: Determinant at the vertical wavelength *vlam* or\n"
+                   u8"    an array matching its size.\n",
                    py::arg("vlam"));
         solver.def("get_determinant", &EffectiveFrequencyCyl_getDeterminant,
-                   "Get modal determinant.\n\n"
-                   "Args:\n"
-                   "    lam (complex of numeric array of complex): wavelength to compute the\n"
-                   "                                               determinant at.\n"
-                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n",
-                   "Returns:\n"
-                   "    complex or list of complex: Determinant at the effective index *neff* or\n"
-                   "    an array matching its size.\n",
+                   u8"Get modal determinant.\n\n"
+                   u8"Args:\n"
+                   u8"    lam (complex of numeric array of complex): wavelength to compute the\n"
+                   u8"                                               determinant at.\n"
+                   u8"    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n",
+                   u8"Returns:\n"
+                   u8"    complex or list of complex: Determinant at the effective index *neff* or\n"
+                   u8"    an array matching its size.\n",
                    (py::arg("lam"), py::arg("m")=0));
         solver.def("set_mode", (size_t (EffectiveFrequencyCyl::*)(dcomplex,int))&EffectiveFrequencyCyl::setMode, (py::arg("lam"), py::arg("m")=0));
         solver.def("set_mode", (size_t (EffectiveFrequencyCyl::*)(double,double,int))&EffectiveFrequencyCyl::setMode,
-                   "Set the current mode the specified wavelength.\n\n"
-                   "Args:\n"
-                   "    lam (float of complex): Mode wavelength.\n"
-                   "    loss (float): Mode losses. Allowed only if *lam* is a float.\n"
-                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
+                   u8"Set the current mode the specified wavelength.\n\n"
+                   u8"Args:\n"
+                   u8"    lam (float of complex): Mode wavelength.\n"
+                   u8"    loss (float): Mode losses. Allowed only if *lam* is a float.\n"
+                   u8"    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
                    (py::arg("lam"), "loss", py::arg("m")=0));
         METHOD(clear_modes, clearModes,
-               "Clear all computed modes.\n");
+               u8"Clear all computed modes.\n");
         solver.def("get_total_absorption", (double (EffectiveFrequencyCyl::*)(size_t))&EffectiveFrequencyCyl::getTotalAbsorption,
-               "Get total energy absorbed from a mode in unit time.\n\n"
-               "Args:\n"
-               "    num (int): number of the mode.\n\n"
-               "Returns:\n"
-               "    Total absorbed energy [mW].\n",
+               u8"Get total energy absorbed from a mode in unit time.\n\n"
+               u8"Args:\n"
+               u8"    num (int): number of the mode.\n\n"
+               u8"Returns:\n"
+               u8"    Total absorbed energy [mW].\n",
                py::arg("num")=0);
         solver.def("get_gain_integral", (double (EffectiveFrequencyCyl::*)(size_t))&EffectiveFrequencyCyl::getGainIntegral,
-               "Get total energy generated in the gain region to a mode in unit time.\n\n"
-               "Args:\n"
-               "    num (int): number of the mode.\n\n"
-               "Returns:\n"
-               "    Total generated energy [mW].\n",
+               u8"Get total energy generated in the gain region to a mode in unit time.\n\n"
+               u8"Args:\n"
+               u8"    num (int): number of the mode.\n\n"
+               u8"Returns:\n"
+               u8"    Total generated energy [mW].\n",
                py::arg("num")=0);
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
@@ -440,36 +440,36 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
-                 "List of the computed modes.\n\n"
-                 ".. rubric:: Item Attributes\n\n"
-                 ".. autosummary::\n\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.m\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.total_absorption\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.gain_integral\n"
-                 ":rtype: Mode\n");
+                 u8"List of the computed modes.\n\n"
+                 u8".. rubric:: Item Attributes\n\n"
+                 u8".. autosummary::\n\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.m\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.total_absorption\n"
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.gain_integral\n"
+                 u8":rtype: Mode\n");
         solver.add_property("vat", &EffectiveFrequencyCyl_getStripeR, &EffectiveFrequencyCyl_setStripeR,
-                            "Radial position of at which the vertical part of the field is calculated.\n\n"
-                            "Should be a float number or ``None`` to compute effective frequencies for all\n"
-                            "the stripes.\n");
+                            u8"Radial position of at which the vertical part of the field is calculated.\n\n"
+                            u8"Should be a float number or ``None`` to compute effective frequencies for all\n"
+                            u8"the stripes.\n");
 
         py::scope scope = solver;
 
         register_vector_of<EffectiveFrequencyCyl::Mode>("Modes");
 
-        py::class_<EffectiveFrequencyCyl::Mode>("Mode", "Detailed information about the mode.", py::no_init)
-            .def_readonly("m", &EffectiveFrequencyCyl::Mode::m, "LP_mn mode parameter describing angular dependence.")
-            .def_readonly("lam", &EffectiveFrequencyCyl::Mode::lam, "Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
-            .def_readonly("wavelength", &EffectiveFrequencyCyl::Mode::lam, "Mode wavelength [nm].")
-            .def_readwrite("power", &EffectiveFrequencyCyl::Mode::power, "Total power emitted into the mode.")
-            .add_property("loss", &EffectiveFrequencyCyl::Mode::loss, "Mode losses [1/cm].")
+        py::class_<EffectiveFrequencyCyl::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
+            .def_readonly("m", &EffectiveFrequencyCyl::Mode::m, u8"LP_mn mode parameter describing angular dependence.")
+            .def_readonly("lam", &EffectiveFrequencyCyl::Mode::lam, u8"Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
+            .def_readonly("wavelength", &EffectiveFrequencyCyl::Mode::lam, u8"Mode wavelength [nm].")
+            .def_readwrite("power", &EffectiveFrequencyCyl::Mode::power, u8"Total power emitted into the mode.")
+            .add_property("loss", &EffectiveFrequencyCyl::Mode::loss, u8"Mode losses [1/cm].")
             .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
-                          "Cumulated absorption for the mode [mW].\n\n"
-                          "This property combines gain in active region and absorption in the whole\n"
-                          "structure.")
-            .add_property("gain_integral", &Mode_gain_integral, "Total gain for the mode [mW].")
+                          u8"Cumulated absorption for the mode [mW].\n\n"
+                          u8"This property combines gain in active region and absorption in the whole\n"
+                          u8"structure.")
+            .add_property("gain_integral", &Mode_gain_integral, u8"Total gain for the mode [mW].")
             .def("__str__", &EffectiveFrequencyCyl_Mode_str)
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr)
         ;
@@ -480,16 +480,16 @@ BOOST_PYTHON_MODULE(effective)
         ;
     }
 
-    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
-        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller', 'broyden', or 'brent')")
-        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
-        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
-        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
-        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
-        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
-        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
-        .def_readwrite("lambd", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
-        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller and Brent methods only).")
+    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", u8"Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("method", &RootDigger::Params::method, u8"Root finding method ('muller', 'broyden', or 'brent')")
+        .def_readwrite("tolx", &RootDigger::Params::tolx, u8"Absolute tolerance on the argument.")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, u8"Sufficient tolerance on the function value.")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, u8"Required tolerance on the function value.")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, u8"Maximum number of iterations.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, u8"Maximum step in one iteration (Broyden method only).")
+        .def_readwrite("alpha", &RootDigger::Params::maxstep, u8"Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
+        .def_readwrite("lambd", &RootDigger::Params::maxstep, u8"Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, u8"Initial range size (Muller and Brent methods only).")
     ;
 
     py_enum<RootDigger::Method>()
