@@ -21,47 +21,42 @@ class Matrix {
     int r, c;
 
     T* data_;         ///< The data of the matrix
-    int* gc;          ///< the reference count for the garbage collector
+    std::atomic<int>* gc;          ///< the reference count for the garbage collector
+
+    void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
+        if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
+            std::atomic_thread_fence(std::memory_order_acquire);
+            delete gc;
+            aligned_delete_array(r*c, data_);
+            write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
+        }
+    }
+
+    void inc_ref() {
+        if (gc) gc->fetch_add(1, std::memory_order_relaxed);
+    }
 
   public:
 
     Matrix() : gc(nullptr) {}
 
-    Matrix(int m, int n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new int(1)) {
+    Matrix(int m, int n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
     }
 
-    Matrix(int m, int n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new int(1)) {
+    Matrix(int m, int n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
     }
 
     Matrix(const Matrix<T>& M) : r(M.r), c(M.c), data_(M.data_), gc(M.gc) {
-        if (gc)
-#ifndef _MSC_VER
-            #pragma omp atomic update
-#endif
-            (*gc)++;
+        inc_ref();
     }
 
     Matrix<T>& operator=(const Matrix<T>& M) {
-        if (gc) {
-            unsigned g;
-#ifndef _MSC_VER
-            #pragma omp atomic capture
-#endif
-            g = --(*gc);
-            if (g == 0) {
-                delete gc; aligned_delete_array(r*c, data_);
-                write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
-            }
-        }
+        dec_ref();
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc;
-        if (gc)
-#ifndef _MSC_VER
-            #pragma omp atomic update
-#endif
-            (*gc)++;
+        inc_ref();
         return *this;
     }
 
@@ -77,17 +72,6 @@ class Matrix {
     }
 
     ~Matrix() {
-        if (gc) {
-            unsigned g;
-#ifndef _MSC_VER
-            #pragma omp atomic capture
-#endif
-            g = --(*gc);
-            if (g == 0) {
-                delete gc; aligned_delete_array(r*c, data_);
-                write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
-            }
-        }
     }
 
     inline const T* data() const { return data_; }
@@ -149,62 +133,47 @@ class MatrixDiagonal {
     int siz;
 
     T* data_;               //< The data of the matrix
-    int* gc;                //< the reference count for the garbage collector
+    std::atomic<int>* gc;                //< the reference count for the garbage collector
+
+    void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
+        if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
+            std::atomic_thread_fence(std::memory_order_acquire);
+            delete gc;
+            aligned_delete_array(siz, data_);
+            write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+        }
+    }
+
+    void inc_ref() {
+        if (gc) gc->fetch_add(1, std::memory_order_relaxed);
+    }
 
   public:
 
     MatrixDiagonal() : gc(nullptr) {}
 
-    MatrixDiagonal(int n) : siz(n), data_(aligned_new_array<T>(n)), gc(new int(1)) {
+    MatrixDiagonal(int n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
     }
 
-    MatrixDiagonal(int n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new int(1)) {
+    MatrixDiagonal(int n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, n, val);
     }
 
     MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), data_(M.data_), gc(M.gc) {
-        if (gc)
-#ifndef _MSC_VER
-            #pragma omp atomic update
-#endif
-            (*gc)++;
+        inc_ref();
     }
 
     MatrixDiagonal<T>& operator=(const MatrixDiagonal<T>& M) {
-        if (gc) {
-            unsigned g;
-#ifndef _MSC_VER
-            #pragma omp atomic capture
-#endif
-            g = --(*gc);
-            if (g == 0) {
-                delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
-            }
-        }
+        dec_ref();
         siz = M.siz; data_ = M.data_; gc = M.gc;
-        if (gc)
-#ifndef _MSC_VER
-            #pragma omp atomic update
-#endif
-            (*gc)++;
+        inc_ref();
         return *this;
     }
 
     ~MatrixDiagonal() {
-        if (gc) {
-            unsigned g;
-#ifndef _MSC_VER
-            #pragma omp atomic capture
-#endif
-            g = --(*gc);
-            if (g == 0) {
-                delete gc; aligned_delete_array(siz, data_);
-                write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
-            }
-        }
+        dec_ref();
     }
 
     inline const T* data() const { return data_; }
