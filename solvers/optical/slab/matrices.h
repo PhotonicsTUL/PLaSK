@@ -54,9 +54,9 @@ class Matrix {
     }
 
     Matrix<T>& operator=(const Matrix<T>& M) {
-        dec_ref();
+        const_cast<Matrix<T>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with *gc==1!
+        this->dec_ref();
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc;
-        inc_ref();
         return *this;
     }
 
@@ -102,7 +102,7 @@ class Matrix {
 
     Matrix<T> copy() const {
         Matrix<T> copy_(r, c);
-        memcpy(copy_.data_, data_, r*c*sizeof(T));
+        std::copy_n(data_, r*c, copy_.data());
         return copy_;
     }
 
@@ -166,9 +166,9 @@ class MatrixDiagonal {
     }
 
     MatrixDiagonal<T>& operator=(const MatrixDiagonal<T>& M) {
-        dec_ref();
+        const_cast<MatrixDiagonal<T>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with *gc==1!
+        this->dec_ref();
         siz = M.siz; data_ = M.data_; gc = M.gc;
-        inc_ref();
         return *this;
     }
 
@@ -205,7 +205,7 @@ class MatrixDiagonal {
 
     MatrixDiagonal<T> copy() const {
         MatrixDiagonal<T> C(siz);
-        memcpy(C.data, data_, siz*sizeof(T));
+        std::copy_n(data_, siz, C.data());
         return C;
     }
 
