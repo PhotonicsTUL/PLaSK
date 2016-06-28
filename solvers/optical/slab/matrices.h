@@ -20,8 +20,8 @@ class Matrix {
   protected:
     int r, c;
 
-    T* data_;         ///< The data of the matrix
-    std::atomic<int>* gc;          ///< the reference count for the garbage collector
+    T* data_;               ///< The data of the matrix
+    std::atomic<int>* gc;   ///< the reference count for the garbage collector
 
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
@@ -60,7 +60,7 @@ class Matrix {
         return *this;
     }
 
-    Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()), data_(aligned_new_array<T>(M.size()*M.size())), gc(new int(1))  {
+    Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()), data_(aligned_new_array<T>(M.size()*M.size())), gc(new std::atomic<int>(1))  {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, r*c*sizeof(T)/1048576., (void*)data_);
         std::fill_n(data_, r*c, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];

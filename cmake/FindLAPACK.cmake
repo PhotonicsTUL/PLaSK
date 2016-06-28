@@ -328,7 +328,7 @@ if(BLA_F95)
  endif(LAPACK95_LIBRARIES)
  if(NOT LAPACK_FIND_QUIETLY)
   if(LAPACK95_FOUND)
-    message(STATUS "A library with LAPACK95 API found.")
+    message(STATUS "A library with LAPACK95 API found: ${LAPACK95_LIBRARIES}")
   else(LAPACK95_FOUND)
     if(LAPACK_FIND_REQUIRED)
       message(FATAL_ERROR
@@ -352,7 +352,7 @@ else(BLA_F95)
 
  if(NOT LAPACK_FIND_QUIETLY)
   if(LAPACK_FOUND)
-    message(STATUS "A library with LAPACK API found.")
+    message(STATUS "A library with LAPACK API found: ${LAPACK_LIBRARIES}")
   else(LAPACK_FOUND)
     if(LAPACK_FIND_REQUIRED)
       message(FATAL_ERROR

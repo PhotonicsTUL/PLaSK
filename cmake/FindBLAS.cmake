@@ -597,7 +597,7 @@ if(BLA_F95)
 
   if(NOT BLAS_FIND_QUIETLY)
     if(BLAS95_FOUND)
-      message(STATUS "A library with BLAS95 API found.")
+      message(STATUS "A library with BLAS95 API found: ${BLAS95_LIBRARIES}")
     else(BLAS95_FOUND)
       if(BLAS_FIND_REQUIRED)
         message(FATAL_ERROR
@@ -619,7 +619,7 @@ else(BLA_F95)
 
   if(NOT BLAS_FIND_QUIETLY)
     if(BLAS_FOUND)
-      message(STATUS "A library with BLAS API found.")
+      message(STATUS "A library with BLAS API found: ${BLAS_LIBRARIES}")
     else(BLAS_FOUND)
       if(BLAS_FIND_REQUIRED)
         message(FATAL_ERROR
