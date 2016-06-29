@@ -27,6 +27,13 @@ set(PLASK_SOLVER_PATH "${PLASK_PATH}/solvers/${SOLVER_PATH}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 
+foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
+    STRING(TOUPPER "${CONF}" CONF)
+    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+    #SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF} ${CMAKE_CFG_INTDIR}/lib)
+endforeach()
+
 set(SOLVER_INSTALL_PATH lib/plask/solvers/${SOLVER_PATH})
 
 # Automatically set sources from the current directory
@@ -82,6 +89,11 @@ macro(make_default)
                               OUTPUT_NAME ${SOLVER_NAME}
                               INSTALL_RPATH "$ORIGIN"
                               PREFIX "")
+        foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
+            STRING(TOUPPER "${CONF}" CONF)
+            set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
+                                  LIBRARY_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+        endforeach()
         if (DEFINED no_strict_aliasing_flag)
             set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
         endif()
@@ -89,6 +101,11 @@ macro(make_default)
             set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                                   RUNTIME_OUTPUT_DIRECTORY "${PLASK_SOLVER_PATH}"
                                   SUFFIX ".pyd")
+            foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
+                STRING(TOUPPER "${CONF}" CONF)
+                set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
+                              RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+            endforeach()
             install(TARGETS ${SOLVER_PYTHON_MODULE} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
                                                   LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()
