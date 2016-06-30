@@ -106,15 +106,16 @@ void SlabSolver<BaseT>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    static_pointer_cast<OrderedAxis>(points->axis1)->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<OrderedAxis>(points->axis1)->addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts = std::move(*points->vert());
+    verts.addPoint(vbounds[0] - outdist);
+    verts.addPoint(vbounds[vbounds.size()-1] + outdist);
 
-    lverts.clear();
     lgained.clear();
     stack.clear();
-    stack.reserve(points->axis1->size());
+    stack.reserve(verts.size());
+    size_t ln = 0;
 
-    for (auto v: *points->axis1) {
+    for (auto v: verts) {
         bool gain = false;
 
         std::vector<LayerItem> layer(points->axis0->size());
@@ -138,19 +139,18 @@ void SlabSolver<BaseT>::setupLayers()
                     }
                 }
                 if (!unique) {
-                    lverts[i]->addPoint(v);
                     stack.push_back(i);
                     break;
                 }
             }
         }
         if (unique) {
+            stack.push_back(ln++);
             layers.emplace_back(std::move(layer));
-            stack.push_back(lverts.size());
-            lverts.emplace_back(plask::make_shared<OrderedAxis,std::initializer_list<double>>({v}));
             lgained.push_back(gain);
         }
     }
+    assert(verts.size() == stack.size());
 
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lverts.size(), group_layers? "distinct " : "");
 }
@@ -171,16 +171,16 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    //static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts = std::move(*points->vert());
+    verts.addPoint(vbounds[0] - outdist);
+    verts.addPoint(vbounds[vbounds.size()-1] + outdist);
 
-    lverts.clear();
     lgained.clear();
     stack.clear();
-    stack.reserve(points->vert()->size());
+    stack.reserve(verts->size());
+    size_t ln = 0;
 
-    for (auto v: *points->vert()) {
+    for (auto v: verts) {
         bool gain = false;
 
         std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());
@@ -208,7 +208,6 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
                     }
                 }
                 if (!unique) {
-                    lverts[i]->addPoint(v);
                     stack.push_back(i);
                     break;
                 }
@@ -216,8 +215,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
         }
         if (unique) {
             layers.emplace_back(std::move(layer));
-            stack.push_back(lverts.size());
-            lverts.emplace_back(plask::make_shared<OrderedAxis,std::initializer_list<double>>({v}));
+            stack.push_back(ln++);
             lgained.push_back(gain);
         }
     }

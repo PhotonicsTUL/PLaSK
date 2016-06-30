@@ -30,16 +30,26 @@ struct PLASK_SOLVER_API Expansion {
 
     /// Frequency for which the actual computations are performed
     dcomplex k0;
-    
+
     /// Material parameters wavelength
     double lam0;
-    
+
     Expansion(SlabBase* solver): solver(solver), k0(NAN), lam0(NAN) {}
 
   private:
       double glambda;
-    
+
   protected:
+
+    /**
+     * Method called before layer integrals are computed
+     */
+    virtual void prepareIntegrals(double lam, double glam) {}
+
+    /**
+     * Method called after layer integrals are computed
+     */
+    virtual void cleanupIntegrals(double lam, double glam) {}
 
     /**
      * Compute itegrals for RE and RH matrices
@@ -48,7 +58,7 @@ struct PLASK_SOLVER_API Expansion {
      * \param glam wavelength for gain
      */
     virtual void layerIntegrals(size_t layer, double lam, double glam) = 0;
-    
+
   public:
 
     /// Set lam0
@@ -91,7 +101,8 @@ struct PLASK_SOLVER_API Expansion {
             }
             size_t nlayers = lcount();
             std::exception_ptr error;
-            #pragma omp parallel for
+            prepareIntegrals(lam, glambda);
+            #pragma   parallel for
             for (plask::openmp_size_t l = 0; l < nlayers; ++l) {
                 if (error) continue;
                 try {
@@ -101,10 +112,11 @@ struct PLASK_SOLVER_API Expansion {
                     error = std::current_exception();
                 }
             }
+            cleanupIntegrals(lam, glambda);
             if (error) std::rethrow_exception(error);
             solver->recompute_integrals = false;
             solver->recompute_gain_integrals = false;
-        } else if (solver->recompute_gain_integrals || 
+        } else if (solver->recompute_gain_integrals ||
                    (solver->always_recompute_gain && !is_zero(lambda - glambda))) {
             double lam = isnan(lam0)? lambda : solver->lam0;
             glambda = (solver->always_recompute_gain)? lambda : lam;
@@ -113,6 +125,7 @@ struct PLASK_SOLVER_API Expansion {
             glayers.reserve(nlayers);
             for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
             std::exception_ptr error;
+            prepareIntegrals(lam, glambda);
             #pragma omp parallel for
             for (plask::openmp_size_t l = 0; l < glayers.size(); ++l) {
                 if (error) continue;
@@ -123,6 +136,8 @@ struct PLASK_SOLVER_API Expansion {
                     error = std::current_exception();
                 }
             }
+            cleanupIntegrals(lam, glambda);
+            if (error) std::rethrow_exception(error);
             solver->recompute_gain_integrals = false;
         }
     }
@@ -181,7 +196,7 @@ struct PLASK_SOLVER_API Expansion {
      * \return integrated Poynting vector i.e. the total vertically emitted energy
      */
     virtual double integratePoyntingVert(const cvector& E, const cvector& H) = 0;
-    
+
   protected:
 
     /**

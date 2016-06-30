@@ -54,7 +54,7 @@ class Matrix {
     }
 
     Matrix<T>& operator=(const Matrix<T>& M) {
-        const_cast<Matrix<T>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with *gc==1!
+        const_cast<Matrix<T>&>(M).inc_ref();    // must be called before dec_ref in case of self-asigment with *gc==1!
         this->dec_ref();
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc;
         return *this;
@@ -133,7 +133,7 @@ class MatrixDiagonal {
     int siz;
 
     T* data_;               //< The data of the matrix
-    std::atomic<int>* gc;                //< the reference count for the garbage collector
+    std::atomic<int>* gc;   //< the reference count for the garbage collector
 
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
@@ -166,7 +166,7 @@ class MatrixDiagonal {
     }
 
     MatrixDiagonal<T>& operator=(const MatrixDiagonal<T>& M) {
-        const_cast<MatrixDiagonal<T>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with *gc==1!
+        const_cast<MatrixDiagonal<T>&>(M).inc_ref();    // must be called before dec_ref in case of self-asigment with *gc==1!
         this->dec_ref();
         siz = M.siz; data_ = M.data_; gc = M.gc;
         return *this;
@@ -196,7 +196,6 @@ class MatrixDiagonal {
     inline T& operator()(int m, int n) {
         assert(m < siz);
         assert(n < siz);
-        // if (m !=n) throw ComputationError("MatrixDiagonal::operator()", "wrong index");
         assert(m == n);
         return data_[n];
     }

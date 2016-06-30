@@ -11,9 +11,9 @@ This file contains classes which can hold (or points to) datas.
 #include <initializer_list>
 #include <atomic>
 #include <type_traits>
-#include <memory>   //std::unique_ptr
+#include <memory>       // std::unique_ptr
 #include <cassert>
-#include <type_traits>  //std::is_trivially_destructible, std::false_type, std::true_type
+#include <type_traits>  // std::is_trivially_destructible, std::false_type, std::true_type
 
 #include "memalloc.h"
 #include "exceptions.h"
@@ -163,8 +163,8 @@ struct DataVector {
      * @return *this
      */
     DataVector<T>& operator=(const DataVector<T>& M) {  //TODO maybe not needed?
-        const_cast<DataVector<T>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with 1 reference
-        this->dec_ref();                // release old content, this can delete old data
+        const_cast<DataVector<T>&>(M).inc_ref();    // must be called before dec_ref in case of self-asigment with 1 reference
+        this->dec_ref();                            // release old content, this can delete the old data
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;
@@ -178,8 +178,8 @@ struct DataVector {
      */
     template <typename TS>
     DataVector<T>& operator=(const DataVector<TS>& M) {
-        const_cast<DataVector<TS>&>(M).inc_ref();    //must be before dec_ref in case of self-asigment with 1 reference
-        this->dec_ref();    //release old content, this can delete old data
+        const_cast<DataVector<TS>&>(M).inc_ref();   // must be called before dec_ref in case of self-asigment with 1 reference
+        this->dec_ref();                            // release old content, this can delete old data
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;

@@ -267,6 +267,10 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
     );
 }
 
+
+void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
+}
+
 void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 {
     auto geometry = SOLVER->getGeometry();
@@ -288,7 +292,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 
     if (isnan(lam))
         throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
-        
+
     auto mesh = plask::make_shared<RectangularMesh<3>>
                            (plask::make_shared<RegularAxis>(long_mesh),
                             plask::make_shared<RegularAxis>(tran_mesh),
@@ -565,7 +569,7 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
     assert(!(symy && ktran != 0.));
 
     assert(!isnan(k0.real()) && !isnan(k0.imag()));
-    
+
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
 
@@ -883,7 +887,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
-    
+
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
     for (int iy = -ordt; iy <= ordt; ++iy) {

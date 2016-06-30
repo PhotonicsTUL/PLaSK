@@ -14,7 +14,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     dcomplex klong,                     ///< Longitudinal wavevector
              ktran;                     ///< Transverse wavevector
-    
+
     RegularAxis long_mesh,              ///< Horizontal axis for structure sampling in longitudinal direction
                 tran_mesh;              ///< Horizontal axis for structure sampling in transverse direction
 
@@ -91,7 +91,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                               InterpolationMethod interp) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
-    
+
   private:
 
     DataVector<Vec<3,dcomplex>> field;
@@ -114,6 +114,10 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
 
+    void prepareIntegrals(double lam, double glam) override;
+
+    void cleanupIntegrals(double lam, double glam) override;
+
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
@@ -124,21 +128,21 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
             solver->clearFields();
         }
     }
-    
+
     void setKtran(dcomplex k) {
         if (k != ktran) {
             ktran = k;
             solver->clearFields();
         }
     }
-    
+
     void setSymmetryLong(Component sym) {
         if (sym != symmetry_long) {
             symmetry_long = sym;
             solver->clearFields();
         }
     }
-    
+
     void setSymmetryTran(Component sym) {
         if (sym != symmetry_tran) {
             symmetry_tran = sym;
