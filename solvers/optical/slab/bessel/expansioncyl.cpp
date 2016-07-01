@@ -19,14 +19,9 @@ ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): Expansion(solver), in
 }
 
 
-size_t ExpansionBessel::lcount() const {
-    return SOLVER->getLayersPoints().size();
-}
-
-
 size_t ExpansionBessel::matrixSize() const {
     return 2 * SOLVER->size; // TODO should be N for m = 0?
-} 
+}
 
 
 void ExpansionBessel::computeBesselZeros()
@@ -43,7 +38,7 @@ void ExpansionBessel::computeBesselZeros()
         cyl_bessel_j_zero(double(m), n+1, N-n, factors.begin()+n);
     }
     // #ifndef NDEBUG
-    //     for (size_t i = 0; i != N; ++i) { 
+    //     for (size_t i = 0; i != N; ++i) {
     //         auto report = [i,m,this]()->bool{
     //             std::cerr << "J(" << m << ", " << factors[i] << ") = " << cyl_bessel_j(m, factors[i]) << "\n";
     //             return false;
@@ -78,24 +73,24 @@ void ExpansionBessel::init()
 
     double max_error = SOLVER->integral_error * expected / nseg;
     double error = 0.;
-    
+
     std::deque<std::vector<double>> abscissae_cache;
     std::deque<DataVector<double>> weights_cache;
-    
-    raxis = plask::make_shared<OrderedAxis>();
-    
+
+    auto raxis = plask::make_shared<OrderedAxis>();
+
     double a, b = 0.;
     double expcts = 0.;
     for (size_t i = 0; i < nseg; ++i) {
         a = b; b = rbounds[i+1];
         segments[i].Z = 0.5 * (a + b);
         segments[i].D = 0.5 * (b - a);
-        
+
         // excpected value is the second Lommel's integral
         double expct = expcts;
         expcts = cyl_bessel_j(m, k*b); expcts = 0.5 * b*b * (expcts*expcts - cyl_bessel_j(m-1, k*b) * cyl_bessel_j(m+1, k*b));
         expct = expcts - expct;
-        
+
         double err = 2 * max_error;
         std::vector<double> points;
         size_t j, n = 0;
@@ -127,14 +122,14 @@ void ExpansionBessel::init()
     }
 
     SOLVER->writelog(LOG_DETAIL, "Sampling structure in {:d} points (error: {:g}/{:g})", raxis->size(), error/expected, SOLVER->integral_error);
-    
+
     // Compute integrals for permeability
     size_t N = SOLVER->size;
     mu_integrals.reset(N);
     if (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.) {
         double ib = 1. / rbounds[rbounds.size()-1];
         size_t pmlseg = segments.size()-1;
-        
+
         // Compute analytically for constant section using first and second Lommel's integrals
         double r0 = rbounds[pmlseg];
         double rr = r0*r0;
@@ -162,9 +157,9 @@ void ExpansionBessel::init()
             dcomplex imu = 1. / mu;
             dcomplex mua = 0.5 * (imu + mu), dmu = 0.5 * (imu - mu);
             dcomplex imu1 = imu - 1.;
-            
+
             imu *= w; mua *= w; dmu *= w; imu1 *= w;
-            
+
             for (int i = 0; i < N; ++i) {
                 double g = factors[i] * ib; double gr = g*r;
                 double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
@@ -197,13 +192,15 @@ void ExpansionBessel::init()
     }
 
     // Allocate memory for integrals
-    size_t nlayers = lcount();
+    size_t nlayers = solver->lcount;
     layers_integrals.resize(nlayers);
     iepsilons.resize(nlayers);
     for (size_t l = 0, nr = raxis->size(); l != nlayers; ++l)
         iepsilons[l].reset(nr);
     diagonals.assign(nlayers, false);
-    
+
+    mesh = plask::make_shared<RectangularMesh<2>>(raxis, solver->verts, RectangularMesh<2>::ORDER_01);
+
     initialized = true;
 }
 
@@ -216,7 +213,22 @@ void ExpansionBessel::reset()
     iepsilons.clear();
     factors.clear();
     initialized = false;
-    raxis.reset();
+    mesh.reset();
+}
+
+
+void ExpansionBessel::prepareIntegrals(double lam, double glam) {
+    temperature = SOLVER->inTemperature(mesh);
+    gain_connected = SOLVER->inGain.hasProvider();
+    if (gain_connected) {
+        if (isnan(glam)) glam = lam;
+        gain = SOLVER->inGain(mesh, glam);
+    }
+}
+
+void ExpansionBessel::cleanupIntegrals(double lam, double glam) {
+    temperature.reset();
+    gain.reset();
 }
 
 
@@ -226,7 +238,8 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    auto zaxis = SOLVER->getLayerPoints(layer);
+
+    auto raxis = mesh->tran();
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
         SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d} in thread {:d}", layer, omp_get_thread_num());
@@ -236,26 +249,26 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
 
     if (isnan(lam))
         throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
-        
+
     size_t nr = raxis->size(), N = SOLVER->size;
     double ib = 1. / rbounds[rbounds.size()-1];
-
-    auto mesh = plask::make_shared<RectangularMesh<2>>(raxis, zaxis, RectangularMesh<2>::ORDER_01);
-
-    LazyData<double> gain;
-    auto temperature = SOLVER->inTemperature(mesh);
-    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
         if (isnan(glam)) glam = lam;
     }
 
-    double matz = zaxis->at(0); // at each point along any vertical axis material is the same
+    double matz;
+    for (size_t i = 0; i != solver->stack.size(); ++i) {
+        if (solver->stack[i] == layer) {
+            matz = solver->verts->at(i);
+            break;
+        }
+    }
 
     Integrals& integrals = layers_integrals[layer];
     integrals.reset(N);
-    
+
     // For checking if the layer is uniform
     Tensor3<dcomplex> EPS;
     diagonals[layer] = true;
@@ -279,19 +292,20 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         double w = segments[seg].weights[wi] * segments[seg].D;
 
         auto material = geometry->getMaterial(vec(r, matz));
-        double T = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) T += temperature[v]; T /= zaxis->size();
+        double T = 0.; int nt = 0;
+        for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k)
+            if (solver->stack[k] == layer) { T += temperature[v]; nt++; }
+        T /= nt;
         Tensor3<dcomplex> eps = material->NR(lam, T);
         if (eps.c01 != 0.)
             throw BadInput(solver->getId(), "Non-diagonal anisotropy not allowed for this solver");
         if (gain_connected &&  solver->lgained[layer]) {
             auto roles = geometry->getRolesAt(vec(r, matz));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                if (!gain_computed) {
-                    gain = SOLVER->inGain(mesh, glam);
-                    gain_computed = true;
-                }
-                double g = 0.; for (size_t v = ri * zaxis->size(), end = (ri+1) * zaxis->size(); v != end; ++v) g += gain[v];
-                double ni = glam * g/zaxis->size() * (0.25e-7/M_PI);
+                double g = 0.; int ng = 0;
+                for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k)
+                    if (solver->stack[k] == layer) { g += gain[v]; ng++; }
+                double ni = glam * g/ng * (0.25e-7/M_PI);
                 eps.c00.imag(ni); eps.c11.imag(ni); eps.c22.imag(ni);
             }
         }
@@ -305,16 +319,16 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam)
         dcomplex ieps = 1. / eps.c22;
         dcomplex epsa = 0.5 * (eps.c11 + eps.c00), deps = 0.5 * (eps.c11 - eps.c00);
         iepsilons[layer][ri] = ieps;
-        
+
         if (ri == 0)
             EPS = eps;
         else {
             auto delta = eps - EPS;
             if (!is_zero(delta.c00) || !is_zero(delta.c11) || !is_zero(delta.c22) || !is_zero(deps)) diagonals[layer] = false;
         }
-        
+
         epsa *= w; deps *= w; ieps *= w;
-        
+
         for (int i = 0; i < N; ++i) {
             double g = factors[i] * ib; double gr = g*r;
             double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
@@ -490,10 +504,10 @@ void ExpansionBessel::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     size_t N = SOLVER->size;
     dcomplex ik0 = 1. / k0;
     double b = rbounds[rbounds.size()-1];
-    
+
     const Integrals& eps = layers_integrals[layer];
     #define mu mu_integrals
-    
+
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
         double i2eta = 1. / (cyl_bessel_j(m+1, factors[i]) * b); i2eta *= i2eta;
@@ -546,14 +560,14 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
     double b = rbounds[rbounds.size()-1];
     const dcomplex fz = dcomplex(0,2) / k0;
 
-    auto src_mesh = plask::make_shared<RectangularMesh<2>>(raxis, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+    auto src_mesh = plask::make_shared<RectangularMesh<2>>(mesh->tran(), plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     auto ieps = interpolate(src_mesh, iepsilons[l], dest_mesh, field_interpolation,
                             InterpolationFlags(SOLVER->getGeometry(),
                                                InterpolationFlags::Symmetry::POSITIVE,
                                                InterpolationFlags::Symmetry::NO));
 
     if (which_field == FIELD_E) {
-        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(), 
+        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(),
             [=](size_t i) -> Vec<3,dcomplex> {
                 double r = dest_mesh->at(i)[0];
                 Vec<3,dcomplex> result {0., 0., 0.};
@@ -572,7 +586,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
             });
     } else { // which_field == FIELD_H
         double r0 = (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.)? rbounds[rbounds.size()-1] : INFINITY;
-        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(), 
+        return LazyData<Vec<3,dcomplex>>(dest_mesh->size(),
             [=](size_t i) -> Vec<3,dcomplex> {
                 double r = dest_mesh->at(i)[0];
                 dcomplex imu = 1.;
@@ -592,7 +606,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                 return result;
             });
     }
-    
+
 }
 
 LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
@@ -600,7 +614,7 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
                                     InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_NEAREST;
-    
+
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
 
@@ -608,10 +622,10 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
     for (size_t i = 0; i != nrs.size(); ++i) {
         nrs[i] = Tensor3<dcomplex>(1. / sqrt(iepsilons[layer][i]));
     }
-    
-    auto src_mesh = plask::make_shared<RectangularMesh<2>>(raxis, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
+
+    auto src_mesh = plask::make_shared<RectangularMesh<2>>(mesh->tran(), plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     return interpolate(src_mesh, nrs, dest_mesh, interp,
-                       InterpolationFlags(SOLVER->getGeometry(), 
+                       InterpolationFlags(SOLVER->getGeometry(),
                                           InterpolationFlags::Symmetry::POSITIVE,
                                           InterpolationFlags::Symmetry::NO));
 }

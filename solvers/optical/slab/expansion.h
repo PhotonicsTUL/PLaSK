@@ -99,10 +99,10 @@ struct PLASK_SOLVER_API Expansion {
             } else{
                 lam = glambda = lambda;
             }
-            size_t nlayers = lcount();
+            size_t nlayers = solver->lcount;
             std::exception_ptr error;
             prepareIntegrals(lam, glambda);
-            #pragma   parallel for
+            #pragma omp parallel for
             for (plask::openmp_size_t l = 0; l < nlayers; ++l) {
                 if (error) continue;
                 try {
@@ -121,7 +121,7 @@ struct PLASK_SOLVER_API Expansion {
             double lam = isnan(lam0)? lambda : solver->lam0;
             glambda = (solver->always_recompute_gain)? lambda : lam;
             std::vector<size_t> glayers;
-            size_t nlayers = lcount();
+            size_t nlayers = solver->lcount;
             glayers.reserve(nlayers);
             for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
             std::exception_ptr error;
@@ -141,12 +141,6 @@ struct PLASK_SOLVER_API Expansion {
             solver->recompute_gain_integrals = false;
         }
     }
-
-    /**
-     * Return number of distinct layers
-     * \return number of layers
-     */
-    virtual size_t lcount() const = 0;
 
     /**
      * Tell if matrix for i-th layer is diagonal
@@ -223,7 +217,6 @@ struct PLASK_SOLVER_API Expansion {
                                                const cvector& E,
                                                const cvector& H) = 0;
 };
-
 
 
 }}} // namespace plask

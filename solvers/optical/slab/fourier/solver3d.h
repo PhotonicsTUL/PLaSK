@@ -15,7 +15,7 @@ namespace plask { namespace solvers { namespace slab {
 struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D>> {
 
     friend struct ExpansionPW3D;
-    
+
     std::string getClassName() const override { return "optical.Fourier3D"; }
 
     /// Indication of parameter to search
@@ -35,7 +35,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
 
-        Mode(const ExpansionPW3D& expansion): 
+        Mode(const ExpansionPW3D& expansion):
             symmetry_long(expansion.symmetry_long),
             symmetry_tran(expansion.symmetry_tran),
             lam0(expansion.lam0),
@@ -76,7 +76,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     Expansion::Component symmetry_long,         ///< Symmetry along longitudinal axis
                          symmetry_tran;         ///< Symmetry along transverse axis
-    
+
     void onInitialize() override;
 
     void onInvalidate() override;
@@ -108,7 +108,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         expansion.setSymmetryLong(getSymmetryLong());
         expansion.setSymmetryTran(getSymmetryTran());
     }
-    
+
     /// Mesh multiplier for finer computation of the refractive indices in the longitudinal direction
     size_t refine_long;
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
@@ -243,17 +243,17 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
 
-    /// Get mesh at which material parameters are sampled along longitudinal axis
-    RegularAxis getLongMesh() const { return expansion.long_mesh; }
-
-    /// Get mesh at which material parameters are sampled along transverse axis
-    RegularAxis getTranMesh() const { return expansion.tran_mesh; }
+    // /// Get mesh at which material parameters are sampled along longitudinal axis
+    // RegularAxis getLongMesh() const { return expansion.mesh->lon(); }
+    //
+    // /// Get mesh at which material parameters are sampled along transverse axis
+    // RegularAxis getTranMesh() const { return expansion.mesh->tran(); }
 
     Expansion& getExpansion() override { return expansion; }
 
     /// Return minor field coefficients dimension
     size_t minor() const { return expansion.Nl; }
-    
+
   private:
 
     /**
@@ -370,7 +370,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         applyMode(modes[num]);
         return transfer->getFieldVectorE(z);
     }
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param num mode number
@@ -381,7 +381,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         applyMode(modes[num]);
         return transfer->getFieldVectorH(z);
     }
-    
+
     /**
      * Compute electric field coefficients for given \a z
      * \param polarization incident field polarization
@@ -400,7 +400,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         expansion.setSymmetryTran(symmetry_tran);
         return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
     }
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param polarization incident field polarization
@@ -420,7 +420,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
         return insertMode();
     }
-    
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -469,7 +469,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             clearFields();
         }
     }
-     
+
     LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
     LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
@@ -484,13 +484,13 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     struct Reflected {
 
         FourierSolver3D* parent;
-         
+
         Expansion::Component polarization;
-        
+
         Transfer::IncidentDirection side;
-        
+
         double wavelength;
-        
+
         /// Provider of the optical electric field
         typename ProviderFor<LightE,Geometry3D>::Delegate outElectricField;
 
@@ -508,13 +508,13 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             parent->expansion.setK0(2e3*M_PI / wavelength);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
-        
+
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
-        
+
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);

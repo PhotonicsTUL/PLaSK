@@ -82,7 +82,10 @@ struct PLASK_SOLVER_API SlabBase {
     OrderedAxis vbounds;
 
     /// Centers of layers
-    OrderedAxis verts;
+    shared_ptr<OrderedAxis> verts;
+
+    /// Number of distinct layers
+    size_t lcount;
 
     /// Information if the layer has gain
     std::vector<bool> lgained;

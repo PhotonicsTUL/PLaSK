@@ -15,9 +15,6 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     dcomplex klong,                     ///< Longitudinal wavevector
              ktran;                     ///< Transverse wavevector
 
-    RegularAxis long_mesh,              ///< Horizontal axis for structure sampling in longitudinal direction
-                tran_mesh;              ///< Horizontal axis for structure sampling in transverse direction
-
     size_t Nl,                          ///< Number of expansion coefficients in longitudinal direction
            Nt;                          ///< Number of expansion coefficients in transverse direction
     size_t nNl,                         ///< Number of of required coefficients for material parameters in longitudinal direction
@@ -47,6 +44,9 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
 
+    /// Mesh for getting material data
+    shared_ptr<RectangularMesh<3>> mesh;
+
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -68,9 +68,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     /// Free allocated memory
     void reset();
 
-    virtual size_t lcount() const override;
-
-    virtual bool diagonalQE(size_t l) const override {
+    bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 
@@ -113,6 +111,15 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used with for PMLs)
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
+
+    /// Obtained temperature
+    LazyData<double> temperature;
+
+    /// Flag indicating if the gain is connected
+    bool gain_connected;
+
+    /// Obtained gain
+    LazyData<double> gain;
 
     void prepareIntegrals(double lam, double glam) override;
 

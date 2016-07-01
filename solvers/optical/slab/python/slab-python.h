@@ -61,13 +61,13 @@ static py::object Solver_getLam0(const SolverT& self) {
     if (!isnan(self.lam0)) return py::object(self.lam0);
     else return py::object();
 }
-    
+
 template <typename SolverT>
 static void Solver_setLam0(SolverT& self, py::object value) {
     if (value == py::object()) self.clearLam0();
     else self.setLam0(py::extract<double>(value));
 }
-    
+
 template <typename SolverT>
 static py::tuple SlabSolver_getStack(const SolverT& self) {
     py::list result;
@@ -77,14 +77,14 @@ static py::tuple SlabSolver_getStack(const SolverT& self) {
     return py::tuple(result);
 }
 
-template <typename SolverT>
-static py::tuple SlabSolver_getLayerSets(const SolverT& self) {
-    py::list result;
-    for (auto i: self.getLayersPoints()) {
-        result.append(i);
-    }
-    return py::tuple(result);
-}
+// template <typename SolverT>
+// static py::tuple SlabSolver_getLayerSets(const SolverT& self) {
+//     py::list result;
+//     for (auto i: self.getLayersPoints()) {
+//         result.append(i);
+//     }
+//     return py::tuple(result);
+// }
 
 struct PythonComponentConventer {
 
@@ -323,7 +323,7 @@ inline void export_base(Class solver) {
                "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
     solver.add_property("stack", &SlabSolver_getStack<Solver>, "Stack of distinct layers.");
-    solver.add_property("layer_sets", &SlabSolver_getLayerSets<Solver>, "Vertical positions of layers in each layer set.");
+    // solver.add_property("layer_sets", &SlabSolver_getLayerSets<Solver>, "Vertical positions of layers in each layer set.");
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
                         "If this property is ``True``, similar layers are grouped for efficiency.");

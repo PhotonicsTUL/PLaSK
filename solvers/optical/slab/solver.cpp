@@ -106,16 +106,16 @@ void SlabSolver<BaseT>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    verts = std::move(*points->vert());
-    verts.addPoint(vbounds[0] - outdist);
-    verts.addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
+    verts->addPoint(vbounds[0] - outdist);
+    verts->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lgained.clear();
     stack.clear();
-    stack.reserve(verts.size());
-    size_t ln = 0;
+    stack.reserve(verts->size());
+    lcount = 0;
 
-    for (auto v: verts) {
+    for (auto v: *verts) {
         bool gain = false;
 
         std::vector<LayerItem> layer(points->axis0->size());
@@ -145,14 +145,16 @@ void SlabSolver<BaseT>::setupLayers()
             }
         }
         if (unique) {
-            stack.push_back(ln++);
+            stack.push_back(lcount++);
             layers.emplace_back(std::move(layer));
             lgained.push_back(gain);
         }
     }
-    assert(verts.size() == stack.size());
 
-    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", ln, group_layers? "distinct " : "");
+    assert(vbounds.size() == stack.size()-1);
+    assert(verts->size() == stack.size());
+
+    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 }
 
 template <>
@@ -171,16 +173,16 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    verts = std::move(*points->vert());
-    verts.addPoint(vbounds[0] - outdist);
-    verts.addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
+    verts->addPoint(vbounds[0] - outdist);
+    verts->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lgained.clear();
     stack.clear();
     stack.reserve(verts->size());
-    size_t ln = 0;
+    lcount = 0;
 
-    for (auto v: verts) {
+    for (auto v: *verts) {
         bool gain = false;
 
         std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());
@@ -215,14 +217,15 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
         }
         if (unique) {
             layers.emplace_back(std::move(layer));
-            stack.push_back(ln++);
+            stack.push_back(lcount++);
             lgained.push_back(gain);
         }
     }
 
     assert(vbounds.size() == stack.size()-1);
+    assert(verts->size() == stack.size());
 
-    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", ln, group_layers? "distinct " : "");
+    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 }
 
 

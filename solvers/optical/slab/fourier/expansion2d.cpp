@@ -21,15 +21,13 @@ void ExpansionPW2D::setPolarization(Component pol) {
         polarization = pol;
     }
 }
-    
 
-size_t ExpansionPW2D::lcount() const {
-    return SOLVER->getLayersPoints().size();
-}
 
 void ExpansionPW2D::init()
 {
     auto geometry = SOLVER->getGeometry();
+
+    shared_ptr<RegularAxis> xmesh;
 
     periodic = geometry->isPeriodic(Geometry2DCartesian::DIRECTION_TRAN);
 
@@ -67,7 +65,7 @@ void ExpansionPW2D::init()
         M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
         xmesh = plask::make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                         left-dx, right-dx-L/M, M);      
+                                         left-dx, right-dx-L/M, M);
     } else {
         L = 2 * right;
         N = SOLVER->getSize() + 1;
@@ -77,7 +75,7 @@ void ExpansionPW2D::init()
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
             double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
             xmesh = plask::make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                             dx, right - dx, M);         
+                                             dx, right - dx, M);
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
             double dx = 0.5 * L * (refine-1) / (refine*nNa);
@@ -149,9 +147,11 @@ void ExpansionPW2D::init()
     }
 
     // Allocate memory for expansion coefficients
-    size_t nlayers = lcount();
+    size_t nlayers = solver->lcount;
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
+
+    mesh = plask::make_shared<RectangularMesh<2>>(xmesh, solver->verts, RectangularMesh<2>::ORDER_01);
 
     initialized = true;
 }
@@ -159,13 +159,28 @@ void ExpansionPW2D::init()
 void ExpansionPW2D::reset() {
     coeffs.clear();
     initialized = false;
+    mesh.reset();
+}
+
+
+void ExpansionPW2D::prepareIntegrals(double lam, double glam) {
+    temperature = SOLVER->inTemperature(mesh);
+    gain_connected = SOLVER->inGain.hasProvider();
+    if (gain_connected) {
+        if (isnan(glam)) glam = lam;
+        gain = SOLVER->inGain(mesh, glam);
+    }
+}
+
+void ExpansionPW2D::cleanupIntegrals(double lam, double glam) {
+    temperature.reset();
+    gain.reset();
 }
 
 
 void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 {
     auto geometry = SOLVER->getGeometry();
-    auto axis1 = SOLVER->getLayerPoints(layer);
 
     size_t refine = SOLVER->refine;
     if (refine == 0) refine = 1;
@@ -179,13 +194,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 
     if (isnan(lam))
         throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
-        
-    auto mesh = plask::make_shared<RectangularMesh<2>>(xmesh, axis1, RectangularMesh<2>::ORDER_01);
-
-    auto temperature = SOLVER->inTemperature(mesh);
-
-    LazyData<double> gain;
-    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
 
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
@@ -193,12 +201,21 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     }
 
     double factor = 1. / refine;
-    double maty = axis1->at(0); // at each point along any vertical axis material is the same
+    double maty;
+    for (size_t i = 0; i != solver->stack.size(); ++i) {
+        if (solver->stack[i] == layer) {
+            maty = solver->verts->at(i);
+            break;
+        }
+    }
     double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
     Tensor3<dcomplex> refl, refr;
     if (!periodic) {
-        double Tl = 0.; for (size_t v = pil * axis1->size(), end = (pil+1) * axis1->size(); v != end; ++v) Tl += temperature[v]; Tl /= axis1->size();
-        double Tr = 0.; for (size_t v = pir * axis1->size(), end = (pir+1) * axis1->size(); v != end; ++v) Tr += temperature[v]; Tr /= axis1->size();
+        double Tl = 0., Tr = 0.;
+        int nt = 0;
+        for (size_t i = 0, vl = pil * solver->verts->size(), vr = pir * solver->verts->size(); i != mesh->vert()->size(); ++vl, ++vr, ++i)
+            if (solver->stack[i] == layer) { Tl += temperature[vl]; Tr += temperature[vr]; nt++; }
+        Tl /= nt; Tr /= nt;
         refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
         refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
     }
@@ -216,22 +233,23 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     // Average material parameters
     for (size_t i = 0; i != nM; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-            auto material = geometry->getMaterial(vec(xmesh->at(j),maty));
-            double T = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) T += temperature[v]; T /= axis1->size();
+            auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
+            double T = 0.; int nt = 0;
+            for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k)
+                if (solver->stack[k] == layer) { T += temperature[v]; nt++; }
+            T /= nt;
             Tensor3<dcomplex> nr = material->NR(lam, T);
             if (nr.c01 != 0.) {
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
             if (gain_connected && solver->lgained[layer]) {
-                auto roles = geometry->getRolesAt(vec(xmesh->at(j),maty));
+                auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j),maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                    if (!gain_computed) {
-                        gain = SOLVER->inGain(mesh, glam);
-                        gain_computed = true;
-                    }
-                    double g = 0.; for (size_t v = j * axis1->size(), end = (j+1) * axis1->size(); v != end; ++v) g += gain[v];
-                    double ni = glam * g/axis1->size() * (0.25e-7/M_PI);
+                    double g = 0.; int ng = 0;
+                    for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k)
+                        if (solver->stack[k] == layer) { g += gain[v]; ng++; }
+                    double ni = glam * g/ng * (0.25e-7/M_PI);
                     nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
                 }
             }
@@ -240,11 +258,11 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             // Add PMLs
             if (!periodic) {
                 if (j < pil) {
-                    double h = (pl - xmesh->at(j)) / SOLVER->pml.size;
+                    double h = (pl - mesh->tran()->at(j)) / SOLVER->pml.size;
                     dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
                     nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
                 } else if (j > pir) {
-                    double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
+                    double h = (mesh->tran()->at(j) - pr) / SOLVER->pml.size;
                     dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
                     nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
                 }
@@ -365,7 +383,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
     assert(initialized);
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
-    
+
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
@@ -531,7 +549,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     Component sym = (which_field == FIELD_E)? symmetry : Component((3-symmetry) % 3);
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
-    
+
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
@@ -727,7 +745,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
 double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
-    
+
     int ord = SOLVER->getSize();
 
     if (separated()) {
@@ -753,11 +771,11 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
             }
         }
     }
-    
+
     double L = SOLVER->geometry->getExtrusion()->getLength();
     if (!isinf(L))
         P *= L * 1e-6;
-    
+
     return P * (right - left) * 1e-6; // µm² -> m²
 }
 

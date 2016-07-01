@@ -16,8 +16,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     dcomplex beta,                      ///< Longitudinal wavevector [1/µm]
              ktran;                     ///< Transverse wavevector [1/µm]
 
-    shared_ptr<RegularAxis> xmesh;      ///< Horizontal axis for structure sampling
-
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
     size_t nM;                          ///< Number of FFT coefficients
@@ -37,6 +35,9 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
+
+    /// Mesh for getting material data
+    shared_ptr<RectangularMesh<2>> mesh;
 
     /**
      * Create new expansion
@@ -59,9 +60,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     /// Free allocated memory
     void reset();
 
-    virtual size_t lcount() const override;
-
-    virtual bool diagonalQE(size_t l) const override {
+    bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 
@@ -82,7 +81,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
-    
+
   private:
 
     DataVector<Vec<3,dcomplex>> field;
@@ -94,6 +93,19 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
+    /// Obtained temperature
+    LazyData<double> temperature;
+
+    /// Flag indicating if the gain is connected
+    bool gain_connected;
+
+    /// Obtained gain
+    LazyData<double> gain;
+
+    void prepareIntegrals(double lam, double glam) override;
+
+    void cleanupIntegrals(double lam, double glam) override;
+
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
   public:
@@ -104,21 +116,21 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
             solver->clearFields();
         }
     }
-    
+
     void setKtran(dcomplex k) {
         if (k != ktran) {
             ktran = k;
             solver->clearFields();
         }
     }
-    
+
     void setSymmetry(Component sym) {
         if (sym != symmetry) {
             symmetry = sym;
             solver->clearFields();
         }
     }
-    
+
     void setPolarization(Component pol);
 
     /// Get \f$ \varepsilon_{zz} \f$

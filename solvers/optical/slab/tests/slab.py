@@ -73,15 +73,15 @@ class LayerSet_Test(unittest.TestCase):
         self.solver.set_interface(self.manager.geo.QW)
         self.assertEqual( self.solver.interface, 61 )
 
-    def testLayers(self):
-        self.solver.interface = 1
-        try: self.solver.get_determinant() # only to trigger solver initialization
-        except ComputationError: pass
-        layers = [ ' '.join(set([ "%s/%s" % (self.mat(2,z), self.mat(7,z)) for z in l ])) for l in self.solver.layer_sets ]
-        stack = list(self.solver.stack)[-1::-1]
-        for i in enumerate(layers):
-            print("%d: %s" % i)
-        print(stack)
-        self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'] )
-        self.assertEqual( stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0] )
+    #def testLayers(self):
+        #self.solver.interface = 1
+        #try: self.solver.get_determinant() # only to trigger solver initialization
+        #except ComputationError: pass
+        #layers = [ ' '.join(set([ "%s/%s" % (self.mat(2,z), self.mat(7,z)) for z in l ])) for l in self.solver.layer_sets ]
+        #stack = list(self.solver.stack)[-1::-1]
+        #for i in enumerate(layers):
+            #print("%d: %s" % i)
+        #print(stack)
+        #self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'] )
+        #self.assertEqual( stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0] )
 
