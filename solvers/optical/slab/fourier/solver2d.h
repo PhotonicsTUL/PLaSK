@@ -15,7 +15,7 @@ namespace plask { namespace solvers { namespace slab {
 struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2DCartesian>> {
 
     friend struct ExpansionPW2D;
-    
+
     std::string getClassName() const override { return "optical.Fourier2D"; }
 
     /// Indication of parameter to search
@@ -97,7 +97,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void clearModes() override {
         modes.clear();
     }
-    
+
     void setExpansionDefaults(bool with_k0=true) override {
         expansion.setLam0(getLam0());
         if (with_k0) expansion.setK0(getK0());
@@ -106,7 +106,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         expansion.setSymmetry(getSymmetry());
         expansion.setPolarization(getPolarization());
     }
-    
+
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 
@@ -226,7 +226,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     Expansion& getExpansion() override { return expansion; }
 
-    RegularAxis getMesh() const { return *expansion.xmesh; }
+    // RegularAxis getMesh() const { return *expansion.mesh->tran(); }
 
   private:
 
@@ -365,7 +365,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
-    
+
     /**
      * Compute electric field coefficients for given \a z
      * \param num mode number
@@ -376,7 +376,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         applyMode(modes[num]);
         return transfer->getFieldVectorE(z);
     }
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param num mode number
@@ -400,7 +400,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         initTransfer(expansion, true);
         return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
     }
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param polarization incident field polarization
@@ -420,7 +420,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
         return insertMode();
     }
-    
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -487,7 +487,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             clearFields();
         }
     }
-    
+
     /**
      * Compute electric field
      * \param num mode number
@@ -520,13 +520,13 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     struct Reflected {
 
         FourierSolver2D* parent;
-        
+
         Expansion::Component polarization;
-        
+
         Transfer::IncidentDirection side;
-        
+
         double wavelength;
-        
+
         /// Provider of the optical electric field
         typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
 
@@ -546,7 +546,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
-        
+
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
@@ -554,7 +554,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
-        
+
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults();
             parent->expansion.setK0(2e3*M_PI / wavelength);
@@ -562,7 +562,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
-        
+
         /**
          * Construct proxy.
          * \param wavelength incident light wavelength

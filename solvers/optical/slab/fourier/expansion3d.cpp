@@ -12,13 +12,12 @@ namespace plask { namespace solvers { namespace slab {
 ExpansionPW3D::ExpansionPW3D(FourierSolver3D* solver): Expansion(solver), initialized(false),
     symmetry_long(E_UNSPECIFIED), symmetry_tran(E_UNSPECIFIED) {}
 
-size_t ExpansionPW3D::lcount() const {
-    return SOLVER->getLayersPoints().size();
-}
 
 void ExpansionPW3D::init()
 {
     auto geometry = SOLVER->getGeometry();
+
+    RegularAxis long_mesh, tran_mesh;
 
     periodic_long = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
     periodic_tran = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
@@ -244,9 +243,15 @@ void ExpansionPW3D::init()
     }
 
     // Allocate memory for expansion coefficients
-    size_t nlayers = lcount();
+    size_t nlayers = solver->lcount;
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
+
+    mesh = plask::make_shared<RectangularMesh<3>>
+                           (plask::make_shared<RegularAxis>(long_mesh),
+                            plask::make_shared<RegularAxis>(tran_mesh),
+                            solver->verts,
+                            RectangularMesh<3>::ORDER_102);
 
     initialized = true;
 }
@@ -255,7 +260,25 @@ void ExpansionPW3D::reset() {
     coeffs.clear();
     initialized = false;
     k0 = klong = ktran = lam0 = NAN;
+    mesh.reset();
 }
+
+
+
+void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
+    temperature = SOLVER->inTemperature(mesh);
+    gain_connected = SOLVER->inGain.hasProvider();
+    if (gain_connected) {
+        if (isnan(glam)) glam = lam;
+        gain = SOLVER->inGain(mesh, glam);
+    }
+}
+
+void ExpansionPW3D::cleanupIntegrals(double lam, double glam) {
+    temperature.reset();
+    gain.reset();
+}
+
 
 template <typename T1, typename T2>
 inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, const Tensor3<T2>& B) {
@@ -270,7 +293,8 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
 void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 {
     auto geometry = SOLVER->getGeometry();
-    auto axis2 = SOLVER->getLayerPoints(layer);
+
+    auto long_mesh = mesh->lon(), tran_mesh = mesh->tran();
 
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
@@ -288,18 +312,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 
     if (isnan(lam))
         throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
-        
-    auto mesh = plask::make_shared<RectangularMesh<3>>
-                           (plask::make_shared<RegularAxis>(long_mesh),
-                            plask::make_shared<RegularAxis>(tran_mesh),
-                            axis2,
-                            RectangularMesh<3>::ORDER_102);
-    double matv = axis2->at(0); // at each point along any vertical axis material is the same
 
-    auto temperature = SOLVER->inTemperature(mesh);
-
-    LazyData<double> gain;
-    bool gain_connected = SOLVER->inGain.hasProvider(), gain_computed = false;
+    double matv;
+    for (size_t i = 0; i != solver->stack.size(); ++i) {
+        if (solver->stack[i] == layer) {
+            matv = solver->verts->at(i);
+            break;
+        }
+    }
 
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
@@ -326,34 +346,32 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 
     for (size_t it = 0; it != nMt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
-        double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
+        double tran0 = 0.5 * (tran_mesh->at(tbegin) + tran_mesh->at(tend-1));
 
         for (size_t il = 0; il != nMl; ++il) {
             size_t lbegin = refl * il; size_t lend = lbegin + refl;
-            double long0 = 0.5 * (long_mesh[lbegin] + long_mesh[lend-1]);
+            double long0 = 0.5 * (long_mesh->at(lbegin) + long_mesh->at(lend-1));
 
             // Store epsilons for a single cell and compute surface normal
             Vec<2> norm(0.,0.);
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
-                    auto material = geometry->getMaterial(vec(long_mesh[l], tran_mesh[t], matv));
-                    double T = 0.; // average temperature in all vertical points
-                    for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v != end; ++v) T += temperature[v];
-                    T /= axis2->size();
+                    auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
+                    double T = 0.; int nt = 0;
+                    for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
+                        if (solver->stack[k] == layer) { T += temperature[v]; nt++; }
+                    T /= nt;
                     cell[j] = material->NR(lam, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
                     if (gain_connected && solver->lgained[layer]) {
-                        auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
+                        auto roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                            if (!gain_computed) {
-                                gain = SOLVER->inGain(mesh, glam);
-                                gain_computed = true;
-                            }
-                            double g = 0.; // average gain in all vertical points
-                            for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2->size()); v < end; ++v) g += gain[v];
-                            double ni = glam * g/axis2->size() * (0.25e-7/M_PI);
+                            double g = 0.; int ng = 0;
+                            for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
+                                if (solver->stack[k] == layer) { g += gain[v]; ng++; }
+                            double ni = glam * g/ng * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
                             cell[j].c22.imag(ni);
@@ -366,10 +384,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     if (!periodic_long) {
                         dcomplex s = 1.;
                         if (l < pib) {
-                            double h = (pb - long_mesh[l]) / SOLVER->pml_long.size;
+                            double h = (pb - long_mesh->at(l)) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                         } else if (l > pif) {
-                            double h = (long_mesh[l] - pf) / SOLVER->pml_long.size;
+                            double h = (long_mesh->at(l) - pf) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                         }
                         cell[j].c00 *= 1./s;
@@ -379,10 +397,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     if (!periodic_tran) {
                         dcomplex s = 1.;
                         if (t < pil) {
-                            double h = (pl - tran_mesh[t]) / SOLVER->pml_tran.size;
+                            double h = (pl - tran_mesh->at(t)) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                         } else if (t > pir) {
-                            double h = (tran_mesh[t] - pr) / SOLVER->pml_tran.size;
+                            double h = (tran_mesh->at(t) - pr) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                         }
                         cell[j].c00 *= s;
@@ -390,7 +408,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         cell[j].c22 *= s;
                     }
 
-                    norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
+                    norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
                 }
             }
 
@@ -565,7 +583,7 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
     assert(!(symy && ktran != 0.));
 
     assert(!isnan(k0.real()) && !isnan(k0.imag()));
-    
+
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
 
@@ -883,7 +901,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
-    
+
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
     for (int iy = -ordt; iy <= ordt; ++iy) {

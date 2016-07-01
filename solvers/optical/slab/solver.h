@@ -81,8 +81,11 @@ struct PLASK_SOLVER_API SlabBase {
     /// Layer boundaries
     OrderedAxis vbounds;
 
-    /// Vertical positions of elements in each layer set
-    std::vector<shared_ptr<OrderedAxis>> lverts;
+    /// Centers of layers
+    shared_ptr<OrderedAxis> verts;
+
+    /// Number of distinct layers
+    size_t lcount;
 
     /// Information if the layer has gain
     std::vector<bool> lgained;
@@ -188,15 +191,6 @@ struct PLASK_SOLVER_API SlabBase {
     /// Get stack
     /// \return layers stack
     const std::vector<std::size_t>& getStack() const { return stack; }
-
-    /// Get list of vertical positions of layers in each set
-    /// \return layer sets
-    const std::vector<shared_ptr<OrderedAxis>>& getLayersPoints() const { return lverts; }
-
-    /// Get list of vertical positions of layers in one set
-    /// \param n set number
-    /// \return layer sets
-    shared_ptr<OrderedAxis> getLayerPoints(size_t n) const { return lverts[n]; }
 
     /// Recompute integrals used in RE and RH matrices
     virtual void computeIntegrals() = 0;

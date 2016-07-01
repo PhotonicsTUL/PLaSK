@@ -13,7 +13,7 @@
 namespace plask { namespace  solvers { namespace slab {
 
 Diagonalizer::Diagonalizer(Expansion* src) :
-    src(src), diagonalized(src->lcount(), false), lcount(src->lcount()) {}
+    src(src), diagonalized(src->solver->lcount, false), lcount(src->solver->lcount) {}
 
 
 SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :

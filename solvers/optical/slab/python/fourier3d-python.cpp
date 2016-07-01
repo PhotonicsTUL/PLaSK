@@ -3,7 +3,7 @@
 
 namespace plask { namespace solvers { namespace slab { namespace python {
 
-    
+
 template <NPY_TYPES type>
 static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     npy_intp dims[] = { data.size()/(2*minor), minor, 2 };
@@ -292,7 +292,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     }
 
     self->initCalculation();
-    
+
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
         expansion->setK0(2e3*M_PI / (*wavelength));
@@ -358,7 +358,7 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
     }
 
     self->initCalculation();
-    
+
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
         self->expansion.setK0(2e3*M_PI / (*wavelength));
@@ -372,7 +372,7 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
     self->expansion.setLam0(self->getLam0());
     self->expansion.setSymmetryLong(self->getSymmetryLong());
     self->expansion.setSymmetryTran(self->getSymmetryTran());
-    
+
     return self->setMode();
 }
 
@@ -483,13 +483,13 @@ void export_FourierSolver3D()
                         &FourierSolver3D_SymmetryLongTranWrapper::setter,
                         "Longitudinal and transverse mode symmetries.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
-    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength, e.g. the effective index of lateral wavevector.\n");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Alias for :attr:`lam`");
-    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
                 "Normalized frequency of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength,e.g. the effective index of lateral wavevector.\n");
@@ -606,10 +606,10 @@ void export_FourierSolver3D()
                "    level (float): Vertical level at which the coefficients are computed.\n\n"
                ":rtype: numpy.ndarray\n"
               );
-    solver.add_property("material_mesh_long", &__Class__::getLongMesh,
-                        "Regular mesh with points in which material is sampled along longitudinal direction.");
-    solver.add_property("material_mesh_tran", &__Class__::getTranMesh,
-                        "Regular mesh with points in which material is sampled along transverse direction.");
+    // solver.add_property("material_mesh_long", &__Class__::getLongMesh,
+    //                     "Regular mesh with points in which material is sampled along longitudinal direction.");
+    // solver.add_property("material_mesh_tran", &__Class__::getTranMesh,
+    //                     "Regular mesh with points in which material is sampled along transverse direction.");
     RO_FIELD(modes, "Computed modes.");
     py::scope scope = solver;
 
@@ -670,7 +670,7 @@ void export_FourierSolver3D()
         .value("TOP", FourierSolver3D::EMISSION_TOP)
         .value("BOTTOM", FourierSolver3D::EMISSION_BOTTOM)
     ;
-    
+
     FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");
     FourierSolver3D_LongTranWrapper<PML>::register_("PMLs");
     FourierSolver3D_SymmetryLongTranWrapper::register_();

@@ -42,29 +42,29 @@ class VCSEL(unittest.TestCase):
               <cartesian3d axes="xyz" name="vcsel" left="mirror" right="extend" back="mirror" front="extend" bottom="GaAs">
                 <clip left="0" back="0">
                   <stack name="layers" xcenter="0" ycenter="0">
-                  <block dx="10" dy="10" dz="0.06949" material="GaAs"/>
-                  <stack name="top-dbr" repeat="24">
-                    <block dx="10" dy="10" dz="0.07955" material="AlGaAs"/>
                     <block dx="10" dy="10" dz="0.06949" material="GaAs"/>
-                  </stack>
-                  <block name="x1" dx="10" dy="10" dz="0.06371" material="AlGaAs"/>
-                  <align bottom="0" name="oxide-layer">
-                    <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.01593" material="AlOx"/></item>
-                    <item xcenter="0" ycenter="0"><cylinder radius="4" height="0.01593" material="AlAs"/></item>
-                  </align>
-                  <block name="x" dx="10" dy="10" dz="0.00000" material="AlGaAs"/>
-                  <block dx="10" dy="10" dz="0.13649" material="GaAs"/>
-                  <align bottom="0" name="QW">
-                    <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.00500" material="InGaAs"/></item>
-                    <item xcenter="0" ycenter="0"><cylinder name="active" role="gain" radius="4" height="0.00500" material="InGaAs"/></item>
-                  </align>
-                  <zero/>
-                  <block dx="10" dy="10" dz="0.13649" material="GaAs"/>
-                  <stack name="bottom-dbr" repeat="29">
+                    <stack name="top-dbr" repeat="24">
+                      <block dx="10" dy="10" dz="0.07955" material="AlGaAs"/>
+                      <block dx="10" dy="10" dz="0.06949" material="GaAs"/>
+                    </stack>
+                    <block name="x1" dx="10" dy="10" dz="0.06371" material="AlGaAs"/>
+                    <align bottom="0" name="oxide-layer">
+                      <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.01593" material="AlOx"/></item>
+                      <item xcenter="0" ycenter="0"><cylinder radius="4" height="0.01593" material="AlAs"/></item>
+                    </align>
+                    <block name="x" dx="10" dy="10" dz="0.00000" material="AlGaAs"/>
+                    <block dx="10" dy="10" dz="0.13649" material="GaAs"/>
+                    <align bottom="0" name="QW">
+                      <item xcenter="0" ycenter="0"><block dx="10" dy="10" dz="0.00500" material="InGaAs"/></item>
+                      <item xcenter="0" ycenter="0"><cylinder name="active" role="gain" radius="4" height="0.00500" material="InGaAs"/></item>
+                    </align>
+                    <zero/>
+                    <block dx="10" dy="10" dz="0.13649" material="GaAs"/>
+                    <stack name="bottom-dbr" repeat="29">
+                      <block dx="10" dy="10" dz="0.07955" material="AlGaAs"/>
+                      <block dx="10" dy="10" dz="0.06949" material="GaAs"/>
+                    </stack>
                     <block dx="10" dy="10" dz="0.07955" material="AlGaAs"/>
-                    <block dx="10" dy="10" dz="0.06949" material="GaAs"/>
-                  </stack>
-                  <block dx="10" dy="10" dz="0.07955" material="AlGaAs"/>
                   </stack>
                 </clip>
               </cartesian3d>
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     vcsel.setUp()
 
     vcsel.solver.initialize()
-    z0 = vcsel.solver.layer_sets[vcsel.solver.stack[vcsel.solver.interface]][0]
+    z0 = 0.
 
     box = vcsel.solver.geometry.bbox
     msh = mesh.Rectangular3D([0.], mesh.Regular(0., 7., 201), mesh.Regular(box.lower.z, box.upper.z, 1001))
@@ -109,8 +109,8 @@ if __name__ == "__main__":
     #plot(lams, abs(dets))
     #yscale('log')
 
-    modes = vcsel.solver.find_mode(lam=979.75), vcsel.solver.find_mode(lam=978.48), 
-    
+    modes = vcsel.solver.find_mode(lam=979.75), vcsel.solver.find_mode(lam=978.48),
+
     for m in modes:
         print(vcsel.solver.modes[m])
 

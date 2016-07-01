@@ -217,7 +217,7 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
     }
 
     self->initCalculation();
-    
+
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getK0());
     if (ktran) expansion->setKtran(*ktran); else expansion->setKtran(self->getKtran());
@@ -360,19 +360,17 @@ void export_FourierSolver2D()
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in two-dimensional Cartesian space.")
     export_base(solver);
-    solver.add_property("material_mesh", &__Class__::getMesh, 
-                "Regular mesh with points in which material is sampled.");
     PROVIDER(outNeff, "Effective index of the last computed mode.");
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
     RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
     RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
-    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength, e.g. the effective index of lateral wavevector.\n");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Alias for :attr:`lam`");
-    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
                 "Normalized frequency of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength,e.g. the effective index of lateral wavevector.\n");
@@ -386,7 +384,7 @@ void export_FourierSolver2D()
                 "the transverse component of the propagation vector.\n");
     RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
     RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
-    solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, 
+    solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT,
                 "Type of discrete cosine transform for symmetric expansion.");
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
                        "Necessary for the over-threshold model to correctly compute the output power.\n"
