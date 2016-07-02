@@ -19,6 +19,10 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
+#if defined(MS_WINDOWS) || defined(__CYGWIN__)
+#  include <io.h>
+#endif
+
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
     extern "C" PyObject* PyInit__plask(void);
