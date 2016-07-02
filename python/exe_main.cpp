@@ -262,8 +262,8 @@ int main(int argc, const char *argv[])
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);
 #  if defined(MS_WINDOWS) || defined(__CYGWIN__)
-            _setmode(fileno(stderr), O_BINARY);
-            _setmode(fileno(stdout), O_BINARY);
+            _setmode(fileno(stderr), _O_BINARY);
+            _setmode(fileno(stdout), _O_BINARY);
 #  endif
             color_log = false;
 #if PY_VERSION_HEX >= 0x03000000
