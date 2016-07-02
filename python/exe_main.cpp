@@ -21,6 +21,7 @@ namespace py = boost::python;
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>
+#  include <fcntl.h>
 #endif
 
 //******************************************************************************
