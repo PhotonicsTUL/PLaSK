@@ -259,8 +259,12 @@ int main(int argc, const char *argv[])
             --argc; ++argv;
             break;
         } else if (arg == "-u") {
-            setbuf(stdout, NULL);
-            setbuf(stderr, NULL);
+            setvbuf(stdout, nullptr, _IONBF, 0);
+            setvbuf(stderr, nullptr, _IONBF, 0);
+#  if defined(MS_WINDOWS) || defined(__CYGWIN__)
+            _setmode(fileno(stderr), O_BINARY);
+            _setmode(fileno(stdout), O_BINARY);
+#  endif
             color_log = false;
 #if PY_VERSION_HEX >= 0x03000000
             Py_UnbufferedStdioFlag = 1;
