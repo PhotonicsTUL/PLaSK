@@ -17,7 +17,7 @@ from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
-from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, TextEditWithCB, ComboBox
+from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.autosolver import SchemaTag, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
@@ -27,7 +27,7 @@ from . import Controller
 from .bconds import BoundaryConditionsDialog
 
 
-def attr_list_to_text(model, group, attr):
+def get_attr_list(model, group, attr):
     attr = attr[:-1]
     skip = len(attr)
     data = model.data[group]
@@ -36,20 +36,21 @@ def attr_list_to_text(model, group, attr):
         values = (max(i[0] for i in items) + 1) * ['']
         for i, v in items:
             values[i] = v
-        return '\n'.join(values)
-    return None
+        return values
+    return []
 
 
-def text_to_attr_list(model, group, attr, text):
+def set_attr_list(model, group, attr, values):
     attr = attr[:-1]
     data = model.data[group]
 
-    skip = len(attr)    #delete old attributes, while data can have more attributes than text and not all will be overwritten
+    skip = len(attr)  # delete old attributes (data can have more attributes than values)
     for k in data.keys():
         if k[:skip] == attr and k[-1].isdigit(): del data[k]
 
-    for i,value in enumerate(text.strip().splitlines()):
-        data[attr+str(i)] = value
+    for i,value in enumerate(values):
+        if value != '':
+            data[attr+str(i)] = value
 
 
 class SolverAutoWidget(VerticalScrollArea):
@@ -70,16 +71,15 @@ class SolverAutoWidget(VerticalScrollArea):
                 u"change solver's {}".format('attribute' if label is None else label.strip())
             ))
 
-    def _change_multi_attr(self, group, attr, text, label=None):
+    def _change_multi_attr(self, group, attr, values, label=None):
         node = self.controller.solver_model
-        def set_solver_attr(value):
-            text_to_attr_list(node, group, attr, value)
+        def set_solver_attr(vals):
+            set_attr_list(node, group, attr, vals)
         model = self.controller.section_model
-        old_text = attr_list_to_text(node, group, attr)
-        text = empty_to_none(text)
-        if text != old_text:
+        old_values= get_attr_list(node, group, attr)
+        if values != old_values:
             model.undo_stack.push(UndoCommandWithSetter(
-                model, set_solver_attr, text, old_text,
+                model, set_solver_attr, values, old_values,
                 u"change solver's {}".format('attribute' if label is None else label.strip())
             ))
 
@@ -178,11 +178,11 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit.lineEdit().setPlaceholderText(attr.default)
                     else:
                         if attr.name[-1] == '#':
-                            edit = TextEditWithCB()
-                            edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
+                            edit = MultiLineEdit(movable=True, persistent=False)
+                            #edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                             #edit.textChanged.connect(self.controller.fire_changed)
-                            edit.focus_out_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
-                                self._change_multi_attr(group, name, edit.toPlainText(), label)
+                            edit.change_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
+                                self._change_multi_attr(group, name, edit.get_values(), label)
                         else:
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
@@ -235,8 +235,7 @@ class SolverAutoWidget(VerticalScrollArea):
                     edit = self.controls[group, attr]
                     with BlockQtSignals(edit):
                         if isinstance(item, AttrMulti):
-                            text = attr_list_to_text(model, group, attr)
-                            if text is not None: edit.setPlainText(text)
+                            edit.set_values(get_attr_list(model, group, attr))
                         else:
                             value = model.data[group][attr]
                             if isinstance(item, AttrGeometryObject):

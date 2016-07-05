@@ -358,6 +358,47 @@ class MultiLineEdit(QtGui.QScrollArea):
     Widget showing multiple lines
     """
 
+    class Row(QtGui.QWidget):
+
+        def __init__(self, parent, value=None):
+            super(MultiLineEdit.Row, self).__init__(parent)
+            self._parent = parent
+            self._edit = QtGui.QLineEdit()
+            self._edit.editingFinished.connect(parent._edited)
+            if value is not None:
+                self._edit.setText(value)
+            layout = QtGui.QHBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self._edit)
+            # if self.movable:
+            #     up = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), "Move Up", row)
+            #     up.triggered.connect(lambda: self.widget().layout().removeWidget(row))
+            if parent.persistent:
+                self._remove = QtGui.QToolButton(self)
+                self._remove.setIcon(QtGui.QIcon.fromTheme('list-remove'))
+                self._remove.pressed.connect(lambda: parent._remove_row(self))
+                layout.addWidget(self._remove)
+            else:
+                self._remove = None
+            self.setLayout(layout)
+
+        @property
+        def text(self):
+            return self._edit.text()
+
+        @text.setter
+        def text(self, text):
+            self._edit.setText(text)
+
+        def set_last(self, last):
+            if last:
+                self._edit.setPalette(self._parent.last_palette)
+                if self._remove is not None: self._remove.setEnabled(False)
+                self._edit.setText('')
+            else:
+                self._edit.setPalette(self._parent.regular_palette)
+                if self._remove is not None: self._remove.setEnabled(True)
+
     def __init__(self, movable=False, persistent=False, change_cb=None):
         super(MultiLineEdit, self).__init__()
         self.persistent = persistent
@@ -368,37 +409,20 @@ class MultiLineEdit(QtGui.QScrollArea):
         widget.setLayout(layout)
         self.setWidget(widget)
         self.setWidgetResizable(True)
+        self.regular_palette = self.palette()
+        self.last_palette = self.palette()
+        self.last_palette.setColor(QtGui.QPalette.Base, self.last_palette.color(QtGui.QPalette.Window))
 
     def _remove_row(self, row):
         layout = self.widget().layout()
         if self.sender().parent() == layout.itemAt(layout.count()-1).widget():
             return
         self.widget().layout().removeWidget(row)
+        row.setParent(None)
         self.updateGeometry()
         if self.change_cb is not None: self.change_cb()
 
-    def make_row(self, value=None):
-        edit = QtGui.QLineEdit()
-        edit.editingFinished.connect(self.edited)
-        if value is not None:
-            edit.setText(value)
-        row = QtGui.QWidget(self)
-        row.edit = edit
-        layout = QtGui.QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(edit)
-        # if self.movable:
-        #     up = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), "Move Up", row)
-        #     up.triggered.connect(lambda: self.widget().layout().removeWidget(row))
-        if self.persistent:
-            button = QtGui.QToolButton(row)
-            button.setIcon(QtGui.QIcon.fromTheme('list-remove'))
-            button.pressed.connect(lambda: self._remove_row(row))
-            layout.addWidget(button)
-        row.setLayout(layout)
-        return row
-
-    def edited(self):
+    def _edited(self):
         empty = not self.sender().text()
         row = self.sender().parent()
         layout = self.widget().layout()
@@ -408,7 +432,7 @@ class MultiLineEdit(QtGui.QScrollArea):
             row.setParent(None)
             self.updateGeometry()
         if not empty and last:
-            layout.addWidget(self.make_row())
+            layout.addWidget(self.Row(self))
             self.updateGeometry()
         if self.change_cb is not None: self.change_cb()
 
@@ -421,14 +445,18 @@ class MultiLineEdit(QtGui.QScrollArea):
             del item
         for i, value in enumerate(values):
             if i < layout.count():
-                layout.itemAt(i).widget().edit.setText(value)
+                row = layout.itemAt(i).widget()
+                row.set_last(False)
+                row.text = value
             else:
-                row = self.make_row(value)
+                row = self.Row(self, value)
                 layout.addWidget(row)
         if len(values) < layout.count():
-            layout.itemAt(len(values)).widget().edit.setText("")
+            row = layout.itemAt(len(values)).widget()
+            row.set_last(True)
         else:
-            row = self.make_row()
+            row = self.Row(self)
+            row.set_last(True)
             layout.addWidget(row)
         self.updateGeometry()
 
@@ -436,7 +464,7 @@ class MultiLineEdit(QtGui.QScrollArea):
         values = []
         layout = self.widget().layout()
         for i in range(layout.count()-1):
-            values.append(layout.itemAt(i).widget().edit.text())
+            values.append(layout.itemAt(i).widget().text)
         return values
 
 
