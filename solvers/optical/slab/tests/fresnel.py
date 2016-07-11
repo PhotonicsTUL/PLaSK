@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 
 from numpy import *
@@ -181,5 +182,6 @@ class FresnelTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test = unittest.main(exit=False)
     show()
+    sys.exit(not test.result.wasSuccessful())
