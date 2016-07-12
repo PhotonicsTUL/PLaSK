@@ -102,7 +102,7 @@ option(USE_OMP "Use OpenMP" ON)
 set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for no profiling. Set to 'GNU' if you want to use gprof or to 'Google' for google perftools.")
 
 if(WIN32)
-    set(USE_MANIFEST "mscvr90" CACHE STRING "Manifest to include into Windows executables")
+    set(USE_MANIFEST "msvcr90" CACHE STRING "Manifest to include into Windows executables")
 endif()
 
 option(LICENSE_CHECKING "Perform license check" OFF)
