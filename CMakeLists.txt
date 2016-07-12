@@ -676,15 +676,16 @@ if(BUILD_TESTING)
         endforeach()
     endif(BUILD_PYTHON)
 
-    if (NOT CTEST_CONFIGURATION_TYPE)
-       set(CTEST_CONFIGURATION_TYPE ${CMAKE_BUILD_TYPE})
-       message(STATUS "Setting CTEST Configuration Type to ${CTEST_CONFIGURATION_TYPE}")
-    endif()
+    if (CTEST_CONFIGURATION_TYPE)
+        set(CTEST_EXTRA_PARAMS "-C ${CTEST_CONFIGURATION_TYPE}")
+    else(CTEST_CONFIGURATION_TYPE)
+        set(CTEST_EXTRA_PARAMS "")
+    endif(CTEST_CONFIGURATION_TYPE)
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)
