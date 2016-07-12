@@ -25,11 +25,11 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
     add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
 else(MSVC)
-	if(MINGW)
-		set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
-	else()
-		set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-	endif()
+    if(MINGW)
+        set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+    endif()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
 endif(MSVC)
 
@@ -101,6 +101,10 @@ option(USE_OMP "Use OpenMP" ON)
 
 set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for no profiling. Set to 'GNU' if you want to use gprof or to 'Google' for google perftools.")
 
+if(WIN32)
+    set(USE_MANIFEST "mscvr90" CACHE STRING "Manifest to include into Windows executables")
+endif()
+
 option(LICENSE_CHECKING "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
@@ -147,14 +151,14 @@ if(NUGET_PACKAGES_PATH)
     list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
     file(GLOB nuget_eigen_includedir "${NUGET_PACKAGES_PATH}/Eigen*/build/native/include")
         list(APPEND CMAKE_INCLUDE_PATH ${nuget_eigen_includedir})
-	#file(GLOB nuget_blas_includedir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/include")
-	#file(GLOB nuget_blas_libdir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/lib/x64" "${NUGET_PACKAGES_PATH}/lib/native/bin/x64")
-	#list(APPEND CMAKE_INCLUDE_PATH ${nuget_blas_includedir})
-	#list(APPEND CMAKE_LIBRARY_PATH ${nuget_blas_libdir})
-	#file(GLOB nuget_boost_includedir "${NUGET_PACKAGES_PATH}/boost*/lib/native/include")
-	#list(APPEND CMAKE_INCLUDE_PATH ${nuget_boost_includedir})
-	#message("CMAKE_INCLUDE_PATH is: ${CMAKE_INCLUDE_PATH}")
-	#message("CMAKE_LIBRARY_PATH is: ${CMAKE_LIBRARY_PATH}")
+    #file(GLOB nuget_blas_includedir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/include")
+    #file(GLOB nuget_blas_libdir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/lib/x64" "${NUGET_PACKAGES_PATH}/lib/native/bin/x64")
+    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_blas_includedir})
+    #list(APPEND CMAKE_LIBRARY_PATH ${nuget_blas_libdir})
+    #file(GLOB nuget_boost_includedir "${NUGET_PACKAGES_PATH}/boost*/lib/native/include")
+    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_boost_includedir})
+    #message("CMAKE_INCLUDE_PATH is: ${CMAKE_INCLUDE_PATH}")
+    #message("CMAKE_LIBRARY_PATH is: ${CMAKE_LIBRARY_PATH}")
 endif(NUGET_PACKAGES_PATH)
 
 # ---------- External libraries --------------------------------------------
@@ -289,8 +293,8 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
-if(WIN32 AND NOT MSVC)
-    set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcr90.manifest\"\n")
+if(WIN32 AND NOT MSVC AND USE_MANIFEST)
+    set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/${USE_MANIFEST}.manifest\"\n")
 else()
     set(manifest "")
 endif()
@@ -867,7 +871,7 @@ if(WIN32)
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\external\\\\highlighter\\\\js.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\resources.py*\\\"
         Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\main.py*\\\"
-        Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\widgets\\\\textedit.py*\\\"
+        Delete \\\"$INSTDIR\\\\lib\\\\plask\\\\gui\\\\widgets\\\    extedit.py*\\\"
     ") #HACK Temporary fix to remove files from old versions
 endif()
 
