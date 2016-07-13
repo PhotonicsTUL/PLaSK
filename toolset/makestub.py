@@ -221,6 +221,7 @@ class StubCreator(object):
 
 
 if __name__ == "__main__":
+    e = 0
     for arg in sys.argv[1:]:
         try:
             c = StubCreator(arg)
@@ -236,7 +237,11 @@ if __name__ == "__main__":
             open(os.path.join(path, "__init__.py"), 'a+')
             file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+')
             print(c, file=file)
-        except Exception as e:
+        except:
             print("Error while generating stubs for module:", arg, file=sys.stderr)
             import traceback
-            traceback.print_exc(e)
+            traceback.print_exc()
+            e += 1
+    if e: print("", file=sys.stderr)
+    sys.stderr.flush()
+    #sys.exit(e)
