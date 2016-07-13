@@ -235,7 +235,7 @@ if __name__ == "__main__":
                     pass
                 else: raise
             open(os.path.join(path, "__init__.py"), 'a+')
-            file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+')
+            file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+', encoding='utf-8')
             print(c, file=file)
         except:
             print("Error while generating stubs for module:", arg, file=sys.stderr)
