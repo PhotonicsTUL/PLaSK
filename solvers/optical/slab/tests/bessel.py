@@ -14,9 +14,7 @@ from optical.effective import EffectiveFrequencyCyl
 
 @material.simple()
 class Core(material.Material):
-    @staticmethod
-    def Nr():
-        return 3.5
+    Nr = 3.5
 
 
 class Disk(unittest.TestCase):

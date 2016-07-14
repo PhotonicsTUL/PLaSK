@@ -60,10 +60,10 @@ def show_plots(solver, direction, title=None, sep=False):
     solver.klong = solver.ktran = 0.
     if sep: solver.polarization = 'El'
     with Refl(solver, direction, 'El') as refl:
-        Rlong = zip(*(refl(a) for a in angles))
+        Rlong = array([refl(a) for a in angles]).T
     if sep: solver.polarization = 'Et'
     with Refl(solver, direction, 'Et') as refl:
-        Rtran = zip(*(refl(a) for a in angles))
+        Rtran = array([refl(a) for a in angles]).T
     f = figure()
     plot(angles, Rlong[0], label='R long')
     plot(angles, Rtran[0], label='R tran')
