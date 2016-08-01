@@ -320,7 +320,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
 
 LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    assert(num < modes.size());
+    if (num >= modes.size()) throw BadInput(this->getId()+".outElectricField", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
@@ -329,7 +329,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const Mes
 
 LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    assert(num < modes.size());
+    if (num >= modes.size()) throw BadInput(this->getId()+".outMagneticField", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
@@ -338,7 +338,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const Mes
 
 LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    assert(num < modes.size());
+    if (num >= modes.size()) throw BadInput(this->getId()+".outLightMagnitude", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);

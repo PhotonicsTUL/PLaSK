@@ -12,15 +12,14 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sys
 import os
 import re
 import subprocess
+import sys
 from time import strftime
 
 from ..qt import QtCore, QtGui
 from ..qt.QtCore import Qt
-
 from ..utils.config import CONFIG
 
 
@@ -295,7 +294,7 @@ class PlaskThread(QtCore.QThread):
                                          cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
                                          bufsize=0, startupinfo=si)
         sys.stdout.flush()
-        fd, fb = os.path.split(fname)
+        fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
         sep = os.path.sep
         if sep == '\\':
             sep = '\\\\'

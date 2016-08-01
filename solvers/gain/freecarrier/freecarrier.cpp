@@ -757,18 +757,20 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
 template <typename GeometryType>
 const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
-    if (what == Gain::DGDN) {
+    if (what == Gain::GAIN) {
+        this->writelog(LOG_DETAIL, "Calculating gain");
+        this->initCalculation(); // This must be called before any calculation!
+        GainData* data = new GainData(this, dst_mesh);
+        data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
+        return LazyData<double>(data);
+    } else if (what == Gain::DGDN) {
         this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
         this->initCalculation(); // This must be called before any calculation!
         DgdnData* data = new DgdnData(this, dst_mesh);
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
         return LazyData<double>(data);
     } else {
-        this->writelog(LOG_DETAIL, "Calculating gain");
-        this->initCalculation(); // This must be called before any calculation!
-        GainData* data = new GainData(this, dst_mesh);
-        data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
-        return LazyData<double>(data);
+        throw BadInput(this->getId(), "Wrong gain type requested");
     }
 }
 

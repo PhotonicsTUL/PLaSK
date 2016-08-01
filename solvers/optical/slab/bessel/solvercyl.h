@@ -79,7 +79,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         if (with_k0) expansion.setK0(getK0());
         expansion.setM(getM());
     }
-    
+
     /// Expected integration estimate error
     double integral_error;
 
@@ -159,7 +159,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
             throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
         return insertMode();
     }
-    
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

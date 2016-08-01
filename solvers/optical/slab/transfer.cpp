@@ -162,7 +162,6 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(double power, const shared_ptr
 
 LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected)
 {
-    
     double fact = 1./Z0 * sqrt(2e-3 * power);
     double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
@@ -190,7 +189,7 @@ cvector Transfer::getFieldVectorE(double z) {
     determineFields();
     return getFieldVectorE(z, solver->getLayerFor(z));
 }
-    
+
 cvector Transfer::getFieldVectorH(double z) {
     determineFields();
     return getFieldVectorH(z, solver->getLayerFor(z));
