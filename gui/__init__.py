@@ -325,17 +325,19 @@ class MainWindow(QtGui.QMainWindow):
         self.config_changed.connect(update_textedit_colors)
 
         desktop = QtGui.QDesktopWidget()
-        screen = desktop.availableGeometry(desktop.primaryScreen())
-        self.resize(screen.width()*0.8, screen.height()*0.9)
         geometry = CONFIG['session/geometry']
         if geometry is not None:
-            if geometry.right()+1 >= screen.width() and \
-               geometry.bottom()+1 >= screen.height() and False:
+            screen = desktop.availableGeometry(geometry.center())
+            if geometry.left() <= screen.left()+1 and geometry.top() <= screen.top()+1 and \
+               geometry.right()+1 >= screen.width() and geometry.bottom()+1 >= screen.height():
                 self.showMaximized()
             else:
                 geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
                 geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
                 self.setGeometry(geometry)
+        else:
+            screen = desktop.availableGeometry(self)
+            self.resize(screen.width() * 0.8, screen.height() * 0.9)
 
         self.show()
 
