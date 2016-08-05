@@ -72,6 +72,7 @@ class Matrix {
     }
 
     ~Matrix() {
+        dec_ref();
     }
 
     inline const T* data() const { return data_; }
