@@ -92,7 +92,7 @@ struct Holder {
      * @param to_copy object to copy
      */
     Holder<T>& operator=(const Holder& to_copy) {
-        if (held == to_copy.held) return;   //self-assigment protection
+        if (held == to_copy.held) return *this;   //self-assigment protection
         delete held;
         held = to_copy.held->clone();
         return *this;
