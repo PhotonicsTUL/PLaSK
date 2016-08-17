@@ -19,7 +19,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import ComboBox, TextEditWithCB, MultiLineEdit
+from ...utils.widgets import ComboBox, MultiLineEdit
 from ...utils import getattr_by_path
 
 
@@ -64,7 +64,7 @@ def aligners_to_controllers(aligners_list, position_controllers):
 class GNodeController(Controller):
 
     class ChangeNodeCommand(QtGui.QUndoCommand):
-        
+
         def __init__(self, model, node, setter, new_value, old_value, action_name, parent=None):
             super(GNodeController.ChangeNodeCommand, self).__init__(action_name, parent)
             self.model = model

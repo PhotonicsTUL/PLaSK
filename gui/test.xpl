@@ -31,6 +31,14 @@
 </materials>
 
 <geometry>
+  <cartesian3d name="l3cavity">
+    <stack front="0">
+      <lattice along="-{sqrt(3)/2}" atran="0.5" avert="0" blong="{sqrt(3)/2}" btran="0.5" bvert="0">
+        <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ 2 1; 1 2; -2 -1; -1 -2</segments>
+        <cylinder material="GaAs" radius="0.35" height="1.0"/>
+      </lattice>
+    </stack>
+  </cartesian3d>
   <cartesian2d name="geo2d" length="1000">
     <stack>
       <shelf flat="no">
@@ -124,14 +132,6 @@
       </extrusion>
       <cuboid material="GaAs" dlong="1" dtran="100" dvert="100"/>
     </align>
-  </cartesian3d>
-  <cartesian3d name="l3cavity">
-    <stack front="0">
-      <lattice along="-{sqrt(3)/2}" atran="0.5" avert="0" blong="{sqrt(3)/2}" btran="0.5" bvert="0">
-        <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ 2 1; 1 2; -2 -1; -1 -2</segments>
-        <cylinder material="GaAs" radius="0.35" height="1.0"/>
-      </lattice>
-    </stack>
   </cartesian3d>
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
     <clip>

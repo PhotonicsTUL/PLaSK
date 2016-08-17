@@ -250,8 +250,8 @@ struct YEnds {
     void add_d(int dbl_x, int y) {
         std::set<int>& dst = coords[y];
         auto ins_ans = dst.insert(dbl_x);
-        if (!ins_ans.second) {    //element was already included
-            dst.erase(ins_ans.first);   //we remove it
+        if (!ins_ans.second) {          // element was already included
+            dst.erase(ins_ans.first);   // we remove it
             if (dst.empty()) coords.erase(y);
         }
     }
@@ -344,7 +344,7 @@ void Lattice::refillContainer()
 {
     container->clear();
 
-    std::map<int, std::set<int>> result;    //coordinates of all (x, y) points inside the poligon in the map: y -> set of x
+    std::map<int, std::set<int>> result;    // coordinates of all (x, y) points inside the polygon in the map: y -> set of x
     YEnds ends;
     SegmentsIterator segment(this->segments);
     while (segment.next()) {
@@ -353,10 +353,10 @@ void Lattice::refillContainer()
             if (segment.first.c0 > segment.second.c0)
                 std::swap(segment.first.c0, segment.second.c0);
             for (int x = segment.first.c0; x <= segment.second.c0; ++x)
-                dst.insert(x);  // we imedietly add all points which lie on side
+                dst.insert(x);  // we immediately add all points which lie on side
         } else {
-            result[segment.first.c1].insert(segment.first.c0);    // we imedietly add all vertexes
-            result[segment.second.c1].insert(segment.second.c0);  // we imedietly add all vertexes
+            result[segment.first.c1].insert(segment.first.c0);    // we immediately add all vertexes
+            result[segment.second.c1].insert(segment.second.c0);  // we immediately add all vertexes
 
             Vec<2, int> low_y, hi_y;
             if (segment.first.c1 > segment.second.c1) {
@@ -373,8 +373,8 @@ void Lattice::refillContainer()
                 int l = dx * (y - low_y.c1);
                 int x = l / dy + low_y.c0;
                 int rem = l % dy;
-                if (rem == 0) {        //x, y is exactly on side
-                    result[y].insert(x);    //so we imedietly add it
+                if (rem == 0) {             // x,y is exactly on side
+                    result[y].insert(x);    // so we immediately add it
                     ends.add_d(2*x, y);
                 } else {
                     // here: real x = x + rem / dy and dy>0
@@ -400,7 +400,7 @@ void Lattice::refillContainer()
         }
     }
 
-    for (auto& p: result) { //p is pair: set of x's, and one y
+    for (auto& p: result) { // p is pair: set of x's, and one y
         for (auto x: p.second) {
             container->addUnsafe(this->_child, x * vec0 + p.first * vec1);
         }

@@ -67,7 +67,7 @@ class Vector(unittest.TestCase):
         #a[1] = 2j
         #self.assertEqual( a, plask.vec(1,2j,3) )
 
-        #ax = plask.config.axes
+        #axes = plask.config.axes
 
         #plask.config.axes = 'xyz'
         #self.assertEqual( [self.a2.y, self.a2.z], [1, 2] )
@@ -85,7 +85,7 @@ class Vector(unittest.TestCase):
         #self.assertEqual( [self.c3.z, self.c3.x, self.c3.y], [100, 2j, 300] )
         #self.c3.x = 200
 
-        #plask.config.axes = ax
+        #plask.config.axes = axes
 
     def testArray(self):
         a = numpy.array(self.c3)

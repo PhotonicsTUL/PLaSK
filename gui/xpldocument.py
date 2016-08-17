@@ -13,6 +13,9 @@
 import shutil
 from lxml import etree
 
+import re
+import numpy
+
 try:
     unicode = unicode
 except NameError:
@@ -217,3 +220,17 @@ class XPLDocument(object):
     #     loglevel = loglevel.lower()
     #     if self.loglevel != loglevel:
     #         self.script.model.undo_stack.
+
+
+class FieldParser(object):
+    subst = re.compile('\{([^}]*)\}')
+
+    def __init__(self, document):
+        self.defines = dict()
+        for entry in document.defines.model.entries:
+            self.defines[entry.name] = eval(self.subst.sub(r'\1', entry.value), numpy.__dict__, self.defines)
+
+    def eval(self, value):
+        for sub in self.subst.findall(value):
+            value = self.subst.subn(str(eval(sub, numpy.__dict__, self.defines)), value, 1)[0]
+        return value

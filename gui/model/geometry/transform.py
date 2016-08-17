@@ -468,7 +468,7 @@ class GNLattice(GNTransform):
         return 'geometry.Lattice'
 
     def get_controller(self, document, model):
-        from ...controller.geometry.transform import GNLatticeController
+        from gui.controller.geometry.lattice import GNLatticeController
         return GNLatticeController(document, model, self)
 
     def major_properties(self):
