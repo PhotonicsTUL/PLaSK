@@ -223,15 +223,14 @@ class NavigationToolbar(NavigationToolbar2QT):
                 self.set_cursor(cursors.MOVE)
                 self._lastCursor = cursors.MOVE
 
-        if event.xdata is not None and event.ydata is not None:
-            xy = self.parent.get_node(event)
-            s = u'{:d}, {:d}'.format(*xy)
-        else:
-            s = ''
-
         if len(self.mode):
-            self.set_message('%s   %s' % (s, self.mode))
+            self.set_message(self.mode)
         else:
+            if event.xdata is not None and event.ydata is not None:
+                xy = self.parent.get_node(event)
+                s = u'{:d}, {:d}'.format(*xy)
+            else:
+                s = ''
             self.set_message(s)
 
     def clear_history(self):
@@ -473,7 +472,7 @@ class LatticeEditor(QtGui.QDialog):
 
     def motion_notify_callback(self, event):
         x, y = self.tr.transform(self.get_node(event))
-        if np.isnan(x) or np.isnan(y):
+        if np.isnan(x) or np.isnan(y) or not self.toolbar.edit_mode():
             self.mark.set_visible(False)
             return
 
