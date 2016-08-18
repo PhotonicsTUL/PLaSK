@@ -537,7 +537,7 @@ class LatticeEditor(QtGui.QDialog):
                 dy = hi[1] - lo[1]
                 for y in range(lo[1]+1, hi[1]):
                     l = dx * (y-lo[1])
-                    x = int(l/dy) + lo[0]
+                    x = l//dy + lo[0]
                     if l % dy == 0:
                         rows.setdefault(y, set()).add(x)
                         ends.add(2*x, y)
@@ -548,8 +548,8 @@ class LatticeEditor(QtGui.QDialog):
             dst = rows.setdefault(y, set())
             itx2 = iter(sorted(x2))
             for beg in itx2:
-                beg = int((beg+1)/2)
-                end = int((itx2.next()+1)/2)
+                beg = (beg+1) // 2
+                end = (next(itx2)+1) // 2
                 while beg < end:
                     dst.add(beg)
                     beg += 1
