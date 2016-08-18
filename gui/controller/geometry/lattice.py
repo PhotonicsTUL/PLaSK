@@ -559,7 +559,10 @@ class LatticeEditor(QtGui.QDialog):
             xx.extend(list(xs))
             yy.extend([y] * len(xs))
         xy = [self.tr.transform(p) for p in zip(xx, yy)]
-        xx, yy = zip(*xy)
+        if xy:
+            xx, yy = zip(*xy)
+        else:
+            xx, yy = [], [
         self.points.set_xdata(xx)
         self.points.set_ydata(yy)
         self.axes.draw_artist(self.points)
