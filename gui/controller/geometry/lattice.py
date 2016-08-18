@@ -473,7 +473,11 @@ class LatticeEditor(QtGui.QDialog):
     def motion_notify_callback(self, event):
         x, y = self.tr.transform(self.get_node(event))
         if np.isnan(x) or np.isnan(y) or not self.toolbar.edit_mode():
-            self.mark.set_visible(False)
+            if self.mark.get_visible():
+                self.mark.set_visible(False)
+                self.canvas.restore_region(self.background)
+                self._draw_current(np.nan, np.nan)
+                self.canvas.blit(self.axes.bbox)
             return
 
         self.canvas.restore_region(self.background)
