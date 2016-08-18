@@ -473,7 +473,7 @@ class GNLattice(GNTransform):
 
     def major_properties(self):
         res = super(GNLattice, self).major_properties()
-        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?', x[2] if x[2] else '?')
+        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '-', x[1] if x[1] else '-', x[2] if x[2] else '-')
                                for x in self.vectors if x != (None, None, None))
         if vectors_str: res.append(('basis vectors', vectors_str))
         return res

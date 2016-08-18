@@ -345,6 +345,7 @@ class LatticeEditor(QtGui.QDialog):
         self.canvas.mpl_connect('draw_event', self.draw_callback)
         self.canvas.mpl_connect('button_press_event', self.button_press_callback)
         self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
+        self.canvas.mpl_connect('figure_leave_event', self.mouse_leave_callback)
         self.mark = Line2D([0], [0], ls='', marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
                            animated=True)
         self.mark.set_visible(False)
@@ -369,7 +370,7 @@ class LatticeEditor(QtGui.QDialog):
             self.axes.add_line(line)
 
     def get_node(self, event):
-        if np.isnan(event.xdata) or np.isnan(event.ydata):
+        if event.xdata is None or event.ydata is None:
             return np.nan, np.nan
         return tuple(int(round(c)) for c in self.tri.transform([event.xdata, event.ydata]))
 
@@ -469,6 +470,15 @@ class LatticeEditor(QtGui.QDialog):
                 self.canvas.blit(self.axes.bbox)
         else:
             super(LatticeEditor, self).keyPressEvent(event)
+
+    def mouse_leave_callback(self, event):
+        if self.mark.get_visible():
+            self.mark.set_visible(False)
+            self.canvas.restore_region(self.background)
+            self._draw_current(np.nan, np.nan)
+            self.canvas.blit(self.axes.bbox)
+            event.xdata = event.ydata = None
+            self.toolbar.mouse_move(event)
 
     def motion_notify_callback(self, event):
         x, y = self.tr.transform(self.get_node(event))
