@@ -388,7 +388,7 @@ void Lattice::refillContainer()
         assert(line.second.size() % 2 == 0);
         std::set<int>& dst = result[line.first];
         for (std::set<int>::iterator dblx_it = line.second.begin(); dblx_it != line.second.end(); ++dblx_it) {
-            // we can exlude ends of the segments as eventualy already included
+            // we can exclude ends of the segments as they are already included
             int beg = (*dblx_it+1) / 2;
             ++dblx_it;  // this is ok because of line.second has even length
             int end = (*dblx_it+1) / 2;

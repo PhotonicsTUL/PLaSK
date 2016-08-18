@@ -126,9 +126,8 @@ class GNLatticeController(GNObjectController):
 
         dialog = LatticeEditor(vecs, bounds)
         if dialog.exec_():
-            segments = ' ^ '.join('; '.join('{:.0f} {:.0f}'.format(x+.001, y+.001) for (x,y) in item)
+            segments = ' ^ '.join('; '.join('{:d} {:d}'.format(*xy) for xy in item)
                                   for item in dialog.bounds)
-            print(segments)
             self._set_node_property_undoable('segments', segments)
 
 
@@ -220,8 +219,8 @@ class NavigationToolbar(NavigationToolbar2QT):
                 self._lastCursor = cursors.MOVE
 
         if event.xdata is not None and event.ydata is not None:
-            x, y = self.parent.get_node(event)
-            s = u'{0:.0f}, {1:.0f}'.format(x+.001, y+.001)
+            xy = self.parent.get_node(event)
+            s = u'{:d}, {:d}'.format(*xy)
         else:
             s = ''
 
@@ -338,13 +337,13 @@ class LatticeEditor(QtGui.QDialog):
         self.canvas.mpl_connect('draw_event', self.draw_callback)
         self.canvas.mpl_connect('button_press_event', self.button_press_callback)
         self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
-        self.mark = Line2D([0], [0], marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
+        self.mark = Line2D([0], [0], ls='', marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
                            animated=True)
         self.mark.set_visible(False)
-        self.points = Line2D([], [], marker='o', mfc=CONFIG['geometry/lattice_line_color'], ms=8., alpha=0.5,
-                             zorder=0, animated=True)
-        self.canvas.draw()
+        self.points = Line2D([], [], ls='', marker='o', mfc=CONFIG['geometry/lattice_line_color'], ms=12., mew=0,
+                             alpha=0.2, zorder=0, animated=True)
         self.bounds = [] if bounds is None else bounds
+        self.canvas.draw()
         self._set_lines()
         self.current = None
         self.undo_stack = [list(self.bounds)]
@@ -362,7 +361,9 @@ class LatticeEditor(QtGui.QDialog):
             self.axes.add_line(line)
 
     def get_node(self, event):
-        return tuple(round(c) for c in self.tri.transform([event.xdata, event.ydata]))
+        if np.isnan(event.xdata) or np.isnan(event.ydata):
+            return np.nan, np.nan
+        return tuple(int(round(c)) for c in self.tri.transform([event.xdata, event.ydata]))
 
     def draw_callback(self, event=None):
         self.mark.set_visible(False)
@@ -424,7 +425,7 @@ class LatticeEditor(QtGui.QDialog):
                     line = self.axes.lines[-1]
                     line.set_color(CONFIG['geometry/lattice_line_color'])
                     line.set_marker(None)
-                    self._draw_current(*self.tr.transform(pt))
+                    self.canvas.draw()
                     self.background = self.canvas.copy_from_bbox(self.axes.bbox)
                     self.current = None
                     self.canvas.blit(self.axes.bbox)
@@ -481,5 +482,72 @@ class LatticeEditor(QtGui.QDialog):
 
         self.canvas.blit(self.axes.bbox)
 
+    def _iter_bounds(self):
+        for bound in self.bounds:
+            a = bound[0]
+            for b in bound[1:]:
+                yield a, b
+                a = b
+            yield a, bound[0]
+
+    class _Yends(object):
+        def __init__(self):
+            self.coords = {}
+        def add(self, x2, y=None):
+            if y is None:
+                x2, y = 2*x2[0], x2[1]
+            dst = self.coords.setdefault(y, set())
+            if x2 in dst:
+                dst.remove(x2)
+                if not dst:
+                    del self.coords[y]
+            else:
+                dst.add(x2)
+
     def update_points(self):
-        pass
+        rows = {}
+        ends = self._Yends()
+        for a,b in self._iter_bounds():
+            if a[1] == b[1]:
+                dst = rows.setdefault(a[1], set())
+                if a[0] > b[0]:
+                    a, b = b, a
+                for x in range(a[0], b[0]+1):
+                    dst.add(x)
+            else:
+                rows.setdefault(a[1], set()).add(a[0])
+                rows.setdefault(b[1], set()).add(b[0])
+                if a[1] > b[1]:
+                    lo, hi = b, a
+                else:
+                    lo, hi = a, b
+                dx = hi[0] - lo[0]
+                dy = hi[1] - lo[1]
+                for y in range(lo[1]+1, hi[1]):
+                    l = dx * (y-lo[1])
+                    x = int(l/dy) + lo[0]
+                    if l % dy == 0:
+                        rows.setdefault(y, set()).add(x)
+                        ends.add(2*x, y)
+                    else:
+                        ends.add(2*x+1, y)
+                ends.add(hi)
+        for y,x2 in ends.coords.items():
+            dst = rows.setdefault(y, set())
+            itx2 = iter(sorted(x2))
+            for beg in itx2:
+                beg = int((beg+1)/2)
+                end = int((itx2.next()+1)/2)
+                while beg < end:
+                    dst.add(beg)
+                    beg += 1
+        xx = []
+        yy = []
+        for y, xs in rows.items():
+            xx.extend(list(xs))
+            yy.extend([y] * len(xs))
+        xy = [self.tr.transform(p) for p in zip(xx, yy)]
+        xx, yy = zip(*xy)
+        self.points.set_xdata(xx)
+        self.points.set_ydata(yy)
+        self.axes.draw_artist(self.points)
