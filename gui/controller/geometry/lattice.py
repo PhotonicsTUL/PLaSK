@@ -102,7 +102,7 @@ class GNLatticeController(GNObjectController):
                                              "Define them first before starting the boundary editor.")
             return
 
-        items = []
+        bounds = []
         msg = True
         for seg in parser.eval(none_to_empty(self.node.segments)).split('^'):
             item = []
@@ -122,11 +122,12 @@ class GNLatticeController(GNObjectController):
                     else: return
             else:
                 if item:
-                    items.append(item)
+                    bounds.append(item)
 
-        dialog = LatticeEditor(vecs, items)
+        dialog = LatticeEditor(vecs, bounds)
         if dialog.exec_():
-            segments = ' ^ '.join('; '.join('{} {}'.format(*xy) for xy in item) for item in dialog.items)
+            segments = ' ^ '.join('; '.join('{:.0f} {:.0f}'.format(x+.001, y+.001) for (x,y) in item)
+                                  for item in dialog.bounds)
             print(segments)
             self._set_node_property_undoable('segments', segments)
 
@@ -157,7 +158,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         "however the boundaries of each polygon will be included into the final lattice.\n\n" \
         "Undo/redo buttons on the toolbar allow you to revert wrong editing or deletion."
 
-    toolitems = (
+    toolbounds = (
         ('Undo', 'Undo previous line edit', 'edit-undo', 'undo', None),
         ('Redo', 'Redo line edit', 'edit-redo', 'redo', None),
         (None, None, None, None, None),
@@ -173,7 +174,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     def _init_toolbar(self):
         self.layout().setContentsMargins(0,0,0,0)
-        for text, tooltip_text, icon, callback, checked in self.toolitems:
+        for text, tooltip_text, icon, callback, checked in self.toolbounds:
             if text is None:
                 self.addSeparator()
             elif callback is None:
@@ -219,8 +220,8 @@ class NavigationToolbar(NavigationToolbar2QT):
                 self._lastCursor = cursors.MOVE
 
         if event.xdata is not None and event.ydata is not None:
-            pt = self.parent.get_node(event)
-            s = u'{0:.0f}, {1:.0f}'.format(pt[0] + 1e-3, pt[1] + 1e-3)
+            x, y = self.parent.get_node(event)
+            s = u'{0:.0f}, {1:.0f}'.format(x+.001, y+.001)
         else:
             s = ''
 
@@ -275,7 +276,7 @@ class LatticeEditor(QtGui.QDialog):
             locs = super(LatticeEditor.MultipleLocator, self).__call__()
             return np.array(locs), len(locs), None
 
-    def __init__(self, vecs, items=None, parent=None):
+    def __init__(self, vecs, bounds=None, parent=None):
         super(LatticeEditor, self).__init__(parent)
         self.setWindowTitle("Edit Lattice Boundaries")
         vbox = QtGui.QVBoxLayout()
@@ -287,7 +288,7 @@ class LatticeEditor(QtGui.QDialog):
         vbox.addWidget(self.canvas)
         #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
-        self.figure.    subplots_adjust(left=0, right=1, bottom=0, top=1)
+        self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -322,8 +323,8 @@ class LatticeEditor(QtGui.QDialog):
         self.axes.axis['t2'] = self.axes.new_floating_axis(1, 0.)
         self.axes.grid(True)
 
-        if items:
-            cc1, cc2 = zip(*itertools.chain(*items))
+        if bounds:
+            cc1, cc2 = zip(*itertools.chain(*bounds))
             lo1, lo2 = min(cc1)-1, min(cc2)-1
             hi1, hi2 = max(cc1)+1, max(cc2)+1
             del cc1, cc2
@@ -340,17 +341,20 @@ class LatticeEditor(QtGui.QDialog):
         self.mark = Line2D([0], [0], marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
                            animated=True)
         self.mark.set_visible(False)
+        self.points = Line2D([], [], marker='o', mfc=CONFIG['geometry/lattice_line_color'], ms=8., alpha=0.5,
+                             zorder=0, animated=True)
         self.canvas.draw()
-        self.items = [] if items is None else items
+        self.bounds = [] if bounds is None else bounds
         self._set_lines()
         self.current = None
-        self.undo_stack = [list(self.items)]
+        self.undo_stack = [list(self.bounds)]
         self.undo_index = 0
 
     def _set_lines(self):
         self.axes.lines = []
         self.axes.add_line(self.mark)
-        for item in self.items:
+        self.axes.add_line(self.points)
+        for item in self.bounds:
             item = [self.tr.transform(p) for p in item]
             xx = [p[0] for p in item] + [item[0][0]]
             yy = [p[1] for p in item] + [item[0][1]]
@@ -362,7 +366,8 @@ class LatticeEditor(QtGui.QDialog):
 
     def draw_callback(self, event=None):
         self.mark.set_visible(False)
-        for line in self.axes.lines[0:]:
+        self.update_points()
+        for line in self.axes.lines[1:]:
             self.axes.draw_artist(line)
         self.background = self.canvas.copy_from_bbox(self.axes.bbox)
         self.axes.draw_artist(self.mark)
@@ -376,16 +381,16 @@ class LatticeEditor(QtGui.QDialog):
         line.set_ydata([p[1] for p in xy] + [y])
         self.axes.draw_artist(line)
 
-    def _save_items(self):
+    def _save_bounds(self):
         self.undo_index += 1
         self.undo_stack = self.undo_stack[:self.undo_index]
-        self.undo_stack.append(list(self.items))
+        self.undo_stack.append(list(self.bounds))
         self.toolbar.set_undo_buttons()
 
     def undo(self):
         if self.undo_index > 0:
             self.undo_index -= 1
-            self.items = list(self.undo_stack[self.undo_index])
+            self.bounds = list(self.undo_stack[self.undo_index])
             self._set_lines()
             self.toolbar.set_undo_buttons()
             self.canvas.draw()
@@ -393,7 +398,7 @@ class LatticeEditor(QtGui.QDialog):
     def redo(self):
         if self.undo_index < len(self.undo_stack)-1:
             self.undo_index += 1
-            self.items = list(self.undo_stack[self.undo_index])
+            self.bounds = list(self.undo_stack[self.undo_index])
             self._set_lines()
             self.toolbar.set_undo_buttons()
             self.canvas.draw()
@@ -413,8 +418,8 @@ class LatticeEditor(QtGui.QDialog):
                 if pt != self.current[0]:
                     self.current.append(pt)
                 else:
-                    self.items.append(self.current)
-                    self._save_items()
+                    self.bounds.append(self.current)
+                    self._save_bounds()
                     self.canvas.restore_region(self.background)
                     line = self.axes.lines[-1]
                     line.set_color(CONFIG['geometry/lattice_line_color'])
@@ -437,11 +442,12 @@ class LatticeEditor(QtGui.QDialog):
                 pt = self.get_node(event)
                 x, y = self.axes.transData.transform(self.tr.transform(pt))
                 event = MouseEvent('Lattice MouseEvent', self.canvas, x, y)
-                for i, line in reversed(list(enumerate(self.axes.lines[1:]))):
+                for i, line in reversed(list(enumerate(self.axes.lines[2:]))):
                     if line.contains(event)[0]:
-                        del self.items[i]
-                        self._save_items()
-                        del self.axes.lines[i + 1]
+                        del self.bounds[i]
+                        del self.axes.lines[i+2]
+                        self._save_bounds()
+                        self.update_points()
                         self.canvas.draw()
                         break
 
@@ -475,3 +481,5 @@ class LatticeEditor(QtGui.QDialog):
 
         self.canvas.blit(self.axes.bbox)
 
+    def update_points(self):
+        pass
