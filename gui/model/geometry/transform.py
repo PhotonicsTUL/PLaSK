@@ -481,12 +481,14 @@ class GNLattice(GNTransform):
     def create_info(self, res, names):
         super(GNLattice, self).create_info(res, names)
         for vec_idx in range(0, 2):
-            for i, v in enumerate(self.vectors[vec_idx]):
-                if not can_be_float(v, required=True):
+            vec = self.vectors[vec_idx]
+            for i, v in enumerate(vec):
+                if not can_be_float(v):
                     self._require(res, ('vectors', vec_idx, i), ('first', 'second')[vec_idx] + ' basis vector', type='float')
-            #if None in self.vectors[vec_idx]:
-            #    self._require(res, 'vectors', ('first', 'second')[vec_idx] + ' basis vector',
-            #                  indexes=(vec_idx, self.vectors[vec_idx].index(None)))
+            if not ((vec[0] and vec[0].strip() != '0') or
+                    (vec[1] and vec[1].strip() != '0') or
+                    (vec[2] and vec[2].strip() != '0')):
+                self._require(res, ('vectors', vec_idx, 0), 'non-zero ' + ('first', 'second')[vec_idx] + ' basis vector')
 
     @staticmethod
     def from_xml_3d(element, conf):

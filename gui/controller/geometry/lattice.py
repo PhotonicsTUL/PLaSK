@@ -94,10 +94,15 @@ class GNLatticeController(GNObjectController):
             for vec in self.node.vectors:
                 v = []
                 for c in vec:
-                    v.append(float(parser.eval(c)))
+                    if not c:
+                        v.append(0.)
+                    else:
+                        v.append(float(parser.eval(c)))
                 vecs.append(np.array(v))
+            if all(vecs[0] == 0.) != all(vecs[1] == 0.):
+                raise ValueError("Zero lattice vector")
         except:
-            QtGui.QMessageBox.critical(None, "Wring Lattice Vectors",
+            QtGui.QMessageBox.critical(None, "Wrong Lattice Vectors",
                                              "No proper lattice vectors are defined. "
                                              "Define them first before starting the boundary editor.")
             return
@@ -296,8 +301,12 @@ class LatticeEditor(QtGui.QDialog):
         self.setLayout(vbox)
 
         if vecs[0][2] == 0. and vecs[1][2] == 0.:
-            a, b = vecs[0][1], -vecs[0][0]
-            c, d = vecs[1][1], -vecs[1][0]
+            if vecs[0][0] == 0. and vecs[1][0] == 0. and vecs[0][1] == 0. and vecs[1][1] == 0.:
+                a, b = 1., 0.
+                c, d = 0., 1.
+            else:
+                a, b = vecs[0][1], -vecs[0][0]
+                c, d = vecs[1][1], -vecs[1][0]
         elif vecs[0][1] == 0. and vecs[1][1] == 0.:
             a, b = vecs[0][0], vecs[0][2]
             c, d = vecs[1][0], vecs[1][2]

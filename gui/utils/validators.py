@@ -1,5 +1,5 @@
 
-def can_be_float(value, required = False, float_validator = None):
+def can_be_float(value, required=False, float_validator=None):
     """
     Check if given value can represent a valid float.
     :param str value: value to check, can be None

@@ -33,7 +33,7 @@
 <geometry>
   <cartesian3d name="l3cavity">
     <stack front="0">
-      <lattice along="-{sqrt(3)/2}" atran="0.5" avert="0" blong="{sqrt(3)/2}" btran="0.5" bvert="0">
+      <lattice along="-{sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
         <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ 2 1; 1 2; -2 -1; -1 -2</segments>
         <cylinder material="GaAs" radius="0.35" height="1.0"/>
       </lattice>
