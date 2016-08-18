@@ -88,6 +88,9 @@ DEFAULTS = {
     'geometry/extra_color': '#00aaff',
     'geometry/extra_alpha': 0.7,
     'geometry/extra_width': 1.0,
+    'geometry/lattice_line_color': '#30a2da',
+    'geometry/lattice_active_color': '#fc4f30',
+    'geometry/lattice_mark_color': '#e5ae38',
     'mesh/mesh_color': '#00aaff',
     'mesh/line_width': 1.0,
     'workarounds/jedi_no_dot': False,
@@ -174,6 +177,13 @@ CONFIG_WIDGETS = OrderedDict([
             ("Info lines width", FloatSpinBox('geometry/extra_width',
                                               step=0.1, min=0.1,
                                               help="Width of info lines for the selected object.")),
+            "Lattice Editor",
+            ("Existing boundary color", Color('geometry/lattice_line_color',
+                                              "Color of boundary lines in lattice editor.")),
+            ("Edited boundary color", Color('geometry/lattice_active_color',
+                                            "Color of active line in lattice editor.")),
+            ("Lattice mark color", Color('geometry/lattice_mark_color',
+                                         "Color of current node mark in lattice editor.")),
         ]),
         ("Mesh Preview", [
             ("Mesh color", Color('mesh/mesh_color', "Mesh color in the preview plot.")),
@@ -310,10 +320,10 @@ CONFIG = Config()
 
 
 class ConfigProxy(object):
-    
+
     def __init__(self, prefix):
         self.prefix = prefix + '/'
-        
+
     def __getitem__(self, key):
         return CONFIG[self.prefix + key]
 

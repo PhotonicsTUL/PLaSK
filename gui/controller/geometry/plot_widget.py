@@ -19,7 +19,7 @@ to_rgba = ColorConverter().to_rgba
 
 class Cursors(object):
     # this class is only used as a simple namespace
-    HAND, POINTER, SELECT_REGION, MOVE = list(range(4))
+    HAND, POINTER, SELECT_REGION, MOVE = range(4)
 cursors = Cursors()
 
 cursord = {

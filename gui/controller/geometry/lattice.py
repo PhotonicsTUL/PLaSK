@@ -31,6 +31,7 @@ from ...xpldocument import FieldParser
 from ...controller.geometry.object import GNObjectController
 from ...utils.str import none_to_empty
 from ...utils.widgets import MultiLineEdit
+from ...utils.config import CONFIG
 
 
 class GNLatticeController(GNObjectController):
@@ -130,18 +131,149 @@ class GNLatticeController(GNObjectController):
             self._set_node_property_undoable('segments', segments)
 
 
-class MultipleLocator(ticker.MultipleLocator):
-    def __init__(self, base=1.0):
-        super(MultipleLocator, self).__init__(base)
-        self.create_dummy_axis()
+class Cursors(object):
+    # this class is only used as a simple namespace
+    HAND, POINTER, SELECT_REGION, MOVE = range(4)
+cursors = Cursors()
 
-    def __call__(self, v1, v2):
-        self.set_bounds(v1, v2)
-        locs = super(MultipleLocator, self).__call__()
-        return np.array(locs), len(locs), None
+
+class NavigationToolbar(NavigationToolbar2QT):
+
+    def __init__(self, canvas, parent, coordinates=True):
+        self.widgets = {}
+        super(NavigationToolbar, self).__init__(canvas, parent, coordinates)
+
+    def _icon(self, name):
+        if name is not None:
+            return QtGui.QIcon.fromTheme(name)
+
+    HELP = \
+        "This is a graphical lattice boundaries editor. Click any lattice node\n" \
+        "in order to create a polygon defining a lattice boundary. Click consecutive\n" \
+        "polygon points and to finish just close the loop. You can remove existing\n" \
+        "polygons by double-clicking right mouse button on any of its vertices.\n" \
+        "The lattice will include all lattice points within each polygon (including\n" \
+        "boundaries). By nesting polygons within each other you can create holes,\n" \
+        "however the boundaries of each polygon will be included into the final lattice.\n\n" \
+        "Undo/redo buttons on the toolbar allow you to revert wrong editing or deletion."
+
+    toolitems = (
+        ('Undo', 'Undo previous line edit', 'edit-undo', 'undo', None),
+        ('Redo', 'Redo line edit', 'edit-redo', 'redo', None),
+        (None, None, None, None, None),
+        ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
+        ('Back', 'Back to previous view', 'go-previous', 'back', None),
+        ('Forward', 'Forward to next view', 'go-next', 'forward', None),
+        (None, None, None, None, None),
+        ('Pan', 'Pan aHelp goes herexes with left mouse, zoom with right', 'transform-move', 'pan', False),
+        ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
+        (None, None, None, None, None),
+        ('Help', HELP, 'help-contents', 'help', None),
+    )
+
+    def _init_toolbar(self):
+        self.layout().setContentsMargins(0,0,0,0)
+        for text, tooltip_text, icon, callback, checked in self.toolitems:
+            if text is None:
+                self.addSeparator()
+            elif callback is None:
+                self.addWidget(QtGui.QLabel(text))
+            else:
+                ic = self._icon(icon)
+                if ic is not None:
+                    action = self.addAction(ic, text, getattr(self, callback))
+                else:
+                    action = self.addAction(text, getattr(self, callback))
+                if checked is not None:
+                    action.setCheckable(True)
+                    if checked: action.setChecked(True)
+                if tooltip_text is not None:
+                    action.setToolTip(tooltip_text)
+                self._actions[callback] = action
+        self.buttons = {}
+        self._actions['undo'].setEnabled(False)
+        self._actions['redo'].setEnabled(False)
+        # Add the x,y location widget at the right side of the toolbar
+        # The stretch factor is 1 which means any resizing of the toolbar
+        # will resize this label instead of the buttons.
+        if self.coordinates:
+            self.locLabel = QtGui.QLabel("", self)
+            self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
+            self.locLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
+            label_action = self.addWidget(self.locLabel)
+            label_action.setVisible(True)
+
+    def mouse_move(self, event):
+        if not event.inaxes or not self._active:
+            if self._lastCursor != cursors.POINTER:
+                self.set_cursor(cursors.POINTER)
+                self._lastCursor = cursors.POINTER
+        else:
+            if self._active == 'ZOOM':
+                if self._lastCursor != cursors.SELECT_REGION:
+                    self.set_cursor(cursors.SELECT_REGION)
+                    self._lastCursor = cursors.SELECT_REGION
+            elif (self._active == 'PAN' and
+                  self._lastCursor != cursors.MOVE):
+                self.set_cursor(cursors.MOVE)
+                self._lastCursor = cursors.MOVE
+
+        if event.xdata is not None and event.ydata is not None:
+            pt = self.parent.get_node(event)
+            s = u'{0:.0f}, {1:.0f}'.format(pt[0] + 1e-3, pt[1] + 1e-3)
+        else:
+            s = ''
+
+        if len(self.mode):
+            self.set_message('%s   %s' % (s, self.mode))
+        else:
+            self.set_message(s)
+
+    def clear_history(self):
+        self._views.clear()
+        self._positions.clear()
+
+    def set_history_buttons(self):
+        if len(self._views) <= 1:
+            self._actions['back'].setEnabled(False)
+            self._actions['forward'].setEnabled(False)
+        elif self._views._pos == 0:
+            self._actions['back'].setEnabled(False)
+            self._actions['forward'].setEnabled(True)
+        elif self._views._pos == len(self._views)-1:
+            self._actions['back'].setEnabled(True)
+            self._actions['forward'].setEnabled(False)
+        else:
+            self._actions['back'].setEnabled(True)
+            self._actions['forward'].setEnabled(True)
+
+    def edit_mode(self):
+        return self._active is None
+
+    def set_undo_buttons(self):
+        self._actions['undo'].setEnabled(self.parent.undo_index != 0)
+        self._actions['redo'].setEnabled(self.parent.undo_index < len(self.parent.undo_stack) - 1)
+
+    def undo(self):
+        self.parent.undo()
+
+    def redo(self):
+        self.parent.redo()
+
+    def help(self):
+        QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.HELP)
 
 
 class LatticeEditor(QtGui.QDialog):
+
+    class MultipleLocator(ticker.MultipleLocator):
+        def __init__(self, base=1.0):
+            super(LatticeEditor.MultipleLocator, self).__init__(base)
+            self.create_dummy_axis()
+        def __call__(self, v1, v2):
+            self.set_bounds(v1, v2)
+            locs = super(LatticeEditor.MultipleLocator, self).__call__()
+            return np.array(locs), len(locs), None
 
     def __init__(self, vecs, items=None, parent=None):
         super(LatticeEditor, self).__init__(parent)
@@ -150,6 +282,8 @@ class LatticeEditor(QtGui.QDialog):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
@@ -179,7 +313,7 @@ class LatticeEditor(QtGui.QDialog):
         self.tr = Affine2D.from_values(a, b, c, d, 0., 0.)
 
         self.tri = self.tr.inverted()
-        loc = MultipleLocator(1)
+        loc = self.MultipleLocator(1)
         grid_helper = GridHelperCurveLinear(self.tr, grid_locator1=loc, grid_locator2=loc)
         self.axes = Subplot(self.figure, 1, 1, 1, grid_helper=grid_helper, adjustable='datalim')
         self.figure.add_subplot(self.axes)
@@ -203,14 +337,15 @@ class LatticeEditor(QtGui.QDialog):
         self.canvas.mpl_connect('draw_event', self.draw_callback)
         self.canvas.mpl_connect('button_press_event', self.button_press_callback)
         self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
-        self.mark = Line2D([0], [0], marker='o', mfc='#e5ae38', ms=6., animated=True)
+        self.mark = Line2D([0], [0], marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
+                           animated=True)
         self.mark.set_visible(False)
         self.canvas.draw()
         self.items = [] if items is None else items
         self._set_lines()
         self.current = None
-        self._undo_stack = [list(self.items)]
-        self._undo_index = 0
+        self.undo_stack = [list(self.items)]
+        self.undo_index = 0
 
     def _set_lines(self):
         self.axes.lines = []
@@ -219,10 +354,10 @@ class LatticeEditor(QtGui.QDialog):
             item = [self.tr.transform(p) for p in item]
             xx = [p[0] for p in item] + [item[0][0]]
             yy = [p[1] for p in item] + [item[0][1]]
-            line = Line2D(xx, yy, ls='-', color='#30a2da', lw=2., animated=True)
+            line = Line2D(xx, yy, ls='-', color=CONFIG['geometry/lattice_line_color'], lw=2., animated=True)
             self.axes.add_line(line)
 
-    def _get_node(self, event):
+    def get_node(self, event):
         return tuple(round(c) for c in self.tri.transform([event.xdata, event.ydata]))
 
     def draw_callback(self, event=None):
@@ -242,33 +377,37 @@ class LatticeEditor(QtGui.QDialog):
         self.axes.draw_artist(line)
 
     def _save_items(self):
-        self._undo_index += 1
-        self._undo_stack = self._undo_stack[:self._undo_index]
-        self._undo_stack.append(list(self.items))
+        self.undo_index += 1
+        self.undo_stack = self.undo_stack[:self.undo_index]
+        self.undo_stack.append(list(self.items))
+        self.toolbar.set_undo_buttons()
 
-    def _undo(self):
-        if self._undo_index > 0:
-            self._undo_index -= 1
-            self.items = list(self._undo_stack[self._undo_index])
+    def undo(self):
+        if self.undo_index > 0:
+            self.undo_index -= 1
+            self.items = list(self.undo_stack[self.undo_index])
             self._set_lines()
+            self.toolbar.set_undo_buttons()
             self.canvas.draw()
 
-    def _redo(self):
-        if self._undo_index < len(self._undo_stack)-1:
-            self._undo_index += 1
-            self.items = list(self._undo_stack[self._undo_index])
+    def redo(self):
+        if self.undo_index < len(self.undo_stack)-1:
+            self.undo_index += 1
+            self.items = list(self.undo_stack[self.undo_index])
             self._set_lines()
+            self.toolbar.set_undo_buttons()
             self.canvas.draw()
 
     def button_press_callback(self, event):
-        if event.inaxes is None: return
+        if not self.toolbar.edit_mode() or event.inaxes is None: return
         if event.button == 1:
-            pt = self._get_node(event)
+            pt = self.get_node(event)
             if self.current is None:
                 #self.background = self.canvas.copy_from_bbox(self.axes.bbox)
                 self.current = [pt]
                 x, y = self.tr.transform(pt)
-                line = Line2D([x], [y], ls='-', color='#fc4f30', lw=2., marker='o', ms='4', animated=True)
+                line = Line2D([x], [y], ls='-', color=CONFIG['geometry/lattice_active_color'], lw=2.,
+                              marker='o', ms='4', animated=True)
                 self.axes.add_line(line)
             if pt != self.current[-1]:
                 if pt != self.current[0]:
@@ -278,7 +417,7 @@ class LatticeEditor(QtGui.QDialog):
                     self._save_items()
                     self.canvas.restore_region(self.background)
                     line = self.axes.lines[-1]
-                    line.set_color('#30a2da')
+                    line.set_color(CONFIG['geometry/lattice_line_color'])
                     line.set_marker(None)
                     self._draw_current(*self.tr.transform(pt))
                     self.background = self.canvas.copy_from_bbox(self.axes.bbox)
@@ -295,7 +434,7 @@ class LatticeEditor(QtGui.QDialog):
                     del self.current[-1]
                     self.motion_notify_callback(event)
             elif event.dblclick == True:
-                pt = self._get_node(event)
+                pt = self.get_node(event)
                 x, y = self.axes.transData.transform(self.tr.transform(pt))
                 event = MouseEvent('Lattice MouseEvent', self.canvas, x, y)
                 for i, line in reversed(list(enumerate(self.axes.lines[1:]))):
@@ -313,12 +452,11 @@ class LatticeEditor(QtGui.QDialog):
                 del self.axes.lines[-1]
                 self.canvas.restore_region(self.background)
                 self.canvas.blit(self.axes.bbox)
-
-        elif event.key() == Qt.Key_U: self._undo()
-        elif event.key() == Qt.Key_R: self._redo()
+        else:
+            super(LatticeEditor, self).keyPressEvent(event)
 
     def motion_notify_callback(self, event):
-        x, y = self.tr.transform(self._get_node(event))
+        x, y = self.tr.transform(self.get_node(event))
         if np.isnan(x) or np.isnan(y):
             self.mark.set_visible(False)
             return
