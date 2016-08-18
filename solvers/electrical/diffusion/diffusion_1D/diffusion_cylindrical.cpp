@@ -272,7 +272,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     modesP.assign(inWavelength.size(), 0.);
 
                     double D; if (current_mesh().size() > 1) D = current_mesh()[1] - current_mesh()[0]; // only ok for regular mesh
-                    
+
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         double wavelength = real(inWavelength(n));
@@ -390,9 +390,9 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
             }
             iterations += 1;
 #ifndef NDEBUG
+            writelog(LOG_DEBUG, "iteration: {0}", iterations);
             if (overthreshold_computation)
                 writelog(LOG_DEBUG, "Integral of overthreshold loses: {0} mW, qw_width: {1} cm", burning_integral(), global_QW_width);
-                writelog(LOG_DEBUG, "iteration: {0}", iterations);
 #endif
         }
 

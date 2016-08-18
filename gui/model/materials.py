@@ -377,7 +377,7 @@ class MaterialsModel(TableModel):
                     return font
             elif index.column() == 0 and role == Qt.DecorationRole:
                 return QtGui.QIcon.fromTheme(
-                    {'library': 'emblem-system', 'module': 'application-x-executable'}[self.entries[index.row()].what])
+                    {'library': 'material-library', 'module': 'material-module'}[self.entries[index.row()].what])
             elif index.column() == 2 and role == Qt.UserRole:
                 return False
         if index.column() == 2:

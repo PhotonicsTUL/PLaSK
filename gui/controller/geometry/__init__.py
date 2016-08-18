@@ -91,7 +91,7 @@ class GeometryController(Controller):
         node = index.internalPointer()
         if node is None: return
         first = True
-        result = QtGui.QMenu()
+        result = QtGui.QMenu(self.more_menu)
         for section in node.add_parent_options(parent_index.internalPointer()):
             if not first:
                 result.addSeparator()
@@ -180,7 +180,6 @@ class GeometryController(Controller):
 
     def fill_more_menu(self):
         self.more_menu.clear()
-
         current_index = self.tree.selectionModel().currentIndex()
         if current_index.isValid():
             reparent = self._get_reparent_menu(current_index)
@@ -400,7 +399,7 @@ class GeometryController(Controller):
         toolbar.addSeparator()
 
         more_button = QtGui.QToolButton(toolbar)
-        more_button.setText('...')
+        more_button.setIcon(QtGui.QIcon.fromTheme('menu-other'))
         self.more_menu = QtGui.QMenu(more_button)
         more_button.setMenu(self.more_menu)
         more_button.setPopupMode(QtGui.QToolButton.InstantPopup)

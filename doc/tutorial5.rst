@@ -97,7 +97,7 @@ When you finish defining all the layers, press F4 and check if the source code o
            <cylinder name="gain" role="gain" material="QW" radius="{R}"
                      height="0.00800"/>
          </align>
-          <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}" 
+          <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}"
                   dz="0.00500"/>
          <again ref="qw"/>
          <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
@@ -116,12 +116,14 @@ In the code above, we have added a name ``interface`` to one of the barriers in 
 Photonic crystal
 ~~~~~~~~~~~~~~~~
 
+At this point we have defined a simple VCSEL structure with a limited active region and no optical confinement. Now we need to add a photonic crytal. We simulate etching air holes in the structure by overlaying air cylinders over the top DBRs. To do so, right-click on the first ``Stack`` in the geometry tree view (the one containing the whole structure). From the pop-up menu select ``Insert into`` and then ``Align``. This will create an another container around the stack. Select it and add the ``Lattice`` item to it. Make sure the lattice appears below the stack.
+
 .. [Dems-2010]
    M. Dems, I.-S. Chung, P. Nyakas, S. Bischoff, K. Panajotov,
    ‘Numerical Methods for Modeling Photonic-Crystal VCSELs,’
    Opt. Express 18 (2010), pp. 16042-16054
 
-   
+
 .. |list-add| image:: list-add.png
    :align: middle
    :alt: +
