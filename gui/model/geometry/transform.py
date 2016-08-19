@@ -84,13 +84,13 @@ class GNTranslation(GNTransform):
     def major_properties(self):
         res = super(GNTranslation, self).major_properties()
         if any(self.vector):
-            res.append(('delta', ', '.join(x if x else '?' for x in self.vector)))
+            res.append(('delta', ', '.join(x if x else '0' for x in self.vector)))
         return res
 
     def create_info(self, res, names):
         super(GNTranslation, self).create_info(res, names)
         for i, v in enumerate(self.vector):
-            if not can_be_float(v, required=True): self._require(res, ('vector', i), 'component of translation vector', type='float')
+            if not can_be_float(v): self._require(res, ('vector', i), 'component of translation vector', type='float')
         #if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
 
     @staticmethod

@@ -104,7 +104,7 @@ class GNTranslationController(GNObjectController):
         self.construct_group('Translation Settings')
         def setter(n, v): n.vector = v
         self.vector = self.construct_point_controllers(row_name='Vector:', change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change translation vector')
+            self._set_node_by_setter_undoable(setter, list(point), self.node.vector, 'change translation vector')
         )
         super(GNTranslationController, self).construct_form()
 
