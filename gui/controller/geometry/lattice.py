@@ -67,7 +67,7 @@ class GNLatticeController(GNObjectController):
         return res
 
     def construct_form(self):
-        self.construct_group('Lattice vectors')
+        self.construct_group('Lattice Vectors')
         self.vectors = (self.construct_point_controllers(row_name='First:',
                                                          change_cb=lambda vec: self._on_point_set(0, vec)),
                         self.construct_point_controllers(row_name='Second:',
@@ -332,15 +332,15 @@ class LatticeEditor(QtGui.QDialog):
 
         if bounds:
             cc1, cc2 = zip(*itertools.chain(*bounds))
-            lo1, lo2 = min(cc1)-1, min(cc2)-1
-            hi1, hi2 = max(cc1)+1, max(cc2)+1
+            lo1, lo2 = min(cc1)-1.2, min(cc2)-1.2
+            hi1, hi2 = max(cc1)+1.2, max(cc2)+1.2
             del cc1, cc2
-            xy = [self.tr.transform(c) for c in ((lo1, lo2), (lo1, hi2), (hi1, lo2), (hi1, hi2))]
-            self.axes.set_ylim(min(y[1] for y in xy), max(y[1] for y in xy))
-            self.axes.set_xlim(min(x[0] for x in xy), max(x[0] for x in xy))
         else:
-            self.axes.set_ylim(-5.5, 5.5)
-            self.axes.set_xlim(-5.5, 5.5)
+            lo1 = lo2 = -5.2
+            hi1 = hi2 = 5.2
+        xy = [self.tr.transform(c) for c in ((lo1, lo2), (lo1, hi2), (hi1, lo2), (hi1, hi2))]
+        self.axes.set_ylim(min(y[1] for y in xy), max(y[1] for y in xy))
+        self.axes.set_xlim(min(x[0] for x in xy), max(x[0] for x in xy))
 
         self.canvas.mpl_connect('draw_event', self.draw_callback)
         self.canvas.mpl_connect('button_press_event', self.button_press_callback)

@@ -137,8 +137,17 @@ First:      ``0``              ``{L}``     ``0`` or blank
 Second:     ``{L*sqrt(3)/2}``  ``{L/2}``   ``0`` or blank
 =========== ================== =========== ==============
 
-This will make triangular lattice
+This will make triangular lattice. The last thing to do is to specify the lattice boundaries. To to this, click the ``Edit...`` button below the *Lattice Boundaries** sections. The visual editor opens. By clicking the lattice nodes draw two polygons as in :ref:`the following figure <fig-tutorial5-lattice-editor>`.
 
+
+.. _fig-tutorial5-lattice-editor:
+.. figure:: tutorial5-lattice-editor.png
+   :width: 100%
+   :align: center
+
+    Lattice boudaries in the visual editor.
+
+Once you click ``Ok`` on the editor, the lattice is completed. You should see the vertical lines in the top DBR region indicating the edges of the holes. You can cat a better preview, by selecting ``x-y`` plane in the geometry preview toolbar and by clicking |lock-screen| next to it, to set equal ratio for both axes.
 
 
 .. [Dems-2010]
@@ -149,21 +158,26 @@ This will make triangular lattice
 
 .. |list-add| image:: list-add.png
    :align: middle
-   :alt: +
+   :alt: add
 
 .. |applications-graphics| image:: applications-graphics.png
    :align: middle
-   :alt: +
+   :alt: paint
 
 .. |edit-copy| image:: edit-copy.png
    :align: middle
-   :alt: +
+   :alt: copy
 
 .. |go-up| image:: go-up.png
    :align: middle
-   :alt: +
+   :alt: up
 
 .. |go-down| image:: go-down.png
    :align: middle
-   :alt: +
+   :alt: down
+
+.. |lock-screen| image:: lock-screen.png
+   :align: middle
+   :alt: lock
+
 

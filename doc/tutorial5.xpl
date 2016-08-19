@@ -52,7 +52,7 @@
           </stack>
         </stack>
         <lattice ax="0" ay="{L}" bx="{L*sqrt(3)/2}" by="{L/2}">
-          <segments>0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0 ^ 0 -3; 3 -3; 3 0; 0 3; -3 3; -3 0 ^ -1 -3; -2 -2; -3 0; 0 -3 ^ -3 0; -4 2; -4 3; -3 3 ^ 0 3; 1 3; 2 2; 3 0 ^ 3 -3; 4 -3; 4 -2; 3 0</segments>
+          <segments>-1 -3; 4 -3; 4 -2; 2 2; 1 3; -4 3; -4 2; -2 -2 ^ 0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0</segments>
           <cylinder material="air" radius="{0.5*d*L}" height="{0.14895*etched}"/>
         </lattice>
       </align>
