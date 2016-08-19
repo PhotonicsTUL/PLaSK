@@ -346,11 +346,11 @@ class LatticeEditor(QtGui.QDialog):
         self.canvas.mpl_connect('button_press_event', self.button_press_callback)
         self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
         self.canvas.mpl_connect('figure_leave_event', self.mouse_leave_callback)
-        self.mark = Line2D([0], [0], ls='', marker='o', mfc=CONFIG['geometry/lattice_mark_color'], ms=6.,
-                           animated=True)
+        self.mark = Line2D([0], [0], linestyle='', marker='o', markerfacecolor=CONFIG['geometry/lattice_mark_color'],
+                           markersize=6., animated=True)
         self.mark.set_visible(False)
-        self.points = Line2D([], [], ls='', marker='o', mfc=CONFIG['geometry/lattice_line_color'], ms=12., mew=0,
-                             alpha=0.2, zorder=0, animated=True)
+        self.points = Line2D([], [], linestyle='', marker='o', markerfacecolor=CONFIG['geometry/lattice_line_color'],
+                             markersize=12., mew=0, alpha=0.2, zorder=0, animated=True)
         self.bounds = [] if bounds is None else bounds
         self.canvas.draw()
         self._set_lines()
@@ -366,7 +366,7 @@ class LatticeEditor(QtGui.QDialog):
             item = [self.tr.transform(p) for p in item]
             xx = [p[0] for p in item] + [item[0][0]]
             yy = [p[1] for p in item] + [item[0][1]]
-            line = Line2D(xx, yy, ls='-', color=CONFIG['geometry/lattice_line_color'], lw=2., animated=True)
+            line = Line2D(xx, yy, linestyle='-', color=CONFIG['geometry/lattice_line_color'], lw=2., animated=True)
             self.axes.add_line(line)
 
     def get_node(self, event):
@@ -421,8 +421,8 @@ class LatticeEditor(QtGui.QDialog):
                 #self.background = self.canvas.copy_from_bbox(self.axes.bbox)
                 self.current = [pt]
                 x, y = self.tr.transform(pt)
-                line = Line2D([x], [y], ls='-', color=CONFIG['geometry/lattice_active_color'], lw=2.,
-                              marker='o', ms='4', animated=True)
+                line = Line2D([x], [y], linestyle='-', color=CONFIG['geometry/lattice_active_color'], lw=2.,
+                              marker='o', markersize=4., animated=True)
                 self.axes.add_line(line)
             if pt != self.current[-1]:
                 if pt != self.current[0]:

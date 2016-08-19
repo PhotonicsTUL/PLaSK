@@ -116,7 +116,30 @@ In the code above, we have added a name ``interface`` to one of the barriers in 
 Photonic crystal
 ~~~~~~~~~~~~~~~~
 
-At this point we have defined a simple VCSEL structure with a limited active region and no optical confinement. Now we need to add a photonic crytal. We simulate etching air holes in the structure by overlaying air cylinders over the top DBRs. To do so, right-click on the first ``Stack`` in the geometry tree view (the one containing the whole structure). From the pop-up menu select ``Insert into`` and then ``Align``. This will create an another container around the stack. Select it and add the ``Lattice`` item to it. Make sure the lattice appears below the stack.
+At this point we have defined a simple VCSEL structure with a limited active region and no optical confinement. Now we need to add a photonic crytal. We simulate etching air holes in the structure by overlaying air cylinders over the top DBRs. To do so, right-click on the first ``Stack`` in the geometry tree view (the one containing the whole structure). From the pop-up menu select ``Insert into`` and then ``Align``. This will create an another container around the stack. Select it and specify *Default Items Positions* as follows:
+
+============= ====== ==========================
+Longitudinal: center ``0``
+Transverse:   center ``0``
+Vertical:     top    ``{0.14895*24 + 0.13471}``
+============= ====== ==========================
+
+This way bot our VCSEL and photonic crystal lattice will be centered horizontally around 0 and vertically the 0 coordinate will be located near one of the quantum wells.
+
+Now add a ``Lattice`` item as a second element of the ``Align`` container. Make sure the lattice appears below the VCSEL stack. Lattice is a special container that can contain only one element and it distributes its multiple copies over a regular lattice. To make a photonic crystal, we first need to create a hole to be distributed. Using the same procedure as with other containers, add a cylinder to the lattice. Set its solid material to “\ ``air``”, radius to “\ ``{0.5*d*L}``” and the height to “\ ``{0.14895*etched}``”. Variables `L`, `d`, and `etched` are already defined in the Defines section and mean the photonic crystal pitch, relative hole diameter, and number of the etched DBR pairs, respectively.
+
+After adding the cylinder, the photonic crysal is still not visible in the preview. Select the ``Lattice`` item again and specify *Lattice vectors* components:
+
+=========== ================== =========== ==============
+Vector      Logitudinal        Transverse  Vertical
+=========== ================== =========== ==============
+First:      ``0``              ``{L}``     ``0`` or blank
+Second:     ``{L*sqrt(3)/2}``  ``{L/2}``   ``0`` or blank
+=========== ================== =========== ==============
+
+This will make triangular lattice
+
+
 
 .. [Dems-2010]
    M. Dems, I.-S. Chung, P. Nyakas, S. Bischoff, K. Panajotov,

@@ -27,38 +27,34 @@
 
 <geometry>
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
-    <clip left="0" back="0">
-      <align x="0" y="0" top="3.70951">
-        <item xcenter="0" ycenter="0">
-          <stack>
-            <stack name="top-dbr" repeat="24">
-              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.06940"/>
-              <cuboid material="AlGaAs" dx="{totalx}" dy="{totaly}" dz="0.07955"/>
-            </stack>
-            <stack name="cavity">
-              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
-              <align name="qw" xcenter="0" ycenter="0" bottom="0">
-                <cuboid material="QW" dx="{totalx}" dy="{totaly}" dz="0.00800"/>
-                <cylinder name="gain" role="gain" material="QW" radius="{R}" height="0.00800"/>
-              </align>
-              <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
-              <again ref="qw"/>
-              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
-              <again ref="qw"/>
-              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
-            </stack>
-            <stack name="bottom-dbr" repeat="29">
-              <cuboid material="AlGaAs" dx="{totalx}" dy="{totaly}" dz="0.07955"/>
-              <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.06940"/>
-            </stack>
+    <clip>
+      <align xcenter="0" ycenter="0" top="{0.14895*24 + 0.13471}">
+        <stack>
+          <stack name="top-dbr" repeat="24">
+            <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.06940"/>
+            <cuboid material="AlGaAs" dx="{totalx}" dy="{totaly}" dz="0.07955"/>
           </stack>
-        </item>
-        <item top="3.70951">
-          <lattice ax="0" ay="{L}" az="0" bx="{L*sqrt(3)/2}" by="{L/2}" bz="0">
-            <segments>-1 -3; 4 -3; 4 -2; 3 0; 2 2; 1 3; -4 3; -4 2; -3 0; -2 -2 ^ 0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0</segments>
-            <cylinder material="air" radius="{0.5*d*L}" height="{0.14895*etched}"/>
-          </lattice>
-        </item>
+          <stack name="cavity">
+            <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
+            <align name="qw" xcenter="0" ycenter="0" bottom="0">
+              <cuboid material="QW" dx="{totalx}" dy="{totaly}" dz="0.00800"/>
+              <cylinder name="gain" role="gain" material="QW" radius="{R}" height="0.00800"/>
+            </align>
+            <cuboid name="interface" material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
+            <again ref="qw"/>
+            <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.00500"/>
+            <again ref="qw"/>
+            <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.12171"/>
+          </stack>
+          <stack name="bottom-dbr" repeat="29">
+            <cuboid material="AlGaAs" dx="{totalx}" dy="{totaly}" dz="0.07955"/>
+            <cuboid material="GaAs" dx="{totalx}" dy="{totaly}" dz="0.06940"/>
+          </stack>
+        </stack>
+        <lattice ax="0" ay="{L}" bx="{L*sqrt(3)/2}" by="{L/2}">
+          <segments>0 -1; 1 -1; 1 0; 0 1; -1 1; -1 0 ^ 0 -3; 3 -3; 3 0; 0 3; -3 3; -3 0 ^ -1 -3; -2 -2; -3 0; 0 -3 ^ -3 0; -4 2; -4 3; -3 3 ^ 0 3; 1 3; 2 2; 3 0 ^ 3 -3; 4 -3; 4 -2; 3 0</segments>
+          <cylinder material="air" radius="{0.5*d*L}" height="{0.14895*etched}"/>
+        </lattice>
       </align>
     </clip>
   </cartesian3d>
