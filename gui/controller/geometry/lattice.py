@@ -449,9 +449,9 @@ class LatticeEditor(QtGui.QDialog):
                     del self.current[-1]
                     self.motion_notify_callback(event)
             elif event.dblclick == True:
-                pt = self.get_node(event)
-                x, y = self.axes.transData.transform(self.tr.transform(pt))
-                event = MouseEvent('Lattice MouseEvent', self.canvas, x, y)
+                # pt = self.get_node(event)
+                # x, y = self.axes.transData.transform(self.tr.transform(pt))
+                # event = MouseEvent('Lattice MouseEvent', self.canvas, x, y)
                 for i, line in reversed(list(enumerate(self.axes.lines[2:]))):
                     if line.contains(event)[0]:
                         del self.bounds[i]
