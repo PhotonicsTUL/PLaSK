@@ -68,6 +68,7 @@ class GNLatticeController(GNObjectController):
 
     def construct_form(self):
         self.construct_group('Lattice Vectors')
+        self.construct_group('Lattice Vectors')
         self.vectors = (self.construct_point_controllers(row_name='First:',
                                                          change_cb=lambda vec: self._on_point_set(0, vec)),
                         self.construct_point_controllers(row_name='Second:',

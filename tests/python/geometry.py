@@ -213,7 +213,7 @@ class Containers(unittest.TestCase):
         stack.append(self.block1)
         self.assertEqual( stack.get_matching_objects(lambda o: o == self.block1), [self.block1, self.block1] )
 
-class Borders(unittest.TestCase):
+class Edges(unittest.TestCase):
 
     def testSymmetricPeriodic(self):
         GaN = plask.material.GaN()

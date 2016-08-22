@@ -103,20 +103,20 @@ static bool objectIncludes2_3D(const Geometry3D& self, const GeometryObject& obj
 
 
 
-static void _Space_setBorders(Geometry& self, py::dict borders, std::set<std::string>& parsed, const std::string& err_msg) {
+static void _Space_setBorders(Geometry& self, py::dict edges, std::set<std::string>& parsed, const std::string& err_msg) {
    self.setBorders(
         [&](const std::string& s)->boost::optional<std::string> {
             std::string str = s;
             std::replace(str.begin(), str.end(), '-', '_');
             parsed.insert(str);
-            return borders.has_key(str) ?
-                boost::optional<std::string>( (borders[str]==py::object()) ? std::string("null") : py::extract<std::string>(borders[str]) ) :
+            return edges.has_key(str) ?
+                boost::optional<std::string>( (edges[str]==py::object()) ? std::string("null") : py::extract<std::string>(edges[str]) ) :
                 boost::optional<std::string>();
         },
     current_axes);
 
-    // Test if we have any spurious borders
-    py::stl_input_iterator<std::string> begin(borders), end;
+    // Test if we have any spurious edges
+    py::stl_input_iterator<std::string> begin(edges), end;
     for (auto item = begin; item != end; item++)
         if (parsed.find(*item) == parsed.end())
             throw ValueError(err_msg, *item);
@@ -250,14 +250,14 @@ static typename Primitive<S::DIM>::Box Space_childBoundingBox(const S& self) {
     return self.getChildBoundingBox();
 }
 
-static void Space_setBorders(Geometry& self, py::dict borders) {
+static void Space_setBorders(Geometry& self, py::dict edges) {
     std::set<std::string> parsed;
-    _Space_setBorders(self, borders, parsed, "unexpected border name '{}'");
+    _Space_setBorders(self, edges, parsed, "unexpected edge name '{}'");
 }
 
-struct BordersProxy : public std::map<std::string, py::object> {
+struct EdgesProxy : public std::map<std::string, py::object> {
     void __setitem__(const std::string&, const py::object&) {
-        throw TypeError("Borders do not support item assignment");
+        throw TypeError("Edges do not support item assignment");
     }
     std::string __repr__() const {
         std::string result;
@@ -294,33 +294,33 @@ inline static py::object _border(const Geometry& self, Geometry::Direction direc
     return (str=="null") ? py::object() : py::object(str);
 }
 
-static BordersProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) {
-    BordersProxy borders;
-    borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
-    borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
-    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
-    return borders;
+static EdgesProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) {
+    EdgesProxy edges;
+    edges["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    edges["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
+    edges["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    edges["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
+    return edges;
 }
 
-static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
-    BordersProxy borders;
-    borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
-    borders["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
-    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
-    return borders;
+static EdgesProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
+    EdgesProxy edges;
+    edges["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    edges["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
+    edges["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    edges["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
+    return edges;
 }
 
-static BordersProxy Geometry3D_getBorders(const Geometry3D& self) {
-    BordersProxy borders;
-    borders["back"] = _border(self, Geometry::DIRECTION_LONG, false);
-    borders["front"] = _border(self, Geometry::DIRECTION_LONG, true);
-    borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
-    borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
-    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
-    return borders;
+static EdgesProxy Geometry3D_getBorders(const Geometry3D& self) {
+    EdgesProxy edges;
+    edges["back"] = _border(self, Geometry::DIRECTION_LONG, false);
+    edges["front"] = _border(self, Geometry::DIRECTION_LONG, true);
+    edges["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    edges["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
+    edges["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    edges["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
+    return edges;
 }
 
 template <typename GeometryT>
@@ -384,7 +384,7 @@ static bool Geometry3D_hasRoleAt(const Geometry3D& self, const std::string& role
 //     std::set<std::string> parsed;
 //     parsed.insert("object");
 //     parsed.insert("path");
-//     _Space_setBorders(*space, kwargs, parsed, "unexpected border name '{}'");
+//     _Space_setBorders(*space, kwargs, parsed, "unexpected edge name '{}'");
 //
 //     return shared_ptr<S>(space);
 // }
@@ -397,17 +397,17 @@ void register_calculation_spaces() {
         .add_property<>("axes", Geometry_getAxes, Geometry_getAxes, "Names of axes for this geometry.")
     ;
 
-    py::class_<BordersProxy>("_BordersProxy")
-        .def(py::map_indexing_suite<BordersProxy, true>())
-        .def("__setitem__", &BordersProxy::__setitem__)
-        .def("__repr__", &BordersProxy::__repr__)
-        .def("keys", &BordersProxy::keys)
-        .def("items", &BordersProxy::items)
+    py::class_<EdgesProxy>("_EdgesProxy")
+        .def(py::map_indexing_suite<EdgesProxy, true>())
+        .def("__setitem__", &EdgesProxy::__setitem__)
+        .def("__repr__", &EdgesProxy::__repr__)
+        .def("keys", &EdgesProxy::keys)
+        .def("items", &EdgesProxy::items)
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
         u8"Geometry in 2D Cartesian space.\n\n"
-        u8"Cartesian2D(root, length=infty, **borders)\n\n"
+        u8"Cartesian2D(root, length=infty, **edges)\n\n"
         u8"Create a space around a two-dimensional geometry object with a given length.\n\n"
         u8"Args:\n"
         u8"    root (GeometryObject2D Extrusion): Root object of the geometry.\n"
@@ -417,10 +417,10 @@ void register_calculation_spaces() {
         u8"        This information is required by some solvers. Furthermore it is\n"
         u8"        necessary if you want to use :mod:`plask.filters` to translate the\n"
         u8"        data between this geometry and the :class:`Cartesian3D` geometry.\n\n"
-        u8"    borders (dict): Optional borders specification.\n"
-        u8"        Borders are given as additional constructor keyword arguments. Available\n"
+        u8"    edges (dict): Optional edges specification.\n"
+        u8"        Edges are given as additional constructor keyword arguments. Available\n"
         u8"        keys are *left*, *right*, *top*, and *bottom* and their values must be\n"
-        u8"        strings specifying the border (either a material name or *mirror*,\n"
+        u8"        strings specifying the edge (either a material name or *mirror*,\n"
         u8"        *periodic*, or *extend*).\n\n"
         u8"Example:\n"
         u8"    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
@@ -448,8 +448,8 @@ void register_calculation_spaces() {
                       u8"Material at the positive side of the axis along the extrusion.")
         .add_property("back_material", &Geometry2DCartesian::getBackMaterial, &Geometry2DCartesian::setBackMaterial,
                       u8"Material at the negative side of the axis along the extrusion.")
-        .add_property("borders", &Geometry2DCartesian_getBorders, &Space_setBorders,
-                      u8"Dictionary specifying the geometry borders.")
+        .add_property("edges", &Geometry2DCartesian_getBorders, &Space_setBorders,
+                      u8"Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry2DCartesian::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, (py::arg("c0"), "c1"),
              u8"Get material at the given point.\n\n"
@@ -634,19 +634,19 @@ void register_calculation_spaces() {
             )
         .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
-//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
         u8"Geometry in 2D cylindrical space.\n\n"
-        u8"Cylindrical2D(root, **borders)\n"
+        u8"Cylindrical2D(root, **edges)\n"
         u8"Create a cylindrical space around a two-dimensional geometry object.\n\n"
         u8"Args:\n"
         u8"    root (GeometryObject2D or Revolution): Root object of the geometry.\n"
-        u8"    borders (dict): Optional borders specification.\n"
-        u8"        Borders are given as additional constructor keyword arguments. Available\n"
+        u8"    edges (dict): Optional edges specification.\n"
+        u8"        Edges are given as additional constructor keyword arguments. Available\n"
         u8"        keys are *inner*, *outer*, *top*, and *bottom* and their values must be\n"
-        u8"        strings specifying the border (either a material name or *mirror*,\n"
+        u8"        strings specifying the edge (either a material name or *mirror*,\n"
         u8"        *periodic*, or *extend*).\n\n"
         u8"Example:\n"
         u8"    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
@@ -670,8 +670,8 @@ void register_calculation_spaces() {
                        u8"for the points that do not belong to any object in the geometry tree.\n"
                        u8"any object in the geometry tree.\n"
                       )
-        .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
-                      "Dictionary specifying the geometry borders.")
+        .add_property("edges", &Geometry2DCylindrical_getBorders, &Space_setBorders,
+                      "Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry2DCylindrical::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, (py::arg("c0"), "c1"),
              u8"Get material at the given point.\n\n"
@@ -856,19 +856,19 @@ void register_calculation_spaces() {
             )
         .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
-//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;
 
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
         u8"Geometry in 3D space.\n\n"
-        u8"Cartesian3D(geometry, **borders)\n"
+        u8"Cartesian3D(geometry, **edges)\n"
         u8"    Create a space around a two-dimensional geometry object.\n\n"
         u8"Args:\n"
         u8"    root (GeometryObject3D): Root object of the geometry.\n"
-        u8"    borders (dict): Optional borders specification.\n"
-        u8"        Borders are given as additional constructor keyword arguments. Available\n"
+        u8"    edges (dict): Optional edges specification.\n"
+        u8"        Edges are given as additional constructor keyword arguments. Available\n"
         u8"        keys are *back*, *front*, *left*, *right*, *top*, and *bottom* and their\n"
-        u8"        values must be strings specifying the border (either a material name or\n"
+        u8"        values must be strings specifying the edge (either a material name or\n"
         u8"        *mirror*, *periodic*, or *extend*).\n\n"
         u8"Example:\n"
         u8"    >>> block = geometry.Block3D(4, 2, 1, 'GaAs')\n"
@@ -890,8 +890,8 @@ void register_calculation_spaces() {
                        u8"This material is returned by :meth:`~plask.geometry.Cartesian3D.get_material`\n"
                        u8"for the points that do not belong to any object in the geometry tree.\n"
                       )
-        .add_property("borders", &Geometry3D_getBorders, &Space_setBorders,
-                      "Dictionary specifying the geometry borders.")
+        .add_property("edges", &Geometry3D_getBorders, &Space_setBorders,
+                      "Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry3D::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry3D>::call, (py::arg("c0"), "c1", "c2"),
              u8"Get material at the given point.\n\n"
@@ -1081,7 +1081,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", &objectIncludes2_3D, (py::arg("object"), "c0", "c1", "c2"))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
-//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;
 
     py::implicitly_convertible<shared_ptr<GeometryD<2>>, shared_ptr<Geometry>>();

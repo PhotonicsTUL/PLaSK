@@ -150,7 +150,7 @@ void register_geometry_container_stack()
         .def("set_zero_below", &StackContainer<2>::setZeroHeightBefore, py::arg("index"),
              u8"Set zero below the item with the given index.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom egde of the item with\n"
+             u8"coordinate of the stack origin is placed at the bootom edge of the item with\n"
              u8"the specified index.\n\n"
              u8"Args:\n"
              u8"    index (int): Index of the item to align the zero with.\n")
@@ -233,7 +233,7 @@ void register_geometry_container_stack()
         .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
              u8"Set zero below the item with the given index.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom egde of the item with\n"
+             u8"coordinate of the stack origin is placed at the bootom edge of the item with\n"
              u8"the specified index.\n\n"
              u8"Args:\n"
              u8"    index (int): Index of the item to align the zero with.\n")
@@ -338,7 +338,7 @@ void register_geometry_container_stack()
         .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
              u8"Set zero to the left of the item with the given index.\n\n"
              u8"This method shifts the local coordinates of the shelf horizontally.\n"
-             u8"The horizontal coordinate of the shelf origin is placed at the left egde\n"
+             u8"The horizontal coordinate of the shelf origin is placed at the left edge\n"
              u8"of the item with the specified index.\n\n"
              u8"Args:\n"
              u8"    index (int): Index of the item to align the zero with.\n")

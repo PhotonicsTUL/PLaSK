@@ -221,7 +221,7 @@ Good base classes for geometries objects are, for example:
 #include "primitives.h"
 
 #include "separator.h"
-#include "border.h"
+#include "edge.h"
 #include "reader.h"
 
 namespace plask {

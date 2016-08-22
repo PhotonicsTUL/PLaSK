@@ -1,7 +1,7 @@
 Optical Analysis of Photonic-Crystal VCSEL
 ------------------------------------------
 
-Analyzed structure
+Analyzed Structure
 ^^^^^^^^^^^^^^^^^^
 
 All the previous tutorials dealed with two-dimensional geometry. Here we will define a three-dimensional structure and perform its optical analysis. This tutorial is base on the article ‘Numerical Methods for modeling Photonic-Crystal VCSELs’ [Dems-2010]_, which compares several advanced method for analysis of a PC-VCSEL.
@@ -83,7 +83,7 @@ When you finish defining all the layers, press F4 and check if the source code o
 
 .. code-block:: xml
 
-   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend"
+   <cartesian3d name="main" axes="x,y,z" back="mirror" front="extend"
                 left="mirror" right="extend" bottom="GaAs">
      <stack>
        <stack name="top-dbr" repeat="24">
@@ -147,7 +147,15 @@ This will make triangular lattice. The last thing to do is to specify the lattic
 
     Lattice boudaries in the visual editor.
 
-Once you click ``Ok`` on the editor, the lattice is completed. You should see the vertical lines in the top DBR region indicating the edges of the holes. You can cat a better preview, by selecting ``x-y`` plane in the geometry preview toolbar and by clicking |lock-screen| next to it, to set equal ratio for both axes.
+Once you click ``Ok`` on the editor, the lattice is completed. You should see the vertical lines in the top DBR region indicating the edges of the holes. You can cat a better preview, by selecting ``x-y`` plane in the geometry preview toolbar and by clicking |lock-screen| next to it, to set equal ratio for both axes. You should see a regular lattice of photonic crystal holes.
+
+The last thing to do is cutting only one forth of the geometry. As the ``main`` geometry has its left and back edge symmetric, we must clip the geometry to the front-right quarter. To do this, right-click the topmost ``Align`` object (the one containg bot VCSEL and the photonic crystal lattice), choose ``Insert into``, and select a ``Clip`` object. In the *Clipping Box* settings set *Left* and *Back* to 0. You should see your structure being clipped in the preview. Don't worry: PLaSK will automatically create the mirror reflections.
+
+
+
+Optical Solver
+^^^^^^^^^^^^^^
+
 
 
 .. [Dems-2010]

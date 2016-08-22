@@ -26,8 +26,8 @@
 </materials>
 
 <geometry>
-  <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
-    <clip>
+  <cartesian3d name="main" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
+    <clip left="0" back="0">
       <align xcenter="0" ycenter="0" top="{0.14895*24 + 0.13471}">
         <stack>
           <stack name="top-dbr" repeat="24">
@@ -62,7 +62,7 @@
 
 <solvers>
   <optical name="FOURIER" solver="Fourier3D" lib="slab">
-    <geometry ref="vcsel"/>
+    <geometry ref="main"/>
     <expansion lam0="980" size="{N}" update-gain="no"/>
     <mode symmetry-long="Etran" symmetry-tran="Etran"/>
     <interface object="interface"/>
@@ -74,7 +74,7 @@ from scipy.optimize import fsolve
 
 # Here we define artificial gain in the structure. If we had added electrical and gain solvers, it could be
 # calculated from the current. However, this time, we specify it manually.
-profile = StepProfile(GEO.vcsel)  # We will add gain profile to ‘vcsel’ geometry
+profile = StepProfile(GEO.main)   # We will add gain profile to the ‘main’ geometry
 profile[GEO.gain] = gain          # The gain over the geometry object ‘gain’ has value specified in defines
 
 # As step profiles can only be defined in Python script, we must make the connection here,
@@ -90,7 +90,7 @@ dy = totaly/2 + FOURIER.pmls[0].dist + FOURIER.pmls[0].size
 xx = mesh.Regular(-dx, dx, 201)
 yy = mesh.Regular(-dy, dy, 201)
 zz = mesh.Regular(-5., 5., 1001)
-msh = mesh.Rectangular3D(xx, yy, [GEO.vcsel.get_object_positions(GEO.interface)[0].z])
+msh = mesh.Rectangular3D(xx, yy, [GEO.main.get_object_positions(GEO.interface)[0].z])
 vmsh = mesh.Rectangular3D([0.], yy, zz)
 
 

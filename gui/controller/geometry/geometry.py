@@ -20,9 +20,9 @@ from ...utils.str import empty_to_none, none_to_empty
 class GNGeometryController(GNObjectController):
 
     def _borders_to_model_undoable(self):
-        self._set_node_property_undoable('borders',
-            [[empty_to_none(self.borders[dir][lh].currentText()) for lh in range(0, 2)] for dir in range(0, self.node.dim)],
-            action_name='change geometry borders')
+        self._set_node_property_undoable('edges',
+            [[empty_to_none(self.edges[dir][lh].currentText()) for lh in range(0, 2)] for dir in range(0, self.node.dim)],
+            action_name='change geometry edges')
 
     def construct_border_controllers(self, row_name=None):
         hbox, group = self._construct_hbox(row_name)
@@ -34,8 +34,8 @@ class GNGeometryController(GNObjectController):
         return res if row_name else (res, group)
 
     def construct_form(self):
-        self.construct_group('Border Settings')
-        self.borders = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
+        self.construct_group('Edges Settings')
+        self.edges = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
                              for (lo, hi) in self.node.get_alternative_direction_names())
         super(GNGeometryController, self).construct_form(roles=False)
 
@@ -43,8 +43,8 @@ class GNGeometryController(GNObjectController):
         super(GNGeometryController, self).fill_form()
         for dir in range(0, self.node.dim):
             for lh in range(0, 2):
-                with BlockQtSignals(self.borders[dir][lh]):
-                    self.borders[dir][lh].setEditText(none_to_empty(self.node.borders[dir][lh]))
+                with BlockQtSignals(self.edges[dir][lh]):
+                    self.edges[dir][lh].setEditText(none_to_empty(self.node.edges[dir][lh]))
 
 
 class GNCartesian2DGeometryController(GNGeometryController):

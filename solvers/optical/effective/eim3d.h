@@ -132,7 +132,7 @@
 //
 //     dcomplex vneff;             ///< Vertical effective index of the main stripe
 //
-//     double outdist;             ///< Distance outside outer borders where material is sampled
+//     double outdist;             ///< Distance outside outer edges where material is sampled
 //
 //     /// Parameters for longitudinal rootdigger
 //     RootDigger::Params root_long;

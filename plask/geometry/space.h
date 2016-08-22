@@ -3,7 +3,7 @@
 
 #include "transform_space_cartesian.h"
 #include "transform_space_cylindric.h"
-#include "border.h"
+#include "edge.h"
 
 #include "../axes.h"
 
@@ -53,53 +53,53 @@ struct PLASK_API Geometry: public GeometryObject {
     virtual ~Geometry() { fireChanged(Event::EVENT_DELETE); }
 
     /**
-     * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
+     * Set all edges in given direction or throw exception if this edges can't be set for this calculation space or direction.
      * @param direction see Direction
-     * @param border_lo new border strategy for lower border in given @p direction
-     * @param border_hi new border strategy for higher border in given @p direction
+     * @param border_lo new edge strategy for lower edge in given @p direction
+     * @param border_hi new edge strategy for higher edge in given @p direction
      */
-    virtual void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
+    virtual void setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) = 0;
 
     /**
-     * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
+     * Set all edges in given direction or throw exception if this edges can't be set for this calculation space or direction.
      * @param direction see Direction
-     * @param border_to_set new border strategy for given borders
+     * @param border_to_set new edge strategy for given edges
      */
-    virtual void setBorders(Direction direction, const border::Strategy& border_to_set) {
+    virtual void setBorders(Direction direction, const edge::Strategy& border_to_set) {
         setBorders(direction, border_to_set, border_to_set);
     }
 
     /**
-     * Set all planar borders or throw exception if this borders can't be set for this calculation space or direction.
+     * Set all planar edges or throw exception if this edges can't be set for this calculation space or direction.
      *
-     * Planar borders are all borders but up-bottom.
-     * @param border_to_set new border strategy for all planar borders
+     * Planar edges are all edges but up-bottom.
+     * @param border_to_set new edge strategy for all planar edges
      */
-    virtual void setPlanarBorders(const border::Strategy& border_to_set) = 0;
+    virtual void setPlanarBorders(const edge::Strategy& border_to_set) = 0;
 
     /**
-     * Set all borders (planar and up-bottom).
-     * @param border_to_set new border strategy for all borders
+     * Set all edges (planar and up-bottom).
+     * @param border_to_set new edge strategy for all edges
      */
-    void setAllBorders(const border::Strategy& border_to_set) {
+    void setAllBorders(const edge::Strategy& border_to_set) {
         setPlanarBorders(border_to_set);
         setBorders(DIRECTION_VERT, border_to_set);
     }
 
     /**
-     * Set border or throw exception if this border can't be set for this calculation space or direction.
+     * Set edge or throw exception if this edge can't be set for this calculation space or direction.
      * @param direction see Direction
      * @param higher @c true for higher bound, @c false for lower
-     * @param border_to_set new border strategy for given border
+     * @param border_to_set new edge strategy for given edge
      */
-    virtual void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) = 0;
+    virtual void setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) = 0;
 
-    //void setBorders(const std::function< std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
+    //void setBorders(const std::function< std::unique_ptr<edge::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
 
     /**
-     * Set borders using string value which is gotten from @p borderValuesGetter.
-     * @param borderValuesGetter optionaly return border strategy string for direction(s) given in argument,
-     *   argument can be one of: "borders", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
+     * Set edges using string value which is gotten from @p borderValuesGetter.
+     * @param borderValuesGetter optionaly return edge strategy string for direction(s) given in argument,
+     *   argument can be one of: "edges", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
      * @param materialsDB source of materials
      */
@@ -107,29 +107,29 @@ struct PLASK_API Geometry: public GeometryObject {
                     const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
-     * Get border strategy or throw exception if border can't be get for this calculation space or direction.
+     * Get edge strategy or throw exception if edge can't be get for this calculation space or direction.
      * @param direction see Direction
      * @param higher @c true for higher bound, @c false for lower
-     * @return border strategy for given border
+     * @return edge strategy for given edge
      */
-    virtual const border::Strategy& getBorder(Direction direction, bool higher) const = 0;
+    virtual const edge::Strategy& getBorder(Direction direction, bool higher) const = 0;
 
     /**
-     * Check if structure in given direction is symmetric, i.e. one of border in this direction is mirror.
+     * Check if structure in given direction is symmetric, i.e. one of edge in this direction is mirror.
      * @param direction direction to check
      * @return @c true only if structure is symmetric in given @p direction
      */
     virtual bool isSymmetric(Direction direction) const {
-        return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
+        return getBorder(direction, false).type() == edge::Strategy::MIRROR || getBorder(direction, true).type() == edge::Strategy::MIRROR;
     }
 
     /**
-     * Check if structure in given direction is periodic, i.e. two borders in this direction are periodic.
+     * Check if structure in given direction is periodic, i.e. two edges in this direction are periodic.
      * @param direction direction to check
      * @return @c true only if structure is periodic in given @p direction
      */
     bool isPeriodic(Direction direction) const {
-        return getBorder(direction, false).type() == border::Strategy::PERIODIC || getBorder(direction, true).type() == border::Strategy::PERIODIC;
+        return getBorder(direction, false).type() == edge::Strategy::PERIODIC || getBorder(direction, true).type() == edge::Strategy::PERIODIC;
     }
 
     /**
@@ -139,7 +139,7 @@ struct PLASK_API Geometry: public GeometryObject {
      * \return \c true only if structure is periodic in given \p direction
      */
     bool isExtended(Direction direction, bool higher) const {
-        return getBorder(direction, higher).type() == border::Strategy::EXTEND;
+        return getBorder(direction, higher).type() == edge::Strategy::EXTEND;
     }
 
     virtual Type getType() const override { return TYPE_GEOMETRY; }
@@ -153,12 +153,12 @@ struct PLASK_API Geometry: public GeometryObject {
 protected:
 
     /**
-     * Dynamic cast border to given type and throw exception in case of bad cast.
-     * @param strategy border strategy to cast
+     * Dynamic cast edge to given type and throw exception in case of bad cast.
+     * @param strategy edge strategy to cast
      */
-    template <typename BorderType>
-    static const BorderType& castBorder(const border::Strategy& strategy) {
-        return dynamic_cast<const BorderType&>(strategy);
+    template <typename EdgeType>
+    static const EdgeType& castBorder(const edge::Strategy& strategy) {
+        return dynamic_cast<const EdgeType&>(strategy);
     }
 
     /// \return alternative direction name
@@ -608,32 +608,32 @@ public:
      */
     std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints& path) const;
 
-    virtual void setPlanarBorders(const border::Strategy& border_to_set) override;
+    virtual void setPlanarBorders(const edge::Strategy& border_to_set) override;
 
     // /*
     //  * Get the sub/super-space of this one (automatically detected)
     //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
     //  * \param path hints specifying particular instance of the geometry object
-    //  * \param copyBorders indicates wheter the new space should have the same borders as this one
+    //  * \param copyBorders indicates wheter the new space should have the same edges as this one
     //  * \return new space
     //  */
     // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
     // /*
-    //  * Get the sub/super-space of this one (automatically detected) with specified borders
+    //  * Get the sub/super-space of this one (automatically detected) with specified edges
     //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
     //  * \param path hints specifying particular instance of the geometry object
-    //  * \param borders map of edge name to border description
-    //  * \param axesNames name of the axes for borders
+    //  * \param edges map of edge name to edge description
+    //  * \param axesNames name of the axes for edges
     //  * \return new space
     //  */
     // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
-    //                                              const std::map<std::string, std::string>& borders=null_borders,
+    //                                              const std::map<std::string, std::string>& edges=null_borders,
     //                                              const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
     //     GeometryD<dim>* subspace = getSubspace(object, path, false);
     //     subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
-    //         auto b = borders.find(s);
-    //         return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
+    //         auto b = edges.find(s);
+    //         return (b != edges.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
     //     }, axesNames);
     //     return subspace;
     // }
@@ -643,12 +643,12 @@ public:
 };
 
 template <> inline
-void GeometryD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
+void GeometryD<2>::setPlanarBorders(const edge::Strategy& border_to_set) {
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
 template <> inline
-void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
+void GeometryD<3>::setPlanarBorders(const edge::Strategy& border_to_set) {
     setBorders(DIRECTION_LONG, border_to_set);
     setBorders(DIRECTION_TRAN, border_to_set);
 }
@@ -667,8 +667,8 @@ class PLASK_API Geometry2DCartesian: public GeometryD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
+    edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
+    edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     shared_ptr<Material> frontMaterial;
     shared_ptr<Material> backMaterial;
@@ -680,76 +680,76 @@ public:
     virtual std::string getTypeName() const override { return NAME; }
 
     /**
-     * Set strategy for the left border.
-     * @param newValue new strategy for the left border
+     * Set strategy for the left edge.
+     * @param newValue new strategy for the left edge
      */
-    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setLeftBorder(const edge::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get left border strategy.
-     * @return left border strategy
+     * Get left edge strategy.
+     * @return left edge strategy
      */
-    const border::Strategy& getLeftBorder() { return leftright.getLo(); }
+    const edge::Strategy& getLeftBorder() { return leftright.getLo(); }
 
     /**
-     * Set strategy for the right border.
-     * @param newValue new strategy for the right border
+     * Set strategy for the right edge.
+     * @param newValue new strategy for the right edge
      */
-    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setRightBorder(const edge::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get right border strategy.
-     * @return right border strategy
+     * Get right edge strategy.
+     * @return right edge strategy
      */
-    const border::Strategy& getRightBorder() { return leftright.getHi(); }
+    const edge::Strategy& getRightBorder() { return leftright.getHi(); }
 
     /**
-     * Set strategy for the bottom border.
-     * @param newValue new strategy for the bottom border
+     * Set strategy for the bottom edge.
+     * @param newValue new strategy for the bottom edge
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setBottomBorder(const edge::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get bottom border strategy.
-     * @return bottom border strategy
+     * Get bottom edge strategy.
+     * @return bottom edge strategy
      */
-    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+    const edge::Strategy& getBottomBorder() { return bottomup.getLo(); }
 
     /**
-     * Set strategy for the top border.
-     * @param newValue new strategy for the top border
+     * Set strategy for the top edge.
+     * @param newValue new strategy for the top edge
      */
-    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setTopBorder(const edge::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get top border strategy.
-     * @return top border strategy
+     * Get top edge strategy.
+     * @return top edge strategy
      */
-    const border::Strategy& getTopBorder() { return bottomup.getHi(); }
+    const edge::Strategy& getTopBorder() { return bottomup.getHi(); }
 
     /**
-     * Set strategies for both borders in specified direction
-     * \param direction direction of the borders
-     * \param border_lo new strategy for the border with lower coordinate
-     * \param border_hi new strategy for the border with higher coordinate
+     * Set strategies for both edges in specified direction
+     * \param direction direction of the edges
+     * \param border_lo new strategy for the edge with lower coordinate
+     * \param border_hi new strategy for the edge with higher coordinate
      */
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
+    void setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
 
     /**
-     * Set strategies for a border in specified direction
-     * \param direction direction of the borders
-     * \param higher indicates whether higher- or lower-coordinate border is to be set
-     * \param border_to_set new strategy for the border with higher coordinate
+     * Set strategies for a edge in specified direction
+     * \param direction direction of the edges
+     * \param higher indicates whether higher- or lower-coordinate edge is to be set
+     * \param border_to_set new strategy for the edge with higher coordinate
      */
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
+    void setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const override;
+    const edge::Strategy& getBorder(Direction direction, bool higher) const override;
 
     /**
      * Set material on the positive side of the axis along the extrusion.
      * \param material material to set
      */
-    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::EVENT_BORDERS); }
+    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::EVENT_EDGES); }
 
     /// \return material on the positive side of the axis along the extrusion
     shared_ptr<Material> getFrontMaterial() const { return frontMaterial ? frontMaterial : defaultMaterial; }
@@ -758,7 +758,7 @@ public:
      * Set material on the negative side of the axis along the extrusion.
      * \param material material to set
      */
-    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::EVENT_BORDERS); }
+    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::EVENT_EDGES); }
 
     /// \return material on the negative side of the axis along extrusion
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
@@ -810,9 +810,9 @@ public:
 //     virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
 //     virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
-//                                           const std::map<std::string, std::string>& borders=null_borders,
+//                                           const std::map<std::string, std::string>& edges=null_borders,
 //                                           const AxisNames& axesNames=AxisNames()) const {
-//         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
+//         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, edges, axesNames);
 //     }
 
     virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
@@ -827,8 +827,8 @@ class PLASK_API Geometry2DCylindrical: public GeometryD<2> {
 
     shared_ptr<Revolution> revolution;
 
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> innerouter;
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
+    edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, edge::UniversalStrategy> innerouter;
+    edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     static void ensureBoundDirIsProper(Direction direction, bool hi) {
         Primitive<3>::ensureIsValid2DDirection(direction);
@@ -841,52 +841,52 @@ public:
     virtual std::string getTypeName() const override { return NAME; }
 
     /**
-     * Set strategy for inner border.
-     * @param newValue new strategy for inner border
+     * Set strategy for inner edge.
+     * @param newValue new strategy for inner edge
      */
-    void setInnerBorder(const border::UniversalStrategy& newValue) { innerouter.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setInnerBorder(const edge::UniversalStrategy& newValue) { innerouter.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get inner border strategy.
-     * @return inner border strategy
+     * Get inner edge strategy.
+     * @return inner edge strategy
      */
-    const border::UniversalStrategy& getInnerBorder() { return innerouter.getLo(); }
+    const edge::UniversalStrategy& getInnerBorder() { return innerouter.getLo(); }
 
     /**
-     * Set strategy for outer border.
-     * @param newValue new strategy for outer border
+     * Set strategy for outer edge.
+     * @param newValue new strategy for outer edge
      */
-    void setOuterBorder(const border::UniversalStrategy& newValue) { innerouter.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setOuterBorder(const edge::UniversalStrategy& newValue) { innerouter.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get outer border strategy.
-     * @return outer border strategy
+     * Get outer edge strategy.
+     * @return outer edge strategy
      */
-    const border::UniversalStrategy& getOuterBorder() { return innerouter.getHi(); }
+    const edge::UniversalStrategy& getOuterBorder() { return innerouter.getHi(); }
 
     /**
-     * Set strategy for bottom border.
-     * @param newValue new strategy for bottom border
+     * Set strategy for bottom edge.
+     * @param newValue new strategy for bottom edge
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setBottomBorder(const edge::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get bottom border strategy.
-     * @return bottom border strategy
+     * Get bottom edge strategy.
+     * @return bottom edge strategy
      */
-    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+    const edge::Strategy& getBottomBorder() { return bottomup.getLo(); }
 
     /**
-     * Set strategy for up border.
-     * @param newValue new strategy for up border
+     * Set strategy for up edge.
+     * @param newValue new strategy for up edge
      */
-    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setUpBorder(const edge::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get up border strategy.
-     * @return up border strategy
+     * Get up edge strategy.
+     * @return up edge strategy
      */
-    const border::Strategy& getUpBorder() { return bottomup.getHi(); }
+    const edge::Strategy& getUpBorder() { return bottomup.getHi(); }
 
     /**
      * Construct geometry over given @p revolution object.
@@ -935,22 +935,22 @@ public:
 //     virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
 //     virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
-//                                             const std::map<std::string, std::string>& borders=null_borders,
+//                                             const std::map<std::string, std::string>& edges=null_borders,
 //                                             const AxisNames& axesNames=AxisNames()) const {
-//         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
+//         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, edges, axesNames);
 //     }
 
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
+    void setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
 
-    void setBorders(Direction direction, const border::Strategy& border_to_set) override;
+    void setBorders(Direction direction, const edge::Strategy& border_to_set) override;
 
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
+    void setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const override;
+    const edge::Strategy& getBorder(Direction direction, bool higher) const override;
 
     virtual bool isSymmetric(Direction direction) const override {
         if (direction == DIRECTION_TRAN) return true;
-        return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
+        return getBorder(direction, false).type() == edge::Strategy::MIRROR || getBorder(direction, true).type() == edge::Strategy::MIRROR;
     }
 
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
@@ -971,9 +971,9 @@ class PLASK_API Geometry3D: public GeometryD<3> {
 
     shared_ptr< GeometryObjectD<3> > child;
 
-    border::StrategyPairHolder<Primitive<3>::DIRECTION_LONG> backfront;
-    border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
-    border::StrategyPairHolder<Primitive<3>::DIRECTION_VERT> bottomup;
+    edge::StrategyPairHolder<Primitive<3>::DIRECTION_LONG> backfront;
+    edge::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
+    edge::StrategyPairHolder<Primitive<3>::DIRECTION_VERT> bottomup;
 
 public:
 
@@ -982,72 +982,72 @@ public:
     virtual std::string getTypeName() const override { return NAME; }
 
     /**
-     * Set strategy for the left border.
-     * @param newValue new strategy for the left border
+     * Set strategy for the left edge.
+     * @param newValue new strategy for the left edge
      */
-    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setLeftBorder(const edge::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get left border strategy.
-     * @return left border strategy
+     * Get left edge strategy.
+     * @return left edge strategy
      */
-    const border::Strategy& getLeftBorder() { return leftright.getLo(); }
+    const edge::Strategy& getLeftBorder() { return leftright.getLo(); }
 
     /**
-     * Set strategy for the right border.
-     * @param newValue new strategy for the right border
+     * Set strategy for the right edge.
+     * @param newValue new strategy for the right edge
      */
-    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setRightBorder(const edge::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get right border strategy.
-     * @return right border strategy
+     * Get right edge strategy.
+     * @return right edge strategy
      */
-    const border::Strategy& getRightBorder() { return leftright.getHi(); }
+    const edge::Strategy& getRightBorder() { return leftright.getHi(); }
 
     /**
-     * Set strategy for the bottom border.
-     * @param newValue new strategy for the bottom border
+     * Set strategy for the bottom edge.
+     * @param newValue new strategy for the bottom edge
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setBottomBorder(const edge::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get bottom border strategy.
-     * @return bottom border strategy
+     * Get bottom edge strategy.
+     * @return bottom edge strategy
      */
-    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+    const edge::Strategy& getBottomBorder() { return bottomup.getLo(); }
 
     /**
-     * Set strategy for the top border.
-     * @param newValue new strategy for the top border
+     * Set strategy for the top edge.
+     * @param newValue new strategy for the top edge
      */
-    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
+    void setTopBorder(const edge::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_EDGES); }
 
     /**
-     * Get top border strategy.
-     * @return top border strategy
+     * Get top edge strategy.
+     * @return top edge strategy
      */
-    const border::Strategy& getTopBorder() { return bottomup.getHi(); }
+    const edge::Strategy& getTopBorder() { return bottomup.getHi(); }
 
     /**
-     * Set strategies for both borders in specified direction
-     * \param direction direction of the borders
-     * \param border_lo new strategy for the border with lower coordinate
-     * \param border_hi new strategy for the border with higher coordinate
+     * Set strategies for both edges in specified direction
+     * \param direction direction of the edges
+     * \param border_lo new strategy for the edge with lower coordinate
+     * \param border_hi new strategy for the edge with higher coordinate
      */
-    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) override;
+    void setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
 
-    void setBorders(Direction direction, const border::Strategy& border_to_set) override;
+    void setBorders(Direction direction, const edge::Strategy& border_to_set) override;
 
     /**
-     * Set strategies for a border in specified direction
-     * \param direction direction of the borders
-     * \param higher indicates whether higher- or lower-coordinate border is to be set
-     * \param border_to_set new strategy for the border with higher coordinate
+     * Set strategies for a edge in specified direction
+     * \param direction direction of the edges
+     * \param higher indicates whether higher- or lower-coordinate edge is to be set
+     * \param border_to_set new strategy for the edge with higher coordinate
      */
-    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) override;
+    void setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
 
-    const border::Strategy& getBorder(Direction direction, bool higher) const override;
+    const edge::Strategy& getBorder(Direction direction, bool higher) const override;
 
     /**
      * Construct geometry over given 3D @p child object.

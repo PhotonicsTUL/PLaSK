@@ -1,11 +1,11 @@
-#include "border.h"
+#include "edge.h"
 #include <cmath>
 
 #include <boost/algorithm/string.hpp>
 
 namespace plask {
 
-namespace border {
+namespace edge {
 
 bool Strategy::canMoveOutsideBoundingBox() const {
     return false;
@@ -124,6 +124,6 @@ std::string Mirror::str() const {
 }
 
 
-}   // namespace border
+}   // namespace edge
 
 }   // namespace plask

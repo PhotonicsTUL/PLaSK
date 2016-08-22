@@ -245,7 +245,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
   public:
 
-    /// Distance outside outer borders where the material is sampled
+    /// Distance outside outer edges where the material is sampled
     double outdist;
 
     /// Smoothing coefficient

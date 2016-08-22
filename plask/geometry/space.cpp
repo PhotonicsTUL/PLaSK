@@ -8,30 +8,30 @@ namespace plask {
 void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
 {
     boost::optional<std::string> v, v_lo, v_hi;
-    v = borderValuesGetter("borders");
-    if (v) setAllBorders(*border::Strategy::fromStrUnique(*v, materialsDB));
+    v = borderValuesGetter("edges");
+    if (v) setAllBorders(*edge::Strategy::fromStrUnique(*v, materialsDB));
     v = borderValuesGetter("planar");
-    if (v) setPlanarBorders(*border::Strategy::fromStrUnique(*v, materialsDB));
+    if (v) setPlanarBorders(*edge::Strategy::fromStrUnique(*v, materialsDB));
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = axesNames[dir_nr];
         v = borderValuesGetter(axis_name);
-        if (v) setBorders(Direction(dir_nr), *border::Strategy::fromStrUnique(*v, materialsDB));
+        if (v) setBorders(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
         v_lo = borderValuesGetter(axis_name + "-lo");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-            if (v_lo) throw BadInput("setBorders", "Border specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
+            if (v_lo) throw BadInput("setBorders", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
             else v_lo = v;
         }
         v_hi = borderValuesGetter(axis_name + "-hi");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-            if (v_hi) throw BadInput("setBorders", "Border specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
+            if (v_hi) throw BadInput("setBorders", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
             else v_hi = v;
         }
         try {
             if (v_lo && v_hi) {
-                setBorders(Direction(dir_nr),  *border::Strategy::fromStrUnique(*v_lo, materialsDB), *border::Strategy::fromStrUnique(*v_hi, materialsDB));
+                setBorders(Direction(dir_nr),  *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
             } else {
-                if (v_lo) setBorder(Direction(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo, materialsDB));
-                if (v_hi) setBorder(Direction(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi, materialsDB));
+                if (v_lo) setBorder(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
+                if (v_hi) setBorder(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
             }
         } catch (DimensionError) {
             throw BadInput("setBorders", "Axis '{0}' is not allowed for this space", axis_name);
@@ -40,8 +40,8 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
 }
 
 void Geometry::storeBorderInXML(XMLWriter::Element &dest_xml_object, Geometry::Direction direction, bool higher) const {
-    const border::Strategy& b = this->getBorder(direction, higher);
-    if (b.type() != border::Strategy::DEFAULT)
+    const edge::Strategy& b = this->getBorder(direction, higher);
+    if (b.type() != edge::Strategy::DEFAULT)
         dest_xml_object.attr(this->alternativeDirectionName(direction, higher), b.str());
 }
 
@@ -165,25 +165,25 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 //     //     return new Geometry2DCartesian(new_child, getExtrusion()->length);
 // }
 
-void Geometry2DCartesian::setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Geometry2DCartesian::setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.setStrategies(border_lo, border_hi);
     else
         bottomup.setStrategies(border_lo, border_hi);
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCartesian::setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) {
+void Geometry2DCartesian::setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.set(higher, border_to_set);
     else
         bottomup.set(higher, border_to_set);
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-const border::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool higher) const {
+const edge::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool higher) const {
     Primitive<3>::ensureIsValid2DDirection(direction);
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
@@ -243,40 +243,40 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
 // Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyBorders) const {
 // }
 
-void Geometry2DCylindrical::setBorders(Direction direction, const border::Strategy& border_to_set) {
+void Geometry2DCylindrical::setBorders(Direction direction, const edge::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN) {
         try {
-            innerouter.setBoth(dynamic_cast<const border::UniversalStrategy&>(border_to_set));
+            innerouter.setBoth(dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast) {
-            throw BadInput("setBorders", "Wrong border type for inner or outer border");
+            throw BadInput("setBorders", "Wrong edge type for inner or outer edge");
         }
     } else
         bottomup.setBoth(border_to_set);
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Geometry2DCylindrical::setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) {
+void Geometry2DCylindrical::setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction, higher);
     if (direction == DIRECTION_TRAN) {
         try {
-            innerouter.set(higher, dynamic_cast<const border::UniversalStrategy&>(border_to_set));
+            innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast) {
-            throw BadInput("setBorder", "Wrong border type for inner or outer border");
+            throw BadInput("setBorder", "Wrong edge type for inner or outer edge");
         }
     } else
         bottomup.set(higher, border_to_set);
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-const border::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bool higher) const {
+const edge::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bool higher) const {
     ensureBoundDirIsProper(direction, higher);
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
@@ -288,34 +288,34 @@ void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, Writ
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
 }
 
-void Geometry3D::setBorders(Direction direction, const border::Strategy &border_lo, const border::Strategy &border_hi) {
+void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_lo, const edge::Strategy &border_hi) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setStrategies(border_lo, border_hi); break;
         case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
         case DIRECTION_VERT: bottomup.setStrategies(border_lo, border_hi); break;
     }
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setBorders(Direction direction, const border::Strategy &border_to_set) {
+void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setBoth(border_to_set); break;
         case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
         case DIRECTION_VERT: bottomup.setBoth(border_to_set); break;
     }
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setBorder(Direction direction, bool higher, const border::Strategy &border_to_set) {
+void Geometry3D::setBorder(Direction direction, bool higher, const edge::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.set(higher, border_to_set); break;
         case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
         case DIRECTION_VERT: bottomup.set(higher, border_to_set); break;
     }
-    fireChanged(Event::EVENT_BORDERS);
+    fireChanged(Event::EVENT_EDGES);
 }
 
-const border::Strategy &Geometry3D::getBorder(Direction direction, bool higher) const {
+const edge::Strategy &Geometry3D::getBorder(Direction direction, bool higher) const {
     switch (direction) {
         case DIRECTION_LONG: return backfront.get(higher);
         case DIRECTION_TRAN: return leftright.get(higher);

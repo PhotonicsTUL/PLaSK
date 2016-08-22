@@ -78,12 +78,12 @@ stack.append(shelf)
 p = stack.append(shelf)
 
 
-borders = dict(left='periodic', right='periodic', back='periodic', front='periodic')
+edges = dict(left='periodic', right='periodic', back='periodic', front='periodic')
 b0, b1 = (('back', 'front'), ('left', 'right'))[axis]
-if not periodic: borders[b0] = borders[b1] = None
-if symmetric: borders[b0] = 'mirror'
+if not periodic: edges[b0] = edges[b1] = None
+if symmetric: edges[b0] = 'mirror'
 
-main = geometry.Cartesian3D(stack, **borders)
+main = geometry.Cartesian3D(stack, **edges)
 
 opt = optical.Fourier3D("opt")
 opt.geometry = main

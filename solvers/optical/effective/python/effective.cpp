@@ -228,7 +228,7 @@ BOOST_PYTHON_MODULE(effective)
         u8"method in two-dimensional Cartesian space.\n")
         solver.add_property("mesh", &EffectiveIndex2D::getMesh, &Optical_setMesh<EffectiveIndex2D>, u8"Mesh provided to the solver.");
         solver.add_property("polarization", &EffectiveIndex2D_getPolarization, &EffectiveIndex2D_setPolarization, u8"Polarization of the searched modes.");
-        RW_FIELD(outdist, u8"Distance outside outer borders where material is sampled.");
+        RW_FIELD(outdist, u8"Distance outside outer edges where material is sampled.");
         RO_FIELD(root,
                  u8"Configuration of the root searching algorithm for horizontal component of the\n"
                  u8"mode.\n\n"
@@ -355,7 +355,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(k0, u8"Reference normalized frequency.");
         RW_FIELD(vlam, u8"'Vertical wavelength' used as a helper for searching vertical modes.");
         solver.add_property("lam0", &EffectiveFrequencyCyl_getLambda0, &EffectiveFrequencyCyl_setLambda0, u8"Reference wavelength.");
-        RW_FIELD(outdist, u8"Distance outside outer borders where material is sampled.");
+        RW_FIELD(outdist, u8"Distance outside outer edges where material is sampled.");
         RO_FIELD(root,
                  u8"Configuration of the root searching algorithm for horizontal component of the\n"
                  u8"mode.\n\n"

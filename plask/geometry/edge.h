@@ -1,5 +1,5 @@
-#ifndef PLASK__GEOMETRY_BORDER_H
-#define PLASK__GEOMETRY_BORDER_H
+#ifndef PLASK__GEOMETRY_EDGE_H
+#define PLASK__GEOMETRY_EDGE_H
 
 #include "../material/db.h"
 #include "primitives.h"
@@ -8,7 +8,7 @@
 
 namespace plask {
 
-namespace border {
+namespace edge {
 
 /**
  * Base, abstract for all classes which describe what do with points outside geometry in calculation space.
@@ -65,7 +65,7 @@ struct PLASK_API Strategy {
 
     /*void ensureCanCoexists(const Strategy& oppositeStrategy) const {
         if (!canCoexistsWith(oppositeStrategy) || !oppositeStrategy.canCoexistsWith(*this))
-            throw Exception("Border strategies \"{0}\" and \"{1}\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
+            throw Exception("Edges \"{0}\" and \"{1}\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
     }*/
 
     /**
@@ -151,7 +151,7 @@ struct PLASK_API SimpleMaterial: public UniversalStrategy {
 };
 
 /**
- * Strategy which moves point p to nearest border.
+ * Strategy which moves point p to nearest edge.
  */
 struct PLASK_API Extend: public UniversalStrategy {
 
@@ -201,7 +201,7 @@ struct PLASK_API Mirror: public Strategy {
 };
 
 /**
- * Held border strategy with given type and:
+ * Held edge strategy with given type and:
  * - delegate apply methods to held strategy,
  * - allow to assing strategy to self (using operator=).
  * @tparam direction held strategy working direction (coordinate of vector component)
@@ -283,11 +283,11 @@ class PLASK_API StrategyPairHolder {
         if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) &&
              strategy_lo.type() != Strategy::MIRROR && strategy_hi.type() != Strategy::MIRROR &&
              strategy_lo.type() != strategy_hi.type()
-           ) writelog(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
+           ) writelog(LOG_WARNING, "Periodic and non-periodic edges used on opposite sides of one direction.");
         //strategy_lo.ensureCanCoexists(strategy_hi);
         if (strategy_hi.canMoveOutsideBoundingBox()) {
             if (strategy_lo.canMoveOutsideBoundingBox())
-                throw Exception("Border strategies on both sides can move point outside bounding box.");
+                throw Exception("Edges on both sides can move point outside bounding box.");
             reverseCallingOrder = true;
         } else
             reverseCallingOrder = false;
@@ -359,8 +359,8 @@ public:
     bool isPeriodic() const { return strategy_lo.type() == Strategy::PERIODIC && strategy_hi.type() == Strategy::PERIODIC; }
 };
 
-}   // namespace border
+}   // namespace edge
 
 }   // namespace plask
 
-#endif // PLASK__GEOMETRY_BORDER_H
+#endif // PLASK__GEOMETRY_EDGE_H

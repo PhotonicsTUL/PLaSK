@@ -552,7 +552,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 with the lower one.
 
         mirror (bool): If *True* then the geometry is mirrored if its
-                specification says so (i.e. some borders are set to
+                specification says so (i.e. some edges are set to
                 *mirror* or the geometry is a cylindrical one).
 
         periods (int): Number of periods to plot periodic geometries.
@@ -639,7 +639,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
     except TypeError:
         periods = array((periods, periods), int)
     try:
-        if geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or \
+        if geometry.edges[dirs[0][0]] == 'mirror' or geometry.edges[dirs[0][1]] == 'mirror' or \
            isinstance(geometry, plask.geometry.Cylindrical2D):
             hshift *= 2
             hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
@@ -647,7 +647,7 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
             periods[0] = 2*periods[0] - 1
         else:
             hmirror = False
-        if geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror':
+        if geometry.edges[dirs[1][0]] == 'mirror' or geometry.edges[dirs[1][1]] == 'mirror':
             vshift *= 2
             vmirrortransform = matplotlib.transforms.Affine2D.from_values(1., 0, 0, -1., 0, 0)
             vmirror = mirror
@@ -656,12 +656,12 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 vhmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, -1., 0, 0)
         else:
             vmirror = False
-        if geometry.borders[dirs[0][0]] == 'periodic' or geometry.borders[dirs[0][1]] == 'periodic':
+        if geometry.edges[dirs[0][0]] == 'periodic' or geometry.edges[dirs[0][1]] == 'periodic':
             hstart = -int((periods[0]-1) / 2)
             hrange = range(hstart, hstart + max(periods[0], 1))
         else:
             hrange = (0,)
-        if geometry.borders[dirs[1][0]] == 'periodic' or geometry.borders[dirs[1][1]] == 'periodic':
+        if geometry.edges[dirs[1][0]] == 'periodic' or geometry.edges[dirs[1][1]] == 'periodic':
             vstart = -int((periods[1]-1) / 2)
             vrange = range(vstart, vstart + max(periods[1], 1))
         else:

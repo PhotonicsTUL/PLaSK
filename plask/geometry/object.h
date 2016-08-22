@@ -83,7 +83,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
             EVENT_CHILDREN_INSERT = 1<<3, ///< children was insert
             EVENT_CHILDREN_REMOVE = 1<<4, ///< children was removed
             EVENT_CHILDREN_GENERIC = 1<<5,///< children list was changed (other or custom changes)
-            EVENT_BORDERS = 1<<6,         ///< borders was changed (only Geometries/calculation spaces emit events with this flags)
+            EVENT_EDGES = 1<<6,         ///< edges was changed (only Geometries/calculation spaces emit events with this flags)
             EVENT_STEPS = 1<<7,           ///< step refining was changed
             EVENT_USER_DEFINED = 1<<8     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
         };
@@ -140,10 +140,10 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         bool hasChangedChildrenList() const { return hasAnyFlag(EVENT_CHILDREN_INSERT|EVENT_CHILDREN_REMOVE|EVENT_CHILDREN_GENERIC); }
 
         /**
-         * Check if EVENT_BORDERS flag is set, which mean that borders connected with source could changed.
-         * @return @c true only if EVENT_BORDERS flag is set
+         * Check if EVENT_EDGES flag is set, which mean that edges connected with source could changed.
+         * @return @c true only if EVENT_EDGES flag is set
          */
-        bool hasChangedBorders() const { return hasFlag(EVENT_BORDERS); }
+        bool hasChangedBorders() const { return hasFlag(EVENT_EDGES); }
 
         /**
          * Get original source of event which can differ from source if event was delegated.

@@ -9,29 +9,29 @@ class GNGeometryBase(GNObject):
 
     def __init__(self, parent=None, dim=None):
         super(GNGeometryBase, self).__init__(parent=parent, dim=dim, children_dim=dim)
-        self.borders = [[None, None] for _ in range(0, dim)]
+        self.edges = [[None, None] for _ in range(0, dim)]
 
-    def all_borders(self):
+    def all_edges(self):
         """
-            :return: border if all borders all are the same or None in other cases
+            :return: edge if all edges all are the same or None in other cases
         """
-        b = self.borders[0]
-        return b if all(x == b for x in self.borders) else None
+        b = self.edges[0]
+        return b if all(x == b for x in self.edges) else None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNGeometryBase, self)._attributes_from_xml(attribute_reader, conf)
         all_names = self.get_alternative_direction_names()
         planar_names = all_names[:-1]
 
-        b = attribute_reader.get('borders')
+        b = attribute_reader.get('edges')
         if b is None:
-            self.borders = [[None, None] for _ in range(0, self.dim)]
+            self.edges = [[None, None] for _ in range(0, self.dim)]
         else:
-            self.borders = [[b, b] for _ in range(0, self.dim)]
+            self.edges = [[b, b] for _ in range(0, self.dim)]
 
         b = attribute_reader.get('planar')
         if b is not None:   #plana are all dirs except last (top/bottom)
-            self.borders = [[b, b] for _ in range(0, self.dim-1)]
+            self.edges = [[b, b] for _ in range(0, self.dim-1)]
 
         for axis_nr, axis_name in enumerate(conf.axes_names(dim=self.dim)):
             for lo_hi_index, lo_or_hi in enumerate(('lo', 'hi')):
@@ -39,17 +39,17 @@ class GNGeometryBase(GNObject):
                 alternative_name = all_names[axis_nr][lo_hi_index]
                 b = attribute_reader.get(alternative_name)
                 if a is not None:
-                    if b is not None: raise ValueError("Border specified by both '{}' and '{}'.".format(axis_name + lo_or_hi, alternative_name))
-                    self.borders[axis_nr][lo_hi_index] = a
+                    if b is not None: raise ValueError("Edge specified by both '{}' and '{}'.".format(axis_name + lo_or_hi, alternative_name))
+                    self.edges[axis_nr][lo_hi_index] = a
                 else:
-                    if b is not None: self.borders[axis_nr][lo_hi_index] = b
+                    if b is not None: self.edges[axis_nr][lo_hi_index] = b
 
     def _attributes_to_xml(self, element, conf):
         super(GNGeometryBase, self)._attributes_to_xml(element, conf)
         names = self.get_alternative_direction_names()
         for axis_nr in range(0, self.dim):
             for lo_hi_index in range(0, 2):
-                val = self.borders[axis_nr][lo_hi_index]
+                val = self.edges[axis_nr][lo_hi_index]
                 if val is not None: element.attrib[names[axis_nr][lo_hi_index]] = val
 
     def _children_from_xml(self, ordered_reader, conf):
@@ -57,16 +57,16 @@ class GNGeometryBase(GNObject):
 
     def major_properties(self):
         res = super(GNGeometryBase, self).major_properties()
-        b = self.all_borders()
+        b = self.all_edges()
         if b is not None:
-            res.append(('all borders', b[1]))
+            res.append(('all edges', b[1]))
         else:
-            if not all(b is None for b in self.borders):
-                res.append('borders:')
+            if not all(b is None for b in self.edges):
+                res.append('edges:')
                 names = self.get_alternative_direction_names()
                 for axis_nr in range(0, self.dim):
                     for lo_hi_index in range(0, 2):
-                        val = self.borders[axis_nr][lo_hi_index]
+                        val = self.edges[axis_nr][lo_hi_index]
                         if val is not None: res.append((names[axis_nr][lo_hi_index], val))
                 res.append(None)
         return res

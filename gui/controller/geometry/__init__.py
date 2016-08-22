@@ -456,7 +456,7 @@ class GeometryController(Controller):
         if self._current_index is None: return
         node = self._current_index.internalPointer()
         if isinstance(node, GNGeometryBase):
-            self.geometry_view.clean_selectors()  # TODO: show borders
+            self.geometry_view.clean_selectors()  # TODO: show geometry edges
             self.geometry_view.canvas.draw()
         else:
             selected = self.model.fake_root.get_corresponding_object(node, self.manager)
