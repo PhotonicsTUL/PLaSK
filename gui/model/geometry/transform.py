@@ -473,7 +473,9 @@ class GNLattice(GNTransform):
 
     def major_properties(self):
         res = super(GNLattice, self).major_properties()
-        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '-', x[1] if x[1] else '-', x[2] if x[2] else '-')
+        vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '0',
+                                                      x[1] if x[1] else '0',
+                                                      x[2] if x[2] else '0')
                                for x in self.vectors if x != (None, None, None))
         if vectors_str: res.append(('basis vectors', vectors_str))
         return res
@@ -484,11 +486,16 @@ class GNLattice(GNTransform):
             vec = self.vectors[vec_idx]
             for i, v in enumerate(vec):
                 if not can_be_float(v):
-                    self._require(res, ('vectors', vec_idx, i), ('first', 'second')[vec_idx] + ' basis vector', type='float')
-            if not ((vec[0] and vec[0].strip() != '0') or
-                    (vec[1] and vec[1].strip() != '0') or
-                    (vec[2] and vec[2].strip() != '0')):
-                self._require(res, ('vectors', vec_idx, 0), 'non-zero ' + ('first', 'second')[vec_idx] + ' basis vector')
+                    self._require(res, ('vectors', vec_idx, i),
+                                  ('first', 'second')[vec_idx] + ' basis vector', type='float')
+            try:
+                if not ((vec[0] and float(vec[0]) != 0.) or
+                        (vec[1] and float(vec[1]) != 0.) or
+                        (vec[2] and float(vec[2]) != 0.)):
+                    self._require(res, ('vectors', vec_idx, 0),
+                                  'non-zero ' + ('first', 'second')[vec_idx] + ' basis vector')
+            except (ValueError, TypeError):
+                pass
 
     @staticmethod
     def from_xml_3d(element, conf):

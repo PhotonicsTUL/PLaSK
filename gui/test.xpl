@@ -33,7 +33,7 @@
 <geometry>
   <cartesian3d name="l3cavity">
     <stack front="0">
-      <lattice along="-{sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
+      <lattice along="{-sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
         <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ -1 -2; -2 -2; -2 -1; 1 2; 2 2; 2 1</segments>
         <cylinder material="GaAs" radius="0.35" height="1.0"/>
       </lattice>
@@ -123,6 +123,11 @@
       <revolution>
         <again ref="VCSEL"/>
       </revolution>
+      <item xcenter="0" ycenter="0">
+        <arrange dy="6.0" count="8">
+          <cuboid material="GaAs" dx="44.0" dy="2.0" dz="0.5"/>
+        </arrange>
+      </item>
     </align>
   </cartesian3d>
   <cartesian3d name="geo3d2" axes="long,tran,vert">
