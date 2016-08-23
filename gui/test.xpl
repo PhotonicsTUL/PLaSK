@@ -94,10 +94,10 @@
         <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
         <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
         <stack name="junction" role="active">
-          <rectangle role="QW" material="InGaAsQW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
+          <rectangle role="QW" material="In(0.2)GaAs_QW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
           <stack repeat="4">
             <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
-            <rectangle role="QW" material="InGaAsQW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
+            <rectangle role="QW" material="In(0.2)GaAs_QW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
           </stack>
         </stack>
         <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
@@ -145,14 +145,14 @@
           <stack>
             <stack name="top-dbr" repeat="24">
               <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.06940"/>
-              <cuboid material="AlGaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
+              <cuboid material="Al(0.7)GaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
             </stack>
             <stack name="cavity">
               <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.12171"/>
               <stack name="active">
                 <align name="qw" xcenter="0" ycenter="0" bottom="0">
-                  <cuboid material="QW" dx="{X}" dy="{Y}" dz="0.00800"/>
-                  <cylinder name="gain" role="gain" material="QW" radius="{L/2}" height="0.00800"/>
+                  <cuboid material="In(0.7)GaAs" dx="{X}" dy="{Y}" dz="0.00800"/>
+                  <cylinder name="gain" role="gain" material="In(0.7)GaAs" radius="{L/2}" height="0.00800"/>
                 </align>
                 <cuboid name="interface" material="GaAs" dx="{X}" dy="{Y}" dz="0.00500"/>
                 <again ref="qw"/>
@@ -162,7 +162,7 @@
               <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.12171"/>
             </stack>
             <stack name="bottom-dbr" repeat="29">
-              <cuboid material="AlGaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
+              <cuboid material="Al(0.2)GaAs" dx="{X}" dy="{Y}" dz="0.07955"/>
               <cuboid material="GaAs" dx="{X}" dy="{Y}" dz="0.06940"/>
             </stack>
           </stack>
@@ -249,7 +249,7 @@
   </electrical>
   <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="8" strained="12"/>
+    <config lifetime="0.5" matrix-elem="8" strained="yes"/>
   </gain>
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
@@ -287,9 +287,18 @@
 
 <script><![CDATA[
 from scipy import optimize
-
 import sys
-print_log('result', sys.executable)
+
+print_log(LOG_RESULT, sys.executable)
+
+print_log(LOG_RESULT, "DEFINES")
+for item in DEF.items():
+    print_log(LOG_RESULT, "{} = {}".format(*item))
+
+print_log(LOG_RESULT, "ARGUMENTS")
+for arg in sys.argv[1:]:
+    print_log(LOG_RESULT, arg)
+
 
 print mesaRadius + 0
 
