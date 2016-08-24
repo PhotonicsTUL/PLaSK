@@ -41,8 +41,6 @@ namespace py = boost::python;
 //******************************************************************************
 py::object globals;
 
-bool endwait = false;
-
 //******************************************************************************
 
 // static PyThreadState* mainTS;   // state of the main thread
@@ -190,10 +188,6 @@ void endPlask() {
     // PyEval_RestoreThread(mainTS);
     fixMatplotlibBug();
     // Py_Finalize(); // Py_Finalize is not supported by Boost
-    if (endwait) {
-        std::cerr << "\nPress Enter to close the window...";
-        std::getchar();
-    }
 }
 
 
@@ -207,13 +201,13 @@ int main(int argc, const char *argv[])
         return 0;
     }
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    SetDllDirectory(plask::exePath().c_str());
-    DWORD procIDs[2];
-    unsigned console_count = GetConsoleProcessList(procIDs, 2);
-#else
-    unsigned console_count = 1;
-#endif
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        SetDllDirectory(plask::exePath().c_str());
+        DWORD procIDs[2];
+        unsigned console_count = GetConsoleProcessList(procIDs, 2);
+#   else
+        unsigned console_count = 1;
+#   endif
 
     // Parse commnad line
     bool force_interactive = false;
@@ -222,6 +216,12 @@ int main(int argc, const char *argv[])
     bool color_log = true;
     bool python_logger = false;
 
+    enum {
+        FILE_ANY = 0,
+        FILE_XML,
+        FILE_PY
+    } filetype = FILE_ANY;
+    
     std::deque<const char*> defs;
 
     while (argc > 1) {
@@ -245,6 +245,12 @@ int main(int argc, const char *argv[])
                 else if (ll == "data") loglevel.reset(plask::LOG_DATA);
                 else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
                 else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
+                else if (ll == "python") {
+                    python_logger = true;;
+                    if (level == argv[2]) { argc -= 2; argv += 2; }
+                    else { --argc; ++argv; }
+                    continue;
+                }
                 else {
                     fprintf(stderr, "Bad log level specified\n");
                     return 4;
@@ -258,37 +264,41 @@ int main(int argc, const char *argv[])
             argv[2] = "-c";
             --argc; ++argv;
             break;
-        } else if (arg == "-c") {
-            command = argv[2];
-            argv[2] = "-c";
-            --argc; ++argv;
-            break;
+        } else if (arg == "-g") {
+            python_logger = true;
+#           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+                if (console_count == 1) { // we are the only ones using the console
+                    HWND hwnd = GetConsoleWindow();
+                    ShowWindow(hwnd, SW_HIDE);
+                    console_count = 0;
+                }
+#           endif
+            argv[1] = "-u";
         } else if (arg == "-u") {
+#           if defined(MS_WINDOWS) || defined(__CYGWIN__)
+                _setmode(fileno(stderr), _O_BINARY);
+                _setmode(fileno(stdout), _O_BINARY);
+#           endif
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);
-#  if defined(MS_WINDOWS) || defined(__CYGWIN__)
-            _setmode(fileno(stderr), _O_BINARY);
-            _setmode(fileno(stdout), _O_BINARY);
-#  endif
             color_log = false;
-#if PY_VERSION_HEX >= 0x03000000
-            Py_UnbufferedStdioFlag = 1;
-#endif
+#           if PY_VERSION_HEX >= 0x03000000
+                Py_UnbufferedStdioFlag = 1;
+#           endif
+            --argc; ++argv;
+        } else if (arg == "-x") {
+            if (filetype == FILE_PY)  {
+                fprintf(stderr, "You cannot specify both -x and -p\n");
+                return 4;
+            }
+            filetype = FILE_XML;
             --argc; ++argv;
         } else if (arg == "-p") {
-            python_logger = true;
-            --argc; ++argv;
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-        } else if (arg == "-w") {
-            if (console_count == 1) { // we are the only ones using the console
-                HWND hwnd = GetConsoleWindow();
-                ShowWindow(hwnd, SW_HIDE);
-                console_count = 0;
+            if (filetype == FILE_XML)  {
+                fprintf(stderr, "You cannot specify both -x and -p\n");
+                return 4;
             }
-            --argc; ++argv;
-#endif
-        } else if (arg == "-x") {
-            endwait = true;
+            filetype = FILE_PY;
             --argc; ++argv;
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
@@ -365,41 +375,46 @@ int main(int argc, const char *argv[])
             return exitcode;
         }
 
-        try
-        {
+        try {
             std::string filename = argv[1];
-            boost::optional<bool> xml_input;
 
             globals["__file__"] = filename;
 
             // Detect if the file is Python script or PLaSK input
-
-            // check file extension
-            try {
-                std::string ext = filename.substr(filename.length()-4);
-                if (ext == ".xpl") xml_input.reset(true);
-                else if (ext == ".xml") xml_input.reset(true);
-                else if (ext.substr(2) == ".py") xml_input.reset(false);
-            } catch (std::out_of_range) {}
-
-            if (!xml_input) {
-                // check first char (should be '<' in XML)
-                FILE* file = std::fopen(filename.c_str(), "r");
-                if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
-                int c;
-                while ((c = std::getc(file))) {
-                    if (!std::isspace(c) || c == EOF) break;
+            if (filename != "-") {
+                if (!filetype) {
+                    // check file extension
+                    try {
+                        std::string ext = filename.substr(filename.length()-4);
+                        if (ext == ".xpl") filetype = FILE_XML;
+                        else if (ext == ".xml") filetype = FILE_XML;
+                        else if (ext.substr(2) == ".py") filetype = FILE_PY;
+                    } catch (std::out_of_range) {}
                 }
-                std::fclose(file);
-                if (c == '<') xml_input.reset(true);
-                else xml_input.reset(false);
-            } else if (*xml_input) {
-                FILE* file = std::fopen(filename.c_str(), "r");
-                if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
-                std::fclose(file);
+                if (!filetype) {
+                    // check first char (should be '<' in XML)
+                    FILE* file = std::fopen(filename.c_str(), "r");
+                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    int c;
+                    while ((c = std::getc(file))) {
+                        if (!std::isspace(c) || c == EOF) break;
+                    }
+                    std::fclose(file);
+                    if (c == '<') filetype = FILE_XML;
+                    else filetype = FILE_PY;
+                } else {
+                    FILE* file = std::fopen(filename.c_str(), "r");
+                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    std::fclose(file);
+                }
+                assert(filetype);
+            } else {
+                if (!filetype) {
+                    throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from STDIN");
+                }
             }
-
-            if (*xml_input) {
+            
+            if (filetype == FILE_XML) {
 
                 py::dict locals;
                 for (const char* def: defs) {
@@ -420,7 +435,13 @@ int main(int argc, const char *argv[])
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
-                plask::python::PythonManager_load(omanager, py::str(filename), locals);
+                if (filename != "-")
+                    plask::python::PythonManager_load(omanager, py::str(filename), locals);
+                else {
+                    py::object sys = py::import("sys");
+                    plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);                    
+                    filename = "STDIN";
+                }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
                 PyDict_Update(globals.ptr(), manager->defs.ptr());
@@ -458,35 +479,45 @@ int main(int argc, const char *argv[])
                     throw py::error_already_set();
                 }
                 PyObject* pyfile = nullptr;
+                PyObject* result;
 #               if PY_VERSION_HEX >= 0x03000000
-#                   if PY_VERSION_HEX >= 0x03040000
-                        FILE* file = _Py_fopen(filename.c_str(), "r");
-#                   else
-                        pyfile = PyUnicode_FromString(filename.c_str());
-                        FILE* file = _Py_fopen(pyfile, "r");
-#                   endif
-                    PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
-                    fclose(file);
+                    if (filename != '-') {
+#                       if PY_VERSION_HEX >= 0x03040000
+                            FILE* file = _Py_fopen(filename.c_str(), "r");
+#                       else
+                            pyfile = PyUnicode_FromString(filename.c_str());
+                            FILE* file = _Py_fopen(pyfile, "r");
+#                       endif
+                        result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                        fclose(file);
+                    } else {
+                        result = PyRun_File(stdin, "STDIN", Py_file_input, globals.ptr(), globals.ptr());
+                    }
 #               else
                     // We want to set "from __future__ import division" flag
-                    pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
-                    if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
-                    FILE* file = PyFile_AsFile(pyfile);
-                    PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                    PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                    if (filename != "-") {
+                        pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
+                        if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
+                        FILE* file = PyFile_AsFile(pyfile);
+                        PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                        result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                    } else {
+                        PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                        result = PyRun_FileFlags(stdin, "STDIN", Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                    }
 #               endif
                 Py_XDECREF(pyfile);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
             }
-        }   // try
+        }
         // when PRINT_STACKTRACE_ON_EXCEPTION is defined, we will not catch most exceptions
         // in order to handle it by terminate handler and print a call stack
-            catch (std::invalid_argument& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-                endPlask();
-                return -1;
-            }
+        catch (std::invalid_argument& err) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+            endPlask();
+            return -1;
+        }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
                 plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", argv[1], err.what());

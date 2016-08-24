@@ -112,11 +112,15 @@ class Launcher(object):
         else:
             env = None
 
+        script = os.path.dirname(__file__)
+
         if os.name == 'nt':
-            subprocess.Popen([program, '-x', '-l{}'.format(loglevel)] + list(defs) + ['--', filename] + list(args),
+            script = os.path.join(script, 'console.bat')
+            subprocess.Popen([script, program, '-l{}'.format(loglevel)] + list(defs) + ['--', filename] + list(args),
                              cwd=dirname, env=env)
         elif os.name == 'posix':
-            command = ' '.join(quote(s) for s in [program, '-x', '-l{}'.format(loglevel)] + list(defs) +
+            script = os.path.join(script, 'console.sh')
+            command = ' '.join(quote(s) for s in [script, program, '-l{}'.format(loglevel)] + list(defs) +
                                ['--', filename] + list(args))
             term = CONFIG['launcher_console/terminal']
             subprocess.Popen([term, '-e', command], cwd=dirname, env=env)

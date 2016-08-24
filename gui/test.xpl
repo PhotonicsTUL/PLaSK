@@ -31,14 +31,6 @@
 </materials>
 
 <geometry>
-  <cartesian3d name="l3cavity">
-    <stack front="0">
-      <lattice along="{-sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
-        <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ -1 -2; -2 -2; -2 -1; 1 2; 2 2; 2 1</segments>
-        <cylinder material="GaAs" radius="0.35" height="1.0"/>
-      </lattice>
-    </stack>
-  </cartesian3d>
   <cartesian2d name="geo2d" length="1000">
     <stack>
       <shelf flat="no">
@@ -67,6 +59,14 @@
       <rectangle material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
+  <cartesian3d name="l3cavity">
+    <stack front="0">
+      <lattice along="{-sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
+        <segments>-4 0; 0 4; 4 4; 4 0; 0 -4; -4 -4 ^ -1 -2; -2 -2; -2 -1; 1 2; 2 2; 2 1</segments>
+        <cylinder material="GaAs" radius="0.35" height="1.0"/>
+      </lattice>
+    </stack>
+  </cartesian3d>
   <cartesian2d name="simple">
     <stack>
       <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>

@@ -39,7 +39,9 @@ else:
         def __call__(self, line, *args, **kwargs):
             self.out.write(line.format(*args, **kwargs))
             self.out.write('\n')
-
+        def __del__(self):
+            self.out.flush()
+            self.out.channel.shutdown_write()
 
     class Launcher(object):
         name = "Remote Batch Job"
@@ -77,8 +79,7 @@ else:
             if not passwd: passwd = None
             workdir = self.workdir.text()
             document = main_window.document
-            filename = os.path.basename(document.filename) if document.filename else \
-                'unnamed.py' if isinstance(document, PyDocument) else 'unnamed.xpl'
+            filetype = 'p' if isinstance(document, PyDocument) else 'x'
 
             ssh = paramiko.SSHClient()
 
@@ -92,21 +93,24 @@ else:
             elif not workdir.startswith('/'):
                 _, stdout, _ = ssh.exec_command("pwd")
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
-            fullname = '/'.join((workdir, filename))
 
-            sftp = ssh.open_sftp()
-            sftp.open(fullname, 'w').write(document.get_content())
-            sftp.close()
+            #sftp = ssh.open_sftp()
+            #sftp.open(fullname, 'w').write(document.get_content())
+            #sftp.close()
 
             stdin, stdout, stderr = ssh.exec_command("qsub".format(quote(workdir)))
             s = Printer(stdin)
             s("#!/bin/sh")
             s("#PBS -d {}", workdir)
-            s("plask {2} {0} {1}\n", quote(filename),
-              ' '.join(quote(a) for a in args),
-              ' '.join(quote(d) for d in defs))
-            stdin.flush()
-            stdin.channel.shutdown_write()
+            if document.filename is not None:
+                name = os.path.basename(document.filename)
+                s("#PBS -n {}", name)
+            s("plask -{ft} {0} - {1} <<PLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7\n",
+              ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
+              ft=filetype)
+            s.out.write(document.get_content())
+            s("\nPLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7")
+            del s
             jobid = stdout.read()
 
             print(str(jobid))
@@ -114,5 +118,5 @@ else:
             sys.stdout.flush()
 
 
-    if _DEBUG:  #TODO: remo
+    if _DEBUG:  #TODO: remove when the launcher is ready
         LAUNCHERS.append(Launcher())
