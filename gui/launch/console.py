@@ -120,7 +120,7 @@ class Launcher(object):
                              cwd=dirname, env=env)
         elif os.name == 'posix':
             script = os.path.join(script, 'console.sh')
-            command = ' '.join(quote(s) for s in [script, program, '-l{}'.format(loglevel)] + list(defs) +
+            command = ' '.join(quote(s) for s in ['/bin/sh', script, program, '-l{}'.format(loglevel)] + list(defs) +
                                ['--', filename] + list(args))
             term = CONFIG['launcher_console/terminal']
             subprocess.Popen([term, '-e', command], cwd=dirname, env=env)

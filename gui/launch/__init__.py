@@ -26,6 +26,7 @@ LAUNCHERS = [LocalLauncher(), ConsoleLauncher()]
 
 current_launcher = None
 
+
 class LaunchDialog(QtGui.QDialog):
 
     def __init__(self, window, parent=None):
@@ -71,9 +72,8 @@ class LaunchDialog(QtGui.QDialog):
         self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
         global current_launcher
         if current_launcher is None:
-            if CONFIG['workarounds/console_launcher']:
-                current_launcher = combo.findText(ConsoleLauncher.name)
-            else:
+            current_launcher = combo.findText(CONFIG['launcher/default'])
+            if current_launcher == -1:
                 current_launcher = combo.findText(LocalLauncher.name)
         for i, widget in enumerate(self.launcher_widgets):
             widget.setVisible(i == current_launcher)

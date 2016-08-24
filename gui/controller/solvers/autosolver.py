@@ -45,7 +45,7 @@ def set_attr_list(model, group, attr, values):
     data = model.data[group]
 
     skip = len(attr)  # delete old attributes (data can have more attributes than values)
-    for k in data.keys():
+    for k in list(data.keys()):
         if k[:skip] == attr and k[-1].isdigit(): del data[k]
 
     for i,value in enumerate(values):

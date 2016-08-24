@@ -56,6 +56,7 @@ DEFAULTS = {
     'editor/replace_color': '#ffddff',
     'editor/matching_bracket_color': '#aaffaa',
     'editor/not_matching_bracket_color': '#ffaaaa',
+    'launcher/defalt': 'Local Process',
     'launcher_local/font': [_default_font_family, str(QtGui.QFont().pointSize()-1),
                             '-1', '5', '50', '0', '0', '0', '0', '0'],
     'syntax/xml_comment': 'color=green, italic=true',
@@ -96,9 +97,13 @@ DEFAULTS = {
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/blocking_jedi': False,
-    'workarounds/console_launcher': False,
     'workarounds/disable_omp': False,
 }
+
+
+def _get_launchers():
+    from ..launch import LAUNCHERS
+    return [l.name for l in LAUNCHERS]
 
 
 def CheckBox(entry, help=None):
@@ -142,7 +147,11 @@ CONFIG_WIDGETS = OrderedDict([
             ("Automatically check for updates",
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
-        ])
+        ]),
+        ("Launcher",
+         [
+            ("Default launcher", Combo('launcher/default', _get_launchers, "Default launcher to select in new window")),
+         ]),
     ])),
     ("Window Display", OrderedDict([
         ("Geometry View", [
@@ -208,7 +217,7 @@ CONFIG_WIDGETS = OrderedDict([
                                               "Highlight color for unmatched brackets "
                                               "in script editor.")),
         ]),
-        ("Launcher", [
+        ("Local Launcher", [
             ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
         ]),
     ])),
@@ -254,8 +263,6 @@ CONFIG_WIDGETS = OrderedDict([
                                       "PLaSK ({});;Any program ({})"
                                       .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
                                       "Full patch to PLaSK executable (leave empty for default)")),
-            ("Prefer console launcher", CheckBox('workarounds/console_launcher',
-                                                 "Select console launcher by default.")),
             ("Disable OpenMP", CheckBox('workarounds/disable_omp',
                                         "Disable parallel computations with OpenMP.")),
         ]),
@@ -352,6 +359,8 @@ class ConfigDialog(QtGui.QDialog):
         def __init__(self, entry, options, parent=None, help=None):
             super(ConfigDialog.Combo, self).__init__(parent)
             self.entry = entry
+            if callable(options):
+                options = options()
             self.addItems(options)
             try:
                 index = options.index(CONFIG[entry])
