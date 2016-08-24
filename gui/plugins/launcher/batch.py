@@ -188,13 +188,15 @@ else:
             elif not workdir.startswith('/'):
                 _, stdout, _ = ssh.exec_command("pwd")
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
+            ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
             try:
                 stdin, stdout, stderr = ssh.exec_command("qsub".format(quote(workdir)))
                 s = Printer(stdin)
                 s("#!/bin/sh")
                 s("#PBS -N {}", name)
-                s("#PBS -q {}", queue)
+                if queue:
+                    s("#PBS -q {}", queue)
                 s("#PBS -d {}", workdir)
                 s("plask -{ft} {0} - {1} <<PLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7\n",
                   ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
