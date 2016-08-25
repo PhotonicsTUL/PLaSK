@@ -221,7 +221,7 @@ int main(int argc, const char *argv[])
         FILE_XML,
         FILE_PY
     } filetype = FILE_ANY;
-    
+
     std::deque<const char*> defs;
 
     while (argc > 1) {
@@ -413,7 +413,7 @@ int main(int argc, const char *argv[])
                     throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from STDIN");
                 }
             }
-            
+
             if (filetype == FILE_XML) {
 
                 py::dict locals;
@@ -439,7 +439,7 @@ int main(int argc, const char *argv[])
                     plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 else {
                     py::object sys = py::import("sys");
-                    plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);                    
+                    plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
                     filename = "STDIN";
                 }
                 if (manager->scriptline)
@@ -481,7 +481,7 @@ int main(int argc, const char *argv[])
                 PyObject* pyfile = nullptr;
                 PyObject* result;
 #               if PY_VERSION_HEX >= 0x03000000
-                    if (filename != '-') {
+                    if (filename != "-") {
 #                       if PY_VERSION_HEX >= 0x03040000
                             FILE* file = _Py_fopen(filename.c_str(), "r");
 #                       else

@@ -26,6 +26,7 @@ from gui.launch import LAUNCHERS
 from gui.xpldocument import XPLDocument
 from gui.utils.config import CONFIG
 
+from socket import timeout as TimeoutException
 
 try:
     import paramiko
@@ -44,8 +45,11 @@ def hexlify(data):
 class Torque(object):
 
     @staticmethod
-    def get_queues(ssh):
-        _, stdout, stderr = ssh.exec_command("qstat -Q")
+    def get_queues(ssh, bp=''):
+        if bp:
+            if not bp.endswith('/'): bp += '/'
+            bp = quote(bp)
+        _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
         if stdout.channel.recv_exit_status() == 0:
             return sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1])
         else:
@@ -57,9 +61,13 @@ class Torque(object):
 
 
     @staticmethod
-    def submit(ssh, document, args, defs, name, queue, command, workdir, others):
+    def submit(ssh, document, args, defs, name, queue, command, workdir, others, bp=''):
+        if bp:
+            if not bp.endswith('/'): bp += '/'
+            bp = quote(bp)
         stdin, stdout, stderr = ssh.exec_command(
-            "qsub -N {} -d {}{}".format(quote(name), quote(workdir), ' -q '+quote(queue) if queue else ''))
+            "{3}qsub -N {0}{1} -d {2}"
+                .format(quote(name), ' -q '+quote(queue) if queue else ''), quote(workdir), bp)
         try:
             print("#!/bin/sh", file=stdin)
             for oth in others:
@@ -89,7 +97,7 @@ SYSTEMS = OrderedDict([('Torque', Torque)])
 class AccountEditDialog(QtGui.QDialog):
 
     def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, program=None,
-                 parent=None):
+                 bp=None, parent=None):
         super(AccountEditDialog, self).__init__(parent)
         self.launcher = launcher
 
@@ -137,7 +145,7 @@ class AccountEditDialog(QtGui.QDialog):
             self.system_edit.setCurrentIndex(systems.index(system))
         except ValueError:
             pass
-        layout.addRow("&System:", self.system_edit)
+        layout.addRow("&Batch system:", self.system_edit)
 
         qbox = QtGui.QVBoxLayout()
         qbox.setContentsMargins(0, 0, 0, 0)
@@ -155,14 +163,22 @@ class AccountEditDialog(QtGui.QDialog):
         qbox.addWidget(get_queues)
         qwidget = QtGui.QWidget()
         qwidget.setLayout(qbox)
-        layout.addRow("&Queues:", qwidget)
+        layout.addRow("Execution &Queues:", qwidget)
 
         self.program_edit = QtGui.QLineEdit()
-        self.program_edit.setToolTip("Path to PLaSK executable.")
+        self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
         self.program_edit.setPlaceholderText("plask")
         if program is not None:
             self.program_edit.setText(program)
         layout.addRow("Co&mmand:", self.program_edit)
+
+        self.bp_edit = QtGui.QLineEdit()
+        self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
+                                "set this, however you may need to specify it if the submit command is\n"
+                                "located in a non-standard directory.")
+        if bp is not None:
+            self.bp_edit.setText(bp)
+        layout.addRow("Batch system pat&h:", self.bp_edit)
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -184,11 +200,11 @@ class AccountEditDialog(QtGui.QDialog):
     def get_queues(self):
         ssh = self.launcher.connect(self.host, self.user)
         if ssh is None: return
-        self.queues_edit.setPlainText('\n'.join(SYSTEMS[self.system].get_queues(ssh)).strip())
+        self.queues_edit.setPlainText('\n'.join(SYSTEMS[self.system].get_queues(ssh, self.bp_edit.text())).strip()+'\n')
 
     def accept(self):
         queues = self.queues_edit.toPlainText()
-        if any(':' in s for s in (self.name, self.host, self.user, queues)) or ',' in queues:
+        if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
             QtGui.QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
         else:
             super(AccountEditDialog, self).accept()
@@ -219,6 +235,10 @@ class AccountEditDialog(QtGui.QDialog):
     def program(self):
         return self.program_edit.text()
 
+    @property
+    def bp(self):
+        return self.bp_edit.text()
+
 
 class Launcher(object):
     name = "Remote Batch Job"
@@ -243,13 +263,14 @@ class Launcher(object):
             accounts = accounts.split('\n')
             if not isinstance(accounts, list):
                 accounts = [accounts]
-            self.accounts = OrderedDict((a, (uh, s, q.split(',') if q else [], p)) for a,uh,s,q,p in
+            self.accounts = OrderedDict((a, (uh, s, q.split(',') if q else [], p, b)) for a,uh,s,q,p,b in
                                        (item.split(':') for item in accounts))
         else:
             self.accounts = OrderedDict()
         self.accounts_combo = QtGui.QComboBox()
         self.accounts_combo.addItems([s for s in self.accounts])
         self.accounts_combo.setEditText(self._saved_account)
+        self.accounts_combo.currentIndexChanged.connect(self.account_changed)
         self.accounts_combo.textChanged.connect(self.account_changed)
         self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
         accounts_layout.addWidget(self.accounts_combo)
@@ -332,11 +353,12 @@ class Launcher(object):
         return widget
 
     def _save_accounts(self):
-        data = ["{0}:{1[0]}:{1[1]}:{2}:{1[3]}".format(k, v, ','.join(v[2])) for k, v in self.accounts.items()]
+        data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{1[3]}:{1[4]}"
+                         .format(k, v, ','.join(v[2])) for k, v in self.accounts.items())
         if not data:
             del CONFIG['launcher_batch/accounts']
         else:
-            CONFIG['launcher_batch/accounts'] = '\n'.join(data)
+            CONFIG['launcher_batch/accounts'] = data
         CONFIG.sync()
 
     def account_add(self):
@@ -347,12 +369,14 @@ class Launcher(object):
             system = dialog.system
             queues = dialog.queues
             program = dialog.program
+            bp = dialog.bp
             if account not in self.accounts:
-                self.accounts[account] = userhost, system, queues, program
+                self.accounts[account] = userhost, system, queues, program, bp
                 self.accounts_combo.addItem(account)
                 self.accounts_combo.setCurrentIndex(self.accounts_combo.count()-1)
             else:
-                self.accounts[account] = system, queues
+                QtGui.QMessageBox.critical(None, "Add Error",
+                                           "Execution account '{}' already in the list.".format(account))
             self._save_accounts()
 
     def account_edit(self):
@@ -364,24 +388,25 @@ class Launcher(object):
             if old != new:
                 if new in self.accounts:
                     QtGui.QMessageBox.critical(None, "Edit Error",
-                                               "Execution account {} already in the list.".format(new))
+                                               "Execution account '{}' already in the list.".format(new))
                 else:
                     userhost = "{}@{}".format(dialog.user, dialog.host)
                     system = dialog.system
                     queues = dialog.queues
                     program = dialog.program
+                    bp = dialog.bp
                     for i in range(len(self.accounts)):
                         k, v = self.accounts.popitem(False)
                         if k == old:
-                            self.accounts[new] = userhost, system, queues, program
+                            self.accounts[new] = userhost, system, queues, program, bp
                         else:
                             self.accounts[k] = v
                     self.accounts_combo.setItemText(idx, new)
                     self.account_changed(new)
                     self._save_accounts()
             else:
-                self.accounts[old] = "{}@{}".format(dialog.user, dialog.host),\
-                                     dialog.system, dialog.queues, dialog.program
+                self.accounts[old] = "{}@{}".format(dialog.user, dialog.host), \
+                                     dialog.system, dialog.queues, dialog.program, dialog.bp
                 self.account_changed(old)
                 self._save_accounts()
 
@@ -392,8 +417,10 @@ class Launcher(object):
         self._save_accounts()
 
     def account_changed(self, account):
+        if isinstance(account, int):
+            account = self.accounts_combo.itemText(account)
         self.queue.clear()
-        self.queue.addItems(self.accounts.get(account, ['','',[],''])[2])
+        self.queue.addItems(self.accounts.get(account, ['','',[],'',''])[2])
         self._saved_account = account
 
     def show_others(self, widget, visible):
@@ -495,9 +522,13 @@ class Launcher(object):
                 else:
                     return
             except Exception as err:
+                try:
+                    msg = err.message
+                except AttributeError:
+                    msg = str(err)
                 answer = QtGui.QMessageBox.critical(None, "Connection Error",
                                                     "Could not connect to {}.\n\n{}\n\nTry again?"
-                                                    .format(host, err.message),
+                                                    .format(host, msg),
                                                     QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)
                 if answer == QtGui.QMessageBox.No:
                     return
@@ -512,6 +543,7 @@ class Launcher(object):
         system = account[1]
         queue = self._saved_queue = self.queue.currentText()
         command = account[3] if account[3] else 'plask'
+        bp = account[4]
         name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         others = self.others.toPlainText().split("\n")
 
@@ -526,7 +558,7 @@ class Launcher(object):
             workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
         ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-        result, message = SYSTEMS[system].submit(ssh, document, args, defs, name, queue, command, workdir, others)
+        result, message = SYSTEMS[system].submit(ssh, document, args, defs, name, queue, command, workdir, others, bp)
 
         if message: message = "\n\n" + message
         if result:
