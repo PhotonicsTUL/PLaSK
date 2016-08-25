@@ -67,7 +67,7 @@ class Torque(object):
             bp = quote(bp)
         stdin, stdout, stderr = ssh.exec_command(
             "{3}qsub -N {0}{1} -d {2}"
-                .format(quote(name), ' -q '+quote(queue) if queue else ''), quote(workdir), bp)
+                .format(quote(name), (' -q '+quote(queue)) if queue else '', quote(workdir), bp))
         try:
             print("#!/bin/sh", file=stdin)
             for oth in others:
