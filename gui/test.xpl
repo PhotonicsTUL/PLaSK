@@ -233,7 +233,7 @@
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <matrix itererr="2"/>
-    <junction beta0="{beta_def}" js0="{js_def}"/>
+    <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
     <voltage>
       <condition value="2.0">
         <place side="bottom" object="p-contact"/>

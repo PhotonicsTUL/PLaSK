@@ -91,7 +91,7 @@ class Torque(object):
                 return True, "Submitted job(s):\n" + output
 
 
-SYSTEMS = OrderedDict([('Torque', Torque)])
+SYSTEMS = OrderedDict([('PBS/Torque', Torque)])
 
 
 class AccountEditDialog(QtGui.QDialog):
@@ -106,7 +106,7 @@ class AccountEditDialog(QtGui.QDialog):
         else:
             user = host = None
 
-        self.setWindowTitle("SSH Server")
+        self.setWindowTitle("Add" if name is None else "Edit" + " Remote Server")
 
         layout = QtGui.QFormLayout()
         self.setLayout(layout)
@@ -165,12 +165,17 @@ class AccountEditDialog(QtGui.QDialog):
         qwidget.setLayout(qbox)
         layout.addRow("Execution &Queues:", qwidget)
 
+        self.advanced = QtGui.QWidget(self)
+        alayout = QtGui.QFormLayout()
+        alayout.setContentsMargins(0, 0, 0, 0)
+        self.advanced.setLayout(alayout)
+
         self.program_edit = QtGui.QLineEdit()
         self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
         self.program_edit.setPlaceholderText("plask")
         if program is not None:
             self.program_edit.setText(program)
-        layout.addRow("Co&mmand:", self.program_edit)
+        alayout.addRow("Co&mmand:", self.program_edit)
 
         self.bp_edit = QtGui.QLineEdit()
         self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
@@ -178,14 +183,27 @@ class AccountEditDialog(QtGui.QDialog):
                                 "located in a non-standard directory.")
         if bp is not None:
             self.bp_edit.setText(bp)
-        layout.addRow("Batch system pat&h:", self.bp_edit)
+        alayout.addRow("Batch system pat&h:", self.bp_edit)
+
+        layout.addRow(self.advanced)
+        self.advanced.setVisible(False)
+
+        abutton = QtGui.QPushButton("&Advanced...")
+        abutton.setCheckable(True)
+        abutton.toggled.connect(self.show_advanced)
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+        buttons.addButton(abutton, QtGui.QDialogButtonBox.ActionRole)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        layout.addRow(buttons)
 
         self.host_edit.setFocus()
+
+    def show_advanced(self, show):
+        self.advanced.setVisible(show)
+        self.setFixedHeight(self.sizeHint().height())
+        self.adjustSize()
 
     def name_edited(self):
         self.autoname = False
@@ -280,7 +298,7 @@ class Launcher(object):
         account_add.pressed.connect(self.account_add)
         accounts_layout.addWidget(account_add)
         account_edit = QtGui.QToolButton()
-        account_edit.setIcon(QtGui.QIcon.fromTheme('document-properties'))
+        account_edit.setIcon(QtGui.QIcon.fromTheme('document-edit'))
         account_edit.setToolTip("Edit the current remote server.")
         account_edit.pressed.connect(self.account_edit)
         accounts_layout.addWidget(account_edit)

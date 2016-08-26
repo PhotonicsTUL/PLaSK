@@ -353,119 +353,122 @@ class TextEditWithCB(QtGui.QPlainTextEdit):
         if self.key_cb is not None: self.key_cb(event)
 
 
-class MultiLineEdit(QtGui.QScrollArea):
+class MultiLineEdit(QtGui.QWidget):
     """
     Widget showing multiple lines
     """
 
-    class Row(QtGui.QWidget):
-
-        def __init__(self, parent, value=None):
-            super(MultiLineEdit.Row, self).__init__(parent)
-            self._parent = parent
-            self._edit = QtGui.QLineEdit()
-            self._edit.editingFinished.connect(parent._edited)
-            if value is not None:
-                self._edit.setText(value)
-            layout = QtGui.QHBoxLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(self._edit)
-            # if self.movable:
-            #     up = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), "Move Up", row)
-            #     up.triggered.connect(lambda: self.widget().layout().removeWidget(row))
-            if parent.persistent:
-                self._remove = QtGui.QToolButton(self)
-                self._remove.setIcon(QtGui.QIcon.fromTheme('list-remove'))
-                self._remove.pressed.connect(lambda: parent._remove_row(self))
-                layout.addWidget(self._remove)
-            else:
-                self._remove = None
-            self.setLayout(layout)
-
-        @property
-        def text(self):
-            return self._edit.text()
-
-        @text.setter
-        def text(self, text):
-            self._edit.setText(text)
-
-        def set_last(self, last):
-            if last:
-                self._edit.setPalette(self._parent.last_palette)
-                if self._remove is not None: self._remove.setEnabled(False)
-                self._edit.setText('')
-            else:
-                self._edit.setPalette(self._parent.regular_palette)
-                if self._remove is not None: self._remove.setEnabled(True)
-
-    def __init__(self, movable=False, persistent=False, change_cb=None):
+    def __init__(self, movable=False, change_cb=None):
         super(MultiLineEdit, self).__init__()
-        self.persistent = persistent
-        self.movable = movable
         self.change_cb = change_cb
-        widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        widget.setLayout(layout)
-        self.setWidget(widget)
-        self.setWidgetResizable(True)
-        self.regular_palette = self.palette()
-        self.last_palette = self.palette()
-        self.last_palette.setColor(QtGui.QPalette.Base, self.last_palette.color(QtGui.QPalette.Window))
+        layout = QtGui.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        self.list_widget = QtGui.QListWidget()
+        layout.addWidget(self.list_widget)
+        buttons = QtGui.QVBoxLayout()
+        buttons.setContentsMargins(0, 0, 0, 0)
+        buttons.setSpacing(1)
+        add = QtGui.QToolButton()
+        add.setIcon(QtGui.QIcon.fromTheme('list-add'))
+        add.pressed.connect(self.add_item)
+        buttons.addWidget(add)
+        self.edit = QtGui.QToolButton()
+        self.edit.setIcon(QtGui.QIcon.fromTheme('document-edit'))
+        self.edit.pressed.connect(self.edit_item)
+        buttons.addWidget(self.edit)
+        self.remove = QtGui.QToolButton()
+        self.remove.setIcon(QtGui.QIcon.fromTheme('list-remove'))
+        self.remove.pressed.connect(self.remove_item)
+        buttons.addWidget(self.remove)
+        if movable:
+            self.up = QtGui.QToolButton()
+            self.up.setIcon(QtGui.QIcon.fromTheme('go-up'))
+            self.up.pressed.connect(self.move_up)
+            buttons.addWidget(self.up)
+            self.down = QtGui.QToolButton()
+            self.down.setIcon(QtGui.QIcon.fromTheme('go-down'))
+            self.down.pressed.connect(self.move_down)
+            buttons.addWidget(self.down)
+        else:
+            self.up = None
+            self.down = None
+        layout.addLayout(buttons)
+        self.selected()
+        self.list_widget.itemSelectionChanged.connect(self.selected)
+        self.list_widget.itemChanged.connect(self.item_changed)
 
-    def _remove_row(self, row):
-        layout = self.widget().layout()
-        if self.sender().parent() == layout.itemAt(layout.count()-1).widget():
-            return
-        self.widget().layout().removeWidget(row)
-        row.setParent(None)
-        self.updateGeometry()
-        if self.change_cb is not None: self.change_cb()
+    def selected(self):
+        row = self.list_widget.currentRow()
+        if row != -1:
+            self.edit.setEnabled(True)
+            self.remove.setEnabled(True)
+            if self.up is not None:
+                self.up.setEnabled(row > 0)
+            if self.down is not None:
+                self.down.setEnabled(row < self.list_widget.count()-1)
+        else:
+            self.edit.setEnabled(False)
+            self.remove.setEnabled(False)
+            if self.up is not None: self.up.setEnabled(False)
+            if self.down is not None: self.down.setEnabled(False)
 
-    def _edited(self):
-        empty = not self.sender().text()
-        row = self.sender().parent()
-        layout = self.widget().layout()
-        last = layout.indexOf(row) == layout.count() - 1
-        if empty and not (last or self.persistent):
-            layout.removeWidget(row)
-            row.setParent(None)
-            self.updateGeometry()
-        if not empty and last:
-            layout.addWidget(self.Row(self))
-            self.updateGeometry()
-        if self.change_cb is not None: self.change_cb()
+    def item_changed(self, item):
+        if item is not None:
+            self.list_widget.setCurrentItem(item)
+        if self.change_cb is not None:
+            self.change_cb()
+
+    def add_item(self):
+        with BlockQtSignals(self.list_widget):
+            item = QtGui.QListWidgetItem('enter_value')
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
+            self.list_widget.addItem(item)
+        self.list_widget.setCurrentItem(None)
+        self.list_widget.editItem(item)
+
+    def edit_item(self):
+        item = self.list_widget.currentItem()
+        if item:
+            self.list_widget.editItem(item)
+
+    def remove_item(self):
+        row = self.list_widget.currentRow()
+        if row != -1:
+            self.list_widget.takeItem(row)
+            self.item_changed(None)
+
+    def move_up(self):
+        row = self.list_widget.currentRow()
+        if row > 0:
+            item = self.list_widget.takeItem(row)
+            self.list_widget.insertItem(row-1, item)
+            self.item_changed(item)
+
+    def move_down(self):
+        row = self.list_widget.currentRow()
+        if row != -1 and row < self.list_widget.count()-1:
+            item = self.list_widget.takeItem(row)
+            self.list_widget.insertItem(row+1, item)
+            self.item_changed(item)
 
     def set_values(self, values):
-        values = tuple(values)
-        layout = self.widget().layout()
-        for i in range(layout.count()-1, len(values)+1, -1):
-            item = layout.takeAt(i)
-            item.widget().setParent(None)
-            del item
-        for i, value in enumerate(values):
-            if i < layout.count():
-                row = layout.itemAt(i).widget()
-                row.set_last(False)
-                row.text = value
+        values = list(values)
+        n = len(values)
+        with BlockQtSignals(self.list_widget):
+            if self.list_widget.count() != n:
+                self.list_widget.clear()
+                self.list_widget.addItems(values)
+                for i in range(n):
+                    item = self.list_widget.item(i)
+                    item.setFlags(item.flags() | Qt.ItemIsEditable)
             else:
-                row = self.Row(self, value)
-                layout.addWidget(row)
-        if len(values) < layout.count():
-            row = layout.itemAt(len(values)).widget()
-            row.set_last(True)
-        else:
-            row = self.Row(self)
-            row.set_last(True)
-            layout.addWidget(row)
-        self.updateGeometry()
+                for i in range(n):
+                    item = self.list_widget.item(i)
+                    item.setText(values[i])
 
     def get_values(self):
-        values = []
-        layout = self.widget().layout()
-        for i in range(layout.count()-1):
-            values.append(layout.itemAt(i).widget().text)
-        return values
+        return [self.list_widget.item(i).text() for i in range(self.list_widget.count())]
 
 
 def fire_edit_end(widget=None):
