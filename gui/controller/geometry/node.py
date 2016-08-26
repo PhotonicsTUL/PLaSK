@@ -92,9 +92,10 @@ class GNodeController(Controller):
         old_value = getattr(node, property_name)
         if action_name is None:
             if display_property_name is None: display_property_name = property_name
-            action_name = u'change {} to "{}"{}'.format(display_property_name, none_to_empty(new_value), none_to_empty(unit))
-        self._set_node_by_setter_undoable(lambda n, v: setattr(n, property_name, v), new_value, old_value,
-                                          action_name=action_name, node=node)
+            action_name = u'change {} to "{}"{}' \
+                .format(display_property_name, none_to_empty(new_value), none_to_empty(unit))
+        return self._set_node_by_setter_undoable(lambda n, v: setattr(n, property_name, v), new_value, old_value,
+                                                 action_name=action_name, node=node)
 
     def _set_node_by_setter_undoable(self, setter, new_value, old_value, action_name, node=None):
         if new_value != old_value:
@@ -102,6 +103,9 @@ class GNodeController(Controller):
                 self.model, self.node if node is None else node,
                 setter, new_value, old_value, action_name
             ))
+            return True
+        else:
+            return False
 
     def _get_current_form(self):
         if not hasattr(self, '_current_form'): self.construct_group()

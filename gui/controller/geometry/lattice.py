@@ -44,8 +44,8 @@ class GNLatticeController(GNObjectController):
 
     def _segments_changed(self):
         segments = (seg for seg in (val.strip() for val in self.segments.get_values()) if seg)
-        self._set_node_property_undoable('segments', ' ^ '.join(segments))
-        return True
+        if not self._set_node_property_undoable('segments', ' ^ '.join(segments)):
+            self.model.fire_changed()  # clean up the editor
 
     def construct_lattice_edit(self, node_property_name=None, display_property_name=None,
                                change_cb=None, sep='\n', edit_cb=None):

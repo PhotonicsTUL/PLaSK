@@ -72,7 +72,7 @@ class Torque(object):
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("{0} -{ft} {1} - {2} <<PLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7\n".format(command,
+            print("{0} -{ft} {1} - {2} <<PLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7".format(command,
                 ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
                 ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
             print(document.get_content(), file=stdin)
@@ -503,7 +503,7 @@ class Launcher(object):
 
         while True:
             try:
-                ssh.connect(host, username=user, password=passwd, timeout=15)
+                ssh.connect(host, username=user, password=passwd, compress=True, timeout=15)
             except Launcher.AbortException:
                 return
             except paramiko.BadHostKeyException as err:
