@@ -79,12 +79,12 @@ class Torque(object):
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("(base64 -d | gunzip | {0} -{ft} -l{loglevel}{logcolor} {defs} -:{fname} {args})<<\\_EOF_"
-                  .format(command,
+            print("(base64 -d | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args})<<\\_EOF_"
+                  .format(cmd=command,
                           fname=fname,
                           defs=' '.join(quote(d) for d in defs),
                           args=' '.join(quote(a) for a in args),
-                          loglevel=loglevel, logcolor=' -lansi' if color else '',
+                          ll=loglevel, lc=' -lansi' if color else '',
                           ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
             gzipped = StringIO()
             with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
@@ -593,7 +593,7 @@ class Launcher(object):
         system = account[1]
         queue = self._saved_queue = self.queue.currentText()
         color = account[3]
-        command = account[4] if account[3] else 'plask'
+        command = account[4] if account[4] else 'plask'
         bp = account[5]
         name = self.jobname.text()
         if not name:
