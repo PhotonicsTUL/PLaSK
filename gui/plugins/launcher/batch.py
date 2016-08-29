@@ -28,6 +28,13 @@ from gui.utils.config import CONFIG
 
 from socket import timeout as TimeoutException
 
+from gzip import GzipFile
+from base64 import b64encode
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 try:
     import paramiko
 except ImportError:
@@ -65,18 +72,21 @@ class Torque(object):
         if bp:
             if not bp.endswith('/'): bp += '/'
             bp = quote(bp)
-        stdin, stdout, stderr = ssh.exec_command(
-            "{3}qsub -N {0}{1} -d {2}"
-                .format(quote(name), (' -q '+quote(queue)) if queue else '', quote(workdir), bp))
+        stdin, stdout, stderr = ssh.exec_command("{3}qsub -N {0}{1} -d {2}"
+            .format(quote(name), (' -q '+quote(queue)) if queue else '', quote(workdir), bp))
         try:
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("{0} -{ft} {1} - {2} <<PLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7".format(command,
-                ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
-                ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
-            print(document.get_content(), file=stdin)
-            print("\nPLASK_BATCH_LAUNCHER_EOF_VAEXE4TAH7", file=stdin)
+            print("(base64 -d | gunzip | {0} -{ft} {1} - {2})<<\\_EOF_"
+                  .format(command,
+                          ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
+                          ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
+            gzipped = StringIO()
+            with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
+                gzip.write(document.get_content().encode('utf8'))
+            print(b64encode(gzipped.getvalue()), file=stdin)
+            print("_EOF_", file=stdin)
             stdin.flush()
             stdin.channel.shutdown_write()
         except (OSError, IOError):

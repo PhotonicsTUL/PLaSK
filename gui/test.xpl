@@ -292,7 +292,7 @@ import sys
 print_log(LOG_RESULT, sys.executable)
 
 print_log(LOG_RESULT, "DEFINES")
-for item in DEF.items():
+for item in list(DEF.items()):
     print_log(LOG_RESULT, "{} = {}".format(*item))
 
 print_log(LOG_RESULT, "ARGUMENTS")
@@ -300,14 +300,14 @@ for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
 
-print mesaRadius + 0
+print(mesaRadius + 0)
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
 
 # OPTICAL.find_mode
 
-print f
+print(f)
 
 class A(object):
     
@@ -434,7 +434,7 @@ class A(object):
         self.a = 1
         
 a = A()
-print a.a
+print(a.a)
 ]]></script>
 
 </plask>
