@@ -200,10 +200,10 @@ PLASK_PYTHON_API void setLoggingColor(std::string color) {
     if (color == "ansi")
         default_logger->color = Logger::COLOR_ANSI;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    else if (color == "windows")
+    else if (color == "windows" color == "dos")
         default_logger->color = Logger::COLOR_WINDOWS;
 #endif
-    else if (color == "none")
+    else if (color == "none" or color == "mono")
         default_logger->color = Logger::COLOR_NONE;
     else
         throw ValueError("Wrong logging coloring specification.");

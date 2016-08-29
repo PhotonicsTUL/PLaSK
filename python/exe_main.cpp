@@ -213,7 +213,7 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
-    bool color_log = true;
+    const char* log_color = nullptr;
     bool python_logger = false;
 
     enum {
@@ -245,18 +245,15 @@ int main(int argc, const char *argv[])
                 else if (ll == "data") loglevel.reset(plask::LOG_DATA);
                 else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
                 else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
-                else if (ll == "python") {
-                    python_logger = true;;
-                    if (level == argv[2]) { argc -= 2; argv += 2; }
-                    else { --argc; ++argv; }
-                    continue;
-                }
+                else if (ll == "python") { python_logger = true; }
+                else if (ll == "ansi") { log_color = "ansi"; }
+                else if (ll == "mono") { log_color = "none"; }
                 else {
                     fprintf(stderr, "Bad log level specified\n");
                     return 4;
                 }
             }
-            plask::forcedLoglevel = true;
+            if (loglevel) plask::forcedLoglevel = true;
             if (level == argv[2]) { argc -= 2; argv += 2; }
             else { --argc; ++argv; }
         } else if (arg == "-c") {
@@ -281,7 +278,7 @@ int main(int argc, const char *argv[])
 #           endif
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);
-            color_log = false;
+            log_color = "none";
 #           if PY_VERSION_HEX >= 0x03000000
                 Py_UnbufferedStdioFlag = 1;
 #           endif
@@ -312,7 +309,7 @@ int main(int argc, const char *argv[])
     // Set the Python logger
     if (python_logger) plask::python::createPythonLogger();
     else plask::createDefaultLogger();
-    if (!color_log) plask::python::setLoggingColor("none");
+    if (log_color) plask::python::setLoggingColor(log_color);
     if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Initalize python and load the plask module

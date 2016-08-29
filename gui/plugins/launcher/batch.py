@@ -68,7 +68,7 @@ class Torque(object):
 
 
     @staticmethod
-    def submit(ssh, document, args, defs, name, queue, command, workdir, others, bp=''):
+    def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, bp=''):
         fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         if bp:
             if not bp.endswith('/'): bp += '/'
@@ -79,10 +79,12 @@ class Torque(object):
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("(base64 -d | gunzip | {0} -{ft} {2} -:{1} {3})<<\\_EOF_"
-                  .format(command, fname,
-                          ' '.join(quote(d) for d in defs),
-                          ' '.join(quote(a) for a in args),
+            print("(base64 -d | gunzip | {0} -{ft} -lansi -l{log} {defs} -:{fname} {args})<<\\_EOF_"
+                  .format(command,
+                          fname=fname,
+                          defs=' '.join(quote(d) for d in defs),
+                          args=' '.join(quote(a) for a in args),
+                          log=loglevel,
                           ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
             gzipped = StringIO()
             with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
@@ -587,6 +589,8 @@ class Launcher(object):
         if not name:
             name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         others = self.others.toPlainText().split("\n")
+        loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
+                   [self.loglevel.currentIndex()]
 
         ssh = self.connect(host, user)
         if ssh is None: return
@@ -599,7 +603,7 @@ class Launcher(object):
             workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
         ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-        result, message = SYSTEMS[system].submit(ssh, document, args, defs, name, queue, command, workdir, others, bp)
+        result, message = SYSTEMS[system].submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, bp)
 
         if message: message = "\n\n" + message
         if result:
