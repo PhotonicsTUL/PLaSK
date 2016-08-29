@@ -69,6 +69,7 @@ class Torque(object):
 
     @staticmethod
     def submit(ssh, document, args, defs, name, queue, command, workdir, others, bp=''):
+        fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         if bp:
             if not bp.endswith('/'): bp += '/'
             bp = quote(bp)
@@ -78,9 +79,10 @@ class Torque(object):
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("(base64 -d | gunzip | {0} -{ft} {1} - {2})<<\\_EOF_"
-                  .format(command,
-                          ' '.join(quote(d) for d in defs), ' '.join(quote(a) for a in args),
+            print("(base64 -d | gunzip | {0} -{ft} {2} -:{1} {3})<<\\_EOF_"
+                  .format(command, fname,
+                          ' '.join(quote(d) for d in defs),
+                          ' '.join(quote(a) for a in args),
                           ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
             gzipped = StringIO()
             with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
@@ -342,6 +344,15 @@ class Launcher(object):
         layout.addWidget(self.workdir)
         label.setBuddy(self.workdir)
 
+        label = QtGui.QLabel("Job &Name:")
+        layout.addWidget(label)
+        self.jobname = QtGui.QLineEdit()
+        self.jobname.setToolTip("Type a job name to use in the batch system.")
+        self.jobname.setPlaceholderText(os.path.basename(main_window.document.filename)
+                                        if main_window.document.filename is not None else 'unnamed')
+        layout.addWidget(self.jobname)
+        label.setBuddy(self.jobname)
+
         others_layout = QtGui.QHBoxLayout()
         others_layout.setContentsMargins(0, 0, 0, 0)
         others_button = QtGui.QToolButton()
@@ -572,7 +583,9 @@ class Launcher(object):
         queue = self._saved_queue = self.queue.currentText()
         command = account[3] if account[3] else 'plask'
         bp = account[4]
-        name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+        name = self.jobname.text()
+        if not name:
+            name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         others = self.others.toPlainText().split("\n")
 
         ssh = self.connect(host, user)

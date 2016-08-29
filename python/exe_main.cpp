@@ -375,13 +375,21 @@ int main(int argc, const char *argv[])
             return exitcode;
         }
 
+        std::string filename = argv[1];
         try {
-            std::string filename = argv[1];
-
+            bool realfile = true;
+            if (filename[0] == '-' and (filename.length() == 1 or filename[1] == ':')) {
+                realfile = false;
+                if (filename[1] == ':' and filename.length() > 2) {
+                    filename = filename.substr(2);
+                } else {
+                    filename = "<stdin>";
+                }
+            }
             globals["__file__"] = filename;
 
             // Detect if the file is Python script or PLaSK input
-            if (filename != "-") {
+            if (realfile) {
                 if (!filetype) {
                     // check file extension
                     try {
@@ -410,7 +418,7 @@ int main(int argc, const char *argv[])
                 assert(filetype);
             } else {
                 if (!filetype) {
-                    throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from STDIN");
+                    throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from <stdin>");
                 }
             }
 
@@ -435,12 +443,11 @@ int main(int argc, const char *argv[])
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
-                if (filename != "-")
+                if (realfile)
                     plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
-                    filename = "STDIN";
                 }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
@@ -481,7 +488,7 @@ int main(int argc, const char *argv[])
                 PyObject* pyfile = nullptr;
                 PyObject* result;
 #               if PY_VERSION_HEX >= 0x03000000
-                    if (filename != "-") {
+                    if (realfile) {
 #                       if PY_VERSION_HEX >= 0x03040000
                             FILE* file = _Py_fopen(filename.c_str(), "r");
 #                       else
@@ -491,11 +498,11 @@ int main(int argc, const char *argv[])
                         result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
                         fclose(file);
                     } else {
-                        result = PyRun_File(stdin, "STDIN", Py_file_input, globals.ptr(), globals.ptr());
+                        result = PyRun_File(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     }
 #               else
                     // We want to set "from __future__ import division" flag
-                    if (filename != "-") {
+                    if (realfile) {
                         pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
                         if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
                         FILE* file = PyFile_AsFile(pyfile);
@@ -503,7 +510,7 @@ int main(int argc, const char *argv[])
                         result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
                     } else {
                         PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                        result = PyRun_FileFlags(stdin, "STDIN", Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                        result = PyRun_FileFlags(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
                     }
 #               endif
                 Py_XDECREF(pyfile);
@@ -520,18 +527,18 @@ int main(int argc, const char *argv[])
         }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", argv[1], err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", filename, err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", argv[1], err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", filename, err.what());
                 endPlask();
                 return 3;
             }
 #       endif
         catch (py::error_already_set) {
-            int exitcode = handlePythonException(argv[1]);
+            int exitcode = handlePythonException(filename.c_str());
             endPlask();
             return exitcode;
         }
