@@ -68,7 +68,7 @@ class Torque(object):
 
 
     @staticmethod
-    def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, bp=''):
+    def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, color, bp=''):
         fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
         if bp:
             if not bp.endswith('/'): bp += '/'
@@ -79,12 +79,12 @@ class Torque(object):
             print("#!/bin/sh", file=stdin)
             for oth in others:
                 print("#PBS ", oth, file=stdin)
-            print("(base64 -d | gunzip | {0} -{ft} -lansi -l{log} {defs} -:{fname} {args})<<\\_EOF_"
+            print("(base64 -d | gunzip | {0} -{ft} -l{loglevel}{logcolor} {defs} -:{fname} {args})<<\\_EOF_"
                   .format(command,
                           fname=fname,
                           defs=' '.join(quote(d) for d in defs),
                           args=' '.join(quote(a) for a in args),
-                          log=loglevel,
+                          loglevel=loglevel, logcolor=' -lansi' if color else '',
                           ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
             gzipped = StringIO()
             with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
@@ -110,8 +110,8 @@ SYSTEMS = OrderedDict([('PBS/Torque', Torque)])
 
 class AccountEditDialog(QtGui.QDialog):
 
-    def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, program=None,
-                 bp=None, parent=None):
+    def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, color=False,
+                 program=None, bp=None, parent=None):
         super(AccountEditDialog, self).__init__(parent)
         self.launcher = launcher
 
@@ -178,6 +178,10 @@ class AccountEditDialog(QtGui.QDialog):
         qwidget = QtGui.QWidget()
         qwidget.setLayout(qbox)
         layout.addRow("Execution &Queues:", qwidget)
+
+        self.color_checkbox = QtGui.QCheckBox()
+        self.color_checkbox.setChecked(bool(color))
+        layout.addRow("Co&lor Output:", self.color_checkbox)
 
         self.advanced = QtGui.QWidget(self)
         alayout = QtGui.QFormLayout()
@@ -246,6 +250,10 @@ class AccountEditDialog(QtGui.QDialog):
         return self.name_edit.text()
 
     @property
+    def data(self):
+        return "{}@{}".format(self.user, self.host), self.system, self.queues, self.color, self.program, self.bp
+
+    @property
     def host(self):
         return self.host_edit.text()
 
@@ -262,6 +270,10 @@ class AccountEditDialog(QtGui.QDialog):
         text = self.queues_edit.toPlainText().strip()
         if not text: return []
         return [q.strip() for q in text.split('\n')]
+
+    @property
+    def color(self):
+        return self.color_checkbox.isChecked()
 
     @property
     def program(self):
@@ -290,15 +302,7 @@ class Launcher(object):
         layout.addWidget(label)
         accounts_layout = QtGui.QHBoxLayout()
         accounts_layout.setContentsMargins(0, 0, 0, 0)
-        accounts = CONFIG['launcher_batch/accounts']
-        if accounts is not None:
-            accounts = accounts.split('\n')
-            if not isinstance(accounts, list):
-                accounts = [accounts]
-            self.accounts = OrderedDict((a, (uh, s, q.split(',') if q else [], p, b)) for a,uh,s,q,p,b in
-                                       (item.split(':') for item in accounts))
-        else:
-            self.accounts = OrderedDict()
+        self._load_accounts()
         self.accounts_combo = QtGui.QComboBox()
         self.accounts_combo.addItems([s for s in self.accounts])
         self.accounts_combo.setEditText(self._saved_account)
@@ -329,7 +333,7 @@ class Launcher(object):
         self.queue = QtGui.QComboBox()
         # self.queue.setEditable(True)
         self.queue.setToolTip("Select the execution queue to send your job to.")
-        self.queue.addItems(self.accounts.get(self.accounts_combo.currentText(), ('','',[],''))[2])
+        self.queue.addItems(self.accounts.get(self.accounts_combo.currentText(), (None,None,[]))[2])
         if self._saved_queue is not None:
             self.queue.setEditText(self._saved_queue)
         layout.addWidget(self.queue)
@@ -393,9 +397,24 @@ class Launcher(object):
 
         return widget
 
+    def _load_accounts(self):
+        accounts = CONFIG['launcher_batch/accounts']
+        self.accounts = OrderedDict()
+        if accounts is not None:
+            accounts = accounts.split('\n')
+            if not isinstance(accounts, list):
+                accounts = [accounts]
+            for account in accounts:
+                account = account.split(':')
+                nf = 7
+                account += [''] * (nf - len(account))
+                account[3] = account[3].split(',') if account[3] else []  # queues
+                account[4] = bool(eval(account[4]))  # color output
+                self.accounts[account[0]] = account[1:]
+
     def _save_accounts(self):
-        data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{1[3]}:{1[4]}"
-                         .format(k, v, ','.join(v[2])) for k, v in self.accounts.items())
+        data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}"
+                         .format(k, v, ','.join(v[2]), int(v[3])) for k, v in self.accounts.items())
         if not data:
             del CONFIG['launcher_batch/accounts']
         else:
@@ -406,13 +425,8 @@ class Launcher(object):
         dialog = AccountEditDialog(self)
         if dialog.exec_() == QtGui.QDialog.Accepted:
             account = dialog.name
-            userhost = "{}@{}".format(dialog.user, dialog.host)
-            system = dialog.system
-            queues = dialog.queues
-            program = dialog.program
-            bp = dialog.bp
             if account not in self.accounts:
-                self.accounts[account] = userhost, system, queues, program, bp
+                self.accounts[account] = dialog.data
                 self.accounts_combo.addItem(account)
                 self.accounts_combo.setCurrentIndex(self.accounts_combo.count()-1)
             else:
@@ -431,23 +445,18 @@ class Launcher(object):
                     QtGui.QMessageBox.critical(None, "Edit Error",
                                                "Execution account '{}' already in the list.".format(new))
                 else:
-                    userhost = "{}@{}".format(dialog.user, dialog.host)
-                    system = dialog.system
-                    queues = dialog.queues
-                    program = dialog.program
-                    bp = dialog.bp
+                    newdata = dialog.data
                     for i in range(len(self.accounts)):
                         k, v = self.accounts.popitem(False)
                         if k == old:
-                            self.accounts[new] = userhost, system, queues, program, bp
+                            self.accounts[new] = newdata
                         else:
                             self.accounts[k] = v
                     self.accounts_combo.setItemText(idx, new)
                     self.account_changed(new)
                     self._save_accounts()
             else:
-                self.accounts[old] = "{}@{}".format(dialog.user, dialog.host), \
-                                     dialog.system, dialog.queues, dialog.program, dialog.bp
+                self.accounts[old] = dialog.data
                 self.account_changed(old)
                 self._save_accounts()
 
@@ -461,7 +470,7 @@ class Launcher(object):
         if isinstance(account, int):
             account = self.accounts_combo.itemText(account)
         self.queue.clear()
-        self.queue.addItems(self.accounts.get(account, ['','',[],'',''])[2])
+        self.queue.addItems(self.accounts.get(account, [None,None,[]])[2])
         self._saved_account = account
 
     def show_others(self, widget, visible):
@@ -583,8 +592,9 @@ class Launcher(object):
         document = main_window.document
         system = account[1]
         queue = self._saved_queue = self.queue.currentText()
-        command = account[3] if account[3] else 'plask'
-        bp = account[4]
+        color = account[3]
+        command = account[4] if account[3] else 'plask'
+        bp = account[5]
         name = self.jobname.text()
         if not name:
             name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
@@ -603,7 +613,8 @@ class Launcher(object):
             workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
         ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-        result, message = SYSTEMS[system].submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, bp)
+        result, message = SYSTEMS[system].submit(ssh, document, args, defs, loglevel, name, queue,
+                                                 command, workdir, others, color, bp)
 
         if message: message = "\n\n" + message
         if result:
