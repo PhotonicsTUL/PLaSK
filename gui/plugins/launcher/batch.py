@@ -63,7 +63,7 @@ except ImportError:
                           'python-paramiko'
                 else:
                     return
-                subprocess.Popen([term, '-T', 'Install Paramiko', '-e', 'sudo', cmd, 'install', pkg])
+                subprocess.Popen([term, '-e', 'sudo', cmd, 'install', pkg])
                 QtGui.QMessageBox.information(None, "Remote Batch Job Launcher",
                                               "Once you have successfully installed Paramiko, please restart PLaSK "
                                               "to use the remote batch launcher.")
