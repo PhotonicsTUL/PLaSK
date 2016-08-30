@@ -53,7 +53,7 @@ except ImportError:
             else:
                 dist = platform.dist()[0].lower()
                 if dist in ('ubuntu', 'debian', 'mint'):
-                    term = 'gnome-terminal'
+                    term = 'xterm'
                     cmd = 'apt-get'
                     pkg = 'python3-paramiko' if sys.version_info.major == 3 else 'python-paramiko'
                 elif dist in ('redhat', 'centos'):
