@@ -53,15 +53,17 @@ except ImportError:
             else:
                 dist = platform.dist()[0].lower()
                 if dist in ('ubuntu', 'debian', 'mint'):
+                    term = 'gnome-terminal'
                     cmd = 'apt-get'
                     pkg = 'python3-paramiko' if sys.version_info.major == 3 else 'python-paramiko'
                 elif dist in ('redhat', 'centos'):
+                    term = 'gnome-terminal'
                     cmd = 'yum'
                     pkg = 'python3{}-paramiko'.format(sys.version_info.minor) if sys.version_info.major == 3 else \
                           'python-paramiko'
                 else:
                     return
-                subprocess.Popen(['xterm', '-T', 'Install Paramiko', '-e', 'sudo', cmd, 'install', pkg])
+                subprocess.Popen([term, '-T', 'Install Paramiko', '-e', 'sudo', cmd, 'install', pkg])
                 QtGui.QMessageBox.information(None, "Remote Batch Job Launcher",
                                               "Once you have successfully installed Paramiko, please restart PLaSK "
                                               "to use the remote batch launcher.")
