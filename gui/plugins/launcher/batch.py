@@ -13,10 +13,60 @@
 # coding utf:8
 from __future__ import print_function
 
+import sys
+import os
+
+from gui.qt import QtGui
+from gui.launch import LAUNCHERS
+
 try:
     import paramiko
+
 except ImportError:
-    paramiko = None
+    import webbrowser
+    import subprocess
+    import platform
+
+    class Launcher(object):
+        name = "Remote Batch Job"
+
+        def widget(self, main_window):
+            message = QtGui.QTextBrowser()
+            message.setText("Remote batch job launcher cannot be used because Python module "
+                          "Paramiko is missing. Either install it manually from its "
+                          "<a href=\"http://www.paramiko.org/\">webpage</a> or press "
+                          "Ok to try to launch the installation for you.")
+            message.setReadOnly(True)
+            message.anchorClicked.connect(self._open_link)
+            message.setOpenLinks(False)
+            pal = message.palette()
+            pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))
+            message.setPalette(pal)
+            return message
+
+        def _open_link(self, url):
+            webbrowser.open(url.toString())
+
+        def launch(self, main_window, args, defs):
+            if os.name == 'nt' and ('conda' in sys.version or 'Continuum' in sys.version):
+                subprocess.Popen(['conda', 'install', 'paramiko'])
+            else:
+                dist = platform.dist()[0].lower()
+                if dist in ('ubuntu', 'debian', 'mint'):
+                    cmd = 'apt-get'
+                    pkg = 'python3-paramiko' if sys.version_info.major == 3 else 'python-paramiko'
+                elif dist in ('redhat', 'centos'):
+                    cmd = 'yum'
+                    pkg = 'python3{}-paramiko'.format(sys.version_info.minor) if sys.version_info.major == 3 else \
+                          'python-paramiko'
+                else:
+                    return
+                subprocess.Popen(['xterm', '-T', 'Install Paramiko', '-e', 'sudo', cmd, 'install', pkg])
+                QtGui.QMessageBox.information(None, "Remote Batch Job Launcher",
+                                              "Once you have successfully installed Paramiko, please restart PLaSK "
+                                              "to use the remote batch launcher.")
+
+
 else:
     import paramiko.hostkeys
 
@@ -28,8 +78,6 @@ else:
     except ImportError:
         from pipes import quote
 
-    from gui.qt import QtGui
-    from gui.launch import LAUNCHERS
     from gui.xpldocument import XPLDocument
     from gui.utils.config import CONFIG
 
@@ -339,6 +387,15 @@ else:
             layout.addWidget(self.queue)
             label.setBuddy(self.queue)
 
+            label = QtGui.QLabel("Job &Name:")
+            layout.addWidget(label)
+            self.jobname = QtGui.QLineEdit()
+            self.jobname.setToolTip("Type a job name to use in the batch system.")
+            self.jobname.setPlaceholderText(os.path.basename(main_window.document.filename)
+                                            if main_window.document.filename is not None else 'unnamed')
+            layout.addWidget(self.jobname)
+            label.setBuddy(self.jobname)
+
             label = QtGui.QLabel("&Working directory:")
             layout.addWidget(label)
             self.workdir = QtGui.QLineEdit()
@@ -349,15 +406,6 @@ else:
             self.workdir.setText(self._saved_workdir)
             layout.addWidget(self.workdir)
             label.setBuddy(self.workdir)
-
-            label = QtGui.QLabel("Job &Name:")
-            layout.addWidget(label)
-            self.jobname = QtGui.QLineEdit()
-            self.jobname.setToolTip("Type a job name to use in the batch system.")
-            self.jobname.setPlaceholderText(os.path.basename(main_window.document.filename)
-                                            if main_window.document.filename is not None else 'unnamed')
-            layout.addWidget(self.jobname)
-            label.setBuddy(self.jobname)
 
             others_layout = QtGui.QHBoxLayout()
             others_layout.setContentsMargins(0, 0, 0, 0)
@@ -409,7 +457,8 @@ else:
                     nf = 7
                     account += [''] * (nf - len(account))
                     account[3] = account[3].split(',') if account[3] else []  # queues
-                    account[4] = bool(eval(account[4]))  # color output
+                    try: account[4] = bool(eval(account[4]))  # color output
+                    except (SyntaxError, ValueError): account[4] = False
                     self.accounts[account[0]] = account[1:]
 
         def _save_accounts(self):
@@ -625,4 +674,4 @@ else:
                                            "Could not submit job to {}.{}".format(host, message))
 
 
-    LAUNCHERS.append(Launcher())
+LAUNCHERS.append(Launcher())
