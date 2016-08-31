@@ -86,11 +86,14 @@ else:
     from socket import timeout as TimeoutException
 
     from gzip import GzipFile
-    from base64 import b64encode
+    try:
+        from base64 import encodebytes as base64
+    except ImportError:
+        from base64 import encodestring as base64
     try:
         from StringIO import StringIO
     except ImportError:
-        from io import StringIO
+        from io import BytesIO as StringIO
 
     def hexlify(data):
         if isinstance(data, str):
@@ -128,8 +131,9 @@ else:
             try:
                 print("#!/bin/sh", file=stdin)
                 for oth in others:
-                    print("#PBS ", oth, file=stdin)
-                print("(base64 -d | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args})<<\\_EOF_"
+                    oth = oth.strip()
+                    if oth: print("#PBS", oth, file=stdin)
+                print("base64 -d <<\\_EOF_ | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}"
                       .format(cmd=command,
                               fname=fname,
                               defs=' '.join(quote(d) for d in defs),
@@ -139,7 +143,7 @@ else:
                 gzipped = StringIO()
                 with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
                     gzip.write(document.get_content().encode('utf8'))
-                print(b64encode(gzipped.getvalue()), file=stdin)
+                stdin.write(base64(gzipped.getvalue()).decode('ascii'))
                 print("_EOF_", file=stdin)
                 stdin.flush()
                 stdin.channel.shutdown_write()
