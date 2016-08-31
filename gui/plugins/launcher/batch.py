@@ -91,9 +91,9 @@ else:
     except ImportError:
         from base64 import encodestring as base64
     try:
-        from StringIO import StringIO
+        from StringIO import StringIO as BytesIO
     except ImportError:
-        from io import BytesIO as StringIO
+        from io import BytesIO
 
     def hexlify(data):
         if isinstance(data, str):
@@ -140,8 +140,8 @@ else:
                               args=' '.join(quote(a) for a in args),
                               ll=loglevel, lc=' -lansi' if color else '',
                               ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
-                gzipped = StringIO()
-                with GzipFile(fileobj=gzipped, filename=name, mode='w') as gzip:
+                gzipped = BytesIO()
+                with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
                     gzip.write(document.get_content().encode('utf8'))
                 stdin.write(base64(gzipped.getvalue()).decode('ascii'))
                 print("_EOF_", file=stdin)
