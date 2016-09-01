@@ -15,9 +15,11 @@ from __future__ import print_function
 
 import sys
 import os
+from stat import S_ISDIR
 
 from gui.qt import QtGui
 from gui.launch import LAUNCHERS
+from gui.utils.qsignals import BlockQtSignals
 
 try:
     import paramiko
@@ -341,16 +343,19 @@ else:
     class Launcher(object):
         name = "Remote Batch Job"
 
-        _passwd_cache = {}
-        _saved_workdir = ''
-        _saved_account = None
-        _saved_queue = None
+        def __init__(self):
+            self._passwd_cache = {}
+            self._workdirs = {}
+            self._saved_account = None
+            self._saved_queue = None
 
         def widget(self, main_window):
             widget = QtGui.QWidget()
             layout = QtGui.QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
+
+            self.filename = main_window.document.filename
 
             label = QtGui.QLabel("&Execution server:")
             layout.addWidget(label)
@@ -397,11 +402,12 @@ else:
             layout.addWidget(label)
             self.jobname = QtGui.QLineEdit()
             self.jobname.setToolTip("Type a job name to use in the batch system.")
-            self.jobname.setPlaceholderText(os.path.basename(main_window.document.filename)
-                                            if main_window.document.filename is not None else 'unnamed')
+            self.jobname.setPlaceholderText(os.path.basename(self.filename)
+                                            if self.filename is not None else 'unnamed')
             layout.addWidget(self.jobname)
             label.setBuddy(self.jobname)
 
+            self._load_workdirs()
             label = QtGui.QLabel("&Working directory:")
             layout.addWidget(label)
             self.workdir = QtGui.QLineEdit()
@@ -409,9 +415,19 @@ else:
                                     "If the directory starts with / it is consider as an absolute path,\n"
                                     "otherwise it is relative to your home directory. If the directory\n"
                                     "does not exists, it is automatically created.")
-            self.workdir.setText(self._saved_workdir)
-            layout.addWidget(self.workdir)
+            if self.filename is not None:
+                self.workdir.setText(self._workdirs.get(
+                    (self.filename, self.accounts_combo.currentText()), ''))
             label.setBuddy(self.workdir)
+            self._auto_workdir = True
+            self.workdir.textEdited.connect(self.workdir_edited)
+            dirbutton = QtGui.QPushButton()
+            dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
+            dirbutton.pressed.connect(self.select_workdir)
+            dirlayout = QtGui.QHBoxLayout()
+            dirlayout.addWidget(self.workdir)
+            dirlayout.addWidget(dirbutton)
+            layout.addLayout(dirlayout)
 
             others_layout = QtGui.QHBoxLayout()
             others_layout.setContentsMargins(0, 0, 0, 0)
@@ -476,6 +492,26 @@ else:
                 CONFIG['launcher_batch/accounts'] = data
             CONFIG.sync()
 
+        def _load_workdirs(self):
+            workdirs = CONFIG['launcher_batch/working_dirs']
+            if workdirs is not None:
+                workdirs = workdirs.split('\n')
+                if not isinstance(workdirs, list):
+                    workdirs = [workdirs]
+                for workdir in workdirs:
+                    fn, ac, wd = workdir.split(';')[:3]
+                    if os.path.isfile(fn) and ac in self.accounts:
+                        self._workdirs[fn, ac] = wd
+
+        def _save_workdirs(self):
+            data = '\n'.join(u"{0[0]};{0[1]};{1}".format(k,v) for k,v in self._workdirs.items()
+                             if os.path.isfile(k[0]) and k[1] in self.accounts)
+            if not data:
+                del CONFIG['launcher_batch/working_dirs']
+            else:
+                CONFIG['launcher_batch/working_dirs'] = data
+            CONFIG.sync()
+
         def account_add(self):
             dialog = AccountEditDialog(self)
             if dialog.exec_() == QtGui.QDialog.Accepted:
@@ -527,6 +563,12 @@ else:
             self.queue.clear()
             self.queue.addItems(self.accounts.get(account, [None,None,[]])[2])
             self._saved_account = account
+            if self._auto_workdir and self.filename is not None:
+                self.workdir.setText(self._workdirs.get(
+                    (self.filename, self.accounts_combo.currentText()), ''))
+
+        def workdir_edited(self):
+            self._auto_workdir = False
 
         def show_others(self, widget, visible):
             dialog = widget.parent()
@@ -641,10 +683,14 @@ else:
                     return ssh
 
         def launch(self, main_window, args, defs):
-            account = self.accounts[self.accounts_combo.currentText()]
+            account_name = self.accounts_combo.currentText()
+            account = self.accounts[account_name]
             user, host = account[0].split('@')
-            workdir = self._saved_workdir = self.workdir.text()
             document = main_window.document
+            workdir = self.workdir.text()
+            if document.filename is not None:
+                self._workdirs[document.filename, account_name] = workdir
+                self._save_workdirs()
             system = account[1]
             queue = self._saved_queue = self.queue.currentText()
             color = account[3]
@@ -679,5 +725,94 @@ else:
                 QtGui.QMessageBox.critical(None, "Error Submitting Job",
                                            "Could not submit job to {}.{}".format(host, message))
 
+        def select_workdir(self):
+            user, host = self.accounts[self.accounts_combo.currentText()][0].split('@')
+            ssh = self.connect(host, user)
+            if ssh is None: return
+
+            workdir = self.workdir.text()
+            if not workdir.startswith('/'):
+                _, stdout, _ = ssh.exec_command("pwd")
+                home = stdout.read().decode('utf8').strip()
+                if workdir: workdir = '/'.join((home, workdir))
+                else: workdir = home
+
+            sftp = ssh.open_sftp()
+
+            dialog = RemoteDirDialog(sftp, host, workdir)
+            if dialog.exec_() == QtGui.QDialog.Accepted:
+                self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
+                self._auto_workdir = False
+
+
+    class RemoteDirDialog(QtGui.QDialog):
+
+        # class Item(QtGui.QTreeWidgetItem):
+        #     def __init__(self, *args):
+        #         super(RemoteDirDialog.Item, self).__init__(*args)
+        #         self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+        #         self.read = False
+
+        def __init__(self, sftp, host='/', path=None, parent=None):
+            self.folder_icon = QtGui.QIcon.fromTheme('folder')
+            super(RemoteDirDialog, self).__init__(parent)
+            self.sftp = sftp
+            if path is None: path = ['']
+            layout = QtGui.QVBoxLayout()
+            self.tree = QtGui.QTreeWidget()
+            self.tree.setHeaderHidden(True)
+            layout.addWidget(self.tree)
+            buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+            buttons.accepted.connect(self.accept)
+            buttons.rejected.connect(self.reject)
+            layout.addWidget(buttons)
+            self.setLayout(layout)
+            item = QtGui.QTreeWidgetItem()
+            item.setText(0, host)
+            item.setIcon(0, QtGui.QIcon.fromTheme('network-server'))
+            item.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+            self.tree.addTopLevelItem(item)
+            self.tree.itemExpanded.connect(self.item_expanded)
+            self.resize(540, 720)
+            item.setExpanded(True)
+            for d in path[1:].split('/'):
+                found = False
+                for i in range(item.childCount()):
+                    child = item.child(i)
+                    if child.text(0) == d:
+                        item = child
+                        found = True
+                        break
+                if not found: return
+                item.setExpanded(True)
+            self.tree.scrollToItem(item)
+            self.tree.setCurrentItem(item)
+
+        @staticmethod
+        def item_path(item):
+            path = []
+            while item:
+                path.insert(0, item.text(0))
+                item = item.parent()
+            return '/' + '/'.join(path[1:])
+
+        def item_expanded(self, item):
+            if item.childIndicatorPolicy() == QtGui.QTreeWidgetItem.ShowIndicator:
+                path = self.item_path(item)
+                dirs = []
+                try:
+                    for f in self.sftp.listdir_attr(path):
+                        if S_ISDIR(f.st_mode) and not f.filename.startswith('.'): dirs.append(f)
+                except (IOError, SystemError, paramiko.SSHException):
+                    pass
+                else:
+                    dirs.sort(key=lambda d: d.filename)
+                    for d in dirs:
+                        sub = QtGui.QTreeWidgetItem()
+                        sub.setText(0, d.filename)
+                        sub.setIcon(0, self.folder_icon)
+                        sub.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+                        item.addChild(sub)
+                item.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicatorWhenChildless)
 
 LAUNCHERS.append(Launcher())

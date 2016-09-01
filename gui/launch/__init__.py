@@ -89,6 +89,9 @@ class LaunchDialog(QtGui.QDialog):
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
 
+        self.setFixedHeight(self.sizeHint().height())
+        self.adjustSize()
+
     def show_defines(self, visible):
         global _defs_visible
         _defs_visible = visible
