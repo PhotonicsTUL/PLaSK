@@ -783,7 +783,7 @@ else:
                         item = child
                         found = True
                         break
-                if not found: return
+                if not found: break
                 item.setExpanded(True)
             self.tree.scrollToItem(item)
             self.tree.setCurrentItem(item)
