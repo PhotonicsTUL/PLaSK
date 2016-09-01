@@ -756,9 +756,12 @@ else:
         def __init__(self, sftp, host='/', path=None, parent=None):
             self.folder_icon = QtGui.QIcon.fromTheme('folder')
             super(RemoteDirDialog, self).__init__(parent)
+            self.setWindowTitle("Select Folder")
             self.sftp = sftp
             if path is None: path = ['']
             layout = QtGui.QVBoxLayout()
+            label = QtGui.QLabel("Please choose a folder on the remote machine.")
+            layout.addWidget(label)
             self.tree = QtGui.QTreeWidget()
             self.tree.setHeaderHidden(True)
             layout.addWidget(self.tree)
