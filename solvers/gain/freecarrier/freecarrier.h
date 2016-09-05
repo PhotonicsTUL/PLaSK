@@ -175,7 +175,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
-        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T): region(region) {
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet=false): region(region) {
             size_t n = region.materials.size();
             U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
             M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
@@ -206,15 +206,15 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             } else {
                 double deltaSO = region.materials[mi]->Dso(T, me);
                 Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
-                solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
+                if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
             }
         }
 
-        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region):
-            ActiveRegionParams(solver, region, solver->T0) {}
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, bool quiet=false):
+            ActiveRegionParams(solver, region, solver->T0, quiet) {}
 
-        explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T):
-            ActiveRegionParams(solver, ref.region, T) {
+        explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T, bool quiet=false):
+            ActiveRegionParams(solver, ref.region, T, quiet) {
                 nhh = ref.nhh;
                 nlh = ref.nlh;
                 for (size_t which = 0; which < 3; ++which) {

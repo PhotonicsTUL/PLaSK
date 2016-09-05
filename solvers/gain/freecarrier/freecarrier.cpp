@@ -695,7 +695,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 try {
                     double T = temps[i];
                     double nr = solver->regions[reg].averageNr(wavelength, T, concs[i]);
-                    ActiveRegionParams params(solver, solver->params0[reg], T);
+                    ActiveRegionParams params(solver, solver->params0[reg], T, bool(i));
                     values[i] = getValue(hw, concs[i], T, nr, params);
                 } catch(...) {
                     #pragma omp critical

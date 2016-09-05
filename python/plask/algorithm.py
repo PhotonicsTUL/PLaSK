@@ -268,9 +268,8 @@ class ThermoElectric(object):
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()
         geom = self.electrical.geometry.item
-        yy = plask.unique(points.index1(i) for i,p in enumerate(points)
-                          if geom.has_role('junction', p)
-                          or geom.has_role('active', p))
+        yy = plask.unique(list(points.index1(i) for i,p in enumerate(points)
+                          if geom.has_role('junction', p) or geom.has_role('active', p)))
         yy = [int(y) for y in yy]
         if len(yy) == 0:
             raise ValueError("no junction defined")

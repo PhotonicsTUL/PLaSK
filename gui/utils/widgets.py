@@ -358,9 +358,10 @@ class MultiLineEdit(QtGui.QWidget):
     Widget showing multiple lines
     """
 
-    def __init__(self, movable=False, change_cb=None):
+    def __init__(self, movable=False, change_cb=None, placeholder=None):
         super(MultiLineEdit, self).__init__()
         self.change_cb = change_cb
+        self.placeholder = '[enter value]' if placeholder is None else placeholder
         layout = QtGui.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
@@ -373,6 +374,11 @@ class MultiLineEdit(QtGui.QWidget):
         add.setIcon(QtGui.QIcon.fromTheme('list-add'))
         add.pressed.connect(self.add_item)
         buttons.addWidget(add)
+        act = QtGui.QAction(self.list_widget)
+        act.setShortcut(QtGui.QKeySequence(Qt.Key_Plus))
+        act.triggered.connect(self.add_item)
+        act.setShortcutContext(Qt.WidgetShortcut)
+        self.list_widget.addAction(act)
         self.edit = QtGui.QToolButton()
         self.edit.setIcon(QtGui.QIcon.fromTheme('document-edit'))
         self.edit.pressed.connect(self.edit_item)
@@ -381,15 +387,31 @@ class MultiLineEdit(QtGui.QWidget):
         self.remove.setIcon(QtGui.QIcon.fromTheme('list-remove'))
         self.remove.pressed.connect(self.remove_item)
         buttons.addWidget(self.remove)
+        act = QtGui.QAction(self.list_widget)
+        act.setShortcut(QtGui.QKeySequence(Qt.Key_Delete))
+        act.triggered.connect(self.remove_item)
+        act.setShortcutContext(Qt.WidgetShortcut)
+        self.list_widget.addAction(act)
+        self._movable = movable
         if movable:
             self.up = QtGui.QToolButton()
             self.up.setIcon(QtGui.QIcon.fromTheme('go-up'))
             self.up.pressed.connect(self.move_up)
+            act = QtGui.QAction(self.list_widget)
+            act.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
+            act.triggered.connect(self.move_up)
+            act.setShortcutContext(Qt.WidgetShortcut)
+            self.list_widget.addAction(act)
             buttons.addWidget(self.up)
             self.down = QtGui.QToolButton()
             self.down.setIcon(QtGui.QIcon.fromTheme('go-down'))
             self.down.pressed.connect(self.move_down)
             buttons.addWidget(self.down)
+            act = QtGui.QAction(self.list_widget)
+            act.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
+            act.triggered.connect(self.move_down)
+            act.setShortcutContext(Qt.WidgetShortcut)
+            self.list_widget.addAction(act)
         else:
             self.up = None
             self.down = None
@@ -421,10 +443,15 @@ class MultiLineEdit(QtGui.QWidget):
 
     def add_item(self):
         with BlockQtSignals(self.list_widget):
-            item = QtGui.QListWidgetItem('enter_value')
+            item = QtGui.QListWidgetItem(self.placeholder)
             item.setFlags(item.flags() | Qt.ItemIsEditable)
-            self.list_widget.addItem(item)
+            current = self.list_widget.currentRow()
+            if self._movable and current != -1:
+                self.list_widget.insertItem(current+1, item)
+            else:
+                self.list_widget.addItem(item)
         self.list_widget.setCurrentItem(None)
+        self.list_widget.scrollToItem(item)
         self.list_widget.editItem(item)
 
     def edit_item(self):

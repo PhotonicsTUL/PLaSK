@@ -128,7 +128,7 @@ else: # Looking for the threshold...
     # First we need to create R²->R² function that takes the wavelenght (real) and the gain and return
     # Real and complex parts of the determinant.
     def fun(arg):
-        profile[GEO.gain] = arg[1]  # We set the gain given in the second element of the ‘arg’ array.
+        profile[GEO.gain] = arg[1]  # Set the gain given in the second element of the ‘arg’ array.
         val = FOURIER.get_determinant(lam=arg[0])  # Compute the determinant for the real wavelength in arg[0]
         print_log('data', "FOURIER:optical.Fourier3D: lam={1} gain={2} det={0}".format(val, *arg))
         # As ‘fsolve’ does not browse imaginary space, but just R², we consider the complex determinant as
@@ -141,7 +141,7 @@ else: # Looking for the threshold...
     
     # Now, we know that we have found the mode, but the solver does not. So we need to explicitly tell it.
     # The correct profile of the gain is already set from the last call to ‘fun’ done by the ‘fsolve’ function.
-    # So we need to tell the solver the eigenmode wavelenght. It will check if the determinant is sufficiently
+    # So we need to tell the solver the eigenmode wavelength. It will check if the determinant is sufficiently
     # close to zero and add the mode parameters to the ‘FOURIER.modes’ array.
     FOURIER.set_mode(lam=result[0])
     
@@ -158,7 +158,7 @@ field = FOURIER.outLightMagnitude(msh)
 # We plot the field and the geometry outlines.
 fig = figure()  # Open new figure
 plot_field(field, plane='xy')  # Plot the field 2D cross-section
-plot_geometry(GEO.vcsel, color='w', plane='xy', mirror=True)  # Plot the geometry outline
+plot_geometry(GEO.main, color='w', plane='xy', mirror=True)  # Plot the geometry outline
 gca().set_aspect('equal')  # Make sure both axes have the same scale
 tight_layout(0.1)  # Reduce the margins of the plot
 fig.canvas.set_window_title("Field")  # Set window title
@@ -170,7 +170,7 @@ field = FOURIER.outLightMagnitude(vmsh)
 
 fig = figure()
 plot_field(field, plane='yz')
-# plot_geometry(GEO.vcsel, color='w', plane='yz', mirror=True)
+# plot_geometry(GEO.main, color='w', plane='yz', mirror=True)
 tight_layout(0.1)
 fig.canvas.set_window_title("Vertical Field")
 

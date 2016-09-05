@@ -20,6 +20,7 @@ from stat import S_ISDIR
 from gui.qt import QtGui
 from gui.launch import LAUNCHERS
 from gui.utils.qsignals import BlockQtSignals
+from gui.utils.widgets import MultiLineEdit
 
 try:
     import paramiko
@@ -219,13 +220,14 @@ else:
 
             qbox = QtGui.QVBoxLayout()
             qbox.setContentsMargins(0, 0, 0, 0)
-            self.queues_edit = QtGui.QPlainTextEdit()
-            self.queues_edit.setToolTip("List of available queues at the execution host.\n"
+            self.queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
+            self.queues_list.setToolTip("List of available queues at the execution host.\n"
                                         "If you are not sure about the correct value, contact\n"
                                         "the host administrator.")
-            qbox.addWidget(self.queues_edit)
+            self.queues_list.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+            qbox.addWidget(self.queues_list)
             if queues is not None:
-                self.queues_edit.setPlainText('\n'.join(queues).strip())
+                self.queues_list.set_values(queues)
             get_queues = QtGui.QPushButton("&Retrieve")
             get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
                                   "you must first correctly fill-in host, user, and system fields.")
@@ -292,10 +294,10 @@ else:
         def get_queues(self):
             ssh = self.launcher.connect(self.host, self.user)
             if ssh is None: return
-            self.queues_edit.setPlainText('\n'.join(SYSTEMS[self.system].get_queues(ssh, self.bp_edit.text())).strip()+'\n')
+            self.queues_list.set_values(SYSTEMS[self.system].get_queues(ssh, self.bp_edit.text()))
 
         def accept(self):
-            queues = self.queues_edit.toPlainText()
+            queues = ' '.join(self.queues_list.get_values())
             if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
                 QtGui.QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
             else:
@@ -323,9 +325,7 @@ else:
 
         @property
         def queues(self):
-            text = self.queues_edit.toPlainText().strip()
-            if not text: return []
-            return [q.strip() for q in text.split('\n')]
+            return self.queues_list.get_values()
 
         @property
         def color(self):
