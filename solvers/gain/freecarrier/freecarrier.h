@@ -106,12 +106,21 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         double bottom;                              ///< Bottom spacer thickness [µm]
         double top;                                 ///< Top spacer thickness [µm]
 
+        enum ConsideredHoles: unsigned {
+            NO_HOLES = 0,
+            HEAVY_HOLES = 1,
+            LIGHT_HOLES = 2,
+            BOTH_HOLES = 3
+        } holes;                                    ///< Type of holes existing in the active region
+
+
         /**
          * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
         void summarize(const FreeCarrierGainSolver<GeometryType>* solver)
         {
+            holes = BOTH_HOLES;
             auto bbox = layers->getBoundingBox();
             total = bbox.upper[1] - bbox.lower[1] - bottom - top;
             materials.clear(); materials.reserve(layers->children.size());
@@ -145,12 +154,15 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
                     double hh2 = material->VB(solver->T0, e, 'G',  'H');
                     double lh2 = material->VB(solver->T0, e, 'G',  'L');
                     if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
-                        if (i != 2 && i != materials.size()-1 &&
-                            !((el0 < el1 && el1 > el2) && (hh0 > hh1 && hh1 < hh2) && (lh0 > lh1 && lh1 < lh2)))
+                        if (i != 2 && i != materials.size()-1) {
+                            bool eb = (el0 < el1 && el1 > el2);
+                            if (eb != (hh0 > hh1 && hh1 < hh2)) holes = ConsideredHoles(holes & ~HEAVY_HOLES);
+                            if (eb != (lh0 > lh1 && lh1 < lh2)) holes = ConsideredHoles(holes & ~LIGHT_HOLES);
+                        }
+                        if (holes == NO_HOLES)
                             throw Exception("{0}: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
                         wells.push_back(i-1);
-                    }
-                    else if (i == 2) wells.push_back(0);
+                    } else if (i == 2) wells.push_back(0);
                     if (el2 != el1) { el0 = el1; el1 = el2; }
                     if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
                     if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }

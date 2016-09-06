@@ -426,8 +426,8 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
         ActiveRegionParams& params = params0.back();
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
             estimateWellLevels(EL, params, qw);
-            estimateWellLevels(HH, params, qw);
-            estimateWellLevels(LH, params, qw);
+            if (region.holes & ActiveRegionInfo::HEAVY_HOLES) estimateWellLevels(HH, params, qw); else params.levels[HH].clear();
+            if (region.holes & ActiveRegionInfo::LIGHT_HOLES) estimateWellLevels(LH, params, qw); else params.levels[LH].clear();
         }
         std::sort(params.levels[EL].begin(), params.levels[EL].end(), [](const Level& a, const Level& b){return a.E < b.E;});
         std::sort(params.levels[HH].begin(), params.levels[HH].end(), [](const Level& a, const Level& b){return a.E > b.E;});
@@ -435,8 +435,8 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
         params.nhh = std::min(params.levels[EL].size(), params.levels[HH].size());
         params.nlh = std::min(params.levels[EL].size(), params.levels[LH].size());
         estimateAboveLevels(EL, params);
-        estimateAboveLevels(HH, params);
-        estimateAboveLevels(LH, params);
+        if (region.holes & ActiveRegionInfo::HEAVY_HOLES) estimateAboveLevels(HH, params);
+        if (region.holes & ActiveRegionInfo::LIGHT_HOLES) estimateAboveLevels(LH, params);
 
         if (maxLoglevel > LOG_DETAIL) {
             {
@@ -567,7 +567,8 @@ double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv
     if (lifetime == 0)
         return getGain0(hw, Fc, Fv, T, nr, params);
 
-    const double E0 = params.levels[EL][0].E - std::max(params.levels[HH][0].E, params.levels[LH][0].E);
+    const double E0 = params.levels[EL][0].E - ((params.region.holes == ActiveRegionInfo::BOTH_HOLES)? std::max(params.levels[HH][0].E, params.levels[LH][0].E) :
+                                                (params.region.holes == ActiveRegionInfo::HEAVY_HOLES)? params.levels[HH][0].E : params.levels[LH][0].E);
 
     const double b = 1e12*phys::hb_eV / lifetime;
     const double tmax = 32. * b;

@@ -187,6 +187,8 @@ class MainWindow(QtGui.QMainWindow):
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = XPLDocument(self)
             self.setup_model()
+            self.setWindowTitle("[*] PLaSK")
+            self.setWindowModified(False)
 
         new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
                                    '&New', self)
