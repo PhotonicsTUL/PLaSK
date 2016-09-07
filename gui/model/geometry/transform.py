@@ -124,7 +124,7 @@ class GNClip(GNTransform):
 
     def bound_names(self):
         d2 = ('left', 'right', 'bottom', 'top')
-        return d2 if self.dim == 2 else d2 + ('back', 'front')
+        return d2 if self.dim == 2 else ('back', 'front') + d2
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNClip, self)._attributes_from_xml(attribute_reader, conf)
