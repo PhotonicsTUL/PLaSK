@@ -375,9 +375,9 @@ int main(int argc, const char *argv[])
         std::string filename = argv[1];
         try {
             bool realfile = true;
-            if (filename[0] == '-' and (filename.length() == 1 or filename[1] == ':')) {
+            if (filename[0] == '-' && (filename.length() == 1 || filename[1] == ':')) {
                 realfile = false;
-                if (filename[1] == ':' and filename.length() > 2) {
+                if (filename[1] == ':' && filename.length() > 2) {
                     filename = filename.substr(2);
                 } else {
                     filename = "<stdin>";
