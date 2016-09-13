@@ -366,7 +366,6 @@ else:
             self.accounts_combo.addItems([s for s in self.accounts])
             self.accounts_combo.setEditText(self._saved_account)
             self.accounts_combo.currentIndexChanged.connect(self.account_changed)
-            self.accounts_combo.textChanged.connect(self.account_changed)
             self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
             accounts_layout.addWidget(self.accounts_combo)
             account_add = QtGui.QToolButton()
@@ -553,9 +552,13 @@ else:
 
         def account_remove(self):
             current = self.accounts_combo.currentText()
-            self.accounts_combo.removeItem(list(self.accounts.keys()).index(current))
-            del self.accounts[current]
-            self._save_accounts()
+            confirm = QtGui.QMessageBox.warning(None, "Remove Account?",
+                                                "Do you really want to remove the account '{}'?".format(current),
+                                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            if confirm == QtGui.QMessageBox.Yes:
+                self.accounts_combo.removeItem(list(self.accounts.keys()).index(current))
+                del self.accounts[current]
+                self._save_accounts()
 
         def account_changed(self, account):
             if isinstance(account, int):

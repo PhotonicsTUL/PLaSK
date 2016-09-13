@@ -211,7 +211,7 @@ class MainWindow(QtGui.QMainWindow):
         saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'),
                                       'Save &As...', self)
         saveas_action.setShortcut(QtGui.QKeySequence.SaveAs)
-        saveas_action.setStatusTip('Save XPL file, ask for name of file')
+        saveas_action.setStatusTip('Save XPL file, ask for namploe of file')
         saveas_action.triggered.connect(self.save_as)
 
         launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start',
