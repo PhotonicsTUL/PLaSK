@@ -1,7 +1,7 @@
 #include <cmath>
 #include "../python_globals.h"
 #include <boost/python/stl_iterator.hpp>
-#include "../../util/raw_constructor.h"
+#include "../python_util/raw_constructor.h"
 
 #include <plask/config.h>
 #include <plask/exceptions.h>

@@ -11,7 +11,7 @@
 #include <plask/material/db.h>
 #include <plask/material/info.h>
 
-#include "../util/raw_constructor.h"
+#include "python_util/raw_constructor.h"
 
 namespace plask { namespace python {
 

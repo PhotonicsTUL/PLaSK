@@ -7,7 +7,7 @@
 #include <plask/mesh/mesh.h>
 #include <plask/utils/string.h>
 
-#include "../util/raw_constructor.h"
+#include "python_util/raw_constructor.h"
 
 namespace plask { namespace python {
 

@@ -1,6 +1,6 @@
 #include "geometry.h"
 #include <boost/python/raw_function.hpp>
-#include "../../util/raw_constructor.h"
+#include "../python_util/raw_constructor.h"
 
 #include <plask/geometry/stack.h>
 

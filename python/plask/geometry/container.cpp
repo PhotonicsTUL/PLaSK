@@ -1,5 +1,5 @@
 #include "geometry.h"
-#include "../../util/py_set.h"
+#include "../python_util/py_set.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python/raw_function.hpp>
 
@@ -271,7 +271,7 @@ void register_geometry_container()
     ;
 
     register_geometry_container_stack();
-    
+
     register_geometry_container_lattice();
 }
 

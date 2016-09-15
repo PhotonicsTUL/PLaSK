@@ -6,7 +6,7 @@
 
 #include "python_globals.h"
 #include "python_numpy.h"
-#include "../util/raw_constructor.h"
+#include "python_util/raw_constructor.h"
 
 #include <boost/python/stl_iterator.hpp>
 #include <boost/concept_check.hpp>

@@ -3,7 +3,7 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/container.h>
 #include <plask/geometry/path.h>
-#include "../../util/py_set.h"
+#include "../python_util/py_set.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"

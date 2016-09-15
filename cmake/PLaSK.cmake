@@ -53,10 +53,18 @@ endif()
 # This is macro that sets all the targets automagically
 macro(make_default)
 
+    if(NOT PLaSK_LIBRARIES)
+        set(PLaSK_LIBRARIES plask)
+    endif()
+
+    if(NOT PLaSK_PYTHON_LIBRARIES)
+        set(PLaSK_LIBRARIES plask_python)
+    endif()
+
     # Build solver library
     add_library(${SOLVER_LIBRARY} SHARED ${solver_src})
     set_target_properties(${SOLVER_LIBRARY} PROPERTIES OUTPUT_NAME ${SOLVER_LIB_NAME})
-    target_link_libraries(${SOLVER_LIBRARY} libplask ${SOLVER_LINK_LIBRARIES})
+    target_link_libraries(${SOLVER_LIBRARY} ${PLaSK_LIBRARIES} ${SOLVER_LINK_LIBRARIES})
     include_directories(${SOLVER_INCLUDE_DIRECTORIES})
     if (DEFINED SOLVER_LINK_FLAGS)
         set_target_properties(${SOLVER_LIBRARY} PROPERTIES LINK_FLAGS ${SOLVER_LINK_FLAGS})
@@ -83,7 +91,7 @@ macro(make_default)
         else()
             add_library(${SOLVER_PYTHON_MODULE} MODULE ${interface_src})
         endif()
-        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python ${SOLVER_PYTHON_LINK_LIBRARIES})
+        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} ${PLaSK_PYTHON_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
@@ -95,7 +103,7 @@ macro(make_default)
                                   LIBRARY_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
         endforeach()
         if (DEFINED no_strict_aliasing_flag)
-            set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+            set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
         endif()
         if(WIN32)
             set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
@@ -132,7 +140,7 @@ macro(make_default)
                             )
         string(REPLACE "/" "_" SOLVER_MODULE ${SOLVER_DIR})
         add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT GUI)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT solvers)
     endif()
 
     if(BUILD_TESTING)

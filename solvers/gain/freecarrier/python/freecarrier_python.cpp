@@ -3,7 +3,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
-#include <util/ufunc.h>
+#include <plask/python_util/ufunc.h>
 using namespace plask;
 using namespace plask::python;
 
@@ -62,7 +62,7 @@ static py::object FreeCarrier_getLevels(FreeCarrierGainSolver<GeometryT>& self, 
         for (size_t i = 0; i < 3; ++i) {
             py::list lst;
             for (const auto& l: self.params0[reg].levels[i]) lst.append(l.E);
-            info[names[i]] = lst; 
+            info[names[i]] = lst;
         }
         result.append(info);
     }
@@ -105,7 +105,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         solver.def("getN", &FreeCarrierGainSolver_getN<Geometry2DCartesian>, (arg("F"), arg("T")=py::object(), arg("reg")=0));
         solver.def("getP", &FreeCarrierGainSolver_getP<Geometry2DCartesian>, (arg("F"), arg("T")=py::object(), arg("reg")=0));
 #endif
-//         RW_FIELD(quick_levels, 
+//         RW_FIELD(quick_levels,
 //                  "Compute levels only once and simply shift for different temperatures?\n\n"
 //                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
 //                  "less accurate for high temperatures.");
@@ -174,7 +174,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         solver.def("getN", &FreeCarrierGainSolver_getN<Geometry2DCylindrical>, (arg("F"), arg("T")=py::object(), arg("reg")=0));
         solver.def("getP", &FreeCarrierGainSolver_getP<Geometry2DCylindrical>, (arg("F"), arg("T")=py::object(), arg("reg")=0));
 #endif
-//         RW_FIELD(quick_levels, 
+//         RW_FIELD(quick_levels,
 //                  "Compute levels only once and simply shift for different temperatures?\n\n"
 //                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
 //                  "less accurate for high temperatures.");

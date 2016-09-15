@@ -7,7 +7,7 @@
 #include <plask/mesh/ordered1d.h>
 
 #include "python_mesh.h"
-#include "../util/raw_constructor.h"
+#include "python_util/raw_constructor.h"
 
 namespace plask { namespace python {
 

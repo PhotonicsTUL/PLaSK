@@ -13,7 +13,7 @@
 namespace plask {
 
 Manager::SetAxisNames::SetAxisNames(GeometryReader& reader): SetAxisNames(reader.manager, reader.source) {}
-    
+
 void Manager::ExternalSourcesFromFile::operator()(Manager &manager, MaterialsDB& materialsDB, const std::string &url, const std::string &section) {
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {

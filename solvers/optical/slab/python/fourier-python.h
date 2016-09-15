@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <plask/python.hpp>
-#include <util/ufunc.h>
+#include <plask/python_util/ufunc.h>
 using namespace plask::python;
 
 #include "../expansion.h"

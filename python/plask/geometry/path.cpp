@@ -1,5 +1,5 @@
 #include "geometry.h"
-#include "../../util/py_set.h"
+#include "../python_util/py_set.h"
 
 #include <plask/geometry/path.h>
 #include <plask/geometry/object.h>

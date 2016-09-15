@@ -339,10 +339,12 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLA
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+    install(FILES extlib/cppformat/format.h DESTINATION include/cppformat COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 endif()
 
 set(PLaSK_LIBRARIES libplask)
+set(PLaSK_PYTHON_LIBRARIES libplask_python)
 
 # ---------- Default materials --------------------------------------------
 
@@ -459,6 +461,7 @@ if(BUILD_PYTHON)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     if (INSTALL_DEV)
         install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
+        install(DIRECTORY python/plask/python_util DESTINATION include/plask COMPONENT dev)
     endif()
 
     # GUI

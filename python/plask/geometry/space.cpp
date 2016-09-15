@@ -2,7 +2,7 @@
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
-#include "../../util/raw_constructor.h"
+#include "../python_util/raw_constructor.h"
 
 #include <plask/geometry/space.h>
 #include <plask/geometry/path.h>
