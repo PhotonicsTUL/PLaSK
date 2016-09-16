@@ -480,9 +480,6 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
 
     size_t reg = 0;
     for (const ActiveRegionInfo& region: regions) {
-std::cerr << "[ ";
-for (auto w: region.wells) std::cerr << w << " ";
-std::cerr << "]\n";
         params0.emplace_back(this, region);
         ActiveRegionParams& params = params0.back();
         for (size_t qw = 0; qw < region.wells.size()-1; ++qw) {
@@ -493,14 +490,11 @@ std::cerr << "]\n";
         std::sort(params.levels[EL].begin(), params.levels[EL].end(), [](const Level& a, const Level& b){return a.E < b.E;});
         std::sort(params.levels[HH].begin(), params.levels[HH].end(), [](const Level& a, const Level& b){return a.E > b.E;});
         std::sort(params.levels[LH].begin(), params.levels[LH].end(), [](const Level& a, const Level& b){return a.E > b.E;});
-std::cerr << params.levels[EL].size() << "," << params.levels[HH].size() << "," << params.levels[LH].size() << "  ";
         params.nhh = std::min(params.levels[EL].size(), params.levels[HH].size());
         params.nlh = std::min(params.levels[EL].size(), params.levels[LH].size());
         estimateAboveLevels(EL, params);
         estimateAboveLevels(HH, params);
         estimateAboveLevels(LH, params);
-
-std::cerr << params.levels[EL].size() << "," << params.levels[HH].size() << "," << params.levels[LH].size() << "  " << params.nhh << "," << params.nlh << "\n";
 
         if (maxLoglevel > LOG_DETAIL) {
             {
