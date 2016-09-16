@@ -118,61 +118,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
          * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
-        void summarize(const FreeCarrierGainSolver<GeometryType>* solver)
-        {
-            holes = BOTH_HOLES;
-            auto bbox = layers->getBoundingBox();
-            total = bbox.upper[1] - bbox.lower[1] - bottom - top;
-            materials.clear(); materials.reserve(layers->children.size());
-            thicknesses.clear(); thicknesses.reserve(layers->children.size());
-            for (const auto& layer: layers->children) {
-                auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
-                auto material = block->singleMaterial();
-                if (!material) throw plask::Exception("{}: Active region can consist only of solid layers", solver->getId());
-                auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
-                double thck = bbox.upper[1] - bbox.lower[1];
-                materials.push_back(material);
-                thicknesses.push_back(thck);
-            }
-            double substra = solver->strained? solver->materialSubstrate->lattC(solver->T0, 'a') : 0.;
-            if (materials.size() > 2) {
-                Material* material = materials[0].get();
-                double e;
-                if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                double el0 = material->CB(solver->T0, e, 'G'),
-                       hh0 = material->VB(solver->T0, e, 'G',  'H'),
-                       lh0 = material->VB(solver->T0, e, 'G',  'L');
-                material = materials[1].get();
-                if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                double el1 = material->CB(solver->T0, e, 'G'),
-                       hh1 = material->VB(solver->T0, e, 'G',  'H'),
-                       lh1 = material->VB(solver->T0, e, 'G',  'L');
-                for (size_t i = 2; i < materials.size(); ++i) {
-                    material = materials[i].get();
-                    if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                    double el2 = material->CB(solver->T0, e, 'G');
-                    double hh2 = material->VB(solver->T0, e, 'G',  'H');
-                    double lh2 = material->VB(solver->T0, e, 'G',  'L');
-                    if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
-                        if (i != 2 && i != materials.size()-1) {
-                            bool eb = (el0 < el1 && el1 > el2);
-                            if (eb != (hh0 > hh1 && hh1 < hh2)) holes = ConsideredHoles(holes & ~HEAVY_HOLES);
-                            if (eb != (lh0 > lh1 && lh1 < lh2)) holes = ConsideredHoles(holes & ~LIGHT_HOLES);
-                        }
-                        if (holes == NO_HOLES)
-                            throw Exception("{0}: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
-                        wells.push_back(i-1);
-                    } else if (i == 2) wells.push_back(0);
-                    if (el2 != el1) { el0 = el1; el1 = el2; }
-                    if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
-                    if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
-                }
-            }
-            if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
-            totalqw = 0.;
-            for (size_t i = 0; i < thicknesses.size(); ++i)
-                if (isQW(i)) totalqw += thicknesses[i];
-        }
+        void summarize(const FreeCarrierGainSolver<GeometryType>* solver);
     };
 
     /// Structure containing active region data for current used
