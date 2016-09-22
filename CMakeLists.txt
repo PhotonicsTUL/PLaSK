@@ -15,8 +15,8 @@ set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible featu
 # ---------- Common options --------------------------------------------
 
 if(MSVC)    # flags needed by Visual Studio:
-    set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   #increase a number of sections in obj. file, required by plask
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   #disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
+    set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   # increase a number of sections in obj. file, required by plask
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   # disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
     add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
     # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
@@ -124,7 +124,7 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
 set(ECM_ENABLE_SANITIZERS "" CACHE STRING "semicolon-separated list of sanitizers to use: leak (requires address), undefined, (and up to one of:) address, memory, thread")
-include(ECMEnableSanitizers)    # Sanitizers, this module is also included in debian package: extra-cmake-modules
+include(ECMEnableSanitizers)    # sanitizers, this module is also included in debian package: extra-cmake-modules
 
 # ---------- Profiler --------------------------------------------
 string(TOLOWER "${USE_PROFILER}" USE_PROFILER)
@@ -313,10 +313,8 @@ endif (NOT MSVC)
 # ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
-#add_library(libplask SHARED ${plask_src})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
-    target_link_libraries(libplask kernel32 iphlpapi)
     if(INSTALL_DEV)
         install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
                                  ARCHIVE DESTINATION lib COMPONENT dev)
@@ -324,6 +322,7 @@ if(WIN32)
         install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core)
     endif()
     if(MSVC)    # defualt "plask.pdb" is overriden by file for plask.exe, so we use different name ("libplask.pdb")
+        target_link_libraries(libplask kernel32 iphlpapi)
         set_target_properties (libplask PROPERTIES PDB_NAME libplask)
     endif(MSVC)
 else()
@@ -332,7 +331,7 @@ else()
 endif()
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS -DFMT_EXPORT")
 
-#if (NOT WIN32) #can be usefull if more threads libraries will be used
+#if (NOT WIN32) # can be usefull if more thread libraries will be used
 #    target_link_libraries(sdsolver "pthread")
 #endif()
 
