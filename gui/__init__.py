@@ -390,6 +390,7 @@ class MainWindow(QtGui.QMainWindow):
             self.document = document
             self.setup_model()
             self.set_changed(False)
+            os.chdir(os.path.dirname(os.path.abspath(filename)))
             return True
 
     def setup_model(self):
@@ -450,9 +451,11 @@ class MainWindow(QtGui.QMainWindow):
             msgbox.exec_()
             return False
         else:
-            update_recent_files(os.path.abspath(filename))
+            abspath = os.path.abspath(filename)
+            update_recent_files(abspath)
             self.setWindowModified(False)
             self.setWindowTitle(u"{}[*] - PLaSK".format(self.document.filename))
+            os.chdir(os.path.dirname(abspath))
             return True
 
     def save(self):

@@ -28,6 +28,8 @@
   </material>
   <material name="name" base="semiconductor"/>
   <material name="name2" base="semiconductor"/>
+  <library name="/home/maciek/Dokumenty/PLaSK/materials_rpsmes/build-release/materials_rpsmes"/>
+  <module name="mats"/>
 </materials>
 
 <geometry>

@@ -456,6 +456,10 @@ class MaterialsModel(TableModel):
                             res.append(
                                 Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"
                                      .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))
+            else:
+                if not d.name:
+                    typ = {'library': 'Library', 'module': 'Module'}[d.what]
+                    res.append(Info(u'{} name is required [row: {}]'.format(typ, i+1), Info.ERROR, rows=[i], cols=[0]))
 
         for name, rows in names.items():
             if len(rows) > 1:

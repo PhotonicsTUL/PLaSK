@@ -11,6 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys
 import itertools
 import numpy
 from matplotlib.figure import Figure
@@ -20,7 +21,7 @@ from matplotlib.widgets import Cursor
 from ...qt.QtCore import Qt
 
 from ...qt import QtGui
-from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
+from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, MaterialsModel
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
 
@@ -31,10 +32,16 @@ except ImportError:
 else:
     import plask.material
 
+from importlib import import_module
+try:
+    from importlib import reload as reload_module
+except ImportError:
+    reload_module = reload
 
 PARAMS = {'T': ['300', '400']}
 CURRENT_PROP = 'thermk'
 CURRENT_ARG = 'T'
+
 
 class MaterialPlot(QtGui.QWidget):
 
@@ -174,10 +181,30 @@ class MaterialPlot(QtGui.QWidget):
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
-        material_list = [] if self.model is None else [e.name for e in self.model.entries]
+        material_list = [] if self.model is None else [e.name for e in self.model.entries
+                                                       if not isinstance(e, MaterialsModel.External)]
         sep = len(material_list)
-        material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
         if plask:
+            if self.model is not None:
+                externals = [e for e in self.model.entries if isinstance(e, MaterialsModel.External)]
+                for ext in externals:
+                    if ext.what == 'library':
+                        try:
+                            plask.material.db.load(ext.name)
+                        except RuntimeError:
+                            pass
+                    elif ext.what == 'module':
+                        sys.path.insert(0, '.')
+                        try:
+                            if ext.name in sys.modules:
+                                reload_module(sys.modules[ext.name])
+                            else:
+                                import_module(ext.name)
+                        except:
+                            pass
+                        finally:
+                            sys.path = sys.path[1:]
+            material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
             material_list.extend(sorted((mat for mat in plask.material.db
                                          if mat not in material_list and mat not in material_blacklist),
                                         key=lambda x: x.lower()))
