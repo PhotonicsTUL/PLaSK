@@ -90,7 +90,7 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice" default="broyden">
+      <attr name="method" label="Root finding method" type="choice" default="muller">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>
@@ -256,7 +256,7 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice" default="broyden">
+      <attr name="method" label="Root finding method" type="choice" default="muller">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>
@@ -289,7 +289,7 @@
     <geometry type="Cartesian2D"/>
 
     <mesh type="Ordered"/>
-    
+
     <tag name="expansion" label="Details on Bessel Expansion">
       Details on Bessel expansion used in computations
       <attr name="lam0" label="Wavelength for parameters" type="float">
@@ -348,7 +348,7 @@
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
-      <attr name="method" label="Root finding method" type="choice" default="broyden">
+      <attr name="method" label="Root finding method" type="choice" default="muller">
         Root finding algorithm (Muller's method or Broyden's method).
         <choice>muller</choice>
         <choice>broyden</choice>

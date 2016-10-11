@@ -73,6 +73,9 @@ except ImportError:
 
 
 else:
+    import logging
+    logging.raiseExceptions = False
+
     import paramiko.hostkeys
 
     import os.path
