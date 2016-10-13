@@ -271,6 +271,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         self.fake_root = GNFakeRoot(self)
         self.axes = None    #TODO ? use axes of FakeRoot
         self._message = None
+        self.dirty = False
 
     @property
     def roots(self):
@@ -302,6 +303,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         else:
             command.redo()
             self.undo_stack.clear()
+        self.dirty = True
 
     def stubs(self):
         res = 'class GEO(object):\n    """PLaSK object containing the defined geometry objects."""\n'

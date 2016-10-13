@@ -1,5 +1,4 @@
 @ECHO OFF
-WHILE
 :shift
 IF "%~1" NEQ "--" (
   SHIFT

@@ -492,11 +492,11 @@ class GNode(object):
         """
         pass
 
+
 class GNFakeRoot(GNode):
 
     def __init__(self, geometry_model):
         super(GNFakeRoot, self).__init__()
-        #self.model = geometry_model    #is this needed?
 
     def accept_new_child(self):
         return True

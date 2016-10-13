@@ -551,6 +551,9 @@ class GeometryController(Controller):
 
     def on_edit_enter(self):
         self.tree.selectionModel().clear()   # model could have been completely changed
+        if self.model.dirty:
+            self._last_index = None
+            self.model.dirty = False
         try:
             if not self._last_index:
                 raise IndexError(self._last_index)
