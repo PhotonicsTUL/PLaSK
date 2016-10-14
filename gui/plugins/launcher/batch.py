@@ -394,9 +394,15 @@ else:
             self.queue = QtGui.QComboBox()
             # self.queue.setEditable(True)
             self.queue.setToolTip("Select the execution queue to send your job to.")
-            self.queue.addItems(self.accounts.get(self.accounts_combo.currentText(), (None,None,[]))[2])
+            queues = self.accounts.get(self.accounts_combo.currentText(), (None,None,[]))[2]
+            self.queue.addItems(queues)
             if self._saved_queue is not None:
-                self.queue.setEditText(self._saved_queue)
+                try:
+                    qi = queues.index(self._saved_queue)
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    self.queue.setCurrentIndex(qi)
             layout.addWidget(self.queue)
             label.setBuddy(self.queue)
 
