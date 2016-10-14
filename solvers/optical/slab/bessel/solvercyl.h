@@ -25,7 +25,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
 
-        Mode(const ExpansionBessel& expansion): lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1.) {}
+        Mode(const ExpansionBessel& expansion): lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1e-9) {}
 
         bool operator==(const Mode& other) const {
             return m == other.m && is_zero(k0 - other.k0) && is_zero(lam0 - other.lam0) &&
