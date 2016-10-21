@@ -23,9 +23,9 @@ from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 try:
     from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
 except ImportError:
-    HAVE_PREVIEW = False
+    preview_available = False
 else:
-    HAVE_PREVIEW = True
+    preview_available = True
 
 
 class PlaceDetailsEditor(QtGui.QWidget):
@@ -136,7 +136,7 @@ class RectangularPlaceLine(PlaceDetailsEditor):
         data.stop = empty_to_none(self.stop.text())
 
 
-if HAVE_PREVIEW:
+if preview_available:
     class NavigationToolbar(GeometryNavigationToolbar):
 
         toolitems = (
@@ -236,6 +236,9 @@ class BoundaryConditionsDialog(QtGui.QDialog):
         layout.addWidget(buttons)
 
         self.setLayout(layout)
+
+    def plot_boundaries(self):
+        if not preview_available: return
 
 
 class PlaceDelegate(QtGui.QStyledItemDelegate):

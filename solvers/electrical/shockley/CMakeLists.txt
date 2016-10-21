@@ -53,7 +53,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #add_solver_test(solvers/foo/bar mytest)
-add_python_test(solvers/electrical/shockley2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical.py)
+add_python_test(solvers/electrical/shockley2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical2d.py)
 add_python_test(solvers/electrical/shockley3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical3d.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
