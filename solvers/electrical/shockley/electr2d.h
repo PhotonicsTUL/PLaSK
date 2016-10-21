@@ -1,28 +1,11 @@
-#ifndef PLASK__MODULE_ELECTRICAL_FEMV_H
-#define PLASK__MODULE_ELECTRICAL_FEMV_H
+#ifndef PLASK__MODULE_ELECTRICAL_ELECTR2D_H
+#define PLASK__MODULE_ELECTRICAL_ELECTR2D_H
 
-#include <plask/plask.hpp>
+#include "common.h"
+#include "iterative_matrix2d.h"
 #include <limits>
 
-#include "block_matrix.h"
-#include "iterative_matrix.h"
-#include "gauss_matrix.h"
-
-namespace plask { namespace solvers { namespace electrical {
-
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< Cholesky factorization
-    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
-};
-
-/// Choice of heat computation method in active region
-enum HeatMethod {
-    HEAT_JOULES, ///< compute Joules heat using effective conductivity
-    HEAT_BANDGAP ///< compute heat based on the size of the band gap
-};
-
+namespace plask { namespace electrical { namespace shockley {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
@@ -30,23 +13,23 @@ enum HeatMethod {
 template<typename Geometry2DType>
 struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
+  protected:
+
     /// Details of active region
     struct Active {
-        struct Temp {
+        struct Region {
             size_t left, right, bottom, top;
             size_t rowl, rowr;
-            Temp(): left(0), right(0), bottom(std::numeric_limits<size_t>::max()),
-                    top(std::numeric_limits<size_t>::max()),
-                    rowl(std::numeric_limits<size_t>::max()), rowr(0) {}
+            Region(): left(0), right(0), bottom(std::numeric_limits<size_t>::max()),
+                      top(std::numeric_limits<size_t>::max()),
+                      rowl(std::numeric_limits<size_t>::max()), rowr(0) {}
         };
         size_t left, right, bottom, top;
-        size_t offset;
+        ptrdiff_t offset;
         double height;
         Active() {}
         Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
     };
-
-  protected:
 
     int size;                   ///< Number of columns in the main matrix
 
@@ -90,7 +73,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
+    void solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize() override;
@@ -114,7 +97,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
-    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
@@ -261,24 +244,30 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         this->invalidate();
     }
 
+    /// Get p-contact layer conductivity [S/m]
     double getCondPcontact() const { return pcond; }
+    /// Set p-contact layer conductivity [S/m]
     void setCondPcontact(double cond)  {
         pcond = cond;
         this->invalidate();
     }
 
+    /// Get n-contact layer conductivity [S/m]
     double getCondNcontact() const { return ncond; }
+    /// Set n-contact layer conductivity [S/m]
     void setCondNcontact(double cond)  {
         ncond = cond;
         this->invalidate();
     }
 
-    double getDefaultCondJunc() const { return junction_conductivity; }
+    /// Get default juction conductivity [S/m]
+    double getCondJunc() const { return junction_conductivity; }
+    /// Set default juction conductivity [S/m]
     void setCondJunc(double cond) {
         junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
         default_junction_conductivity = cond;
     }
-    DataVector<const double> getCondJunc() const { return junction_conductivity; }
+    /// Set default juction conductivity [S/m]
     void setCondJunc(const DataVector<const double>& cond)  {
         size_t condsize = 0;
         for (const auto& act: active) condsize += act.right - act.left;
@@ -307,9 +296,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
 };
 
-}} //namespaces
-
-} // namespace plask
+}}} //namespaces
 
 #endif
 

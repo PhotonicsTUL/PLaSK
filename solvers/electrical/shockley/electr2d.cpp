@@ -1,6 +1,6 @@
-#include "femV.h"
+#include "electr2d.h"
 
-namespace plask { namespace solvers { namespace electrical {
+namespace plask { namespace electrical { namespace shockley {
 
 template<typename Geometry2DType>
 FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
@@ -118,7 +118,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 
-    std::vector<typename Active::Temp> regions;
+    std::vector<typename Active::Region> regions;
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         size_t prev = 0;
@@ -247,7 +247,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, 
 }
 
 template<typename Geometry2DType>
-void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMatrix2D& A, DataVector<double>& B,
                                                                     const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -406,7 +406,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(unsigned l
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix2D>(loops);
     }
     return 0.;
 }
@@ -536,16 +536,16 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
 }
 
 template<typename Geometry2DType>
-void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
-    PrecondJacobi precond(ioA);
+    PrecondJacobi2D precond(A);
 
     DataVector<double> x = potentials.copy(); // We use previous potentials as initial solution
     double err;
     try {
-        int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
+        int iter = solveDCG(A, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError exc) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
@@ -595,7 +595,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
                                 / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
             auto midpoint = e.getMidpoint();
             if (size_t nact = isActive(midpoint)) {
-                const auto& act = active[nact];
+                const auto& act = active[nact-1];
                 double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jy = conds[i].c11 * fabs(dvy); // [j] = A/m²
                 heats[i] = heatfact * jy ;
@@ -804,4 +804,4 @@ template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindric
 template struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;
 
-}}} // namespace plask::solvers::thermal
+}}} // namespaces

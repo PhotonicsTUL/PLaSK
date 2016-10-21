@@ -1,6 +1,6 @@
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/thermal/fem)
+project(plask/electrical/fem)
 
 
 # Do not change thew following two lines
@@ -44,7 +44,6 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 #set(solvers_src file1.cpp file2.cpp file3.h file4.hpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
-
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using macro add_solver_test for binaries
 # and add_python_test(name file.py) for Python scripts. You should name
@@ -54,7 +53,8 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #add_solver_test(solvers/foo/bar mytest)
-add_python_test(solvers/electrical/fem3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical3d.py)
+add_python_test(solvers/electrical/shockley2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical.py)
+add_python_test(solvers/electrical/shockley3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical3d.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
 #add_executable(femtest ${femtest_src})

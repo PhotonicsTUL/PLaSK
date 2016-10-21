@@ -2,15 +2,15 @@
 
 #include "electr3d.h"
 
-namespace plask { namespace solvers { namespace electrical3d {
+namespace plask { namespace electrical { namespace shockley {
 
 FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, plask::RectangularMesh<3>>(name),
     pcond(5.),
     ncond(50.),
-    algorithm(ALGORITHM_CHOLESKY),
     loopno(0),
     default_junction_conductivity(5.),
+    algorithm(ALGORITHM_CHOLESKY),
     maxerr(0.05),
     heatmet(HEAT_JOULES),
     itererr(1e-8),
@@ -59,8 +59,6 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
         }
 
         else if (param == "junction") {
-            js = source.getAttribute<double>("js", js);
-            beta = source.getAttribute<double>("beta", beta);
             auto condjunc = source.getAttribute<double>("pnjcond");
             if (condjunc) setCondJunc(*condjunc);
             auto wavelength = source.getAttribute<double>("wavelength");
@@ -69,6 +67,23 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
                 .value("joules", HEAT_JOULES)
                 .value("wavelength", HEAT_BANDGAP)
                 .get(heatmet);
+            for (auto attr: source.getAttributes()) {
+                if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
+                if (attr.first.substr(0,4) == "beta") {
+                    size_t no;
+                    try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }
+                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    setBeta(no, source.requireAttribute<double>(attr.first));
+                }
+                else if (attr.first.substr(0,2) == "js") {
+                    size_t no;
+                    try { no = boost::lexical_cast<size_t>(attr.first.substr(2)); }
+                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    setJs(no, source.requireAttribute<double>(attr.first));
+                }
+                else
+                    throw XMLUnexpectedAttrException(source, attr.first);
+            }
             source.requireTagEnd();
         }
 
@@ -95,72 +110,69 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         return;
     }
 
-    actlo.clear();
-    acthi.clear();
-    actd.clear();
-
     shared_ptr<RectangularMesh<3>> points = mesh->getMidpointsMesh();
-
-    size_t ileft = 0, iright = points->axis1->size();
-    size_t iback = 0, ifront = points->axis0->size();
-    bool in_active = false;
-
-    for (size_t ver = 0; ver < points->axis2->size(); ++ver) {
-        bool had_active_tra = false;
+    
+    std::map<size_t, Active::Region> regions;
+    size_t nreg = 0;
+    
+    for (size_t lon = 0; lon < points->axis0->size(); ++lon) {
         for (size_t tra = 0; tra < points->axis1->size(); ++tra) {
-            bool had_active_lon = false;
-            for (size_t lon = 0; lon < points->axis0->size(); ++lon) {
+            size_t num = 0;
+            size_t start = 0;
+            for (size_t ver = 0; ver < points->axis2->size(); ++ver) {
                 auto point = points->at(lon, tra, ver);
-                bool active = isActive(point);
-
-                // Here we are inside potential active region
-                if (tra < ileft) {
-                    if (active) throw Exception("{0}: Left edge of the active region not aligned.", getId());
-                } else if (tra >= iright) {
-                    if (active) throw Exception("{0}: Right edge of the active region not aligned.", getId());
-                } else if (lon < iback) {
-                    if (active) throw Exception("{0}: Back edge of the active region not aligned.", getId());
-                } else if (lon >= ifront) {
-                    if (active) throw Exception("{0}: Front edge of the active region not aligned.", getId());
-                } else if (active) {
-                    if (!had_active_lon && !had_active_tra) {
-                        if (!in_active) { // active region is starting set-up new region info
-                            ileft = tra;
-                            iback = lon;
-                            actlo.push_back(ver);
+                size_t cur = isActive(point);
+                if (num != cur) {
+                    if (num) {  // summarize current region
+                        auto found = regions.find(num);
+                        if (found == regions.end()) {  // `num` is a new region
+                            regions[num] = Active::Region(start, ver);
+                            if (nreg < num) nreg = num;
+                        } else {
+                            Active::Region& region = found->second;
+                            if (start != region.bottom || ver != region.top)
+                                throw Exception("{0}: Junction {1} does not have top and bottom edges at constant heights", this->getId(), num-1);
+                            if (tra < region.left) region.left = tra;
+                            if (tra >= region.right) region.right = tra+1;
+                            if (lon < region.back) region.back = lon;
+                            if (lon >= region.front) region.front = lon+1;
                         }
                     }
-                    had_active_lon = true;
-                } else if (had_active_lon) {
-                    if (!in_active && !had_active_tra) ifront = lon;
-                    else throw Exception("{0}: Front edge of the active region not aligned.", getId());
-                } else if (had_active_tra) {
-                    if (!in_active) iright = tra;
-                    else throw Exception("{0}: Right edge of the active region not aligned.", getId());
+                    num = cur;
+                    start = ver;
                 }
             }
-            had_active_tra |= had_active_lon;
-        }
-        in_active = had_active_tra;
-
-        // Test if the active region has finished
-        if (!in_active && actlo.size() != acthi.size()) {
-            acthi.push_back(ver);
-            actd.push_back(mesh->axis2->at(acthi.back()) - mesh->axis2->at(actlo.back()));
-            this->writelog(LOG_DETAIL, "Detected active layer {1} thickness = {0}nm", 1e3 * actd.back(), actd.size()-1);
+            if (num) {  // summarize current region
+                auto found = regions.find(num);
+                if (found == regions.end()) {  // `current` is a new region
+                    regions[num] = Active::Region(start, points->axis2->size());
+                } else {
+                    Active::Region& region = found->second;
+                    if (start != region.bottom || points->axis2->size() != region.top)
+                        throw Exception("{0}: Junction {1} does not have top and bottom edges at constant heights", this->getId(), num-1);
+                    if (tra < region.left) region.left = tra;
+                    if (tra >= region.right) region.right = tra+1;
+                    if (lon < region.back) region.back = lon;
+                    if (lon >= region.front) region.front = lon+1;
+                }
+            }
         }
     }
 
-    if (actlo.size() != acthi.size()) {
-        acthi.push_back(points->axis2->size());
-        actd.push_back(mesh->axis2->at(acthi.back()) - mesh->axis2->at(actlo.back()));
-        this->writelog(LOG_DETAIL, "Detected active layer {1} thickness = {0}nm", 1e3 * actd.back(), actd.size()-1);
+    size_t condsize = 0;
+    active.resize(nreg);
+
+    for (auto& ireg: regions) {
+        size_t num = ireg.first - 1;
+        Active::Region& reg = ireg.second;
+        double height = this->mesh->axis2->at(reg.top) - this->mesh->axis2->at(reg.bottom);
+        active[num] = Active(condsize, reg, height);
+        condsize += (reg.right-reg.left) * (reg.front-reg.back);
+        this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", num, 1e3*height);
+        this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3},{5}]-[{2},{4},{6}]", num,
+                       reg.back, reg.front, reg.left, reg.right, reg.bottom, reg.top);
     }
-
-    assert(acthi.size() == actlo.size());
-
-    size_t condsize = max(actlo.size() * (mesh->axis0->size()-1) * (mesh->axis1->size()-1), size_t(1));
-
+    
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
@@ -177,7 +189,9 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     current.reset(this->mesh->elements.size(), vec(0.,0.,0.));
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
-        size_t condsize = max(actlo.size() * (this->mesh->axis1->size()-1) * (this->mesh->axis0->size()-1), size_t(1));
+        size_t condsize = 0;
+        for (const auto& act: active) condsize += (act.right-act.left)*act.ld;
+        condsize = max(condsize, size_t(1));
         junction_conductivity.reset(condsize, junction_conductivity[0]);
     }
 }
@@ -194,36 +208,38 @@ void FiniteElementMethodElectrical3DSolver::onInvalidate() {
 
 void FiniteElementMethodElectrical3DSolver::loadConductivity()
 {
-    auto midmesh = (mesh)->getMidpointsMesh();
+    auto midmesh = (this->mesh)->getMidpointsMesh();
     auto temperature = inTemperature(midmesh);
 
-    for (auto e: mesh->elements)
+    for (auto e: this->mesh->elements)
     {
         size_t i = e.getIndex();
         Vec<3,double> midpoint = e.getMidpoint();
 
-        auto roles = geometry->getRolesAt(midpoint);
-        if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-            size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex2()) - acthi.begin();
-            assert(n < acthi.size());
-            conds[i] = Tensor2<double>(0., junction_conductivity[(n * (mesh->axis1->size()-1) + e.getIndex1()) * (mesh->axis0->size()-1) + e.getIndex0()]);
+        auto roles = this->geometry->getRolesAt(midpoint);
+        if (size_t actn = isActive(midpoint)) {
+            const auto& act = active[actn-1];
+            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + act.ld*e.getIndex1() + e.getIndex0()]);
             if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
         } else if (roles.find("n-contact") != roles.end()) {
             conds[i] = Tensor2<double>(ncond, ncond);
         } else
-            conds[i] = geometry->getMaterial(midpoint)->cond(temperature[i]);
+            conds[i] = this->geometry->getMaterial(midpoint)->cond(temperature[i]);
     }
 }
 
 void FiniteElementMethodElectrical3DSolver::saveConductivity()
 {
-    for (size_t n = 0; n < getActNo(); ++n) {
-        size_t z = (actlo[n]+acthi[n])/2;
-        for (size_t y = 0; y != mesh->axis1->size()-1; ++y)
-            for (size_t x = 0; x != mesh->axis0->size()-1; ++x)
-                junction_conductivity[(n * (mesh->axis1->size()-1) + y) * (mesh->axis0->size()-1) + x] = conds[mesh->elements(x, y, z).getIndex()].c11;
+    for (size_t n = 0; n < active.size(); ++n) {
+        const auto& act = active[n];
+        size_t v = (act.top + act.bottom) / 2;
+        for (size_t t = act.left; t != act.right; ++t) {
+            size_t offset = act.offset + act.ld * t;
+            for (size_t l = act.back; l != act.front; ++l)
+                junction_conductivity[offset + l] = conds[this->mesh->elements(l, t, v).getIndex()].c11;
+        }
     }
 }
 
@@ -237,21 +253,20 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     // Update junction conductivities
     if (loopno != 0) {
         for (auto elem: mesh->elements) {
-            if (isActive(elem)) {
+            if (size_t nact = isActive(elem)) {
                 size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
                 size_t back = mesh->index0(lll),
                        front = mesh->index0(uuu),
                        left = mesh->index1(lll),
                        right = mesh->index1(uuu);
-                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index2(lll)) - acthi.begin();
-                assert(nact < acthi.size());
+                const Active& act = active[nact-1];
                 double jy = 0.25e6 * conds[index].c11  * abs
-                    (- potential[mesh->index(back,left,actlo[nact])] - potential[mesh->index(front,left,actlo[nact])]
-                     - potential[mesh->index(back,right,actlo[nact])] - potential[mesh->index(front,right,actlo[nact])]
-                     + potential[mesh->index(back,left,acthi[nact])] + potential[mesh->index(front,left,acthi[nact])]
-                     + potential[mesh->index(back,right,acthi[nact])] + potential[mesh->index(front,right,acthi[nact])])
-                    / actd[nact]; // [j] = A/m²
-                conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+                    (- potential[mesh->index(back,left,act.bottom)] - potential[mesh->index(front,left,act.bottom)]
+                     - potential[mesh->index(back,right,act.bottom)] - potential[mesh->index(front,right,act.bottom)]
+                     + potential[mesh->index(back,left,act.top)] + potential[mesh->index(front,left,act.top)]
+                     + potential[mesh->index(back,right,act.top)] + potential[mesh->index(front,right,act.top)])
+                    / act.height; // [j] = A/m²
+                conds[index] = Tensor2<double>(0., 1e-6 * getBeta(nact-1) * jy * act.height / log(jy / getJs(nact-1) + 1.));
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
                     conds[index].c11 = 1e-16;
                 }
@@ -355,7 +370,7 @@ void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<doubl
 }
 
 template <>
-void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix>(SparseBandMatrix& A, DataVector<double>& B,
+void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
                                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -408,8 +423,10 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 
     loadConductivity();
 
-    bool noactive = (actd.size() == 0);
-    double minj = 100e-7 * js; // assume no significant heating below this current
+    bool noactive = (active.size() == 0);
+    double minj = js[0]; // assume no significant heating below this current
+    for (auto j: js) if (j < minj) minj = j;
+    minj *= 1e-5;
 
     do {
         setMatrix(A, potential, bvoltage);   // corr holds RHS now
@@ -472,7 +489,7 @@ double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
     }
     return 0.;
 }
@@ -524,11 +541,11 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
 }
 
 
-void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix& A, DataVector<double>& B)
+void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
-    PrecondJacobi precond(A);
+    PrecondJacobi3D precond(A);
 
     DataVector<double> X = potential.copy(); // We use previous potential as initial solution
     double err;
@@ -600,10 +617,9 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                                 / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
             auto midpoint = el.getMidpoint();
             auto roles = this->geometry->getRolesAt(midpoint);
-            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), mesh->index2(i)) - acthi.begin();
-                assert(nact < acthi.size());
-                double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * actd[nact]);
+            if (size_t nact = isActive(midpoint)) {
+                const auto& act = active[nact-1];
+                double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jz = conds[i].c11 * fabs(dvz); // [j] = A/m²
                 heat[i] = heatfact * jz ;
             } else if (geometry->getMaterial(midpoint)->kind() == Material::NONE || roles.find("noheat") != roles.end())
@@ -634,10 +650,11 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bo
 
 double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 {
-    if (nact >= actlo.size()) throw BadInput(this->getId(), "Wrong active region number");
+    if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
+    const auto& act = active[nact];
     // Find the average of the active region
-    size_t level = (actlo[nact] + acthi[nact]) / 2;
-    return integrateCurrent(level);
+    size_t level = (act.bottom + act.top) / 2;
+    return integrateCurrent(level, true);
 }
 
 
@@ -753,4 +770,4 @@ double FiniteElementMethodElectrical3DSolver::getTotalHeat() {
     return W;
 }
 
-}}} // namespace plask::solvers::electrical
+}}} // namespaces

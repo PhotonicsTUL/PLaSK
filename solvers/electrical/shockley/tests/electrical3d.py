@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from electrical.fem3d import Shockley3D
+from electrical.shockley import Shockley3D
 
 eps0 = 8.854187817e-6 # pF/µm
 

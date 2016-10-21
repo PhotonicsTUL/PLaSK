@@ -3,8 +3,9 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../femV.h"
-using namespace plask::solvers::electrical;
+#include "../electr2d.h"
+#include "../electr3d.h"
+using namespace plask::electrical::shockley;
 
 static py::object outPotential(const py::object& self) {
     throw TypeError("{}: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
@@ -96,15 +97,14 @@ template <typename Class> void Shockley__setattr__(const py::object& oself, cons
 }
 
 
-template <typename GeometryT>
+template <typename __Class__>
 inline static void register_electrical_solver(const char* name, const char* geoname)
 {
-    typedef FiniteElementMethodElectrical2DSolver<GeometryT>  __Class__;
-    ExportSolver<FiniteElementMethodElectrical2DSolver<GeometryT>> solver(name, format(
+    ExportSolver<__Class__> solver(name, format(
 
         u8"{0}(name=\"\")\n\n"
 
-        u8"Finite element thermal solver for 2D {1} geometry."
+        u8"Finite element thermal solver for {1} geometry."
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, u8"Run electrical calculations", py::arg("loops")=0);
@@ -145,8 +145,12 @@ inline static void register_electrical_solver(const char* name, const char* geon
     solver.def("__setattr__",  &Shockley__setattr__<__Class__>);
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
-    solver.add_property("pnjcond", &__Class__::getDefaultCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc, u8"Effective conductivity of the p-n junction");
-    solver.add_property("outPotential", outPotential, "Removed: use :attr:`outVoltage` instead.");
+    solver.add_property("pnjcond", &__Class__::getCondJunc, (void(__Class__::*)(double))&__Class__::setCondJunc,
+                        u8"Default effective conductivity of the p-n junction.\n\n"
+                        u8"Effective junction conductivity will be computed starting from this value.\n"
+                        u8"Note that the actual junction conductivity after convergence can be obtained\n"
+                        u8"with :attr:`outConductivity`.");
+    solver.add_property("outPotential", outPotential, u8"Not available in this solver. Use :attr:`outVoltage` instead.");
     RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
     RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
@@ -178,7 +182,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(fem)
+BOOST_PYTHON_MODULE(shockley)
 {
     py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
@@ -191,8 +195,11 @@ BOOST_PYTHON_MODULE(fem)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    register_electrical_solver<Geometry2DCartesian>("Shockley2D", "Cartesian");
+    register_electrical_solver<FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>>("Shockley2D", "2D Cartesian");
 
-    register_electrical_solver<Geometry2DCylindrical>("ShockleyCyl", "cylindrical");
+    register_electrical_solver<FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>>("ShockleyCyl", "2D cylindrical");
+
+    register_electrical_solver<FiniteElementMethodElectrical3DSolver>("Shockley3D", "3D Cartesian");
+
 }
 

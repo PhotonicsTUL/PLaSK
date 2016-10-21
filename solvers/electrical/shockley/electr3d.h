@@ -1,27 +1,10 @@
-#ifndef PLASK__MODULE_ELECTRICAL_FEMV_H
-#define PLASK__MODULE_ELECTRICAL_FEMV_H
+#ifndef PLASK__MODULE_ELECTRICAL_ELECTR3D_H
+#define PLASK__MODULE_ELECTRICAL_ELECTR3D_H
 
-#include <plask/plask.hpp>
+#include "common.h"
+#include "iterative_matrix3d.h"
 
-#include "block_matrix.h"
-#include "gauss_matrix.h"
-#include "iterative_matrix.h"
-
-namespace plask { namespace solvers { namespace electrical3d {
-
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< block algorithm (thrice faster, however a little prone to failures)
-    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-    ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
-};
-
-/// Choice of heat computation method in active region
-enum HeatMethod {
-    HEAT_JOULES, ///< compute Joules heat using effective conductivity
-    HEAT_BANDGAP ///< compute heat based on the size of the band gap
-};
-
+namespace plask { namespace electrical { namespace shockley {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
@@ -29,13 +12,32 @@ enum HeatMethod {
 struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
+    
+    /// Details of active region
+    struct Active {
+        struct Region {
+            size_t bottom, top, left, right, back, front;
+            Region() {}
+            Region(size_t b, size_t t): bottom(b), top(t),
+                                        left(std::numeric_limits<size_t>::max()), right(0),
+                                        back(std::numeric_limits<size_t>::max()), front(0) {}
+        };
+        size_t bottom, top, left, right, back, front;
+        size_t ld;
+        ptrdiff_t offset;
+        double height;
+        Active() {}
+        Active(size_t tot, size_t v0, size_t v1, size_t t0, size_t t1, size_t l0, size_t l1, double h):
+            bottom(v0), top(v1), left(t0), right(t1), back(l0), front(l1), ld(l1-l0), offset(tot - (l1-l0)*t0 - l0), height(h) {}
+        Active(size_t tot, Region r, double h):
+            bottom(r.bottom), top(r.top), left(r.left), right(r.right), back(r.back), front(r.front),
+            ld(r.front-r.back), offset(tot - (r.front-r.back)*r.left - r.back), height(h) {}
+    };
 
-    double js;                                  ///< p-n junction parameter [A/m^2]
-    double beta;                                ///< p-n junction parameter [1/V]
+    std::vector<double> js;                     ///< p-n junction parameter [A/m^2]
+    std::vector<double> beta;                   ///< p-n junction parameter [1/V]
     double pcond;                               ///< p-contact electrical conductivity [S/m]
     double ncond;                               ///< n-contact electrical conductivity [S/m]
-
-    Algorithm algorithm;                        ///< Factorization algorithm to use
 
     int loopno;                                 ///< Number of completed loops
     double toterr;                              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
@@ -49,10 +51,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     DataVector<Vec<3,double>> current;          ///< Computed current densities
     DataVector<double> heat;                    ///< Computed and cached heat source densities
 
-    std::vector<size_t>
-        actlo,                                  ///< Vertical index of the lower side of the active regions
-        acthi;                                  ///< Vertical index of the higher side of the active regions
-    std::vector<double> actd;                   ///< Active regions thickness
+    std::vector<Active> active;                 ///< Active regions information
 
 
     /**
@@ -84,7 +83,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver for the iterative algorithm
-    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
+    void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize() override;
@@ -110,17 +109,33 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     double doCompute(unsigned loops=1);
 
     /// Return \c true if the specified point is at junction
-    bool isActive(const Vec<3>& point) const {
-        auto roles = geometry->getRolesAt(point);
-        return roles.find("active") != roles.end() || roles.find("junction") != roles.end();
+    size_t isActive(const Vec<3>& point) const {
+        size_t no(0);
+        auto roles = this->geometry->getRolesAt(point);
+        for (auto role: roles) {
+            size_t l = 0;
+            if (role.substr(0,6) == "active") l = 6;
+            else if (role.substr(0,8)  == "junction") l = 8;
+            else continue;
+            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+            if (role.size() == l)
+                no = 1;
+            else {
+                try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
+                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '{0}'", role); }
+            }
+        }
+        return no;
     }
 
     /// Return \c true if the specified element is a junction
-    bool isActive(const RectangularMesh<3>::Element& element) const {
+    size_t isActive(const RectangularMesh<3>::Element& element) const {
            return isActive(element.getMidpoint());
     }
 
   public:
+
+    Algorithm algorithm;        ///< Factorization algorithm to use
 
     double maxerr;              ///< Maximum relative current density correction accepted as convergence
     Vec<3,double> maxcur;       ///< Maximum current in the structure
@@ -199,50 +214,60 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     /// Return the maximum estimated error
     double getErr() const { return toterr; }
 
-    /// \return current algorithm
-    Algorithm getAlgorithm() const { return algorithm; }
-
-    /// Set algorithm
-    void setAlgorithm(Algorithm alg) {
-        algorithm = alg;
+    /// Return beta.
+    double getBeta(size_t n) const {
+        if (beta.size() <= n) throw Exception("{0}: no beta given for junction {1}", this->getId(), n);
+        return beta[n];
     }
-
-    /// Get \f$ \beta \f$ [1/V]
-    double getBeta() const { return beta; }
-    /// Set \f$ \beta \f$ [1/V]
-    void setBeta(double beta)  {
-        this->beta = beta;
+    /// Set new beta and invalidate the solver.
+    void setBeta(size_t n, double beta)  {
+        if (this->beta.size() <= n) {
+            this->beta.reserve(n+1); for (size_t s = this->beta.size(); s <= n; ++s) this->beta.push_back(NAN);
+        }
+        this->beta[n] = beta;
         this->invalidate();
     }
 
-    /// Get junction thermal voltage \f$ V_t \f$
-    double getVt() const { return 1. / beta; }
-    /// Set new junction thermal voltage \f$ V_t \f$ and invalidate the solver
-    void setVt(double Vt) {
-        this->beta = 1. / Vt;
+    /// Get junction thermal voltage.
+    double getVt(size_t n) const {
+        if (beta.size() <= n) throw Exception("{0}: no Vt given for junction {1}", this->getId(), n);
+        return 1. / beta[n];
+    }
+    /// Set new junction thermal voltage and invalidate the solver.
+    void setVt(size_t n, double Vt) {
+        if (beta.size() <= n) {
+            beta.reserve(n+1); for (size_t s = beta.size(); s <= n; ++s) beta.push_back(NAN);
+        }
+        this->beta[n] = 1. / Vt;
         this->invalidate();
     }
 
-    /// Get \f$ j_s \f$ [A/m²]
-    double getJs() const { return js; }
-    /// Set \f$ j_s \f$ [A/m²]
-    void setJs(double js)  {
-        this->js = js;
+    /// Return js
+    double getJs(size_t n) const {
+        if (js.size() <= n) throw Exception("{0}: no js given for junction {1}", this->getId(), n);
+        return js[n];
+    }
+    /// Set new js and invalidate the solver
+    void setJs(size_t n, double js)  {
+        if (this->js.size() <= n) {
+            this->js.reserve(n+1); for (size_t s = this->js.size(); s <= n; ++s) this->js.push_back(1.);
+        }
+        this->js[n] = js;
         this->invalidate();
     }
 
     /// Get p-contact layer conductivity [S/m]
-    double getPcond() const { return pcond; }
+    double getCondPcontact() const { return pcond; }
     /// Set p-contact layer conductivity [S/m]
-    void setPcond(double cond)  {
+    void setCondPcontact(double cond)  {
         pcond = cond;
         this->invalidate();
     }
 
     /// Get n-contact layer conductivity [S/m]
-    double getNcond() const { return ncond; }
+    double getCondNcontact() const { return ncond; }
     /// Set n-contact layer conductivity [S/m]
-    void setNcond(double cond)  {
+    void setCondNcontact(double cond)  {
         ncond = cond;
         this->invalidate();
     }
@@ -256,14 +281,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     }
     /// Set junction effective conductivity to previously read data
     void setCondJunc(const DataVector<const double>& cond)  {
-        if (!this->mesh || cond.size() != (this->mesh->axis0->size()-1) * (this->mesh->axis1->size()-1) * getActNo())
+        size_t condsize = 0;
+        for (const auto& act: active) condsize += (act.right-act.left) * act.ld;
+        condsize = max(condsize, size_t(1));
+        if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }
-
-    double getActLo(size_t n) const { return actlo[n]; }
-    double getActHi(size_t n) const { return acthi[n]; }
-    size_t getActNo() const { return actd.size(); }
 
   protected:
 
