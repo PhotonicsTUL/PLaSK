@@ -98,6 +98,7 @@ class GridsController(Controller):
 
         self.model.changed.connect(self.on_model_change)
 
+        self.plotted_geometry = None
         self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
@@ -223,26 +224,27 @@ class GridsController(Controller):
             try:
                 selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
                 if selected_geometry:
-                    geometry = manager.geo[selected_geometry]
+                    self.plotted_geometry = manager.geo[selected_geometry]
                 else:
-                    geometry = None
+                    self.plotted_geometry = None
             except KeyError:
-                geometry = None
+                self.plotted_geometry = None
             if model.is_mesh:
                 mesh = manager.msh[model.name]
             elif model.is_generator:
-                if geometry is None:
+                if self.plotted_geometry is None:
                     if ignore_no_geometry:
                         mesh = None
                     else:
                         raise ValueError("You must select geometry to preview generators")
                 else:
-                    mesh = manager.msg[model.name](geometry)
+                    mesh = manager.msg[model.name](self.plotted_geometry)
             else:
                 mesh = None
             if model != self.plotted_model:
                 self.clear = self.mesh_preview.toolbar._views.clear()
-            self.mesh_preview.update_mesh_plot(mesh, geometry, set_limits=set_limits, plane=self.checked_plane)
+            self.mesh_preview.update_mesh_plot(mesh, self.plotted_geometry, set_limits=set_limits,
+                                               plane=self.checked_plane)
         except Exception as e:
             self.model.info_message("Could not update mesh preview: {}".format(str(e)), Info.WARNING)
             # self.status_bar.setText(str(e))
@@ -268,7 +270,7 @@ class GridsController(Controller):
 
     def plot(self):
         if self._current_controller is not None:
-            self.plot_mesh(self._current_controller.model, set_limits=True)
+            self.plot_mesh(self._current_controller.model, set_limits=self.plotted_geometry is None)
 
 
 class GridController(Controller):

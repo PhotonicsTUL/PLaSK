@@ -106,7 +106,7 @@ struct RegisterBoundaryConditions {
                ", " + std::string(py::extract<std::string>(py::str(py::object(self.value)))) + ")";
     }
 
-    RegisterBoundaryConditions()
+    RegisterBoundaryConditions(bool delattr=true)
     {
         if (py::converter::registry::lookup(py::type_id<BoundaryConditionsT>()).m_class_object == nullptr) {
 
@@ -122,7 +122,7 @@ struct RegisterBoundaryConditions {
                 .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions.")
                 .def("__iter__", &__iter__)
             ;
-            py::delattr(py::scope(), "BoundaryConditions");
+            if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;
 
             py::class_<Iter>("Iterator", py::no_init)

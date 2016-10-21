@@ -5,6 +5,7 @@
 
 // Important contains
 #include "python_globals.h"
+#include "python_boundaries.h"
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/boundary.h>
 
@@ -88,6 +89,8 @@ struct ExportBoundary {
                  py::with_custodian_and_ward_postcall<0,2>>())
         ;
 
+        detail::RegisterBoundaryConditions<MeshType, py::object>(false);
+        
         boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshType::Boundary>());
     }
 };

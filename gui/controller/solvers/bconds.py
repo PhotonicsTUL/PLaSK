@@ -20,6 +20,13 @@ from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 
+try:
+    from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
+except ImportError:
+    HAVE_PREVIEW = False
+else:
+    HAVE_PREVIEW = True
+
 
 class PlaceDetailsEditor(QtGui.QWidget):
     pass
@@ -129,6 +136,48 @@ class RectangularPlaceLine(PlaceDetailsEditor):
         data.stop = empty_to_none(self.stop.text())
 
 
+if HAVE_PREVIEW:
+    class NavigationToolbar(GeometryNavigationToolbar):
+
+        toolitems = (
+            ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
+            ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
+            (None, None, None, None, None),
+            ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
+            ('Back', 'Back to previous view', 'go-previous', 'back', None),
+            ('Forward', 'Forward to next view', 'go-next', 'forward', None),
+            (None, None, None, None, None),
+            ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
+            ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
+            (None, None, None, None, None),
+            ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
+            (None, None, None, None, None),
+            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
+             (('tran-long', 'long-vert', 'tran-vert'), 2)),
+        )
+
+        def __init__(self, *args, **kwargs):
+            super(NavigationToolbar, self).__init__(*args, **kwargs)
+            self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
+            self.disable_planes(('long','tran','vert'))
+
+        def home(self):
+            if self.controller.plotted_geometry is not None:
+                box = self.controller.plotted_geometry.bbox
+                self.parent.zoom_bbox(box)
+
+        def select_plane(self, index):
+            plane = ('10', '02', '12')[index]
+            self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
+            self.controller.checked_plane = plane
+            if self.controller.plot_auto_refresh: self.controller.plot()
+            self.set_message(self.mode)
+
+
+    class PlotWidget(GeometryPlotWidget):
+        pass
+
+
 class BoundaryConditionsDialog(QtGui.QDialog):
 
     def __init__(self, controller, schema, data, parent=None):
@@ -137,6 +186,11 @@ class BoundaryConditionsDialog(QtGui.QDialog):
 
         self.schema = schema
         self.data = data
+
+        self.plotted_geometry = None
+        self.plotted_mesh = None
+        self.plot_auto_refresh = True
+        self.checked_plane = '12'
 
         self.table = QtGui.QTableView()
         model = BoundaryConditionsModel(schema, data)

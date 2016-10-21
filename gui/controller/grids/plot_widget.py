@@ -53,6 +53,11 @@ class NavigationToolbar(GeometryNavigationToolbar):
         else:
             self.controller.show_update_required()
 
+    def home(self):
+        if self.controller.plotted_geometry is not None:
+            box = self.controller.plotted_geometry.bbox
+            self.parent.zoom_bbox(box)
+
     def select_plane(self, index):
         plane = ('10', '02', '12')[index]
         self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
