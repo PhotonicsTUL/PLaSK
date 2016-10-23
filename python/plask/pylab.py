@@ -205,8 +205,37 @@ def _get_component(comp, total):
 
 
 def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, **kwargs):
-    """Plot scalar real fields as two-dimensional color map"""
-    #TODO documentation
+    """
+    Plot scalar real fields as two-dimensional color map.
+    
+    This function uses ``contourf`` of ``contour`` functions to plot scalar real
+    fields returned by providers. It can also plot a single component of a vector
+    or tensor field; in such case the component must be specified with the ``comp``
+    argument.
+    
+    Args:
+        field (Data): The field to plot. As it is usually returned by providers, it
+                      already contains the mesh and field values.
+                      
+        levels (int): Number of value bands to plot.
+        
+        plane (str): If the field to plot is a 3D one, this argument must be used
+                     to select to which the field is projected. The field mesh must
+                     be flat in this plane i.e. all its poinst must lie at the same
+                     level alongside the axis perpendicular to the specified plane.
+                     
+        fill (bool): If True, ``contourf`` is used to plot the field i.e. the bands
+                     are filled. Otherwise the coutours are plotted with
+                     ``countour``.
+                     
+        antialiased (bool): If True, the antialiasing is enabled.
+        
+        comp (int or str): If the vector field is plotted, this argument must
+                           specify the component to plot. It can be either
+                           a component number or its name.
+                           
+        **kwargs: Keyword arguments passed to ``contourf`` or ``contour``.
+    """
 
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
         if fill and not levels:
@@ -274,7 +303,28 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
 
 def plot_profile(field, comp=None, swap_axes=False, **kwargs):
-    """Plot scalar real fields as two-dimensional color map"""
+    """
+    Plot a scalar real field value along one axis.
+    
+    This function creates a classical plot of a scalar field. The field must be
+    obtained on a rectangular mesh that has a single point in all dimensions but
+    one. In other words, the field must be obtained over a single line which
+    is used as an argument axis of this plot.
+    
+    Args:
+        field (Data): The field to plot. As it is usually returned by providers, it
+                      already contains the mesh and field values.
+                      
+        comp (int or str): If the vector field is plotted, this argument must
+                           specify the component to plot. It can be either
+                           a component number or its name.
+                           
+        swap_axes (bool): If False, the mesh position is plotted on the horizontal
+                          axis and the field value on the vertical one and otherwise
+                          if this argument is True.
+                          
+        **kwargs: Keyword arguments passed to ``plot`` function.
+    """
     #TODO documentation
 
     data = field.array
@@ -324,8 +374,30 @@ def plot_profile(field, comp=None, swap_axes=False, **kwargs):
 
 
 def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
-    """Plot vector field"""
-    #TODO documentation
+    """
+    Plot vector field with arrows.
+    
+    This function uses ``quiver`` to plot a vector field returned by some providers
+    with arrows.
+    
+    Args:
+        field (Data): The field to plot. As it is usually returned by providers, it
+                      already contains the mesh and field values.
+                      
+        plane (str): If the field to plot is a 3D one, this argument must be used
+                     to select to which the field is projected. The field mesh must
+                     be flat in this plane i.e. all its poinst must lie at the same
+                     level alongside the axis perpendicular to the specified plane.
+                     
+        angles (str): This is equivalent to the ``angles`` argument of ``quiver``,
+                      however, the default value is 'xy', which makes more sense
+                      for the physical fields.
+                      
+        scale_units (str): ``scale_units`` argument of ``quiver``, with 'xy' as
+                           the default.
+                           
+        **kwargs: Keyword arguments passed to ``quiver``.
+    """
 
     m = field.mesh
 
@@ -355,8 +427,27 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
 
 
 def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
-    """Plot vector field as a streamlines"""
-    #TODO documentation
+    """
+    Plot vector field as a streamlines.
+    
+    This function uses ``streamplot`` to plot a vector field returned by some
+    providers using streamlines.
+    
+    Args:
+        field (Data): The field to plot. As it is usually returned by providers, it
+                      already contains the mesh and field values.
+                      
+        plane (str): If the field to plot is a 3D one, this argument must be used
+                     to select to which the field is projected. The field mesh must
+                     be flat in this plane i.e. all its poinst must lie at the same
+                     level alongside the axis perpendicular to the specified plane.
+                     
+        scale (float): Scale by which the streamlines widths are multiplied.
+        
+        color (str): Color of the streamlines.
+        
+        **kwargs: Keyword arguments passed to ``streamplot``.
+    """
 
     m = field.mesh
 
@@ -400,11 +491,53 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
 
 
 def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
-    """Plot points of specified boundary"""
-    #TODO documentation
+    """
+    Plot boundary conditions.
+    
+    This functions is used to visualize boundary conditions. It plots the markers at
+    mesh points, in which boundary conditions are specified. Optionally it can color
+    the points according to the boundary condition value using a specified colormap.
+    
+    Args:
+        boundary (BoundaryConditions): Boundary conditions to plot. Normally, this
+            is some attribute of a solver.
+            
+        mesh (plask.mesh.Mesh): Mesh which points are selected as boundary
+            conditions. Normally it should be the mesh configured for the solver
+            whose boundary conditions are plotted.
+            
+        geometry (plask.geometry.Geometry): Geometry over, which the boundary
+            conditions are defined. Normally it should be the geometry configured
+            for the solver whose boundary conditions are plotted.
+            
+        cmap (str or None): Name of a color map to use for coloring the boundary
+            conditions. If this is ``None``, all the points have the same color.
+            
+        color (str): Color of the boundary conditions points if ``cmap`` is None.
+        
+        plane (str): If the field to plot is a 3D one, this argument must be used
+            to select to which the field is projected. The field mesh must be flat
+            in this plane i.e. all its poinst must lie at the same level alongside
+            the axis perpendicular to the specified plane.
+            
+        zorder (float): Ordering index of the geometry plot in the graph.
+                Elements with higher `zorder` are drawn on top of the ones
+                with the lower one.
+        
+        **kwargs: Keyword arguments passed to ``scatter``.
+        
+    Example:
+        >>> solver = electrical.Schockey2D()
+        >>> # configure solver
+        >>> plot_boundary(solver.voltage_boundary, solver.mesh, solver.geometry,
+        ...               cmap='summer')
+    """
 
     if not isinstance(mesh, plask.mesh.Mesh):
-        raise TypeError("plot_boundary called for non-mesh type")
+        if isinstance(mesh, (plask.mesh.Generator1D, plask.mesh.Generator2D, plask.mesh.Generator3D)):
+            mesh = mesh(geometry)
+        else:
+            raise TypeError("plot_boundary called for non-mesh type")
 
     if type(cmap) == str: cmap = get_cmap(cmap)
     if cmap is not None: c = []
@@ -434,9 +567,39 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, figure=None, zorder=1.5, set_limits=None):
-    """Plot two-dimensional rectilinear mesh."""
-    #TODO documentation
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, figure=None, zorder=1.5, alpha=1.0):
+    """
+    Plot two-dimensional mesh.
+    
+    Args:
+        mesh (plask.mesh.Mesh): Mesh to draw.
+
+        color (str): Color of the drawn mesh lines.
+
+        lw (float): Width of the drawn mesh lines.
+
+        plane (str): Planes to draw. Should be a string with two letters
+                specifying axis names of the drawn plane. This argument
+                is required if 3D mesh is plotted and ignored for 2D meshes.
+
+        margin (float of None): The margins around the structure (as a fraction
+                of the structure bounding box) to which the plot limits should
+                be set. If None, the axes limits are not adjusted.
+
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
+        zorder (float): Ordering index of the meshs plot in the graph.
+                Elements with higher `zorder` are drawn on top of the ones
+                with the lower one.
+
+        alpha (float): Opacity of the drawn mesh (1: fully opaque,
+                0: fully transparent)
+    """
 
     if axes is None:
         if figure is None:
@@ -453,10 +616,10 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
         ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder, alpha=alpha))
         x_min = mesh.axis0[0]; x_max = mesh.axis0[-1]
         for y in mesh.axis1:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder, alpha=alpha))
 
     elif isinstance(mesh, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
@@ -464,24 +627,20 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
         y_min = axis[1][0]; y_max = axis[1][-1]
         for x in axis[0]:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder, alpha=alpha))
         x_min = axis[0][0]; x_max = axis[0][-1]
         for y in axis[1]:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder, alpha=alpha))
 
     elif isinstance(mesh, (plask.mesh.Regular, plask.mesh.Ordered)):
         ix, iy = 0, 1
         for x in mesh:
-            lines.append(axes.axvline(x, color=color, lw=lw, zorder=zorder))
+            lines.append(axes.axvline(x, color=color, lw=lw, zorder=zorder, alpha=alpha))
         x_min = mesh[0]; x_max = mesh[-1]
         y_max = y_min = None
 
     else:
         raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
-
-    if set_limits is not None:
-        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolete, set 'margin' instead")
-        if margin is None: margin = 0.
 
     for line in lines:
         axes.add_line(line)

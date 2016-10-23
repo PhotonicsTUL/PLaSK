@@ -25,9 +25,9 @@ class Shockley3D_Test(unittest.TestCase):
     def setUp(self):
         cond = Conductor()
         contact = geometry.Cuboid(700., 700., 1., cond)
-        #rect = geometry.Cylinder(1000., 300., cond)
-        #junc = geometry.Cylinder(1000., 0.02, 'GaAs')
-        #self.S = pi * 1e6
+        #rect = geometry.Cylinder(500., 300., cond)
+        #junc = geometry.Cylinder(500., 0.02, 'GaAs')
+        #self.S = pi * 0.25e6
         rect = geometry.Cuboid(1000., 1000., 300., cond)
         junc = geometry.Cuboid(1000., 1000., 0.02, 'GaAs')
         self.S = 1e6
@@ -71,8 +71,7 @@ class Shockley3D_Test(unittest.TestCase):
                 plot_geometry(self.solver.geometry, plane=plane, margin=0.1, color='k')
                 plot_mesh(self.solver.mesh, plane=plane, color='c')
                 plot_boundary(self.solver.voltage_boundary, self.solver.mesh, self.solver.geometry, plane=plane,
-                              #cmap='YlGnBu_r')
-                              color='m')
+                              cmap='bwr', s=40)
                 fig.canvas.set_window_title(plane)
 
 

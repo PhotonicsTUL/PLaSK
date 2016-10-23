@@ -530,13 +530,12 @@ def plane_to_axes(plane, dim):
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None,
-                  set_limits=None):
+                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None):
     """
     Plot specified geometry.
 
     Args:
-        geometry (plask.Geometry): Geometry to draw.
+        geometry (plask.geometry.Geometry): Geometry to draw.
 
         color (str): Color of the edges of drawn elements.
 
@@ -602,11 +601,6 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
 
         Filling is not supported when 3D geometry object or Cartesian3D geometry is drawn.
     """
-
-    if set_limits is not None:
-        plask.print_log('warning', "plot_geometry: 'set_limits' is obsolete, set 'margin' instead")
-        if margin is None:
-            margin = 0.
 
     if axes is None:
         if figure is None:
