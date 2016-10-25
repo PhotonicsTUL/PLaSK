@@ -239,7 +239,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     """
 
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
-        if fill and not levels:
+        if fill and levels is None:
             xaxis = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
             yaxis = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
             field = field.interpolate(plask.mesh.Rectangular2D(xaxis, yaxis), 'linear')
@@ -256,7 +256,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
                 data = data[:,:,comp]
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
-        if fill and not levels:
+        if fill and levels is None:
             axis0 = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
             axis1 = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
             axis2 = plask.mesh.Regular(field.mesh.axis2[0], field.mesh.axis2[-1], len(field.mesh.axis2))
@@ -284,7 +284,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
     if fill:
-        if levels:
+        if levels is not None:
             result = contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
         else:
             result = imshow(data, extent=(xaxis[0], xaxis[-1], yaxis[0], yaxis[-1]), origin='lower', **kwargs)
