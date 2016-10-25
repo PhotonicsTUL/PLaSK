@@ -217,7 +217,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         field (Data): The field to plot. As it is usually returned by providers, it
                       already contains the mesh and field values.
                       
-        levels (int): Number of value bands to plot.
+        levels (int or sequence): Number of value bands to plot of a sequence
+                                  containing the bands.
         
         plane (str): If the field to plot is a 3D one, this argument must be used
                      to select to which the field is projected. The field mesh must
@@ -407,7 +408,7 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
         data = field.array.transpose((1,0,2))
     elif isinstance(m, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
-        if data.shape[3-ix-iy] != 1:
+        if field.array.shape[3-ix-iy] != 1:
             raise ValueError("Field mesh must have dimension {} equal to 1".format(3-ix-iy))
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
