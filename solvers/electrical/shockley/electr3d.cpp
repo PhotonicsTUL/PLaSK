@@ -111,10 +111,10 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
     }
 
     shared_ptr<RectangularMesh<3>> points = mesh->getMidpointsMesh();
-    
+
     std::map<size_t, Active::Region> regions;
     size_t nreg = 0;
-    
+
     for (size_t lon = 0; lon < points->axis0->size(); ++lon) {
         for (size_t tra = 0; tra < points->axis1->size(); ++tra) {
             size_t num = 0;
@@ -172,7 +172,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3},{5}]-[{2},{4},{6}]", num,
                        reg.back, reg.front, reg.left, reg.right, reg.bottom, reg.top);
     }
-    
+
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
@@ -470,7 +470,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%%",
+        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));

@@ -12,7 +12,7 @@ namespace plask { namespace electrical { namespace shockley {
 struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
-    
+
     /// Details of active region
     struct Active {
         struct Region {

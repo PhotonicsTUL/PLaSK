@@ -376,32 +376,33 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         typename Boundary<MeshType>::WithMesh::const_iterator in_boundary;
         typename Boundary<MeshType>::WithMesh::const_iterator in_boundary_end;
 
+        // Skip empty or finished boundaries and advance to the next one
         void fixCurrentBoundary() {
             while (in_boundary == in_boundary_end) {
                 ++current_boundary;
-                if (current_boundary != current_boundary_end) return;
+                if (current_boundary == current_boundary_end) return;
                 in_boundary = current_boundary->begin();
                 in_boundary_end = current_boundary->end();
             }
         }
 
-        // special version for begin
+        // Special version for begin
         IteratorImpl(typename BoundariesVec::const_iterator current_boundary, typename BoundariesVec::const_iterator current_boundary_end)
             : current_boundary(current_boundary), current_boundary_end(current_boundary_end), in_boundary(current_boundary->begin()), in_boundary_end(current_boundary->end()) {
             if (current_boundary != current_boundary_end) fixCurrentBoundary();
         }
 
-        // special version for end
+        // Special version for end
         IteratorImpl(typename BoundariesVec::const_iterator current_boundary_end)
             : current_boundary(current_boundary_end), current_boundary_end(current_boundary_end)
         {}
 
         bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const override {
             const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
-            if (current_boundary != o.current_boundary) return false;   //other outer-loop boundaries
+            if (current_boundary != o.current_boundary) return false;   // other outer-loop boundaries
             //same outer-loop boundaries:
-            if (current_boundary == current_boundary_end) return true;  //and both are ends
-            return in_boundary == o.in_boundary;    //both are no ends, compare inner-loop iterators
+            if (current_boundary == current_boundary_end) return true;  // and both are ends
+            return in_boundary == o.in_boundary;    // both are no ends, compare inner-loop iterators
         }
 
         virtual IteratorImpl* clone() const override {
@@ -413,9 +414,10 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         }
 
         virtual void increment() override {
-            if (current_boundary != current_boundary_end) return;
-            ++in_boundary;
-            fixCurrentBoundary();
+            if (current_boundary != current_boundary_end) {
+                ++in_boundary;
+                fixCurrentBoundary();
+            }
         }
 
     };
