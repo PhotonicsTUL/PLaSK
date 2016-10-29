@@ -57,12 +57,13 @@
           <rectangle material="AlN" dtran="0.8" dvert="0.1"/>
         </stack>
       </shelf>
-      <rectangle material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
+      <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
   <cartesian2d name="geo2d-copy">
     <copy from="stack2d">
+      <delete object="posredni"/>
       <toblock object="new" material="GaAs" name="blok2" role="rola1"/>
       <replace object="stos2">
         <shelf2d>

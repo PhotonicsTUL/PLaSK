@@ -102,6 +102,10 @@ class GNCDelete(GNCopyChild):
         from ...controller.geometry.again_copy import GNCDeleteController
         return GNCDeleteController(document, model, self)
 
+    def get_model_path(self, stop=None):
+        path = super(GNCDelete, self).get_model_path(stop)
+        return path[:-1]
+
 
 class GNCReplace(GNCopyChild):
 
@@ -237,17 +241,27 @@ class GNCopy(GNObject):
 
     def model_to_real_index(self, index, model):
         source = model.find_by_name(self.source)
-        object = model.find_by_name(self.children[index].object)
+        target = model.find_by_name(self.children[index].object)
         real_path = []
-        if source is not None and object is not None:
+        have_delete = GNCDelete in (type(op) for op in self.children)
+        if source is not None and target is not None:
             node = source
-            model_path = object.get_model_path(source)
+            model_path = target.get_model_path(source)
             for index in model_path:
-                idx = node.model_to_real_index(index, model)
-                if isinstance(idx, Number):
-                    real_path.append(idx)
-                else:
-                    real_path.extend(idx)
+                real_indexes = node.model_to_real_index(index, model)
+                if isinstance(real_indexes, Number): real_indexes = [real_indexes]
+                else: real_indexes = list(real_indexes)
+                if have_delete and len(real_indexes) > 0:
+                    children_names = [getattr(c, 'name', None) for c in node.children]
+                    for op in self.children:
+                        if isinstance(op, GNCDelete) and op.object is not None and \
+                           op.object in children_names:
+                            ci = children_names.index(op.object)
+                            cri = node.model_to_real_index(ci, model)
+                            if not isinstance(cri, Number): cri = cri[0]
+                            if cri < real_indexes[0]:
+                                real_indexes[0] -= 1
+                real_path.extend(real_indexes)
                 node = node.children[index]
         return real_path
 

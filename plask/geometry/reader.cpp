@@ -121,6 +121,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                     for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
                 }
                 source.requireTagEnd();
+            } else if (operation_name == "delete") {
+                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
+                GeometryObject::DeleteChanger* changer = new GeometryObject::DeleteChanger(op_from);
+                changers.append(changer);
+                source.requireTagEnd();
             } else {
                 throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.", operation_name);
             }
