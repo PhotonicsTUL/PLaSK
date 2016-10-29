@@ -253,6 +253,7 @@ class GNCopy(GNObject):
                 else: real_indexes = list(real_indexes)
                 if have_delete and len(real_indexes) > 0:
                     children_names = [getattr(c, 'name', None) for c in node.children]
+                    dec = 0
                     for op in self.children:
                         if isinstance(op, GNCDelete) and op.object is not None and \
                            op.object in children_names:
@@ -260,7 +261,8 @@ class GNCopy(GNObject):
                             cri = node.model_to_real_index(ci, model)
                             if not isinstance(cri, Number): cri = cri[0]
                             if cri < real_indexes[0]:
-                                real_indexes[0] -= 1
+                                dec += 1
+                    real_indexes[0] -= dec
                 real_path.extend(real_indexes)
                 node = node.children[index]
         return real_path
