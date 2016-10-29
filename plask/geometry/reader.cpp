@@ -86,6 +86,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
 
     shared_ptr<GeometryObject> new_object;    // new object will be constructed
 
+    std::deque<std::pair<std::string, shared_ptr<GeometryObject>>> other_names;
+    
     if (nodeName == "copy") {
         shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
         GeometryObject::CompositeChanger changers;
@@ -110,7 +112,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 shared_ptr<Material> blockMaterial = getMaterial(source.requireAttribute("material"));
                 GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
                 changers.append(changer);
-                //TODO read and process name and path
+                boost::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);    // read name
+                if (block_name && !isAutoName(*block_name)) {
+                    BadId::throwIfBad("block replacing object", *block_name, '-');
+                    other_names.push_back(std::make_pair(*block_name, changer->to));
+                }
                 if (boost::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
                     for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
                 }
@@ -121,7 +127,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         }
         new_object = const_pointer_cast<GeometryObject>(from->changedVersion(changers));
     } else {
-        Manager::SetAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
+        Manager::SetAxisNames axis_reader(*this);   // try set up new axis names, store old, and restore old on end of block
         auto reader_it = objectReaders().find(nodeName);
         if (reader_it == objectReaders().end()) {
             if (expectedSuffix == 0)
@@ -130,10 +136,13 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             if (reader_it == objectReaders().end())
                 throw NoSuchGeometryObjectType(nodeName + "[" + expectedSuffix + "]");
         }
-        new_object = reader_it->second(*this); //and rest (but while reading this subtree, name is not registred yet)
+        new_object = reader_it->second(*this); // and rest (but while reading this subtree, name is not registred yet)
     }
 
     registerObjectName(name, new_object);
+    for (const auto& other: other_names) {
+        registerObjectName(other.first, other.second);
+    }
 
     if (roles) {  // if have some roles
         new_object->clearRoles();  // in case of copied object: overwrite
@@ -246,10 +255,10 @@ shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::stri
 
 void GeometryReader::registerObjectName(const std::string &name, shared_ptr<GeometryObject> object) {
     if (isAutoName(name)) {
-        if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
+        if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject>>::value_type(name, object)).second)
             throw NamesConflictException("Auto-named geometry object", name);
     } else {    //normal name
-        if (!manager.geometrics.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
+        if (!manager.geometrics.insert(std::map<std::string, shared_ptr<GeometryObject>>::value_type(name, object)).second)
             throw NamesConflictException("Geometry object", name);
     }
 }

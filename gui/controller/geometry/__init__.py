@@ -460,7 +460,11 @@ class GeometryController(Controller):
             self.geometry_view.canvas.draw()
         else:
             selected = self.model.fake_root.get_corresponding_object(node, self.manager)
-            self.geometry_view.select_object(self.plotted_object, selected)
+            if selected is not None:
+                self.geometry_view.select_object(self.plotted_object, selected)
+            else:
+                self.geometry_view.clean_selectors()
+                self.geometry_view.canvas.draw()
 
     def set_current_index(self, new_index):
         """

@@ -27,8 +27,10 @@ class GNode(object):
     def __init__(self, parent=None, dim=None, children_dim=None, parent_index=None):
         """
             :param GNode parent: parent node of self (self will be added to parent's children)
-            :param int dim: number of dimension of self or None if it is unknown or not defined (like in case of again or copy)
-            :param int children_dim: required number of dimension of self's children or None if no or any children are allowed
+            :param int dim: number of dimension of self or None if it is unknown or undefined
+                   (like in case of again or copy)
+            :param int children_dim: required number of dimension of self's children or None
+                   if no or any children are allowed
         """
         super(GNode, self).__init__()
         self.dim = dim
@@ -413,10 +415,11 @@ class GNode(object):
         """
         return next(path_iterator)
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         """
         Calculate real index (path fragment) of child with given model index
         :param int index: model index
+        :param model: geometry model
         :return: path fragment, sequence of indexes
         """
         return index,
@@ -436,15 +439,17 @@ class GNode(object):
                 break
         return node
 
-    def get_object_by_model_path(self, object, model_path):
+    def get_object_by_model_path(self, object, model_path, model):
         """
-        :param plask.GeometryObject object: object which is represented by self or plask.Manager if model_path is absolute
+        :param plask.GeometryObject object: object which is represented by self
+               or plask.Manager if model_path is absolute
         :param collection.Iterable model_path: collection of indexes in GNode's tree
+        :param model: geometry model
         :return plask.GeometryObject, GNode: object and node which represents this object
         """
         node = self
         for index in model_path:
-            real_indexes = node.model_to_real_index(index)
+            real_indexes = node.model_to_real_index(index, model)
             if isinstance(real_indexes, Number): real_indexes = (real_indexes,)
             for real_index in real_indexes:
                 try:
@@ -454,12 +459,13 @@ class GNode(object):
             node = node.children[index]
         return object, node
 
-    def get_model_path(self):
+    def get_model_path(self, stop=None):
         """
         :return: path in model from fake_root to self
         """
-        if self.parent is None: return []
-        result = self.parent.get_model_path()
+        if self.parent is None or self == stop:
+            return []
+        result = self.parent.get_model_path(stop)
         result.append(self.index_in_parent)
         return result
 
@@ -497,6 +503,7 @@ class GNFakeRoot(GNode):
 
     def __init__(self, geometry_model):
         super(GNFakeRoot, self).__init__()
+        self.model = geometry_model
 
     def accept_new_child(self):
         return True
@@ -515,4 +522,4 @@ class GNFakeRoot(GNode):
         :param plask.Manager manager: manager which describes real geometry objects tree
         :return plask.GeometryObject: object that corresponds to self in real objects tree
         """
-        return self.get_object_by_model_path(manager, node.get_model_path())[0]
+        return self.get_object_by_model_path(manager, node.get_model_path(), self.model)[0]

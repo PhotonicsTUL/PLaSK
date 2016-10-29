@@ -34,7 +34,7 @@
 
 <geometry>
   <cartesian2d name="geo2d" length="1000">
-    <stack>
+    <stack name="stack2d">
       <shelf flat="no">
         <stack name="new">
           <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
@@ -50,7 +50,7 @@
           <rectangle material="Al(0.5)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         </stack>
         <gap total="2"/>
-        <stack>
+        <stack name="stos2">
           <item path="tadam" right="0.8">
             <triangle material="AlOx" atran="-0.4" avert="0" btran="0" bvert="0.2"/>
           </item>
@@ -61,6 +61,24 @@
       <rectangle material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
+  <cartesian2d name="geo2d-copy">
+    <copy from="stack2d">
+      <toblock object="new" material="GaAs" name="blok2" role="rola1"/>
+      <replace object="stos2">
+        <shelf2d>
+          <rectangle material="GaAs" dtran="0.4" dvert="0.5"/>
+          <rectangle material="AlAs" dtran="0.4" dvert="0.5"/>
+        </shelf2d>
+      </replace>
+    </copy>
+  </cartesian2d>
+  <cartesian2d name="simple">
+    <stack>
+      <again ref="blok2"/>
+      <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
+      <rectangle material="Al(0.73)GaN:Si=1e18" dtran="1" dvert="1"/>
+    </stack>
+  </cartesian2d>
   <cartesian3d name="l3cavity">
     <stack front="0">
       <lattice along="{-sqrt(3)/2}" atran="0.5" blong="{sqrt(3)/2}" btran="0.5">
@@ -69,12 +87,6 @@
       </lattice>
     </stack>
   </cartesian3d>
-  <cartesian2d name="simple">
-    <stack>
-      <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
-      <rectangle material="Al(0.73)GaN:Si=1e18" dtran="1" dvert="1"/>
-    </stack>
-  </cartesian2d>
   <cylindrical2d name="GeoTE" axes="rz">
     <stack name="stack">
       <zero/>
@@ -231,7 +243,7 @@
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <config matrix-elem="10"/>
   </gain>
-  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
+  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <matrix itererr="2"/>

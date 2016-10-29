@@ -172,7 +172,7 @@ class GNContainerBase(GNObject):
         else:
             return child_element
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
@@ -306,10 +306,10 @@ class GNStack(GNContainerBase):
             i += 1
         return index
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         #if isinstance(self.children[index], GNZero)    #TODO throw exception
         index -= sum(1 for i in range(0, index) if isinstance(self.children[i], GNZero))
-        return super(GNStack, self).model_to_real_index(self.real_children_count - 1 - index)
+        return super(GNStack, self).model_to_real_index(self.real_children_count - 1 - index, model)
 
 
 class GNShelf(GNContainerBase):

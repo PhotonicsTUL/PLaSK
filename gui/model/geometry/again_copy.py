@@ -9,12 +9,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from numbers import Number
+
 from . import construct_geometry_object
 
 from .node import GNode
 from .. import Info
 from .object import GNObject
-from ...utils.xml import attr_to_xml
+from ...utils.xml import attr_to_xml, xml_to_attr
 
 
 class GNAgain(GNode):
@@ -144,20 +146,25 @@ class GNCReplace(GNCopyChild):
         from ...controller.geometry.again_copy import GNCReplaceController
         return GNCReplaceController(document, model, self)
 
+    def model_to_real_index(self, index, model):
+        return ()
+
 
 class GNCToBlock(GNCopyChild):
 
     def __init__(self, parent=None, object=None, material=None):
         super(GNCToBlock, self).__init__(parent, object)
-        self.material = material    # with in PLaSK
+        self.material = material
+        self.name = None
+        self.role = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNCToBlock, self)._attributes_from_xml(attribute_reader, conf)
-        self.material = attribute_reader.get('material')
+        xml_to_attr(attribute_reader, self, 'name', 'role', 'material')
 
     def _attributes_to_xml(self, element, conf):
         super(GNCToBlock, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'material')
+        attr_to_xml(self, element, 'material', 'name', 'role')
 
     def tag_name(self, full_name=True):
         return "toblock"
@@ -165,6 +172,8 @@ class GNCToBlock(GNCopyChild):
     def major_properties(self):
         res = super(GNCToBlock, self).major_properties()
         res.append(('material', self.material))
+        if self.name is not None:
+            res.append(('name', self.name))
         return res
 
     def get_controller(self, document, model):
@@ -180,7 +189,7 @@ class GNCopy(GNObject):
 
     def __init__(self, parent=None, name=None, source=None):
         super(GNCopy, self).__init__(parent, name)
-        self.source = source    # from in PLaSK
+        self.source = source
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNCopy, self)._attributes_from_xml(attribute_reader, conf)
@@ -225,6 +234,22 @@ class GNCopy(GNObject):
 
     def real_to_model_index(self, path_iterator):
         raise IndexError()
+
+    def model_to_real_index(self, index, model):
+        source = model.find_by_name(self.source)
+        object = model.find_by_name(self.children[index].object)
+        real_path = []
+        if source is not None and object is not None:
+            node = source
+            model_path = object.get_model_path(source)
+            for index in model_path:
+                idx = node.model_to_real_index(index, model)
+                if isinstance(idx, Number):
+                    real_path.append(idx)
+                else:
+                    real_path.extend(idx)
+                node = node.children[index]
+        return real_path
 
     def major_properties(self):
         res = super(GNCopy, self).major_properties()

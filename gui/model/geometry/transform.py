@@ -428,7 +428,7 @@ class GNArrange(GNTransform):
         result.set_xml_element(element, conf)
         return result
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
@@ -503,7 +503,7 @@ class GNLattice(GNTransform):
         result.set_xml_element(element, conf)
         return result
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         return index, 0
 
     def real_to_model_index(self, path_iterator):
