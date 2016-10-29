@@ -50,8 +50,8 @@ struct MaterialCache {
 
     boost::optional<Tensor2<double>> mobe;
     boost::optional<Tensor2<double>> mobh;
-    boost::optional<double> Ae;
-    boost::optional<double> Ah;
+    boost::optional<double> taue;
+    boost::optional<double> tauh;
     boost::optional<double> Ce;
     boost::optional<double> Ch;
     boost::optional<double> e13;

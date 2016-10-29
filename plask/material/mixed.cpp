@@ -195,12 +195,12 @@ Tensor2<double> MixedMaterial::mobh(double T) const {
     return avg_pairs([&](const Material& m) { return m.mobh(T); });
 }
 
-double MixedMaterial::Ae(double T) const {
-    return avg([&](const Material& m) { return m.Ae(T); });
+double MixedMaterial::taue(double T) const {
+    return avg([&](const Material& m) { return m.taue(T); });
 }
 
-double MixedMaterial::Ah(double T) const {
-    return avg([&](const Material& m) { return m.Ah(T); });
+double MixedMaterial::tauh(double T) const {
+    return avg([&](const Material& m) { return m.tauh(T); });
 }
 
 double MixedMaterial::Ce(double T) const {

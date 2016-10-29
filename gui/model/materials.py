@@ -34,9 +34,9 @@ else:
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
            [(u'T', u'temperature', 'K')])),
-    ('Ae', (u'Monomolecular recombination coefficient <i>A<sub>e</sub></i> for electrons', u'1/s',
+    ('taue', (u'Monomolecular electrons lifetime <i>τ<sub>e</sub></i>', u'ns',
            [(u'T', u'temperature', 'K')])),
-    ('Ah', (u'Monomolecular recombination coefficient <i>A<sub>h</sub></i> for holes', u'1/s',
+    ('tauh', (u'Monomolecular holes lifetime <i>A<sub>h</sub></i>', u'ns',
            [(u'T', u'temperature', 'K')])),
     ('absp', (u'Absorption coefficient <i>α</i>', u'cm<sup>-1</sup>',
               [(u'wl', u'wavelength', 'nm'),

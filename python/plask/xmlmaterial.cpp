@@ -35,7 +35,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
-        mobe, mobh, Ae, Ah, Ce, Ch, e13, e15, e33, c13, c33, Psp;
+        mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
     PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool complex) :
         MaterialsDB::MaterialConstructor(name),
@@ -242,8 +242,8 @@ class PythonEvalMaterial : public Material
 
     Tensor2<double> mobe(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mobe, T) }
     Tensor2<double> mobh(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mobh, T) }
-    double Ae(double T) const override { PYTHON_EVAL_CALL_1(double, Ae, T) }
-    double Ah(double T) const override { PYTHON_EVAL_CALL_1(double, Ah, T) }
+    double taue(double T) const override { PYTHON_EVAL_CALL_1(double, taue, T) }
+    double tauh(double T) const override { PYTHON_EVAL_CALL_1(double, tauh, T) }
     double Ce(double T) const override { PYTHON_EVAL_CALL_1(double, Ce, T) }
     double Ch(double T) const override { PYTHON_EVAL_CALL_1(double, Ch, T) }
     double e13(double T) const override { PYTHON_EVAL_CALL_1(double, e13, T) }
@@ -378,8 +378,8 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
 
         COMPILE_PYTHON_MATERIAL_FUNCTION(mobe)
         COMPILE_PYTHON_MATERIAL_FUNCTION(mobh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Ae)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Ah)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(taue)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(tauh)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ce)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ch)
         COMPILE_PYTHON_MATERIAL_FUNCTION(e13)

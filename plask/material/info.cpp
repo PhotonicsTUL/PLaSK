@@ -48,8 +48,8 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
 
     "mobe",
     "mobh",
-    "Ae",
-    "Ah",
+    "taue",
+    "tauh",
     "Ce",
     "Ch",
     "e13",

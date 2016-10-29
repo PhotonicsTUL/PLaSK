@@ -131,9 +131,9 @@ struct PLASK_API MixedMaterial: public Material {
 
     Tensor2<double> mobh(double T) const override;
 
-    double Ae(double T) const override;
+    double taue(double T) const override;
 
-    double Ah(double T) const override;
+    double tauh(double T) const override;
 
     double Ce(double T) const override;
 

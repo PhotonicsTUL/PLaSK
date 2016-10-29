@@ -67,8 +67,8 @@ struct PLASK_API MaterialInfo {
 
         mobe,       ///< electron mobility
         mobh,       ///< hole mobility
-        Ae,         ///< monomolecular recombination coefficient for electrons
-        Ah,         ///< monomolecular recombination coefficient for holes
+        taue,       ///< monomolecular electrons lifetime [ns]
+        tauh,       ///< monomolecular holes lifetime [ns]
         Ce,         ///< Auger recombination coefficient for electrons
         Ch,         ///< Auger recombination coefficient for holes
         e13,        ///< piezoelectric constant

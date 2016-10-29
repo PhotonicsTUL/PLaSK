@@ -700,18 +700,18 @@ struct PLASK_API Material {
     virtual Tensor2<double> mobh(double T) const;
 
     /**
-     * Get monomolecular recombination coefficient A for electrons [1/s].
+     * Get monomolecular electrons lifetime [ns].
      * \param T temperature [K]
-     * \return monomolecular recombination coefficient A [1/s]
+     * \return monomolecular electrons lifetime [ns]
      */
-    virtual double Ae(double T) const;
+    virtual double taue(double T) const;
 
     /**
-     * Get monomolecular recombination coefficient A for holes [1/s].
+     * Get monomolecular holes lifetime [ns].
      * \param T temperature [K]
-     * \return monomolecular recombination coefficient A [1/s]
+     * \return monomolecular holes lifetime [ns]
      */
-    virtual double Ah(double T) const;
+    virtual double tauh(double T) const;
 
     /**
      * Get Auger recombination coefficient C for electrons [cm^6/s].

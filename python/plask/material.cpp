@@ -382,8 +382,8 @@ class PythonMaterial: public Material, Overriden
 
     Tensor2<double> mobe(double T) const override { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
     Tensor2<double> mobh(double T) const override { return call<Tensor2<double>>("mobh", &Material::mobh, cache->mobh, T); }
-    double Ae(double T) const override { return call<double>("Ae", &Material::Ae, cache->Ae, T); }
-    double Ah(double T) const override { return call<double>("Ah", &Material::Ah, cache->Ah, T); }
+    double taue(double T) const override { return call<double>("taue", &Material::taue, cache->taue, T); }
+    double tauh(double T) const override { return call<double>("tauh", &Material::tauh, cache->tauh, T); }
     double Ce(double T) const override { return call<double>("Ce", &Material::Ce, cache->Ce, T); }
     double Ch(double T) const override { return call<double>("Ch", &Material::Ch, cache->Ch, T); }
     double e13(double T) const override { return call<double>("e13", &Material::e13, cache->e13, T); }
@@ -648,8 +648,8 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
 
         CHECK_CACHE(Tensor2<double>, mobe, "mobe", 300.)
         CHECK_CACHE(Tensor2<double>, mobh, "mobh", 300.)
-        CHECK_CACHE(double, Ae, "Ae", 300.)
-        CHECK_CACHE(double, Ah, "Ah", 300.)
+        CHECK_CACHE(double, taue, "taue", 300.)
+        CHECK_CACHE(double, tauh, "tauh", 300.)
         CHECK_CACHE(double, Ce, "Ce", 300.)
         CHECK_CACHE(double, Ch, "Ch", 300.)
         CHECK_CACHE(double, e13, "e13", 300.)
@@ -1117,13 +1117,13 @@ void initMaterials() {
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
-        .def("Ae", &Material::Ae, (py::arg("T")=300.),
-             "Get monomolecular recombination coefficient A [1/s] for electrons.\n\n"
+        .def("taue", &Material::taue, (py::arg("T")=300.),
+             "Get monomolecular electrons lifetime [ns].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
-        .def("Ah", &Material::Ah, (py::arg("T")=300.),
-             "Get monomolecular recombination coefficient A [1/s] for holes.\n\n"
+        .def("tauh", &Material::tauh, (py::arg("T")=300.),
+             "Get monomolecular holes lifetime [ns].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 

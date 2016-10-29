@@ -416,11 +416,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
-                    double normAe = material->Ae(T) / mAx;
-                    double normAh = material->Ah(T) / mAx;
-                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi / normAh  + p / normAe)
-                        / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
-                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
+                    double normte = material->taue(T) * mAx * 1e-9;  // 1e-9: ns -> s
+                    double normth = material->tauh(T) * mAx * 1e-9;
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNe * yn * (p + normNi) * (normNi * normth  + p * normte)
+                        / pow((n + normNi) * normth + (p + normNi) * normte, 2.));
+                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) * normth + (p + normNi) * normte));
                 }
                 if (mRrad) {
                     //this->writelog(LOG_DATA, "Recombination RAD");
@@ -468,11 +468,11 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
-                    double normAe = material->Ae(T) / mAx;
-                    double normAh = material->Ah(T) / mAx;
-                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi / normAe + n / normAh)
-                        / pow((n + normNi) / normAh + (p + normNi) / normAe, 2.));
-                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) / normAh + (p + normNi) / normAe));
+                    double normte = material->taue(T) * mAx * 1e-9;
+                    double normth = material->tauh(T) * mAx * 1e-9;
+                    gg += ((1./9.) * (hx*0.5) * (hy*0.5) * normNh * yp * (n + normNi) * (normNi * normte + n * normth)
+                        / pow((n + normNi) * normth + (p + normNi) * normte, 2.));
+                    ff += ((hx*0.5) * (hy*0.5) * (n * p - normNi * normNi) / ((n + normNi) * normth + (p + normNi) * normte));
                 }
                 if (mRrad) {
                     //this->writelog(LOG_DATA, "Recombination RAD");

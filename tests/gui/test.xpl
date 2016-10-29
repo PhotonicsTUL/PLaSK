@@ -63,7 +63,6 @@
   </cartesian2d>
   <cartesian2d name="geo2d-copy">
     <copy from="stack2d">
-      <delete object="posredni"/>
       <toblock object="new" material="GaAs" name="blok2" role="rola1"/>
       <replace object="stos2">
         <shelf2d>
@@ -71,6 +70,7 @@
           <rectangle material="AlAs" dtran="0.4" dvert="0.5"/>
         </shelf2d>
       </replace>
+      <delete object="posredni"/>
     </copy>
   </cartesian2d>
   <cartesian2d name="simple">

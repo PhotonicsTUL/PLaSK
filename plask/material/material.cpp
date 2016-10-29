@@ -168,9 +168,9 @@ Tensor2<double> Material::mobe(double T) const { throwNotImplemented("mobe(doubl
 
 Tensor2<double> Material::mobh(double T) const { throwNotImplemented("mobh(double T)"); return 0; }
 
-double Material::Ae(double T) const { throwNotImplemented("Ae(double T)"); return 0; }
+double Material::taue(double T) const { throwNotImplemented("taue(double T)"); return 0; }
 
-double Material::Ah(double T) const { throwNotImplemented("Ah(double T)"); return 0; }
+double Material::tauh(double T) const { throwNotImplemented("tauh(double T)"); return 0; }
 
 double Material::Ce(double T) const { throwNotImplemented("Ce(double T)"); return 0; }
 
