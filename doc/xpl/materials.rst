@@ -361,11 +361,11 @@ This section contains specification of custom materials that can be used togethe
 
    Load binary materials library.
 
-      :attr required name: Name of the library to load. This should be the name of the library file without the extension (``.so`` or ``.dll``). It is resolved relative to the current working directory, however you can specify the absolute path (still without the extension).
+   :attr required name: Name of the library to load. This should be the name of the library file without the extension (``.so`` or ``.dll``). It is resolved relative to the current working directory, however you can specify the absolute path (still without the extension).
 
 
 .. xml:tag:: <module>
 
    Import Python module with materials library.
 
-      :attr required name: Name of the module to load. This should be the name of the module file without the ``.py`` extension. The module is imported by Python using standard rules, i.e. it is searched in the current directory, the directory specified by the ``PYTHONPATH`` environmental variable or in one of the system directories.
+   :attr required name: Name of the module to load. This should be the name of the module file without the ``.py`` extension. The module is imported by Python using standard rules, i.e. it is searched in the current directory, the directory specified by the ``PYTHONPATH`` environmental variable or in one of the system directories.
