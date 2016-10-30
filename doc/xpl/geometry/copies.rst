@@ -46,3 +46,5 @@ Copies and references to geometry objects
 
          :attr required object: Name of the object to replace with the the solid block.
          :attr required material: Material of the solid block.
+         :attr name: Replacing block name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+         :attr role: Replacing block role. Important for some solvers.
