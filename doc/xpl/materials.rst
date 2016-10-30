@@ -41,18 +41,6 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``T`` — temperature [K].
 
-      .. xml:tag:: <Ae>
-
-         Monomolecular recombination coefficient *A* for electrons [1/s].
-
-         Variables: ``T`` — temperature [K].
-
-      .. xml:tag:: <Ah>
-
-         Monomolecular recombination coefficient *A* for holes [1/s].
-
-         Variables: ``T`` — temperature [K].
-
       .. xml:tag:: <absb>
 
          Absorption coefficient *α* [cm\ :sup:`-1`].
@@ -340,6 +328,18 @@ This section contains specification of custom materials that can be used togethe
       .. xml:tag:: <Psp>
 
          Spontaneous polarization [C/m\ :sup:`2`]
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <taue>
+
+         Monomolecular electrons lifetime *τ* [ns].
+
+         Variables: ``T`` — temperature [K].
+
+      .. xml:tag:: <tauh>
+
+         Monomolecular holes lifetime *τ* [ns].
 
          Variables: ``T`` — temperature [K].
 
