@@ -60,7 +60,7 @@ void Translation<dim>::getPositionsToVec(const GeometryObject::Predicate& predic
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim> > Translation<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> Translation<dim>::shallowCopy() const {
     return copyShallow();
 }
 

@@ -39,10 +39,16 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
      */
     explicit Triangle(const DVec& p0, const DVec& p1, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom);
 
+    explicit Triangle(const DVec& p0, const DVec& p1, const std::unique_ptr<MaterialProvider>& materialProvider);
+
     virtual Box2D getBoundingBox() const override;
 
     virtual bool contains(const DVec& p) const override;
 
+    shared_ptr<GeometryObject> shallowCopy() const override {
+        return make_shared<Triangle>(*this);
+    }
+    
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
     bool isUniform(Primitive<3>::Direction direction) const override;

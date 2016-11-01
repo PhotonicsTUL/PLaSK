@@ -74,9 +74,31 @@ SpatialIndexNode<dim>* TranslationContainer<dim>::ensureHasCache() const {
 }
 
 template <int dim>
+shared_ptr<GeometryObject> TranslationContainer<dim>::shallowCopy() const {
+    shared_ptr<TranslationContainer<dim>> result = plask::make_shared<TranslationContainer<dim>>();
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        result->addUnsafe(children[child_no]->getChild(), children[child_no]->translation);
+    return result;
+}
+
+template <int dim>
+shared_ptr<GeometryObject> TranslationContainer<dim>::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<TranslationContainer<dim>> result = plask::make_shared<TranslationContainer<dim>>();
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (children[child_no]->getChild())
+            result->addUnsafe(static_pointer_cast<ChildType>(children[child_no]->getChild()->deepCopy(copied)), children[child_no]->translation);
+    return result;
+    copied[this] = result;
+    return result;
+}
+
+
+template <int dim>
 shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
         std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< TranslationContainer<dim> > result = plask::make_shared< TranslationContainer<dim> >();
+    shared_ptr<TranslationContainer<dim>> result = plask::make_shared<TranslationContainer<dim>>();
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, children[child_no]->translation + vec<dim, double>(children_after_change[child_no].second));

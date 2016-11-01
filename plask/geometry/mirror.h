@@ -70,7 +70,7 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
          return shared_ptr<Flip<dim>>(new Flip<dim>(flipDir, getChild()));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
@@ -163,7 +163,7 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
          return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, this->_child));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 

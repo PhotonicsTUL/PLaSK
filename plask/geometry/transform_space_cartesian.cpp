@@ -38,7 +38,7 @@ Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box &child
     return getChild()->getLeafs();
 }*/
 
-shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
+shared_ptr<GeometryObject> Extrusion::shallowCopy() const {
     return shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>>(new Extrusion(this->_child, length));
 }
 

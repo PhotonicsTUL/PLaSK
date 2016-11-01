@@ -87,7 +87,7 @@ struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
 
     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    shared_ptr<GeometryObject> shallowCopy() const override;
 
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
@@ -213,7 +213,7 @@ struct PLASK_API Lattice: public GeometryObjectTransform<3> {
        return result;
     }
 
-    shared_ptr<GeometryObjectTransform<3>> shallowCopy() const override { return copyShallow(); }
+    shared_ptr<GeometryObject> shallowCopy() const override { return copyShallow(); }
 
     //probably unused
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }

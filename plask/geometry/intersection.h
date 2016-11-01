@@ -78,7 +78,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
          return plask::make_shared<Intersection<dim>>(getChild(), envelope);
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
      * Get shallow copy of this with diffrent clipping shape.

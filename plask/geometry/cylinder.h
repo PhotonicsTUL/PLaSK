@@ -22,6 +22,8 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
 
     Cylinder(double radius, double height, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom);
 
+    Cylinder(const Cylinder& src);
+
     virtual Box getBoundingBox() const override;
 
     virtual bool contains(const DVec& p) const override;
@@ -29,6 +31,10 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
     //virtual bool intersects(const Box& area) const;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+
+    shared_ptr<GeometryObject> shallowCopy() const override {
+        return make_shared<Cylinder>(*this);
+    }
 
     /**
      * Set radius and inform observers about changes.

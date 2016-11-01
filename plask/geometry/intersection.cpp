@@ -68,7 +68,7 @@ void Intersection<dim>::getPositionsToVec(const GeometryObject::Predicate& predi
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim> > Intersection<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> Intersection<dim>::shallowCopy() const {
     return copyShallow();
 }
 

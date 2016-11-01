@@ -272,6 +272,11 @@ public:
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
     virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const override;
+
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+    
 };
 
 template <int dim>
@@ -456,6 +461,10 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     //add in reverse order
     virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const override;
 
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+    
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const override;
 
@@ -581,6 +590,10 @@ class PLASK_API MultiStackContainer: public UpperClass {
         repeat_count = new_repeat_count;
         this->fireChildrenChanged();    //TODO should this be called? or simple change?
     }
+
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
 protected:
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;

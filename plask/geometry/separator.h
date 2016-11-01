@@ -73,6 +73,8 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
     //     if (predicate(*this)) dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
     // }
 
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+
     virtual bool contains(const DVec& p) const override;
 
     /*virtual bool intersects(const Box& area) const override {
@@ -131,6 +133,9 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
         dest_xml_object.attr(XML_SIZE_ATTR, size);
     }
 
+    shared_ptr<GeometryObject> shallowCopy() const override {
+        return make_shared<Gap1D>(size);
+    }
 };
 
 }    // namespace plask

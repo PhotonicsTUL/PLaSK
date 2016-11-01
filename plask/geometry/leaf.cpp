@@ -101,6 +101,16 @@ shared_ptr<const GeometryObject> GeometryObjectLeaf<dim>::changedVersion(const G
     return result;
 }
 
+template <int dim>
+shared_ptr<GeometryObject> GeometryObjectLeaf<dim>::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<GeometryObject> result = this->shallowCopy();
+    copied[this] = result;
+    return result;
+}
+
+
 template struct PLASK_API GeometryObjectLeaf<2>;
 template struct PLASK_API GeometryObjectLeaf<3>;
 

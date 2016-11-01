@@ -16,6 +16,8 @@ Cylinder::Cylinder(double radius, double height, shared_ptr<MaterialsDB::MixedCo
     : GeometryObjectLeaf<3>(materialTopBottom), radius(std::max(radius, 0.)), height(std::max(height, 0.))
 {}
 
+Cylinder::Cylinder(const Cylinder& src): GeometryObjectLeaf<3>(src), radius(src.radius), height(src.height) {}
+
 Cylinder::Box Cylinder::getBoundingBox() const {
     return Box(vec(-radius, -radius, 0.0), vec(radius, radius, height));
 }

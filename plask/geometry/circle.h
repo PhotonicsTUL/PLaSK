@@ -26,7 +26,7 @@ struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
 
     explicit Circle(double radius, const shared_ptr<Material>& material = shared_ptr<Material>());
 
@@ -34,11 +34,17 @@ struct PLASK_API Circle: public GeometryObjectLeaf<dim> {
         if (radius < 0.) radius = 0.;
     }
 
-    virtual Box getBoundingBox() const override;
+    explicit Circle(const Circle& src): GeometryObjectLeaf<dim>(src), radius(src.radius) {}
 
-    virtual bool contains(const DVec& p) const override;
+    shared_ptr<GeometryObject> shallowCopy() const override {
+        return make_shared<Circle>(*this);
+    }
+    
+    Box getBoundingBox() const override;
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+    bool contains(const DVec& p) const override;
+
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
     bool isUniform(Primitive<3>::Direction direction) const override;
 

@@ -185,7 +185,7 @@ GeometryObject::Subtree ArrangeContainer<dim>::getPathsAt(const typename Arrange
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim>> ArrangeContainer<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> ArrangeContainer<dim>::shallowCopy() const {
     return plask::make_shared<ArrangeContainer<dim>>(_child, translation, repeat_count);
 }
 

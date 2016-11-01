@@ -169,6 +169,10 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
 
     //virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+
 protected:
     shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 

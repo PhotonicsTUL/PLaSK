@@ -46,7 +46,7 @@ void Clip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim> > Clip<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> Clip<dim>::shallowCopy() const {
     return copyShallow();
 }
 

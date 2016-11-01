@@ -52,7 +52,7 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim> > Flip<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> Flip<dim>::shallowCopy() const {
     return copyShallow();
 }
 
@@ -177,7 +177,7 @@ shared_ptr<GeometryObject> Mirror<dim>::getRealChildNo(std::size_t child_no) con
 }
 
 template <int dim>
-shared_ptr<GeometryObjectTransform<dim> > Mirror<dim>::shallowCopy() const {
+shared_ptr<GeometryObject> Mirror<dim>::shallowCopy() const {
     return copyShallow();
 }
 

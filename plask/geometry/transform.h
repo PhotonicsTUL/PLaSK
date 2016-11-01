@@ -133,28 +133,31 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     }
 
     /**
-     * Get shallow copy of this.
-     * @return shallow copy of this
-     */
-    virtual shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopy() const = 0;
-
-    /**
      * Get copy of this, and change child in the copy,
      * @param child child for the copy
      * @return the copy of this
      */
-    shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopy(const shared_ptr<ChildType>& child) const {
-        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = shallowCopy();
+    shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopyWithChild(const shared_ptr<ChildType>& child) const {
+        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
         result->setChild(child);
         return result;
     }
 
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override {
+        auto found = copied.find(this);
+        if (found != copied.end()) return found->second;
+        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
+        copied[this] = result;
+        if (hasChild()) result->setChild(dynamic_pointer_cast<ChildType>(_child->deepCopy(copied)));
+        return result;
+    }
+    
     shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override {
         shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
         if (changer.apply(result, translation) || !hasChild()) return result;
         shared_ptr<const GeometryObject> new_child = _child->changedVersion(changer, translation);
-        if (!new_child) return shared_ptr<const GeometryObject>();  //child was deleted, so we also should be
-        return new_child == _child ? result : shallowCopy(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
+        if (!new_child) return shared_ptr<const GeometryObject>();  // child was deleted, so we also should be
+        return new_child == _child ? result : shallowCopyWithChild(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
     }
 
     void removeAtUnsafe(std::size_t) override {
@@ -331,7 +334,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
          return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), translation));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
 

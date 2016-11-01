@@ -205,6 +205,16 @@ void GeometryObject_setRoles(GeometryObject& self, py::object roles) {
     for (auto role = begin; role != end; ++role) self.addRole(*role);
 }
 
+py::object GeometryObject_deepCopy(const py::object& oself, py::object omemo) {
+    py::dict memo = (omemo == py::object())? py::dict() : py::dict(omemo);
+    unsigned long id = (unsigned long)(oself.ptr());
+    if (memo.has_key(id)) return memo[id];
+    shared_ptr<GeometryObject> self = py::extract<shared_ptr<GeometryObject>>(oself);
+    py::object result = py::object(self->deepCopy());
+    memo[id] = result;
+    return result;
+}
+
 GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, contains,
     u8"Test if the geometry object contains a point.\n\n"
     u8"Args:\n"
@@ -692,6 +702,8 @@ void register_geometry_object()
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
         .def("__hash__", __hash__<GeometryObject>)
+        .def("__copy__", &GeometryObject::shallowCopy)
+        .def("__deepcopy__", &GeometryObject_deepCopy, (py::arg("x"), py::arg("memo")=py::object()))
     ;
 
     {py::scope scope = geometry_object;

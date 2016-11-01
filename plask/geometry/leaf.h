@@ -17,7 +17,7 @@ class GeometryReader;
  * @tparam dim number of dimensions
  * @ingroup GEOMETRY_OBJ
  */
-template < int dim >
+template <int dim>
 struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
 
     typedef typename GeometryObjectD<dim>::DVec DVec;
@@ -121,13 +121,18 @@ public:
     GeometryObjectLeaf<dim>(): materialProvider(new SolidMaterial()) {}
 
     /**
+     * Copy-constructor
+     */
+    GeometryObjectLeaf<dim>(const GeometryObjectLeaf<dim>& src): materialProvider(src.materialProvider->clone()) {}
+
+    /**
      * Construct leaf which uses solid material.
      * @param material to set (solid on all surface)
      */
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
 
     /**
-     * Construct leaf which uses lineary changeble material.
+     * Construct leaf which uses linearly changeble material.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
      */
     GeometryObjectLeaf<dim>(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): materialProvider(new MixedCompositionMaterial(materialTopBottom)) {}
@@ -184,27 +189,29 @@ public:
         this->fireChanged();
     }
 
-    virtual GeometryObject::Type getType() const override;
+    GeometryObject::Type getType() const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const override;
 
-    virtual bool hasInSubtree(const GeometryObject& el) const override;
+    bool hasInSubtree(const GeometryObject& el) const override;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
+    GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const override;
 
-    virtual std::size_t getChildrenCount() const override { return 0; }
+    std::size_t getChildrenCount() const override { return 0; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
+    shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
     // void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const {
     //     if (predicate(*this)) dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
@@ -233,7 +240,7 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
 
     /**
      * Size and upper corner of block. Lower corner is zeroed vector.
@@ -273,16 +280,21 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
 
     explicit Block(const DVec& size, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): GeometryObjectLeaf<dim>(materialTopBottom), size(size) {}
 
-    virtual Box getBoundingBox() const override;
+    explicit Block(const Block& src): GeometryObjectLeaf<dim>(src), size(src.size) {}
 
-    virtual bool contains(const DVec& p) const override;
+    Box getBoundingBox() const override;
+
+    bool contains(const DVec& p) const override;
 
     bool intersects(const Box &area) const {
         return this->getBoundingBox().intersects(area);
     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+    shared_ptr<GeometryObject> shallowCopy() const override {
+        return make_shared<Block>(*this);
+    }
 
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 };
 
 template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;

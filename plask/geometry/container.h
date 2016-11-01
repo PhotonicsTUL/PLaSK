@@ -57,7 +57,7 @@ protected:
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
     /**
-     * This is called by changedVersion method to create new version of this container which consists with new children.
+     * This is called by changedVersion method to create new version of this container which consists of new children.
      * @param[in] children_after_change vector of new children
      * @param[out] recomended_translation optional, place to store recommended translation (if is not nullptr, it has all coordinates equals to 0.0)
      * @return copy of this, with new children

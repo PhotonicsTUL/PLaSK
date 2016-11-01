@@ -34,7 +34,7 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
     return mesh;
 }
 
-shared_ptr<MeshD<1> > OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry, extend_to_zero);
     writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh ({0})", mesh->size());

@@ -815,6 +815,10 @@ public:
 //         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, edges, axesNames);
 //     }
 
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;    
+
     virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
 };
@@ -952,6 +956,10 @@ public:
         if (direction == DIRECTION_TRAN) return true;
         return getBorder(direction, false).type() == edge::Strategy::MIRROR || getBorder(direction, true).type() == edge::Strategy::MIRROR;
     }
+
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;    
 
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
@@ -1098,6 +1106,10 @@ public:
     virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override;
 
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
+
+    shared_ptr<GeometryObject> shallowCopy() const override;
+
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;    
 
 //     virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
 };

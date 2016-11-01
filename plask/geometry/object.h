@@ -932,11 +932,34 @@ public:
      * Get this or copy of this with some changes in subtree.
      * @param[in] changer changer which will be aplied to subtree with this in root
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
-     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
+     * @return pointer to this (if nothing was changed) or copy of this with some changes in subtree
      */
     virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
 
+    /**
+     * Get shallow copy of this. In the shallow copy all children are the same
+     * @return shallow copy of this
+     */
+    virtual shared_ptr<GeometryObject> shallowCopy() const = 0;
+
+    /**
+     * Get deep copy of this. In the deep copy all children are copied.
+     * @param copied map containing copied objects to avoid double copying
+     * @return deep copy of this
+     */
+    virtual shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const = 0;
+
+    /**
+     * Get deep copy of this. In the deep copy all children are copied.
+     * @return deep copy of this
+     */
+    shared_ptr<GeometryObject> deepCopy() {
+        std::map<const GeometryObject*, shared_ptr<GeometryObject>> copied;
+        return deepCopy(copied);
+    }
+
     bool canHasAsChild(const GeometryObject& potential_child) const { return !potential_child.hasInSubtree(*this); }
+
     bool canHasAsParent(const GeometryObject& potential_parent) const { return !this->hasInSubtree(potential_parent); }
 
     /**

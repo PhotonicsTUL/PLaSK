@@ -127,6 +127,7 @@ void StackContainerBaseImpl<dim, growingDirection>::rebuildStackHeights(std::siz
     updateAllHeights(first_child_index);
 }
 
+
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
     dest_xml_object.attr(baseH_attr, getBaseHeight());
@@ -287,9 +288,34 @@ void StackContainer<dim>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_t
     this->aligners[child_index].writeToXML(dest_xml_child_tag, axes);
 }
 
+
+template <int dim>
+shared_ptr<GeometryObject> StackContainer<dim>::shallowCopy() const {
+    shared_ptr<StackContainer<dim>> result = plask::make_shared<StackContainer<dim>>(this->getBaseHeight());
+    result->default_aligner = default_aligner;
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        result->addUnsafe(this->children[child_no]->getChild(), this->aligners[child_no]);
+    return result;
+}
+
+template <int dim>
+shared_ptr<GeometryObject> StackContainer<dim>::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<StackContainer<dim>> result = plask::make_shared<StackContainer<dim>>(this->getBaseHeight());
+    result->default_aligner = default_aligner;
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (this->children[child_no]->getChild())
+            result->addUnsafe(static_pointer_cast<ChildType>(this->children[child_no]->getChild()->deepCopy(copied)), this->aligners[child_no]);
+    copied[this] = result;
+    return result;
+}
+
+
 template <int dim>
 shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< StackContainer<dim> > result = plask::make_shared< StackContainer<dim> >(this->getBaseHeight());
+    shared_ptr<StackContainer<dim> > result = plask::make_shared< StackContainer<dim> >(this->getBaseHeight());
+    result->default_aligner = default_aligner;
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, this->aligners[child_no]);
@@ -356,8 +382,30 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
+shared_ptr<GeometryObject> ShelfContainer2D::shallowCopy() const {
+    shared_ptr<ShelfContainer2D> result = plask::make_shared<ShelfContainer2D>(this->getBaseHeight());
+    result->resizableGap = resizableGap;
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        result->addUnsafe(this->children[child_no]->getChild());
+    return result;
+}
+
+shared_ptr<GeometryObject> ShelfContainer2D::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<ShelfContainer2D> result = plask::make_shared<ShelfContainer2D>(this->getBaseHeight());
+    result->resizableGap = resizableGap;
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (this->children[child_no]->getChild())
+            result->addUnsafe(static_pointer_cast<ChildType>(this->children[child_no]->getChild()->deepCopy(copied)));
+    copied[this] = result;
+    return result;
+}
+
+
 shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
-    shared_ptr< ShelfContainer2D > result = plask::make_shared< ShelfContainer2D >(this->getBaseHeight());
+    shared_ptr<ShelfContainer2D> result = plask::make_shared<ShelfContainer2D>(this->getBaseHeight());
+    result->resizableGap = resizableGap;
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first);
@@ -548,15 +596,45 @@ static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const
     result.addUnsafe(children_after_change[child_no].first);
 }
 
+template <typename StackContainerT>
+static inline void addChild(StackContainerT& result, const StackContainerT& src, const shared_ptr<GeometryObject>& child, std::size_t child_no) {
+    result.addUnsafe(static_pointer_cast<typename StackContainerT::ChildType>(child), src.getAlignerAt(child_no));
+}
+
+static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& src, const shared_ptr<GeometryObject>& child, std::size_t child_no) {
+    result.addUnsafe(static_pointer_cast<MultiStackContainer<ShelfContainer2D>::ChildType>(child));
+}
+
+
+
+template <typename UpperClass>
+shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::shallowCopy() const {
+    shared_ptr<MultiStackContainer<UpperClass>> result = plask::make_shared<MultiStackContainer<UpperClass>>(this->repeat_count, this->getBaseHeight());
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        addChild(*result, *this, children[child_no]->getChild(), child_no);
+    return result;
+}
+
+template <typename UpperClass>
+shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<MultiStackContainer<UpperClass>> result = plask::make_shared<MultiStackContainer<UpperClass>>(this->repeat_count, this->getBaseHeight());
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (children[child_no]->getChild())
+            addChild(*result, *this, children[child_no]->getChild()->deepCopy(copied), child_no);
+    copied[this] = result;
+    return result;
+}
+
 template <typename UpperClass>
 shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChildren(
                   std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change,
                   Vec<3, double>* recomended_translation) const {
-    shared_ptr< MultiStackContainer<UpperClass> > result = plask::make_shared< MultiStackContainer<UpperClass> >(this->repeat_count, this->getBaseHeight());
+    shared_ptr<MultiStackContainer<UpperClass>> result = plask::make_shared<MultiStackContainer<UpperClass>>(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
             addChild(*result, *this, child_no, children_after_change);
-            //result->addUnsafe(children_after_change[child_no].first, this->getAlignerAt(child_no));
     return result;
 }
 

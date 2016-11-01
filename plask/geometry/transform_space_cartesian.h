@@ -49,7 +49,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     //virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const override;
 
-    virtual shared_ptr<GeometryObjectTransform<3, ChildType>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 

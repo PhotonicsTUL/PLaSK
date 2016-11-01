@@ -27,7 +27,7 @@ Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &ch
     return parentBox(child_bbox);
 }
 
-shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallowCopy() const {
+shared_ptr<GeometryObject> Revolution::shallowCopy() const {
     return plask::make_shared<Revolution>(this->_child);
 }
 

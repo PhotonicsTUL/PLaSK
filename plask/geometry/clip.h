@@ -63,7 +63,7 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
          return plask::make_shared<Clip<dim>>(getChild(), clipBox);
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
      * Get shallow copy of this with diffrent clip box.

@@ -35,7 +35,7 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    virtual shared_ptr<GeometryObjectTransform<3, GeometryObjectD<2> > > shallowCopy() const override;
+    virtual shared_ptr<GeometryObject> shallowCopy() const override;
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 

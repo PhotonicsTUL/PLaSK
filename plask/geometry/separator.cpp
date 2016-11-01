@@ -68,6 +68,16 @@ shared_ptr<const GeometryObject> GeometryObjectSeparator<dim>::changedVersion(co
 }
 
 template < int dim >
+shared_ptr<GeometryObject> GeometryObjectSeparator<dim>::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<GeometryObject> result = this->shallowCopy();
+    copied[this] = result;
+    return result;
+}
+
+
+template < int dim >
 bool GeometryObjectSeparator<dim>::contains(const typename GeometryObjectSeparator<dim>::DVec &p) const {
     return false;
 }

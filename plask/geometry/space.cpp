@@ -188,6 +188,27 @@ const edge::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool h
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
+shared_ptr<GeometryObject> Geometry2DCartesian::shallowCopy() const {
+    shared_ptr<Geometry2DCartesian> result = make_shared<Geometry2DCartesian>(static_pointer_cast<Extrusion>(this->extrusion->shallowCopy()));
+    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->frontMaterial = frontMaterial;
+    result->backMaterial = backMaterial;
+    return result;
+}
+
+shared_ptr<GeometryObject> Geometry2DCartesian::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<Geometry2DCartesian> result = make_shared<Geometry2DCartesian>(static_pointer_cast<Extrusion>(this->extrusion->deepCopy(copied)));
+    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->frontMaterial = frontMaterial;
+    result->backMaterial = backMaterial;
+    copied[this] = result;
+    return result;
+}
+
 void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
@@ -281,6 +302,23 @@ const edge::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bool
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
+shared_ptr<GeometryObject> Geometry2DCylindrical::shallowCopy() const {
+    shared_ptr<Geometry2DCylindrical> result = make_shared<Geometry2DCylindrical>(static_pointer_cast<Revolution>(static_pointer_cast<Revolution>(this->revolution->shallowCopy())));
+    result->setBorders(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    return result;
+}
+
+shared_ptr<GeometryObject> Geometry2DCylindrical::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<Geometry2DCylindrical> result = make_shared<Geometry2DCylindrical>(static_pointer_cast<Revolution>(this->revolution->deepCopy(copied)));
+    result->setBorders(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    copied[this] = result;
+    return result;
+}
+
 void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
@@ -359,6 +397,25 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
     if (material) return material;
 
     return getMaterialOrDefault(r);
+}
+
+shared_ptr<GeometryObject> Geometry3D::shallowCopy() const {
+    shared_ptr<Geometry3D> result = make_shared<Geometry3D>(this->child);
+    result->setBorders(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
+    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    return result;
+}
+
+shared_ptr<GeometryObject> Geometry3D::deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const {
+    auto found = copied.find(this);
+    if (found != copied.end()) return found->second;
+    shared_ptr<Geometry3D> result = make_shared<Geometry3D>(static_pointer_cast<GeometryObjectD<3>>(this->child->deepCopy(copied)));
+    result->setBorders(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
+    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    copied[this] = result;
+    return result;
 }
 
 // Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {

@@ -284,7 +284,7 @@ class PLASK_API StrategyPairHolder {
              strategy_lo.type() != Strategy::MIRROR && strategy_hi.type() != Strategy::MIRROR &&
              strategy_lo.type() != strategy_hi.type()
            ) writelog(LOG_WARNING, "Periodic and non-periodic edges used on opposite sides of one direction.");
-        //strategy_lo.ensureCanCoexists(strategy_hi);
+        // strategy_lo.ensureCanCoexists(strategy_hi);
         if (strategy_hi.canMoveOutsideBoundingBox()) {
             if (strategy_lo.canMoveOutsideBoundingBox())
                 throw Exception("Edges on both sides can move point outside bounding box.");
