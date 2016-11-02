@@ -61,7 +61,7 @@ namespace detail {
         }
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            PyObject* first;
+            PyObject* first = PySequence_GetItem(obj, 0);
             shared_ptr<GeometryObject> parent = py::extract<shared_ptr<GeometryObject>>(first);
             int i = py::extract<int>(PySequence_GetItem(obj, 1));
 
