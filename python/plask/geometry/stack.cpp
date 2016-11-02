@@ -30,7 +30,7 @@ PathHints::Hint Stack_push_front(py::tuple args, py::dict kwargs) {
 
 template <typename StackT>
 PathHints::Hint Stack_insert(py::tuple args, py::dict kwargs) {
-    parseKwargs("insert", args, kwargs, "self", "item", "index");
+    parseKwargs("insert", args, kwargs, "self", "index", "item");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     size_t pos = py::extract<size_t>(args[2]);
@@ -135,13 +135,13 @@ void register_geometry_container_stack()
              u8"                      name. By default the object is aligned according to the\n"
              u8"                      specification in the stack constructor.\n")
         .def("insert", py::raw_function(&Stack_insert<StackContainer<2>>),
-             u8"insert(item, **alignment)\n\n"
+             u8"insert(index, item, **alignment)\n\n"
              u8"Insert a new object to the stack.\n\n"
              u8"This method adds a new item to the stack and places it at the position\n"
              u8"specified by `index`.\n\n"
              u8"Args:\n"
-             u8"    item (GeometryObject2D): Object to insert to the stack.\n"
              u8"    index (int): Index of the inserted item in the stack.\n"
+             u8"    item (GeometryObject2D): Object to insert to the stack.\n"
              u8"    alignment (dict): Horizontal alignment specifications. This dictionary can\n"
              u8"                      contain only one item. Its key can be ``left``, ``right``,\n"
              u8"                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
@@ -216,13 +216,13 @@ void register_geometry_container_stack()
              u8"                       object is aligned according to the specification in the\n"
              u8"                       stack constructor.\n")
         .def("insert", py::raw_function(&Stack_insert<StackContainer<3>>),
-             u8"insert(item, **alignments)\n\n"
+             u8"insert(index, item, **alignments)\n\n"
              u8"Insert a new object to the stack.\n\n"
              u8"This method adds a new item to the stack and places it at the position\n"
              u8"specified by `index`.\n\n"
              u8"Args:\n"
-             u8"    item (GeometryObject3D): Object to insert to the stack.\n"
              u8"    index (int): Index of the inserted item in the stack.\n"
+             u8"    item (GeometryObject3D): Object to insert to the stack.\n"
              u8"    alignments (dict): Horizontal alignments specifications. Keys in this dict\n"
              u8"                       can be ``left``, ``right``, ``back``, ``front``,\n"
              u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"

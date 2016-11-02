@@ -77,13 +77,13 @@ static PathHints::Hint TranslationContainer3_add
 }
 
 static PathHints::Hint TranslationContainer2_insert
-    (int pos, TranslationContainer<2>& self, shared_ptr<typename TranslationContainer<2>::ChildType> el, double c0, double c1) {
+    (TranslationContainer<2>& self, int pos, shared_ptr<typename TranslationContainer<2>::ChildType> el, double c0, double c1) {
     if (pos < 0) pos += self.getRealChildrenCount() + 1;
     return self.insert(pos, el, Vec<2>(c0, c1));
 }
 
 static PathHints::Hint TranslationContainer3_insert
-    (int pos, TranslationContainer<3>& self, shared_ptr<typename TranslationContainer<3>::ChildType> el, double c0, double c1, double c2) {
+    (TranslationContainer<3>& self, int pos, shared_ptr<typename TranslationContainer<3>::ChildType> el, double c0, double c1, double c2) {
     if (pos < 0) pos += self.getRealChildrenCount() + 1;
     return self.insert(pos, el, Vec<3>(c0, c1, c2));
 }
@@ -107,7 +107,7 @@ PathHints::Hint TranslationContainer_add(py::tuple args, py::dict kwargs) {
 
 template <typename ContainerT>
 PathHints::Hint TranslationContainer_insert(py::tuple args, py::dict kwargs) {
-    parseKwargs("insert", args, kwargs, "self", "pos", "item");
+    parseKwargs("insert", args, kwargs, "self", "index", "item");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
     int pos = py::extract<int>(args[1]);
     if (pos < 0) pos += self->getRealChildrenCount() + 1;
@@ -167,12 +167,12 @@ void register_geometry_container()
 
         .def("insert", py::raw_function(&TranslationContainer_insert<TranslationContainer<2>>))
         .def("insert", TranslationContainer_insert_vec<2>,
-             (py::arg("pos"), "item", py::arg("translation")=Vec<2>(0.,0.)))
-        .def("insert", &TranslationContainer2_insert, (py::arg("pos"), "item", "c0", "c1"),
-            u8"insert(item, **alignments)\n\n"
+             (py::arg("index"), "item", py::arg("translation")=Vec<2>(0.,0.)))
+        .def("insert", &TranslationContainer2_insert, (py::arg("index"), "item", "c0", "c1"),
+            u8"insert(index, item, **alignments)\n\n"
             u8"Insert new object to the container at specified position with provided alignment.\n\n"
             u8"Args:\n"
-            u8"    post (int): Item postion after insertion.\n"
+            u8"    index (int): Item index after insertion.\n"
             u8"    item (geometry object): Item to insert.\n"
             u8"    translation (:class:`plask.vec`): Two-dimensional vector specifying\n"
             u8"                                      the position of the item origin.\n"
@@ -244,12 +244,12 @@ void register_geometry_container()
 
         .def("insert", py::raw_function(&TranslationContainer_insert<TranslationContainer<3>>))
         .def("insert", TranslationContainer_insert_vec<3>,
-             (py::arg("pos"), "item", py::arg("translation")=Vec<3>(0.,0.,0.)))
-        .def("insert", &TranslationContainer3_insert, (py::arg("pos"), "item", "c0", "c1", "c2"),
-            u8"insert(item, **alignments)\n\n"
+             (py::arg("index"), "item", py::arg("translation")=Vec<3>(0.,0.,0.)))
+        .def("insert", &TranslationContainer3_insert, (py::arg("index"), "item", "c0", "c1", "c2"),
+            u8"insert(index, item, **alignments)\n\n"
             u8"Insert new object to the container at specified position with provided alignment.\n\n"
             u8"Args:\n"
-            u8"    post (int): Item postion after insertion.\n"
+            u8"    index (int): Item index after insertion.\n"
             u8"    item (geometry object): Item to insert.\n"
             u8"    translation (:class:`plask.vec`): Two-dimensional vector specifying\n"
             u8"                                      the position of the item origin.\n"
