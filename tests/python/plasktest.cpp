@@ -230,6 +230,25 @@ py::tuple mesh2d_at(const plask::MeshD<2>& msh, size_t i) {
     return py::make_tuple(p[0], p[1]);
 }    
 
+//// Geometry /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+py::tuple extractPathHint(const plask::PathHints::Hint& hint) {
+    return py::make_tuple(py::object(hint.first), py::object(hint.second));
+}
+
+py::dict extractPathHints(const plask::PathHints& hints) {
+    py::dict result;
+    for (const auto& item: hints.hintFor) {
+        py::list values;
+        for (const auto& val: item.second) {
+            values.append(py::object(val.lock()));
+        }
+        result[item.first.lock()] = values;
+    }
+    return result;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -297,4 +316,7 @@ BOOST_PYTHON_MODULE(plasktest)
     ;
     
     py::def("mesh2d_at", mesh2d_at);
+    
+    py::def("extractPathHint", extractPathHint);
+    py::def("extractPathHints", extractPathHints);
 }

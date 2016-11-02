@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 
 import plask, plask.material, plask.geometry
-
 
 
 class SimpleGeometry(unittest.TestCase):
@@ -89,6 +89,23 @@ class GeometryPath(unittest.TestCase):
     def testIncludes(self):
         self.assertTrue( self.stack1.object_contains(self.object1, 0.5, 1.0) )
         self.assertFalse( self.stack1.object_contains(self.object1, 0.5, 3.0) )
+
+
+class PathHints(unittest.TestCase):
+    
+    def testHints(self):
+        rect = plask.geometry.Rectangle(1,1,'GaAs')
+        stack = plask.geometry.Stack2D()
+        hint = stack.append(rect)
+        stack.append(rect)
+        stack.append(rect)
+        stack.append(rect)
+        self.assertAlmostEqual( stack.get_leafs_positions(hint)[0][1], 0. )
+        self.assertAlmostEqual( stack.get_leafs_positions((stack, 1))[0][1], 1. )
+        self.assertAlmostEqual( stack.get_leafs_positions({stack: 2})[0][1], 2. )
+        self.assertAlmostEqual( stack.get_leafs_positions({stack: (3,)})[0][1], 3. )
+        del stack, hint 
+        self.assertEqual( sys.getrefcount(rect), 2 )
 
 
 class Containers(unittest.TestCase):
@@ -212,6 +229,7 @@ class Containers(unittest.TestCase):
         stack.append(self.block2)
         stack.append(self.block1)
         self.assertEqual( stack.get_matching_objects(lambda o: o == self.block1), [self.block1, self.block1] )
+
 
 class Edges(unittest.TestCase):
 

@@ -93,15 +93,15 @@ struct PLASK_API PathHints {
      * @param container, child_tran content of hint (container and child - typically translation)
      * @return *c true only if hint is included in @c this
      */
-    bool include(shared_ptr<const GeometryObject> container, shared_ptr<const GeometryObject> child_tran) const;
+    bool includes(shared_ptr<const GeometryObject> container, shared_ptr<const GeometryObject> child_tran) const;
 
     /**
      * Check if @p hint is included in @c this.
      * @param hint hint to check
      * @return *c true only if @p hint is included in @c this
      */
-    bool include(const Hint& hint) const {
-        return include(hint.first, hint.second);
+    bool includes(const Hint& hint) const {
+        return includes(hint.first, hint.second);
     }
 
     /**

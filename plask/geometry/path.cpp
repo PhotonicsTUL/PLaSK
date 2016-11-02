@@ -10,7 +10,7 @@ void PathHints::addHint(const Hint& hint) {
     addHint(hint.first, hint.second);
 }
 
-bool PathHints::include(shared_ptr<const GeometryObject> container, shared_ptr<const GeometryObject> child_tran) const {
+bool PathHints::includes(shared_ptr<const GeometryObject> container, shared_ptr<const GeometryObject> child_tran) const {
     auto cont_set_it = hintFor.find(const_pointer_cast<GeometryObject>(container));
     if (cont_set_it == hintFor.end()) return true;  //no entry == no constraint == everything is included
     return cont_set_it->second.find(const_pointer_cast<GeometryObject>(child_tran)) != cont_set_it->second.end();

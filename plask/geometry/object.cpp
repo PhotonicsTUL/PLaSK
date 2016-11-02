@@ -214,7 +214,7 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
         if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
         assert(nodes->children.size() == 1);
         if (path && nodes->object->isContainer()) {
-            if (!path->include(nodes->object, nodes->children.front().object))
+            if (!path->includes(nodes->object, nodes->children.front().object))
                 return shared_ptr<const GeometryObject>();
         }
         nodes = &(nodes->children.front());

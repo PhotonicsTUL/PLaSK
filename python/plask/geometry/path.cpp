@@ -49,6 +49,25 @@ namespace detail {
 
     };
 
+    shared_ptr<GeometryObject> getItem(PyObject* oself, int i) {
+        GeometryObject* self = py::extract<GeometryObject*>(oself);
+        int n = self->getChildrenCount();
+        if (n == 0) {
+            if (self->isLeaf())
+                throw TypeError("{0} object has no items", py::extract<std::string>(
+                    PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))());
+            else
+                throw IndexError("{0} object has no items", py::extract<std::string>(
+                    PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))());
+        }
+        if (i < 0) i = n + i;
+        if (i < 0 || i >= n) {
+            throw IndexError("{0} index {1} out of range (0 <= index < {2})", py::extract<std::string>(
+                PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))(), i, n);
+        }
+        return self->getChildNo(i);
+    }
+    
     struct PathHint_from_Tuple {
         PathHint_from_Tuple() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<PathHints::Hint>());
@@ -56,31 +75,15 @@ namespace detail {
 
         // Determine if obj can be converted into an PathHint
         static void* convertible(PyObject* obj) {
-            if (!PySequence_Check(obj) || PySequence_Length(obj) != 2) return nullptr;
+            if (!PyTuple_Check(obj) || PySequence_Length(obj) != 2) return nullptr;
             return obj;
         }
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            PyObject* first = PySequence_GetItem(obj, 0);
-            shared_ptr<GeometryObject> parent = py::extract<shared_ptr<GeometryObject>>(first);
-            int i = py::extract<int>(PySequence_GetItem(obj, 1));
-
-            int n = parent->getChildrenCount();
-            if (n == 0) {
-                if (parent->isLeaf())
-                    throw TypeError("{0} object has no items", py::extract<std::string>(
-                        PyObject_GetAttrString(PyObject_GetAttrString(first, "__class__"), "__name__"))());
-                else
-                    throw IndexError("{0} object has no items", py::extract<std::string>(
-                        PyObject_GetAttrString(PyObject_GetAttrString(first, "__class__"), "__name__"))());
-            }
-            if (i < 0) i = n + i;
-            if (i < 0 || i >= n) {
-                throw IndexError("{0} index {1} out of range (0 <= index < {2})", py::extract<std::string>(
-                    PyObject_GetAttrString(PyObject_GetAttrString(first, "__class__"), "__name__"))(), i, n);
-            }
-            auto child = parent->getChildNo(i);
-
+            py::handle<> first(PySequence_GetItem(obj, 0)); 
+            py::handle<> second(PySequence_GetItem(obj, 1)); 
+            shared_ptr<GeometryObject> parent = py::extract<GeometryObject*>(first.get())()->shared_from_this();
+            auto child = getItem(first.get(), py::extract<int>(second.get()));
             // Grab pointer to memory into which to construct the new PathHint
             void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints::Hint>*)data)->storage.bytes;
             new(storage) PathHints::Hint(parent, child);
@@ -90,6 +93,50 @@ namespace detail {
 
     };
 
+    struct PathHints_from_Dict {
+        PathHints_from_Dict() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<PathHints>());
+        }
+
+        // Determine if obj can be converted into an PathHint
+        static void* convertible(PyObject* obj) {
+            if (PyDict_Check(obj)) return obj;
+            else return nullptr;
+        }
+
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            PyObject *key, *value;
+            Py_ssize_t pos = 0;
+            
+            // Grab pointer to memory into which to construct the new PathHint
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints>*)data)->storage.bytes;
+            PathHints* hints = new(storage) PathHints();
+
+            try {
+                while (PyDict_Next(obj, &pos, &key, &value)) {
+                    shared_ptr<GeometryObject> parent = py::extract<GeometryObject*>(key)()->shared_from_this();
+                    if (PySequence_Check(value)) {
+                        Py_ssize_t n = PySequence_Length(value);
+                        for (Py_ssize_t i = 0; i != n; ++i) {
+                            py::handle<> obj(PySequence_GetItem(value, i));
+                            auto child = parent->getChildNo(py::extract<int>(obj.get()));
+                            hints->addHint(parent, child);
+                        }
+                    } else {
+                        auto child = parent->getChildNo(py::extract<int>(value));
+                        hints->addHint(parent, child);
+                    }
+                }
+            } catch(...) {
+                hints->~PathHints();
+                throw;
+            }
+
+            // Stash the memory chunk pointer for later use by boost.python
+            data->convertible = storage;
+        }
+
+    };
 }
 
 static shared_ptr<GeometryObject> Path__getitem__(const Path& self, long int index) {
@@ -110,7 +157,7 @@ void register_geometry_path()
                                 u8"PathHints, or to retrieve the container, child, or translation objects.",
                                 py::no_init)
         .def("__add__", &Hint__add__)
-        .def("__eq__", Hint__eq__)
+        .def("__eq__", &Hint__eq__)
     ;
 
     set_to_python_list_conventer<shared_ptr<GeometryObject>>();
@@ -137,8 +184,9 @@ void register_geometry_path()
     ;
 
     py::implicitly_convertible<PathHints::Hint,PathHints>();
-    detail::PathHints_from_None();
     detail::PathHint_from_Tuple();
+    detail::PathHints_from_None();
+    detail::PathHints_from_Dict();
     
     py::class_<Path, shared_ptr<Path>>("Path",
                      u8"Sequence of objects in the geometry tree, used for resolving ambiguities.\n\n"
