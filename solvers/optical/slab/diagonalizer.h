@@ -61,7 +61,7 @@ class Diagonalizer
         return diagonalized[layer];
     }
 
-    /// Return diagnoal matrix of eignevalues
+    /// Return diagonal matrix of eigenevalues
     virtual const cdiagonal& Gamma(size_t layer) const = 0;
 
     /// Return matrix of eigenvectors of QE

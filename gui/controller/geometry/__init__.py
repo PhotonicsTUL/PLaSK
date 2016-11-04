@@ -75,8 +75,9 @@ class GeometryController(Controller):
                 if type_name.endswith('2d') or type_name.endswith('3d'):
                     type_name = type_name[:-2]
                 a = QAction(gname(type_name, True), result)
-                a.triggered.connect(lambda *args, type_constructor=type_constructor, parent_index=geometry_node_index:
-                                        self._add_child(type_constructor, parent_index))
+                a.triggered.connect(lambda checked=False, type_constructor=type_constructor,
+                                           parent_index=geometry_node_index:
+                                    self._add_child(type_constructor, parent_index))
                 result.addAction(a)
         return result
 
@@ -106,7 +107,7 @@ class GeometryController(Controller):
                 if type_name.endswith('2d') or type_name.endswith('3d'):
                     type_name = type_name[:-2]
                 a = QAction(gname(type_name, True), result)
-                a.triggered.connect(lambda *args, type_constructor=type_constructor, index=index:
+                a.triggered.connect(lambda checked=False, type_constructor=type_constructor, index=index:
                                         self._reparent(index, type_constructor))
                 result.addAction(a)
         return result
@@ -157,7 +158,7 @@ class GeometryController(Controller):
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
         search_action.setShortcut(QKeySequence.Find)
-        search_action.triggered.connect(lambda: self.search_box.setFocus())
+        search_action.triggered.connect(lambda checked=False: self.search_box.setFocus())
         self.main_splitter.addAction(search_action)
 
 
@@ -181,7 +182,7 @@ class GeometryController(Controller):
                 self.add_menu.addAction('&Item').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
             a = QAction(gname(n, True), self.add_menu)
-            a.triggered.connect(lambda n=n: self.append_geometry_node(n))
+            a.triggered.connect(lambda checked=False, n=n: self.append_geometry_node(n))
             self.add_menu.addAction(a)
 
     def fill_more_menu(self):
