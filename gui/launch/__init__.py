@@ -11,8 +11,8 @@
 # GNU General Public License for more details.
 
 import shlex
-from ..qt import QtGui
-from ..qt.QtCore import Qt
+from ..qt.QtWidgets import *
+from ..qt.QtCore import *
 from ..utils.config import CONFIG
 
 from .local import Launcher as LocalLauncher
@@ -27,44 +27,44 @@ LAUNCHERS = [LocalLauncher(), ConsoleLauncher()]
 current_launcher = None
 
 
-class LaunchDialog(QtGui.QDialog):
+class LaunchDialog(QDialog):
 
     def __init__(self, window, parent=None):
         super(LaunchDialog, self).__init__(parent)
         self.setWindowTitle("Launch Computations")
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        combo = QtGui.QComboBox()
+        combo = QComboBox()
         combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
         combo.currentIndexChanged.connect(self.launcher_changed, Qt.QueuedConnection)
         self.layout.addWidget(combo)
 
         if window.document.defines is not None:
-            defines_layout = QtGui.QHBoxLayout()
+            defines_layout = QHBoxLayout()
             defines_layout.setContentsMargins(0, 0, 0, 0)
-            defines_button = QtGui.QToolButton()
-            defines_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
+            defines_button = QToolButton()
+            defines_button.setIcon(QIcon.fromTheme('menu-down'))
             defines_button.setCheckable(True)
             defines_button.setChecked(_defs_visible)
             defines_button.toggled.connect(self.show_defines)
-            self.defs_label = QtGui.QLabel("Temporary de&fines:", self)
+            self.defs_label = QLabel("Temporary de&fines:", self)
             self.defs_label.setBuddy(defines_button)
             defines_layout.addWidget(self.defs_label)
             defines_layout.addWidget(defines_button)
             self.layout.addLayout(defines_layout)
 
-            self.defines = QtGui.QPlainTextEdit()
+            self.defines = QPlainTextEdit()
             self.layout.addWidget(self.defines)
             self.defines.setVisible(_defs_visible)
 
             self.defines.setPlainText('\n'.join(e.name+'=' for e in window.document.defines.model.entries))
 
-        self.args = QtGui.QLineEdit()
+        self.args = QLineEdit()
         self.args.setText(_launch_args)
-        args_label = QtGui.QLabel("Command line &arguments:", self)
+        args_label = QLabel("Command line &arguments:", self)
         args_label.setBuddy(self.args)
         self.layout.addWidget(args_label)
         self.layout.addWidget(self.args)
@@ -81,10 +81,10 @@ class LaunchDialog(QtGui.QDialog):
 
         combo.setCurrentIndex(current_launcher)
 
-        self.setFixedWidth(5*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
+        self.setFixedWidth(5*QFontMetrics(QFont()).width(self.windowTitle()))
         self.setFixedHeight(self.sizeHint().height())
 
-        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
@@ -113,17 +113,17 @@ def launch_plask(window):
     global _launch_args
     result = dialog.exec_()
     _launch_args = dialog.args.text()
-    if result == QtGui.QDialog.Accepted:
+    if result == QDialog.Accepted:
         launch_defs = []
         if window.document.defines is not None:
             for line in dialog.defines.toPlainText().split('\n'):
                 if not line.strip(): continue
                 if '=' not in line or line.startswith('-'):
-                    msgbox = QtGui.QMessageBox()
+                    msgbox = QMessageBox()
                     msgbox.setWindowTitle("Wrong Defines")
                     msgbox.setText("Wrong define: '{}'".format(line))
-                    msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-                    msgbox.setIcon(QtGui.QMessageBox.Critical)
+                    msgbox.setStandardButtons(QMessageBox.Ok)
+                    msgbox.setIcon(QMessageBox.Critical)
                     msgbox.exec_()
                     return
                 items = line.split('=')

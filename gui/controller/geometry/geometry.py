@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 
 from .object import GNObjectController
 from ...utils.qsignals import BlockQtSignals
@@ -29,7 +29,7 @@ class GNGeometryController(GNObjectController):
         res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'], change_cb=self._borders_to_model_undoable)
                     for _ in range(0, 2))
         for r in res:
-            r.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         for w in res: hbox.addWidget(w)
         return res if row_name else (res, group)
 

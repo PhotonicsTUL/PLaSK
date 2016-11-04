@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 
 from . import GridController
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ...utils import getattr_by_path
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
@@ -21,7 +21,7 @@ from ..defines import get_defines_completer
 from ...utils.widgets import ComboBox, TextEdit
 
 
-class AxisEdit(QtGui.QGroupBox):
+class AxisEdit(QGroupBox):
 
     def _type_changed(self):
         self.controller.fire_changed()
@@ -32,7 +32,7 @@ class AxisEdit(QtGui.QGroupBox):
         self.controller = controller
         self.axis_path = axis_path
         defines = get_defines_completer(controller.document.defines.model, self)
-        form_layout = QtGui.QFormLayout()
+        form_layout = QFormLayout()
         self.allow_type_select = allow_type_select
         if not allow_type_select:
             self.accept_non_regular = accept_non_regular
@@ -49,30 +49,30 @@ class AxisEdit(QtGui.QGroupBox):
                                                       None if self.type.currentIndex() == 0 else empty_to_none(self.type.currentText())))
             self.type.currentIndexChanged.connect(self._auto_enable_points)
             form_layout.addRow("Axis type:", self.type)
-        range_layout = QtGui.QHBoxLayout()
-        self.start = QtGui.QLineEdit()
+        range_layout = QHBoxLayout()
+        self.start = QLineEdit()
         self.start.setCompleter(defines)
         self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
                               u'Position of the first point on the axis. (float [µm])'.format(axis))
         self.start.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'start'), empty_to_none(self.start.text())))
-        # range_layout.addWidget(QtGui.QLabel("Start:"))
+        # range_layout.addWidget(QLabel("Start:"))
         range_layout.addWidget(self.start)
-        self.stop = QtGui.QLineEdit()
+        self.stop = QLineEdit()
         self.stop.setCompleter(defines)
         self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
                              u'Position of the last point on the axis. (float [µm])'.format(axis))
         self.stop.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'stop'), empty_to_none(self.stop.text())))
-        range_layout.addWidget(QtGui.QLabel(" Stop:"))
+        range_layout.addWidget(QLabel(" Stop:"))
         range_layout.addWidget(self.stop)
-        self.num = QtGui.QLineEdit()
+        self.num = QLineEdit()
         self.num.setCompleter(defines)
         self.num.setToolTip('&lt;{} start="" stop="" <b>num</b>=""&gt;<br/>'
                             'Number of the equally distributed points along the axis. (integer)'.format(axis))
         self.num.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'num'), empty_to_none(self.num.text())))
-        range_layout.addWidget(QtGui.QLabel(" Num:"))
+        range_layout.addWidget(QLabel(" Num:"))
         range_layout.addWidget(self.num)
         range_layout.setContentsMargins(0, 0, 0, 0)
-        range_widget = QtGui.QWidget()
+        range_widget = QWidget()
         range_widget.setLayout(range_layout)
         form_layout.addRow("Start:", range_widget)
         if allow_type_select or accept_non_regular:
@@ -80,7 +80,7 @@ class AxisEdit(QtGui.QGroupBox):
             self.points.setToolTip('&lt;{0}&gt;<b><i>points</i></b>&lt;/{0}&gt;<br/>'
                                    'Comma-separated list of the mesh points along this axis.'.format(axis))
             # self.points.editingFinished.connect(controller.fire_changed)
-            #self.points.setWordWrapMode(QtGui.QTextEdit.LineWrapMode)
+            #self.points.setWordWrapMode(QTextEdit.LineWrapMode)
             form_layout.addRow("Points:", self.points)
             if allow_type_select:
                 self.points.setVisible(self.are_points_editable())
@@ -157,8 +157,8 @@ class RectangularMeshController(GridController):
 
     def __init__(self, document, model):
         super(RectangularMeshController, self).__init__(document=document, model=model)
-        self.form = QtGui.QGroupBox()
-        vbox = QtGui.QVBoxLayout()
+        self.form = QGroupBox()
+        vbox = QVBoxLayout()
         self.axis = []
         for i in range(0, model.dim):
             self.axis.append(

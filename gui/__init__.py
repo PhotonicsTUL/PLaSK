@@ -39,8 +39,10 @@ try:
 except KeyError:
     _DEBUG = False
 
-from .qt import QtGui, QtCore, QtSignal, QT_API
-from .qt.QtCore import Qt
+from .qt.QtCore import *
+from .qt.QtWidgets import *
+from .qt.QtGui import *
+from .qt import QtSignal, QT_API
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
@@ -121,7 +123,7 @@ SECTION_ICONS = {
 }
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
 
     SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
                           solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
@@ -136,7 +138,7 @@ class MainWindow(QtGui.QMainWindow):
         'script': "Edit control script for your computations (Alt+R)"}
 
     opened = QtSignal()
-    closing = QtSignal(QtGui.QCloseEvent)
+    closing = QtSignal(QCloseEvent)
     closed = QtSignal()
     config_changed = QtSignal()
 
@@ -144,43 +146,43 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
 
         self.current_tab_index = -1
-        self.tabs = QtGui.QTabWidget(self)
+        self.tabs = QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
-        # self.tabs.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
+        # self.tabs.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
 
-        menu_bar = QtGui.QMenuBar(self)
+        menu_bar = QMenuBar(self)
         menu_bar.setVisible(False)
 
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.tabs)
-        main_widget = QtGui.QWidget()
+        main_widget = QWidget()
         main_widget.setLayout(layout)
         self.setCentralWidget(main_widget)
 
-        self.showsource_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme('show-source'),
+        self.showsource_action = QAction(
+            QIcon.fromTheme('show-source'),
             'Show Sour&ce', self)
-        self.showsource_action.setShortcut(QtGui.QKeySequence(Qt.Key_F4))
+        self.showsource_action.setShortcut(QKeySequence(Qt.Key_F4))
         self.showsource_action.setCheckable(True)
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
 
-        self.setWindowIcon(QtGui.QIcon.fromTheme('plaskgui'))
+        self.setWindowIcon(QIcon.fromTheme('plaskgui'))
 
         self.info_model = InfoListModel(None)
         self.info_table = InfoListView(self.info_model, self)
         self.info_table.setModel(self.info_model)
-        self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
+        self.info_table.setSelectionMode(QListView.NoSelection)
         self.info_model.entries = [Info('', Info.NONE)]
         self.info_table.setFixedHeight(self.info_table.sizeHintForRow(0))
         self.info_model.entries = []
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
 
-        self.info_table.setFrameShape(QtGui.QFrame.NoFrame)
+        self.info_table.setFrameShape(QFrame.NoFrame)
         layout.addWidget(self.info_table)
         self.info_model.layoutChanged.connect(self._update_info_color)
 
@@ -190,70 +192,70 @@ class MainWindow(QtGui.QMainWindow):
             self.setWindowTitle("[*] PLaSK")
             self.setWindowModified(False)
 
-        new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'),
+        new_action = QAction(QIcon.fromTheme('document-new'),
                                    '&New', self)
-        new_action.setShortcut(QtGui.QKeySequence.New)
+        new_action.setShortcut(QKeySequence.New)
         new_action.setStatusTip('New XPL file')
         new_action.triggered.connect(self.new)
 
-        open_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+        open_action = QAction(QIcon.fromTheme('document-open'),
                                     '&Open...', self)
-        open_action.setShortcut(QtGui.QKeySequence.Open)
+        open_action.setShortcut(QKeySequence.Open)
         open_action.setStatusTip('Open XPL file')
         open_action.triggered.connect(self.open)
 
-        save_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'),
+        save_action = QAction(QIcon.fromTheme('document-save'),
                                     '&Save', self)
-        save_action.setShortcut(QtGui.QKeySequence.Save)
+        save_action.setShortcut(QKeySequence.Save)
         save_action.setStatusTip('Save XPL file')
         save_action.triggered.connect(self.save)
 
-        saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'),
+        saveas_action = QAction(QIcon.fromTheme('document-save-as'),
                                       'Save &As...', self)
-        saveas_action.setShortcut(QtGui.QKeySequence.SaveAs)
+        saveas_action.setShortcut(QKeySequence.SaveAs)
         saveas_action.setStatusTip('Save XPL file, ask for namploe of file')
         saveas_action.triggered.connect(self.save_as)
 
-        launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start',
-                                                            QtGui.QIcon(':/media-playback-start.png')),
+        launch_action = QAction(QIcon.fromTheme('media-playback-start',
+                                                            QIcon(':/media-playback-start.png')),
                                       '&Launch...', self)
         launch_action.setShortcut('F5')
         launch_action.setStatusTip('Launch current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
-        goto_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-jump'),
+        goto_action = QAction(QIcon.fromTheme('go-jump'),
                                     '&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
-        plot_material_action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
+        plot_material_action = QAction(QIcon.fromTheme('matplotlib'),
                                              'Examine &Material Parameters...', self)
         plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
 
-        settings_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-properties'),
+        settings_action = QAction(QIcon.fromTheme('document-properties'),
                                         'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
-        help_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-contents'),
+        help_action = QAction(QIcon.fromTheme('help-contents'),
                                     'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
         help_action.triggered.connect(self.open_help)
 
-        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('application-exit'),
+        exit_action = QAction(QIcon.fromTheme('application-exit'),
                                     'E&xit', self)
-        exit_action.setShortcut(QtGui.QKeySequence.Quit)
+        exit_action.setShortcut(QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
-        self.recent_menu = QtGui.QMenu('Open &Recent')
+        self.recent_menu = QMenu('Open &Recent')
         self.recent_menu.setIcon(
-            QtGui.QIcon.fromTheme('document-open-recent'))
+            QIcon.fromTheme('document-open-recent'))
         self.update_recent_list()
 
-        self.menu = QtGui.QMenu('&PLaSK')
+        self.menu = QMenu('&PLaSK')
 
         self.menu.addAction(new_action)
         self.menu.addAction(open_action)
@@ -281,52 +283,52 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(exit_action)
 
         if os.name == 'nt':
-            menu_button = QtGui.QToolButton(self)
-            menu_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+            menu_button = QToolButton(self)
+            menu_button.setPopupMode(QToolButton.InstantPopup)
             menu_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             menu_button.setAutoFillBackground(True)
             font = menu_button.font()
             font.setBold(True)
             menu_button.setFont(font)
         else:
-            menu_button = QtGui.QPushButton(self)
+            menu_button = QPushButton(self)
         menu_button.setText("PLaSK")
         pal = menu_button.palette()
-        pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
-        menu_button.setIcon(QtGui.QIcon.fromTheme('plask-logo'))
+        pal.setColor(QPalette.Button, QColor("#88aaff"))
+        menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
-        menu_button.setShortcut(QtGui.QKeySequence(Qt.Key_F2))
+        menu_button.setShortcut(QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
 
         menu_button.setMenu(self.menu)
-        self.tabs.setCornerWidget(menu_button, QtCore.Qt.TopLeftCorner)
+        self.tabs.setCornerWidget(menu_button, Qt.TopLeftCorner)
 
-        tabs_menu = QtGui.QMenu("Sections", menu_bar)
+        tabs_menu = QMenu("Sections", menu_bar)
         def add_tab_menu(indx):
             def show_tab():
                 self.tabs.setCurrentIndex(indx)
                 self.tab_change(indx)
             tabs_action.triggered.connect(show_tab)
         for i in range(self.tabs.count()):
-            tabs_action = QtGui.QAction(self.tabs.tabText(i), self)
+            tabs_action = QAction(self.tabs.tabText(i), self)
             add_tab_menu(i)
             tabs_menu.addAction(tabs_action)
         menu_bar.addMenu(self.menu)
         menu_bar.addMenu(tabs_menu)
 
-        source_button = QtGui.QToolButton(self)
+        source_button = QToolButton(self)
         source_button.setDefaultAction(self.showsource_action)
-        self.tabs.setCornerWidget(source_button, QtCore.Qt.TopRightCorner)
+        self.tabs.setCornerWidget(source_button, Qt.TopRightCorner)
 
         self.opened.connect(self.init_pysparkle, Qt.QueuedConnection)
 
-        fs = int(1.3 * QtGui.QFont().pointSize())
+        fs = int(1.3 * QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
         menu_button.setStyleSheet("QPushButton {{ font-size: {}pt; font-weight: bold; }}".format(fs))
 
         self.config_changed.connect(update_textedit_colors)
 
-        desktop = QtGui.QDesktopWidget()
+        desktop = QDesktopWidget()
         geometry = CONFIG['session/geometry']
         if geometry is not None:
             screen = desktop.availableGeometry(geometry.center())
@@ -350,15 +352,15 @@ class MainWindow(QtGui.QMainWindow):
     def _update_info_color(self):
         pal = self.info_table.palette()
         if any(info.level != Info.NONE for info in self.info_model.entries):
-            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
+            pal.setColor(QPalette.Base, QColor("#ffc"))
         else:
-            pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))
+            pal.setColor(QPalette.Base, pal.color(QPalette.Window))
         self.info_table.setPalette(pal)
 
     def _on_select_info(self, current, _):
         if not current.isValid(): return
         self.current_controller.select_info(self.info_model.entries[current.row()])
-        self.info_table.setCurrentIndex(QtCore.QModelIndex())
+        self.info_table.setCurrentIndex(QModelIndex())
 
     @property
     def current_controller(self):
@@ -371,9 +373,9 @@ class MainWindow(QtGui.QMainWindow):
             def __init__(s, f): s.f = f
             def __call__(s): return self.open(s.f)
         for i,f in enumerate(reversed(RECENT)):
-            action = QtGui.QAction(f, self)
+            action = QAction(f, self)
             action.triggered.connect(Func(f))
-            # action.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_0 + (i+1)%10))
+            # action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0 + (i+1)%10))
             self.recent_menu.addAction(action)
 
     def _try_load_from_file(self, filename):
@@ -383,7 +385,7 @@ class MainWindow(QtGui.QMainWindow):
             document.load_from_file(filename)
         except Exception as e:
             if _DEBUG: raise e
-            QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
+            QMessageBox.critical(self, 'Error while loading XPL from file.',
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
@@ -398,7 +400,7 @@ class MainWindow(QtGui.QMainWindow):
         for m in self.document.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_widget(), self.SECTION_TITLES[m])
             self.tabs.setTabToolTip(self.tabs.count()-1, self.SECTION_TIPS[m])
-            # self.tabs.setTabIcon(self.tabs.count()-1, QtGui.QIcon.fromTheme(SECTION_ICONS[m]))
+            # self.tabs.setTabIcon(self.tabs.count()-1, QIcon.fromTheme(SECTION_ICONS[m]))
         self.current_tab_index = -1
         if isinstance(self.document, PyDocument):
             self.tab_change(0)
@@ -413,7 +415,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def open(self, filename=None):
         if not filename:
-            filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
+            filename = QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
                                                          "PLaSK file (*.xpl *.py);;"
                                                          "PLaSK structure data (*.xpl);;"
                                                          "Python script (*.py)")
@@ -442,12 +444,12 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.document.save_to_file(unicode(filename))
         except Exception as err:
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setWindowTitle("Save Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
             msgbox.setInformativeText(unicode(err))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
             msgbox.exec_()
             return False
         else:
@@ -471,7 +473,7 @@ class MainWindow(QtGui.QMainWindow):
         if not self.before_save():
             return False
         flt = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or CURRENT_DIR, flt)
+        filename = QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or CURRENT_DIR, flt)
         if type(filename) is tuple:
             filename = filename[0]
         if not filename:
@@ -484,26 +486,26 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
             except Exception as e:
-                msgbox = QtGui.QMessageBox()
+                msgbox = QMessageBox()
                 msgbox.setText("Edited content of the current section is invalid.")
                 msgbox.setDetailedText(str(e))
                 msgbox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
-                msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                msgbox.setIcon(QtGui.QMessageBox.Warning)
-                #msgbox.setDefaultButton(QtGui.QMessageBox.Yes);
-                return msgbox.exec_() == QtGui.QMessageBox.Yes
+                msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msgbox.setIcon(QMessageBox.Warning)
+                #msgbox.setDefaultButton(QMessageBox.Yes);
+                return msgbox.exec_() == QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
         sys.stdout.flush()
         if errors:
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setText("Document contains some non-critical errors.\n\n"
                            "It is possible to save it, however launching it will most probably fail.")
             msgbox.setDetailedText(u'\n'.join(map(unicode, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
-            msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            msgbox.setIcon(QtGui.QMessageBox.Warning)
-            msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
-            return msgbox.exec_() == QtGui.QMessageBox.Yes
+            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msgbox.setIcon(QMessageBox.Warning)
+            msgbox.setDefaultButton(QMessageBox.Yes)
+            return msgbox.exec_() == QMessageBox.Yes
         return True
 
     def open_help(self):
@@ -549,10 +551,10 @@ class MainWindow(QtGui.QMainWindow):
             return
 
         if self.isWindowModified():
-            confirm = QtGui.QMessageBox.question(self, "Unsaved File",
+            confirm = QMessageBox.question(self, "Unsaved File",
                                                  "File is not saved. Do you want to save it before closing the window?",
-                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-            if confirm == QtGui.QMessageBox.Cancel or (confirm == QtGui.QMessageBox.Yes and not self.save()):
+                                                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+            if confirm == QMessageBox.Cancel or (confirm == QMessageBox.Yes and not self.save()):
                 event.ignore()
                 return
 
@@ -605,7 +607,7 @@ class MainWindow(QtGui.QMainWindow):
             if self.showsource_action.isEnabled() and not self.showsource_action.isChecked():
                 self.showsource_action.trigger()
             editor = cntrl.get_source_widget().editor
-            cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
+            cursor = QTextCursor(editor.document().findBlockByLineNumber(
                 min(lineno, editor.document().blockCount()-1)))
             editor.setTextCursor(cursor)
             editor.setFocus()
@@ -629,8 +631,9 @@ class MainWindow(QtGui.QMainWindow):
         if pysparkle is None:
             if VERSION is not None:
                 pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
-                                      config=ConfigProxy('updates'), shutdown=close_all_windows)
-                action_check_update = QtGui.QAction(QtGui.QIcon.fromTheme('software-update-available'),
+                                      config=ConfigProxy('updates'), shutdown=close_all_windows,
+                                      frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
+                action_check_update = QAction(QIcon.fromTheme('software-update-available'),
                                                     "Check for &Updates Now...", self)
                 action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
                 self.menu.insertAction(self._pysparkle_place, action_check_update)
@@ -638,27 +641,27 @@ class MainWindow(QtGui.QMainWindow):
                 pysparkle = None
 
 
-class GotoDialog(QtGui.QDialog):
+class GotoDialog(QDialog):
     def __init__(self, parent=None):
         super(GotoDialog, self).__init__(parent)
         self.setWindowTitle("Go to Line")
-        vbox = QtGui.QVBoxLayout()
-        hbox = QtGui.QHBoxLayout()
-        label = QtGui.QLabel()
+        vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        label = QLabel()
         label.setText("Line number:")
-        self.input = QtGui.QLineEdit()
-        self.input.setValidator(QtGui.QIntValidator(self.input))
+        self.input = QLineEdit()
+        self.input.setValidator(QIntValidator(self.input))
         hbox.addWidget(label)
         hbox.addWidget(self.input)
         vbox.addLayout(hbox)
-        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         vbox.addWidget(buttons)
         self.setLayout(vbox)
 
 
-class PlaskApplication(QtGui.QApplication):
+class PlaskApplication(QApplication):
 
     def __init__(self, argv):
         self._opened_windows = []
@@ -742,22 +745,22 @@ def main():
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
     if icons_theme == 'system':
-        icons_path = QtGui.QIcon.themeSearchPaths()[:-1]
-        if not QtGui.QIcon.themeName():
-            QtGui.QIcon.setThemeName('hicolor')
+        icons_path = QIcon.themeSearchPaths()[:-1]
+        if not QIcon.themeName():
+            QIcon.setThemeName('hicolor')
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
         icons_path = []
-        QtGui.QIcon.setThemeName(icons_theme)
+        QIcon.setThemeName(icons_theme)
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
-    QtGui.QIcon.setThemeSearchPaths(icons_path)
+    QIcon.setThemeSearchPaths(icons_path)
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
         loader.find_module(modname).load_module(modname)
 
     if matplotlib:
-        ft = QtGui.QWidget().font()
+        ft = QWidget().font()
         pd = APPLICATION.desktop()
         matplotlib.rcParams.update({
             'figure.dpi': pd.logicalDpiY(),

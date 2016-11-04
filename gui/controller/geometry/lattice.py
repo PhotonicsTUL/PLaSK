@@ -14,8 +14,7 @@ import numpy as np
 import itertools
 
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+
 from matplotlib import ticker
 from matplotlib.transforms import Affine2D
 from matplotlib.lines import Line2D
@@ -23,8 +22,16 @@ from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axisartist.grid_helper_curvelinear import GridHelperCurveLinear
 from mpl_toolkits.axisartist import Subplot
 
-from ...qt import QtGui
-from ...qt.QtCore import Qt
+from ...qt import QT_API
+if QT_API == 'PyQt5':
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+
+from ...qt.QtWidgets import *
+from ...qt.QtCore import *
 
 from ...xpldocument import FieldParser
 
@@ -52,9 +59,9 @@ class GNLatticeController(GNObjectController):
         res = MultiLineEdit(change_cb=change_cb)
         # res = TextEditWithCB(key_cb=key_cb)
         # res.setTabChangesFocus(True)
-        # res.setFixedHeight(int(3.5 * QtGui.QFontMetrics(res.font()).height()))
+        # res.setFixedHeight(int(3.5 * QFontMetrics(res.font()).height()))
         if edit_cb is not None:
-            left = QtGui.QPushButton("&Edit...")
+            left = QPushButton("&Edit...")
             left.clicked.connect(edit_cb)
         else:
             left = "Boundaries:"
@@ -103,7 +110,7 @@ class GNLatticeController(GNObjectController):
             if all(vecs[0] == 0.) != all(vecs[1] == 0.):
                 raise ValueError("Zero lattice vector")
         except:
-            QtGui.QMessageBox.critical(None, "Wrong Lattice Vectors",
+            QMessageBox.critical(None, "Wrong Lattice Vectors",
                                              "No proper lattice vectors are defined. "
                                              "Define them first before starting the boundary editor.")
             return
@@ -120,11 +127,11 @@ class GNLatticeController(GNObjectController):
                     item.append((x,y))
             except:
                 if msg:
-                    answer = QtGui.QMessageBox.warning(None, "Unrecognized Boundary",
+                    answer = QMessageBox.warning(None, "Unrecognized Boundary",
                                                        "At least one boundary segment cannot be parsed. "
                                                        "Do you want to launch the editor ignoring wrong "
-                                                       "segments?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                    if answer == QtGui.QMessageBox.Yes: msg = False
+                                                       "segments?", QMessageBox.Yes | QMessageBox.No)
+                    if answer == QMessageBox.Yes: msg = False
                     else: return
             else:
                 if item:
@@ -151,7 +158,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     def _icon(self, name):
         if name is not None:
-            return QtGui.QIcon.fromTheme(name)
+            return QIcon.fromTheme(name)
 
     HELP = \
         "This is a graphical lattice boundaries editor. Click any lattice node\n" \
@@ -183,7 +190,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             if text is None:
                 self.addSeparator()
             elif callback is None:
-                self.addWidget(QtGui.QLabel(text))
+                self.addWidget(QLabel(text))
             else:
                 ic = self._icon(icon)
                 if ic is not None:
@@ -203,9 +210,9 @@ class NavigationToolbar(NavigationToolbar2QT):
         # The stretch factor is 1 which means any resizing of the toolbar
         # will resize this label instead of the buttons.
         if self.coordinates:
-            self.locLabel = QtGui.QLabel("", self)
+            self.locLabel = QLabel("", self)
             self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            self.locLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
+            self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored))
             label_action = self.addWidget(self.locLabel)
             label_action.setVisible(True)
 
@@ -266,10 +273,10 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.parent.redo()
 
     def help(self):
-        QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.HELP)
+        QToolTip.showText(QCursor.pos(), self.HELP)
 
 
-class LatticeEditor(QtGui.QDialog):
+class LatticeEditor(QDialog):
 
     class MultipleLocator(ticker.MultipleLocator):
         def __init__(self, base=1.0):
@@ -283,18 +290,18 @@ class LatticeEditor(QtGui.QDialog):
     def __init__(self, vecs, bounds=None, parent=None):
         super(LatticeEditor, self).__init__(parent)
         self.setWindowTitle("Edit Lattice Boundaries")
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         self.toolbar = NavigationToolbar(self.canvas, self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
-        #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
+        #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
-        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         vbox.addWidget(buttons)

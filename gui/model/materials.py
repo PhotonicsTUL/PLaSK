@@ -16,9 +16,9 @@ from lxml import etree as ElementTree
 from collections import OrderedDict
 import itertools
 
-from ..qt.QtCore import Qt
-
-from ..qt import QtCore, QtGui
+from ..qt.QtCore import *
+from ..qt.QtGui import *
+from ..qt.QtWidgets import *
 from .table import TableModel, TableModelEditMethods
 from .info import Info
 from ..utils.xml import AttributeReader, require_no_attributes, require_no_children
@@ -235,11 +235,11 @@ class MaterialsModel(TableModel):
         def base(self):
             return {'library': 'Binary Library', 'module': 'Python Module'}[self.what]
 
-    class Material(TableModelEditMethods, QtCore.QAbstractTableModel): #(InfoSource)
+    class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
         def __init__(self, materials_model, name, base=None, properties=None, cplx=False, comment=None,
                      parent=None, *args):
-            QtCore.QAbstractTableModel.__init__(self, parent, *args)
+            QAbstractTableModel.__init__(self, parent, *args)
             TableModelEditMethods.__init__(self)
             self.materials_model = materials_model
             if properties is None: properties = []
@@ -256,11 +256,11 @@ class MaterialsModel(TableModel):
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
 
-        def rowCount(self, parent=QtCore.QModelIndex()):
+        def rowCount(self, parent=QModelIndex()):
             if parent.isValid(): return 0
             return len(self.properties)
 
-        def columnCount(self, parent=QtCore.QModelIndex()):
+        def columnCount(self, parent=QModelIndex()):
             return 4    # 5 if comment supported
 
         def get(self, col, row):
@@ -288,7 +288,7 @@ class MaterialsModel(TableModel):
     #                     if err.level > max_level: max_level = err.level
     #             return info.info_level_icon(max_level)
             if role == Qt.BackgroundRole and index.column() >= 2:
-                return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+                return QBrush(QPalette().color(QPalette.Normal, QPalette.Window))
 
         def set(self, col, row, value):
             n, v = self.properties[row]
@@ -372,11 +372,11 @@ class MaterialsModel(TableModel):
         if isinstance(self.entries[index.row()], MaterialsModel.External):
             if index.column() == 1:
                 if role == Qt.FontRole:
-                    font = QtGui.QFont()
+                    font = QFont()
                     font.setItalic(True)
                     return font
             elif index.column() == 0 and role == Qt.DecorationRole:
-                return QtGui.QIcon.fromTheme(
+                return QIcon.fromTheme(
                     {'library': 'material-library', 'module': 'material-module'}[self.entries[index.row()].what])
             elif index.column() == 2 and role == Qt.UserRole:
                 return False
@@ -414,7 +414,7 @@ class MaterialsModel(TableModel):
 
     # QAbstractListModel implementation
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 3    # 4 if comment supported
 
     def headerData(self, col, orientation, role):

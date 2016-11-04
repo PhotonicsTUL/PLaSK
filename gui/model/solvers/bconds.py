@@ -12,7 +12,7 @@
 
 from lxml import etree
 
-from ...qt.QtCore import Qt, QAbstractTableModel, QModelIndex
+from ...qt.QtCore import *
 
 try:
     unicode = unicode

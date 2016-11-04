@@ -10,10 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt.QtCore import Qt
-from ...qt.QtGui import QSplitter
-
-from ...qt import QtGui
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
@@ -53,26 +52,29 @@ class GridsController(Controller):
 
         self.splitter = QSplitter()
 
-        self.grids_table = QtGui.QTableView()
+        self.grids_table = QTableView()
         self.grids_table.setModel(self.model)
         #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
         #self.materialsTableActions = TableActions(self.grids_table)
         table_last_col_fill(self.grids_table, self.model.columnCount(None), 80)
-        self.grids_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.grids_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.grids_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.grids_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         table_edit_shortcut(self.grids_table, 0, 'n')
         self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and Generators"))
         self.grids_table.setVisible(False)
-        self.grids_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        try:
+            self.grids_table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        except AttributeError:
+            self.grids_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.grids_table.setVisible(True)
 
-        self.vertical_splitter = QtGui.QSplitter()
+        self.vertical_splitter = QSplitter()
         self.vertical_splitter.setOrientation(Qt.Vertical)
 
         if plask is not None:
             self.mesh_preview = PlotWidget(self, self.vertical_splitter)
-            # self.status_bar = QtGui.QLabel()
-            # self.status_bar.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            # self.status_bar = QLabel()
+            # self.status_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
             # self.mesh_preview.layout().addWidget(self.status_bar)
             self.vertical_splitter.addWidget(self.mesh_preview)
@@ -80,14 +82,14 @@ class GridsController(Controller):
         else:
             self.mesh_preview = None
 
-        self.parent_for_editor_widget = QtGui.QStackedWidget()
+        self.parent_for_editor_widget = QStackedWidget()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
 
         self.splitter.addWidget(self.vertical_splitter)
 
-        focus_action = QtGui.QAction(self.grids_table)
+        focus_action = QAction(self.grids_table)
         focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
-        focus_action.setShortcut(QtGui.QKeySequence(Qt.Key_Return))
+        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.grids_table.addAction(focus_action)
 
@@ -158,7 +160,7 @@ class GridsController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grids_table.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
+            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
 
     def set_current_index(self, new_index):
         """

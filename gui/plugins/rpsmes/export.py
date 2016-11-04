@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Photonics Group, Lodz University of Technology
+# Copyright (C) 2014 Photonics Group, Lodz University of Technology# This program is distributed in the hope that it will be useful,
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of GNU General Public License as published by the
@@ -13,7 +13,8 @@
 import os
 
 import gui
-from gui.qt import QtGui
+from gui.qt.QtWidgets import *
+from gui.qt.QtGui import *
 from gui.xpldocument import XPLDocument
 
 try:
@@ -163,11 +164,11 @@ else:
 
     def export_dan(parent):
         if not isinstance(parent.document, XPLDocument):
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setWindowTitle("Export Error")
             msgbox.setText("You can only export from xpl file.")
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Error)
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Error)
             msgbox.exec_()
             return
 
@@ -183,26 +184,26 @@ else:
             filename = u'{}_{}'.format(os.path.splitext(parent.document.filename)[0], name)
             write_dan(filename, manager.solvers.values(), geom)
         except Exception as err:
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setWindowTitle("RPSMES Export Error")
             msgbox.setText("There was an error while writing the RPSMES file.")
             msgbox.setDetailedText(str(err))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
             if gui._DEBUG:
                 import traceback
                 traceback.print_exc()
         else:
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setWindowTitle("RPSMES Export")
             msgbox.setText("Geometry '{}' exported to '{}_temp.dan'. "
                            "You should examine the file and correct it!".format(name, filename))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Information)
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Information)
         msgbox.exec_()
 
     def export_dan_operation(parent):
-        action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'),
+        action = QAction(QIcon.fromTheme('document-save'),
                                '&Export RPSMES .dan file...', parent)
         action.triggered.connect(lambda: export_dan(parent))
         return action

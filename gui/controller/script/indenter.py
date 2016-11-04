@@ -12,7 +12,7 @@
 
 import re
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 
 indent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')+:\s*(#.*)?$''')
 prev_unindent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')*'''
@@ -29,16 +29,16 @@ def indent(editor, col=0):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText('    ')
             end += 4
-            if not cursor.movePosition(QtGui.QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.NextBlock):
                 break
         cursor.endEditBlock()
     else:
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         cursor.insertText(' ' * (4 - (col % 4)))
 
 
@@ -52,16 +52,16 @@ def unindent(editor, col=4):
             start = cursor.selectionStart()
             end = cursor.selectionEnd()
             cursor.setPosition(start)
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             if cursor.position() == end: end += 1
             while cursor.position() < end:
                 for i in range(4):
                     if document.characterAt(cursor.position()) != ' ': break
                     cursor.deleteChar()
                     end -= 1
-                if not cursor.movePosition(QtGui.QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
         else:
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             for i in range(min(col,4)):
                 if document.characterAt(cursor.position()) != ' ':
                     break
@@ -109,7 +109,7 @@ def autoindent(editor):
                 prevlen += 4
             if prevlen != len(cspaces):
                 nl = len(cspaces) - len(_find_prev_indent_level(document, row+1, cspaces))
-                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                cursor.movePosition(QTextCursor.StartOfBlock)
                 for i in range(nl):
                     cursor.deleteChar()
     cursor.endEditBlock()

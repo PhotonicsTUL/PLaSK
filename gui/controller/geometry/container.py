@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 
 from .object import GNObjectController
 from .node import GNodeController, GNChildController, aligners_to_controllers
@@ -34,7 +34,7 @@ class GNGapController(GNodeController):
 
     def construct_form(self):
         super(GNGapController, self).construct_form()
-        self.gap_type = QtGui.QComboBox()
+        self.gap_type = QComboBox()
         self.gap_type.addItems(['Gap size', 'Total container size'])
         self.gap_type.currentIndexChanged.connect(self._on_change_gap_params)
         self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm', change_cb=self._on_change_gap_params)

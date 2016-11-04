@@ -13,27 +13,56 @@
 import sys
 import os
 
-try:
-    import matplotlib
-except ImportError:
-    QT_API = 'PySide'
-else:
-    matplotlib.use('Qt4Agg')
-    QT_API = os.environ.get('QT_API')
-    if QT_API is not None:
-        QT_API = dict(pyqt='PyQt4', pyside='PySide').get(QT_API, 'PySide')
+QT_API = os.environ.get('QT_API')
+if QT_API is not None:
+    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PySide')
+    try:
+        import matplotlib
+    except ImportError:
+        pass
     else:
-        QT_API = matplotlib.rcParams['backend.qt4']
+        if QT_API == 'PyQt5':
+            matplotlib.use('Qt5Agg')
+        else:
+            matplotlib.rcParams['backend.qt4'] = QT_API
+            matplotlib.use('Qt4Agg')
+else:
+    try:
+        import matplotlib
+    except ImportError:
+        QT_API = 'PySide'
+    else:
+        if matplotlib.rcParams['backend'] == 'Qt5Agg':
+            QT_API = 'PyQt5'
+        else:
+            matplotlib.use('Qt4Agg')
+            QT_API = matplotlib.rcParams['backend.qt4']
 
-for QT_API in (QT_API, 'PySide', 'PyQt4'):
+for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
     if QT_API == 'PySide':
         try:
             from PySide import QtCore, QtGui
         except ImportError:
             pass
         else:
+            QtWidgets = QtGui
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
+            break
+    elif QT_API == 'PyQt5':
+        try:
+            # import sip
+            # for n in ("QString", "QVariant"):
+            #     try:
+            #         sip.setapi(n, 2)
+            #     except:
+            #         pass
+            from PyQt5 import QtCore, QtWidgets, QtGui
+        except ImportError:
+            pass
+        else:
+            QtSignal = QtCore.pyqtSignal
+            QtSlot = QtCore.pyqtSlot
             break
     else:
         try:
@@ -47,10 +76,12 @@ for QT_API in (QT_API, 'PySide', 'PyQt4'):
         except ImportError:
             pass
         else:
+            QtWidgets = QtGui
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
 
 sys.modules['gui.qt.QtCore'] = QtCore
+sys.modules['gui.qt.QtWidgets'] = QtWidgets
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtGui', 'QT_API', 'QtSignal', 'QtSlot']
+__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QT_API', 'QtSignal', 'QtSlot']

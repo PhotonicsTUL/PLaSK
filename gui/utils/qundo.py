@@ -1,7 +1,7 @@
-from ..qt import QtGui
+from ..qt.QtWidgets import *
 
 
-class UndoCommandWithSetter(QtGui.QUndoCommand):
+class UndoCommandWithSetter(QUndoCommand):
     """
         Undo command which change node using setter method, to new_value and call model.fire_changed after each change.
         Node can optionally be equal to model.

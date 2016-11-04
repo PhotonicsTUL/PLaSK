@@ -24,8 +24,9 @@ try:
 except ImportError:
     import pickle
 
-from ...qt import QtCore, QtGui
-from ...qt.QtCore import Qt
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtCore import *
 
 from .. import SectionModel, Info
 from .reader import GNReadConf
@@ -47,7 +48,7 @@ else:
     bytes = str
 
 
-class PyObjMime(QtCore.QMimeData):
+class PyObjMime(QMimeData):
     MIMETYPE = 'application/x-pyobj'
 
     def __init__(self, data=None):
@@ -78,11 +79,11 @@ class PyObjMime(QtCore.QMimeData):
         return None
 
 
-class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
+class GeometryModel(SectionModel, QAbstractItemModel):
 
     REMOVE_COMMAND_ID = 0
 
-    class RemoveChildrenCommand(QtGui.QUndoCommand):
+    class RemoveChildrenCommand(QUndoCommand):
 
         def __init__(self, model, parent_node, row, end, parent=None):
             self.model = model
@@ -120,7 +121,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def id(self):
             return GeometryModel.REMOVE_COMMAND_ID
 
-    class InsertChildCommand(QtGui.QUndoCommand):
+    class InsertChildCommand(QUndoCommand):
 
         def __init__(self, model, parent_node, row, child_node, merge_with_next_remove=False, parent=None):
             self.model = model
@@ -170,7 +171,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return GeometryModel.REMOVE_COMMAND_ID
             return super(GeometryModel.InsertChildCommand, self).id()
 
-    class SwapChildrenCommand(QtGui.QUndoCommand):
+    class SwapChildrenCommand(QUndoCommand):
 
         def __init__(self, model, parent_node, index1, index2, parent = None):
             if index2 < index1:
@@ -195,7 +196,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         def undo(self):
             self.redo()
 
-    class ReparentCommand(QtGui.QUndoCommand):
+    class ReparentCommand(QUndoCommand):
 
         def __init__(self, model, parent_node, row, child_node, new_parent, parent=None):
             self.model = model
@@ -241,7 +242,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self.children_list[self.row] = self.child_node
             self.model.fire_changed()
 
-    class SetRootsCommand(QtGui.QUndoCommand):
+    class SetRootsCommand(QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
             super(GeometryModel.SetRootsCommand, self).__init__('edit XPL source', QUndoCommand_parent)
@@ -265,7 +266,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             self._set(self.old_axes, self.old_roots)
 
     def __init__(self, parent=None, info_cb=None):
-        QtCore.QAbstractItemModel.__init__(self, parent)
+        QAbstractItemModel.__init__(self, parent)
         SectionModel.__init__(self, 'geometry', info_cb)
         #TableModelEditMethods.__init__(self)
         self.fake_root = GNFakeRoot(self)
@@ -311,7 +312,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         return res
 
     # QAbstractItemModel implementation:
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent = QModelIndex()):
         return 2
 
     def data(self, index, role=Qt.DisplayRole):
@@ -385,24 +386,24 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         if isinstance(parent, GNode): return parent.children
         return parent.internalPointer().children if parent.isValid() else self.roots
 
-    def index(self, row, column, parent=QtCore.QModelIndex()):
-        if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
+    def index(self, row, column, parent=QModelIndex()):
+        if not self.hasIndex(row, column, parent): return QModelIndex()
         l = self.children_list(parent)
-        return self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QtCore.QModelIndex()
+        return self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QModelIndex()
 
     def parent(self, index):
-        if not index.isValid(): return QtCore.QModelIndex()
+        if not index.isValid(): return QModelIndex()
         return self.index_for_node(index.internalPointer().parent)
         #childItem = index.internalPointer()
         #parentItem = childItem.parent
-        #if parentItem is None: return QtCore.QModelIndex()
+        #if parentItem is None: return QModelIndex()
         #return self.createIndex(self.children_list(parentItem.parent).index(parentItem), 0, parentItem)
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         if parent.column() > 0: return 0
         return len(self.children_list(parent))
 
-    def removeRows(self, row, count, parent=QtCore.QModelIndex()):
+    def removeRows(self, row, count, parent=QModelIndex()):
         l = self.children_list(parent)
         end = row + count
         if row < 0 or end > len(l):
@@ -467,11 +468,11 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
     #def moveRow(sourceParent, sourceRow, destinationParent, destinationChild):
     #    return False
 
-    #def insertRows(self, row, count, parent = QtCore.QModelIndex()):
+    #def insertRows(self, row, count, parent = QModelIndex()):
     #    pass
 
     def index_for_node(self, node, column=0):
-        if node is None or isinstance(node, GNFakeRoot): return QtCore.QModelIndex()
+        if node is None or isinstance(node, GNFakeRoot): return QModelIndex()
         c = node.parent.children if node.parent else self.roots
         return self.createIndex(c.index(node), column, node)
 

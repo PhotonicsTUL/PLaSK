@@ -10,7 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui, QtCore
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 from ..utils import sorted_index
 
 
@@ -83,14 +85,14 @@ class Controller(object):
                 # sys.stderr.write('Traceback (most recent call last):\n')
                 # sys.stderr.write(''.join(tb.format_list(tb.extract_stack()[:-1])))
                 # sys.stderr.write('{}: {}\n'.format(exc.__class__.__name__, exc))
-            return QtGui.QMessageBox().critical(
+            return QMessageBox().critical(
                 None, "Error saving data from editor",
                 "An error occured while trying to save data from editor:\n"
                 "(caused either by wrong values entered or a by a program error)\n\n"
                 "{}: {}\n\n"
                 "Do you want to discard your changes in this {}editor and move on?"
                 .format(exc.__class__.__name__, str(exc), '' if cat is None else (cat+' ')),
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No) == QtGui.QMessageBox.Yes
+                QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
         else:
             return True
 
@@ -117,8 +119,8 @@ class NoConfController(Controller):
     """Controller for all models that does not require any configuration."""
     def __init__(self, text='Configuration is neither required nor available.'):
         super(NoConfController, self).__init__()
-        self.label = QtGui.QLabel(text)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label = QLabel(text)
+        self.label.setAlignment(Qt.AlignCenter)
 
     def get_widget(self):
         return self.label
@@ -140,10 +142,10 @@ class ControllerWithSubController(Controller):
         self._current_controller = None
 
         self.grid.setModel(self.model)
-        self.grid.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.grid.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.grid.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.grid.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.parent_for_editor_widget = QtGui.QStackedWidget()
+        self.parent_for_editor_widget = QStackedWidget()
 
         selection_model = self.grid.selectionModel()
         selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
@@ -182,7 +184,7 @@ class ControllerWithSubController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grid.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
+            self.grid.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
 
     def on_edit_enter(self):
         self.grid.selectionModel().clear()   # model could completly changed

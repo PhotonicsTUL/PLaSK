@@ -12,27 +12,27 @@
 
 import math
 
-from ..qt.QtCore import Qt
-
-from ..qt import QtCore, QtGui
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 from .widgets import EDITOR_FONT
 from .config import CONFIG
 
 
 def update_textedit_colors():
     global CURRENT_LINE_COLOR, SELECTION_COLOR
-    CURRENT_LINE_COLOR = QtGui.QColor(CONFIG['editor/current_line_color'])
-    SELECTION_COLOR = QtGui.QColor(CONFIG['editor/selection_color'])
+    CURRENT_LINE_COLOR = QColor(CONFIG['editor/current_line_color'])
+    SELECTION_COLOR = QColor(CONFIG['editor/selection_color'])
 update_textedit_colors()
 
 
-class TextEditor(QtGui.QPlainTextEdit):
+class TextEditor(QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
     def __init__(self, parent=None, line_numbers=True):
         super(TextEditor, self).__init__(parent)
         self.setFont(EDITOR_FONT)
-        self.setLineWrapMode(QtGui.QPlainTextEdit.NoWrap)
+        self.setLineWrapMode(QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)
             self.line_numbers.update_width()
@@ -51,7 +51,7 @@ class TextEditor(QtGui.QPlainTextEdit):
         super(TextEditor, self).resizeEvent(e)
         if self.line_numbers is not None:
             cr = self.contentsRect()
-            self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
+            self.line_numbers.setGeometry(QRect(cr.left(), cr.top(),
                                                        self.line_numbers.get_width(), cr.height()))
 
     def on_text_change(self):
@@ -83,10 +83,10 @@ class TextEditor(QtGui.QPlainTextEdit):
         self.setExtraSelections(self.highlight_current_line() + self.get_same_as_selected() + self.selections)
 
     def highlight_current_line(self):
-        selection = QtGui.QTextEdit.ExtraSelection()
+        selection = QTextEdit.ExtraSelection()
         if self.hasFocus():
             selection.format.setBackground(CURRENT_LINE_COLOR)
-        selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
         return [selection]
@@ -97,13 +97,13 @@ class TextEditor(QtGui.QPlainTextEdit):
         document = self.document()
         text = cursor.selectedText()
         if not text.strip(): return []
-        cursor.movePosition(QtGui.QTextCursor.Start)
+        cursor.movePosition(QTextCursor.Start)
         selections = []
         while True:
             cursor = document.find(text, cursor,
-                                   QtGui.QTextDocument.FindCaseSensitively | QtGui.QTextDocument.FindWholeWords)
+                                   QTextDocument.FindCaseSensitively | QTextDocument.FindWholeWords)
             if not cursor.isNull():
-                selection = QtGui.QTextEdit.ExtraSelection()
+                selection = QTextEdit.ExtraSelection()
                 selection.cursor = cursor
                 selection.format.setBackground(SELECTION_COLOR)
                 selections.append(selection)
@@ -132,7 +132,7 @@ class TextEditorWithCB(TextEditor):
         if self.key_cb is not None: self.key_cb(event)
 
 
-class LineNumberArea(QtGui.QWidget):
+class LineNumberArea(QWidget):
     """Line numbers widget
 
        http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
@@ -151,7 +151,7 @@ class LineNumberArea(QtGui.QWidget):
         return 8 + self.editor.fontMetrics().width('9') * digits
 
     def sizeHint(self):
-        QtCore.QSize(self.get_width(), 0)
+        QSize(self.get_width(), 0)
 
     def update_width(self, n=0):
         self.editor.setViewportMargins(self.get_width(), 0, 0, 0)
@@ -167,17 +167,17 @@ class LineNumberArea(QtGui.QWidget):
             self.update_width()
 
     def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        painter.fillRect(event.rect(), QtGui.QColor('#ddd'))
+        painter = QPainter(self)
+        painter.fillRect(event.rect(), QColor('#ddd'))
         block = self.editor.firstVisibleBlock()
         block_number = block.blockNumber() + 1 + self._offset
         top = self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()
         bottom = top + self.editor.blockBoundingRect(block).height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(QtCore.Qt.darkGray)
+                painter.setPen(Qt.darkGray)
                 painter.drawText(0, top, self.width()-3, self.editor.fontMetrics().height(),
-                                 QtCore.Qt.AlignRight, str(block_number))
+                                 Qt.AlignRight, str(block_number))
             block = block.next()
             top = bottom
             bottom = top + self.editor.blockBoundingRect(block).height()

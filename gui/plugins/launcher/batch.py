@@ -17,7 +17,7 @@ import sys
 import os
 from stat import S_ISDIR
 
-from gui.qt import QtGui
+from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
 from gui.utils.qsignals import BlockQtSignals
 from gui.utils.widgets import MultiLineEdit
@@ -34,7 +34,7 @@ except ImportError:
         name = "Remote Batch Job"
 
         def widget(self, main_window):
-            message = QtGui.QTextBrowser()
+            message = QTextBrowser()
             message.setText("Remote batch job launcher cannot be used because Python module "
                           "Paramiko is missing. Either install it manually from its "
                           "<a href=\"http://www.paramiko.org/\">webpage</a> or press "
@@ -43,7 +43,7 @@ except ImportError:
             message.anchorClicked.connect(self._open_link)
             message.setOpenLinks(False)
             pal = message.palette()
-            pal.setColor(QtGui.QPalette.Base, pal.color(QtGui.QPalette.Window))
+            pal.setColor(QPalette.Base, pal.color(QPalette.Window))
             message.setPalette(pal)
             return message
 
@@ -67,7 +67,7 @@ except ImportError:
                 else:
                     return
                 subprocess.Popen([term, '-e', 'sudo {} install {}'.format(cmd, pkg)])
-                QtGui.QMessageBox.information(None, "Remote Batch Job Launcher",
+                QMessageBox.information(None, "Remote Batch Job Launcher",
                                               "Once you have successfully installed Paramiko, please restart PLaSK "
                                               "to use the remote batch launcher.")
 
@@ -120,7 +120,7 @@ else:
                 return sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1])
             else:
                 errors = stderr.read().decode('utf8').strip()
-                QtGui.QMessageBox.critical(None, "Error Retrieving Queues",
+                QMessageBox.critical(None, "Error Retrieving Queues",
                                            "Queue list could not be retrieved." +
                                            ("\n\n" + errors) if errors else "")
                 return []
@@ -168,7 +168,7 @@ else:
     SYSTEMS = OrderedDict([('PBS/Torque', Torque)])
 
 
-    class AccountEditDialog(QtGui.QDialog):
+    class AccountEditDialog(QDialog):
 
         def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, color=False,
                      program=None, bp=None, parent=None):
@@ -182,10 +182,10 @@ else:
 
             self.setWindowTitle("Add" if name is None else "Edit" + " Remote Server")
 
-            layout = QtGui.QFormLayout()
+            layout = QFormLayout()
             self.setLayout(layout)
 
-            self.name_edit = QtGui.QLineEdit()
+            self.name_edit = QLineEdit()
             self.name_edit.setToolTip("Friendly name of the account.")
             if name is not None:
                 self.name_edit.setText(name)
@@ -195,21 +195,21 @@ else:
             self.name_edit.textEdited.connect(self.name_edited)
             layout.addRow("&Name:", self.name_edit)
 
-            self.host_edit = QtGui.QLineEdit()
+            self.host_edit = QLineEdit()
             self.host_edit.setToolTip("Hostname to execute the batch job at.")
             if host is not None:
                 self.host_edit.setText(host)
             self.host_edit.textEdited.connect(self.userhost_edited)
             layout.addRow("&Host:", self.host_edit)
 
-            self.user_edit = QtGui.QLineEdit()
+            self.user_edit = QLineEdit()
             self.user_edit.setToolTip("Username at the execution host.")
             if user is not None:
                 self.user_edit.setText(user)
             self.user_edit.textEdited.connect(self.userhost_edited)
             layout.addRow("&User:", self.user_edit)
 
-            self.system_edit = QtGui.QComboBox()
+            self.system_edit = QComboBox()
             systems = list(SYSTEMS.keys())
             self.system_edit.setToolTip("Batch job scheduling system at the execution host.\n"
                                         "If you are not sure about the correct value, contact\n"
@@ -221,42 +221,42 @@ else:
                 pass
             layout.addRow("&Batch system:", self.system_edit)
 
-            qbox = QtGui.QVBoxLayout()
+            qbox = QVBoxLayout()
             qbox.setContentsMargins(0, 0, 0, 0)
             self.queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
             self.queues_list.setToolTip("List of available queues at the execution host.\n"
                                         "If you are not sure about the correct value, contact\n"
                                         "the host administrator.")
-            self.queues_list.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+            self.queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
             qbox.addWidget(self.queues_list)
             if queues is not None:
                 self.queues_list.set_values(queues)
-            get_queues = QtGui.QPushButton("&Retrieve")
+            get_queues = QPushButton("&Retrieve")
             get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
                                   "you must first correctly fill-in host, user, and system fields.")
             get_queues.pressed.connect(self.get_queues)
             qbox.addWidget(get_queues)
-            qwidget = QtGui.QWidget()
+            qwidget = QWidget()
             qwidget.setLayout(qbox)
             layout.addRow("Execution &Queues:", qwidget)
 
-            self.color_checkbox = QtGui.QCheckBox()
+            self.color_checkbox = QCheckBox()
             self.color_checkbox.setChecked(bool(color))
             layout.addRow("Co&lor Output:", self.color_checkbox)
 
-            self.advanced = QtGui.QWidget(self)
-            alayout = QtGui.QFormLayout()
+            self.advanced = QWidget(self)
+            alayout = QFormLayout()
             alayout.setContentsMargins(0, 0, 0, 0)
             self.advanced.setLayout(alayout)
 
-            self.program_edit = QtGui.QLineEdit()
+            self.program_edit = QLineEdit()
             self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
             self.program_edit.setPlaceholderText("plask")
             if program is not None:
                 self.program_edit.setText(program)
             alayout.addRow("Co&mmand:", self.program_edit)
 
-            self.bp_edit = QtGui.QLineEdit()
+            self.bp_edit = QLineEdit()
             self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
                                     "set this, however you may need to specify it if the submit command is\n"
                                     "located in a non-standard directory.")
@@ -267,12 +267,12 @@ else:
             layout.addRow(self.advanced)
             self.advanced.setVisible(False)
 
-            abutton = QtGui.QPushButton("&Advanced...")
+            abutton = QPushButton("&Advanced...")
             abutton.setCheckable(True)
             abutton.toggled.connect(self.show_advanced)
 
-            buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
-            buttons.addButton(abutton, QtGui.QDialogButtonBox.ActionRole)
+            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            buttons.addButton(abutton, QDialogButtonBox.ActionRole)
             buttons.accepted.connect(self.accept)
             buttons.rejected.connect(self.reject)
             layout.addRow(buttons)
@@ -302,7 +302,7 @@ else:
         def accept(self):
             queues = ' '.join(self.queues_list.get_values())
             if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
-                QtGui.QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
+                QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
             else:
                 super(AccountEditDialog, self).accept()
 
@@ -353,45 +353,45 @@ else:
             self._saved_queue = None
 
         def widget(self, main_window):
-            widget = QtGui.QWidget()
-            layout = QtGui.QVBoxLayout()
+            widget = QWidget()
+            layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
 
             self.filename = main_window.document.filename
 
-            label = QtGui.QLabel("&Execution server:")
+            label = QLabel("&Execution server:")
             layout.addWidget(label)
-            accounts_layout = QtGui.QHBoxLayout()
+            accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
             self._load_accounts()
-            self.accounts_combo = QtGui.QComboBox()
+            self.accounts_combo = QComboBox()
             self.accounts_combo.addItems([s for s in self.accounts])
             self.accounts_combo.setEditText(self._saved_account)
             self.accounts_combo.currentIndexChanged.connect(self.account_changed)
             self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
             accounts_layout.addWidget(self.accounts_combo)
-            account_add = QtGui.QToolButton()
-            account_add.setIcon(QtGui.QIcon.fromTheme('list-add'))
+            account_add = QToolButton()
+            account_add.setIcon(QIcon.fromTheme('list-add'))
             account_add.setToolTip("Add new remote server.")
             account_add.pressed.connect(self.account_add)
             accounts_layout.addWidget(account_add)
-            account_edit = QtGui.QToolButton()
-            account_edit.setIcon(QtGui.QIcon.fromTheme('document-edit'))
+            account_edit = QToolButton()
+            account_edit.setIcon(QIcon.fromTheme('document-edit'))
             account_edit.setToolTip("Edit the current remote server.")
             account_edit.pressed.connect(self.account_edit)
             accounts_layout.addWidget(account_edit)
-            account_remove = QtGui.QToolButton()
-            account_remove.setIcon(QtGui.QIcon.fromTheme('list-remove'))
+            account_remove = QToolButton()
+            account_remove.setIcon(QIcon.fromTheme('list-remove'))
             account_remove.setToolTip("Remove the current remote server.")
             account_remove.pressed.connect(self.account_remove)
             accounts_layout.addWidget(account_remove)
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
-            label = QtGui.QLabel("Execution &Queue:")
+            label = QLabel("Execution &Queue:")
             layout.addWidget(label)
-            self.queue = QtGui.QComboBox()
+            self.queue = QComboBox()
             # self.queue.setEditable(True)
             self.queue.setToolTip("Select the execution queue to send your job to.")
             queues = self.accounts.get(self.accounts_combo.currentText(), (None,None,[]))[2]
@@ -406,9 +406,9 @@ else:
             layout.addWidget(self.queue)
             label.setBuddy(self.queue)
 
-            label = QtGui.QLabel("Job &Name:")
+            label = QLabel("Job &Name:")
             layout.addWidget(label)
-            self.jobname = QtGui.QLineEdit()
+            self.jobname = QLineEdit()
             self.jobname.setToolTip("Type a job name to use in the batch system.")
             self.jobname.setPlaceholderText(os.path.basename(self.filename)
                                             if self.filename is not None else 'unnamed')
@@ -416,9 +416,9 @@ else:
             label.setBuddy(self.jobname)
 
             self._load_workdirs()
-            label = QtGui.QLabel("&Working directory:")
+            label = QLabel("&Working directory:")
             layout.addWidget(label)
-            self.workdir = QtGui.QLineEdit()
+            self.workdir = QLineEdit()
             self.workdir.setToolTip("Type a directory at the execution server in which the job will run.\n"
                                     "If the directory starts with / it is consider as an absolute path,\n"
                                     "otherwise it is relative to your home directory. If the directory\n"
@@ -429,27 +429,27 @@ else:
             label.setBuddy(self.workdir)
             self._auto_workdir = True
             self.workdir.textEdited.connect(self.workdir_edited)
-            dirbutton = QtGui.QPushButton()
-            dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
+            dirbutton = QPushButton()
+            dirbutton.setIcon(QIcon.fromTheme('folder-open'))
             dirbutton.pressed.connect(self.select_workdir)
-            dirlayout = QtGui.QHBoxLayout()
+            dirlayout = QHBoxLayout()
             dirlayout.addWidget(self.workdir)
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
-            others_layout = QtGui.QHBoxLayout()
+            others_layout = QHBoxLayout()
             others_layout.setContentsMargins(0, 0, 0, 0)
-            others_button = QtGui.QToolButton()
-            others_button.setIcon(QtGui.QIcon.fromTheme('menu-down'))
+            others_button = QToolButton()
+            others_button.setIcon(QIcon.fromTheme('menu-down'))
             others_button.setCheckable(True)
             others_button.setChecked(False)
             others_button.toggled.connect(lambda visible: self.show_others(widget, visible))
-            label = QtGui.QLabel("Other submit &parameters:")
+            label = QLabel("Other submit &parameters:")
             label.setBuddy(others_button)
             others_layout.addWidget(label)
             others_layout.addWidget(others_button)
             layout.addLayout(others_layout)
-            self.others = QtGui.QPlainTextEdit()
+            self.others = QPlainTextEdit()
             self.others.setVisible(False)
             self.others.setFixedHeight(4*self.others.fontMetrics().height())
             self.others.setToolTip("Other submit parameters. You can use them to precisely specify\n"
@@ -457,9 +457,9 @@ else:
                                    "system documentation for details.")
             layout.addWidget(self.others)
 
-            label = QtGui.QLabel("&Log level:")
+            label = QLabel("&Log level:")
             layout.addWidget(label)
-            self.loglevel = QtGui.QComboBox()
+            self.loglevel = QComboBox()
             loglevels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(loglevels)
             self.loglevel.setToolTip("Logging level of the executed script.")
@@ -522,14 +522,14 @@ else:
 
         def account_add(self):
             dialog = AccountEditDialog(self)
-            if dialog.exec_() == QtGui.QDialog.Accepted:
+            if dialog.exec_() == QDialog.Accepted:
                 account = dialog.name
                 if account not in self.accounts:
                     self.accounts[account] = dialog.data
                     self.accounts_combo.addItem(account)
                     self.accounts_combo.setCurrentIndex(self.accounts_combo.count()-1)
                 else:
-                    QtGui.QMessageBox.critical(None, "Add Error",
+                    QMessageBox.critical(None, "Add Error",
                                                "Execution account '{}' already in the list.".format(account))
                 self._save_accounts()
 
@@ -537,11 +537,11 @@ else:
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
             dialog = AccountEditDialog(self, old, *self.accounts[old])
-            if dialog.exec_() == QtGui.QDialog.Accepted:
+            if dialog.exec_() == QDialog.Accepted:
                 new = dialog.name
                 if old != new:
                     if new in self.accounts:
-                        QtGui.QMessageBox.critical(None, "Edit Error",
+                        QMessageBox.critical(None, "Edit Error",
                                                    "Execution account '{}' already in the list.".format(new))
                     else:
                         newdata = dialog.data
@@ -561,10 +561,10 @@ else:
 
         def account_remove(self):
             current = self.accounts_combo.currentText()
-            confirm = QtGui.QMessageBox.warning(None, "Remove Account?",
+            confirm = QMessageBox.warning(None, "Remove Account?",
                                                 "Do you really want to remove the account '{}'?".format(current),
-                                                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            if confirm == QtGui.QMessageBox.Yes:
+                                                QMessageBox.Yes | QMessageBox.No)
+            if confirm == QMessageBox.Yes:
                 self.accounts_combo.removeItem(list(self.accounts.keys()).index(current))
                 del self.accounts[current]
                 self._save_accounts()
@@ -603,7 +603,7 @@ else:
 
         class AskAddPolicy(paramiko.MissingHostKeyPolicy):
             def missing_host_key(self, client, hostname, key):
-                add = QtGui.QMessageBox.warning(None, "Unknown Host Key",
+                add = QMessageBox.warning(None, "Unknown Host Key",
                                                 "The host key for {} is not cached "
                                                 "in the registry. You have no guarantee that the "
                                                 "server is the computer you think it is.\n\n"
@@ -616,11 +616,11 @@ else:
                                                 "If you do not trust this host, hit Cancel to "
                                                 "abandon the connection."
                                                 .format(hostname, key.get_name()[4:], str(hexlify(key.get_fingerprint()))),
-                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-                if add == QtGui.QMessageBox.Cancel:
+                                                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                if add == QMessageBox.Cancel:
                     raise Launcher.AbortException(u'Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
-                if add == QtGui.QMessageBox.Yes:
+                if add == QMessageBox.Yes:
                     Launcher.save_host_keys(client.get_host_keys())
 
         def connect(self, host, user):
@@ -648,7 +648,7 @@ else:
                 except Launcher.AbortException:
                     return
                 except paramiko.BadHostKeyException as err:
-                    add = QtGui.QMessageBox.warning(None, "Bad Host Key",
+                    add = QMessageBox.warning(None, "Bad Host Key",
                                                     "WARNING - POTENTIAL SECURITY BREACH!\n\n"
                                                     "The host key for {} does not "
                                                     "match the one cached in the registry. This means "
@@ -665,18 +665,18 @@ else:
                                                     "abandon the connection."
                                                     .format(err.hostname, err.key.get_name()[4:],
                                                             str(hexlify(err.key.get_fingerprint()))),
-                                                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-                    if add == QtGui.QMessageBox.Cancel:
+                                                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+                    if add == QMessageBox.Cancel:
                         return
                     ssh.get_host_keys().add(err.hostname, err.key.get_name(), err.key)
-                    if add == QtGui.QMessageBox.Yes:
+                    if add == QMessageBox.Yes:
                         self.save_host_keys(ssh.get_host_keys())
                 except paramiko.AuthenticationException:
-                    dialog = QtGui.QInputDialog()
+                    dialog = QInputDialog()
                     dialog.setLabelText("Password required for {}@{}. Please enter valid password:"
                                         .format(user, host))
-                    dialog.setTextEchoMode(QtGui.QLineEdit.Password)
-                    if dialog.exec_() == QtGui.QDialog.Accepted:
+                    dialog.setTextEchoMode(QLineEdit.Password)
+                    if dialog.exec_() == QDialog.Accepted:
                         passwd = self._passwd_cache[host, user] = dialog.textValue()
                     else:
                         return
@@ -685,11 +685,11 @@ else:
                         msg = err.message
                     except AttributeError:
                         msg = str(err)
-                    answer = QtGui.QMessageBox.critical(None, "Connection Error",
+                    answer = QMessageBox.critical(None, "Connection Error",
                                                         "Could not connect to {}.\n\n{}\n\nTry again?"
                                                         .format(host, msg),
-                                                        QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)
-                    if answer == QtGui.QMessageBox.No:
+                                                        QMessageBox.Yes|QMessageBox.No)
+                    if answer == QMessageBox.No:
                         return
                 else:
                     return ssh
@@ -731,10 +731,10 @@ else:
 
             if message: message = "\n\n" + message
             if result:
-                QtGui.QMessageBox.information(None, "Job Submitted",
+                QMessageBox.information(None, "Job Submitted",
                                               "Job has been submitted to {}.{}".format(host, message))
             else:
-                QtGui.QMessageBox.critical(None, "Error Submitting Job",
+                QMessageBox.critical(None, "Error Submitting Job",
                                            "Could not submit job to {}.{}".format(host, message))
 
         def select_workdir(self):
@@ -752,40 +752,40 @@ else:
             sftp = ssh.open_sftp()
 
             dialog = RemoteDirDialog(sftp, host, workdir)
-            if dialog.exec_() == QtGui.QDialog.Accepted:
+            if dialog.exec_() == QDialog.Accepted:
                 self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
                 self._auto_workdir = False
 
 
-    class RemoteDirDialog(QtGui.QDialog):
+    class RemoteDirDialog(QDialog):
 
-        # class Item(QtGui.QTreeWidgetItem):
+        # class Item(QTreeWidgetItem):
         #     def __init__(self, *args):
         #         super(RemoteDirDialog.Item, self).__init__(*args)
-        #         self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+        #         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
         #         self.read = False
 
         def __init__(self, sftp, host='/', path=None, parent=None):
-            self.folder_icon = QtGui.QIcon.fromTheme('folder')
+            self.folder_icon = QIcon.fromTheme('folder')
             super(RemoteDirDialog, self).__init__(parent)
             self.setWindowTitle("Select Folder")
             self.sftp = sftp
             if path is None: path = ['']
-            layout = QtGui.QVBoxLayout()
-            label = QtGui.QLabel("Please choose a folder on the remote machine.")
+            layout = QVBoxLayout()
+            label = QLabel("Please choose a folder on the remote machine.")
             layout.addWidget(label)
-            self.tree = QtGui.QTreeWidget()
+            self.tree = QTreeWidget()
             self.tree.setHeaderHidden(True)
             layout.addWidget(self.tree)
-            buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
             buttons.accepted.connect(self.accept)
             buttons.rejected.connect(self.reject)
             layout.addWidget(buttons)
             self.setLayout(layout)
-            item = QtGui.QTreeWidgetItem()
+            item = QTreeWidgetItem()
             item.setText(0, host)
-            item.setIcon(0, QtGui.QIcon.fromTheme('network-server'))
-            item.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+            item.setIcon(0, QIcon.fromTheme('network-server'))
+            item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
             self.tree.addTopLevelItem(item)
             self.tree.itemExpanded.connect(self.item_expanded)
             self.resize(540, 720)
@@ -812,7 +812,7 @@ else:
             return '/' + '/'.join(path[1:])
 
         def item_expanded(self, item):
-            if item.childIndicatorPolicy() == QtGui.QTreeWidgetItem.ShowIndicator:
+            if item.childIndicatorPolicy() == QTreeWidgetItem.ShowIndicator:
                 path = self.item_path(item)
                 dirs = []
                 try:
@@ -823,11 +823,11 @@ else:
                 else:
                     dirs.sort(key=lambda d: d.filename)
                     for d in dirs:
-                        sub = QtGui.QTreeWidgetItem()
+                        sub = QTreeWidgetItem()
                         sub.setText(0, d.filename)
                         sub.setIcon(0, self.folder_icon)
-                        sub.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+                        sub.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
                         item.addChild(sub)
-                item.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicatorWhenChildless)
+                item.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicatorWhenChildless)
 
 LAUNCHERS.append(Launcher())

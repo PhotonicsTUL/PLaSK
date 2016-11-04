@@ -13,9 +13,9 @@
 import sys
 from copy import copy
 
-from ...qt.QtCore import Qt
-
-from ...qt import QtCore, QtGui
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qthread import BackgroundTask
 from .completer import CompletionsController
@@ -71,8 +71,8 @@ class ScriptEditor(TextEditor):
         self.cursorPositionChanged.connect(self.highlight_brackets)
         self.selectionChanged.connect(self.highlight_brackets)
 
-        self.comment_action = QtGui.QAction('Co&mment lines', self)
-        self.uncomment_action = QtGui.QAction('Uncomm&ent lines', self)
+        self.comment_action = QAction('Co&mment lines', self)
+        self.uncomment_action = QAction('Uncomm&ent lines', self)
         self.comment_action.setShortcut(Qt.CTRL + Qt.Key_Slash)
         self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
         self.comment_action.triggered.connect(self.block_comment)
@@ -98,12 +98,12 @@ class ScriptEditor(TextEditor):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText("# ")
             end += 2
-            if not cursor.movePosition(QtGui.QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.NextBlock):
                 break
         cursor.endEditBlock()
 
@@ -113,20 +113,20 @@ class ScriptEditor(TextEditor):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         if cursor.position() == end: end += 1
         document = self.document()
         try:
             while cursor.position() < end:
                 while document.characterAt(cursor.position()) in (' ', '\t'):
-                    if not cursor.movePosition(QtGui.QTextCursor.NextCharacter): raise ValueError
+                    if not cursor.movePosition(QTextCursor.NextCharacter): raise ValueError
                 if document.characterAt(cursor.position()) == '#':
                     cursor.deleteChar()
                     end -= 1
                     if document.characterAt(cursor.position()) == ' ':
                         cursor.deleteChar()
                         end -= 1
-                if not cursor.movePosition(QtGui.QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
         except ValueError:
             pass
         cursor.endEditBlock()
@@ -180,11 +180,11 @@ class ScriptEditor(TextEditor):
             cursor = self.textCursor()
             txt = cursor.block().text()
             col = cursor.positionInBlock()
-            mode = QtGui.QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QtGui.QTextCursor.MoveAnchor
+            mode = QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QTextCursor.MoveAnchor
             if txt[:col].strip() or (col == 0 and txt.strip()):
-                cursor.movePosition(QtGui.QTextCursor.StartOfBlock, mode)
+                cursor.movePosition(QTextCursor.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QtGui.QTextCursor.Right, mode)
+                    cursor.movePosition(QTextCursor.Right, mode)
                 self.setTextCursor(cursor)
                 return
 
@@ -201,11 +201,11 @@ class ScriptEditor(TextEditor):
     def link_definition(self, row, col):
         self._pointer_blocked = False
         self._pointer_definition = row, col
-        cursor = QtGui.QApplication.overrideCursor()
+        cursor = QApplication.overrideCursor()
         if not cursor and row is not None:
-            QtGui.QApplication.setOverrideCursor(Qt.PointingHandCursor)
+            QApplication.setOverrideCursor(Qt.PointingHandCursor)
         elif cursor and cursor.shape() == Qt.PointingHandCursor and row is None:
-            QtGui.QApplication.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
 
     def _get_mouse_definitions(self, event):
         if event.modifiers() == Qt.ControlModifier:
@@ -220,9 +220,9 @@ class ScriptEditor(TextEditor):
             if not CONFIG['workarounds/no_jedi']:
                 self.link_definition(*get_definitions(self.controller.document, self.toPlainText(), row, col))
         else:
-            cursor = QtGui.QApplication.overrideCursor()
+            cursor = QApplication.overrideCursor()
             if cursor and cursor.shape() == Qt.PointingHandCursor:
-                QtGui.QApplication.restoreOverrideCursor()
+                QApplication.restoreOverrideCursor()
 
     def mouseMoveEvent(self, event):
         super(ScriptEditor, self).mouseMoveEvent(event)
@@ -232,8 +232,8 @@ class ScriptEditor(TextEditor):
         super(ScriptEditor, self).mouseReleaseEvent(event)
         row, col = self._pointer_definition
         if event.modifiers() == Qt.ControlModifier and not self._pointer_blocked and row:
-            cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(row))
-            cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, col)
+            cursor = QTextCursor(self.document().findBlockByLineNumber(row))
+            cursor.movePosition(QTextCursor.Right, QTextCursor.MoveAnchor, col)
             self.setTextCursor(cursor)
 
 
@@ -246,8 +246,8 @@ class ScriptController(SourceEditController):
         self.highlighter = None
 
     def create_source_widget(self, parent):
-        window = QtGui.QMainWindow(parent)
-        window.setWindowFlags(QtCore.Qt.Widget)
+        window = QMainWindow(parent)
+        window.setWindowFlags(Qt.Widget)
 
         source = SourceWidget(parent, ScriptEditor, self)
 
@@ -258,19 +258,19 @@ class ScriptController(SourceEditController):
         source.editor.cursorPositionChanged.connect(self.model.refresh_info)
 
         source.toolbar.addSeparator()
-        unindent_action = QtGui.QAction(QtGui.QIcon.fromTheme('format-indent-less'), 'Unin&dent', source)
+        unindent_action = QAction(QIcon.fromTheme('format-indent-less'), 'Unin&dent', source)
         unindent_action.triggered.connect(lambda: unindent(source.editor))
         source.toolbar.addAction(unindent_action)
-        indent_action = QtGui.QAction(QtGui.QIcon.fromTheme('format-indent-more'), '&Indent', source)
+        indent_action = QAction(QIcon.fromTheme('format-indent-more'), '&Indent', source)
         indent_action.triggered.connect(lambda: indent(source.editor))
         source.toolbar.addAction(indent_action)
-        menu = QtGui.QMenu()
+        menu = QMenu()
         menu.addAction(source.editor.comment_action)
         menu.addAction(source.editor.uncomment_action)
-        button = QtGui.QToolButton()
-        button.setIcon(QtGui.QIcon.fromTheme('document-properties'))
+        button = QToolButton()
+        button.setIcon(QIcon.fromTheme('document-properties'))
         button.setMenu(menu)
-        button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        button.setPopupMode(QToolButton.InstantPopup)
         source.toolbar.addWidget(button)
         if self.model.is_read_only():
             unindent_action.setEnabled(False)
@@ -285,11 +285,11 @@ class ScriptController(SourceEditController):
             window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
-        doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-contextual'), 'Show &docstring', source)
+        doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &docstring', source)
         doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
         doc_action.triggered.connect(self.show_docstring)
         source.editor.addAction(doc_action)
-        hide_doc_action = QtGui.QAction('Hide help', source)
+        hide_doc_action = QAction('Hide help', source)
         hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
         hide_doc_action.triggered.connect(self.help_dock.hide)
         source.editor.addAction(hide_doc_action)
@@ -303,11 +303,11 @@ class ScriptController(SourceEditController):
         except AttributeError:
             pass
         else:
-            spacer = QtGui.QWidget()
-            spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+            spacer = QWidget()
+            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             source.toolbar.addWidget(spacer)
-            source.toolbar.addWidget(QtGui.QLabel("Log Level: "))
-            self.loglevel = QtGui.QComboBox()
+            source.toolbar.addWidget(QLabel("Log Level: "))
+            self.loglevel = QComboBox()
             levels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(levels)
             try:
@@ -372,10 +372,10 @@ class ScriptController(SourceEditController):
     def show_docstring(self):
         if CONFIG['workarounds/no_jedi']: return
         cursor = self.source_widget.editor.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
+        cursor.movePosition(QTextCursor.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        # QApplication.setOverrideCursor(Qt.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
             self.help_dock.show_help(get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col))
         else:
@@ -385,16 +385,16 @@ class ScriptController(SourceEditController):
             task.start()
 
 
-class HelpDock(QtGui.QDockWidget):
+class HelpDock(QDockWidget):
 
     def __init__(self, parent):
         super(HelpDock, self).__init__(parent)
-        self.textarea = QtGui.QTextEdit()
+        self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
-        help_font = QtGui.QFont(EDITOR_FONT)
+        help_font = QFont(EDITOR_FONT)
         help_font.fromString(','.join(CONFIG['editor/help_font']))
         pal = self.textarea.palette()
-        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
+        pal.setColor(QPalette.Base, QColor("#ffe"))
         self.textarea.setPalette(pal)
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
@@ -408,7 +408,7 @@ class HelpDock(QtGui.QDockWidget):
             self.setWindowTitle("Help: " + name)
             self.textarea.setText(docstring)
             self.show()
-        # QtGui.QApplication.restoreOverrideCursor()
+        # QApplication.restoreOverrideCursor()
 
     def reconfig(self):
         help_font = self.textarea.font()

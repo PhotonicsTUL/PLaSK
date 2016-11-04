@@ -10,14 +10,14 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore
+from ..qt.QtCore import *
 
 
 class BackgroundTask(object):
 
     instances = set()
 
-    class Thread(QtCore.QThread):
+    class Thread(QThread):
 
         def __init__(self, task):
             super(BackgroundTask.Thread, self).__init__()

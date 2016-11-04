@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui
+from ..qt.QtWidgets import *
 
 from .table import TableController
 from .defines import DefinesCompletionDelegate
@@ -28,15 +28,15 @@ class FlowDelegate(DefinesCompletionDelegate):
     def createEditor(self, parent, option, index):
         items = self.get_slots()
         if not items: return super(FlowDelegate, self).createEditor(parent, option, index)
-        combo = QtGui.QComboBox(parent)
+        combo = QComboBox(parent)
         combo.setEditable(True)
         combo.addItems(items)
         combo.setEditText(index.data())
         try: combo.setCurrentIndex(items.index(index.data()))
         except ValueError: pass
         combo.setMaxVisibleItems(len(items))
-        #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
-        #             self, QtCore.SLOT("currentIndexChanged()"))
+        #self.connect(combo, SIGNAL("currentIndexChanged(int)"),
+        #             self, SLOT("currentIndexChanged()"))
         #combo.currentIndexChanged[str].connect()
         return combo
 

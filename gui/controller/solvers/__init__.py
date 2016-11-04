@@ -11,10 +11,9 @@
 # GNU General Public License for more details.
 from itertools import groupby
 
-from ...qt.QtGui import QSplitter, QItemSelectionModel
-from ...qt.QtCore import Qt
-
-from ...qt import QtGui
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from ...model.connects import PROPS
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from .. import Controller, select_index_from_info
@@ -35,17 +34,17 @@ class FilterController(Controller):
     def __init__(self, document, model):
         super(FilterController, self).__init__(document, model)
 
-        self.widget = QtGui.QWidget()
-        layout = QtGui.QFormLayout()
-        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+        self.widget = QWidget()
+        layout = QFormLayout()
+        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        self.what = QtGui.QComboBox()
+        self.what = QComboBox()
         self.what.addItems(PROPS)
         self.what.currentIndexChanged.connect(self.fire_changed)
         self.what.setToolTip('Name physical property to filter.')
         layout.addRow('For:', self.what)
 
-        self.geometry = QtGui.QComboBox()
+        self.geometry = QComboBox()
         self.geometry.setEditable(True)
         self.geometry.textChanged.connect(self.fire_changed)
         self.geometry.currentIndexChanged.connect(self.fire_changed)
@@ -95,23 +94,26 @@ class SolversController(Controller):
 
         self.splitter = QSplitter()
 
-        self.solvers_table = QtGui.QTableView()
+        self.solvers_table = QTableView()
         self.solvers_table.setModel(self.model)
         table_last_col_fill(self.solvers_table, self.model.columnCount(None), [100, 200])
-        self.solvers_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.solvers_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.solvers_table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.solvers_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.solvers_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        try:
+            self.solvers_table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        except AttributeError:
+            self.solvers_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         table_edit_shortcut(self.solvers_table, 2, 'n')
         self.splitter.addWidget(table_with_manipulators(self.solvers_table, self.splitter, title="Solvers"))
 
-        self.parent_for_editor_widget = QtGui.QStackedWidget()
+        self.parent_for_editor_widget = QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
 
         self.splitter.setSizes([10000, 20000])
 
-        focus_action = QtGui.QAction(self.solvers_table)
+        focus_action = QAction(self.solvers_table)
         focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
-        focus_action.setShortcut(QtGui.QKeySequence(Qt.Key_Return))
+        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.solvers_table.addAction(focus_action)
 
@@ -172,32 +174,32 @@ class SolversController(Controller):
             pass
 
 
-class NewSolverDialog(QtGui.QDialog):
+class NewSolverDialog(QDialog):
 
     def __init__(self, parent=None):
         super(NewSolverDialog, self).__init__(parent)
         self.setWindowTitle('Create New Solver')
-        layout = QtGui.QFormLayout()
-        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+        layout = QFormLayout()
+        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        self.category = QtGui.QComboBox()
+        self.category = QComboBox()
         self.category.addItems([c.title() for c in CATEGORIES])
         self.category.addItem("FILTER")
         self.category.insertSeparator(len(CATEGORIES))
         self.category.currentIndexChanged.connect(self.category_changed)
         layout.addRow("C&ategory:", self.category)
 
-        self.solver = QtGui.QComboBox()
+        self.solver = QComboBox()
         self.solver.setEditable(True)
         if MODELS:
             self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
-            self.solver.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
+            self.solver.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
         layout.addRow("&Solver:", self.solver)
 
-        self.name = QtGui.QLineEdit()
+        self.name = QLineEdit()
         layout.addRow("&Name:", self.name)
 
-        button_box = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         layout.addRow(button_box)
@@ -226,7 +228,7 @@ class NewSolverDialog(QtGui.QDialog):
 
 def get_new_solver():
     dialog = NewSolverDialog()
-    if dialog.exec_() == QtGui.QDialog.Accepted:
+    if dialog.exec_() == QDialog.Accepted:
         return dict(category=dialog.category.currentText().lower(),
                     solver=dialog.solver.currentText(),
                     name=dialog.name.text())

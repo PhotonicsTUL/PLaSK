@@ -13,7 +13,7 @@
 import shutil
 import re
 
-from .qt import QtGui
+from .qt.QtWidgets import *
 from .controller.script import ScriptController
 from .utils.config import CONFIG
 
@@ -73,7 +73,7 @@ class PyDocument(object):
             try:
                 text.encode(coding)
             except UnicodeEncodeError:
-                QtGui.QMessageBox.critical(None, "Error while saving file.",
+                QMessageBox.critical(None, "Error while saving file.",
                                            "The file could not be saved with the specified encoding '{}'.\n\n"
                                            "Please set the proper encoding and try again.".format(coding))
                 return

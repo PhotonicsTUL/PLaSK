@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 from copy import deepcopy
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
@@ -114,10 +114,10 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controller = controller
 
-        layout = QtGui.QFormLayout()
-        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+        layout = QFormLayout()
+        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        label = QtGui.QLabel("General")
+        label = QLabel("General")
         font = label.font()
         font.setBold(True)
         label.setFont(font)
@@ -152,7 +152,7 @@ class SolverAutoWidget(VerticalScrollArea):
         for schema in controller.model.schema:
             group = schema.name
             gname = group.split('/')[-1]
-            label = QtGui.QLabel(schema.label)
+            label = QLabel(schema.label)
             font = label.font()
             font.setBold(True)
             label.setFont(font)
@@ -184,7 +184,7 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit.change_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
                                 self._change_multi_attr(group, name, edit.get_values(), label)
                         else:
-                            edit = QtGui.QLineEdit()
+                            edit = QLineEdit()
                             edit.setCompleter(defines)
                             #edit.textEdited.connect(self.controller.fire_changed)
                             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
@@ -197,14 +197,14 @@ class SolverAutoWidget(VerticalScrollArea):
                     self.controls[group, attr.name] = edit
                     layout.addRow(attr.label + ':', edit)
             elif isinstance(schema, SchemaBoundaryConditions):
-                edit = QtGui.QPushButton("View / Edit")
+                edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: self.edit_boundary_conditions(schema))
                 self.controls[group] = edit
                 layout.addRow(edit)
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
-                font = QtGui.QFont(EDITOR_FONT)
+                font = QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
                                                      default_font=font)
@@ -214,7 +214,7 @@ class SolverAutoWidget(VerticalScrollArea):
                 #edit.textChanged.connect(self.controller.fire_changed)
                 edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
 
-        main = QtGui.QWidget()
+        main = QWidget()
         main.setLayout(layout)
         self.setWidget(main)
 
@@ -250,7 +250,7 @@ class SolverAutoWidget(VerticalScrollArea):
                                     edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
                                 except AttributeError:
                                     pass
-                            if type(edit) in (ComboBox, QtGui.QComboBox):
+                            if type(edit) in (ComboBox, QComboBox):
                                 edit.setCurrentIndex(edit.findText(value))
                                 edit.setEditText(value)
                             else:
@@ -266,7 +266,7 @@ class SolverAutoWidget(VerticalScrollArea):
         data = deepcopy(self.controller.model.data[schema.name])
         dialog = BoundaryConditionsDialog(self.controller, schema, data)
         result = dialog.exec_()
-        if result == QtGui.QDialog.Accepted:
+        if result == QDialog.Accepted:
             self._change_boundary_condition(schema, data)
 
 

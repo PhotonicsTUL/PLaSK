@@ -10,21 +10,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt.QtCore import Qt
+from ...qt.QtCore import *
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ...utils.qthread import BackgroundTask
 from ...utils.config import CONFIG
 from ...model.script.completer import CompletionsModel, get_completions
 
 
-class CompletionsController(QtGui.QCompleter):
+class CompletionsController(QCompleter):
 
     def __init__(self, edit, parent=None):
         super(CompletionsController, self).__init__(parent)
         self._edit = edit
         self.setWidget(edit)
-        self.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+        self.setCompletionMode(QCompleter.PopupCompletion)
         self.setCaseSensitivity(Qt.CaseInsensitive)
         self.activated.connect(self.insert_completion)
         self.popup().setMinimumWidth(300)
@@ -37,8 +37,8 @@ class CompletionsController(QtGui.QCompleter):
         extra = len(self.completionPrefix())
         if not (cursor.atBlockStart() or
                 self._edit.document().characterAt(cursor.position()-1).isspace()):
-            cursor.movePosition(QtGui.QTextCursor.Left)
-        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
+            cursor.movePosition(QTextCursor.Left)
+        cursor.movePosition(QTextCursor.EndOfWord)
         cursor.insertText(completion[extra:])
         self._edit.setTextCursor(cursor)
 
@@ -48,16 +48,16 @@ class CompletionsController(QtGui.QCompleter):
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        cursor.select(QtGui.QTextCursor.WordUnderCursor)
+        cursor.select(QTextCursor.WordUnderCursor)
         completion_prefix = cursor.selectedText()
 
         def thread_finished(completions):
             tc = self._edit.textCursor()
             if tc.blockNumber() == row and tc.positionInBlock() == col:
                 self.show_completion_popup(completion_prefix, completions)
-            # QtGui.QApplication.restoreOverrideCursor()
+            # QApplication.restoreOverrideCursor()
 
-        # QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        # QApplication.setOverrideCursor(Qt.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
             thread_finished(get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col))
         else:

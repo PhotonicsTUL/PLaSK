@@ -56,6 +56,7 @@
           </item>
           <rectangle material="AlN" dtran="0.8" dvert="0.1"/>
         </stack>
+        <rectangle material="AlGa(0.5)N" dtran="0.1" dvert="0.3"/>
       </shelf>
       <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle material="GaN" dtran="2" dvert="1"/>
@@ -242,6 +243,7 @@
     <radiation/>
   </thermal>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
+    <geometry ref="GeoO"/>
     <config matrix-elem="10"/>
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">

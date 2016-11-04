@@ -16,7 +16,7 @@ from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
 from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBoxDelegate, ComboBox
@@ -31,12 +31,12 @@ class RectilinearRefinedGeneratorController(GridController):
     }
 
     def _make_param_hbox(self, container_to_add, label, tooltip, defines_completer, model_path = None):
-        hbox_div = QtGui.QHBoxLayout()
-        res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
+        hbox_div = QHBoxLayout()
+        res = tuple(QLineEdit() for _ in range(0, self.model.dim))
         for i, r in enumerate(res):
             if self.model.dim != 1:
                 axis_name = AXIS_NAMES[self.model.dim-1][i]
-                hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
+                hbox_div.addWidget(QLabel('{}:'.format(axis_name if axis_name else str(i))))
             else:
                 axis_name = 'horizontal'
             hbox_div.addWidget(r)
@@ -53,27 +53,27 @@ class RectilinearRefinedGeneratorController(GridController):
     def __init__(self, document, model):
         super(RectilinearRefinedGeneratorController, self).__init__(document=document, model=model)
 
-        self.form = QtGui.QGroupBox()
+        self.form = QGroupBox()
 
         self.defines = get_defines_completer(self.document.defines.model, self.form)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
 
-        self.options = QtGui.QHBoxLayout()
+        self.options = QHBoxLayout()
 
-        self.aspect = QtGui.QLineEdit()
+        self.aspect = QLineEdit()
         self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', empty_to_none(self.aspect.text())))
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
                                'by this generator.')
-        self.options.addWidget(QtGui.QLabel("aspect:"))
+        self.options.addWidget(QLabel("aspect:"))
         self.options.addWidget(self.aspect)
 
-        self.form_layout = QtGui.QFormLayout()
+        self.form_layout = QFormLayout()
         self.form_layout.addRow('Options:', self.options)
 
-        warnings_layout = QtGui.QHBoxLayout()
+        warnings_layout = QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
             cb = ComboBox()
             cb.editingFinished.connect(lambda w=w, cb=cb: self._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning') )
@@ -84,16 +84,16 @@ class RectilinearRefinedGeneratorController(GridController):
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
                           RectilinearDivideGeneratorController.warnings_help.get(w, ''))
             setattr(self, 'warn_'+w, cb)
-            label = QtGui.QLabel(w+':')
-            label.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
+            label = QLabel(w+':')
+            label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             warnings_layout.addWidget(label)
-            cb.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+            cb.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
             warnings_layout.addWidget(cb)
         self.form_layout.addRow('Warnings:', warnings_layout)
 
         vbox.addLayout(self.form_layout)
 
-        self.refinements = QtGui.QTableView()
+        self.refinements = QTableView()
         self.refinements.setModel(model.refinements)
         one = int(self.model.dim == 1)
         if one:
@@ -114,7 +114,7 @@ class RectilinearRefinedGeneratorController(GridController):
         self.refinements.setItemDelegateForColumn(3-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(4-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(5-one, defines_delegate)
-        # self.refinements.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        # self.refinements.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
         self.refinements.setColumnWidth(1-one, 140)
         self.refinements.setColumnWidth(2-one, 120)
         self.refinements.setMinimumHeight(100)
@@ -159,7 +159,7 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
         self.gradual.setToolTip('&lt;options <b>gradual</b>=""&gt;<br/>'
                                 'Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated'
                                 ' mesh may differ more than by the factor of two). Gradual is enabled by default.')
-        self.options.insertWidget(0, QtGui.QLabel("gradual:"))
+        self.options.insertWidget(0, QLabel("gradual:"))
         self.options.insertWidget(1, self.gradual)
 
         self.prediv = self._make_param_hbox(self.form_layout, 'Pre-refining divisions:',

@@ -12,9 +12,8 @@
 
 import sys
 
-from ...qt.QtCore import Qt
-
-from ...qt import QtCore, QtGui
+from ...qt.QtCore import *
+from ...qt.QtGui import *
 from ...utils.qthread import BackgroundTask, Lock
 from ...utils.config import CONFIG
 try:
@@ -23,7 +22,7 @@ except ImportError:
     jedi = None
 
 
-JEDI_MUTEX = QtCore.QMutex()
+JEDI_MUTEX = QMutex()
 
 PREAMBLE = """\
 from pylab import *
@@ -53,7 +52,7 @@ def prepare_completions():
             task.start()
 
 
-class CompletionsModel(QtCore.QAbstractTableModel):
+class CompletionsModel(QAbstractTableModel):
 
     _icons = {}
 
@@ -65,13 +64,13 @@ class CompletionsModel(QtCore.QAbstractTableModel):
             self._load_icons()
 
     def _load_icons(self):
-        code_function = QtGui.QIcon.fromTheme("code-function")
-        code_class = QtGui.QIcon.fromTheme("code-class")
-        code_variable = QtGui.QIcon.fromTheme("code-variable")
-        code_typedef = QtGui.QIcon.fromTheme("code-typedef")
-        code_block = QtGui.QIcon.fromTheme("code-block")
-        code_context = QtGui.QIcon.fromTheme("code-context")
-        no_icon = QtGui.QIcon()
+        code_function = QIcon.fromTheme("code-function")
+        code_class = QIcon.fromTheme("code-class")
+        code_variable = QIcon.fromTheme("code-variable")
+        code_typedef = QIcon.fromTheme("code-typedef")
+        code_block = QIcon.fromTheme("code-block")
+        code_context = QIcon.fromTheme("code-context")
+        no_icon = QIcon()
         self._icons.update({None: no_icon,
                             "function": code_function,
                             "class": code_class,
@@ -94,16 +93,16 @@ class CompletionsModel(QtCore.QAbstractTableModel):
             if role in (Qt.DisplayRole, Qt.EditRole):
                 return value[0]
             elif role == Qt.DecorationRole:
-                return self._icons.get(value[1], QtGui.QIcon())
+                return self._icons.get(value[1], QIcon())
             else:
                 return None
         else:
             return None
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.items)
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 1
 
 

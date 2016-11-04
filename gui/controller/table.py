@@ -10,9 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt.QtCore import Qt
-
-from ..qt import QtGui
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions
 
@@ -58,7 +58,7 @@ class TableActions(object):
 
     @staticmethod
     def make_action(icon, text, tip, parent, to_call, shortcut=None):
-        action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), text, parent)
+        action = QAction(QIcon.fromTheme(icon), text, parent)
         action.setStatusTip(tip)
         if shortcut is not None:
             action.setShortcut(shortcut)
@@ -92,7 +92,7 @@ class TableActions(object):
 
 
 def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_action=None):
-    toolbar = QtGui.QToolBar()
+    toolbar = QToolBar()
     if model is None: model = table.model()
     toolbar.setStyleSheet("QToolBar { border: 0px }")
 
@@ -107,15 +107,15 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
     toolbar.addActions(actions)
     table.addActions(actions)
 
-    vbox = QtGui.QVBoxLayout()
+    vbox = QVBoxLayout()
     vbox.addWidget(toolbar)
     vbox.addWidget(table)
 
     if title is not None:
-        external = QtGui.QGroupBox()
+        external = QGroupBox()
         external.setTitle(title)
     else:
-        external = QtGui.QWidget()
+        external = QWidget()
     vbox.setContentsMargins(0, 0, 0, 0)
     vbox.setSpacing(0)
 
@@ -132,20 +132,26 @@ class TableController(Controller):
 
     def __init__(self, document, model):
         Controller.__init__(self, document, model)
-        self.table = QtGui.QTableView()
+        self.table = QTableView()
         self.table.setModel(self.model)
         self.table_actions = TableActions(self.table, self.model)
 
         cols = self.model.columnCount(None)  # column widths:
         for c in range(0, cols-1):
             self.table.setColumnWidth(c, 200)
-            #self.table.horizontalHeader().setResizeMode(c, QtGui.QHeaderView.ResizeToContents);
-        self.table.horizontalHeader().setResizeMode(cols-1, QtGui.QHeaderView.Stretch)
+            #self.table.horizontalHeader().setResizeMode(c, QHeaderView.ResizeToContents);
+        try:
+            self.table.horizontalHeader().setResizeMode(cols-1, QHeaderView.Stretch)
+        except AttributeError:
+            self.table.horizontalHeader().setSectionResizeMode(cols-1, QHeaderView.Stretch)
 
-        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         table_last_col_fill(self.table, model.columnCount(None))
-        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        try:
+            self.table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        except AttributeError:
+            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         for col in range(model.columnCount()):
             label = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
@@ -154,9 +160,9 @@ class TableController(Controller):
     def get_widget(self):
         if self.model.is_read_only():
             return self.table
-        widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        toolbar = QtGui.QToolBar(widget)
+        widget = QWidget()
+        layout = QVBoxLayout()
+        toolbar = QToolBar(widget)
         toolbar.setStyleSheet("QToolBar { border: 0px }")
         create_undo_actions(toolbar, self.model, widget)
         toolbar.addSeparator()

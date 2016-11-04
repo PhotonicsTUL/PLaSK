@@ -10,15 +10,15 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .qt.QtGui import QDialogButtonBox
+from .qt.QtWidgets import QDialogButtonBox
 
-from .qt import QtGui
+from .qt.QtWidgets import *
 
 
-class SourceSelectDialog(QtGui.QDialog):
+class SourceSelectDialog(QDialog):
     
     def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        QDialog.__init__(self, parent)
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         
         #connect(buttonBox, SIGNAL(accepted()), self, SLOT(accept()))

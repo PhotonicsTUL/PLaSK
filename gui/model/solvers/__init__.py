@@ -14,7 +14,7 @@ from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import quoteattr
 
-from ...qt import QtCore
+from ...qt.QtCore import *
 from ...utils.xml import print_interior, XML_parser, AttributeReader
 from ...controller.source import SourceEditController
 from ..table import TableModel
@@ -178,11 +178,11 @@ class SolversModel(TableModel):
             res.append(e.get_xml_element())
         return res
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 3
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0: return 'Category'
             if col == 1: return 'Solver'
             if col == 2: return 'Name'
@@ -202,7 +202,7 @@ class SolversModel(TableModel):
 
     def flags(self, index):
         flags = super(SolversModel, self).flags(index)
-        if index.column() < 2: flags &= ~QtCore.Qt.ItemIsEditable
+        if index.column() < 2: flags &= ~Qt.ItemIsEditable
         return flags
 
     def create_default_entry(self):

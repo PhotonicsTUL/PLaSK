@@ -13,7 +13,7 @@
 
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 
 
@@ -22,7 +22,7 @@ class GNLeafController(GNObjectController):
     def construct_form(self):
         material_form = self.construct_group('Material')
 
-        self.material_selection_type = QtGui.QComboBox()
+        self.material_selection_type = QComboBox()
         self.material_selection_type.addItems(['Solid', 'Bottom/Top'])
         self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
 
@@ -41,16 +41,16 @@ class GNLeafController(GNObjectController):
                                  u'Shape exponent of changing material. Setting this value to anything different than '
                                  u'one allows to specify non-linearly varying material. (float)'
                                  .format(self.node.tag_name(False)))
-        self.material_bottom.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        self.material_top.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.material_bottom.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.material_top.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.material_shape.setMaximumWidth(50)
         material_tb_hbox.addWidget(self.material_bottom)
-        material_tb_hbox.addWidget(QtGui.QLabel('...'))
+        material_tb_hbox.addWidget(QLabel('...'))
         material_tb_hbox.addWidget(self.material_shape)
-        material_tb_hbox.addWidget(QtGui.QLabel('...'))
+        material_tb_hbox.addWidget(QLabel('...'))
         material_tb_hbox.addWidget(self.material_top)
 
-        self.material_group = QtGui.QStackedWidget()
+        self.material_group = QStackedWidget()
         self.material_group.addWidget(self.material_solid)
         self.material_group.addWidget(material_tb_group)
         self.material_selection_type.currentIndexChanged.connect(self.material_group.setCurrentIndex)

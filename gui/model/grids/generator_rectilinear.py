@@ -12,7 +12,7 @@
 
 from lxml.etree import Element, SubElement
 
-from ...qt import QtCore
+from ...qt.QtCore import *
 from ..table import TableModelEditMethods
 from ...utils.validators import can_be_float, can_be_bool, can_be_int
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
@@ -67,20 +67,20 @@ class RefinementConf(object):
         setattr(self, RefinementConf.all_attributes_names[index], value)
 
 
-class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
+class Refinements(TableModelEditMethods, QAbstractTableModel):
 
     def __init__(self, generator, entries=None, parent=None, *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+        QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.generator = generator
         self.entries = entries if entries is not None else []
         self.one = int(self.generator.dim == 1)
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return len(RefinementConf.all_attributes_names)-self.one
 
     def get(self, col, row):
@@ -91,11 +91,11 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
 
     get_raw = get
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return self.get(index.column(), index.row())
-        if role == QtCore.Qt.ToolTipRole:
+        if role == Qt.ToolTipRole:
             col = index.column()
             attr = ('</b>... ', '<b>object</b>=""', '<b>path</b>=""',
                     '<b>at</b>=""', '<b>by</b>=""', '<b>every</b>=""')[col]
@@ -109,12 +109,12 @@ class Refinements(TableModelEditMethods, QtCore.QAbstractTableModel):
         self.entries[row].set_attr_by_index(col+self.one, value)
 
     def flags(self, index):
-        flags = super(Refinements, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
-        if not self.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
+        flags = super(Refinements, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        if not self.is_read_only(): flags |= Qt.ItemIsEditable
         return flags
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             try:
                 return RefinementConf.all_attributes_names[col+self.one].title()
             except IndexError:

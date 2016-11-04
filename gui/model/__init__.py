@@ -13,8 +13,9 @@
 import os
 from lxml import etree
 
-from ..qt.QtCore import Qt
-from ..qt import QtGui
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 from .info import InfoSource, Info
 from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
@@ -65,7 +66,7 @@ class TreeFragmentModel(InfoSource):
             :param TreeFragmentModel parent: parent in models tree
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
-        InfoSource.__init__(self, info_cb)
+        super(TreeFragmentModel, self).__init__(info_cb)
         self.changed = Signal()
         self.tree_parent = parent   #parent is not good name, due to its commonly using in Qt!
 
@@ -97,38 +98,38 @@ class TreeFragmentModel(InfoSource):
 class SectionModel(TreeFragmentModel):
     """Base class for model of section (defines, geometry, ...)."""
 
-    def __init__(self, name, info_cb=None, undo_stack=None):
+    def __init__(self, name, info_cb=None, undo_stack=None, parent=None):
         """
             :param str name: name of section
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
             :param undo_stack: undo stack for model; if None it is creates
         """
-        super(SectionModel, self).__init__(info_cb=info_cb)
+        super(SectionModel, self).__init__(parent, info_cb=info_cb)
         self.name = name
         self.externalSource = None
         self.line_in_file = None
         if undo_stack is None:
-            self.undo_stack = QtGui.QUndoStack()
+            self.undo_stack = QUndoStack()
         else:
             self.undo_stack = undo_stack
 
     def create_undo_action(self, parent):
         """
-            :param QtCore.QObject parent: qt parent
-            :return QtGui.QAction: undo action connected with self.undo_stack
+            :param QObject parent: qt parent
+            :return QAction: undo action connected with self.undo_stack
         """
         res = self.undo_stack.createUndoAction(parent)
-        res.setIcon(QtGui.QIcon.fromTheme('edit-undo'))
+        res.setIcon(QIcon.fromTheme('edit-undo'))
         res.setShortcut(Qt.ALT + Qt.Key_Z)
         return res
 
     def create_redo_action(self, parent):
         """
-            :param QtCore.QObject parent: qt parent
-            :return QtGui.QAction: redo action connected with self.undo_stack
+            :param QObject parent: qt parent
+            :return QAction: redo action connected with self.undo_stack
         """
         res = self.undo_stack.createRedoAction(parent)
-        res.setIcon(QtGui.QIcon.fromTheme('edit-redo'))
+        res.setIcon(QIcon.fromTheme('edit-redo'))
         res.setShortcut(Qt.ALT + Qt.SHIFT + Qt.Key_Z)
         return res
 

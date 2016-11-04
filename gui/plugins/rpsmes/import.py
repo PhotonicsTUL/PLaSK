@@ -19,7 +19,9 @@ from collections import OrderedDict
 
 try:
     import gui
-    from gui.qt import QtGui, QtCore
+    from gui.qt.QtCore import Qt
+    from gui.qt.QtWidgets import *
+    from gui.qt.QtGui import *
 except ImportError:
     qt = False
 else:
@@ -545,7 +547,7 @@ if qt:
 
         remove_self = parent.document.filename is None and not parent.isWindowModified()
 
-        iname = QtGui.QFileDialog.getOpenFileName(parent, "Import RPSMES file", gui.CURRENT_DIR,
+        iname = QFileDialog.getOpenFileName(parent, "Import RPSMES file", gui.CURRENT_DIR,
                                                   "RPSMES file (*.dan)")
         if type(iname) == tuple:
             iname = iname[0]
@@ -561,13 +563,13 @@ if qt:
             if gui._DEBUG:
                 import traceback
                 traceback.print_exc()
-            msgbox = QtGui.QMessageBox()
+            msgbox = QMessageBox()
             msgbox.setWindowTitle("Import Error")
             msgbox.setText("There was an error while reading the RPSMES file.\n\n"
                            "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
             msgbox.setDetailedText(str(err))
-            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-            msgbox.setIcon(QtGui.QMessageBox.Critical)
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
             msgbox.exec_()
         else:
             oname = obase + '.xpl'
@@ -581,12 +583,12 @@ if qt:
                 if gui._DEBUG:
                     import traceback
                     traceback.print_exc()
-                msgbox = QtGui.QMessageBox()
+                msgbox = QMessageBox()
                 msgbox.setWindowTitle("Import Error")
                 msgbox.setText("There was an error while saving the converted XPL file.")
                 msgbox.setDetailedText(str(err))
-                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-                msgbox.setIcon(QtGui.QMessageBox.Critical)
+                msgbox.setStandardButtons(QMessageBox.Ok)
+                msgbox.setIcon(QMessageBox.Critical)
                 msgbox.exec_()
             else:
                 new_window = gui.MainWindow(oname)
@@ -606,7 +608,7 @@ if qt:
                     new_window.close()
 
     def import_dan_operation(parent):
-        action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+        action = QAction(QIcon.fromTheme('document-open'),
                                '&Import RPSMES .dan file...', parent)
         action.triggered.connect(lambda: import_dan(parent))
         return action

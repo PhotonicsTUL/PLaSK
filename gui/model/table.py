@@ -10,9 +10,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt.QtCore import Qt
+from ..qt.QtCore import *
 
-from ..qt import QtCore, QtGui
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
 from . import SectionModel
 from . import info
 
@@ -25,7 +26,7 @@ class TableModelEditMethods(object):
         else:
             command.redo()
 
-    class InsertEntryCommand(QtGui.QUndoCommand):
+    class InsertEntryCommand(QUndoCommand):
 
         def __init__(self, table, index, entry, QUndoCommand_parent = None):
             super(TableModelEditMethods.InsertEntryCommand, self).__init__('insert row {}'.format(index+1), QUndoCommand_parent)
@@ -34,13 +35,13 @@ class TableModelEditMethods(object):
             self.entry = entry
 
         def redo(self):
-            self.table.beginInsertRows(QtCore.QModelIndex(), self.index, self.index)
+            self.table.beginInsertRows(QModelIndex(), self.index, self.index)
             self.table.entries.insert(self.index, self.entry)
             self.table.fire_changed()
             self.table.endInsertRows()
 
         def undo(self):
-            self.table.beginRemoveRows(QtCore.QModelIndex(), self.index, self.index)
+            self.table.beginRemoveRows(QModelIndex(), self.index, self.index)
             del self.table.entries[self.index]
             self.table.fire_changed()
             self.table.endRemoveRows()
@@ -56,7 +57,7 @@ class TableModelEditMethods(object):
         return index
 
 
-    class RemoveEntryCommand(QtGui.QUndoCommand):
+    class RemoveEntryCommand(QUndoCommand):
 
         def __init__(self, table, index, QUndoCommand_parent = None):
             super(TableModelEditMethods.RemoveEntryCommand, self).__init__('remove row {}'.format(index+1), QUndoCommand_parent)
@@ -65,13 +66,13 @@ class TableModelEditMethods(object):
             self.removed_entry = self.table.entries[self.index]
 
         def redo(self):
-            self.table.beginRemoveRows(QtCore.QModelIndex(), self.index, self.index)
+            self.table.beginRemoveRows(QModelIndex(), self.index, self.index)
             del self.table.entries[self.index]
             self.table.fire_changed()
             self.table.endRemoveRows()
 
         def undo(self):
-            self.table.beginInsertRows(QtCore.QModelIndex(), self.index, self.index)
+            self.table.beginInsertRows(QModelIndex(), self.index, self.index)
             self.table.entries.insert(self.index, self.removed_entry)
             self.table.fire_changed()
             self.table.endInsertRows()
@@ -82,7 +83,7 @@ class TableModelEditMethods(object):
         self._exec_command(TableModelEditMethods.RemoveEntryCommand(self, index))
 
 
-    class SwapEntriesCommand(QtGui.QUndoCommand):
+    class SwapEntriesCommand(QUndoCommand):
 
         def __init__(self, table, index1, index2, QUndoCommand_parent = None):
             if index2 < index1:
@@ -93,7 +94,7 @@ class TableModelEditMethods(object):
             self.table = table
 
         def redo(self):
-            self.table.beginMoveRows(QtCore.QModelIndex(), self.index2, self.index2, QtCore.QModelIndex(), self.index1)
+            self.table.beginMoveRows(QModelIndex(), self.index2, self.index2, QModelIndex(), self.index1)
             self.table.entries[self.index1], self.table.entries[self.index2] =\
                         self.table.entries[self.index2], self.table.entries[self.index1]
             self.table.fire_changed()
@@ -113,7 +114,7 @@ class TableModelEditMethods(object):
         index = self.createIndex(row, col)
         self.dataChanged.emit(index, index)
 
-    class SetDataCommand(QtGui.QUndoCommand):
+    class SetDataCommand(QUndoCommand):
 
         def __init__(self, table, col, row, new_value, QUndoCommand_parent = None):
             super(TableModel.SetDataCommand, self)\
@@ -137,7 +138,7 @@ class TableModelEditMethods(object):
         self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
 
-    class SetEntriesCommand(QtGui.QUndoCommand):
+    class SetEntriesCommand(QUndoCommand):
 
         def __init__(self, table, new_entries, QUndoCommand_parent = None):
             super(TableModel.SetEntriesCommand, self).__init__('edit XPL source', QUndoCommand_parent)
@@ -166,12 +167,11 @@ class TableModelEditMethods(object):
             if hasattr(self, 'undo_stack'): self.undo_stack.clear()
 
 
-class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel):
+class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
 
     def __init__(self, name, parent=None, info_cb=None, *args):
         SectionModel.__init__(self, name, info_cb)
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
-        TableModelEditMethods.__init__(self)
+        QAbstractTableModel.__init__(self, parent)
         self.entries = []
         self._row_to_errors = None
 
@@ -193,7 +193,7 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
         super(TableModel, self).mark_info_invalid()
 
     # QAbstractTableModel implementation
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
@@ -213,10 +213,10 @@ class TableModel(TableModelEditMethods, QtCore.QAbstractTableModel, SectionModel
                 if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages hav decoration only in first column
                     if err.level > max_level: max_level = err.level
             return info.info_level_icon(max_level)
-            #c = QtGui.QPalette().color(QtGui.QPalette.Window)    #default color
-            #if max_level == info.Info.ERROR: return QtGui.QColor(255, 220, 220)
-            #if max_level == info.Info.WARNING: return QtGui.QColor(255, 255, 160)
-            #if max_level == info.Info.INFO: return QtGui.QColor(220, 220, 255)
+            #c = QPalette().color(QPalette.Window)    #default color
+            #if max_level == info.Info.ERROR: return QColor(255, 220, 220)
+            #if max_level == info.Info.WARNING: return QColor(255, 255, 160)
+            #if max_level == info.Info.INFO: return QColor(220, 220, 255)
 
     def flags(self, index):
         flags = super(TableModel, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled

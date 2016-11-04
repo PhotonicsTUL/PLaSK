@@ -386,7 +386,7 @@ def _create_from_name(module, parent, name):
         obj = getattr(parent.obj, name)
     except AttributeError:
         # happens e.g. in properties of
-        # PyQt4.QtGui.QStyleOptionComboBox.currentText
+        # PyQt4.QStyleOptionComboBox.currentText
         # -> just set it to None
         obj = None
     return CompiledObject(obj, parent)

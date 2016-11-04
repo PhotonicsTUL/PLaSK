@@ -10,7 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 
 from .. import Controller
 from ..materials import MaterialsComboBox
@@ -63,7 +63,7 @@ def aligners_to_controllers(aligners_list, position_controllers):
 
 class GNodeController(Controller):
 
-    class ChangeNodeCommand(QtGui.QUndoCommand):
+    class ChangeNodeCommand(QUndoCommand):
 
         def __init__(self, model, node, setter, new_value, old_value, action_name, parent=None):
             super(GNodeController.ChangeNodeCommand, self).__init__(action_name, parent)
@@ -113,13 +113,13 @@ class GNodeController(Controller):
 
     def construct_line_edit(self, row_name=None, use_defines_completer=True, unit=None,
                             node_property_name=None, display_property_name=None, change_cb=None):
-        res = QtGui.QLineEdit()
+        res = QLineEdit()
         if use_defines_completer: res.setCompleter(self.defines_completer)
         if row_name:
             if unit is not None:
                 box, _ = self._construct_hbox(row_name)
                 box.addWidget(res)
-                box.addWidget(QtGui.QLabel(unit))
+                box.addWidget(QLabel(unit))
             else:
                 self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
@@ -134,7 +134,7 @@ class GNodeController(Controller):
         res = MultiLineEdit(change_cb=change_cb)
         # res = TextEditWithCB(key_cb=key_cb)
         # res.setTabChangesFocus(True)
-        # res.setFixedHeight(int(3.5 * QtGui.QFontMetrics(res.font()).height()))
+        # res.setFixedHeight(int(3.5 * QFontMetrics(res.font()).height()))
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
@@ -147,7 +147,7 @@ class GNodeController(Controller):
                             display_property_name=None, node=None, change_cb=None):
         res = ComboBox()
         res.setEditable(editable)
-        res.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        res.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
@@ -188,16 +188,16 @@ class GNodeController(Controller):
             if found is not None:
                 self.document.geometry.gui.tree.setCurrentIndex(self.model.index_for_node(found))
 
-        button = QtGui.QToolButton()
+        button = QToolButton()
         button.setText("->")
         button.setToolTip("Go to selected object")
         button.pressed.connect(goto)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(res)
         layout.addWidget(button)
-        widget = QtGui.QWidget()
+        widget = QWidget()
         widget.setLayout(layout)
 
         if row_name:
@@ -207,8 +207,8 @@ class GNodeController(Controller):
             return widget
 
     def construct_group(self, title=None, position=None):
-        external = QtGui.QGroupBox(self.form)
-        form_layout = QtGui.QFormLayout(external)
+        external = QGroupBox(self.form)
+        form_layout = QFormLayout(external)
         if title is not None:
             external.setTitle(title)
         #     m = form_layout.getContentsMargins()
@@ -224,26 +224,26 @@ class GNodeController(Controller):
         return form_layout
 
     def construct_align_controllers(self, dim=None, add_to_current=True, aligners_dir=None, change_cb=None):
-        """:return List[(QtGui.QComboBox, QtGui.QLineEdit)]: list of controllers pairs, first is combo box to select aligner type,
+        """:return List[(QComboBox, QLineEdit)]: list of controllers pairs, first is combo box to select aligner type,
                     second is line edit for its value"""
         if aligners_dir is None:
             aligners_dir = self.node.aligners_dir()
             if aligners_dir is None: return
         if dim is None: dim = self.node.children_dim
         positions = []
-        layout = QtGui.QGridLayout(None)
+        layout = QGridLayout(None)
         layout.setContentsMargins(0, 0, 0, 0)
         for r, c in enumerate(aligners_dir):
-            axis = QtGui.QLabel(('Longitudinal:', 'Transverse:', 'Vertical:')[c+3-dim])
+            axis = QLabel(('Longitudinal:', 'Transverse:', 'Vertical:')[c+3-dim])
             layout.addWidget(axis, r, 0)
-            position = QtGui.QComboBox()
+            position = QComboBox()
             position.addItems(GNAligner.display_names(dim, c))
             layout.addWidget(position, r, 1)
-            layout.addWidget(QtGui.QLabel('at'), r, 2)
+            layout.addWidget(QLabel('at'), r, 2)
             pos_value = self.construct_line_edit()
             layout.addWidget(pos_value, r, 3)
             positions.append((position, pos_value))
-            layout.addWidget(QtGui.QLabel(u'µm'), r, 4)
+            layout.addWidget(QLabel(u'µm'), r, 4)
         if change_cb is not None:
             cb = lambda: change_cb(controller_to_aligners(positions))
             for p in positions:
@@ -253,9 +253,9 @@ class GNodeController(Controller):
         return positions
 
     def _construct_hbox(self, row_name=None):
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
         hbox.setContentsMargins(0, 0, 0, 0)
-        group = QtGui.QWidget(self.form)
+        group = QWidget(self.form)
         group.setContentsMargins(0, 0, 0, 0)
         group.setLayout(hbox)
         if row_name: self._get_current_form().addRow(row_name, group)
@@ -273,7 +273,7 @@ class GNodeController(Controller):
         res = tuple(self.construct_line_edit() for _ in range(0, dim))
         for i in range(0, dim):
             hbox.addWidget(res[i])
-            hbox.addWidget(QtGui.QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
+            hbox.addWidget(QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
             if change_cb is not None:
                 res[i].editingFinished.connect(lambda : change_cb(tuple(empty_to_none(p.text()) for p in res)))
         return res if row_name else (res, group)
@@ -290,9 +290,9 @@ class GNodeController(Controller):
 
         self.defines_completer = get_defines_completer(document.defines.model, None)
 
-        self.form = QtGui.QWidget()
+        self.form = QWidget()
 
-        self.vbox = QtGui.QVBoxLayout()
+        self.vbox = QVBoxLayout()
         self.vbox.setSpacing(0)
         self.form.setLayout(self.vbox)
         self.construct_form()

@@ -12,7 +12,7 @@
 
 from lxml import etree
 
-from ..qt import QtCore
+from ..qt.QtCore import *
 from .table import TableModel
 from .info import Info
 from ..utils.xml import OrderedTagReader, AttributeReader
@@ -81,11 +81,11 @@ class ConnectsModel(TableModel):
 
     # QAbstractListModel implementation
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0: return 'Provider'
             if col == 1: return 'Receiver'
             if col == 2: return 'Comment'

@@ -11,9 +11,9 @@
 # GNU General Public License for more details.
 from collections import OrderedDict
 
-from ...qt.QtCore import Qt
-
-from ...qt import QtGui, QtCore
+from ...qt.QtCore import *
+from ...qt.QtGui import *
+from ...qt.QtWidgets import *
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ..defines import DefinesCompletionDelegate, get_defines_completer
@@ -28,7 +28,7 @@ else:
     preview_available = True
 
 
-class PlaceDetailsEditor(QtGui.QWidget):
+class PlaceDetailsEditor(QWidget):
     pass
 
 
@@ -39,25 +39,25 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         super(RectangularPlaceSide, self).__init__(parent)
         self.controller = controller
         self.setAutoFillBackground(True)
-        layout = QtGui.QHBoxLayout()
+        layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 4, 0)
         self.object = ComboBox()
         self.object.sizePolicy().setHorizontalStretch(2)
-        self.object.sizePolicy().setHorizontalPolicy(QtGui.QSizePolicy.MinimumExpanding)
+        self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.object.setEditable(True)
         self.path = ComboBox()
         self.path.sizePolicy().setHorizontalStretch(1)
-        self.path.sizePolicy().setHorizontalPolicy(QtGui.QSizePolicy.MinimumExpanding)
+        self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.path.setEditable(True)
         if defines is not None:
             self.object.setCompleter(defines)
             self.path.setCompleter(defines)
-        label = QtGui.QLabel(" Obj&ect:")
+        label = QLabel(" Obj&ect:")
         label.setBuddy(self.object)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.object)
-        label = QtGui.QLabel(" &Path:")
+        label = QLabel(" &Path:")
         label.setBuddy(self.path)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
@@ -92,11 +92,11 @@ class RectangularPlaceLine(PlaceDetailsEditor):
         super(RectangularPlaceLine, self).__init__(parent)
         self.controller = controller
         self.setAutoFillBackground(True)
-        layout = QtGui.QHBoxLayout()
+        layout = QHBoxLayout()
         layout.setContentsMargins(4, 0, 4, 0)
-        self.position = QtGui.QLineEdit()
-        self.start = QtGui.QLineEdit()
-        self.stop = QtGui.QLineEdit()
+        self.position = QLineEdit()
+        self.start = QLineEdit()
+        self.stop = QLineEdit()
         self.position.sizePolicy().setHorizontalStretch(1)
         self.start.sizePolicy().setHorizontalStretch(1)
         self.stop.sizePolicy().setHorizontalStretch(1)
@@ -104,17 +104,17 @@ class RectangularPlaceLine(PlaceDetailsEditor):
             self.position.setCompleter(defines)
             self.start.setCompleter(defines)
             self.stop.setCompleter(defines)
-        label = QtGui.QLabel(" &Pos:")
+        label = QLabel(" &Pos:")
         label.setBuddy(self.position)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.position)
-        label = QtGui.QLabel(" &From:")
+        label = QLabel(" &From:")
         label.setBuddy(self.start)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.start)
-        label = QtGui.QLabel(" &To:")
+        label = QLabel(" &To:")
         label.setBuddy(self.stop)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
         layout.addWidget(label)
@@ -178,7 +178,7 @@ if preview_available:
         pass
 
 
-class BoundaryConditionsDialog(QtGui.QDialog):
+class BoundaryConditionsDialog(QDialog):
 
     def __init__(self, controller, schema, data, parent=None):
         super(BoundaryConditionsDialog, self).__init__(parent)
@@ -192,18 +192,21 @@ class BoundaryConditionsDialog(QtGui.QDialog):
         self.plot_auto_refresh = True
         self.checked_plane = '12'
 
-        self.table = QtGui.QTableView()
+        self.table = QTableView()
         model = BoundaryConditionsModel(schema, data)
         self.table.setModel(model)
         cols = model.columnCount(None)  # column widths:
-        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 250)
-        self.table.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+        try:
+            self.table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+        except AttributeError:
+            self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
-        table_edit_shortcut(self.table, 0, QtGui.QKeySequence(Qt.Key_P))
-        table_edit_shortcut(self.table, 1, QtGui.QKeySequence(Qt.Key_D))
+        table_edit_shortcut(self.table, 0, QKeySequence(Qt.Key_P))
+        table_edit_shortcut(self.table, 1, QKeySequence(Qt.Key_D))
         used_shortcuts = ['p', 'd']
 
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
@@ -214,7 +217,7 @@ class BoundaryConditionsDialog(QtGui.QDialog):
             label = schema.keys[i-2].lower()
             for l in label:
                 if l not in used_shortcuts:
-                    table_edit_shortcut(self.table, i, QtGui.QKeySequence(l))
+                    table_edit_shortcut(self.table, i, QKeySequence(l))
                     used_shortcuts.append(l)
                     break
 
@@ -225,12 +228,12 @@ class BoundaryConditionsDialog(QtGui.QDialog):
 
         self.resize(800, 400)
 
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
         layout.setContentsMargins(2, 2, 2, 6)
         layout.addWidget(table_with_manipulators(self.table))
 
-        buttons = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
@@ -241,7 +244,7 @@ class BoundaryConditionsDialog(QtGui.QDialog):
         if not preview_available: return
 
 
-class PlaceDelegate(QtGui.QStyledItemDelegate):
+class PlaceDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         schema = index.model().schema
@@ -252,11 +255,11 @@ class PlaceDelegate(QtGui.QStyledItemDelegate):
             self._first_enter = True
 
         if opts is None:
-            ed = QtGui.QLineEdit(parent)
+            ed = QLineEdit(parent)
             return ed
 
-        combo = QtGui.QComboBox(parent)
-        combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        combo = QComboBox(parent)
+        combo.setInsertPolicy(QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))
         if index.column() == 0:
@@ -274,7 +277,7 @@ class PlaceDelegate(QtGui.QStyledItemDelegate):
         return combo
 
     def eventFilter(self, editor, event):
-        if isinstance(editor, QtGui.QComboBox) and event.type() == QtCore.QEvent.Enter and self._first_enter:
+        if isinstance(editor, QComboBox) and event.type() == QEvent.Enter and self._first_enter:
             editor.showPopup()
             self._first_enter = False
             return True

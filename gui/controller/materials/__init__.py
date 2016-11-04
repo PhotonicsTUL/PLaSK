@@ -12,9 +12,10 @@
 
 import itertools
 
-from ...qt.QtCore import Qt
-
-from ...qt import QtCore, QtGui, QtSignal
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
+from ...qt import QtSignal
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.python27 import syntax
 from ..script import scheme
@@ -40,29 +41,29 @@ else:
 BASE_MATERIALS = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
 
-class ComponentsPopup(QtGui.QFrame):
+class ComponentsPopup(QFrame):
 
     def __init__(self, close_cb, name, label, groups, doping, pos=None):
         super(ComponentsPopup, self).__init__()
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
-        self.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
+        self.setFrameStyle(QFrame.Box | QFrame.Plain)
         self.close_cb = close_cb
         self.elements = elements_re.findall(name)
         self.label = label
         self.doping = doping
         self.edits = {}
         first = None
-        box = QtGui.QHBoxLayout()
+        box = QHBoxLayout()
         for el in tuple(itertools.chain(*((e[0] for e in g) for g in groups if len(g) > 1))):
-            qlabel = QtGui.QLabel(' ' + el + ':')
-            edit = QtGui.QLineEdit(self)
+            qlabel = QLabel(' ' + el + ':')
+            edit = QLineEdit(self)
             if first is None: first = edit
             box.addWidget(qlabel)
             box.addWidget(edit)
             self.edits[el] = edit
         if doping:
-            qlabel = QtGui.QLabel(' [' + doping + ']:')
-            edit = QtGui.QLineEdit(self)
+            qlabel = QLabel(' [' + doping + ']:')
+            edit = QLineEdit(self)
             if first is None: first = edit
             box.addWidget(qlabel)
             box.addWidget(edit)
@@ -70,7 +71,7 @@ class ComponentsPopup(QtGui.QFrame):
         box.setContentsMargins(2, 1, 2, 1)
         self.setLayout(box)
         if pos is None:
-            cursor = QtGui.QCursor()
+            cursor = QCursor()
             self.move(cursor.pos())
         else:
             self.move(pos)
@@ -99,7 +100,7 @@ class ComponentsPopup(QtGui.QFrame):
         self.close_cb(mat)
 
 
-class MaterialLineEdit(QtGui.QLineEdit):
+class MaterialLineEdit(QLineEdit):
 
     def __init__(self, parent, materials_model):
         super(MaterialLineEdit, self).__init__(parent)
@@ -107,29 +108,29 @@ class MaterialLineEdit(QtGui.QLineEdit):
         self.materials_model = materials_model
 
         # Create a clear button with icon
-        self.button = QtGui.QToolButton(self)
-        self.button.setIcon(QtGui.QIcon.fromTheme('matplotlib'))
+        self.button = QToolButton(self)
+        self.button.setIcon(QIcon.fromTheme('matplotlib'))
         self.button.setCursor(Qt.ArrowCursor)
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
 
         # signals, clear lineEdit if btn pressed; change btn visibility on input
         self.button.clicked.connect(self.show_material)
 
-        frw = self.style().pixelMetric(QtGui.QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
         self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
         msh = self.minimumSizeHint().height()
         self.button.setMaximumHeight(msh)
 
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
-        frw = self.style().pixelMetric(QtGui.QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
         self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
 
     def show_material(self):
         show_material_plot(self, self.materials_model, self.text())
 
 
-class MaterialsComboBox(QtGui.QComboBox):
+class MaterialsComboBox(QComboBox):
 
     editingFinished = QtSignal()
 
@@ -147,7 +148,7 @@ class MaterialsComboBox(QtGui.QComboBox):
             self.setLineEdit(line_edit)
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
-        self.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        self.setInsertPolicy(QComboBox.NoInsert)
         if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent))
         if material_list:
             self.addItems(material_list)
@@ -185,7 +186,7 @@ class MaterialsComboBox(QtGui.QComboBox):
         self.append_list(BASE_MATERIALS, insert_separator)
 
     def show_components_popup(self, text):
-        pos = self.mapToGlobal(QtCore.QPoint(0, self.height()))
+        pos = self.mapToGlobal(QPoint(0, self.height()))
         self.material_edit_popup = None  # close old popup
         name, label, groups, doping = parse_material_components(text)
         if not groups and doping is None:
@@ -202,7 +203,7 @@ class MaterialsComboBox(QtGui.QComboBox):
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 
-class MaterialNameDelegate(QtGui.QStyledItemDelegate):
+class MaterialNameDelegate(QStyledItemDelegate):
 
     def __init__(self, model, parent):
         super(MaterialNameDelegate, self).__init__(parent)
@@ -212,7 +213,7 @@ class MaterialNameDelegate(QtGui.QStyledItemDelegate):
         if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
             ed = MaterialLineEdit(parent, self.model)
         else:
-            ed = QtGui.QLineEdit(parent)
+            ed = QLineEdit(parent)
         return ed
 
     def sizeHint(self, item, index):
@@ -253,8 +254,8 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.insertSeparator(4)
         combo.insertSeparator(len(material_list)-index.row()+1)
         combo.setMaxVisibleItems(len(material_list))
-        #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
-        #             self, QtCore.SLOT("currentIndexChanged()"))
+        #self.connect(combo, SIGNAL("currentIndexChanged(int)"),
+        #             self, SLOT("currentIndexChanged()"))
         #combo.currentIndexChanged[str].connect()
         return combo
 
@@ -274,8 +275,8 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
         if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
 
-        combo = QtGui.QComboBox(parent)
-        combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        combo = QComboBox(parent)
+        combo.setInsertPolicy(QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))
         if index.column() == 0:
@@ -284,7 +285,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             except ValueError:
                 combo.setCurrentIndex(0)
             combo.highlighted.connect(lambda i:
-                QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(combo.itemText(i))))
+                QToolTip.showText(QCursor.pos(), material_html_help(combo.itemText(i))))
         else:
             combo.setEditable(True)
             combo.setEditText(index.data())
@@ -292,13 +293,13 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             completer.setCaseSensitivity(Qt.CaseSensitive)
             combo.setCompleter(completer)
         #combo.setCompleter(completer)
-        #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
-        #             self, QtCore.SLOT("currentIndexChanged()"))
+        #self.connect(combo, SIGNAL("currentIndexChanged(int)"),
+        #             self, SLOT("currentIndexChanged()"))
 
         return combo
 
     def eventFilter(self, editor, event):
-        if isinstance(editor, QtGui.QComboBox) and event.type() == QtCore.QEvent.Enter and self._first_enter:
+        if isinstance(editor, QComboBox) and event.type() == QEvent.Enter and self._first_enter:
             editor.showPopup()
             self._first_enter = False
             return True
@@ -314,9 +315,9 @@ class MaterialsController(Controller):
 
         self.selected_material = None
 
-        self.splitter = QtGui.QSplitter()
+        self.splitter = QSplitter()
 
-        self.materials_table = QtGui.QTableView()
+        self.materials_table = QTableView()
         self.materials_table.setModel(self.model)
         #self.model.modelReset.connect(lambda : self.materials_table.clearSelection())  #TODO why does not work?
         self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model,
@@ -335,23 +336,23 @@ class MaterialsController(Controller):
         module_action = TableActions.make_action('material-module', 'Add &Module',
                                                  'Add new python module to the list', self.materials_table,
                                                  lambda: self.add_external('module'))
-        tool_button = QtGui.QToolButton()
-        tool_button.setIcon(QtGui.QIcon.fromTheme('material-external'))
-        tool_menu = QtGui.QMenu(self.materials_table)
+        tool_button = QToolButton()
+        tool_button.setIcon(QIcon.fromTheme('material-external'))
+        tool_menu = QMenu(self.materials_table)
         tool_menu.addAction(library_action)
         tool_menu.addAction(module_action)
         tool_button.setMenu(tool_menu)
-        tool_button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        tool_button.setPopupMode(QToolButton.InstantPopup)
         materials_toolbar.addWidget(tool_button)
         self.splitter.addWidget(materials_table)
         # materials_toolbar.addSeparator()
         # materials_toolbar.addAction(self.document.window.material_plot_action)
 
-        self.prop_splitter = QtGui.QSplitter()
+        self.prop_splitter = QSplitter()
         self.prop_splitter.setOrientation(Qt.Vertical)
 
         #self.property_model = MaterialPropertyModel(material_selection_model)
-        self.properties_table = QtGui.QTableView()
+        self.properties_table = QTableView()
         #self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
         self.unit_delegate = HTMLDelegate(self.properties_table)
@@ -364,13 +365,16 @@ class MaterialsController(Controller):
         self.prop_splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter,
                                                              title="Properties of the material"))
 
-        self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.materials_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.materials_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.materials_table.setColumnWidth(0, 140)
-        self.materials_table.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+        try:
+            self.materials_table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+        except AttributeError:
+            self.materials_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
-        check_box_style_option = QtGui.QStyleOptionButton()
-        check_box_rect = QtGui.QApplication.style().subElementRect(QtGui.QStyle.SE_CheckBoxIndicator,
+        check_box_style_option = QStyleOptionButton()
+        check_box_rect = QApplication.style().subElementRect(QStyle.SE_CheckBoxIndicator,
                                                                    check_box_style_option, None)
         self.materials_table.setColumnWidth(2, check_box_rect.width()+8)
 
@@ -381,8 +385,8 @@ class MaterialsController(Controller):
 
         self.model.infoChanged.connect(self.update_materials_table)
 
-        self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.properties_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.properties_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         table_last_col_fill(self.properties_table, 4, [80, 320, 50])
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
@@ -395,9 +399,9 @@ class MaterialsController(Controller):
 
         self.document.window.config_changed.connect(self.reconfig)
 
-        focus_action = QtGui.QAction(self.materials_table)
+        focus_action = QAction(self.materials_table)
         focus_action.triggered.connect(lambda: self.properties_table.setFocus())
-        focus_action.setShortcut(QtGui.QKeySequence(Qt.Key_Return))
+        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.materials_table.addAction(focus_action)
 
@@ -447,7 +451,10 @@ class MaterialsController(Controller):
         if self.selected_material is not None:
             self.selected_material.dataChanged.connect(self.property_data_changed)
         #self.properties_table.resizeColumnsToContents()
-        self.properties_table.horizontalHeader().setResizeMode(2, QtGui.QHeaderView.ResizeToContents)
+        try:
+            self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
+        except AttributeError:
+            self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.properties_table.resizeColumnToContents(1)
         self.properties_table.resizeRowsToContents()
 

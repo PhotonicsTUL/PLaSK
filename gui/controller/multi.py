@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui
+from ..qt.QtWidgets import *
 
 from ..utils.widgets import fire_edit_end
 from . import Controller
@@ -26,7 +26,7 @@ class MultiEditorController(Controller):
         object.__init__(self)
         self.controllers = list(controllers)
 
-        self.editorWidget = QtGui.QStackedWidget()
+        self.editorWidget = QStackedWidget()
         for c in controllers:
             self.editorWidget.addWidget(c.get_widget())
 

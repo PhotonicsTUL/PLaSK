@@ -89,7 +89,7 @@ class XPLDocument(object):
             ModelTest(self.model_by_name('geometry'))
         # self.tree = etree()
 
-        # self.undo_group = QtGui.QUndoGroup()    #does we need this?
+        # self.undo_group = QUndoGroup()    #does we need this?
         # for c in self.controllers:
         #     self.undo_group.addStack(c.model.undo_stack)
 

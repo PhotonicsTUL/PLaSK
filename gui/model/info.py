@@ -12,9 +12,10 @@
 
 import weakref
 
-from ..qt.QtCore import Qt
+from ..qt.QtCore import *
 
-from ..qt import QtCore, QtGui
+from ..qt.QtCore import *
+from ..qt.QtGui import *
 from ..utils.signal import Signal
 
 
@@ -56,14 +57,14 @@ class Info(object):
 
 
 def info_level_icon(level):
-    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
-    if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
-    if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
-    if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
+    if level == Info.GROUP: return QIcon.fromTheme('folder')
+    if level == Info.INFO: return QIcon.fromTheme('dialog-information')
+    if level == Info.WARNING: return QIcon.fromTheme('dialog-warning')
+    if level == Info.ERROR: return QIcon.fromTheme('dialog-error')
     return None
 
 
-class InfoListModel(QtCore.QAbstractListModel):
+class InfoListModel(QAbstractListModel):
     """
     Qt list model of info (warning, errors, etc.) of section model
     (None section model is allowed and than the list is empty)
@@ -82,7 +83,7 @@ class InfoListModel(QtCore.QAbstractListModel):
             model.infoChanged += self.infoChanged
 
     def __init__(self, model, parent=None, *args):
-        QtCore.QAbstractListModel.__init__(self, parent, *args)
+        QAbstractListModel.__init__(self, parent, *args)
         self._set_model(model)
 
     def infoChanged(self, model, *args, **kwargs):
@@ -95,11 +96,11 @@ class InfoListModel(QtCore.QAbstractListModel):
         self._set_model(model)
         if model is not None: self.infoChanged(model)
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
-    #def columnCount(self, parent=QtCore.QModelIndex()):
+    #def columnCount(self, parent=QModelIndex()):
     #    return 1
 
     def data(self, index, role=Qt.DisplayRole):
@@ -117,7 +118,7 @@ class InfoListModel(QtCore.QAbstractListModel):
             try: return self.entries[index.row()].align
             except AttributeError: return None
         # if role == Qt.FontRole:
-        #     font = QtGui.QFont()
+        #     font = QFont()
         #     font.setUnderline(True)
         #     return font
         return None

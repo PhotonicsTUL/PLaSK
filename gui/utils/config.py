@@ -15,7 +15,9 @@ import os
 from collections import OrderedDict
 from numpy import log10, ceil
 
-from ..qt import QtCore, QtGui
+from ..qt.QtCore import *
+from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 
 try:
     unicode = unicode
@@ -46,9 +48,9 @@ DEFAULTS = {
     'main_window/use_menu': False,
     'main_window/icons_theme': 'system',
     'updates/automatic_check': None,
-    'editor/font': [_default_font_family, str(QtGui.QFont().pointSize()),
+    'editor/font': [_default_font_family, str(QFont().pointSize()),
                     '-1', '5', '50', '0', '0', '0', '0', '0'],
-    'editor/help_font': [_default_font_family, str(QtGui.QFont().pointSize()-2),
+    'editor/help_font': [_default_font_family, str(QFont().pointSize()-2),
                          '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/current_line_color': '#ffffee',
     'editor/selection_color': '#ffffdd',
@@ -57,7 +59,7 @@ DEFAULTS = {
     'editor/matching_bracket_color': '#aaffaa',
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher/defalt': 'Local Process',
-    'launcher_local/font': [_default_font_family, str(QtGui.QFont().pointSize()-1),
+    'launcher_local/font': [_default_font_family, str(QFont().pointSize()-1),
                             '-1', '5', '50', '0', '0', '0', '0', '0'],
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
@@ -293,7 +295,7 @@ class Config(object):
     """Configuration wrapper"""
 
     def __init__(self):
-        self.qsettings = QtCore.QSettings("plask", "gui")
+        self.qsettings = QSettings("plask", "gui")
 
     def __getitem__(self, key):
         current = self.qsettings.value(key)
@@ -344,9 +346,9 @@ class ConfigProxy(object):
         CONFIG.sync()
 
 
-class ConfigDialog(QtGui.QDialog):
+class ConfigDialog(QDialog):
 
-    class CheckBox(QtGui.QCheckBox):
+    class CheckBox(QCheckBox):
         def __init__(self, entry, parent=None, help=None):
             super(ConfigDialog.CheckBox, self).__init__(parent)
             self.entry = entry
@@ -355,7 +357,7 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.isChecked()
 
-    class Combo(QtGui.QComboBox):
+    class Combo(QComboBox):
         def __init__(self, entry, options, parent=None, help=None):
             super(ConfigDialog.Combo, self).__init__(parent)
             self.entry = entry
@@ -372,7 +374,7 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.currentText()
 
-    class SpinBox(QtGui.QSpinBox):
+    class SpinBox(QSpinBox):
         def __init__(self, entry, parent=None, min=None, max=None, help=None):
             super(ConfigDialog.SpinBox, self).__init__(parent)
             self.entry = entry
@@ -383,7 +385,7 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.value()
 
-    class FloatSpinBox(QtGui.QDoubleSpinBox):
+    class FloatSpinBox(QDoubleSpinBox):
         def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None):
             super(ConfigDialog.FloatSpinBox, self).__init__(parent)
             self.entry = entry
@@ -397,7 +399,7 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.value()
 
-    class Color(QtGui.QToolButton):
+    class Color(QToolButton):
         def __init__(self, entry, parent=None, help=None):
             super(ConfigDialog.Color, self).__init__(parent)
             self.entry = entry
@@ -405,49 +407,49 @@ class ConfigDialog(QtGui.QDialog):
             self.setStyleSheet(u"background-color: {};".format(self._color))
             if help is not None: self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
-            self.setSizePolicy(QtGui.QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
         def on_press(self):
-            dlg = QtGui.QColorDialog(self.parent())
+            dlg = QColorDialog(self.parent())
             if self._color:
-                dlg.setCurrentColor(QtGui.QColor(self._color))
+                dlg.setCurrentColor(QColor(self._color))
             if dlg.exec_():
                 self._color = dlg.currentColor().name()
                 self.setStyleSheet(u"background-color: {};".format(self._color))
         def save(self):
             CONFIG[self.entry] = self._color
 
-    class Syntax(QtGui.QWidget):
+    class Syntax(QWidget):
         def __init__(self, entry, parent=None, help=None):
             super(ConfigDialog.Syntax, self).__init__(parent)
             self.entry = entry
             syntax = parse_highlight(CONFIG[entry])
-            layout = QtGui.QHBoxLayout()
+            layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(4)
             self.setLayout(layout)
-            self.color_button = QtGui.QToolButton(self)
-            self.color_button.setSizePolicy(QtGui.QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
+            self.color_button = QToolButton(self)
+            self.color_button.setSizePolicy(QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
             self.color_button.clicked.connect(self.on_color_press)
             layout.addWidget(self.color_button)
             self._color = syntax.get('color')
             if self._color is not None:
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
             layout.addWidget(self.color_button)
-            self.bold = QtGui.QCheckBox('bold', self)
+            self.bold = QCheckBox('bold', self)
             self.bold.setChecked(syntax.get('bold', False))
             layout.addWidget(self.bold)
-            self.italic = QtGui.QCheckBox('italic', self)
+            self.italic = QCheckBox('italic', self)
             self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
         def on_color_press(self):
-            if QtGui.QApplication.keyboardModifiers() == QtCore.Qt.CTRL:
+            if QApplication.keyboardModifiers() == Qt.CTRL:
                 self._color = None
                 self.color_button.setStyleSheet("")
                 return
-            dlg = QtGui.QColorDialog(self.parent())
+            dlg = QColorDialog(self.parent())
             if self._color:
-                dlg.setCurrentColor(QtGui.QColor(self._color))
+                dlg.setCurrentColor(QColor(self._color))
             if dlg.exec_():
                 self._color = dlg.currentColor().name()
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
@@ -458,11 +460,11 @@ class ConfigDialog(QtGui.QDialog):
             if self.italic.isChecked(): syntax.append('italic=true')
             CONFIG[self.entry] = ', '.join(syntax)
 
-    class Font(QtGui.QPushButton):
+    class Font(QPushButton):
         def __init__(self, entry, parent=None, help=None):
             super(ConfigDialog.Font, self).__init__(parent)
             self.entry = entry
-            self.current_font = QtGui.QFont()
+            self.current_font = QFont()
             self.current_font.fromString(','.join(CONFIG[entry]))
             family = self.current_font.family()
             size = self.current_font.pointSize()
@@ -471,9 +473,9 @@ class ConfigDialog(QtGui.QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
-            self.setSizePolicy(QtGui.QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
         def on_press(self):
-            dlg = QtGui.QFontDialog(self.parent())
+            dlg = QFontDialog(self.parent())
             dlg.setCurrentFont(self.current_font)
             if dlg.exec_():
                 self.current_font = dlg.selectedFont()
@@ -482,18 +484,18 @@ class ConfigDialog(QtGui.QDialog):
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
 
-    class Path(QtGui.QWidget):
+    class Path(QWidget):
         def __init__(self, entry, title,  mask, parent=None, help=None):
             super(ConfigDialog.Path, self).__init__(parent)
-            layout = QtGui.QHBoxLayout()
+            layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
-            self.edit = QtGui.QLineEdit(self)
+            self.edit = QLineEdit(self)
             path = CONFIG[entry]
             if path is not None:
                 self.edit.setText(str(path))
-            self.select = QtGui.QToolButton(self)
-            self.select.setIcon(QtGui.QIcon.fromTheme('document-open'))
+            self.select = QToolButton(self)
+            self.select.setIcon(QIcon.fromTheme('document-open'))
             self.select.pressed.connect(self.pushed)
             layout.addWidget(self.edit)
             layout.addWidget(self.select)
@@ -507,7 +509,7 @@ class ConfigDialog(QtGui.QDialog):
             dirname = os.path.dirname(self.edit.text())
             if not dirname:
                 dirname = os.path.dirname(sys.executable)
-            filename = QtGui.QFileDialog.getOpenFileName(self, "Select {}".format(self.title), dirname, self.mask)
+            filename = QFileDialog.getOpenFileName(self, "Select {}".format(self.title), dirname, self.mask)
             if type(filename) == tuple: filename = filename[0]
             if filename: self.edit.setText(filename)
         def save(self):
@@ -516,13 +518,13 @@ class ConfigDialog(QtGui.QDialog):
     def __init__(self, parent):
         super(ConfigDialog, self).__init__(parent)
         self.setWindowTitle("GUI Settings")
-        vlayout = QtGui.QVBoxLayout()
+        vlayout = QVBoxLayout()
 
-        categories = QtGui.QListWidget()
-        stack = QtGui.QStackedWidget()
+        categories = QListWidget()
+        stack = QStackedWidget()
         categories.currentRowChanged.connect(stack.setCurrentIndex)
 
-        hlayout = QtGui.QHBoxLayout()
+        hlayout = QHBoxLayout()
         hlayout.addWidget(categories)
         hlayout.addWidget(stack)
         vlayout.addLayout(hlayout)
@@ -530,18 +532,18 @@ class ConfigDialog(QtGui.QDialog):
         self.items = []
 
         for cat, tabs in CONFIG_WIDGETS.items():
-            # page = QtGui.QToolBox()
-            page = QtGui.QTabWidget()
+            # page = QToolBox()
+            page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
             for label, items in tabs.items():
-                tab = QtGui.QWidget(page)
-                tab_layout = QtGui.QFormLayout()
+                tab = QWidget(page)
+                tab_layout = QFormLayout()
                 tab.setLayout(tab_layout)
                 page.addTab(tab, label)
                 for item in items:
                     if isinstance(item, basestring):
-                        label = QtGui.QLabel(item)
+                        label = QLabel(item)
                         font = label.font()
                         font.setBold(True)
                         label.setFont(font)
@@ -553,11 +555,11 @@ class ConfigDialog(QtGui.QDialog):
 
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
-        buttons = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Apply | QtGui. QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Apply |  QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-        buttons.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self.apply)
+        buttons.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
 
         vlayout.addWidget(buttons)
         self.setLayout(vlayout)

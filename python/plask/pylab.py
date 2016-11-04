@@ -27,7 +27,7 @@ else:
     matplotlib.use(backend)
 
 # Specify Qt4 API v2 while it is not too late
-if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4' or backend == 'Qt5Agg':
+if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
     try:
         import sip
         for n in ("QString", "QVariant"):

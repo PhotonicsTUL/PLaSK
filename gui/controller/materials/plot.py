@@ -15,12 +15,17 @@ import sys
 import itertools
 import numpy
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.widgets import Cursor
 
-from ...qt.QtCore import Qt
+from ...qt import QT_API
+if QT_API == 'PyQt5':
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+else:
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
-from ...qt import QtGui
+from ...qt.QtCore import *
+from ...qt.QtGui import *
+from ...qt.QtWidgets import *
 from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, MaterialsModel
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
@@ -43,72 +48,72 @@ CURRENT_PROP = 'thermk'
 CURRENT_ARG = 'T'
 
 
-class MaterialPlot(QtGui.QWidget):
+class MaterialPlot(QWidget):
 
     def __init__(self, model=None, parent=None, init_material=None):
         super(MaterialPlot, self).__init__(parent)
 
         self.model = model
 
-        self.material = QtGui.QComboBox()
+        self.material = QComboBox()
         self.material.setEditable(False)
-        self.material.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        self.material.setInsertPolicy(QComboBox.NoInsert)
         self.material.setMinimumWidth(180)
         self.material.currentIndexChanged.connect(self.material_changed)
-        self.param = QtGui.QComboBox()
+        self.param = QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.setCurrentIndex(self.param.findText(CURRENT_PROP))
         self.param.currentIndexChanged.connect(self.property_changed)
         self.param.setMaxVisibleItems(len(MATERIALS_PROPERTES))
         self.param.highlighted.connect(lambda i:
-            QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(self.param.itemText(i)))
+            QToolTip.showText(QCursor.pos(), material_html_help(self.param.itemText(i)))
         )
-        toolbar1 = QtGui.QToolBar()
+        toolbar1 = QToolBar()
         toolbar1.setStyleSheet("QToolBar { border: 0px }")
-        toolbar1.addWidget(QtGui.QLabel("Material: "))
+        toolbar1.addWidget(QLabel("Material: "))
         toolbar1.addWidget(self.material)
-        toolbar1.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        toolbar2 = QtGui.QToolBar()
+        toolbar1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        toolbar2 = QToolBar()
         toolbar2.setStyleSheet("QToolBar { border: 0px }")
-        toolbar2.addWidget(QtGui.QLabel("Parameter: "))
+        toolbar2.addWidget(QLabel("Parameter: "))
         toolbar2.addWidget(self.param)
-        toolbar2.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        self.par_toolbar = QtGui.QToolBar()
+        toolbar2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.par_toolbar = QToolBar()
         self.par_toolbar.setStyleSheet("QToolBar { border: 0px }")
-        self.mat_toolbar = QtGui.QToolBar()
+        self.mat_toolbar = QToolBar()
         self.mat_toolbar.setStyleSheet("QToolBar { border: 0px }")
 
         self.arguments = {}
 
         # self.model.changed.connect(self.update_materials)
 
-        plot = QtGui.QPushButton()
+        plot = QPushButton()
         plot.setText("&Plot")
         plot.pressed.connect(self.update_plot)
         plot.setDefault(True)
-        plot.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        plot.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
         self.canvas.updateGeometry()
         self.axes = None
 
-        self.error = QtGui.QTextEdit(self)
+        self.error = QTextEdit(self)
         self.error.setVisible(False)
         self.error.setReadOnly(True)
         self.error.setContentsMargins(0, 0, 0, 0)
         self.error.setFrameStyle(0)
         pal = self.error.palette()
-        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
+        pal.setColor(QPalette.Base, QColor("#ffc"))
         self.error.setPalette(pal)
         self.error.acceptRichText()
-        self.error.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self.error.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        hbox1 = QtGui.QHBoxLayout()
-        hbox2 = QtGui.QHBoxLayout()
+        hbox1 = QHBoxLayout()
+        hbox2 = QHBoxLayout()
         hbox1.addWidget(toolbar1)
         hbox1.addWidget(self.mat_toolbar)
         hbox2.addWidget(toolbar2)
@@ -116,41 +121,41 @@ class MaterialPlot(QtGui.QWidget):
 
         hbox2.addWidget(plot)
 
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
         layout.addLayout(hbox1)
         layout.addLayout(hbox2)
 
-        self.label = QtGui.QLabel(self)
+        self.label = QLabel(self)
         self.label.setText(' ')
 
-        plotbox = QtGui.QVBoxLayout()
+        plotbox = QVBoxLayout()
         plotbox.addWidget(self.error)
         plotbox.addWidget(self.label)
         plotbox.setAlignment(self.label, Qt.AlignRight)
         plotbox.addWidget(self.canvas)
 
-        splitter = QtGui.QSplitter(self)
+        splitter = QSplitter(self)
         splitter.setOrientation(Qt.Vertical)
-        plotbox_widget = QtGui.QWidget()
+        plotbox_widget = QWidget()
         plotbox_widget.setLayout(plotbox)
         splitter.addWidget(plotbox_widget)
 
-        self.logx_action = QtGui.QAction("Logarithmic &Argument", self.canvas)
+        self.logx_action = QAction("Logarithmic &Argument", self.canvas)
         self.logx_action.setCheckable(True)
         self.logx_action.triggered.connect(self.update_scale)
-        self.logy_action = QtGui.QAction("Logarithmic &Value", self.canvas)
+        self.logy_action = QAction("Logarithmic &Value", self.canvas)
         self.logy_action.setCheckable(True)
         self.logy_action.triggered.connect(self.update_scale)
         self.canvas.addAction(self.logy_action)
         self.canvas.addAction(self.logx_action)
         self.canvas.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        self.info = QtGui.QTextEdit(self)
+        self.info = QTextEdit(self)
         self.info.setAcceptRichText(True)
         self.info.setReadOnly(True)
         self.info.setContentsMargins(0, 0, 0, 0)
         self.info.setFrameStyle(0)
-        self.info.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+        self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
 
         splitter.addWidget(self.info)
 
@@ -228,23 +233,23 @@ class MaterialPlot(QtGui.QWidget):
             if name is None:
                 toolbar.addSeparator()
                 continue
-            select = QtGui.QRadioButton()
+            select = QRadioButton()
             select.toggled.connect(self.selected_argument)
             select.setAutoExclusive(False)
             toolbar.addWidget(select)
             select.setText("{}:".format(name))
             select.descr = descr
             select.unit = unit
-            val0 = QtGui.QLineEdit()
-            val0.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            val0 = QLineEdit()
+            val0.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
             val0.returnPressed.connect(self.update_plot)
             val0.setObjectName(name+'0')
             val0.textChanged.connect(self.param_changed)
             toolbar.addWidget(val0)
-            sep = toolbar.addWidget(QtGui.QLabel("-"))
+            sep = toolbar.addWidget(QLabel("-"))
             sep.setVisible(False)
-            val1 = QtGui.QLineEdit()
-            val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            val1 = QLineEdit()
+            val1.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
             val1.returnPressed.connect(self.update_plot)
             val1.setObjectName(name+'1')
             val1.textChanged.connect(self.param_changed)
@@ -487,12 +492,12 @@ class MaterialPlot(QtGui.QWidget):
 
 
 def show_material_plot(parent, model, init_material=None):
-    # plot_window = QtGui.QDockWidget("Parameter Plot", self.document.window)
-    # plot_window.setFeatures(QtGui.QDockWidget.AllDockWidgetFeatures)
+    # plot_window = QDockWidget("Parameter Plot", self.document.window)
+    # plot_window.setFeatures(QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
     # plot_window.setWidget(MaterialPlot())
     # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
-    plot_window = QtGui.QMainWindow(parent)
+    plot_window = QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
     plot_window.setCentralWidget(MaterialPlot(model, init_material=init_material))
     plot_window.show()

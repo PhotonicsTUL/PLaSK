@@ -22,7 +22,7 @@ except ImportError:
     from pipes import quote
 
 from .. import XPLDocument
-from ..qt import QtGui
+from ..qt.QtWidgets import *
 from ..utils.config import CONFIG
 
 
@@ -46,29 +46,29 @@ class Launcher(object):
         self.dirname = None
 
     def widget(self, main_window):
-        widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
+        widget = QWidget()
+        layout = QVBoxLayout()
         widget.setLayout(layout)
-        layout.addWidget(QtGui.QLabel("Working directory:"))
-        dirbutton = QtGui.QPushButton()
+        layout.addWidget(QLabel("Working directory:"))
+        dirbutton = QPushButton()
         if self.dirname:
             dirname = self.dirname
         else:
             dirname = os.path.dirname(os.path.abspath(main_window.document.filename or u'dummy'))
-        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
+        dirbutton.setIcon(QIcon.fromTheme('folder-open'))
         dirbutton.pressed.connect(lambda: self.select_workdir(main_window.document.filename))
-        dirlayout = QtGui.QHBoxLayout()
-        self.diredit = QtGui.QLineEdit()
+        dirlayout = QHBoxLayout()
+        self.diredit = QLineEdit()
         self.diredit.setReadOnly(True)
         self.diredit.setText(dirname)
         pal = self.diredit.palette()
-        pal.setColor(QtGui.QPalette.Base, QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+        pal.setColor(QPalette.Base, QPalette().color(QPalette.Normal, QPalette.Window))
         self.diredit.setPalette(pal)
         dirlayout.addWidget(self.diredit)
         dirlayout.addWidget(dirbutton)
         layout.addLayout(dirlayout)
-        layout.addWidget(QtGui.QLabel("Log level:"))
-        self.loglevel = QtGui.QComboBox()
+        layout.addWidget(QLabel("Log level:"))
+        self.loglevel = QComboBox()
         loglevels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
         self.loglevel.addItems(loglevels)
         if isinstance(main_window.document, XPLDocument):
@@ -91,11 +91,11 @@ class Launcher(object):
             program = which(program) or program
 
         if main_window.isWindowModified():
-            confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
+            confirm = QMessageBox.question(main_window, "Unsaved File",
                                                  "The file must be saved before launching local computations. "
                                                  "Do you want to save the file now?",
-                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            if confirm == QtGui.QMessageBox.No or not main_window.save():
+                                                 QMessageBox.Yes | QMessageBox.No)
+            if confirm == QMessageBox.No or not main_window.save():
                 return
         filename = os.path.abspath(main_window.document.filename)
         if self.dirname:
@@ -132,7 +132,7 @@ class Launcher(object):
             dname = self.dirname
         else:
             dname = os.path.dirname(os.path.abspath(filename or 'dummy'))
-        dirname = QtGui.QFileDialog.getExistingDirectory(None, None, dname)
+        dirname = QFileDialog.getExistingDirectory(None, None, dname)
         if dirname:
             self.dirname = dirname
             self.diredit.setText(dirname)

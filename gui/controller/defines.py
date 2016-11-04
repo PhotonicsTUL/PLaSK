@@ -10,16 +10,19 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui, QtCore
+from ..qt.QtCore import *
+
+from ..qt.QtGui import *
+from ..qt.QtWidgets import *
 
 from ..model.defines import DefinesModel
 from .table import TableController
 
 
-class AfterBracketCompleter(QtGui.QCompleter):
+class AfterBracketCompleter(QCompleter):
 
     def pathFromIndex(self, index):
-        path = QtGui.QCompleter.pathFromIndex(self, index)
+        path = QCompleter.pathFromIndex(self, index)
 
         try:
             text = self.widget().text()         # text field
@@ -42,15 +45,18 @@ class AfterBracketCompleter(QtGui.QCompleter):
 def get_defines_completer(model, parent):
     completer = AfterBracketCompleter(model, parent)
     completer.setModel(model)  # PySide needs this
-    tab = QtGui.QTableView(parent)
+    tab = QTableView(parent)
     #tab.resizeColumnsToContents()
     tab.setModel(model)
     tab.setMinimumSize(0, 200)
-    #tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-    tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-    tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-    tab.setSelectionBehavior(QtGui.QTableView.SelectRows)
-    tab.setSelectionMode(QtGui.QTableView.SingleSelection)
+    #tab.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+    try:
+        tab.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+    except AttributeError:
+        tab.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+    tab.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    tab.setSelectionBehavior(QTableView.SelectRows)
+    tab.setSelectionMode(QTableView.SingleSelection)
     tab.horizontalHeader().hide()
     tab.verticalHeader().hide()
     tab.setSortingEnabled(False)
@@ -61,44 +67,44 @@ def get_defines_completer(model, parent):
     return completer
 
 
-class DefineHintsTableModel(QtCore.QAbstractTableModel):
+class DefineHintsTableModel(QAbstractTableModel):
 
     def __init__(self, defines_model, parent=None, *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)   #QtCore.QObject.parent(defines_model)
+        QAbstractTableModel.__init__(self, parent, *args)   #QObject.parent(defines_model)
         self.model = defines_model
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         return self.model.rowCount(parent)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if index.isValid() and index.column() == 1:
-            if role == QtCore.Qt.FontRole:
-                font = QtGui.QFont()
+            if role == Qt.FontRole:
+                font = QFont()
                 font.setItalic(True)
                 return font
-            if role == QtCore.Qt.TextColorRole:
-                return QtGui.QColor(90, 90, 90) #QtGui.QColor(QtCore.Qt.blue)
+            if role == Qt.TextColorRole:
+                return QColor(90, 90, 90) #QColor(Qt.blue)
         return self.model.data(index, role)
 
     #def flags(self, index):
-    #    return super(DefineHintsTableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+    #    return super(DefineHintsTableModel, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 2
 
     def headerData(self, col, orientation, role):
         return self.model.headerData(col, orientation, role)
 
 
-class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
+class DefinesCompletionDelegate(QStyledItemDelegate):
 
     def __init__(self, model, parent):
-        QtGui.QStyledItemDelegate.__init__(self, parent)
+        QStyledItemDelegate.__init__(self, parent)
         self.model = DefineHintsTableModel(model, parent)
         #self.model = model
 
     def createEditor(self, parent, option, index):
-        ed = QtGui.QLineEdit(parent)
+        ed = QLineEdit(parent)
         completer = get_defines_completer(self.model, parent)
         ed.setCompleter(completer)
         return ed
@@ -111,7 +117,7 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
     #def setModelData(self, editor, model, index):
     #    model.setData(index, editor.currentIndex())
 
-    #@QtCore.pyqtSlot()
+    #@pyqtSlot()
     #def currentIndexChanged(self):
     #    self.commitData.emit(self.sender())
 

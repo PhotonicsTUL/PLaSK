@@ -23,12 +23,13 @@ else:
         unicode = str
 
     import gui
-    from gui.qt import QtGui
+    from gui.qt.QtWidgets import *
+    from gui.qt.QtGui import *
 
-    class RefactorAction(QtGui.QAction):
+    class RefactorAction(QAction):
 
         def __init__(self, parent):
-            super(RefactorAction, self).__init__(QtGui.QIcon.fromTheme('show-source'),
+            super(RefactorAction, self).__init__(QIcon.fromTheme('show-source'),
                                                  'Convert Script to Python&3', parent)
             self.triggered.connect(self.execute)
 
@@ -40,26 +41,26 @@ else:
             try:
                 node3 = refactoring_tool.refactor_string(text2, 'script')
             except Exception as err:
-                msgbox = QtGui.QMessageBox()
+                msgbox = QMessageBox()
                 msgbox.setWindowTitle("Python3 Conversion Error")
                 msgbox.setText("There was an error while converting your script to Python3!")
                 msgbox.setInformativeText("Check if the script does not have any Python2 syntax errors.")
                 msgbox.setDetailedText(unicode(err))
-                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-                msgbox.setIcon(QtGui.QMessageBox.Critical)
+                msgbox.setStandardButtons(QMessageBox.Ok)
+                msgbox.setIcon(QMessageBox.Critical)
                 msgbox.exec_()
             else:
-                editor.moveCursor(QtGui.QTextCursor.Start)
-                editor.moveCursor(QtGui.QTextCursor.End, True)
+                editor.moveCursor(QTextCursor.Start)
+                editor.moveCursor(QTextCursor.End, True)
                 cursor = editor.textCursor()
                 cursor.insertText(unicode(node3)[:-1])
 
-                msgbox = QtGui.QMessageBox()
+                msgbox = QMessageBox()
                 msgbox.setWindowTitle("Python3 Conversion")
                 msgbox.setText("Your script have been converted to Python3.")
                 msgbox.setInformativeText("You should verify it now and do the manual adjustments if necessary.")
-                msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
-                msgbox.setIcon(QtGui.QMessageBox.Information)
+                msgbox.setStandardButtons(QMessageBox.Ok)
+                msgbox.setIcon(QMessageBox.Information)
                 msgbox.exec_()
 
     if gui.OPERATIONS:

@@ -1,16 +1,23 @@
 # coding=utf-8
 import matplotlib
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import ColorConverter
 
-from ...qt.QtCore import Qt
+from ...qt import QT_API
+if QT_API == 'PyQt5':
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+
+from ...qt.QtCore import *
 
 import plask
 from plask._plot_geometry import plane_to_axes
-from ...qt import QtGui
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG
 
@@ -39,7 +46,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     def _icon(self, name):
         if name is not None:
-            return QtGui.QIcon.fromTheme(name)
+            return QIcon.fromTheme(name)
 
     toolitems = (
         ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
@@ -65,10 +72,10 @@ class NavigationToolbar(NavigationToolbar2QT):
             if text is None:
                 self.addSeparator()
             elif callback is None:
-                self.addWidget(QtGui.QLabel(text))
+                self.addWidget(QLabel(text))
             else:
                 if type(checked) in (tuple, list):
-                    combo = QtGui.QComboBox()
+                    combo = QComboBox()
                     combo.addItems(checked[0])
                     combo.setCurrentIndex(checked[1])
                     combo.currentIndexChanged.connect(getattr(self, callback))
@@ -78,11 +85,11 @@ class NavigationToolbar(NavigationToolbar2QT):
                     if text is None:
                         widget = combo
                     else:
-                        widget = QtGui.QWidget()
-                        layout = QtGui.QHBoxLayout()
+                        widget = QWidget()
+                        layout = QHBoxLayout()
                         layout.setContentsMargins(0, 2, 0, 0)
                         layout.setAlignment(Qt.AlignVCenter)
-                        layout.addWidget(QtGui.QLabel(text))
+                        layout.addWidget(QLabel(text))
                         layout.addWidget(combo)
                         widget.setLayout(layout)
                     action = self.addWidget(widget)
@@ -103,9 +110,9 @@ class NavigationToolbar(NavigationToolbar2QT):
         # The stretch factor is 1 which means any resizing of the toolbar
         # will resize this label instead of the buttons.
         if self.coordinates:
-            self.locLabel = QtGui.QLabel("", self)
+            self.locLabel = QLabel("", self)
             self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            self.locLabel.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Ignored))
+            self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored))
             label_action = self.addWidget(self.locLabel)
             label_action.setVisible(True)
 
@@ -217,7 +224,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             self._actions['forward'].setEnabled(True)
 
 
-class PlotWidget(QtGui.QWidget):
+class PlotWidget(QWidget):
 
     def __init__(self, controller=None, parent=None, picker=None, toolbar_class=NavigationToolbar):
         super(PlotWidget, self).__init__(parent)
@@ -229,13 +236,13 @@ class PlotWidget(QtGui.QWidget):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        #self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
+        #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.toolbar = toolbar_class(self.canvas, self, controller)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QVBoxLayout()
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         vbox.update()
@@ -341,7 +348,7 @@ class PlotWidget(QtGui.QWidget):
             self.plane = plane
 
     def dock_window(self, window):
-        res = QtGui.QDockWidget('Geometry', window)
+        res = QDockWidget('Geometry', window)
         res.setContentsMargins(0, 0, 0, 0)
         res.setWidget(self)
         return res

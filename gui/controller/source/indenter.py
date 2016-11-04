@@ -12,7 +12,7 @@
 
 import re
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 
 indent_re = re.compile(r'.*<(?:[^/].*)?[^/]\s*>\s*$')
 unindent_re = re.compile(r'\s*</.+\s*>.*$')
@@ -26,16 +26,16 @@ def indent(editor, col=0):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText('  ')
             end += 2
-            if not cursor.movePosition(QtGui.QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.NextBlock):
                 break
         cursor.endEditBlock()
     else:
-        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.StartOfBlock)
         cursor.insertText(' ' * (2 - (col % 2)))
 
 
@@ -49,16 +49,16 @@ def unindent(editor, col=2):
             start = cursor.selectionStart()
             end = cursor.selectionEnd()
             cursor.setPosition(start)
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             if cursor.position() == end: end += 1
             while cursor.position() < end:
                 for i in range(2):
                     if document.characterAt(cursor.position()) != ' ': break
                     cursor.deleteChar()
                     end -= 1
-                if not cursor.movePosition(QtGui.QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
         else:
-            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.StartOfBlock)
             for i in range(min(col,2)):
                 if document.characterAt(cursor.position()) != ' ':
                     break
@@ -110,7 +110,7 @@ def autoindent(editor):
                 prevlen = len(_find_prev_indent_level(document, row-1, pspaces))
             if prevlen != len(spaces):
                 nl = len(spaces) - len(_find_prev_indent_level(document, row+1, spaces))
-                cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+                cursor.movePosition(QTextCursor.StartOfBlock)
                 for i in range(nl):
                     cursor.deleteChar()
         cursor.endEditBlock()

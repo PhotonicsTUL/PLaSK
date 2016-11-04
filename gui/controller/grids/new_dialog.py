@@ -10,56 +10,59 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt.QtGui import QStringListModel
+try:
+    from ...qt.QtCore import *
+except ImportError:
+    from ...qt.QtGui import QStringListModel
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
 from ...model.grids import Grid
 from ...model.grids.types import construct_grid, meshes_types, generators_types,\
     generator_methods, xml_name
 
 
-class NewGridDialog(QtGui.QDialog):
+class NewGridDialog(QDialog):
 
     def __init__(self, parent=None):
         super(NewGridDialog, self).__init__(parent)
         self.setWindowTitle("Create New Mesh")
 
-        kind = QtGui.QGroupBox("Kind")
-        self.kind_mesh = QtGui.QRadioButton("&Mesh")
-        self.kind_generator = QtGui.QRadioButton("&Generator")
+        kind = QGroupBox("Kind")
+        self.kind_mesh = QRadioButton("&Mesh")
+        self.kind_generator = QRadioButton("&Generator")
         self.kind_generator.toggled.connect(self._set_mode)
         self.kind_mesh.setChecked(True)
-        hbox = QtGui.QHBoxLayout()
+        hbox = QHBoxLayout()
         hbox.addWidget(self.kind_mesh)
         hbox.addWidget(self.kind_generator)
         #hbox.addStretch(1)    #??
         kind.setLayout(hbox)
 
-        self.name_edit = QtGui.QLineEdit()
+        self.name_edit = QLineEdit()
         self.name_edit.setToolTip('Name of the mesh or generator for reference in configuration of the solvers.')
 
-        self.type_edit = QtGui.QComboBox()
+        self.type_edit = QComboBox()
         self.type_edit.setEditable(True)
-        self.type_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        self.type_edit.setInsertPolicy(QComboBox.NoInsert)
         self.type_edit.editTextChanged.connect(self._type_changed)
         self.type_edit.setToolTip('Type of the mesh.')
 
-        self.method_edit = QtGui.QComboBox()
+        self.method_edit = QComboBox()
         self.method_edit.setEditable(True)
-        self.method_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        self.method_edit.setInsertPolicy(QComboBox.NoInsert)
         self.method_edit.setToolTip('Generation method i.e. the type of the generator.')
         #self.method_edit_label = QLabel("Method:")
 
-        self.form_layout = QtGui.QFormLayout()
+        self.form_layout = QFormLayout()
         self.form_layout.addRow("&Name:", self.name_edit)
         self.form_layout.addRow("&Type:", self.type_edit)
         self.form_layout.addRow("M&ethod:", self.method_edit)
 
-        self.button_box = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
-        main_layout = QtGui.QVBoxLayout()
+        main_layout = QVBoxLayout()
         main_layout.addWidget(kind)
         main_layout.addLayout(self.form_layout)
         main_layout.addStretch()
@@ -100,5 +103,5 @@ class NewGridDialog(QtGui.QDialog):
 
 def construct_grid_using_dialog(grids_model):
     dial = NewGridDialog()
-    if dial.exec_() == QtGui.QDialog.Accepted:
+    if dial.exec_() == QDialog.Accepted:
         return dial.get_grid(grids_model)

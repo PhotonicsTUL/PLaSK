@@ -10,12 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore
+from ..qt.QtCore import *
 
 
-class ETreeModel(QtCore.QAbstractItemModel):
+class ETreeModel(QAbstractItemModel):
     """
-        Implementation of QtCore.QAbstractItemModel which display etree Element.
+        Implementation of QAbstractItemModel which display etree Element.
         By default only tag is displayed, but subclasses can override columnCount, headerData and data to change this.
     """
 
@@ -40,21 +40,21 @@ class ETreeModel(QtCore.QAbstractItemModel):
 
     def data(self, index, role):
         if not index.isValid(): return None
-        if role != QtCore.Qt.DisplayRole: return None
+        if role != Qt.DisplayRole: return None
         item = index.internalPointer()
         return item.tag
 
     def flags(self, index):
-        if not index.isValid(): return QtCore.Qt.NoItemFlags
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        if not index.isValid(): return Qt.NoItemFlags
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return 'tag'
         return None
 
     def index(self, row, column, parent):
-        if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
+        if not self.hasIndex(row, column, parent): return QModelIndex()
 
         if not parent.isValid():
             parentItem = self.root
@@ -63,14 +63,14 @@ class ETreeModel(QtCore.QAbstractItemModel):
         if row < len(parentItem):
             return self.createIndex(row, column, parentItem[row])
         else:
-            return QtCore.QModelIndex()
+            return QModelIndex()
 
 
     def parent(self, index):
-        if not index.isValid(): return QtCore.QModelIndex()
+        if not index.isValid(): return QModelIndex()
         childItem = index.internalPointer()
         parentItem = childItem.getparent()
-        if parentItem == self.root: return QtCore.QModelIndex()
+        if parentItem == self.root: return QModelIndex()
         return self.createIndex(parentItem.index(childItem), 0, parentItem)
 
     def rowCount(self, parent):

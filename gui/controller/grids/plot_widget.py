@@ -12,7 +12,7 @@
 
 from matplotlib.ticker import MaxNLocator
 
-from ...qt.QtCore import Qt
+from ...qt.QtCore import *
 
 import plask
 from ...utils.config import CONFIG

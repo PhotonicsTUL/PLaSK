@@ -13,14 +13,15 @@
 # Bracket highliter. Calculates list of QTextEdit.ExtraSelection.
 # Based on https://github.com/hlamer/qutepart
 
-from ...qt import QtGui
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from ...utils.config import CONFIG
 
 
 def update_brackets_colors():
     global MATCHING_BRACKET_COLOR, NOT_MATCHING_BRACKET_COLOR
-    MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/matching_bracket_color'])
-    NOT_MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG['editor/not_matching_bracket_color'])
+    MATCHING_BRACKET_COLOR = QColor(CONFIG['editor/matching_bracket_color'])
+    NOT_MATCHING_BRACKET_COLOR = QColor(CONFIG['editor/not_matching_bracket_color'])
 update_brackets_colors()
 
 
@@ -92,7 +93,7 @@ def _find_matching(bracket, block, column):
 def _make_match_selection(block, column, matched):
     """Make matched or unmatched QTextEdit.ExtraSelection
     """
-    selection = QtGui.QTextEdit.ExtraSelection()
+    selection = QTextEdit.ExtraSelection()
 
     if matched:
         bg_color = MATCHING_BRACKET_COLOR
@@ -100,9 +101,9 @@ def _make_match_selection(block, column, matched):
         bg_color = NOT_MATCHING_BRACKET_COLOR
 
     selection.format.setBackground(bg_color)
-    selection.cursor = QtGui.QTextCursor(block)
+    selection.cursor = QTextCursor(block)
     selection.cursor.setPosition(block.position() + column)
-    selection.cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor)
+    selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
 
     return selection
 

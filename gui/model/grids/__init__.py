@@ -15,7 +15,7 @@ from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import quoteattr
 
-from ...qt import QtCore
+from ...qt.QtCore import *
 from ...utils import require_str_first_attr_path_component
 from ...utils.xml import XML_parser, AttributeReader
 from ...controller.source import SourceEditController
@@ -190,11 +190,11 @@ class GridsModel(TableModel):
         for e in self.entries: res.append(e.get_xml_element())
         return res
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Type (Method)'
             if col == 2: return 'Comment'
@@ -212,7 +212,7 @@ class GridsModel(TableModel):
 
     def flags(self, index):
         flags = super(GridsModel, self).flags(index)
-        if index.column() == 1: flags &= ~QtCore.Qt.ItemIsEditable
+        if index.column() == 1: flags &= ~Qt.ItemIsEditable
         return flags
 
     def create_default_entry(self):
