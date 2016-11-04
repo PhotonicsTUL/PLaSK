@@ -30,8 +30,9 @@ else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
-from ...qt.QtWidgets import *
 from ...qt.QtCore import *
+from ...qt.QtGui import *
+from ...qt.QtWidgets import *
 
 from ...xpldocument import FieldParser
 
