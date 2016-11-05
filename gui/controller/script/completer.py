@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 from ...qt.QtCore import *
-
+from ...qt.QtGui import *
 from ...qt.QtWidgets import *
 from ...utils.qthread import BackgroundTask
 from ...utils.config import CONFIG
