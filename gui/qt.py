@@ -51,13 +51,13 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
             break
     elif QT_API == 'PyQt5':
         try:
-            if os.name == 'nt':
-                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
-                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
             from PyQt5 import QtCore, QtWidgets, QtGui
         except ImportError:
             pass
         else:
+            if os.name == 'nt':
+                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
+                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
