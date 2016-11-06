@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
     closed = QtSignal()
     config_changed = QtSignal()
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, Document=XPLDocument):
         super(MainWindow, self).__init__()
 
         self.current_tab_index = -1
@@ -187,77 +187,71 @@ class MainWindow(QMainWindow):
         self.info_model.layoutChanged.connect(self._update_info_color)
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
-            self.document = XPLDocument(self)
+            self.document = Document(self)
             self.setup_model()
             self.setWindowTitle("[*] PLaSK")
             self.setWindowModified(False)
 
-        new_action = QAction(QIcon.fromTheme('document-new'),
-                                   '&New', self)
+        new_action = QAction(QIcon.fromTheme('document-new'), '&New', self)
         new_action.setShortcut(QKeySequence.New)
         new_action.setStatusTip('New XPL file')
-        new_action.triggered.connect(self.new)
+        new_action.triggered.connect(lambda: self.new(XPLDocument))
 
-        open_action = QAction(QIcon.fromTheme('document-open'),
-                                    '&Open...', self)
+        newpy_action = QAction(QIcon.fromTheme('document-new'), 'New &Python', self)
+        newpy_action.setStatusTip('New Python file')
+        newpy_action.triggered.connect(lambda: self.new(PyDocument))
+
+        open_action = QAction(QIcon.fromTheme('document-open'), '&Open...', self)
         open_action.setShortcut(QKeySequence.Open)
         open_action.setStatusTip('Open XPL file')
         open_action.triggered.connect(self.open)
 
-        save_action = QAction(QIcon.fromTheme('document-save'),
-                                    '&Save', self)
+        save_action = QAction(QIcon.fromTheme('document-save'), '&Save', self)
         save_action.setShortcut(QKeySequence.Save)
         save_action.setStatusTip('Save XPL file')
         save_action.triggered.connect(self.save)
 
-        saveas_action = QAction(QIcon.fromTheme('document-save-as'),
-                                      'Save &As...', self)
+        saveas_action = QAction(QIcon.fromTheme('document-save-as'), 'Save &As...', self)
         saveas_action.setShortcut(QKeySequence.SaveAs)
         saveas_action.setStatusTip('Save XPL file, ask for namploe of file')
         saveas_action.triggered.connect(self.save_as)
 
-        launch_action = QAction(QIcon.fromTheme('media-playback-start',
-                                                            QIcon(':/media-playback-start.png')),
-                                      '&Launch...', self)
+        launch_action = QAction(QIcon.fromTheme('media-playback-start', QIcon(':/media-playback-start.png')),
+                                '&Launch...', self)
         launch_action.setShortcut('F5')
         launch_action.setStatusTip('Launch current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
-        goto_action = QAction(QIcon.fromTheme('go-jump'),
-                                    '&Go to Line...', self)
+        goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
-        plot_material_action = QAction(QIcon.fromTheme('matplotlib'),
-                                             'Examine &Material Parameters...', self)
+        plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
         plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
 
-        settings_action = QAction(QIcon.fromTheme('document-properties'),
-                                        'GUI Se&ttings...', self)
+        settings_action = QAction(QIcon.fromTheme('document-properties'), 'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
-        help_action = QAction(QIcon.fromTheme('help-contents'),
-                                    'Open &Help...', self)
+        help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
         help_action.triggered.connect(self.open_help)
 
-        exit_action = QAction(QIcon.fromTheme('application-exit'),
-                                    'E&xit', self)
+        exit_action = QAction(QIcon.fromTheme('application-exit'), 'E&xit', self)
         exit_action.setShortcut(QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
         self.recent_menu = QMenu('Open &Recent')
-        self.recent_menu.setIcon(
-            QIcon.fromTheme('document-open-recent'))
+        self.recent_menu.setIcon(QIcon.fromTheme('document-open-recent'))
         self.update_recent_list()
 
         self.menu = QMenu('&PLaSK')
 
         self.menu.addAction(new_action)
+        self.menu.addAction(newpy_action)
         self.menu.addAction(open_action)
         self.menu.addMenu(self.recent_menu)
         self.menu.addAction(save_action)
@@ -407,8 +401,8 @@ class MainWindow(QMainWindow):
         else:
             self.tabs.setCurrentIndex(2)
 
-    def new(self):
-        new_window = MainWindow()
+    def new(self, Document=XPLDocument):
+        new_window = MainWindow(Document=Document)
         new_window.resize(self.size())
         new_window.move(self.x() + 24, self.y() + 24)
         WINDOWS.add(new_window)
