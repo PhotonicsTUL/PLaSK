@@ -210,7 +210,7 @@ class GNCylindrical(GNGeometryBase):
             next(path_iterator)    # skip 0
         return 0
 
-    def model_to_real_index(self, index):
+    def model_to_real_index(self, index, model):
         if not self.children: return index
         return (index,) if isinstance(self.children[0], GNRevolution) else (index, 0)
 
