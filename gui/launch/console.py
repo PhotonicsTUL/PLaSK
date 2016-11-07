@@ -22,6 +22,7 @@ except ImportError:
     from pipes import quote
 
 from .. import XPLDocument
+from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..utils.config import CONFIG
 

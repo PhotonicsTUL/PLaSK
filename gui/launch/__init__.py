@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import shlex
+from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
 from ..utils.config import CONFIG

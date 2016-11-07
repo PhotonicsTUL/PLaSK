@@ -17,9 +17,9 @@ import sys
 import os
 from stat import S_ISDIR
 
+from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
-from gui.utils.qsignals import BlockQtSignals
 from gui.utils.widgets import MultiLineEdit
 
 try:

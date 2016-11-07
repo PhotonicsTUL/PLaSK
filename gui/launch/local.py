@@ -19,6 +19,7 @@ import sys
 from time import strftime
 
 from ..qt.QtCore import *
+from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..utils.config import CONFIG
 
@@ -302,7 +303,10 @@ class PlaskThread(QThread):
         self.link = re.compile(u'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\\d+)(.*)'.format(fd, sep, fb))
         self.lines = lines
         self.mutex = mutex
-        self.terminated.connect(self.kill_process)
+        try:
+            self.terminated.connect(self.kill_process)
+        except AttributeError:
+            self.finished.connect(self.kill_process)
         self.main_window.closed.connect(self.kill_process)
 
     def __del__(self):
