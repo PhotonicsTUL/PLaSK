@@ -588,8 +588,8 @@ void export_FourierSolver3D()
                 , (py::arg("lam"), "polarization", "side"));
     solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
                "Get Fourier expansion coefficients for the electric field.\n\n"
-               "This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier expansion\n"
-               "coefficients. Please refer to the detailed solver description for their\n"
+               "This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
+               "expansion coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
@@ -598,8 +598,8 @@ void export_FourierSolver3D()
               );
     solver.def("get_magnetic_coefficients", FourierSolver3D_getFieldVectorH, (py::arg("num"), "level"),
                "Get Fourier expansion coefficients for the magnetic field.\n\n"
-               "This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier expansion\n"
-               "coefficients. Please refer to the detailed solver description for their\n"
+               "This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier\n"
+               "expansion coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
@@ -647,8 +647,8 @@ void export_FourierSolver3D()
         )
         .def("get_electric_coefficients", FourierSolver3D_getReflectedFieldVectorE, py::arg("level"),
              "Get Fourier expansion coefficients for the electric field.\n\n"
-             "This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier expansion\n"
-             "coefficients. Please refer to the detailed solver description for their\n"
+             "This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
+             "expansion coefficients. Please refer to the detailed solver description for their\n"
              "interpretation.\n\n"
              "Args:\n"
              "    level (float): Vertical level at which the coefficients are computed.\n\n"
@@ -656,8 +656,8 @@ void export_FourierSolver3D()
             )
         .def("get_magnetic_coefficients", FourierSolver3D_getReflectedFieldVectorH, py::arg("level"),
              "Get Fourier expansion coefficients for the magnegtic field.\n\n"
-             "This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier expansion\n"
-             "coefficients. Please refer to the detailed solver description for their\n"
+             "This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier\n"
+             "expansion coefficients. Please refer to the detailed solver description for their\n"
              "interpretation.\n\n"
              "Args:\n"
              "    level (float): Vertical level at which the coefficients are computed.\n\n"

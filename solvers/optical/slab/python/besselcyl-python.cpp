@@ -175,8 +175,8 @@ void export_BesselSolverCyl()
               );
     solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                "Get Bessel expansion coefficients for the electric field.\n\n"
-               "This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel expansion\n"
-               "coefficients. Please refer to the detailed solver description for their\n"
+               "This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel\n"
+               "expansion coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
@@ -185,8 +185,8 @@ void export_BesselSolverCyl()
               );
     solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
                "Get Bessel expansion coefficients for the magnetic field.\n\n"
-               "This is a low-level function returning :math:`H_s` and :math:`H_p` Bessel expansion\n"
-               "coefficients. Please refer to the detailed solver description for their\n"
+               "This is a low-level function returning :math:`H_s` and :math:`H_p` Bessel\n"
+               "expansion coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
                "    num (int): Computed mode number.\n"
