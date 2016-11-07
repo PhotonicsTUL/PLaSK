@@ -53,7 +53,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
         } else
             throw TypeError("get_determinant() got unexpected keyword argument '{0}'", *i);
     }
-    
+
     self->initCalculation();
 
     if (k0) expansion->setK0(*k0);
@@ -135,17 +135,17 @@ void export_BesselSolverCyl()
     PROVIDER(outWavelength, "");
     PROVIDER(outLoss, "");
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
-    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength, e.g. the effective index of lateral wavevector.\n");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>, 
+    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Alias for :attr:`lam`");
-    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, 
+    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
                 "Normalized frequency of the light [1/µm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
                 "the wavelength,e.g. the effective index of lateral wavevector.\n");
-    METHOD(find_mode, findMode, 
+    METHOD(find_mode, findMode,
            "Compute the mode near the specified effective index.\n\n"
            "Only one of the following arguments can be given through a keyword.\n"
            "It is the starting point for search of the specified parameter.\n\n"
@@ -175,7 +175,7 @@ void export_BesselSolverCyl()
               );
     solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                "Get Bessel expansion coefficients for the electric field.\n\n"
-               "This is a low-level function returning $E_s$ and $E_p$ Bessel expansion\n"
+               "This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
@@ -185,7 +185,7 @@ void export_BesselSolverCyl()
               );
     solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
                "Get Bessel expansion coefficients for the magnetic field.\n\n"
-               "This is a low-level function returning $H_s$ and $H_p$ Bessel expansion\n"
+               "This is a low-level function returning :math:`H_s` and :math:`H_p` Bessel expansion\n"
                "coefficients. Please refer to the detailed solver description for their\n"
                "interpretation.\n\n"
                "Args:\n"
