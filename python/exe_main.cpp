@@ -124,8 +124,8 @@ static py::object initPlask(int argc, const char* argv[])
     plask::writelog(plask::LOG_INFO, PLASK_BANNER);
     plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 #ifdef LICENSE_CHECKING
-    std::string user = plask::license_verifier.getUser();
-    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to {}.", user);
+    std::string user = plask::license_verifier.getUser(), expiration = plask::license_verifier.getExpiration();
+    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
 #endif
 
     sys.attr("modules")["plask._plask"] = _plask;
@@ -198,6 +198,12 @@ int main(int argc, const char *argv[])
 
     if (argc > 1 && std::string(argv[1]) == "-V") {
         printf("PLaSK " PLASK_VERSION "\n");
+#       ifdef LICENSE_CHECKING
+            std::string user = plask::license_verifier.getUser(),
+                        expiry = plask::license_verifier.getExpiration();
+            if (user != "") printf((user + " " + expiry + "\n").c_str());
+#       else
+#   endif
         return 0;
     }
 

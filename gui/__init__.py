@@ -16,6 +16,7 @@ import os
 import subprocess
 import pkgutil
 import webbrowser
+from datetime import datetime
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -235,6 +236,10 @@ class MainWindow(QMainWindow):
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
+        about_action = QAction(QIcon.fromTheme('dialog-information'), '&About..', self)
+        about_action.setStatusTip('Show information about PLaSK')
+        about_action.triggered.connect(self.about)
+
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
         help_action.triggered.connect(self.open_help)
@@ -270,6 +275,7 @@ class MainWindow(QMainWindow):
                 else:
                     self.menu.addSeparator()
         self.menu.addSeparator()
+        self.menu.addAction(about_action)
         self.menu.addAction(help_action)
         self._pysparkle_place = self.menu.addSeparator()
         self.menu.addAction(settings_action)
@@ -634,6 +640,28 @@ class MainWindow(QMainWindow):
             else:
                 pysparkle = None
 
+    def about(self):
+        msgbox = QMessageBox()
+        msgbox.setText(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
+                       u"© 2014-2017 Lodz University of Technology, Photonics Group")
+        if VERSION is not None:
+            details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)\n".format(QT_API)
+            if LICENSE['user']:
+                details += u"<br/>\n<br/>\nLicensed to:<br/>\n{}".format(
+                    LICENSE['user'].replace('<', '&lt;').replace('>', '&gt;'))
+                if LICENSE['date']:
+                    date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
+                    try: date = date.decode('utf8')
+                    except AttributeError: pass
+                    details += u"<br/>\nLicense active until " + date
+            msgbox.setInformativeText(details)
+        msgbox.setTextFormat(Qt.RichText)
+        # msgbox.setDetailedText(LICENSE["text"])
+        msgbox.setStandardButtons(QMessageBox.Ok)
+        msgbox.setIcon(QMessageBox.Information)
+        msgbox.setDefaultButton(QMessageBox.Ok)
+        msgbox.exec_()
+
 
 class GotoDialog(QDialog):
     def __init__(self, parent=None):
@@ -703,11 +731,14 @@ except NameError:
         proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
     else:
         proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-    version, err = proc.communicate()
-    try:
-        _, VERSION = version.strip().split()
-    except ValueError:
-        VERSION = None
+    info, err = proc.communicate()
+    VERSION, LICENSE = info.decode('utf8').strip().split("\n")
+    _, VERSION = VERSION.split()
+    _ls = LICENSE.rfind(' ')
+    LICENSE = dict(user=LICENSE[:_ls], date=LICENSE[_ls+1:])
+else:
+    try: LICENSE = plask.license
+    except AttributeError: LICENSE = dict(user='', date='')
 
 
 def main():

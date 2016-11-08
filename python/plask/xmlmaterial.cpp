@@ -16,7 +16,7 @@ namespace plask { namespace python {
  */
 class PythonEvalMaterial;
 
-extern PLASK_PYTHON_API py::dict xml_globals;
+extern PLASK_PYTHON_API py::dict* xml_globals;
 
 struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
@@ -30,7 +30,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::ConductivityType condtype;
 
     bool complex;
-    
+
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
@@ -64,9 +64,9 @@ class PythonEvalMaterial : public Material
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
         return
 #if PY_VERSION_HEX >= 0x03000000
-            PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr());
+            PyEval_EvalCode((PyObject*)fun, xml_globals->ptr(), locals.ptr());
 #else
-            PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
+            PyEval_EvalCode(fun, xml_globals->ptr(), locals.ptr());
 #endif
     }
 
@@ -274,7 +274,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string material_name = reader.requireAttribute("name");
     std::string base_name = reader.requireAttribute("base");
     bool complex = reader.getAttribute<bool>("complex", false);
-    
+
     shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, complex);
     constructor->self = constructor;
 
@@ -294,7 +294,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                 py::dict locals; \
                 constructor->cache.func.reset( \
                     py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals.ptr(), locals.ptr())).get() \
+                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
                     ) \
                 ); \
                 writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
@@ -313,7 +313,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                 py::dict locals; \
                 constructor->cache.func.reset( \
                     py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func, xml_globals.ptr(), locals.ptr())).get() \
+                        py::handle<>(PyEval_EvalCode(constructor->func, xml_globals->ptr(), locals.ptr())).get() \
                     ) \
                 ); \
                 writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \

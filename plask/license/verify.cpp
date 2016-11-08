@@ -87,6 +87,7 @@ LicenseVerifier::LicenseVerifier() {
 #endif
     try_load_license(prefixPath() + V "plask_license.xml") ||
     try_load_license(prefixPath() + V "etc" V "license.xml");
+    readData();
 }
 
 void LicenseVerifier::verify() {
@@ -122,10 +123,10 @@ void LicenseVerifier::verify() {
         throw Exception("License has expired");
 }
 
-std::string LicenseVerifier::getUser() {
-    
-    std::string user, organisation, email;
-    if (content.empty()) return "";
+void LicenseVerifier::readData() {
+
+    std::string organisation, email;
+    if (content.empty()) return;
 
     XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
 
@@ -137,9 +138,11 @@ std::string LicenseVerifier::getUser() {
                        email = src.getTextContent();
                    else if (src.getNodeName() == PLASK_LICENSE_ORGANISATION_TAG_NAME)
                        organisation = src.getTextContent();
+                   else if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME)
+                       expiration = src.getTextContent();
                }
     );
-    
+
     if (!email.empty()) {
         if (!user.empty()) {
             user += " <"; user += email; user += ">";
@@ -151,8 +154,6 @@ std::string LicenseVerifier::getUser() {
         if (!user.empty()) user += " ";
         user += organisation;
     }
-    
-    return user;
 }
 
 

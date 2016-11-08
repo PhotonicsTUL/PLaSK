@@ -10,6 +10,7 @@
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/solver.h>
+#include <plask/license/verify.h>
 
 using namespace plask::python;
 
@@ -195,7 +196,7 @@ inline static void register_config()
 
 
 // Globals for XML material
-PLASK_PYTHON_API py::dict xml_globals;
+PLASK_PYTHON_API py::dict* xml_globals;
 
 // Print Python exception to PLaSK logging system
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -303,12 +304,12 @@ py::docstring_options doc_options(
 //     IntFromInt64() {
 //         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<int>());
 //     }
-// 
+//
 //     static void* convertible(PyObject* obj) {
 //         return (PyArray_Check(obj) PyArray_IsIntegerScalar(obj) && PyObject_TypeCheck(obj, &PyInt64ArrType_Type))? obj : NULL;
 //         // return PyObject_TypeCheck(obj, &PyInt64ArrType_Type)? obj : NULL;
 //     }
-// 
+//
 //     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
 //         void* storage = ((boost::python::converter::rvalue_from_python_storage<int>*)data)->storage.bytes;
 //         try {
@@ -329,9 +330,9 @@ py::docstring_options doc_options(
 // };
 
 // struct DoubleFromComplex {
-// 
+//
 //     static PyObject* ComplexWarning;
-// 
+//
 //     DoubleFromComplex() {
 //         ComplexWarning = PyErr_NewExceptionWithDoc((char*)"plask.ComplexWarning",
 //                                                    (char*)"The warning raised when casting a complex dtype to a real dtype.\n\n"
@@ -340,13 +341,13 @@ py::docstring_options doc_options(
 //                                                    PyExc_Warning, NULL);
 //         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<double>());
 //     }
-// 
+//
 //     // Determine if obj can be converted into an Aligner
 //     static void* convertible(PyObject* obj) {
 //         if (!PyComplex_Check(obj)) return NULL;
 //         return obj;
 //     }
-// 
+//
 //     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
 //         void* storage = ((boost::python::converter::rvalue_from_python_storage<double>*)data)->storage.bytes;
 //         plask::dcomplex cplx = py::extract<plask::dcomplex>(obj);
@@ -430,7 +431,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     py::register_exception_translator<std::string>( [=](const std::string& err) { PyErr_SetString(PyExc_RuntimeError, err.c_str()); } );
     py::register_exception_translator<const char*>( [=](const char* err) { PyErr_SetString(PyExc_RuntimeError, err); } );
-    
+
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
     register_exception<plask::OutOfBoundsException>(PyExc_IndexError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
@@ -474,12 +475,19 @@ BOOST_PYTHON_MODULE(_plask)
     scope.attr("version_minor") = PLASK_VERSION_MINOR;
 
     // Set global namespace for materials
-    plask::python::xml_globals = py::dict();
-    py::incref(plask::python::xml_globals.ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
-    scope.attr("__xml__globals") = plask::python::xml_globals;
+    plask::python::xml_globals = new py::dict();
+    py::incref(plask::python::xml_globals->ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
+    scope.attr("__xml__globals") = *plask::python::xml_globals;
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
+
+#ifdef LICENSE_CHECKING
+    py::dict license;
+    license["user"] = plask::license_verifier.getUser();
+    license["date"] = plask::license_verifier.getExpiration();
+    scope.attr("license") = license;
+#endif
 
     // Properties
     register_standard_properties();

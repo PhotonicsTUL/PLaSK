@@ -8,7 +8,7 @@
 
 // PLaSK copyright banner
 #define PLASK_BANNER "PLaSK ${VERSION} --- Photonic Laser Simulation Kit"
-#define PLASK_COPYRIGHT "(c) 2014 Lodz University of Technology, Photonics Group"
+#define PLASK_COPYRIGHT "(c) 2014-2017 Lodz University of Technology, Photonics Group"
 
 #endif // PLASK__VERSION_H
 

@@ -19,7 +19,7 @@
 
 namespace plask { namespace python {
 
-extern PLASK_PYTHON_API py::dict xml_globals;
+extern PLASK_PYTHON_API py::dict* xml_globals;
 
 class PythonXMLFilter {
 
@@ -58,7 +58,7 @@ class PythonXMLFilter {
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
         try {
-            return py::extract<std::string>(py::str(py_eval(str, xml_globals, manager->defs)));
+            return py::extract<std::string>(py::str(py_eval(str, *xml_globals, manager->defs)));
         } catch (py::error_already_set) {
             throw Exception(getPythonExceptionMessage());
         }
@@ -199,7 +199,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         };
         if (!defs.has_key(name)) {
             try {
-                defs[name] = (py_eval(value, xml_globals, defs));
+                defs[name] = (py_eval(value, *xml_globals, defs));
             } catch (py::error_already_set) {
                 writelog(LOG_WARNING, "Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
@@ -623,7 +623,7 @@ void register_manager() {
     register_manager_dict<shared_ptr<Mesh>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
     register_manager_dict<shared_ptr<Solver>>("Solvers");
-    
+
     py::scope scope(manager);
     py::class_<ManagerRoots>("_Roots", py::no_init)
         .def("__getitem__", &ManagerRoots::getitem)
