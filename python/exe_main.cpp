@@ -59,7 +59,7 @@ namespace plask { namespace python {
 
     extern PLASK_PYTHON_API AxisNames current_axes;
 
-    extern PLASK_PYTHON_API py::dict xml_globals;
+    extern PLASK_PYTHON_API py::dict* xml_globals;
 }}
 
 //******************************************************************************
@@ -432,7 +432,7 @@ int main(int argc, const char *argv[])
                     auto keyval = plask::splitString2(def, '=');
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
-                                                                       plask::python::xml_globals, locals));
+                                                                       *plask::python::xml_globals, locals));
                     } catch (py::error_already_set) {
                         plask::writelog(plask::LOG_WARNING,
                                         "Cannot parse command-line definition '{}' (storing it as string): {}",
