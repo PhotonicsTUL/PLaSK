@@ -201,7 +201,7 @@ int main(int argc, const char *argv[])
 #       ifdef LICENSE_CHECKING
             std::string user = plask::license_verifier.getUser(),
                         expiry = plask::license_verifier.getExpiration();
-            if (user != "") printf((user + " " + expiry + "\n").c_str());
+            if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
 #       else
 #   endif
         return 0;

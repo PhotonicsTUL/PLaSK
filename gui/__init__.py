@@ -633,12 +633,13 @@ class MainWindow(QMainWindow):
                 pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
                                       frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
-                action_check_update = QAction(QIcon.fromTheme('software-update-available'),
-                                                    "Check for &Updates Now...", self)
-                action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
-                self.menu.insertAction(self._pysparkle_place, action_check_update)
             else:
                 pysparkle = None
+        if pysparkle is not None:
+            action_check_update = QAction(QIcon.fromTheme('software-update-available'),
+                                          "Check for &Updates Now...", self)
+            action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
+            self.menu.insertAction(self._pysparkle_place, action_check_update)
 
     def about(self):
         msgbox = QMessageBox()
