@@ -11,6 +11,7 @@ TODO
 
 """
 
+import sys as _sys
 import os as _os
 
 import matplotlib
@@ -37,6 +38,11 @@ if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
                 pass
     except:
         pass
+# Fix for Anaconda bug
+elif backend == 'Qt5Agg' and _os.name == 'nt':
+    from PyQt5 import QtWidgets as _QtWidgets
+    _QtWidgets.QApplication.addLibraryPath(_os.path.join(_sys.prefix, 'Library', 'plugins'))
+    _QtWidgets.QApplication.addLibraryPath(_os.path.join(_os.path.dirname(_QtWidgets.__file__), 'plugins'))
 
 import matplotlib.pylab
 from matplotlib.pylab import *
