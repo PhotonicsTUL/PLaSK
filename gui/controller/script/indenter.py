@@ -12,7 +12,7 @@
 
 import re
 
-from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 
 indent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')+:\s*(#.*)?$''')
 prev_unindent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')*'''
