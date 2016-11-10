@@ -642,9 +642,21 @@ class MainWindow(QMainWindow):
             self.menu.insertAction(self._pysparkle_place, action_check_update)
 
     def about(self):
-        msgbox = QMessageBox()
-        msgbox.setText(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                       u"© 2014-2017 Lodz University of Technology, Photonics Group")
+        msgbox = QMessageBox(QMessageBox.Information,
+                             "About PLaSK",
+                             u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
+                             u"© 2014-2017 Lodz University of Technology, Photonics Group",
+                             QMessageBox.Ok,
+                             self,
+                             Qt.FramelessWindowHint | Qt.Popup)
+        msgbox.setStyleSheet("""
+            QDialog {
+                border-style: outset;
+                border-width: 2px;
+                border-color: black;
+            }
+        """)
+        msgbox.setTextFormat(Qt.RichText)
         if VERSION is not None:
             details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)\n".format(QT_API)
             if LICENSE['user']:
@@ -656,11 +668,9 @@ class MainWindow(QMainWindow):
                     except AttributeError: pass
                     details += u"<br/>\nLicense active until " + date
             msgbox.setInformativeText(details)
-        msgbox.setTextFormat(Qt.RichText)
         # msgbox.setDetailedText(LICENSE["text"])
-        msgbox.setStandardButtons(QMessageBox.Ok)
-        msgbox.setIcon(QMessageBox.Information)
-        msgbox.setDefaultButton(QMessageBox.Ok)
+        msgbox.adjustSize()
+        msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
         msgbox.exec_()
 
 
