@@ -399,7 +399,7 @@ int main(int argc, const char *argv[])
                         std::string ext = filename.substr(filename.length()-4);
                         if (ext == ".xpl") filetype = FILE_XML;
                         else if (ext == ".xml") filetype = FILE_XML;
-                        else if (ext.substr(2) == ".py") filetype = FILE_PY;
+                        else if (ext.substr(1) == ".py") filetype = FILE_PY;
                     } catch (std::out_of_range) {}
                 }
                 if (!filetype) {
