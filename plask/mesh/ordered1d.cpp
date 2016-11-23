@@ -12,15 +12,15 @@ void OrderedAxis::sortPointsAndRemoveNonUnique(double min_dist)
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
 }
 
-OrderedAxis::OrderedAxis(std::initializer_list<PointType> points, double min_dist): points(points) {
+OrderedAxis::OrderedAxis(std::initializer_list<PointType> points, double min_dist): points(points), warn_too_close(true) {
     sortPointsAndRemoveNonUnique(min_dist);
 }
 
-OrderedAxis::OrderedAxis(const std::vector<PointType>& points, double min_dist): points(points) {
+OrderedAxis::OrderedAxis(const std::vector<PointType>& points, double min_dist): points(points), warn_too_close(true) {
     sortPointsAndRemoveNonUnique(min_dist);
 }
 
-OrderedAxis::OrderedAxis(std::vector<PointType>&& points, double min_dist): points(std::move(points)) {
+OrderedAxis::OrderedAxis(std::vector<PointType>&& points, double min_dist): points(std::move(points)), warn_too_close(true) {
     sortPointsAndRemoveNonUnique(min_dist);
 }
 
@@ -87,6 +87,7 @@ bool OrderedAxis::addPoint(double new_node_cord, double min_dist) {
             return true;
         }
     }
+    if (warn_too_close) writelog(LOG_WARNING, "Points in ordered mesh too close, skipping point at {0}", new_node_cord);
     return false;
 }
 

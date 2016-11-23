@@ -5,6 +5,14 @@
 
 namespace plask {
 
+struct WarningOff {
+    OrderedAxis* axis;
+    bool prev_state;
+    WarningOff(OrderedAxis* axis): axis(axis), prev_state(axis->warn_too_close) { axis->warn_too_close = false; }
+    WarningOff(const shared_ptr<OrderedAxis>& axis): axis(axis.get()), prev_state(axis->warn_too_close) { axis->warn_too_close = false; }
+    ~WarningOff() { axis->warn_too_close = prev_state; }
+};
+
 inline static void addPoints(OrderedAxis& dst, double lo, double up, bool singleMaterial, double min_ply, unsigned max_points) {
     dst.addPoint(lo);
     dst.addPoint(up);
@@ -45,6 +53,8 @@ shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<Geo
 shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
+    WarningOff warning_off0(axis0);
+    WarningOff warning_off1(axis1);
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector<shared_ptr<const GeometryObject>> leafs = geometry->getLeafs();
@@ -79,6 +89,9 @@ shared_ptr<MeshD<2>> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr
 shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
+    WarningOff warning_off0(axis0);
+    WarningOff warning_off1(axis1);
+    WarningOff warning_off2(axis2);
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector<shared_ptr<const GeometryObject>> leafs = geometry->getLeafs();
@@ -123,6 +136,7 @@ void RectilinearMeshRefinedGenerator<dim>::divideLargestSegment(shared_ptr<Order
         double L = axis->at(i) - axis->at(i-1);
         if (L > max) { max = L; newpoint = 0.5 * (axis->at(i-1) + axis->at(i)); }
     }
+    WarningOff warning_off(axis);
     axis->addPoint(newpoint);
 }
 
@@ -130,6 +144,7 @@ template <int dim>
 shared_ptr<OrderedAxis> RectilinearMeshRefinedGenerator<dim>::getAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
 {
     assert(bool(axis));
+    WarningOff warning_off(axis);
 
     // Add refinement points
     for (auto ref: this->refinements[dir]) {
@@ -191,7 +206,7 @@ RectilinearMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::Geom
     }
 
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::{}: Generating new mesh ({:d}x{:d}, max. aspect {:.0f}:1)", name(), 
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::{}: Generating new mesh ({:d}x{:d}, max. aspect {:.0f}:1)", name(),
              mesh->axis0->size(), mesh->axis1->size(), max(asp0, asp1));
     return mesh;
 }
@@ -233,6 +248,7 @@ template <int dim>
 shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
 {
     assert(bool(axis));
+    WarningOff warning_off(axis);
 
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;
@@ -314,6 +330,8 @@ RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator():
 template <int dim>
 shared_ptr<OrderedAxis> RectilinearMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
 {
+    WarningOff warning_off(axis);
+
     // Next divide each object
     double x = *axis->begin();
     std::vector<double> points; //points.reserve(...);

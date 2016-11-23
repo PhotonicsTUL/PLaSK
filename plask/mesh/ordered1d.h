@@ -11,6 +11,7 @@ This file contains rectilinear mesh for 1d space.
 
 #include "mesh.h"
 #include "../vec.h"
+#include "../log/log.h"
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
 
@@ -29,6 +30,9 @@ class PLASK_API OrderedAxis: public RectangularAxis {
     void sortPointsAndRemoveNonUnique(double min_dist);
 
 public:
+
+    /// Should a warning be issued if the points are too close
+    bool warn_too_close;
 
     /// Maximum difference between the points, so they are threated as one
     constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
@@ -82,16 +86,16 @@ public:
     std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
 
     /// Construct an empty mesh.
-    OrderedAxis() {}
+    OrderedAxis(): warn_too_close(true) {}
 
     /// Copy constructor. It does not copy the owner.
-    OrderedAxis(const OrderedAxis& src): points(src.points) {}
+    OrderedAxis(const OrderedAxis& src): points(src.points), warn_too_close(true) {}
 
     /// Move constructor. It does not move the owner.
-    OrderedAxis(OrderedAxis&& src): points(std::move(src.points)) {}
+    OrderedAxis(OrderedAxis&& src): points(std::move(src.points)), warn_too_close(true) {}
 
     /// Copy constructor from any RectangularAxis
-    OrderedAxis(const RectangularAxis& src): points(src.size()) {
+    OrderedAxis(const RectangularAxis& src): points(src.size()), warn_too_close(true) {
         if (src.isIncreasing())
             std::copy(src.begin(), src.end(), points.begin());
         else
@@ -250,7 +254,11 @@ inline void OrderedAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::s
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
     this->points = std::move(result);
     // Remove points too close to each other
-    auto almost_equal = [min_dist](const double& x, const double& y) -> bool { return std::abs(x-y) < min_dist; };
+    auto almost_equal = [min_dist, this](const double& x, const double& y) -> bool {
+        bool remove = std::abs(x-y) < min_dist;
+        if (warn_too_close && remove) writelog(LOG_WARNING, "Points in ordered mesh too close, skipping point at {0}", y);
+        return remove;
+    };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
     fireResized();
 }
