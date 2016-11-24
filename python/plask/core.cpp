@@ -364,7 +364,6 @@ BOOST_PYTHON_MODULE(_plask)
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-
     py::scope scope; // Default scope
 
     // Config

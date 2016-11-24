@@ -19,6 +19,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     outWavelength(this, &EffectiveFrequencyCyl::getWavelength, &EffectiveFrequencyCyl::nmodes),
     outLoss(this, &EffectiveFrequencyCyl::getModalLoss,  &EffectiveFrequencyCyl::nmodes),
     outLightMagnitude(this, &EffectiveFrequencyCyl::getLightMagnitude,  &EffectiveFrequencyCyl::nmodes),
+    outElectricField(this, &EffectiveFrequencyCyl::getElectricField,  &EffectiveFrequencyCyl::nmodes),
     outRefractiveIndex(this, &EffectiveFrequencyCyl::getRefractiveIndex),
     outHeat(this, &EffectiveFrequencyCyl::getHeat),
     asymptotic(false) {
@@ -764,62 +765,89 @@ double EffectiveFrequencyCyl::getGainIntegral(size_t num)
 }
 
 
-struct EffectiveFrequencyCyl::LightMagnitudeDataInefficient: public LazyDataImpl<double>
+template <typename FieldT>
+struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 {
-    const EffectiveFrequencyCyl* solver;
+    EffectiveFrequencyCyl* solver;
     int num;
+
+    FieldDataBase(EffectiveFrequencyCyl* solver, int num);
+    
+  protected:
+    inline FieldT value(dcomplex val) const;
+    double scale;
+};
+
+template <>
+EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+    solver(solver), num(num), scale(1e-3 * solver->modes[num].power)
+{}
+
+template <>
+double EffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
+    return scale * abs2(val);
+}
+
+template <>
+EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+    solver(solver), num(num), scale(sqrt(2e-3 * solver->modes[num].power * 376.73031346177))
+    // <M> = ½ E conj(E) / Z0
+{}
+
+template <>
+Vec<3,dcomplex> EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::value(dcomplex val) const {
+    return Vec<3,dcomplex>(0., scale * val, 0.);
+}
+
+
+template <typename FieldT>
+struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
+{
     shared_ptr<const MeshD<2>> dst_mesh;
     size_t stripe;
 
-    LightMagnitudeDataInefficient(const EffectiveFrequencyCyl* solver,
-                                  int num,
-                                  const shared_ptr<const MeshD<2>>& dst_mesh,
-                                  size_t stripe):
-        solver(solver),
-        num(num),
+    FieldDataInefficient(EffectiveFrequencyCyl* solver, int num,
+                         const shared_ptr<const MeshD<2>>& dst_mesh,
+                         size_t stripe):
+        FieldDataBase<FieldT>(solver, num),
         dst_mesh(dst_mesh),
         stripe(stripe)
     {}
 
     size_t size() const override { return dst_mesh->size(); }
 
-    double at(size_t id) const override {
+    FieldT at(size_t id) const override {
         auto point = dst_mesh->at(id);
         double r = point.c0;
         double z = point.c1;
         if (r < 0) r = -r;
 
-        dcomplex val = solver->modes[num].rField(r);
+        dcomplex val = this->solver->modes[this->num].rField(r);
 
-        size_t iz = solver->mesh->axis1->findIndex(z);
-        if (iz >= solver->zsize) iz = solver->zsize-1;
-        else if (iz < solver->zbegin) iz = solver->zbegin;
-        dcomplex kz = solver->k0 * sqrt(solver->nrCache[stripe][iz]*solver->nrCache[stripe][iz]
-                                      - solver->veffs[stripe] * solver->nrCache[stripe][iz]*solver->ngCache[stripe][iz]);
+        size_t iz = this->solver->mesh->axis1->findIndex(z);
+        if (iz >= this->solver->zsize) iz = this->solver->zsize-1;
+        else if (iz < this->solver->zbegin) iz = this->solver->zbegin;
+        dcomplex kz = this->solver->k0 * sqrt(this->solver->nrCache[stripe][iz]*this->solver->nrCache[stripe][iz]
+                                              - this->solver->veffs[stripe] * this->solver->nrCache[stripe][iz]*this->solver->ngCache[stripe][iz]);
         if (real(kz) < 0.) kz = -kz;
-        z -= solver->mesh->axis1->at(max(int(iz)-1, 0));
+        z -= this->solver->mesh->axis1->at(max(int(iz)-1, 0));
         dcomplex phasz = exp(- I * kz * z);
-        val *= solver->zfields[iz].F * phasz + solver->zfields[iz].B / phasz;
+        val *= this->solver->zfields[iz].F * phasz + this->solver->zfields[iz].B / phasz;
 
-        return 1e-3 * solver->modes[num].power * abs2(val);
+        return this->value(val);
     }
-
 };
 
-struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<double>
+template <typename FieldT>
+struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 {
-    const EffectiveFrequencyCyl* solver;
-    int num;
     shared_ptr<const RectangularMesh<2>> rect_mesh;
-
     std::vector<dcomplex> valr, valz;
 
-    LightMagnitudeDataEfficient(const EffectiveFrequencyCyl* solver,
-                                int num,
-                                const shared_ptr<const RectangularMesh<2>>& rect_mesh,
-                                size_t stripe):
-        solver(solver),
-        num(num),
+    FieldDataEfficient(EffectiveFrequencyCyl* solver, int num,
+                       const shared_ptr<const RectangularMesh<2>>& rect_mesh,
+                       size_t stripe):
+        FieldDataBase<FieldT>(solver, num),
         rect_mesh(rect_mesh),
         valr(rect_mesh->axis0->size()),
         valz(rect_mesh->axis1->size())
@@ -862,34 +890,32 @@ struct EffectiveFrequencyCyl::LightMagnitudeDataEfficient: public LazyDataImpl<d
 
     size_t size() const override { return rect_mesh->size(); }
 
-    double at(size_t idx) const override {
+    FieldT at(size_t idx) const override {
         size_t i0 = rect_mesh->index0(idx);
         size_t i1 = rect_mesh->index1(idx);
-        return 1e-3 * solver->modes[num].power * abs2(valr[i0] * valz[i1]);
+        return this->value(valr[i0] * valz[i1]);
     }
 
-    DataVector<const double> getAll() const override {
+    DataVector<const FieldT> getAll() const override {
 
-        const double power = 1e-3 * solver->modes[num].power; // 1e-3 mW->W
-
-        DataVector<double> results(rect_mesh->size());
+        DataVector<FieldT> results(rect_mesh->size());
 
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
             for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
-                double* data = results.data() + i1 * rect_mesh->axis0->size();
+                FieldT* data = results.data() + i1 * rect_mesh->axis0->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                     dcomplex f = valr[i0] * valz[i1];
-                    data[i0] = power * abs2(f);
+                    data[i0] = this->value(f);
                 }
             }
         } else {
             #pragma omp parallel for
             for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
-                double* data = results.data() + i0 * rect_mesh->axis1->size();
+                FieldT* data = results.data() + i0 * rect_mesh->axis1->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                     dcomplex f = valr[i0] * valz[i1];
-                    data[i1] = power * abs2(f);
+                    data[i1] = this->value(f);
                 }
             }
         }
@@ -921,9 +947,38 @@ const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const s
     }
 
     if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
-        return LazyData<double>(new LightMagnitudeDataEfficient(this, num, rect_mesh, stripe));
+        return LazyData<double>(new FieldDataEfficient<double>(this, num, rect_mesh, stripe));
     else
-        return LazyData<double>(new LightMagnitudeDataInefficient(this, num, dst_mesh, stripe));
+        return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh, stripe));
+}
+
+const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+{
+    this->writelog(LOG_DEBUG, "Getting light electric field");
+
+    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
+
+    size_t stripe = getMainStripe();
+
+    if (!modes[num].have_fields) {
+        // Compute vertical part
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
+        // Compute horizontal part
+        detS(modes[num].lam, modes[num], true);
+        #ifndef NDEBUG
+        {
+            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
+                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
+            writelog(LOG_DEBUG, "horizontal fields = [{0}) ]", nrs.str().substr(2));
+        }
+        #endif
+        modes[num].have_fields = true;
+    }
+
+    if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
+        return LazyData<Vec<3,dcomplex>>(new FieldDataEfficient<Vec<3,dcomplex>>(this, num, rect_mesh, stripe));
+    else
+        return LazyData<Vec<3,dcomplex>>(new FieldDataInefficient<Vec<3,dcomplex>>(this, num, dst_mesh, stripe));
 }
 
 const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)

@@ -162,6 +162,9 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     /// Provider of optical field
     typename ProviderFor<LightMagnitude, Geometry2DCartesian>::Delegate outLightMagnitude;
 
+    /// Provider of optical field
+    typename ProviderFor<LightE, Geometry2DCartesian>::Delegate outElectricField;
+
     /// Provider for refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
 
@@ -405,6 +408,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         modes.push_back(mode);
         outNeff.fireChanged();
         outLightMagnitude.fireChanged();
+        outElectricField.fireChanged();
         return modes.size()-1;
     }
 
@@ -422,13 +426,16 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         return modes[n].neff;
     }
 
-    struct LightMagnitudeDataBase;
-    struct LightMagnitudeDataInefficient;
-    struct LightMagnitudeDataEfficient;
+    template <typename T> struct FieldDataBase;
+    template <typename T> struct FieldDataInefficient;
+    template <typename T> struct FieldDataEfficient;
     struct HeatDataImpl;
 
     /// Method computing the distribution of light intensity
     const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+
+    /// Method computing the distribution of the light electric field
+    const LazyData<Vec<3,dcomplex>> getElectricField(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
     const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);

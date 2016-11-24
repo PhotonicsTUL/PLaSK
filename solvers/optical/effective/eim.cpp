@@ -1,8 +1,6 @@
 #include <exception>
 #include "eim.h"
 
-using plask::dcomplex;
-
 namespace plask { namespace solvers { namespace effective {
 
 EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
@@ -16,6 +14,7 @@ EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     outdist(0.1),
     outNeff(this, &EffectiveIndex2D::getEffectiveIndex, &EffectiveIndex2D::nmodes),
     outLightMagnitude(this, &EffectiveIndex2D::getLightMagnitude, &EffectiveIndex2D::nmodes),
+    outElectricField(this, &EffectiveIndex2D::getElectricField, &EffectiveIndex2D::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2D::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2D::getHeat),
     k0(2e3*M_PI/980) {
@@ -702,15 +701,15 @@ dcomplex EffectiveIndex2D::detS(const dcomplex& x, EffectiveIndex2D::Mode& mode,
     else return T.bb;                                                // F0 = 0    Bn = 0
 }
 
-
-struct EffectiveIndex2D::LightMagnitudeDataBase: public LazyDataImpl<double>
+template <typename FieldT>
+struct EffectiveIndex2D::FieldDataBase: public LazyDataImpl<FieldT>
 {
     EffectiveIndex2D* solver;
     int num;
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx, ky;
     size_t stripe;
 
-    LightMagnitudeDataBase(EffectiveIndex2D* solver, int num):
+    FieldDataBase(EffectiveIndex2D* solver, int num):
         solver(solver), num(num), kx(solver->xend), ky(solver->yend),
         stripe(solver->mesh->tran()->findIndex(solver->stripex))
     {
@@ -732,56 +731,89 @@ struct EffectiveIndex2D::LightMagnitudeDataBase: public LazyDataImpl<double>
             ky[i] = solver->k0 * sqrt(solver->nrCache[stripe][i]*solver->nrCache[stripe][i] - solver->vneff*solver->vneff);
             if (imag(ky[i]) > 0.) ky[i] = -ky[i];
         }
+        
+        setScale();
     }
+    
+  protected:
+    inline FieldT value(dcomplex val) const;
+    double scale;
+    void setScale();
 };
 
-struct EffectiveIndex2D::LightMagnitudeDataInefficient: public EffectiveIndex2D::LightMagnitudeDataBase
+template <>
+void EffectiveIndex2D::FieldDataBase<double>::setScale() {
+    scale = 1e-3 * solver->modes[num].power;
+}
+
+template <>
+double EffectiveIndex2D::FieldDataBase<double>::value(dcomplex val) const {
+    return scale * abs2(val);
+}
+
+template <>
+void EffectiveIndex2D::FieldDataBase<Vec<3,dcomplex>>::setScale() {
+    // <M> = ½ E conj(E) / Z0
+    scale = sqrt(2e-3 * solver->modes[num].power * 376.73031346177);
+}
+
+template <>
+Vec<3,dcomplex> EffectiveIndex2D::FieldDataBase<Vec<3,dcomplex>>::value(dcomplex val) const {
+    if (solver->getPolarization() == TE)
+        return Vec<3,dcomplex>(0., scale * val, 0.);
+    else
+        return Vec<3,dcomplex>(0., 0., scale * val);
+}
+
+template <typename FieldT>
+struct EffectiveIndex2D::FieldDataInefficient: public EffectiveIndex2D::FieldDataBase<FieldT>
 {
     shared_ptr<const MeshD<2>> dst_mesh;
 
-     LightMagnitudeDataInefficient(EffectiveIndex2D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
-        LightMagnitudeDataBase(solver, num), dst_mesh(dst_mesh) {}
+    FieldDataInefficient(EffectiveIndex2D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
+        FieldDataBase<FieldT>(solver, num), dst_mesh(dst_mesh) {}
 
     size_t size() const override { return dst_mesh->size(); }
 
-    double at(size_t idx) const override {
+    FieldT at(size_t idx) const override {
         auto point = dst_mesh->at(idx);
         double x = point.tran();
         double y = point.vert();
 
         bool negate = false;
-        if (x < 0. && solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
-            x = -x; if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
+        if (x < 0. && this->solver->modes[this->num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
+            x = -x; if (this->solver->modes[this->num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
         }
-        size_t ix = solver->mesh->tran()->findIndex(x);
-        if (ix >= solver->xend) ix = solver->xend-1;
-        if (ix < solver->xbegin) ix = solver->xbegin;
-        if (ix != 0) x -= solver->mesh->tran()->at(ix-1);
-        else if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
-        dcomplex phasx = exp(- I * kx[ix] * x);
-        dcomplex val = solver->modes[num].xfields[ix].F * phasx + solver->modes[num].xfields[ix].B / phasx;
+        size_t ix = this->solver->mesh->tran()->findIndex(x);
+        if (ix >= this->solver->xend) ix = this->solver->xend-1;
+        if (ix < this->solver->xbegin) ix = this->solver->xbegin;
+        if (ix != 0) x -= this->solver->mesh->tran()->at(ix-1);
+        else if (this->solver->modes[this->num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= this->solver->mesh->tran()->at(0);
+        dcomplex phasx = exp(- I * this->kx[ix] * x);
+        dcomplex val = this->solver->modes[this->num].xfields[ix].F * phasx + this->solver->modes[this->num].xfields[ix].B / phasx;
         if (negate) val = - val;
 
-        size_t iy = solver->mesh->vert()->findIndex(y);
-        if (iy >= solver->yend) iy = solver->yend-1;
-        if (iy < solver->ybegin) iy = solver->ybegin;
-        y -= solver->mesh->vert()->at(max(int(iy)-1, 0));
-        dcomplex phasy = exp(- I * ky[iy] * y);
-        val *= solver->yfields[iy].F * phasy + solver->yfields[iy].B / phasy;
+        size_t iy = this->solver->mesh->vert()->findIndex(y);
+        if (iy >= this->solver->yend) iy = this->solver->yend-1;
+        if (iy < this->solver->ybegin) iy = this->solver->ybegin;
+        y -= this->solver->mesh->vert()->at(max(int(iy)-1, 0));
+        dcomplex phasy = exp(- I * this->ky[iy] * y);
+        val *= this->solver->yfields[iy].F * phasy + this->solver->yfields[iy].B / phasy;
 
-        return 1e-3 * solver->modes[num].power * abs2(val);
+        return this->value(val);
     }
 };
 
-struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::LightMagnitudeDataBase
+template <typename FieldT>
+struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataBase<FieldT>
 {
     shared_ptr<const RectangularMesh<2>> rect_mesh;
     std::vector<dcomplex,aligned_allocator<dcomplex>> valx, valy;
 
     size_t size() const override { return rect_mesh->size(); }
 
-    LightMagnitudeDataEfficient(EffectiveIndex2D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
-        LightMagnitudeDataBase(solver, num), rect_mesh(rect_mesh), valx(rect_mesh->tran()->size()), valy(rect_mesh->vert()->size())
+    FieldDataEfficient(EffectiveIndex2D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
+        FieldDataBase<FieldT>(solver, num), rect_mesh(rect_mesh), valx(rect_mesh->tran()->size()), valy(rect_mesh->vert()->size())
     {
         #pragma omp parallel
         {
@@ -789,16 +821,16 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
             for (plask::openmp_size_t idx = 0; idx < rect_mesh->tran()->size(); ++idx) {
                 double x = rect_mesh->tran()->at(idx);
                 bool negate = false;
-                if (x < 0. && solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
-                    x = -x; if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
+                if (x < 0. && this->solver->modes[num].symmetry != EffectiveIndex2D::SYMMETRY_NONE) {
+                    x = -x; if (this->solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NEGATIVE) negate = true;
                 }
-                size_t ix = solver->mesh->tran()->findIndex(x);
-                if (ix >= solver->xend) ix = solver->xend-1;
-                if (ix < solver->xbegin) ix = solver->xbegin;
-                if (ix != 0) x -= solver->mesh->tran()->at(ix-1);
-                else if (solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= solver->mesh->tran()->at(0);
-                dcomplex phasx = exp(- I * kx[ix] * x);
-                dcomplex val = solver->modes[num].xfields[ix].F * phasx + solver->modes[num].xfields[ix].B / phasx;
+                size_t ix = this->solver->mesh->tran()->findIndex(x);
+                if (ix >= this->solver->xend) ix = this->solver->xend-1;
+                if (ix < this->solver->xbegin) ix = this->solver->xbegin;
+                if (ix != 0) x -= this->solver->mesh->tran()->at(ix-1);
+                else if (this->solver->modes[num].symmetry == EffectiveIndex2D::SYMMETRY_NONE) x -= this->solver->mesh->tran()->at(0);
+                dcomplex phasx = exp(- I * this->kx[ix] * x);
+                dcomplex val = this->solver->modes[this->num].xfields[ix].F * phasx + this->solver->modes[num].xfields[ix].B / phasx;
                 if (negate) val = - val;
                 valx[idx] = val;
             }
@@ -806,44 +838,43 @@ struct EffectiveIndex2D::LightMagnitudeDataEfficient: public EffectiveIndex2D::L
             #pragma omp for
             for (plask::openmp_size_t idy = 0; idy < rect_mesh->vert()->size(); ++idy) {
                 double y = rect_mesh->vert()->at(idy);
-                size_t iy = solver->mesh->vert()->findIndex(y);
-                if (iy >= solver->yend) iy = solver->yend-1;
-                if (iy < solver->ybegin) iy = solver->ybegin;
+                size_t iy = this->solver->mesh->vert()->findIndex(y);
+                if (iy >= this->solver->yend) iy = this->solver->yend-1;
+                if (iy < this->solver->ybegin) iy = this->solver->ybegin;
                 y -= solver->mesh->vert()->at(max(int(iy)-1, 0));
-                dcomplex phasy = exp(- I * ky[iy] * y);
-                valy[idy] = solver->yfields[iy].F * phasy + solver->yfields[iy].B / phasy;
+                dcomplex phasy = exp(- I * this->ky[iy] * y);
+                valy[idy] = this->solver->yfields[iy].F * phasy + this->solver->yfields[iy].B / phasy;
             }
         }
         // Free no longer needed memory
-        kx.clear();
-        ky.clear();
+        this->kx.clear();
+        this->ky.clear();
     }
 
-    double at(size_t idx) const override {
+    FieldT at(size_t idx) const override {
         size_t i0 = rect_mesh->index0(idx);
         size_t i1 = rect_mesh->index1(idx);
-        return 1e-3 * solver->modes[num].power * abs2(valx[i0] * valy[i1]);
+        return this->value(valx[i0] * valy[i1]);
     }
 
-    DataVector<const double> getAll() const override {
-        const double power = 1e-3 * solver->modes[num].power; // 1e-3 mW->W
-        DataVector<double> results(rect_mesh->size());
+    DataVector<const FieldT> getAll() const override {
+        DataVector<FieldT> results(rect_mesh->size());
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
             for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
-                double* data = results.data() + i1 * rect_mesh->axis0->size();
+                FieldT* data = results.data() + i1 * rect_mesh->axis0->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
-                    data[i0] = power * abs2(f);
+                    data[i0] = this->value(f);
                 }
             }
         } else {
             #pragma omp parallel for
             for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
-                double* data = results.data() + i0 * rect_mesh->axis1->size();
+                FieldT* data = results.data() + i0 * rect_mesh->axis1->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];
-                    data[i1] = power * abs2(f);
+                    data[i1] = this->value(f);
                 }
             }
         }
@@ -856,11 +887,20 @@ const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<c
     this->writelog(LOG_DEBUG, "Getting light intensity");
 
     if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
-        return LazyData<double>(new LightMagnitudeDataEfficient(this, num, rect_mesh));
+        return LazyData<double>(new FieldDataEfficient<double>(this, num, rect_mesh));
     else
-        return LazyData<double>(new LightMagnitudeDataInefficient(this, num, dst_mesh));
+        return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh));
 }
 
+const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+{
+    this->writelog(LOG_DEBUG, "Getting optical electric field");
+
+    if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
+        return LazyData<Vec<3,dcomplex>>(new FieldDataEfficient<Vec<3,dcomplex>>(this, num, rect_mesh));
+    else
+        return LazyData<Vec<3,dcomplex>>(new FieldDataInefficient<Vec<3,dcomplex>>(this, num, dst_mesh));
+}
 
 const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
     this->writelog(LOG_DEBUG, "Getting refractive indices");

@@ -313,6 +313,7 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "");
         PROVIDER(outNeff, "");
         PROVIDER(outLightMagnitude, "");
+        PROVIDER(outElectricField, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
@@ -437,6 +438,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
         PROVIDER(outLightMagnitude, "");
+        PROVIDER(outElectricField, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
