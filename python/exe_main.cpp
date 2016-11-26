@@ -220,7 +220,7 @@ int main(int argc, const char *argv[])
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
     const char* log_color = nullptr;
-    bool python_logger = false;
+    bool python_logger = true;
 
     enum {
         FILE_ANY = 0,
@@ -251,7 +251,7 @@ int main(int argc, const char *argv[])
                 else if (ll == "data") loglevel.reset(plask::LOG_DATA);
                 else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
                 else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
-                else if (ll == "python") { python_logger = true; }
+                else if (ll == "nopython" || ll == "nopy") { python_logger = false; }
                 else if (ll == "ansi") { log_color = "ansi"; }
                 else if (ll == "mono") { log_color = "none"; }
                 else {
@@ -268,7 +268,6 @@ int main(int argc, const char *argv[])
             --argc; ++argv;
             break;
         } else if (arg == "-g") {
-            python_logger = true;
 #           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
                 if (console_count == 1) { // we are the only ones using the console
                     HWND hwnd = GetConsoleWindow();

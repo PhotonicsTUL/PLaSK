@@ -14,7 +14,7 @@ using boost::math::legendre_p;
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): Expansion(solver), initialized(false)
+ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): m(1), Expansion(solver), initialized(false)
 {
 }
 
@@ -56,6 +56,7 @@ void ExpansionBessel::init()
         SOLVER->setMesh(plask::make_shared<OrderedMesh1DSimpleGenerator>(true));
     }
     rbounds = OrderedAxis(*SOLVER->getMesh());
+    OrderedAxis::WarningOff nowarn_rbounds(rbounds);
     size_t nseg = rbounds.size() - 1;
     if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
     if (SOLVER->pml.size > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.size);
@@ -78,6 +79,7 @@ void ExpansionBessel::init()
     std::deque<DataVector<double>> weights_cache;
 
     auto raxis = plask::make_shared<OrderedAxis>();
+    OrderedAxis::WarningOff nowarn_raxis(raxis);
 
     double a, b = 0.;
     double expcts = 0.;
@@ -580,7 +582,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                     result.c0 -= A * E[idxp(j)] + B * E[idxs(j)];   // E_p
                     result.c1 += A * E[idxs(j)] + B * E[idxp(j)];   // E_r
                     double k = factors[j] / b;
-                    result.c2 += fz * k * ieps[j] * J * H[idxp(j)]; // E_z
+                    result.c2 += fz * k * ieps[i] * J * H[idxp(j)]; // E_z
                 }
                 return result;
             });

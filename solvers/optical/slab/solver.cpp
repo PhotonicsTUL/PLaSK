@@ -70,6 +70,7 @@ void SlabSolver<BaseT>::setup_vbounds()
     if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
         std::deque<double> zz;
         for (double z: vbounds) zz.push_front(-z);
+        OrderedAxis::WarningOff nowarn(vbounds);
         vbounds.addOrderedPoints(zz.begin(), zz.end(), zz.size());
     }
 }
@@ -107,6 +108,7 @@ void SlabSolver<BaseT>::setupLayers()
 
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
+    OrderedAxis::WarningOff nowarn(verts);
     verts->addPoint(vbounds[0] - outdist);
     verts->addPoint(vbounds[vbounds.size()-1] + outdist);
 
@@ -174,6 +176,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
 
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
+    OrderedAxis::WarningOff nowarn(verts);
     verts->addPoint(vbounds[0] - outdist);
     verts->addPoint(vbounds[vbounds.size()-1] + outdist);
 

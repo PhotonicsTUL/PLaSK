@@ -31,6 +31,15 @@ class PLASK_API OrderedAxis: public RectangularAxis {
 
 public:
 
+    struct WarningOff {
+        OrderedAxis* axis;
+        bool prev_state;
+        WarningOff(OrderedAxis& axis): axis(&axis), prev_state(axis.warn_too_close) { axis.warn_too_close = false; }
+        WarningOff(OrderedAxis* axis): axis(axis), prev_state(axis->warn_too_close) { axis->warn_too_close = false; }
+        WarningOff(const shared_ptr<OrderedAxis>& axis): axis(axis.get()), prev_state(axis->warn_too_close) { axis->warn_too_close = false; }
+        ~WarningOff() { axis->warn_too_close = prev_state; }
+    };
+    
     /// Should a warning be issued if the points are too close
     bool warn_too_close;
 

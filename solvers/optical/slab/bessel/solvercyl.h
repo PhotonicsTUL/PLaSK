@@ -76,8 +76,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     void setExpansionDefaults(bool with_k0=true) override {
         expansion.setLam0(getLam0());
-        if (with_k0) expansion.setK0(getK0());
-        expansion.setM(getM());
+        if (with_k0) {
+            expansion.setK0(getK0());
+            expansion.setM(getM());
+        }
     }
 
     /// Expected integration estimate error
@@ -105,7 +107,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      * \param start initial wavelength value to search the mode around
      * \return determined effective index
      */
-    size_t findMode(dcomplex start, int m=0);
+    size_t findMode(dcomplex start, int m=1);
 
     /// Get order of the orthogonal base
     size_t getSize() const { return size; }

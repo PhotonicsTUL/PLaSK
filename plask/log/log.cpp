@@ -134,6 +134,11 @@ void StderrLogger::writelog(LogLevel level, const std::string& msg) {
     static OmpLock loglock;
     OmpLockGuard<OmpLock> guard(loglock);
 #endif
+    
+    static LogLevel prev_level; static std::string prev_msg;
+    if (level == prev_level && msg == prev_msg) return;
+    prev_level = level; prev_msg = msg;
+
     if (color == COLOR_ANSI) {
         fprintf(stderr, "%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
     #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)

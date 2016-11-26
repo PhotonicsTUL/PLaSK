@@ -1,5 +1,7 @@
 #include "python_globals.h"
 
+#include <frameobject.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/python/enum.hpp>
 #include <boost/python/raw_function.hpp>
@@ -149,29 +151,44 @@ const char* PythonSysLogger::head(LogLevel level) {
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-    // PyFrameObject* frame = PyEval_GetFrame();
-    // if (frame)
-    //     pyinfo = format("{1}:{0}: ", PyFrame_GetLineNumber(frame), PyString_AsString(frame->f_code->co_filename));
+
+    static LogLevel prev_level; static std::string prev_msg;
+    if (level == prev_level && msg == prev_msg) return;
+    prev_level = level; prev_msg = msg;
+
+    PyFrameObject* frame = PyEval_GetFrame();
+    std::string pyinfo;
+    if (frame) {
+        std::string filename = PyString_AsString(frame->f_code->co_filename);
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+            size_t idx = filename.rfind("\\");
+#       else
+            size_t idx = filename.rfind("/");
+#       endif
+        if (idx != std::string::npos) filename = filename.substr(idx+1);
+        pyinfo = format("{1}:{0} : ", PyFrame_GetLineNumber(frame), filename);
+    }
+
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+            PySys_WriteStderr("%s: %s%s" ANSI_DEFAULT "\n", head(level), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+            PySys_WriteStdout("%s: %s%s" ANSI_DEFAULT "\n", head(level), pyinfo.c_str(), msg.c_str());
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
         if (dest == DEST_STDERR) {
-            PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+            PySys_WriteStderr("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
         } else {
-            PySys_WriteStdout("%s: %s\n", head(level), msg.c_str());
+            PySys_WriteStdout("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), previous_color);
         }
 #endif
     } else {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+            PySys_WriteStderr("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s\n", head(level), msg.c_str());
+            PySys_WriteStdout("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
     }
 }
 
