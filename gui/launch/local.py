@@ -300,7 +300,7 @@ class PlaskThread(QThread):
         if sep == '\\':
             sep = '\\\\'
             fd = fd.replace('\\', '\\\\')
-        self.link = re.compile(u'((?:{}{})?{}(?:,|:)(?:&nbsp;XML)?)&nbsp;line&nbsp;(\\d+)(.*)'.format(fd, sep, fb))
+        self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
         self.lines = lines
         self.mutex = mutex
         try:
@@ -331,7 +331,7 @@ class PlaskThread(QThread):
         elif cat == "DEBUG         :": color = "gray   "
         else: color = "black; font-weight:bold"
         line = line.replace(' ', '&nbsp;')
-        line = self.link.sub(u'<a style="color: {}" href="line:\\2">\\1&nbsp;line&nbsp;\\2\\3</a>'.format(color), line)
+        line = self.link.sub(u'<a style="color: {}; text-decoration: none;" href="line:\\2">\\1\\2\\3</a>'.format(color), line)
         try:
             self.mutex.lock()
             self.lines.append((cat[:-1].strip(),

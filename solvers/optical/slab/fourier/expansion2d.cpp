@@ -88,6 +88,8 @@ void ExpansionPW2D::init()
     SOLVER->writelog(LOG_DETAIL, "Creating{2}{3} expansion with {0} plane-waves (matrix size: {1})",
                      N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
+    if (symmetric()) SOLVER->writelog(LOG_DETAIL, "Symmetry is {0}", (symmetry== E_TRAN)? "Etran" : "Elong");
+
     matFFT = FFT::Forward1D(4, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
