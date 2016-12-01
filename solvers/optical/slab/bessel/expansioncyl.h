@@ -17,6 +17,8 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     bool initialized;                   ///< Expansion is initialized
 
+    bool m_changed;                     ///< m has changed and init2 must be called
+    
     /// Horizontal axis with separate integration intervals.
     /// material functions contain discontinuities at these points
     OrderedAxis rbounds;
@@ -33,17 +35,15 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
      */
     ExpansionBessel(BesselSolverCyl* solver);
 
-    /**
-     * fill factors with Bessel zeros
-     */
+    /// Fill factors with Bessel zeros
     void computeBesselZeros();
 
-    /**
-     * Init expansion
-     * \param compute_coeffs compute material coefficients
-     */
-    void init();
+    /// Init expansion
+    void init1();
 
+    /// Perform m-specific initialization
+    void init2();
+    
     /// Free allocated memory
     void reset();
 

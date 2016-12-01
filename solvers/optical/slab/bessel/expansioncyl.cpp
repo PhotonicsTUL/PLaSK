@@ -14,7 +14,8 @@ using boost::math::legendre_p;
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): m(1), Expansion(solver), initialized(false)
+ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): Expansion(solver), m(1),
+                                                           initialized(false), m_changed(true)
 {
 }
 
@@ -48,7 +49,7 @@ void ExpansionBessel::computeBesselZeros()
     // #endif
 }
 
-void ExpansionBessel::init()
+void ExpansionBessel::init1()
 {
     // Initialize segments
     if (!SOLVER->mesh) {
@@ -61,8 +62,24 @@ void ExpansionBessel::init()
     if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
     if (SOLVER->pml.size > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.size);
     segments.resize(nseg);
+    double a, b = 0.;
+    for (size_t i = 0; i < nseg; ++i) {
+        a = b; b = rbounds[i+1];
+        segments[i].Z = 0.5 * (a + b);
+        segments[i].D = 0.5 * (b - a);
+    }
 
+    diagonals.assign(solver->lcount, false);
+    initialized = true;
+    m_changed = true;
+}
+    
+void ExpansionBessel::init2()
+{
+    SOLVER->writelog(LOG_DETAIL, "Preparing Bessel functions for m = {}", m);
     computeBesselZeros();
+
+    size_t nseg = rbounds.size() - 1;
 
     // Estimate necessary number of integration points
     double k = factors[factors.size()-1];
@@ -81,12 +98,9 @@ void ExpansionBessel::init()
     auto raxis = plask::make_shared<OrderedAxis>();
     OrderedAxis::WarningOff nowarn_raxis(raxis);
 
-    double a, b = 0.;
     double expcts = 0.;
     for (size_t i = 0; i < nseg; ++i) {
-        a = b; b = rbounds[i+1];
-        segments[i].Z = 0.5 * (a + b);
-        segments[i].D = 0.5 * (b - a);
+        double b = rbounds[i+1];
 
         // excpected value is the second Lommel's integral
         double expct = expcts;
@@ -128,6 +142,7 @@ void ExpansionBessel::init()
     // Compute integrals for permeability
     size_t N = SOLVER->size;
     mu_integrals.reset(N);
+
     if (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.) {
         double ib = 1. / rbounds[rbounds.size()-1];
         size_t pmlseg = segments.size()-1;
@@ -199,11 +214,10 @@ void ExpansionBessel::init()
     iepsilons.resize(nlayers);
     for (size_t l = 0, nr = raxis->size(); l != nlayers; ++l)
         iepsilons[l].reset(nr);
-    diagonals.assign(nlayers, false);
 
     mesh = plask::make_shared<RectangularMesh<2>>(raxis, solver->verts, RectangularMesh<2>::ORDER_01);
 
-    initialized = true;
+    m_changed = false;
 }
 
 
@@ -220,6 +234,7 @@ void ExpansionBessel::reset()
 
 
 void ExpansionBessel::prepareIntegrals(double lam, double glam) {
+    if (m_changed) init2();
     temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
