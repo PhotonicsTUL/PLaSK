@@ -318,6 +318,10 @@ This section contains specification of custom materials that can be used togethe
 
          Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
+         .. warning::
+
+            This parameter is used only by solvers that can consider refractive index anisotropy properly. It is stronly adviced to also define :xml:tag:`Nr`.
+
       .. xml:tag:: <Nv>
 
          Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
