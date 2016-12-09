@@ -660,6 +660,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             solver(solver), name(name)
         {
             auto vaxis = plask::make_shared<OrderedAxis>();
+            OrderedAxis::WarningOff vaxiswoff(vaxis);
             for(size_t n = 0; n != region.size(); ++n) {
                 if (region.isQW(n)) {
                     auto box = region.getLayerBox(n);
@@ -667,7 +668,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 }
             }
             mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
-                                                         vaxis, RectangularMesh<2>::ORDER_01);
+                                                                vaxis, RectangularMesh<2>::ORDER_01);
             factor = 1. / vaxis->size();
         }
         size_t size() const { return mesh->axis0->size(); }
@@ -703,6 +704,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 if (solver->regions[r].contains(p)) pts.insert(p.c0);
             }
             auto msh = plask::make_shared<OrderedAxis>();
+            OrderedAxis::WarningOff mshw(msh);            ;
             msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
             regpoints.emplace_back(std::move(msh));
         }
@@ -726,6 +728,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                     if (solver->regions[r].contains(p)) pts.insert(p.c0);
                 }
                 auto msh = plask::make_shared<OrderedAxis>();
+                OrderedAxis::WarningOff mshw(msh);
                 msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
                 regpoints.emplace_back(std::move(msh));
             }

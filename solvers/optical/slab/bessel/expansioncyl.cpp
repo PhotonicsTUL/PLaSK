@@ -73,7 +73,7 @@ void ExpansionBessel::init1()
     initialized = true;
     m_changed = true;
 }
-    
+
 void ExpansionBessel::init2()
 {
     SOLVER->writelog(LOG_DETAIL, "Preparing Bessel functions for m = {}", m);
