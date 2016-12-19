@@ -320,7 +320,7 @@ This section contains specification of custom materials that can be used togethe
 
          .. warning::
 
-            This parameter is used only by solvers that can consider refractive index anisotropy properly. It is stronly adviced to also define :xml:tag:`Nr`.
+            This parameter is used only by solvers that can consider refractive index anisotropy properly. It is stronly advised to also define :xml:tag:`Nr`.
 
       .. xml:tag:: <Nv>
 

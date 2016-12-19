@@ -1196,7 +1196,7 @@ void initMaterials() {
              "    n (float): Injected carriers concentration [1/cm³].\n\n"
              ".. warning::\n"
              "   This parameter is used only by solvers that can consider refractive index\n"
-             "   anisotropy properly. It is stronly adviced to also define\n"
+             "   anisotropy properly. It is stronly advised to also define\n"
              "   :meth:`~plask.material.Material.Nr`.\n")
     ;
 

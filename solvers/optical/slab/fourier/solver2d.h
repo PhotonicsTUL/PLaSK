@@ -239,7 +239,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
         size_t idx;
         if (polarization == Expansion::E_UNSPECIFIED)
-            throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
+            throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
         if (expansion.symmetric() && expansion.symmetry != polarization)
             throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
         if (expansion.separated()) {
