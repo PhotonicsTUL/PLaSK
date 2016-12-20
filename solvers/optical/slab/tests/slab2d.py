@@ -12,11 +12,13 @@ h = 0.10
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 symmetric = True
-periodic = False
+periodic = True
 
-size = 12
-refine = 1
+size = 16
+refine = 8
 oversampling = 1
+
+smooth = 0.01
 
 dct = 2
 
@@ -35,18 +37,18 @@ class Asym(plask.material.Material):
 
 shelf = geometry.Shelf2D()
 if symmetric:
-    stack = geometry.Stack2D()
-else:
     stack = geometry.Stack2D(left=0)
+else:
+    stack = geometry.Stack2D(xcenter=0)
 
 core = geometry.Block2D(wn, h, Glass())
 air =  geometry.Block2D(wa, h, material.air)
 
 if not symmetric:
-    shelf.append(core)
-    shelf.append(air)
     shelf.append(air)
     shelf.append(core)
+    shelf.append(core)
+    shelf.append(air)
 else:
     shelf.append(core)
     shelf.append(air)
@@ -61,14 +63,14 @@ if periodic:
         main = geometry.Cartesian2D(stack, left='periodic', right='periodic')
 else:
     if symmetric:
-        main = geometry.Cartesian2D(stack, left='mirror')
+        main = geometry.Cartesian2D(stack, left='mirror', right='extend')
     else:
-        main = geometry.Cartesian2D(stack)
+        main = geometry.Cartesian2D(stack, right='extend')
 
 opt = optical.Fourier2D("opt")
 opt.geometry = main
 opt.wavelength = 980.
-opt.smooth = 1e-2
+opt.smooth = smooth
 opt.size = size
 opt.refine = refine
 
@@ -102,23 +104,12 @@ plot(XX, NR, '--k')
 NR = opt.outRefractiveIndex(msh)
 plot(XX, NR.array[:,0,2].real, 'r', label='Fourier')
 
-#NR = opt.outRefractiveIndex(msh, 'linear')
-#plot(XX, NR.array[:,0,2].real, 'b', label='linear')
-
-#print(" ".join("{:.4f}".format(x) for x in opt.material_mesh))
-#mm = opt.material_mesh
-#mm = {
-    #(8, True): [0.0000, 0.0531, 0.1062, 0.1594, 0.2125, 0.2656, 0.3187, 0.3719, 0.4250, 0.4781, 0.5312, 0.5844, 0.6375, 0.6906, 0.7438, 0.7969, 0.8500],
-    #(8, False): [0.0000, 0.1469, 0.2938, 0.4406, 0.5875, 0.7344, 0.8813, 1.0281, 1.1750, 1.3219, 1.4688, 1.6156, 1.7625, 1.9094, 2.0562, 2.2031, 2.3500],
-#}[opt.size, periodic]
-#NR = opt.outRefractiveIndex(mesh.Rectangular2D(mm, [0.5*h]), 'nearest')
-#plot(mm, NR.array[:,0,2].real, 'ob', ms=4, alpha=0.5)
 
 
 xlim(XX[0], XX[-1])
 ylim(0.95, 1.35)
 
-legend(loc='best')
+#legend(loc='best')
 
 tight_layout()
 

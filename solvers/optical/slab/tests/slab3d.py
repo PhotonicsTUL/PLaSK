@@ -18,11 +18,13 @@ d = 0.
 axis = 0
 
 symmetric = True
-periodic = True
+periodic = False
 
-size = 2
+size = 12
 refine = 1
-oversampling = 2., 1.
+oversampling = 1
+
+smooth = 0.005
 
 dct = 1
 
@@ -91,7 +93,7 @@ opt.wavelength = 980.
 opt.smooth = 0.00025
 opt.size = 0
 opt.size[axis] = size
-opt.smooth = 0.
+opt.smooth = smooth
 opt.refine = refine
 opt.oversampling = oversampling
 
@@ -130,13 +132,10 @@ plot(AX, NR, '--k')
 NR = opt.outRefractiveIndex(msh, 'fourier')
 plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Fourier')
 
-print
 if axis == 0:
     msh = mesh.Rectangular3D(AX, [0], [0.5*h])
-    print "long_mesh:", ", ".join("{:.4f}".format(x) for x in opt.material_mesh_long)
 elif axis == 1:
     msh = mesh.Rectangular3D([0], AX, [0.5*h])
-    print "tran_mesh:", ", ".join("{:.4f}".format(x) for x in opt.material_mesh_tran)
 
 #NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
 #plot(opt.tran_mesh, NR, 'b.')
@@ -149,13 +148,13 @@ elif axis == 1:
 #NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
 #plot(opt.tran_mesh, NR, 'r.')
 
-NR = opt.outRefractiveIndex(msh, 'nearest')
-plot(AX, NR.array[:,:,0,2].ravel().real, 'b', label='nearest')
+#NR = opt.outRefractiveIndex(msh, 'linear')
+#plot(AX, NR.array[:,:,0,2].ravel().real, 'b', label='linear')
 
 xlim(AX[0], AX[-1])
 #ylim(0.95, 1.35)
 
-legend(loc='best')
+#legend(loc='best')
 
 tight_layout()
 

@@ -41,11 +41,11 @@ void ExpansionPW2D::init()
         throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
-        if (right <= 0) {
+        if (right <= 0.) {
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0.) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric()) left = -right;
     }
 
@@ -67,7 +67,7 @@ void ExpansionPW2D::init()
         xmesh = plask::make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
                                          left-dx, right-dx-L/M, M);
     } else {
-        L = 2 * right;
+        L = 2. * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
         nM = size_t(round(SOLVER->oversampling * nN));
@@ -312,9 +312,9 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / ((right-left) * (symmetric()? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
-                int k = i; if (k > nN/2) k -= nN;
+                int k = i; if (!symmetric() && k > nN/2) k -= nN;
                 coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }

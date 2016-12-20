@@ -186,7 +186,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
+            double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nNl; ++i) {
                 int k = i; if (!symmetric_long() && k > nNl/2) k -= nNl;
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -237,7 +237,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
+            double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nNt; ++i) {
                 int k = i; if (!symmetric_tran() && k > nNt/2) k -= nNt;
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
