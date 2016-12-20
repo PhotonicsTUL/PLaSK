@@ -11,14 +11,14 @@ h = 0.10
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-symmetric = False
+symmetric = True
 periodic = False
 
-size = 1
+size = 12
 refine = 1
-oversampling = 2.
+oversampling = 1
 
-dct = 1
+dct = 2
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -68,7 +68,7 @@ else:
 opt = optical.Fourier2D("opt")
 opt.geometry = main
 opt.wavelength = 980.
-opt.smooth = 0.0
+opt.smooth = 1e-2
 opt.size = size
 opt.refine = refine
 
@@ -102,12 +102,11 @@ plot(XX, NR, '--k')
 NR = opt.outRefractiveIndex(msh)
 plot(XX, NR.array[:,0,2].real, 'r', label='Fourier')
 
-NR = opt.outRefractiveIndex(msh, 'linear')
-plot(XX, NR.array[:,0,2].real, 'b', label='linear')
+#NR = opt.outRefractiveIndex(msh, 'linear')
+#plot(XX, NR.array[:,0,2].real, 'b', label='linear')
 
-print " ".join("{:.4f}".format(x) for x in opt.material_mesh)
-
-mm = opt.material_mesh
+#print(" ".join("{:.4f}".format(x) for x in opt.material_mesh))
+#mm = opt.material_mesh
 #mm = {
     #(8, True): [0.0000, 0.0531, 0.1062, 0.1594, 0.2125, 0.2656, 0.3187, 0.3719, 0.4250, 0.4781, 0.5312, 0.5844, 0.6375, 0.6906, 0.7438, 0.7969, 0.8500],
     #(8, False): [0.0000, 0.1469, 0.2938, 0.4406, 0.5875, 0.7344, 0.8813, 1.0281, 1.1750, 1.3219, 1.4688, 1.6156, 1.7625, 1.9094, 2.0562, 2.2031, 2.3500],

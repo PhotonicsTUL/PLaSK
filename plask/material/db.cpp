@@ -145,6 +145,8 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
             Material::Parameters p(name, true);
             constructor = db.getConstructor(p, true);
             composition = p.composition;
+            doping_amount_type = p.dopingAmountType;
+            doping_amount = p.dopingAmount;
         }
     }
     assert(material || constructor);
@@ -153,6 +155,27 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr<Material>& material):
     MaterialsDB::MaterialConstructor(material->name()), material(material)
 {}
+
+shared_ptr<Material> MaterialsDB::ProxyMaterialConstructor::operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const {
+    if (material) {
+        return material;
+    }
+    if (dopt == Material::NO_DOPING && doping_amount_type != Material::NO_DOPING) {
+        dopt = doping_amount_type;
+        dop = doping_amount;
+    }
+    if (composition.empty()) {
+        return (*constructor)(comp, dopt, dop);
+    } else {
+        return (*constructor)(composition, dopt, dop);
+    }
+}
+
+bool MaterialsDB::ProxyMaterialConstructor::isSimple() const {
+    if (material || !composition.empty() || !constructor) return true;
+    return constructor->isSimple();
+}
+
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, bool allow_complex_without_composition) const {
     auto it = constructors.find(db_Key);

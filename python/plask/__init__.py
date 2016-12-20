@@ -83,7 +83,7 @@ class _simple(object):
     """
     def __init__(self, base=None):
         if isinstance(base, type):
-            raise TypeError("material.simple argument is a class (you probably forgot parenthes)")
+            raise TypeError("@material.simple argument is a class (you probably forgot parenthes)")
         self.base = base
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
@@ -105,15 +105,20 @@ class _alloy(object):
     """
     def __init__(self, base=None):
         if isinstance(base, type):
-            raise TypeError("material.alloy argument is a class (you probably forgot parenthes)")
+            raise TypeError("@material.alloy argument is a class (you probably forgot parenthes)")
         self.base = base
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         material._register_material_complex(cls.name, cls, self.base)
         return cls
+class _complex(_alloy):
+    def __init__(self, base=None):
+        print_log('warning', "Decorator @material.complex is obsolete, use @material.alloy instead")
+        super(material.complex, self).__init__(base)
 material.alloy = _alloy
-material.complex = _alloy
+material.complex = _complex
 del _alloy
+del _complex
 
 material.const = staticmethod
 

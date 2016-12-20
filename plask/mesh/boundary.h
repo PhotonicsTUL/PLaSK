@@ -72,6 +72,7 @@ PLaSK contains some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<
 #include "../utils/iterators.h"
 #include "../utils/xml/reader.h"
 #include "../memory.h"
+#include "../log/log.h"
 
 #include "../exceptions.h"
 #include "../geometry/space.h"
@@ -308,7 +309,9 @@ public:
      */
     WithMesh operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
-        return this->create(mesh, geometry);
+        auto result =  this->create(mesh, geometry);
+        if (result.empty()) writelog(LOG_WARNING, "Boundary condition contains no points for given mesh");
+        return result;
     }
 
     /**
@@ -318,7 +321,9 @@ public:
      */
     WithMesh operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
-        return this->create(*mesh, geometry);
+        auto result = this->create(*mesh, geometry);
+        if (result.empty()) writelog(LOG_WARNING, "Boundary condition contains no points for given mesh");
+        return result;
     }
 
     /**

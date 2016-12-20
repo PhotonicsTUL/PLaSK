@@ -29,7 +29,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::Kind kind;
     Material::ConductivityType condtype;
 
-    bool complex;
+    bool alloy;
 
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
@@ -37,16 +37,16 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         thermk, dens, cp, nr, absp, Nr, NR,
         mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp;
 
-    PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool complex) :
+    PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool alloy) :
         MaterialsDB::MaterialConstructor(name),
         base(base, db),
         kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        complex(complex)
+        alloy(alloy)
     {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override;
 
-    bool isSimple() const override { return !complex; }
+    bool isSimple() const override { return !alloy; }
 };
 
 class PythonEvalMaterial : public Material
@@ -259,7 +259,7 @@ class PythonEvalMaterial : public Material
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
     material->self = py::object(shared_ptr<Material>(material));
-    if (complex) {
+    if (alloy) {
         for (auto item: Material::completeComposition(composition)) {
             material->self.attr(item.first.c_str()) = item.second;
         }

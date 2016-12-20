@@ -360,6 +360,8 @@ public:
         shared_ptr<Material> material;
         shared_ptr<const MaterialsDB::MaterialConstructor> constructor;
         Material::Composition composition;
+        Material::DopingAmountType doping_amount_type;
+        double doping_amount;
 
       public:
         ProxyMaterialConstructor();
@@ -368,21 +370,9 @@ public:
 
         ProxyMaterialConstructor(const shared_ptr<Material>& material);
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override {
-            if (material) {
-                return material;
-            }
-            if (composition.empty()) {
-                return (*constructor)(comp, dopt, dop);
-            } else {
-                return (*constructor)(composition, dopt, dop);
-            }
-        }
+        shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override;
 
-        bool isSimple() const override {
-            if (material || !composition.empty() || !constructor) return true;
-            return constructor->isSimple();
-        }
+        bool isSimple() const override;
     };
 
     /**
