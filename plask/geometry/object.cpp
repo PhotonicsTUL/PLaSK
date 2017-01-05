@@ -1,3 +1,5 @@
+#include <boost/algorithm/string/join.hpp>
+
 #include "object.h"
 #include "leaf.h"
 #include "transform.h"
@@ -65,7 +67,7 @@ XMLWriter::Element GeometryObject::WriteXMLCallback::makeTag(XMLElement &parent_
     XMLWriter::Element tag(parent_tag, object.getTypeName());
     AxisNames newAxesNames = axesNames;
     std::string name = getName(object, newAxesNames);
-    if (name.empty()) { //check if auto-name should be constructed
+    if (name.empty()) {  // check if auto-name should be constructed
         auto c = counts.find(&object);
         if (c != counts.end() && c->second > 1) { //only for non-unique objects
             name += "#";
@@ -76,6 +78,9 @@ XMLWriter::Element GeometryObject::WriteXMLCallback::makeTag(XMLElement &parent_
     if (!name.empty()) {
         tag.attr("name", name);
         names_of_saved[&object] = name;
+    }
+    if (!object.roles.empty()) {
+        tag.attr("role", boost::join(object.roles, ","));
     }
     if (axesNames != newAxesNames) {
         axesNames = std::move(newAxesNames);
