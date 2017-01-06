@@ -235,6 +235,14 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         BaseT::onGeometryChange(evt);
         if (this->geometry) {
             if (!vbounds.empty()) setup_vbounds(); // update layers
+            if (evt.flags() == 0) {
+                auto objects = this->geometry->getObjectsWithRole("interface");
+                if (objects.size() > 1) {
+                    Solver::writelog(LOG_WARNING, "More than one object with 'interface' role: interface not set");
+                } else if (objects.size() == 1) {
+                    setInterfaceOn(objects[0]);
+                }
+            }
         } else {
             vbounds.clear();
         }
@@ -330,7 +338,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param object where the interface should  be set on
      * \param path path specifying object in the geometry
      */
-    void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints* path=nullptr) {
+    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints* path=nullptr) {
         if (vbounds.empty()) setup_vbounds();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
@@ -345,7 +353,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param object where the interface should  be set on
      * \param path path specifying object in the geometry
      */
-    void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints& path) {
+    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints& path) {
         setInterfaceOn(object, &path);
     }
 

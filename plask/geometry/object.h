@@ -80,10 +80,10 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
             EVENT_DELETE = 1,             ///< is deleted
             EVENT_RESIZE = 1<<1,          ///< size could be changed
             EVENT_DELEGATED = 1<<2,       ///< delegated from child
-            EVENT_CHILDREN_INSERT = 1<<3, ///< children was insert
+            EVENT_CHILDREN_INSERT = 1<<3, ///< children was inserted
             EVENT_CHILDREN_REMOVE = 1<<4, ///< children was removed
             EVENT_CHILDREN_GENERIC = 1<<5,///< children list was changed (other or custom changes)
-            EVENT_EDGES = 1<<6,         ///< edges was changed (only Geometries/calculation spaces emit events with this flags)
+            EVENT_EDGES = 1<<6,           ///< edges was changed (only Geometries/calculation spaces emit events with this flags)
             EVENT_STEPS = 1<<7,           ///< step refining was changed
             EVENT_USER_DEFINED = 1<<8     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
         };

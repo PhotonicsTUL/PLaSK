@@ -43,7 +43,7 @@ class LayerSet_Test(unittest.TestCase):
                 <shelf name="oxide-layer">
                   <block dr="4" dz="0.01593" material="AlAs"/><block dr="6" dz="0.01593" material="AlOx"/>
                 </shelf>
-                <block dr="10" dz="0.13649" material="GaAs" role="opt-cavity"/>
+                <block dr="10" dz="0.13649" material="GaAs" role="opt-cavity,interface"/>
                 <shelf name="QW">
                   <block name="active" dr="4" dz="0.00500" material="InGaAs"/><block dr="6" dz="0.00500" material="InGaAs"/>
                 </shelf>
@@ -68,6 +68,7 @@ class LayerSet_Test(unittest.TestCase):
         self.mat = self.manager.geo.vcsel.get_material
 
     def testInterface(self):
+        self.assertEqual( self.solver.interface, 62 )
         self.solver.set_interface(0.)
         self.assertEqual( self.solver.interface, 60 )
         self.solver.set_interface(self.manager.geo.QW)
