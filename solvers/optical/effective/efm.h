@@ -231,9 +231,6 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         invalidate();
     }
 
-    /// Distance outside outer edges where material is sampled
-    double outdist;
-
     // Parameters for rootdigger
     RootDigger::Params root;        ///< Parameters for horizontal root digger
     RootDigger::Params stripe_root; ///< Parameters for vertical root diggers

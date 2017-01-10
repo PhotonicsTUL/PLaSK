@@ -13,7 +13,6 @@
 //     recompute_neffs(true),
 //     emission(FRONT),
 //     vneff(0.),
-//     outdist(0.1),
 //     outNeff(this, &EffectiveIndex3D::getEffectiveIndex, &EffectiveIndex3D::nmodes),
 //     outLightMagnitude(this, &EffectiveIndex3D::getLightMagnitude, &EffectiveIndex3D::nmodes),
 //     outRefractiveIndex(this, &EffectiveIndex3D::getRefractiveIndex),
@@ -58,9 +57,6 @@
 //             double R1 = reader.requireAttribute<double>("R1");
 //             double R2 = reader.requireAttribute<double>("R2");
 //             mirrors.reset(std::make_pair(R1,R2));
-//             reader.requireTagEnd();
-//         } else if (param == "outer") {
-//             outdist = reader.requireAttribute<double>("dist");
 //             reader.requireTagEnd();
 //         } else if (param == "mesh") {
 //             auto name = reader.getAttribute("ref");
@@ -309,14 +305,14 @@
 //
 //         if (xbegin == 0) {
 //             if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) axis0->addPoint(0.5 * mesh->axis0->at(0));
-//             else axis0->addPoint(mesh->axis0->at(0) - outdist);
+//             else axis0->addPoint(mesh->axis0->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
 //         }
 //         if (xend == mesh->axis0->size()+1)
-//             axis0->addPoint(mesh->axis0->at(mesh->axis0->size()-1) + outdist);
+//             axis0->addPoint(mesh->axis0->at(mesh->axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 //         if (ybegin == 0)
-//             axis1->addPoint(mesh->axis1->at(0) - outdist);
+//             axis1->addPoint(mesh->axis1->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
 //         if (yend == mesh->axis1->size()+1)
-//             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
+//             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 //
 //         writelog(LOG_DEBUG, "Updating refractive indices cache");
 //         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());

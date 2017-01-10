@@ -136,8 +136,6 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
 
     dcomplex vneff;             ///< Vertical effective index of the main stripe
 
-    double outdist;             ///< Distance outside outer edges where material is sampled
-
     /// Mirror reflectivities
     boost::optional<std::pair<double,double>> mirrors;
 

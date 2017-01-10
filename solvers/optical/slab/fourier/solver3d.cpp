@@ -156,9 +156,6 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
-        } else if (param == "outer") {
-            outdist = reader.requireAttribute<double>("dist");
-            reader.requireTagEnd();
         } else
             parseStandardConfiguration(reader, manager);
     }

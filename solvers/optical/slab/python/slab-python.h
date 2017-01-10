@@ -309,7 +309,6 @@ py::object Solver_computeTransmittivity(SolverT* self,
 template <typename Class>
 inline void export_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
-    solver.def_readwrite("outdist", &Solver::outdist, "Distance outside outer edges where material is sampled.");
     solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position.");
     solver.def("set_interface", (void(Solver::*)(const shared_ptr<const GeometryObject>&, const PathHints&))&Solver::setInterfaceOn,
                "Set interface at the bottom of the specified object.\n\n"

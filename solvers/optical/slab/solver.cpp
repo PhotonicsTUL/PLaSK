@@ -32,7 +32,6 @@ void SlabBase::initTransfer(Expansion& expansion, bool emitting) {
 
 template <typename BaseT>
 SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
-    outdist(0.1),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
     outLightMagnitude(this, &SlabSolver<BaseT>::getMagnitude, &SlabSolver<BaseT>::nummodes),
@@ -109,8 +108,8 @@ void SlabSolver<BaseT>::setupLayers()
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
     OrderedAxis::WarningOff nowarn(verts);
-    verts->addPoint(vbounds[0] - outdist);
-    verts->addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts->addPoint(vbounds[0] - 2.*OrderedAxis::MIN_DISTANCE);
+    verts->addPoint(vbounds[vbounds.size()-1] + 2.*OrderedAxis::MIN_DISTANCE);
 
     lgained.clear();
     stack.clear();
@@ -156,6 +155,7 @@ void SlabSolver<BaseT>::setupLayers()
     assert(vbounds.size() == stack.size()-1);
     assert(verts->size() == stack.size());
 
+
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 }
 
@@ -177,8 +177,8 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
     OrderedAxis::WarningOff nowarn(verts);
-    verts->addPoint(vbounds[0] - outdist);
-    verts->addPoint(vbounds[vbounds.size()-1] + outdist);
+    verts->addPoint(vbounds[0] - 2.*OrderedAxis::MIN_DISTANCE);
+    verts->addPoint(vbounds[vbounds.size()-1] + 2.*OrderedAxis::MIN_DISTANCE);
 
     lgained.clear();
     stack.clear();

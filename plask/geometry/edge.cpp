@@ -50,10 +50,10 @@ std::string Null::str() const {
 
 
 void Extend::applyLo(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&, const Strategy*) const {
-    p = bbox_lo;
+    p = bbox_lo + 1e-12;
 }
 void Extend::applyHi(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&, const Strategy*) const {
-    p = bbox_hi;
+    p = bbox_hi - 1e-12;
 }
 
 Extend* Extend::clone() const {

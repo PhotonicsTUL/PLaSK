@@ -131,9 +131,6 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             double R2 = reader.requireAttribute<double>("R2");
             mirrors.reset(std::make_pair(R1,R2));
             reader.requireTagEnd();
-        } else if (param == "outer") {
-            outdist = reader.requireAttribute<double>("dist");
-            reader.requireTagEnd();
         } else
             parseStandardConfiguration(reader, manager);
     }

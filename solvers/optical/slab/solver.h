@@ -253,9 +253,6 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
   public:
 
-    /// Distance outside outer edges where the material is sampled
-    double outdist;
-
     /// Smoothing coefficient
     double smooth;
 
@@ -316,7 +313,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         if (vbounds.empty()) setup_vbounds();
         if (index == 0 || index > vbounds.size())
             throw BadInput(this->getId(), "Cannot set interface to {0} (min: 1, max: {1})", index, vbounds.size());
-        double pos = vbounds[index-1]; if (abs(pos) < 1e-12) pos = 0.;
+        double pos = vbounds[index-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
         Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, index);
         interface = index;
     }
@@ -327,9 +324,9 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      */
     inline void setInterfaceAt(double pos) {
         if (vbounds.empty()) setup_vbounds();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin() + 1; // -1e-12 to compensate for truncation errors
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-0.5*OrderedAxis::MIN_DISTANCE) - vbounds.begin() + 1; // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
         if (interface > vbounds.size()) interface = vbounds.size();
-        pos = vbounds[interface-1]; if (abs(pos) < 1e-12) pos = 0.;
+        pos = vbounds[interface-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
         Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, interface);
     }
 
@@ -342,9 +339,9 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         if (vbounds.empty()) setup_vbounds();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin() + 1;
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-0.5*OrderedAxis::MIN_DISTANCE) - vbounds.begin() + 1;
         if (interface > vbounds.size()) interface = vbounds.size();
-        double pos = vbounds[interface-1]; if (abs(pos) < 1e-12) pos = 0.;
+        double pos = vbounds[interface-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
         Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, interface);
     }
 

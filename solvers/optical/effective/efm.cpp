@@ -12,7 +12,6 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),
-    outdist(0.1),
     perr(1e-3),
     k0(NAN),
     vlam(0.),
@@ -65,9 +64,6 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
             RootDigger::readRootDiggerConfig(reader, root);
         } else if (param == "stripe-root") {
             RootDigger::readRootDiggerConfig(reader, stripe_root);
-        } else if (param == "outer") {
-            outdist = reader.requireAttribute<double>("dist");
-            reader.requireTagEnd();
         } else if (param == "mesh") {
             auto name = reader.getAttribute("ref");
             if (!name) name.reset(reader.requireTextInCurrentTag());
@@ -273,11 +269,11 @@ void EffectiveFrequencyCyl::updateCache()
             axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis1);
         }
         if (rsize == axis0->size())
-            axis0->addPoint(axis0->at(axis0->size()-1) + outdist);
+            axis0->addPoint(mesh->axis0->at(axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
         if (zbegin == 0)
-            axis1->addPoint(axis1->at(0) - outdist);
+            axis1->addPoint(mesh->axis1->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
         if (zsize == mesh->axis1->size()+1)
-            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
+            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
@@ -737,7 +733,7 @@ double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
         detS(mode.lam, mode, true); // compute horizontal part
         mode.have_fields = true;
     }
-    
+
     double result = 0.;
     dcomplex lam0 = 2e3*M_PI / k0;
 
@@ -772,7 +768,7 @@ struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
     int num;
 
     FieldDataBase(EffectiveFrequencyCyl* solver, int num);
-    
+
   protected:
     inline FieldT value(dcomplex val) const;
     double scale;
