@@ -13,8 +13,16 @@ namespace plask { namespace thermal { namespace tstatic {
         return "Convection(" + str(self.coeff) + "," + str(self.ambient) + ")";
     }
 
+    std::string Convection__str__(const Convection& self) {
+        return str(self.coeff) + " (" + str(self.ambient) + "K)";
+    }
+
     std::string Radiation__repr__(const Radiation& self) {
         return "Radiation(" + str(self.emissivity) + "," + str(self.ambient) + ")";
+    }
+
+    std::string Radiation__str__(const Radiation& self) {
+        return str(self.emissivity) + " (" + str(self.ambient) + "K)";
     }
 
 }}}
@@ -38,12 +46,14 @@ BOOST_PYTHON_MODULE(static)
         .def_readwrite("coeff", &Convection::coeff)
         .def_readwrite("ambient", &Convection::ambient)
         .def("__repr__", &Convection__repr__)
+        .def("__str__", &Convection__str__)
     ;
 
     py::class_<Radiation>("Radiation", "Radiative boundary condition value.", py::init<double,double>())
         .def_readwrite("emissivity", &Radiation::emissivity)
         .def_readwrite("ambient", &Radiation::ambient)
         .def("__repr__", &Radiation__repr__)
+        .def("__str__", &Radiation__str__)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D",

@@ -394,10 +394,14 @@ public:
                                                        const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         BoundaryConditionsWithMesh<MeshType,ValueType> impl;
         impl.container.reserve(container.size());
-        for (auto& el: container)
+        for (auto& el: container) {
+            auto place = el.place(mesh, geometry);
+            if (place.empty())
+                writelog(LOG_WARNING, "Boundary condition with value {} contains no points for given mesh", el.value);
             impl.container.push_back(
-                BoundaryConditionWithMesh<MeshType,ValueType>(el.place(mesh, geometry), el.value)
+                BoundaryConditionWithMesh<MeshType,ValueType>(place, el.value)
             );
+        }
         return impl;
     }
 

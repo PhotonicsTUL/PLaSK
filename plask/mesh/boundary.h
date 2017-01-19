@@ -309,9 +309,7 @@ public:
      */
     WithMesh operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
-        auto result =  this->create(mesh, geometry);
-        if (result.empty()) writelog(LOG_WARNING, "Boundary condition contains no points for given mesh");
-        return result;
+        return this->create(mesh, geometry);
     }
 
     /**
@@ -321,9 +319,7 @@ public:
      */
     WithMesh operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
-        auto result = this->create(*mesh, geometry);
-        if (result.empty()) writelog(LOG_WARNING, "Boundary condition contains no points for given mesh");
-        return result;
+        return this->create(*mesh, geometry);
     }
 
     /**
@@ -438,7 +434,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
     }
 
     typename BoundaryLogicImpl::Iterator begin() const override {
-        if (boundaries.empty()) //boundaries.begin() == boundaries.end()
+        if (boundaries.empty()) // boundaries.begin() == boundaries.end()
             return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
     }
@@ -447,6 +443,11 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
     }
 
+    bool empty() const override {
+        for (auto bound: boundaries) if (!bound.empty()) return false;
+        return true;
+    }
+    
     std::size_t size() const override {
         std::size_t s = 0;
         for (auto bound: boundaries) s += bound.size();
@@ -553,7 +554,9 @@ public:
  */
 template <typename MeshType>
 inline typename MeshType::Boundary makeEmptyBoundary() {
-    return typename MeshType::Boundary( [=](const MeshType& mesh) { return new EmptyBoundaryImpl(); } );
+    return typename MeshType::Boundary( 
+        [](const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&) { return new EmptyBoundaryImpl(); } 
+    );
 }
 
 

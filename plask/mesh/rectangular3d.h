@@ -1266,6 +1266,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 0 direction and lies on lower face of the @p box
      */
     static Boundary getBackOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineLo(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1283,6 +1284,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 0 direction and lies on higher face of the @p box
      */
     static Boundary getFrontOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineHi(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1300,6 +1302,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
      */
     static Boundary getLeftOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineLo(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
@@ -1317,6 +1320,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 1 direction and lies on higher face of the @p box
      */
     static Boundary getRightOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineHi(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
@@ -1334,6 +1338,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
      */
     static Boundary getBottomOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineLo(line, *mesh.axis2, box.lower.c2, box.upper.c2) &&
@@ -1351,6 +1356,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
      * @return boundary which has fixed index at axis 2 direction and lies on higher face of the @p box
      */
     static Boundary getTopOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineHi(line, *mesh.axis2, box.lower.c2, box.upper.c2) &&

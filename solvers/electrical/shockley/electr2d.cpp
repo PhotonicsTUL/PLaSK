@@ -226,7 +226,7 @@ inline void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setLoc
 template<typename Geometry2DType>
 template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
+                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -248,7 +248,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, 
 
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMatrix2D& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
+                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -279,7 +279,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMa
 template<typename Geometry2DType>
 template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
-                                                                      const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
+                                                                      const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
@@ -475,7 +475,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%%",
+        this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));

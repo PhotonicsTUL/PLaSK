@@ -1177,6 +1177,7 @@ public:
      * @return boundary which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getLeftOfBoundary(const Box2D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
         return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1193,6 +1194,7 @@ public:
      * @return boundary which lies on right edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getRightOfBoundary(const Box2D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
         return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1209,6 +1211,7 @@ public:
      * @return boundary which lies on bottom edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getBottomOfBoundary(const Box2D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
         return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
@@ -1225,6 +1228,7 @@ public:
      * @return boundary which lies on top edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getTopOfBoundary(const Box2D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
         return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
