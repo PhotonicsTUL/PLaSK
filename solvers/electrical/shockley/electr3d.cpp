@@ -122,11 +122,11 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
             for (size_t ver = 0; ver < points->axis2->size(); ++ver) {
                 auto point = points->at(lon, tra, ver);
                 size_t cur = isActive(point);
-                if (num != cur) {
+                if (cur != num) {
                     if (num) {  // summarize current region
                         auto found = regions.find(num);
                         if (found == regions.end()) {  // `num` is a new region
-                            regions[num] = Active::Region(start, ver);
+                            regions[num] = Active::Region(start, ver, lon, tra);
                             if (nreg < num) nreg = num;
                         } else {
                             Active::Region& region = found->second;
@@ -141,11 +141,23 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
                     num = cur;
                     start = ver;
                 }
+                if (cur) {
+                    auto found = regions.find(cur);
+                    if (found != regions.end()) {
+                        Active::Region& region = found->second;
+                        if (region.warn && lon != region.lon && tra != region.tra &&
+                            *this->geometry->getMaterial(points->at(lon, tra, ver)) !=
+                            *this->geometry->getMaterial(points->at(region.lon, region.tra, ver))) {
+                            writelog(LOG_WARNING, "Junction {} is laterally non-uniform", num-1);
+                            region.warn = false;
+                        }
+                    }
+                }
             }
             if (num) {  // summarize current region
                 auto found = regions.find(num);
                 if (found == regions.end()) {  // `current` is a new region
-                    regions[num] = Active::Region(start, points->axis2->size());
+                    regions[num] = Active::Region(start, points->axis2->size(), lon, tra);
                 } else {
                     Active::Region& region = found->second;
                     if (start != region.bottom || points->axis2->size() != region.top)

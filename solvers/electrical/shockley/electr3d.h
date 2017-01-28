@@ -16,11 +16,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     /// Details of active region
     struct Active {
         struct Region {
-            size_t bottom, top, left, right, back, front;
+            size_t bottom, top, left, right, back, front, lon, tra;
+            bool warn;
             Region() {}
-            Region(size_t b, size_t t): bottom(b), top(t),
+            Region(size_t b, size_t t, size_t x, size_t y): bottom(b), top(t),
                                         left(std::numeric_limits<size_t>::max()), right(0),
-                                        back(std::numeric_limits<size_t>::max()), front(0) {}
+                                        back(std::numeric_limits<size_t>::max()), front(0),
+                                        lon(x), tra(y), warn(true) {}
         };
         size_t bottom, top, left, right, back, front;
         size_t ld;

@@ -122,11 +122,19 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         size_t prev = 0;
+        shared_ptr<Material> material;
         for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
             size_t num = isActive(point);
 
             if (num) { // here we are inside the active region
+                if (regions.size() >= num && regions[num-1].warn) {
+                    if (!material) material = this->geometry->getMaterial(points->at(c,r));
+                    else if (*material != *this->geometry->getMaterial(points->at(c,r))) {
+                        writelog(LOG_WARNING, "Junction {} is laterally non-uniform", num-1);
+                        regions[num-1].warn = false;
+                    }
+                }
                 regions.resize(max(regions.size(), num));
                 auto& reg = regions[num-1];
                 if (prev != num) { // this region starts in the current row
@@ -134,7 +142,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
                         throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
                     }
                     if (reg.bottom >= r) reg.bottom = r; // first row
-                    else if (reg.rowr <= c) throw Exception("{0}: Junction {1} is disjoint", this->getId(), num-1);
+                    else if (reg.rowr <= c) throw Exception("{0}: Active region {1} is disjoint", this->getId(), num-1);
                     reg.top = r + 1;
                     reg.rowl = c; if (reg.left > reg.rowl) reg.left = reg.rowl;
                 }

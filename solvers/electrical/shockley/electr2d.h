@@ -20,9 +20,10 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         struct Region {
             size_t left, right, bottom, top;
             size_t rowl, rowr;
+            bool warn;
             Region(): left(0), right(0), bottom(std::numeric_limits<size_t>::max()),
                       top(std::numeric_limits<size_t>::max()),
-                      rowl(std::numeric_limits<size_t>::max()), rowr(0) {}
+                      rowl(std::numeric_limits<size_t>::max()), rowr(0), warn(true) {}
         };
         size_t left, right, bottom, top;
         ptrdiff_t offset;
