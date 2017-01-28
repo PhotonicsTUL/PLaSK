@@ -434,7 +434,8 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
         }
     ), function(function) {
         if (!PyCallable_Check(function.ptr()) && !py::extract<ReturnedType>(function).check())
-            throw TypeError("'data' in custom Python provider must be a callable or a Data object");
+            throw TypeError("'data' in custom Python provider must be a callable or "
+                            "a proper Data object over {}-dimensional mesh", ProviderT::SpaceType::DIM);
     }
 };
 
