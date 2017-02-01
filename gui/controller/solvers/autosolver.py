@@ -20,7 +20,7 @@ from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.autosolver import SchemaTag, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.autosolver import SchemaTag, AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
 from . import Controller
@@ -109,6 +109,44 @@ class SolverAutoWidget(VerticalScrollArea):
                     .format(schema.name if schema.label is None else schema.label.strip().lower())
             ))
 
+    def _add_attr(self, attr, defines, gname, group):
+        if isinstance(attr, AttrChoice):
+            edit = ComboBox()
+            edit.setEditable(True)
+            edit.addItems([''] + list(attr.choices))
+            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
+                                         self._change_attr(group, name, edit.currentText(), label))
+            edit.setCompleter(defines)
+            if attr.default is not None:
+                edit.lineEdit().setPlaceholderText(attr.default)
+        elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath)):
+            edit = ComboBox()
+            edit.setEditable(True)
+            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
+                                         self._change_attr(group, name, edit.currentText()))
+            edit.setCompleter(defines)
+            if attr.default is not None:
+                edit.lineEdit().setPlaceholderText(attr.default)
+        else:
+            if attr.name[-1] == '#':
+                edit = MultiLineEdit(movable=True)
+                # edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
+                # edit.textChanged.connect(self.controller.fire_changed)
+                edit.change_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label: \
+                    self._change_multi_attr(group, name, edit.get_values(), label)
+            else:
+                edit = QLineEdit()
+                edit.setCompleter(defines)
+                # edit.textEdited.connect(self.controller.fire_changed)
+                edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
+                                             self._change_attr(group, name, edit.text(), label))
+                if attr.default is not None:
+                    edit.setPlaceholderText(attr.default)
+        edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;<br/>{}'.format(
+            gname, attr.name, '' if attr.default is None else attr.default, attr.help))
+        self.controls[group, attr.name] = edit
+        return edit
+
     def __init__(self, controller, parent=None):
         super(SolverAutoWidget, self).__init__(parent)
 
@@ -159,42 +197,21 @@ class SolverAutoWidget(VerticalScrollArea):
             layout.addRow(label)
             if isinstance(schema, SchemaTag):
                 for attr in schema.attrs:
-                    if isinstance(attr, AttrChoice):
-                        edit = ComboBox()
-                        edit.setEditable(True)
-                        edit.addItems([''] + list(attr.choices))
-                        edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
-                                                     self._change_attr(group, name, edit.currentText(), label))
-                        edit.setCompleter(defines)
-                        if attr.default is not None:
-                            edit.lineEdit().setPlaceholderText(attr.default)
-                    elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath)):
-                        edit = ComboBox()
-                        edit.setEditable(True)
-                        edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
-                                                    self._change_attr(group, name, edit.currentText()))
-                        edit.setCompleter(defines)
-                        if attr.default is not None:
-                            edit.lineEdit().setPlaceholderText(attr.default)
+                    if isinstance(attr, AttrGroup):
+                        edit = QWidget()
+                        lay = QHBoxLayout()
+                        lay.setContentsMargins(0, 0, 0, 0)
+                        edit.setLayout(lay)
+                        sep = ''
+                        for item in attr:
+                            field = self._add_attr(item, defines, gname, group)
+                            field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+                            label = QLabel(sep + item.label + ':')
+                            lay.addWidget(label)
+                            lay.addWidget(field)
+                            sep = ' '
                     else:
-                        if attr.name[-1] == '#':
-                            edit = MultiLineEdit(movable=True)
-                            #edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
-                            #edit.textChanged.connect(self.controller.fire_changed)
-                            edit.change_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label:\
-                                self._change_multi_attr(group, name, edit.get_values(), label)
-                        else:
-                            edit = QLineEdit()
-                            edit.setCompleter(defines)
-                            #edit.textEdited.connect(self.controller.fire_changed)
-                            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
-                                                         self._change_attr(group, name, edit.text(), label))
-                            if attr.default is not None:
-                                edit.setPlaceholderText(attr.default)
-
-                    edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;<br/>{}'.format(
-                        gname, attr.name, '' if attr.default is None else attr.default, attr.help))
-                    self.controls[group, attr.name] = edit
+                        edit = self._add_attr(attr, defines, gname, group)
                     layout.addRow(attr.label + ':', edit)
             elif isinstance(schema, SchemaBoundaryConditions):
                 edit = QPushButton("View / Edit")
@@ -230,7 +247,7 @@ class SolverAutoWidget(VerticalScrollArea):
         for schema in model.schema:
             group = schema.name
             if isinstance(schema, SchemaTag):
-                for item in schema.attrs:
+                for item in schema.attrs.flat:
                     attr = item.name
                     edit = self.controls[group, attr]
                     with BlockQtSignals(edit):

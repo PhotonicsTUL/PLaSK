@@ -73,6 +73,7 @@
       <xs:sequence>
         <xs:element ref="attr" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="tag" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="group" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="label" type="xs:string" use="required"/>
@@ -80,6 +81,16 @@
   </xs:element>
 
   <xs:element name="choice" type="xs:string">
+  </xs:element>
+
+  <xs:element name="group">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="attr" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="label" type="xs:string" use="required"/>
+      <xs:attribute name="unit" type="xs:string" use="optional"/>
+    </xs:complexType>
   </xs:element>
 
   <xs:element name="attr">
@@ -93,6 +104,7 @@
       <xs:attribute name="type" use="optional">
         <xs:simpleType>
           <xs:restriction base="xs:string">
+            <xs:enumeration value="group"/>
             <xs:enumeration value="string"/>
             <xs:enumeration value="float"/>
             <xs:enumeration value="complex"/>

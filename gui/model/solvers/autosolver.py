@@ -35,6 +35,22 @@ except ImportError:
     plask = None
 
 
+class AttrList(list):
+    @property
+    def flat(self):
+        for item in self:
+            if isinstance(item, AttrGroup):
+                for i in item:
+                    yield i
+            else:
+                yield item
+
+
+class AttrGroup(list):
+    def __init__(self, label):
+        self.label = label
+
+
 class Attr(object):
     def __init__(self, name, label, help, default=None):
         self.name = name
@@ -75,6 +91,9 @@ def read_attr(attr, xns):
         ad = attr.attrib.get('default')
         if au is not None:
             al += u' [{}]'.format(au)
+        else:
+            au = attr.getparent().attrib.get('unit')
+        if au is not None:
             at += u' [{}]'.format(au)
         if at == u'choice':
             ac = tuple(ch.text.strip() for ch in attr.findall(xns+'choice'))
@@ -114,7 +133,7 @@ class AutoSolver(Solver):
 
     def set_fresh_data(self):
         self.data = dict((schema.name,
-                          dict((a.name, None) for a in schema.attrs) if isinstance(schema, SchemaTag) else [])
+                          dict((a.name, None) for a in schema.attrs.flat) if isinstance(schema, SchemaTag) else [])
                          for schema in self.schema)
 
     def get_xml_element(self):
@@ -263,9 +282,19 @@ def _load_xml(filename):
 
         for tag in _iter_tags(solver, xns):
             tn, tl = tag.attrib['name'], tag.attrib['label']
-            attrs = []
-            for attr in tag.findall(xns+'attr'):
-                attrs.append(read_attr(attr, xns))
+            attrs = AttrList()
+            for attr in tag.iterchildren(xns+'attr', xns+'group'):
+                if attr.tag == xns+'attr':
+                    attrs.append(read_attr(attr, xns))
+                elif attr.tag == xns+'group':
+                    gl = attr.attrib['label']
+                    gu = attr.attrib.get('unit')
+                    if gu is not None:
+                        gl += u' [{}]'.format(gu)
+                    group = AttrGroup(gl)
+                    for attr in attr.findall(xns+'attr'):
+                        group.append(read_attr(attr, xns))
+                    attrs.append(group)
             schema.append(SchemaTag(tn, tl, attrs))
 
         try:

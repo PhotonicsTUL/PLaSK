@@ -31,8 +31,10 @@
     <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Longitudinal wave-vector component.</attr>
+      <group label="Wavevector" unit="µm&lt;sup&gt;-1&lt;/sup&gt;">
+        <attr name="k-long" label="Longitudinal" type="float" default="0">Longitudinal wave-vector component.</attr>
+        <attr name="k-tran" label="Transverse" type="float" default="0">Transverse wave-vector component.</attr>
+      </group>
       <attr name="symmetry" label="Mode symmetry" type="choice" default="none">
         Mode symmetry. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
         <choice>none</choice>
@@ -139,38 +141,44 @@
         Expansion sizes along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal expansion size’ (&lt;tt&gt;size-long&lt;/tt&gt;) and ‘Transverse expansion size’ (&lt;tt&gt;size-tran&lt;/tt&gt;)
       </attr>
-      <attr name="size-long" label="  Longitudinal expansion size" type="int">
-        Expansion size along longitudinal axis.
-        You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
-      </attr>
-      <attr name="size-tran" label="  Transverse expansion size" type="int">
-        Expansion size along transverse axis.
-        You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
-      </attr>
+      <group label="Expansion sizes">
+        <attr name="size-long" label="Longitudinal" type="int">
+          Expansion size along longitudinal axis.
+          You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
+        </attr>
+        <attr name="size-tran" label="Transverse" type="int">
+          Expansion size along transverse axis.
+          You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
+        </attr>
+      </group>
       <attr name="refine" label="Averaging points" type="int" default="16">
         Number of refinement points for refractive index averaging along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) and ‘Transverse averaging points’ (&lt;tt&gt;refine-tran&lt;/tt&gt;) .
       </attr>
-      <attr name="refine-long" label="  Longitudinal averaging points" type="int">
-        Number of refinement points for refractive index averaging along longitudinal axis.
-        You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
-      </attr>
-      <attr name="refine-tran" label="  Transverse averaging points" type="int">
-        Number of refinement points for refractive index averaging along transverse axis.
-        You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
-      </attr>
+      <group label="Averaging points">
+        <attr name="refine-long" label="Longitudinal" type="int">
+          Number of refinement points for refractive index averaging along longitudinal axis.
+          You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+        </attr>
+        <attr name="refine-tran" label="Transverse" type="int">
+          Number of refinement points for refractive index averaging along transverse axis.
+          You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+        </attr>
+      </group>
       <attr name="oversampling" label="Oversampling" type="float" default="1">
         Factor by which the number of coefficients is increased for FFT along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal oversampling’ (&lt;tt&gt;oversampling-long&lt;/tt&gt;) and ‘Transverse oversampling’ (&lt;tt&gt;oversampling-tran&lt;/tt&gt;) .
       </attr>
-      <attr name="oversampling-long" label="  Longitudinal oversampling" type="float">
-        Factor by which the number of coefficients is increased for FFT along longitudinal direction.
-        You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
-      </attr>
-      <attr name="oversampling-tran" label="  Transverse oversampling" type="float">
-        Factor by which the number of coefficients is increased for FFT along transverse direction.
-        You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
-      </attr>
+      <group label="Oversampling">
+        <attr name="oversampling-long" label="Longitudinal" type="float">
+          Factor by which the number of coefficients is increased for FFT along longitudinal direction.
+          You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
+        </attr>
+        <attr name="oversampling-tran" label="Transverse" type="float">
+          Factor by which the number of coefficients is increased for FFT along transverse direction.
+          You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
+        </attr>
+      </group>
       <attr name="dct" label="Symmetric transform type" type="choice" default="2">Type of discrete cosine transform for symmetric expansion.
         <choice>1</choice>
         <choice>2</choice>
@@ -182,21 +190,25 @@
     <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-      <attr name="k-tran" label="Transverse wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Transverse wave-vector component.</attr>
-      <attr name="k-long" label="Longitudinal wave-vector" type="float" unit="µm&lt;sup&gt;-1&lt;/sup&gt;" default="0">Longitudinal wave-vector component.</attr>
-      <attr name="symmetry-long" label="Longitudinal mode symmetry" type="choice" default="none">
-        Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>none</choice>
-        <choice>Etran</choice>
-        <choice>Elong</choice>
-      </attr>
-      <attr name="symmetry-tran" label="Transverse mode symmetry" type="choice" default="none">
-        Mode symmetry along transverse axis. Specify a symmetric field component here
-        (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
-        <choice>none</choice>
-        <choice>Etran</choice>
-        <choice>Elong</choice>
-      </attr>
+        <group label="Wavevector" unit="µm&lt;sup&gt;-1&lt;/sup&gt;">
+          <attr name="k-long" label="Longitudinal" type="float" default="0">Longitudinal wave-vector component.</attr>
+          <attr name="k-tran" label="Transverse" type="float" default="0">Transverse wave-vector component.</attr>
+      </group>
+      <group label="Mode symmetry">
+        <attr name="symmetry-long" label="Longitudinal" type="choice" default="none">
+          Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+          <choice>none</choice>
+          <choice>Etran</choice>
+          <choice>Elong</choice>
+        </attr>
+        <attr name="symmetry-tran" label="Transverse" type="choice" default="none">
+          Mode symmetry along transverse axis. Specify a symmetric field component here
+          (e.g. '&lt;i&gt;Etran&lt;/i&gt;', '&lt;i&gt;Hx&lt;/i&gt;').
+          <choice>none</choice>
+          <choice>Etran</choice>
+          <choice>Elong</choice>
+        </attr>
+      </group>
       <attr name="emission" label="Direction of emission" type="choice" default="undefined">
         Direction of the useful light emission. Necessary for the over-threshold model
         to correctly compute the output power. Currently, the fields are normalized only
@@ -236,7 +248,7 @@
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
     </tag>
-
+attr.getparent()
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>

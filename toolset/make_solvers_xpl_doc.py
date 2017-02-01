@@ -110,7 +110,7 @@ def make_rst(dirname):
             for tag in tags:
                 out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
                 out_text(tag, level+1)
-                attrs = tag.findall(xns+'attr')
+                attrs = tag.findall('.//'+xns+'attr')
                 if attrs:
                     out()
                     for attr in attrs:
@@ -118,6 +118,8 @@ def make_rst(dirname):
                         req = 'required' in attr.attrib and attr.attrib['required'].lower() in ('yes', 'true')
                         typ = attr.attrib.get('type')
                         unit = attr.attrib.get('unit')
+                        if unit is None:
+                            unit = attr.getparent().attrib.get('unit')
                         default = attr.attrib.get('default')
                         if typ == 'choice':
                             choices = [ch.text.strip() for ch in attr.findall(xns+'choice')]
