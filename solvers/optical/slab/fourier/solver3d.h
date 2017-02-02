@@ -282,21 +282,37 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * Get amplitudes of reflected diffraction orders
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
      */
     cvector getReflectedAmplitudes(Expansion::Component polarization,
-                                   Transfer::IncidentDirection incidence,
-                                   size_t* savidx=nullptr);
+                                   Transfer::IncidentDirection incidence);
 
     /**
      * Get amplitudes of transmitted diffraction orders
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
      */
     cvector getTransmittedAmplitudes(Expansion::Component polarization,
+                                     Transfer::IncidentDirection incidence);
+
+    /**
+     * Get coefficients of reflected diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     * \param savidx pointer to which optionally save nonzero incident index
+     */
+    cvector getReflectedCoefficients(Expansion::Component polarization,
                                      Transfer::IncidentDirection incidence,
                                      size_t* savidx=nullptr);
+
+    /**
+     * Get coefficients of transmitted diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     * \param savidx pointer to which optionally save nonzero incident index
+     */
+    cvector getTransmittedCoefficients(Expansion::Component polarization,
+                                       Transfer::IncidentDirection incidence,
+                                       size_t* savidx=nullptr);
 
     /**
      * Get reflection coefficient

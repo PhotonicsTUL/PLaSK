@@ -215,13 +215,13 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
 
-    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
-
     size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
+
+    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
@@ -271,8 +271,6 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
 
-    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
-
     size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
@@ -282,6 +280,8 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
+
+    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
 
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex gamma0 = gamma[idx];
@@ -312,6 +312,39 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     }
 
     return transmitted;
+}
+
+
+cvector FourierSolver2D::getReflectedCoefficients(Expansion::Component polarization,
+                                                  Transfer::IncidentDirection incidence)
+{
+    size_t idx;
+
+    if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
+    clearFields();
+    initCalculation();
+    initTransfer(expansion, true);
+
+    if (!expansion.periodic)
+        throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
+
+    return transfer->getReflectionVector(incidentVector(polarization, &idx), incidence);
+}
+
+cvector FourierSolver2D::getTransmittedCoefficients(Expansion::Component polarization,
+                                                    Transfer::IncidentDirection incidence)
+{
+    size_t idx;
+
+    if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
+    clearFields();
+    initCalculation();
+    initTransfer(expansion, true);
+
+    if (!expansion.periodic)
+        throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");
+
+    return transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence);
 }
 
 

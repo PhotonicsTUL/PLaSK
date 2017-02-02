@@ -329,6 +329,26 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
+static py::object FourierSolver2D_reflectedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getReflectedCoefficients(polarization, incidence);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
+static py::object FourierSolver2D_transmittedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+    if (self.initCalculation()) {
+        self.expansion.setK0(2e3*M_PI/lam);
+        self.setExpansionDefaults(false);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getTransmittedCoefficients(polarization, incidence);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
 static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
     if (num >= self.modes.size()) throw IndexError("Bad mode number {:d}", num);
@@ -440,7 +460,8 @@ void export_FourierSolver2D()
                 "        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
     solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
-                "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
+                "Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
+                "of the reflected field [-].\n\n"
                 "Args:\n"
                 "    lam (float): Incident light wavelength.\n"
                 "    polarization: Specification of the incident light polarization.\n"
@@ -450,7 +471,28 @@ void export_FourierSolver2D()
                 "        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
     solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
-                "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
+                "Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
+                "of the transmited field [-].\n\n"
+                "Args:\n"
+                "    lam (float): Incident light wavelength.\n"
+                "    polarization: Specification of the incident light polarization.\n"
+                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                "        name of the non-vanishing electric field component.\n"
+                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                "        present.\n"
+                , (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients,
+                "Compute Fourier coefficients of the reflected field [-].\n\n"
+                "Args:\n"
+                "    lam (float): Incident light wavelength.\n"
+                "    polarization: Specification of the incident light polarization.\n"
+                "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                "        name of the non-vanishing electric field component.\n"
+                "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                "        present.\n"
+                , (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients,
+                "Compute Fourier coefficients of the reflected field [-].\n\n"
                 "Args:\n"
                 "    lam (float): Incident light wavelength.\n"
                 "    polarization: Specification of the incident light polarization.\n"

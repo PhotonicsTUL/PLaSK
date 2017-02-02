@@ -57,6 +57,20 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 
 template <typename SolverT>
+static py::object Solver_getInterface(const SolverT& self) {
+    size_t interface = self.getInterface();
+    if (interface == size_t(-1)) return py::object();
+    else return py::object(interface);
+}
+
+template <typename SolverT>
+static void Solver_setInterface(SolverT& self, const py::object& value) {
+    if (value == py::object()) self.setInterface(-1);
+    else self.setInterface(py::extract<size_t>(value));
+}
+
+
+template <typename SolverT>
 static py::object Solver_getLam0(const SolverT& self) {
     if (!isnan(self.lam0)) return py::object(self.lam0);
     else return py::object();
@@ -309,7 +323,7 @@ py::object Solver_computeTransmittivity(SolverT* self,
 template <typename Class>
 inline void export_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
-    solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position.");
+    solver.add_property("interface", &Solver_getInterface<Solver>, &Solver_setInterface<Solver>, "Matching interface position.");
     solver.def("set_interface", (void(Solver::*)(const shared_ptr<const GeometryObject>&, const PathHints&))&Solver::setInterfaceOn,
                "Set interface at the bottom of the specified object.\n\n"
                "Args:\n"

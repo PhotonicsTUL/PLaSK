@@ -303,13 +303,18 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * Get the position of the matching interface.
      * \return index of the vertical mesh, where interface is set
      */
-    inline size_t getInterface() { return interface; }
+    inline size_t getInterface() const { return interface; }
 
     /**
      * Set the position of the matching interface.
      * \param index index of the vertical mesh, where interface is set
      */
     inline void setInterface(size_t index) {
+        if (index == size_t(-1)) {
+            Solver::writelog(LOG_DEBUG, "Clearing interface position");
+            interface = index;
+            this->invalidate();
+        }
         if (vbounds.empty()) setup_vbounds();
         if (index == 0 || index > vbounds.size())
             throw BadInput(this->getId(), "Cannot set interface to {0} (min: 1, max: {1})", index, vbounds.size());

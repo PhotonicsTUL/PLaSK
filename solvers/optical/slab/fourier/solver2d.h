@@ -301,7 +301,21 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     cvector getTransmittedAmplitudes(Expansion::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
-     * Get reflection coefficient
+     * Get coefficients of reflected diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    cvector getReflectedCoefficients(Expansion::Component polarization, Transfer::IncidentDirection incidence);
+
+    /**
+     * Get coefficients of transmitted diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    cvector getTransmittedCoefficients(Expansion::Component polarization, Transfer::IncidentDirection incidence);
+
+    /**
+     * Get reflection coeffiCoefficientscient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
