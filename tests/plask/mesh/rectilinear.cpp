@@ -3,7 +3,7 @@
 #include <plask/geometry/stack.h>
 #include <plask/geometry/leaf.h>
 
-#include <plask/mesh/generator_rectilinear.h>
+#include <plask/mesh/generator_rectangular.h>
 
 BOOST_AUTO_TEST_SUITE(rectilinear) // MUST be the same as the file name
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect2, plask::align::center(0.0));
     stack->push_back(rect3, plask::align::center(0.0));
 
-    auto mesh = plask::RectilinearMesh2DSimpleGenerator().generate_t<plask::RectangularMesh<2>>(stack);
+    auto mesh = plask::RectangularMesh2DSimpleGenerator().generate_t<plask::RectangularMesh<2>>(stack);
     BOOST_CHECK_EQUAL(*mesh->axis0, plask::OrderedAxis({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(*mesh->axis1, plask::OrderedAxis({0., 3., 8., 10.}));
 }
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub2, plask::align::lonCenter(0.0) & plask::align::tranCenter(0.0));
     stack->push_back(cub3, plask::align::lonCenter(0.0) & plask::align::tranCenter(0.0));
 
-    auto mesh = plask::RectilinearMesh3DSimpleGenerator().generate_t<plask::RectangularMesh<3>>(stack);
+    auto mesh = plask::RectangularMesh3DSimpleGenerator().generate_t<plask::RectangularMesh<3>>(stack);
     BOOST_CHECK_EQUAL(*mesh->axis0, plask::OrderedAxis({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(*mesh->axis1, plask::OrderedAxis({-1., 1.}));
     BOOST_CHECK_EQUAL(*mesh->axis2, plask::OrderedAxis({0., 3., 8., 10.}));
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(boundary) {
 }
 
 BOOST_AUTO_TEST_CASE(generator) {
-    plask::RectilinearMeshDivideGenerator<2> generator;
+    plask::RectangularMeshDivideGenerator<2> generator;
 
     auto stack(plask::make_shared<plask::StackContainer<2>>());
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(generator) {
 }
 
 BOOST_AUTO_TEST_CASE(elements) {
-    plask::RectilinearMesh2DSimpleGenerator generator;
+    plask::RectangularMesh2DSimpleGenerator generator;
     auto stack(plask::make_shared<plask::StackContainer<2>>());
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 1.), plask::shared_ptr<plask::Material>()));

@@ -46,10 +46,10 @@ typename RectangularMesh<2>::IterationOrder RectangularMesh<2>::getIterationOrde
     return (index_f == &transposed_index)? ORDER_01 : ORDER_10;
 }
 
-void RectangularMesh<2>::setAxis(const shared_ptr<RectangularAxis> &axis, shared_ptr<RectangularAxis> new_val) {
+void RectangularMesh<2>::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<MeshAxis> new_val) {
     if (axis == new_val) return;
     unsetChangeSignal(axis);
-    const_cast<shared_ptr<RectangularAxis>&>(axis) = new_val;
+    const_cast<shared_ptr<MeshAxis>&>(axis) = new_val;
     setChangeSignal(axis);
     fireResized();
 }
@@ -66,7 +66,7 @@ RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
     setChangeSignal(this->axis1);
 }
 
-RectangularMesh<2>::RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder)
+RectangularMesh<2>::RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder)
     : axis0(std::move(axis0)), axis1(std::move(axis1)), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
@@ -131,12 +131,12 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary
     return Boundary();
 }
 
-shared_ptr<RectangularMesh<2> > make_rectilinear_mesh(const RectangularMesh<2> &to_copy) {
+shared_ptr<RectangularMesh<2> > make_rectangular_mesh(const RectangularMesh<2> &to_copy) {
    return plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(*to_copy.axis0), plask::make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
-    shared_ptr<RectangularAxis> axis[2];
+    shared_ptr<MeshAxis> axis[2];
     XMLReader::CheckTagDuplication dub_check;
     for (int i = 0; i < 2; ++i) {
         reader.requireTag();

@@ -14,7 +14,7 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>>
+struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryType, MeshAxis>
 {
     /// Which level to compute
     enum WhichLevel: size_t {

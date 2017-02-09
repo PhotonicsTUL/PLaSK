@@ -84,7 +84,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/interpolation.h"
 #include "mesh/boundary_conditions.h"
 #include "mesh/rectangular.h"
-#include "mesh/generator_rectilinear.h"
+#include "mesh/generator_rectangular.h"
 #include "mesh/rectangular_spline.h"
 #include "mesh/basic.h"
 

@@ -11,14 +11,14 @@ This file defines regular mesh for 1d space.
 #include "../utils/interpolation.h"
 #include "../utils/stl.h"
 
-#include "rectangular1d.h"
+#include "axis1d.h"
 
 namespace plask {
 
 /**
  * Regular mesh in 1d space.
  */
-class PLASK_API RegularAxis: public RectangularAxis {
+class PLASK_API RegularAxis: public MeshAxis {
 
     double lo, _step;
     std::size_t points_count;
@@ -153,13 +153,13 @@ class PLASK_API RegularAxis: public RectangularAxis {
      */
     std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
 
-    virtual shared_ptr<RectangularMesh<1>> clone() const override { return plask::make_shared<RegularAxis>(*this); }
+    virtual shared_ptr<MeshAxis> clone() const override { return plask::make_shared<RegularAxis>(*this); }
 
     void writeXML(XMLElement& object) const override;
 
     bool isIncreasing() const override;
 
-    shared_ptr<RectangularMesh<1>> getMidpointsMesh() const override;
+    shared_ptr<MeshAxis> getMidpointsMesh() const override;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

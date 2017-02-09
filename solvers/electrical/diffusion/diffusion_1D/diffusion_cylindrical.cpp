@@ -775,7 +775,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
-    shared_ptr<RectangularMesh<2>> grid = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
+    shared_ptr<RectangularMesh<2>> grid = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
 
     std::vector<Box2D> results;

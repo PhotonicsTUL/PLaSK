@@ -48,7 +48,7 @@ OrderedAxis::native_const_iterator OrderedAxis::findNearest(double to_find) cons
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }
 
-OrderedAxis &OrderedAxis::operator=(const RectangularAxis &src) {
+OrderedAxis &OrderedAxis::operator=(const MeshAxis &src) {
     bool resized = size() != src.size();
     points.clear();
     points.reserve(src.size());
@@ -111,7 +111,7 @@ void OrderedAxis::clear() {
     fireResized();
 }
 
-shared_ptr<RectangularAxis> OrderedAxis::clone() const {
+shared_ptr<MeshAxis> OrderedAxis::clone() const {
     return plask::make_shared<OrderedAxis>(*this);
 }
 

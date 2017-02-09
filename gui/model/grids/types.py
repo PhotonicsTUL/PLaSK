@@ -12,7 +12,7 @@
 
 from . import TreeFragmentGrid, GridWithoutConf
 from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
-from .generator_rectilinear import RectilinearDivideGenerator, RectilinearSmoothGenerator
+from .generator_rectangular import RectangularDivideGenerator, RectangularSmoothGenerator
 
 MESHES_TYPES = {
     'ordered': RectangularMesh1D.from_xml,
@@ -23,19 +23,19 @@ MESHES_TYPES = {
 
 GENERATORS_TYPES = {
     'ordered': {
-            'divide': RectilinearDivideGenerator.from_xml,
+            'divide': RectangularDivideGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
-            'smooth': RectilinearSmoothGenerator.from_xml,
+            'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular2d': {
-            'divide': RectilinearDivideGenerator.from_xml,
+            'divide': RectangularDivideGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
-            'smooth': RectilinearSmoothGenerator.from_xml,
+            'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular3d': {
-            'divide': RectilinearDivideGenerator.from_xml,
+            'divide': RectangularDivideGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
-            'smooth': RectilinearSmoothGenerator.from_xml,
+            'smooth': RectangularSmoothGenerator.from_xml,
     },
 }   # use TreeFragmentGrid.from_xml for grids without special support
 

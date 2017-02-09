@@ -14,7 +14,7 @@ from . import GridController
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
-from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
+from ...model.grids.generator_rectangular import RectangularDivideGenerator
 from ...model.grids.mesh_rectilinear import AXIS_NAMES
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
@@ -22,7 +22,7 @@ from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 
-class RectilinearRefinedGeneratorController(GridController):
+class RectangularRefinedGeneratorController(GridController):
 
     warnings_help = {
         'missing': 'Warn if any refinement references to non-existing object. Defaults to true.',
@@ -51,7 +51,7 @@ class RectilinearRefinedGeneratorController(GridController):
         return res
 
     def __init__(self, document, model):
-        super(RectilinearRefinedGeneratorController, self).__init__(document=document, model=model)
+        super(RectangularRefinedGeneratorController, self).__init__(document=document, model=model)
 
         self.form = QGroupBox()
 
@@ -74,7 +74,7 @@ class RectilinearRefinedGeneratorController(GridController):
         self.form_layout.addRow('Options:', self.options)
 
         warnings_layout = QHBoxLayout()
-        for w in RectilinearDivideGenerator.warnings:
+        for w in RectangularDivideGenerator.warnings:
             cb = ComboBox()
             cb.editingFinished.connect(lambda w=w, cb=cb: self._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning') )
             #cb.editingFinished.connect(self.fire_changed)
@@ -82,7 +82,7 @@ class RectilinearRefinedGeneratorController(GridController):
             cb.addItems(['', 'yes', 'no'])
             cb.setEditable(True)
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
-                          RectilinearDivideGeneratorController.warnings_help.get(w, ''))
+                          RectangularDivideGeneratorController.warnings_help.get(w, ''))
             setattr(self, 'warn_'+w, cb)
             label = QLabel(w+':')
             label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
@@ -124,10 +124,10 @@ class RectilinearRefinedGeneratorController(GridController):
         self.form.setLayout(vbox)
 
     def fill_form(self):
-        super(RectilinearRefinedGeneratorController, self).fill_form()
+        super(RectangularRefinedGeneratorController, self).fill_form()
         self.aspect.setText(none_to_empty(self.grid_model.aspect))
         with self.mute_changes():
-            for attr_name in ['warn_'+w for w in RectilinearDivideGenerator.warnings]:
+            for attr_name in ['warn_'+w for w in RectangularDivideGenerator.warnings]:
                 cb = getattr(self, attr_name)
                 a = getattr(self.model, attr_name)
                 with BlockQtSignals(cb): cb.setEditText(none_to_empty(a))
@@ -136,18 +136,18 @@ class RectilinearRefinedGeneratorController(GridController):
         return self.form
 
     def select_info(self, info):
-        super(RectilinearRefinedGeneratorController, self).select_info(info)
+        super(RectangularRefinedGeneratorController, self).select_info(info)
         try:
             if info.property == 'refinements':  # select refinements index using info.reinf_row and info.reinf_col
                 self.refinements.setCurrentIndex(self.model.refinements.createIndex(info.reinf_row, info.reinf_col))
         except AttributeError: pass
 
 
-class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController):
+class RectangularDivideGeneratorController(RectangularRefinedGeneratorController):
     """Ordered and rectangular 2D and 3D divide generator script."""
 
     def __init__(self, document, model):
-        super(RectilinearDivideGeneratorController, self).__init__(document=document, model=model)
+        super(RectangularDivideGeneratorController, self).__init__(document=document, model=model)
 
         self.gradual = ComboBox()
         self.gradual.editingFinished.connect(lambda : self._change_attr('gradual', empty_to_none(self.gradual.currentText())))
@@ -172,7 +172,7 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
                                              self.defines, 'postdiv')
 
     def fill_form(self):
-        super(RectilinearDivideGeneratorController, self).fill_form()
+        super(RectangularDivideGeneratorController, self).fill_form()
         with self.mute_changes():
             with BlockQtSignals(self.gradual):
                 self.gradual.setEditText(none_to_empty(self.model.gradual))
@@ -181,23 +181,23 @@ class RectilinearDivideGeneratorController(RectilinearRefinedGeneratorController
                 self.postdiv[i].setText(self.model.postdiv[i])
 
     #def save_data_in_model(self):
-    #    super(RectilinearDivideGeneratorController, self).save_data_in_model()
+    #    super(RectangularDivideGeneratorController, self).save_data_in_model()
     #    self.model.prediv = [empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)]
     #    self.model.postdiv = [empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)]
 
     #def on_edit_enter(self):
-    #    super(RectilinearDivideGeneratorController, self).on_edit_enter()
+    #    super(RectangularDivideGeneratorController, self).on_edit_enter()
     #    with self.mute_changes():
     #        for i in range(0, self.model.dim):
     #            self.prediv[i].setText(self.model.prediv[i])
     #            self.postdiv[i].setText(self.model.postdiv[i])
 
 
-class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController):
+class RectangularSmoothGeneratorController(RectangularRefinedGeneratorController):
     """Ordered and rectangular 2D and 3D divide generator script."""
 
     def __init__(self, document, model):
-        super(RectilinearSmoothGeneratorController, self).__init__(document=document, model=model)
+        super(RectangularSmoothGeneratorController, self).__init__(document=document, model=model)
 
         self.small = self._make_param_hbox(self.form_layout, 'Smallest element:',
                                            '&lt;<b>step small{}</b>=""&gt;<br/>'
@@ -213,14 +213,14 @@ class RectilinearSmoothGeneratorController(RectilinearRefinedGeneratorController
                                             self.defines, 'factor')
 
     #def save_data_in_model(self):
-    #    super(RectilinearSmoothGeneratorController, self).save_data_in_model()
+    #    super(RectangularSmoothGeneratorController, self).save_data_in_model()
     #    self.model.small = [empty_to_none(self.small[i].text()) for i in range(0, self.model.dim)]
     #    self.model.large = [empty_to_none(self.large[i].text()) for i in range(0, self.model.dim)]
     #    self.model.factor = [empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)]
 
     def fill_form(self):
         with self.mute_changes():
-            super(RectilinearSmoothGeneratorController, self).fill_form()
+            super(RectangularSmoothGeneratorController, self).fill_form()
             for i in range(0, self.model.dim):
                 self.small[i].setText(self.model.small[i])
                 self.large[i].setText(self.model.large[i])

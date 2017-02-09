@@ -15,14 +15,14 @@ This file contains rectilinear mesh for 1d space.
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
 
-#include "rectangular1d.h"
+#include "axis1d.h"
 
 namespace plask {
 
 /**
  * Rectilinear mesh in 1D space.
  */
-class PLASK_API OrderedAxis: public RectangularAxis {
+class PLASK_API OrderedAxis: public MeshAxis {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;
@@ -39,7 +39,7 @@ public:
         WarningOff(const shared_ptr<OrderedAxis>& axis): axis(axis.get()), prev_state(axis->warn_too_close) { axis->warn_too_close = false; }
         ~WarningOff() { axis->warn_too_close = prev_state; }
     };
-    
+
     /// Should a warning be issued if the points are too close
     bool warn_too_close;
 
@@ -103,8 +103,8 @@ public:
     /// Move constructor. It does not move the owner.
     OrderedAxis(OrderedAxis&& src): points(std::move(src.points)), warn_too_close(true) {}
 
-    /// Copy constructor from any RectangularAxis
-    OrderedAxis(const RectangularAxis& src): points(src.size()), warn_too_close(true) {
+    /// Copy constructor from any MeshAxis
+    OrderedAxis(const MeshAxis& src): points(src.size()), warn_too_close(true) {
         if (src.isIncreasing())
             std::copy(src.begin(), src.end(), points.begin());
         else
@@ -142,7 +142,7 @@ public:
     OrderedAxis& operator=(OrderedAxis&& src);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    OrderedAxis& operator=(const RectangularAxis& src);
+    OrderedAxis& operator=(const MeshAxis& src);
 
     /**
      * Compares meshes
@@ -231,7 +231,7 @@ public:
      */
     void clear();
 
-    shared_ptr<RectangularAxis> clone() const override;
+    shared_ptr<MeshAxis> clone() const override;
 
     bool isIncreasing() const override { return true; }
 

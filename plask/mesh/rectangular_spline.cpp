@@ -52,7 +52,7 @@ namespace detail {
     };
 
     template <typename DataT>
-    void computeDiffs(DataT* diffs, int ax, const shared_ptr<RectangularAxis>& axis,
+    void computeDiffs(DataT* diffs, int ax, const shared_ptr<MeshAxis>& axis,
                       const DataT* data, size_t stride, const InterpolationFlags& flags)
     {
         const size_t n0 = axis->size() - 1;

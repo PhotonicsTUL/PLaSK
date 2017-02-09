@@ -24,7 +24,7 @@ FreeCarrierGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double
 
 
 template <typename GeometryType>
-FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
+FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, MeshAxis>(name),
     outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData, []{return 2;}),
     lifetime(0.1),
     matrixelem(0.),
@@ -656,7 +656,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         const FreeCarrierGainSolver<GeometryT>* solver;
         const char* name;
         AveragedData(const FreeCarrierGainSolver<GeometryT>* solver, const char* name,
-                     const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region):
+                     const shared_ptr<const MeshAxis>& haxis, const ActiveRegionInfo& region):
             solver(solver), name(name)
         {
             auto vaxis = plask::make_shared<OrderedAxis>();
@@ -667,7 +667,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                     vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
                 }
             }
-            mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
+            mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<MeshAxis>(haxis),
                                                                 vaxis, RectangularMesh<2>::ORDER_01);
             factor = 1. / vaxis->size();
         }
@@ -688,11 +688,11 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     typedef typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams ActiveRegionParams;
 
     FreeCarrierGainSolver<GeometryT>* solver;           ///< Solver
-    std::vector<shared_ptr<RectangularAxis>> regpoints; ///< Points in each active region
+    std::vector<shared_ptr<MeshAxis>> regpoints; ///< Points in each active region
     std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
-    void setupFromAxis(const shared_ptr<RectangularAxis>& axis) {
+    void setupFromAxis(const shared_ptr<MeshAxis>& axis) {
         regpoints.reserve(solver->regions.size());
         InterpolationFlags flags(solver->geometry);
         for (size_t r = 0; r != solver->regions.size(); ++r) {

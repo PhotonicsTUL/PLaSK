@@ -1,7 +1,7 @@
 #ifndef PLASK__RECTANGULAR_H
 #define PLASK__RECTANGULAR_H
 
-#include "rectangular1d.h"
+#include "axis1d.h"
 #include "rectangular2d.h"
 #include "rectangular3d.h"
 
@@ -19,7 +19,7 @@ struct Rectangular_t {
 
 template <>
 struct Rectangular_t<1> {
-    typedef RectangularMesh<1> Rectangular;
+    typedef MeshAxis Rectangular;
     typedef RegularAxis Regular;
     typedef OrderedAxis Rectilinear;
 };

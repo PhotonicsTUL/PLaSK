@@ -61,7 +61,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         void compute_threshold();
         void compute_overthreshold();
 
-        plask::shared_ptr<plask::RectangularAxis> current_mesh_ptr()
+        plask::shared_ptr<plask::MeshAxis> current_mesh_ptr()
         {
             return mesh2->axis0;
         }

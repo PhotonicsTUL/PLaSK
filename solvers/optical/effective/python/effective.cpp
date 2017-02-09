@@ -178,7 +178,7 @@ static void Optical_setMesh(SolverT& self, py::object omesh) {
         PyErr_Clear();
         try {
             shared_ptr<MeshGeneratorD<1>> meshg = py::extract<shared_ptr<MeshGeneratorD<1>>>(omesh);
-            self.setMesh(plask::make_shared<RectilinearMesh2DFrom1DGenerator>(meshg));
+            self.setMesh(plask::make_shared<RectangularMesh2DFrom1DGenerator>(meshg));
         } catch (py::error_already_set) {
             PyErr_Clear();
             plask::python::detail::ExportedSolverDefaultDefs<SolverT>::Solver_setMesh(self, omesh);

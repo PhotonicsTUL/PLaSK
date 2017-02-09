@@ -2,7 +2,7 @@
 #define PLASK__RECTANGULAR2D_H
 
 /** @file
-This file contains rectilinear mesh for 2d space.
+This file contains rectangular mesh for 2D space.
 */
 
 #include <iterator>
@@ -17,7 +17,7 @@ This file contains rectilinear mesh for 2d space.
 #include "../math.h"
 #include "../manager.h"
 
-#include "rectangular1d.h"
+#include "axis1d.h"
 #include "ordered1d.h"
 
 namespace plask {
@@ -32,7 +32,7 @@ namespace details {
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
  */
-inline bool getLineLo(std::size_t& line, const RectangularAxis& axis, double box_lower, double box_upper) {
+inline bool getLineLo(std::size_t& line, const MeshAxis& axis, double box_lower, double box_upper) {
     assert(box_lower <= box_upper);
     line = axis.findIndex(box_lower);
     return line != axis.size() && axis[line] <= box_upper;
@@ -46,7 +46,7 @@ inline bool getLineLo(std::size_t& line, const RectangularAxis& axis, double box
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
  */
-inline bool getLineHi(std::size_t& line, const RectangularAxis& axis, double box_lower, double box_upper) {
+inline bool getLineHi(std::size_t& line, const MeshAxis& axis, double box_lower, double box_upper) {
     assert(box_lower <= box_upper);
     line = axis.findIndex(box_upper);
     if (line != axis.size() && axis[line] == box_upper) return true;
@@ -63,7 +63,7 @@ inline bool getLineHi(std::size_t& line, const RectangularAxis& axis, double box
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
  */
-inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const RectangularAxis& axis, double box_lower, double box_upper) {
+inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const MeshAxis& axis, double box_lower, double box_upper) {
     if(box_lower > box_upper) return false;
     begInd = axis.findIndex(box_lower);
     endInd = axis.findIndex(box_upper);
@@ -77,7 +77,7 @@ inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const R
  * @param[in, out] index index such that axis[index] <= real_pos < axis[index+1], can be unchanged or decrement by one by this method
  * @param[in] real_pos position
  */
-inline void tryMakeLower(const RectangularAxis& axis, std::size_t& index, double real_pos) {
+inline void tryMakeLower(const MeshAxis& axis, std::size_t& index, double real_pos) {
     if (index == 0) return;
     if ((real_pos - axis[index-1]) * 100.0 < (axis[index] - axis[index-1])) --index;
 }
@@ -88,7 +88,7 @@ inline void tryMakeLower(const RectangularAxis& axis, std::size_t& index, double
  * @param[in, out] index index such that axis[index-1] <= real_pos < axis[index], can be unchanged or increment by one by this method
  * @param[in] real_pos position
  */
-inline void tryMakeHigher(const RectangularAxis& axis, std::size_t& index, double real_pos) {
+inline void tryMakeHigher(const MeshAxis& axis, std::size_t& index, double real_pos) {
     if (index == axis.size() || index == 0) return; //index == 0 means empty mesh
     if ((axis[index] - real_pos) * 100.0 < (axis[index] - axis[index-1])) ++index;
 }
@@ -101,7 +101,7 @@ inline void tryMakeHigher(const RectangularAxis& axis, std::size_t& index, doubl
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if some of @p axis points (almost) lies in bounds [@p box_lower, @p box_upper]
  */
-inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const RectangularAxis& axis, double box_lower, double box_upper) {
+inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const MeshAxis& axis, double box_lower, double box_upper) {
     getIndexesInBounds(begInd, endInd, axis, box_lower, box_upper);
     tryMakeLower(axis, begInd, box_lower);
     tryMakeHigher(axis, endInd, box_upper);
@@ -201,15 +201,15 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     index01_ft* index0_f;
     index01_ft* index1_f;
 
-    const shared_ptr<RectangularAxis>* minor_axis; ///< minor (changing fastest) axis
-    const shared_ptr<RectangularAxis>* major_axis; ///< major (changing slowest) axis
+    const shared_ptr<MeshAxis>* minor_axis; ///< minor (changing fastest) axis
+    const shared_ptr<MeshAxis>* major_axis; ///< major (changing slowest) axis
 
     void onAxisChanged(Event& e);
 
-    void setChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
-    void unsetChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
+    void setChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
+    void unsetChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
 
-    void setAxis(const shared_ptr<RectangularAxis>& axis, shared_ptr<RectangularAxis> new_val);
+    void setAxis(const shared_ptr<MeshAxis>& axis, shared_ptr<MeshAxis> new_val);
 
   public:
 
@@ -366,10 +366,10 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     typedef plask::Boundary<RectangularMesh<2>> Boundary;
 
     /// First coordinate of points in this mesh.
-    const shared_ptr<RectangularAxis> axis0;
+    const shared_ptr<MeshAxis> axis0;
 
     /// Second coordinate of points in this mesh.
-    const shared_ptr<RectangularAxis> axis1;
+    const shared_ptr<MeshAxis> axis1;
 
     /// Accessor to FEM-like elements.
     const Elements elements;
@@ -418,20 +418,20 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder = ORDER_01);
+    RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder = ORDER_01);
 
     /// Copy constructor
     RectangularMesh(const RectangularMesh<2>& src);
 
     ~RectangularMesh();
 
-    const shared_ptr<RectangularAxis> getAxis0() const { return axis0; }
+    const shared_ptr<MeshAxis> getAxis0() const { return axis0; }
 
-    void setAxis0(shared_ptr<RectangularAxis> a0) { setAxis(this->axis0, a0); }
+    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(this->axis0, a0); }
 
-    const shared_ptr<RectangularAxis> getAxis1() const { return axis1; }
+    const shared_ptr<MeshAxis> getAxis1() const { return axis1; }
 
-    void setAxis1(shared_ptr<RectangularAxis> a1) { setAxis(this->axis1, a1); }
+    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(this->axis1, a1); }
 
 
 
@@ -452,60 +452,60 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<RectangularAxis>& tran() const { return axis0; }
+    const shared_ptr<MeshAxis>& tran() const { return axis0; }
 
-    void setTran(shared_ptr<RectangularAxis> a0) { setAxis0(a0); }
+    void setTran(shared_ptr<MeshAxis> a0) { setAxis0(a0); }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<RectangularAxis>& vert() const { return axis1; }
+    const shared_ptr<MeshAxis>& vert() const { return axis1; }
 
-    void setVert(shared_ptr<RectangularAxis> a1) { setAxis1(a1); }
+    void setVert(shared_ptr<MeshAxis> a1) { setAxis1(a1); }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<RectangularAxis>& ee_x() const { return axis0; }
+    const shared_ptr<MeshAxis>& ee_x() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<RectangularAxis>& ee_y() const { return axis1; }
+    const shared_ptr<MeshAxis>& ee_y() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<RectangularAxis>& rad_r() const { return axis0; }
+    const shared_ptr<MeshAxis>& rad_r() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<RectangularAxis>& rad_z() const { return axis1; }
+    const shared_ptr<MeshAxis>& rad_z() const { return axis1; }
 
     /**
      * Get numbered axis
      * @param n number of axis
      * @return n-th axis (cn)
      */
-    const shared_ptr<RectangularAxis>& axis(size_t n) const {
+    const shared_ptr<MeshAxis>& axis(size_t n) const {
         if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
         return axis1;
     }
 
     /// \return major (changing slowest) axis
-    inline const shared_ptr<RectangularAxis> majorAxis() const {
+    inline const shared_ptr<MeshAxis> majorAxis() const {
         return *major_axis;
     }
 
     /// \return minor (changing fastest) axis
-    inline const shared_ptr<RectangularAxis> minorAxis() const {
+    inline const shared_ptr<MeshAxis> minorAxis() const {
         return *minor_axis;
     }
 
@@ -1479,8 +1479,8 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_NEAR
  * @param to_copy mesh to copy
  * @return mesh with each axis of type OrderedAxis
  */
-PLASK_API shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(const RectangularMesh<2>& to_copy);
-inline shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<2>> to_copy) { return make_rectilinear_mesh(*to_copy); }
+PLASK_API shared_ptr<RectangularMesh<2>> make_rectangular_mesh(const RectangularMesh<2>& to_copy);
+inline shared_ptr<RectangularMesh<2>> make_rectangular_mesh(shared_ptr<const RectangularMesh<2>> to_copy) { return make_rectangular_mesh(*to_copy); }
 
 template <>
 inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(const std::string& boundary_desc, plask::Manager&) { return RectangularMesh<2>::getBoundary(boundary_desc); }

@@ -226,7 +226,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        setMesh(plask::make_shared<RectilinearMesh2DSimpleGenerator>());
+        setMesh(plask::make_shared<RectangularMesh2DSimpleGenerator>());
     }
 
     /**
@@ -234,10 +234,10 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(shared_ptr<RectangularAxis> meshx) { //TODO pointer to mesh is held now, is this fine?
+    void setHorizontalMesh(shared_ptr<MeshAxis> meshx) { //TODO pointer to mesh is held now, is this fine?
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto meshxy = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
+        auto meshxy = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
         meshxy->setAxis0(meshx);
         setMesh(meshxy);
     }

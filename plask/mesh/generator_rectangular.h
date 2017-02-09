@@ -1,5 +1,5 @@
-#ifndef PLASK__GENERATOR_RECTILINEAR_H
-#define PLASK__GENERATOR_RECTILINEAR_H
+#ifndef PLASK__GENERATOR_RECTANGULAR_H
+#define PLASK__GENERATOR_RECTANGULAR_H
 
 #include "mesh.h"
 #include "rectangular.h"
@@ -51,7 +51,7 @@ class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 /**
  * Generator of basic 2D geometry grid
  */
-class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
+class PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 
     /// Should we add line at horizontal zero
     bool extend_to_zero;
@@ -62,7 +62,7 @@ class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
      */
-    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
+    RectangularMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -70,7 +70,7 @@ class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 /**
  * Generator of 2D geometry grid using other generator for horizontal axis
  */
-class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
+class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 
     shared_ptr<MeshGeneratorD<1>> horizontal_generator;
 
@@ -80,7 +80,7 @@ class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
      */
-    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
+    RectangularMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
         horizontal_generator(source) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
@@ -91,14 +91,14 @@ class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 /**
  * Generator of basic 3D geometry grid
  */
-struct PLASK_API RectilinearMesh3DSimpleGenerator: public MeshGeneratorD<3> {
+struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
 
 public:
 
     /**
      * Create generator
      */
-    RectilinearMesh3DSimpleGenerator() {}
+    RectangularMesh3DSimpleGenerator() {}
 
     virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
@@ -107,7 +107,7 @@ public:
  * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
+struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
@@ -137,7 +137,7 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
     /**
      * Create new generator
      */
-    RectilinearMeshRefinedGenerator() :
+    RectangularMeshRefinedGenerator() :
         aspect(0), warn_multiple(true), warn_missing(true), warn_outside(true) {}
 
     shared_ptr<MeshD<dim>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
@@ -216,9 +216,9 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
         auto key = std::make_pair(object, path);
         assert(size_t(direction) <= dim);
         auto ref = refinements[size_t(direction)].find(key);
-        if (ref == refinements[size_t(direction)].end()) throw BadInput("RectilinearMeshDivideGenerator", "There are no refinements for specified geometry object.");
+        if (ref == refinements[size_t(direction)].end()) throw BadInput("RectangularMeshDivideGenerator", "There are no refinements for specified geometry object.");
         auto oposition = ref->second.find(position);
-        if (oposition == ref->second.end()) throw BadInput("RectilinearMeshDivideGenerator", "Specified geometry object does not have refinements at {0}.", *oposition);
+        if (oposition == ref->second.end()) throw BadInput("RectangularMeshDivideGenerator", "Specified geometry object does not have refinements at {0}.", *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[size_t(direction)].erase(ref);
         this->fireChanged();
@@ -271,7 +271,7 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
             }
         }
         if (found) this->fireChanged();
-        else writelog(LOG_WARNING, "RectilinearMeshDivideGenerator: There are no refinements for specified geometry object");
+        else writelog(LOG_WARNING, "RectangularMeshDivideGenerator: There are no refinements for specified geometry object");
     }
 
     /**
@@ -302,19 +302,19 @@ struct PLASK_API RectilinearMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
 };
 
-template <> shared_ptr<MeshD<1>> RectilinearMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
-template <> shared_ptr<MeshD<2>> RectilinearMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
-template <> shared_ptr<MeshD<3>> RectilinearMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry);
+template <> shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <> shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <> shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry);
 
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<1>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<2>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshRefinedGenerator<3>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<3>)
 
 /**
  * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGenerator<dim> {
+struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGenerator<dim> {
 
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
@@ -329,12 +329,12 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
     const char* name() override { return "DivideGenerator"; }
 
     template <int fd>
-    friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
+    friend shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader&, const Manager&);
 
     /**
      * Create new generator
      */
-    RectilinearMeshDivideGenerator(): gradual(true)
+    RectangularMeshDivideGenerator(): gradual(true)
     {
         for (int i = 0; i != dim; ++i) {
             pre_divisions[i] = 1;
@@ -378,16 +378,16 @@ struct PLASK_API RectilinearMeshDivideGenerator: public RectilinearMeshRefinedGe
     }
 };
 
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<1>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<2>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshDivideGenerator<3>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<3>)
 
 
 /**
  * Dense-edge genereator that has very dense sampling near edges and gradually gets wider towards the center.
  */
 template <int dim>
-struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGenerator<dim> {
+struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGenerator<dim> {
 
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
@@ -398,13 +398,13 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
 
-    const char* name() override { return "SmoothGenerator"; }   
+    const char* name() override { return "SmoothGenerator"; }
 
     template <int fd>
-    friend shared_ptr<MeshGenerator> readRectilinearSmoothGenerator(XMLReader&, const Manager&);
+    friend shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader&, const Manager&);
 
     /// Create new generator
-    RectilinearMeshSmoothGenerator();
+    RectangularMeshSmoothGenerator();
 
     /// Get small step next to the boundary
     inline double getFineStep(typename Primitive<DIM>::Direction direction) const {
@@ -447,14 +447,14 @@ struct PLASK_API RectilinearMeshSmoothGenerator: public RectilinearMeshRefinedGe
     }
 };
 
-template<> RectilinearMeshSmoothGenerator<1>::RectilinearMeshSmoothGenerator();
-template<> RectilinearMeshSmoothGenerator<2>::RectilinearMeshSmoothGenerator();
-template<> RectilinearMeshSmoothGenerator<3>::RectilinearMeshSmoothGenerator();
+template<> RectangularMeshSmoothGenerator<1>::RectangularMeshSmoothGenerator();
+template<> RectangularMeshSmoothGenerator<2>::RectangularMeshSmoothGenerator();
+template<> RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator();
 
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<1>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<2>)
-PLASK_API_EXTERN_TEMPLATE_STRUCT(RectilinearMeshSmoothGenerator<3>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<3>)
 
 } // namespace plask
 
-#endif // PLASK__GENERATOR_RECTILINEAR_H
+#endif // PLASK__GENERATOR_RECTANGULAR_H

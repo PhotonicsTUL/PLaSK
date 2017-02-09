@@ -149,14 +149,14 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
                                          type='non-negative float', reinf_row=i, reinf_col=5)
 
 
-class RectilinearRefinedGenerator(Grid):
+class RectangularRefinedGenerator(Grid):
 
     warnings = ('missing', 'multiple', 'outside')
 
     def __init__(self, grids_model, name, type, method, aspect=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
-        super(RectilinearRefinedGenerator, self).__init__(grids_model, name, type, method)
+        super(RectangularRefinedGenerator, self).__init__(grids_model, name, type, method)
         self.aspect = aspect
         self.refinements = Refinements(self, refinements)
         self.warn_missing = warn_missing
@@ -179,7 +179,7 @@ class RectilinearRefinedGenerator(Grid):
             for r in self.refinements.entries:
                 refinements_element.append(r.get_xml_element())
         warnings_el = Element('warnings')
-        for w in RectilinearDivideGenerator.warnings:
+        for w in RectangularDivideGenerator.warnings:
             v = getattr(self, 'warn_' + w, None)
             if v is not None and v != '': warnings_el.attrib[w] = v
         if warnings_el.attrib: res.append(warnings_el)
@@ -204,36 +204,36 @@ class RectilinearRefinedGenerator(Grid):
                 self.refinements.entries.append(to_append)
         warnings_element = res.find('warnings')
         if warnings_element is None:
-            for w in RectilinearDivideGenerator.warnings:
+            for w in RectangularDivideGenerator.warnings:
                 setattr(self, 'warn_' + w, None)
         else:
             with AttributeReader(warnings_element) as a:
-                for w in RectilinearDivideGenerator.warnings:
+                for w in RectangularDivideGenerator.warnings:
                     setattr(self, 'warn_' + w, a.get(w, None))
 
     def create_info(self, res, rows):
-        super(RectilinearRefinedGenerator, self).create_info(res, rows)
+        super(RectangularRefinedGenerator, self).create_info(res, rows)
         self.refinements.create_info(res, rows, 'refinements')
         if not can_be_float(self.aspect): self._required(res, rows, 'aspect', type='float')
-        for w in RectilinearDivideGenerator.warnings:
+        for w in RectangularDivideGenerator.warnings:
             a = 'warn_' + w
             if not can_be_bool(getattr(self, a, None)):
                 self._required(res, rows, a, display_name='{} warning'.format(w), type='boolean')
 
 
-class RectilinearDivideGenerator(RectilinearRefinedGenerator):
+class RectangularDivideGenerator(RectangularRefinedGenerator):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
 
     @staticmethod
     def from_xml(grids_model, element):
-        e = RectilinearDivideGenerator(grids_model, element.attrib['name'], element.attrib['type'])
+        e = RectangularDivideGenerator(grids_model, element.attrib['name'], element.attrib['type'])
         e.set_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
-        super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
+        super(RectangularDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.gradual = gradual
         self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
@@ -253,7 +253,7 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
                 dst.append(div_element)
 
     def get_xml_element(self):
-        res = super(RectilinearDivideGenerator, self).get_xml_element()
+        res = super(RectangularDivideGenerator, self).get_xml_element()
         options = {}
         if self.gradual is not None: options['gradual'] = self.gradual
         self._append_div_xml_element('prediv', res)
@@ -274,18 +274,18 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
                     setattr(self, div_name, [a.get('by'+str(i)) for i in range(0, self.dim)])
 
     def set_xml_element(self, element):
-        super(RectilinearDivideGenerator, self).set_xml_element(element)
+        super(RectangularDivideGenerator, self).set_xml_element(element)
         with UnorderedTagReader(element) as res:
             self._div_from_xml('prediv', res)
             self._div_from_xml('postdiv', res)
             self.set_xml_common(res, 'gradual')
 
     def get_controller(self, document):
-        from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorController
-        return RectilinearDivideGeneratorController(document=document, model=self)
+        from ...controller.grids.generator_rectangular import RectangularDivideGeneratorController
+        return RectangularDivideGeneratorController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectilinearDivideGenerator, self).create_info(res, rows)
+        super(RectangularDivideGenerator, self).create_info(res, rows)
         for div_type in ('prediv', 'postdiv'):
             for i, p in enumerate(getattr(self, div_type)):
                 if not can_be_int(p, int_validator=lambda n: n>0):
@@ -293,19 +293,19 @@ class RectilinearDivideGenerator(RectilinearRefinedGenerator):
         if not can_be_bool(self.gradual): self._required(res, rows, 'gradual', type='boolean')
 
 
-class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
+class RectangularSmoothGenerator(RectangularRefinedGenerator):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
 
     @staticmethod
     def from_xml(grids_model, element):
-        e = RectilinearSmoothGenerator(grids_model, element.attrib['name'], element.attrib['type'])
+        e = RectangularSmoothGenerator(grids_model, element.attrib['name'], element.attrib['type'])
         e.set_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
-        super(RectilinearSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
+        super(RectangularSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.small = [None for _ in range(0, self.dim)] if small is None else small
         self.large = [None for _ in range(0, self.dim)] if large is None else large
@@ -326,7 +326,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
                     element.attrib[attr + str(i)] = value[i]
 
     def get_xml_element(self):
-        res = super(RectilinearSmoothGenerator, self).get_xml_element()
+        res = super(RectangularSmoothGenerator, self).get_xml_element()
         if self.small is not None or self.factor is not None:
             steps = SubElement(res, 'steps')
             self._set_steps_attribute('small', steps)
@@ -343,7 +343,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
             setattr(self, name, [reader.get(name + str(i)) for i in range(0, self.dim)])
 
     def set_xml_element(self, element):
-        super(RectilinearSmoothGenerator, self).set_xml_element(element)
+        super(RectangularSmoothGenerator, self).set_xml_element(element)
         with UnorderedTagReader(element) as res:
             self.set_xml_common(res, 'gradual')
             steps = res.find('steps')
@@ -357,7 +357,7 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
                     self._steps_from_xml('factor', a)
 
     def create_info(self, res, rows):
-        super(RectilinearSmoothGenerator, self).create_info(res, rows)
+        super(RectangularSmoothGenerator, self).create_info(res, rows)
         for i, p in enumerate(self.small):
             if not can_be_float(p): self._required(res, rows, ('small', i), 'a component of smallest element', type='float')
         for i, p in enumerate(self.large):
@@ -366,6 +366,6 @@ class RectilinearSmoothGenerator(RectilinearRefinedGenerator):
             if not can_be_float(p): self._required(res, rows, ('factor', i), 'a component of increase factor', type='float')
 
     def get_controller(self, document):
-        from ...controller.grids.generator_rectilinear import RectilinearSmoothGeneratorController
-        return RectilinearSmoothGeneratorController(document=document, model=self)
+        from ...controller.grids.generator_rectangular import RectangularSmoothGeneratorController
+        return RectangularSmoothGeneratorController(document=document, model=self)
 
