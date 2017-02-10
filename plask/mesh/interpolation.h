@@ -411,7 +411,7 @@ struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
 };
 
 /**
- * Implementation of InterpolatedLazyDataImpl which call src_mesh.interpolateLinear(src_vec, dst_mesh).
+ * Implementation of InterpolatedLazyDataImpl which calls src_mesh.interpolateLinear(src_vec, dst_mesh).
  *
  * So it can be used if SrcMeshType has such interpolateLinear method.
  */
@@ -429,7 +429,7 @@ struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, Src
 };
 
 /**
- * Implementation of InterpolatedLazyDataImpl which call src_mesh.interpolateNearestNeighbor(src_vec, dst_mesh).
+ * Implementation of InterpolatedLazyDataImpl which calls src_mesh.interpolateNearestNeighbor(src_vec, dst_mesh).
  *
  * So it can be used if SrcMeshType has such interpolateLinear method.
  */

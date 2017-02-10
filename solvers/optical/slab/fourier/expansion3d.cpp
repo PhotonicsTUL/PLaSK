@@ -763,8 +763,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
     }
 
     if (field_interpolation == INTERPOLATION_FOURIER) {
-        const double lo0 = symmetric_long()? -hi0 : lo0, hi0 = hi0,
-                     lo1 = symmetric_tran()? -hi1 : lo1, hi1 = hi1;
+        const double lo0 = symmetric_long()? -this->hi0 : this->lo0,
+                     lo1 = symmetric_tran()? -this->hi1 : this->lo1;
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double Ll = (symmetric_long()? 2. : 1.) * (hi0 - lo0),
                Lt = (symmetric_tran()? 2. : 1.) * (hi1 - lo1);
