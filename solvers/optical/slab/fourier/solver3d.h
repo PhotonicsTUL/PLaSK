@@ -252,7 +252,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     Expansion& getExpansion() override { return expansion; }
 
     /// Return minor field coefficients dimension
-    size_t minor() const { return expansion.Nl; }
+    size_t minor() const { return expansion.N0; }
 
   private:
 

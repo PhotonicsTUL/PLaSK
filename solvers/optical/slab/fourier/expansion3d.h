@@ -15,17 +15,21 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     dcomplex klong,                     ///< Longitudinal wavevector
              ktran;                     ///< Transverse wavevector
 
-    size_t Nl,                          ///< Number of expansion coefficients in longitudinal direction
-           Nt;                          ///< Number of expansion coefficients in transverse direction
-    size_t nNl,                         ///< Number of of required coefficients for material parameters in longitudinal direction
-           nNt;                         ///< Number of of required coefficients for material parameters in transverse direction
-    size_t nMl,                         ///< Number of FFT coefficients in longitudinal direction
-           nMt;                         ///< Number of FFT coefficients in transverse direction
+    size_t N0,                          ///< Number of expansion coefficients along the first basis vector (longitudinal direction)
+           N1;                          ///< Number of expansion coefficients along the second basis vector (transverse direction)
+    size_t nN0,                         ///< Number of of required coefficients for material parameters along the first basis vector (longitudinal direction)
+           nN1;                         ///< Number of of required coefficients for material parameters along the second basis vector (transverse direction)
+    size_t nM0,                         ///< Number of FFT coefficients along the first basis vector (longitudinal direction)
+           nM1;                         ///< Number of FFT coefficients along the second basis vector (transverse direction)
 
-    double left;                        ///< Left side of the sampled area
-    double right;                       ///< Right side of the sampled area
-    double back;                        ///< Back side of the sampled area
-    double front;                       ///< Front side of the sampled area
+    Vec<3> vec0,                        ///< First basis vector
+           vec1;                        ///< Second basis vector
+           
+    double lo0;                         ///< Back side of the sampled area
+    double hi0;                         ///< Front side of the sampled area
+    double lo1;                         ///< Left side of the sampled area
+    double hi1;                         ///< Right side of the sampled area
+
     bool periodic_long,                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in longitudinal direction
          periodic_tran;                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in transverse direction
     bool initialized;                   ///< Expansion is initialized
@@ -72,7 +76,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         return diagonals[l];
     }
 
-    size_t matrixSize() const override { return 2*Nl*Nt; }
+    size_t matrixSize() const override { return 2*N0*N1; }
 
     void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
 
@@ -97,18 +101,18 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     void copy_coeffs_long(size_t l, const DataVector<Tensor3<dcomplex>>& work, size_t tw, size_t tc) {
         if (symmetric_long()) {
-            std::copy_n(work.begin()+tw*nMl, nNl, coeffs[l].begin()+tc*nNl);
+            std::copy_n(work.begin()+tw*nM0, nN0, coeffs[l].begin()+tc*nN0);
         } else {
-            size_t nn = nNl/2;
-            std::copy_n(work.begin()+tw*nMl, nn+1, coeffs[l].begin()+tc*nNl);
-            std::copy_n(work.begin()+(tw+1)*nMl-nn, nn, coeffs[l].begin()+tc*nNl+nn+1);
+            size_t nn = nN0/2;
+            std::copy_n(work.begin()+tw*nM0, nn+1, coeffs[l].begin()+tc*nN0);
+            std::copy_n(work.begin()+(tw+1)*nM0-nn, nn, coeffs[l].begin()+tc*nN0+nn+1);
         }
     }
 
   protected:
 
-    DataVector<Tensor2<dcomplex>> mag_long; ///< Magnetic permeability coefficients in longitudinal direction (used with for PMLs)
-    DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used with for PMLs)
+    DataVector<Tensor2<dcomplex>> mag_long; ///< Magnetic permeability coefficients in longitudinal direction (used for PMLs)
+    DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used for PMLs)
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
 
@@ -159,74 +163,74 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
-        return coeffs[lay][nNl * t + l].c00;
+        if (l < 0) l += nN0; if (t < 0) t += nN1;
+        return coeffs[lay][nN0 * t + l].c00;
     }
 
     /// Get \f$ \varepsilon_{yy} \f$
     dcomplex epsyy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
-        return coeffs[lay][nNl * t + l].c11;
+        if (l < 0) l += nN0; if (t < 0) t += nN1;
+        return coeffs[lay][nN0 * t + l].c11;
     }
 
     /// Get \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex iepszz(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
-        return coeffs[lay][nNl * t + l].c22;
+        if (l < 0) l += nN0; if (t < 0) t += nN1;
+        return coeffs[lay][nN0 * t + l].c22;
     }
 
     /// Get \f$ \varepsilon_{xy} \f$
     dcomplex epsxy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
-        return coeffs[lay][nNl * t + l].c01;
+        if (l < 0) l += nN0; if (t < 0) t += nN1;
+        return coeffs[lay][nN0 * t + l].c01;
     }
 
     /// Get \f$ \varepsilon_{yx} \f$
     dcomplex epsyx(size_t lay, int l, int t) { return conj(epsxy(lay, l, t)); }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
+    dcomplex muxx(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nN0].c11 * mag_tran[(t>=0)?t:t+nN1].c00; }
 
     /// Get \f$ \mu_{yy} \f$
-    dcomplex muyy(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex muyy(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nN0].c00 * mag_tran[(t>=0)?t:t+nN1].c11; }
 
     /// Get \f$ \mu_{zz}^{-1} \f$
-    dcomplex imuzz(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex imuzz(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nN0].c11 * mag_tran[(t>=0)?t:t+nN1].c11; }
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
-        return 2 * (Nl*t + l);
+        if (l < 0) { if (symmetric_long()) l = -l; else l += N0; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += N1; }
+        assert(0 <= l && l < N0);
+        assert(0 <= t && t < N1);
+        return 2 * (N0*t + l);
     }
 
     /// Get \f$ E_y \f$ index
     size_t iEy(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
-        return 2 * (Nl*t + l) + 1;
+        if (l < 0) { if (symmetric_long()) l = -l; else l += N0; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += N1; }
+        assert(0 <= l && l < N0);
+        assert(0 <= t && t < N1);
+        return 2 * (N0*t + l) + 1;
     }
 
     /// Get \f$ H_x \f$ index
     size_t iHx(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
-        return 2 * (Nl*t + l) + 1;
+        if (l < 0) { if (symmetric_long()) l = -l; else l += N0; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += N1; }
+        assert(0 <= l && l < N0);
+        assert(0 <= t && t < N1);
+        return 2 * (N0*t + l) + 1;
     }
 
     /// Get \f$ H_y \f$ index
     size_t iHy(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
-        return 2 * (Nl*t + l);
+        if (l < 0) { if (symmetric_long()) l = -l; else l += N0; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += N1; }
+        assert(0 <= l && l < N0);
+        assert(0 <= t && t < N1);
+        return 2 * (N0*t + l);
     }
 };
 
