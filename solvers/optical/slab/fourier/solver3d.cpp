@@ -165,9 +165,12 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierSolver3D::onInitialize()
 {
     this->setupLayers();
-    this->ensureInterface();
-    Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack, interface after {1} layer{2})",
-                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    if (this->interface == size_t(-1))
+        Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack",
+                                     this->stack.size());
+    else
+        Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack, interface after {1} layer{2})",
+                                     this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     setExpansionDefaults();
     expansion.init();
     this->recompute_integrals = true;
@@ -188,6 +191,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     expansion.setSymmetryTran(symmetry_tran);
     expansion.setLam0(this->lam0);
     initCalculation();
+    ensureInterface();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {

@@ -370,6 +370,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     /// Get discontinuity matrix determinant for the current parameters
     dcomplex getDeterminant() {
         this->initCalculation();
+        ensureInterface();
         initTransfer(getExpansion(), false);
         return transfer->determinant();
     }

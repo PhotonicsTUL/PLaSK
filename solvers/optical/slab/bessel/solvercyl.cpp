@@ -86,9 +86,12 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 void BesselSolverCyl::onInitialize()
 {
     this->setupLayers();
-    this->ensureInterface();
-    Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack, interface after {1} layer{2})",
-                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    if (this->interface == size_t(-1))
+        Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack",
+                                     this->stack.size());
+    else
+        Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack, interface after {1} layer{2})",
+                                     this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     setExpansionDefaults();
     expansion.init1();
     this->recompute_integrals = true;
@@ -106,6 +109,7 @@ void BesselSolverCyl::onInvalidate()
 size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
     initCalculation();
+    ensureInterface();
     expansion.setLam0(this->lam0);
     expansion.setM(m);
     initTransfer(expansion, false);

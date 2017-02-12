@@ -140,9 +140,12 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierSolver2D::onInitialize()
 {
     this->setupLayers();
-    this->ensureInterface();
-    Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver ({0} layers in the stack, interface after {1} layer{2})",
-                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    if (this->interface == size_t(-1))
+        Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver ({0} layers in the stack",
+                                     this->stack.size());
+    else
+        Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver ({0} layers in the stack, interface after {1} layer{2})",
+                                     this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     setExpansionDefaults();
     expansion.init();
     this->recompute_integrals = true;
@@ -163,6 +166,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
     expansion.setPolarization(polarization);
     expansion.setLam0(this->lam0);
     initCalculation();
+    ensureInterface();
     initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
@@ -217,11 +221,12 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 
     size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
+
+    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
+
     if (!expansion.diagonalQE(l))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
-
-    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
@@ -274,14 +279,15 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
+
+    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
+
     if (!expansion.diagonalQE(lt))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
                                       (incidence == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
-
-    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
 
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex gamma0 = gamma[idx];
