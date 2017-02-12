@@ -213,7 +213,13 @@ void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_object, WriteX
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
-    if (auto c = getExtrusion()) c->writeXML(tag, write_cb, axes);
+    if (auto c = getExtrusion()) {
+        if (isinf(c->getLength()) && c->hasChild()) {
+            c->getChild()->writeXML(tag, write_cb, axes);
+        } else {
+            c->writeXML(tag, write_cb, axes);
+        }
+    }
 }
 
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)

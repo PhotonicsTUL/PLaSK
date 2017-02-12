@@ -52,10 +52,10 @@ shared_ptr<GeometryObject> Clip<dim>::shallowCopy() const {
 
 template <typename ClipBoxType>
 inline static void writeClip2D3D(XMLWriter::Element& dest_xml_object, const ClipBoxType& clipBox) {
-    dest_xml_object.attr("left", clipBox.left());
-    dest_xml_object.attr("right", clipBox.right());
-    dest_xml_object.attr("top", clipBox.top());
-    dest_xml_object.attr("bottom", clipBox.bottom());
+    if (clipBox.left() > -std::numeric_limits<double>::infinity()) dest_xml_object.attr("left", clipBox.left());
+    if (clipBox.right() < std::numeric_limits<double>::infinity()) dest_xml_object.attr("right", clipBox.right());
+    if (clipBox.bottom() > -std::numeric_limits<double>::infinity()) dest_xml_object.attr("bottom", clipBox.bottom());
+    if (clipBox.top() < std::numeric_limits<double>::infinity()) dest_xml_object.attr("top", clipBox.top());
 }
 
 template <>
@@ -68,16 +68,16 @@ template <>
 void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     GeometryObjectTransform<3>::writeXMLAttr(dest_xml_object, axes);
     writeClip2D3D(dest_xml_object, clipBox);
-    dest_xml_object.attr("back", clipBox.back());
-    dest_xml_object.attr("front", clipBox.front());
+    if (clipBox.back() > -std::numeric_limits<double>::infinity()) dest_xml_object.attr("back", clipBox.back());
+    if (clipBox.front() < std::numeric_limits<double>::infinity()) dest_xml_object.attr("front", clipBox.front());
 }
 
 template <typename ClipType>
 inline static void setupClip2D3D(GeometryReader& reader, ClipType& clip) {
-    clip.clipBox.left() = reader.source.getAttribute<double>("left", - std::numeric_limits<double>::infinity());
+    clip.clipBox.left() = reader.source.getAttribute<double>("left", -std::numeric_limits<double>::infinity());
     clip.clipBox.right() = reader.source.getAttribute<double>("right", std::numeric_limits<double>::infinity());
     clip.clipBox.top() = reader.source.getAttribute<double>("top", std::numeric_limits<double>::infinity());
-    clip.clipBox.bottom() = reader.source.getAttribute<double>("bottom", - std::numeric_limits<double>::infinity());
+    clip.clipBox.bottom() = reader.source.getAttribute<double>("bottom", -std::numeric_limits<double>::infinity());
     clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>(!reader.manager.draft));
 }
 
@@ -91,7 +91,7 @@ shared_ptr<GeometryObject> read_Clip2D(GeometryReader& reader) {
 shared_ptr<GeometryObject> read_Clip3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Clip<3> > clip(new Clip<3>());
-    clip->clipBox.back() = reader.source.getAttribute<double>("back", - std::numeric_limits<double>::infinity());
+    clip->clipBox.back() = reader.source.getAttribute<double>("back", -std::numeric_limits<double>::infinity());
     clip->clipBox.front() = reader.source.getAttribute<double>("front", std::numeric_limits<double>::infinity());
     setupClip2D3D(reader, *clip);
     return clip;
