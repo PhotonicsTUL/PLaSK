@@ -22,8 +22,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t nM0,                         ///< Number of FFT coefficients along the first basis vector (longitudinal direction)
            nM1;                         ///< Number of FFT coefficients along the second basis vector (transverse direction)
 
-    Vec<3> vec0,                        ///< First basis vector
-           vec1;                        ///< Second basis vector
+    Vec<3,double> vec0,                 ///< First basis vector
+                  vec1;                 ///< Second basis vector
            
     double lo0;                         ///< Back side of the sampled area
     double hi0;                         ///< Front side of the sampled area
@@ -32,7 +32,6 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     bool periodic_long,                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in longitudinal direction
          periodic_tran;                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in transverse direction
-    bool initialized;                   ///< Expansion is initialized
 
     Component symmetry_long,            ///< Indicates symmetry if `symmetric` in longitudinal direction
               symmetry_tran;            ///< Indicates symmetry if `symmetric` in transverse direction
@@ -42,6 +41,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
            pif,                         ///< Index of the beginning of the front PML
            pib;                         ///< Index of the beginning of the back PML
 
+    bool initialized;                   ///< Expansion is initialized
+
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
 
@@ -49,7 +50,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     std::vector<bool> diagonals;
 
     /// Mesh for getting material data
-    shared_ptr<RectangularMesh<3>> mesh;
+    shared_ptr<EquilateralMesh3D> mesh;
 
     /**
      * Create new expansion

@@ -88,6 +88,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Type of discrete cosine transform. Can be only 1 or two
     int dct;
 
+    /// Flag indicaing if the solver uses custom lattice vectors
+    bool custom_lattice;
+    
   public:
 
     /// Class responsoble for computing expansion coefficients

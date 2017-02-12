@@ -8,6 +8,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     klong(0.), ktran(0.),
     symmetry_long(Expansion::E_UNSPECIFIED), symmetry_tran(Expansion::E_UNSPECIFIED),
     dct(2),
+    custom_lattice(false),
     expansion(this),
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
