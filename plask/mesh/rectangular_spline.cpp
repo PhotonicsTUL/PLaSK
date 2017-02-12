@@ -317,11 +317,11 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
 
 template <typename DstT, typename SrcT>
-SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<const RectangularMesh<3>>& src_mesh,
+SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<const RectilinearMesh3D>& src_mesh,
                                                                const DataVector<const SrcT>& src_vec,
                                                                const shared_ptr<const MeshD<3>>& dst_mesh,
                                                                const InterpolationFlags& flags):
-    InterpolatedLazyDataImpl<DstT, RectangularMesh<3>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
+    InterpolatedLazyDataImpl<DstT, RectilinearMesh3D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size())
 {
     const int n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size()), n2 = int(src_mesh->axis2->size());

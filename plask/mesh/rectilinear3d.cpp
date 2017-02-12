@@ -45,7 +45,7 @@ void RectilinearMesh3D::setIterationOrder(IterationOrder iterationOrder) {
             index_f = index_210; index0_f = index0_210;  index1_f = index1_210; index2_f = index2_210;
             major_axis = &axis2; medium_axis = &axis1; minor_axis = &axis0;
     }
-    this->fireChanged();
+    fireChanged();
 }
 
 
@@ -81,7 +81,7 @@ void RectilinearMesh3D::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<Mes
 
 void RectilinearMesh3D::onAxisChanged(Mesh::Event &e) {
     assert(!e.isDelete());
-    this->fireChanged(e.flags());
+    fireChanged(e.flags());
 }
 
 RectilinearMesh3D::RectilinearMesh3D(IterationOrder iterationOrder)
