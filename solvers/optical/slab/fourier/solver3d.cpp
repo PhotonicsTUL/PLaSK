@@ -155,6 +155,18 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
             reader.requireTagEnd();
+        } else if (param == "lattice") {
+            double x0 = reader.requireAttribute<double>("long0"),
+                   y0 = reader.requireAttribute<double>("tran0");
+            double x1 = reader.requireAttribute<double>("long1"),
+                   y1 = reader.requireAttribute<double>("tran1");
+            if (x0 != 0. || y0 != 0. || x1 != 0. || y1 != 0.) {
+                custom_lattice = true;
+                vec0 = vec(x0, y0, 0.);
+                vec1 = vec(x1, y1, 0.);
+            } else {
+                custom_lattice = false;
+            }
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else

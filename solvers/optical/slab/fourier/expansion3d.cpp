@@ -9,8 +9,7 @@ using boost::algorithm::clamp;
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW3D::ExpansionPW3D(FourierSolver3D* solver): Expansion(solver), 
-    vec0(1., 0., 0.), vec1(0., 1., 0.),
+ExpansionPW3D::ExpansionPW3D(FourierSolver3D* solver): Expansion(solver),
     symmetry_long(E_UNSPECIFIED), symmetry_tran(E_UNSPECIFIED),
     initialized(false) {}
 
@@ -27,18 +26,36 @@ void ExpansionPW3D::init()
     size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran, Ml, Mt;
     if (refl == 0) refl = 1;  if (reft == 0) reft = 1;
 
+    double L0, L1;
+
+    Vec<3,double> vec0, vec1;
+
     if (SOLVER->custom_lattice) {
         if (!periodic_long || !periodic_tran)
             throw BadInput(solver->getId(), "Custom lattice allowed only for periodic geometry");
-        if (symmetry_long != E_UNSPECIFIED || symmetry_tran != E_UNSPECIFIED)
+        if (symmetric_long() || symmetric_tran())
             throw BadInput(solver->getId(), "Mode symmetry is not allowed with custom lattice");
-        lo0 = 0.;
-        lo1 = 0.;
-        hi0 = sqrt(vec0.c0*vec0.c0 + vec0.c1*vec0.c1);
-        hi1 = sqrt(vec1.c0*vec1.c0 + vec1.c1*vec1.c1);
+
+        vec0 = vec(SOLVER->vec0.c0, SOLVER->vec0.c1, 0.);
+        vec1 = vec(SOLVER->vec1.c0, SOLVER->vec1.c1, 0.);
+
+        L0 = sqrt(vec0.c0*vec0.c0 + vec0.c1*vec0.c1);
+        L1 = sqrt(vec1.c0*vec1.c0 + vec1.c1*vec1.c1);
+
+        hi0 = 0.5 * L0;
+        hi1 = 0.5 * L1;
+        lo0 = -hi0;
+        lo1 = -hi1;
 
         //TODO: test if the periodicity vectors match geometry periodicity
-        
+
+        double f = 2.*M_PI / (vec0.c0 * vec1.c1 - vec0.c1 * vec1.c0);
+        recip0 = f * vec(vec1.c1, -vec1.c0, 0.);
+        recip1 = f * vec(-vec0.c1, vec0.c0, 0.);
+
+        vec0 /= L0;
+        vec1 /= L1;
+
     } else {
         lo0 = geometry->getChild()->getBoundingBox().lower[0];
         hi0 = geometry->getChild()->getBoundingBox().upper[0];
@@ -81,53 +98,55 @@ void ExpansionPW3D::init()
             if (!symmetric_tran()) lo1 -= SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
             hi1 += SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
         }
+
+        L0 = symmetric_long()? 2.*hi0 : hi0 - lo0;
+        L1 = symmetric_tran()? 2.*hi1 : hi1 - lo1;
+
+        vec0 = vec(1., 0., 0.);
+        vec1 = vec(0., 1., 0.);
+        recip0 = vec(2.*M_PI / L0, 0., 0.);
+        recip1 = vec(0., 2.*M_PI / L1, 0.);
     }
 
-    double Ll, Lt;
-
     if (!symmetric_long()) {
-        Ll = hi0 - lo0;
         N0 = 2 * SOLVER->getLongSize() + 1;
         nN0 = 4 * SOLVER->getLongSize() + 1;
         nM0 = size_t(round(SOLVER->oversampling_long * nN0));
         Ml = refl * nM0;
-        double dx = 0.5 * Ll * (refl-1) / Ml;
-        long_mesh = RegularAxis(lo0-dx, hi0-dx-Ll/Ml, Ml);
+        double dx = 0.5 * L0 * (refl-1) / Ml;
+        long_mesh = RegularAxis(lo0-dx, hi0-dx-L0/Ml, Ml);
     } else {
-        Ll = 2 * hi0;
         N0 = SOLVER->getLongSize() + 1;
         nN0 = 2 * SOLVER->getLongSize() + 1;
         nM0 = size_t(round(SOLVER->oversampling_long * nN0));
         Ml = refl * nM0;
         if (SOLVER->dct2()) {
-            double dx = 0.25 * Ll / Ml;
+            double dx = 0.25 * L0 / Ml;
             long_mesh = RegularAxis(dx, hi0-dx, Ml);
         } else {
             size_t nNa = 4 * SOLVER->getLongSize() + 1;
-            double dx = 0.5 * Ll * (refl-1) / (refl*nNa);
+            double dx = 0.5 * L0 * (refl-1) / (refl*nNa);
             long_mesh = RegularAxis(-dx, hi0+dx, Ml);
         }
     }                                                           // N = 3  nN = 5  refine = 5  M = 25
     if (!symmetric_tran()) {                                    //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
-        Lt = hi1 - lo1;                                      //  ^ ^ ^ ^ ^
-        N1 = 2 * SOLVER->getTranSize() + 1;                     // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
-        nN1 = 4 * SOLVER->getTranSize() + 1;
+        N1 = 2 * SOLVER->getTranSize() + 1;                     //  ^ ^ ^ ^ ^
+        nN1 = 4 * SOLVER->getTranSize() + 1;                    // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nM1 = size_t(round(SOLVER->oversampling_tran * nN1));   // N = 3  nN = 5  refine = 4  M = 20
         Mt = reft * nM1;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        double dx = 0.5 * Lt * (reft-1) / Mt;                   //  ^ ^ ^ ^
-        tran_mesh = RegularAxis(lo1-dx, hi1-dx-Lt/Mt, Mt);   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        double dx = 0.5 * L1 * (reft-1) / Mt;                   //  ^ ^ ^ ^
+        tran_mesh = RegularAxis(lo1-dx, hi1-dx-L1/Mt, Mt);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     } else {
-        Lt = 2 * hi1;                                         // N = 3  nN = 5  refine = 4  M = 20
-        N1 = SOLVER->getTranSize() + 1;                         // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-        nN1 = 2 * SOLVER->getTranSize() + 1;                    //  ^ ^ ^ ^
-        nM1 = size_t(round(SOLVER->oversampling_tran * nN1));   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-        Mt = reft * nM1;
+        N1 = SOLVER->getTranSize() + 1;                         // N = 3  nN = 5  refine = 4  M = 20
+        nN1 = 2 * SOLVER->getTranSize() + 1;                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+        nM1 = size_t(round(SOLVER->oversampling_tran * nN1));   //  ^ ^ ^ ^
+        Mt = reft * nM1;                                        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         if (SOLVER->dct2()) {
-            double dx = 0.25 * Lt / Mt;
+            double dx = 0.25 * L1 / Mt;
             tran_mesh = RegularAxis(dx, hi1-dx, Mt);
         } else {
             size_t nNa = 4 * SOLVER->getTranSize() + 1;
-            double dx = 0.5 * Lt * (reft-1) / (reft*nNa);
+            double dx = 0.5 * L1 * (reft-1) / (reft*nNa);
             tran_mesh = RegularAxis(-dx, hi1+dx, Mt);
         }
     }
@@ -142,7 +161,7 @@ void ExpansionPW3D::init()
 
     if (symmetric_long()) SOLVER->writelog(LOG_DETAIL, "Longitudinal symmetry is {0}", (symmetry_long == E_TRAN)? "Etran" : "Elong");
     if (symmetric_tran()) SOLVER->writelog(LOG_DETAIL, "Transverse symmetry is {0}", (symmetry_tran == E_TRAN)? "Etran" : "Elong");
-    
+
     auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
 
     matFFT = FFT::Forward2D(4, nM0, nM1,
@@ -152,7 +171,7 @@ void ExpansionPW3D::init()
     // Compute permeability coefficients
     DataVector<Tensor2<dcomplex>> work;
     if (!periodic_long || !periodic_tran) {
-        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: {0}um x {1}um)", Ll, Lt);
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: {0}um x {1}um)", L0, L1);
         size_t ml = (!periodic_long && nN0 != nM0)? nM0 : 0,
                mt = (!periodic_tran && nN1 != nM1)? nM1 : 0;
         size_t lenwork = max(ml, mt);
@@ -202,7 +221,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI / L0; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN0; ++i) {
                 int k = i; if (!symmetric_long() && k > nN0/2) k -= nN0;
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -253,7 +272,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI / L1; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN1; ++i) {
                 int k = i; if (!symmetric_tran() && k > nN1/2) k -= nN1;
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -267,7 +286,7 @@ void ExpansionPW3D::init()
     diagonals.assign(nlayers, false);
 
     static const Vec<3,double> vec2(0., 0., 1.);
-    
+
     mesh = plask::make_shared<EquilateralMesh3D>
                            (plask::make_shared<RegularAxis>(long_mesh),
                             plask::make_shared<RegularAxis>(tran_mesh),
@@ -594,45 +613,46 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
-    char symx = symmetric_long()? 2 * int(symmetry_long) - 3 : 0,
-         symy = symmetric_tran()? 2 * int(symmetry_tran) - 3 : 0;
+    char sym0 = symmetric_long()? 2 * int(symmetry_long) - 3 : 0,
+         sym1 = symmetric_tran()? 2 * int(symmetry_tran) - 3 : 0;
          // +1: Ex+, Ey-, Hx-, Hy+
          //  0: no symmetry
          // -1: Ex-, Ey+, Hx+, Hy-
 
-    assert(!(symx && klong != 0.));
-    assert(!(symy && ktran != 0.));
+    assert(!(sym0 && klong != 0.));
+    assert(!(sym1 && ktran != 0.));
 
     assert(!isnan(k0.real()) && !isnan(k0.imag()));
 
-    double Gx = 2.*M_PI / (hi0-lo0) * (symx ? 0.5 : 1.),
-           Gy = 2.*M_PI / (hi1-lo1) * (symy ? 0.5 : 1.);
-
     dcomplex ik0 = 1./k0;
 
-    size_t N = (symx ? ordl+1 : 2*ordl+1) * (symy ? ordt+1 : 2*ordt+1);
+    size_t N = (sym0 ? ordl+1 : 2*ordl+1) * (sym1 ? ordt+1 : 2*ordt+1);
 
     std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
     std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
 
-    for (int iy = (symy ? 0 : -ordt); iy <= ordt; ++iy) {
-        dcomplex gy = iy * Gy - ktran;
-        for (int ix = (symx ? 0 : -ordl); ix <= ordl; ++ix) {
-            dcomplex gx = ix * Gx - klong;
-            size_t iex = iEx(ix, iy), iey = iEy(ix, iy);
-            size_t ihx = iHx(ix, iy), ihy = iHy(ix, iy);
+    for (int i1 = (sym1 ? 0 : -ordt); i1 <= ordt; ++i1) {
+        for (int i0 = (sym0 ? 0 : -ordl); i0 <= ordl; ++i0) {
+            dcomplex gx = recip0.c0 * i0 + recip1.c0 * i1 - klong;
+            dcomplex gy = recip0.c1 * i0 + recip1.c1 * i1 - ktran;
+            // dcomplex gx = i0 * Gx - klong;
+            // dcomplex gy = i1 * Gy - ktran;
+            size_t iex = iEx(i0, i1), iey = iEy(i0, i1);
+            size_t ihx = iHx(i0, i1), ihy = iHy(i0, i1);
 
-            for (int jy = -ordt; jy <= ordt; ++jy) {
-                dcomplex py = jy * Gy - ktran;
-                int ijy = iy - jy; if (symy && ijy < 0) ijy = - ijy;
-                for (int jx = -ordl; jx <= ordl; ++jx) {
-                    dcomplex px = jx * Gx - klong;
-                    int ijx = ix - jx; if (symx && ijx < 0) ijx = - ijx;
-                    size_t jex = iEx(jx, jy), jey = iEy(jx, jy);
-                    size_t jhx = iHx(jx, jy), jhy = iHy(jx, jy);
+            for (int j1 = -ordt; j1 <= ordt; ++j1) {
+                int ijy = i1 - j1; if (sym1 && ijy < 0) ijy = - ijy;
+                for (int j0 = -ordl; j0 <= ordl; ++j0) {
+                    dcomplex px = recip0.c0 * j0 + recip1.c0 * j1 - klong;
+                    dcomplex py = recip0.c1 * j0 + recip1.c1 * j1 - ktran;
+                    // dcomplex px = j0 * Gx - klong;
+                    // dcomplex py = j1 * Gy - ktran;
+                    int ijx = i0 - j0; if (sym0 && ijx < 0) ijx = - ijx;
+                    size_t jex = iEx(j0, j1), jey = iEy(j0, j1);
+                    size_t jhx = iHx(j0, j1), jhy = iHy(j0, j1);
                     double fx = 1., fy = 1.;
-                    if (symx && jx < 0) { fx *= symx; fy *= -symx; }
-                    if (symy && jy < 0) { fx *= symy; fy *= -symy; }
+                    if (sym0 && j0 < 0) { fx *= sym0; fy *= -sym0; }
+                    if (sym1 && j1 < 0) { fx *= sym1; fy *= -sym1; }
                     dcomplex ieps = iepszz(lay, ijx, ijy) * ik0;
                     RH(iex,jhy) += fx * (- gx * px * ieps + k0 * muyy(lay, ijx, ijy));
                     RH(iey,jhy) += fx * (- gy * px * ieps);

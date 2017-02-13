@@ -22,9 +22,9 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t nM0,                         ///< Number of FFT coefficients along the first basis vector (longitudinal direction)
            nM1;                         ///< Number of FFT coefficients along the second basis vector (transverse direction)
 
-    Vec<3,double> vec0,                 ///< First basis vector
-                  vec1;                 ///< Second basis vector
-           
+    Vec<3,double> recip0,               ///< First reciprocal lattice vector
+                  recip1;               ///< Second reciprocal lattice vector
+
     double lo0;                         ///< Back side of the sampled area
     double hi0;                         ///< Front side of the sampled area
     double lo1;                         ///< Left side of the sampled area
