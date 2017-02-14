@@ -3,11 +3,11 @@
 <defines>
   <define name="r" value="0.3"/>
   <define name="h" value="0.6"/>
-  <define name="nk" value="20"/>
+  <define name="nk" value="40"/>
   <define name="N" value="5"/>
-  <define name="start" value="0.01"/>
+  <define name="start" value="0.001"/>
   <define name="end" value="0.500"/>
-  <define name="step" value="0.005&#10;"/>
+  <define name="step" value="0.001"/>
 </defines>
 
 <materials>
@@ -75,7 +75,6 @@ graphpos.extend( [ pi * (sqr3/2 + 0.5 * k/n) for k in range(n) ] )
 
 bb = bb, len(graphpos) + 1
 
-
 # K -> Gamma
 n = nk
 wavevectors.extend( [ (4*pi/3 * (n-k)/nk, 0) for k in range(n+1) ] )
@@ -99,6 +98,11 @@ for K,pos in zip(wavevectors, graphpos):
         results.append((pos, K[0], K[1], k0))
     print_log('result', K, ':', ' '.join(str(k0) for k0 in bands))
 
+with open('bands.out', 'w') as out:
+    out.write("#pos kx ky  omega/c\n")
+    for pos, kx, ky, k0 in results:
+        out.write("{:6.3f} {:5.3f} {:5.3}  {:.4f}\n".format(pos, kx, ky, k0))
+
 results = array(results).T
 
 try:
@@ -108,12 +112,12 @@ except IOError:
 else:
     plot(reference[0], reference[3], '.', color='0.7')
 plot(results[0], results[3], '.', color='maroon')
-xticks([0., graphpos[bb[0]], graphpos[bb[1]], graphpos[-1]], ['$\\Gamma$', '$M$', '$K$', '$\\Gamma$'])
+xticks([0., graphpos[bb[0]], graphpos[bb[1]], graphpos[-1]], ['$\\Gamma$', 'M', 'K', '$\\Gamma$'])
 xlim(0., graphpos[-1])
 grid(axis='x')
 ylabel("$\\omega/c$")
 tight_layout(0.1)
-savefig('bandgap.png')
+savefig('bands.png')
 show()
 ]]></script>
 
