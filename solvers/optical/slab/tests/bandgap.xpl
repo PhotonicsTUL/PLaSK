@@ -111,8 +111,9 @@ plot(results[0], results[3], '.', color='maroon')
 xticks([0., graphpos[bb[0]], graphpos[bb[1]], graphpos[-1]], ['$\\Gamma$', '$M$', '$K$', '$\\Gamma$'])
 xlim(0., graphpos[-1])
 grid(axis='x')
-ylabel("$\\omega/c$)
+ylabel("$\\omega/c$")
 tight_layout(0.1)
+savefig('bandgap.png')
 show()
 ]]></script>
 
