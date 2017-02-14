@@ -167,6 +167,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             } else {
                 custom_lattice = false;
             }
+            reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else
