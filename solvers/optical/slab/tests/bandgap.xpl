@@ -37,7 +37,7 @@
 <solvers>
   <optical name="OPTICAL" solver="Fourier3D" lib="slab">
     <geometry ref="main"/>
-    <expansion lam0="980." oversampling="8" refine="0" size="2"/>
+    <expansion lam0="980." oversampling="8" refine="0" size="{N}"/>
     <interface position="0."/>
     <lattice long0="0.0" long1="{sqrt(3)/2}" tran0="1.0" tran1="0.5"/>
   </optical>
