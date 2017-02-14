@@ -261,6 +261,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         custom_lattice = false;
     }
 
+    /// Return true if the solver has custom lattice
+    bool hasCustomLattice() const {
+        return custom_lattice;
+    }
+    
     /// Get custom lattice vectors
     std::tuple<Vec<3,double>,Vec<3,double>> getCustomLattice() const {
         if (custom_lattice)
