@@ -48,6 +48,10 @@ import matplotlib.pylab
 from matplotlib.pylab import *
 # __doc__ += matplotlib.pylab.__doc__
 
+def aspect(*args, **kwargs):
+    gca().set_aspect(*args, **kwargs)
+
+
 # Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
 if True:
     class _Rc(object):
@@ -256,7 +260,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         ax = 0, 1
         if len(data.shape) == 3:
             if comp is None:
-                raise TypeError("Specify vector component to plot")
+                raise TypeError("Specify {} component to plot".format('tensor' if field.dtype == tuple else 'vector'))
             else:
                 comp = _get_component(comp, data.shape[2])
                 data = data[:,:,comp]
@@ -274,7 +278,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
             if comp is None:
-                raise TypeError("Specify vector component to plot")
+                raise TypeError("Specify {} component to plot".format('tensor' if field.dtype == tuple else 'vector'))
             else:
                 comp = _get_component(comp, data.shape[3])
                 data = data[:,:,:,comp]

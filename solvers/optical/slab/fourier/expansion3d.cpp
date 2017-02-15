@@ -50,8 +50,8 @@ void ExpansionPW3D::init()
         //TODO: test if the periodicity vectors match geometry periodicity
 
         double f = 2.*M_PI / (vec0.c0 * vec1.c1 - vec0.c1 * vec1.c0);
-        recip0 = f * vec(vec1.c1, -vec1.c0, 0.);
-        recip1 = f * vec(-vec0.c1, vec0.c0, 0.);
+        recip0 = f * vec(vec1.c1, -vec1.c0);
+        recip1 = f * vec(-vec0.c1, vec0.c0);
 
         vec0 /= L0;
         vec1 /= L1;
@@ -104,8 +104,8 @@ void ExpansionPW3D::init()
 
         vec0 = vec(1., 0., 0.);
         vec1 = vec(0., 1., 0.);
-        recip0 = vec(2.*M_PI / L0, 0., 0.);
-        recip1 = vec(0., 2.*M_PI / L1, 0.);
+        recip0 = vec(2.*M_PI / L0, 0.);
+        recip1 = vec(0., 2.*M_PI / L1);
     }
 
     if (!symmetric_long()) {
@@ -135,7 +135,7 @@ void ExpansionPW3D::init()
         nM1 = size_t(round(SOLVER->oversampling_tran * nN1));   // N = 3  nN = 5  refine = 4  M = 20
         Mt = reft * nM1;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         double dx = 0.5 * L1 * (reft-1) / Mt;                   //  ^ ^ ^ ^
-        axis1 = RegularAxis(lo1-dx, hi1-dx-L1/Mt, Mt);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        axis1 = RegularAxis(lo1-dx, hi1-dx-L1/Mt, Mt);          // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     } else {
         N1 = SOLVER->getTranSize() + 1;                         // N = 3  nN = 5  refine = 4  M = 20
         nN1 = 2 * SOLVER->getTranSize() + 1;                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
@@ -535,7 +535,6 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
-            //TODO Check it!!!
             Vec<3,double> point = dest_mesh->at(i) - shift;
             Tensor3<dcomplex> eps(0.);
             const int n1 = symmetric_tran()? nN1-1 : nN1/2,
@@ -746,7 +745,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
             if (symt == E_TRAN) dxt = 1; else dyt = 1;
             for (size_t l = 0, off = n0*(n1-1); l != N0; ++l) field[off+l] = Vec<3,dcomplex>(0.,0.,0.);
         }
-    }
+    } else if (SOLVER->custom_lattice) 
+        throw NotImplemented("Interpolation {} not implemented with custom lattice", interpolationMethodNames[field_interpolation]);
 
     if (which_field == FIELD_E) {
         for (int i1 = symmetric_tran()? 0 : -ord1; i1 <= ord1; ++i1) {
@@ -805,15 +805,10 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
     }
 
     if (field_interpolation == INTERPOLATION_FOURIER) {
-        const double lo0 = symmetric_long()? -this->hi0 : this->lo0,
-                     lo1 = symmetric_tran()? -this->hi1 : this->lo1;
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
-        double Ll = (symmetric_long()? 2. : 1.) * (this->hi0 - this->lo0),
-               Lt = (symmetric_tran()? 2. : 1.) * (this->hi1 - this->lo1);
-        dcomplex bl = 2.*M_PI * I / Ll, bt = 2.*M_PI * I / Lt;
-        dcomplex ikx = I * kx, iky = I * ky;
         result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
         for (int i1 = -ord1; i1 <= ord1; ++i1) {
+            Vec<2,double> g1 = double(i1) * recip1;
             double ftx = 1., fty = 1.;
             size_t iit;
             if (i1 < 0) {
@@ -827,8 +822,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
             } else {
                 iit = n0 * i1;
             }
-            dcomplex gt = bt*double(i1) - iky;
             for (int i0 = -ord0; i0 <= ord0; ++i0) {
+                Vec<2,double> g0 = double(i0) * recip0;
                 double flx = 1., fly = 1.;
                 size_t iil;
                 if (i0 < 0) {
@@ -846,12 +841,12 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 coeff.c0 *= ftx * flx;
                 coeff.c1 *= fty * fly;
                 coeff.c2 *= ftx * fly;
-                dcomplex gl = bl*double(i0) - ikx;
                 for (size_t ip = 0; ip != dest_mesh->size(); ++ip) {
                     auto p = dest_mesh->at(ip);
-                    if (!periodic_long) p.c0 = clamp(p.c0, lo0, hi0);
-                    if (!periodic_tran) p.c1 = clamp(p.c1, lo1, hi1);
-                    result[ip] += coeff * exp(gl * (p.c0-this->lo0) + gt * (p.c1-this->lo1));
+                    if (!periodic_long) p.c0 = clamp(p.c0, symmetric_long()? -hi0 : lo0, hi0);
+                    if (!periodic_tran) p.c1 = clamp(p.c1, symmetric_tran()? -hi1 : lo1, hi1);
+                    p -= shift;
+                    result[ip] += coeff * exp(I * ((g0.c0+g1.c0-kx) * p.c0 + (g0.c1+g1.c1-ky) * p.c1));
                 }
             }
         }

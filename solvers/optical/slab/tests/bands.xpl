@@ -18,8 +18,8 @@
 
 <geometry>
   <cartesian3d name="main" axes="x,y,z" back="periodic" front="periodic" left="periodic" right="periodic" bottom="air" top="air">
-    <stack>
-      <align name="layer" xcenter="0" ycenter="0" zcenter="0">
+    <stack x="0" y="0">
+      <align name="layer" xcenter="0.2" ycenter="0.1" zcenter="0">
         <cuboid material="mat" dx="{sqrt(3)}" dy="1.0" dz="{h/2}"/>
         <clip back="{-sqrt(3)/2}" front="{sqrt(3)/2}" left="-0.5" right="0.5">
           <lattice ax="0.0" ay="1.0" az="0.0" bx="{sqrt(3)/2}" by="0.5" bz="0.0">
@@ -44,10 +44,15 @@
 </solvers>
 
 <script><![CDATA[
-# OPTICAL.klong = 2.218
-# OPTICAL.ktran = 1.280
-# OPTICAL.find_mode(k0=1.2556)
-# OPTICAL.find_mode(k0=2.4986)
+msh = mesh.Rectangular3D(linspace(-2., 2., 201), linspace(-2., 2., 201), [0.])
+refindex = OPTICAL.outRefractiveIndex(msh)
+(x0, y0), (x1, y1) = OPTICAL.lattice
+plot_field(refindex, None, plane='yx', comp='x', interpolation='nearest')
+plot_geometry(OPTICAL.geometry, plane='yx', color='w')
+plot([0., x0], [0., y0], color='m')
+plot([0., x1], [0., y1], color='m')
+aspect('equal')
+gcf().canvas.set_window_title('Refractive Index')
 
 k0s = arange(2*pi*start, 2*pi*end+1e-12, 2*pi*step)
 
@@ -102,6 +107,7 @@ with open('bands.out', 'w') as out:
 
 results = array(results).T
 
+figure()
 try:
     reference = loadtxt('bands.dat', unpack=True)
 except IOError:
@@ -109,7 +115,7 @@ except IOError:
 else:
     plot(reference[0], reference[3], '.', color='0.7')
 
-    plot(results[0], results[3], '.', color='maroon')
+plot(results[0], results[3], '.', color='maroon')
 
 xticks([0., pi*sqr32, pi*(sqr32+0.5), pi*(sqr32+1.5)], ['$\\Gamma$', 'M', 'K', '$\\Gamma$'])
 xlim(0., pi*(sqr32+1.5))
@@ -118,6 +124,7 @@ grid(axis='x')
 ylabel("$\\omega/c$")
 
 tight_layout(0.1)
+gcf().canvas.set_window_title('Photonic Bands')
 savefig('bands.png')
 show()
 ]]></script>

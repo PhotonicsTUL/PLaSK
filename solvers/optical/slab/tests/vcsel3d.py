@@ -82,7 +82,7 @@ class VCSEL(unittest.TestCase):
         self.solver.inGain = self.profile.outGain
         self.solver.refine = 32
         self.solver.size = 5
-        self.solver.root.method = 'broyden'
+        self.solver.root.method = 'muller'
         self.solver.symmetry = 'Er', 'Er'
 
     def testComputations(self):
