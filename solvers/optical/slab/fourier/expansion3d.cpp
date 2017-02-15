@@ -448,8 +448,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         cell[j].c22 *= s;
                     }
 
-                    //FIXME
-                    norm += (real(cell[j].c00) + real(cell[j].c11)) * mesh->fromMeshCoords(vec(axis0->at(j0) - shift0, axis1->at(j1) - shift1, 0.));
+                    // we compute surface normals basing on the orientation 
+                    // of the vector pointing to the sub-mesh point
+                    auto nv = mesh->fromMeshCoords(vec(axis0->at(j0) - shift0, axis1->at(j1) - shift1, 0.));
+                    double anv = abs(nv);
+                    if (anv != 0.) {
+                        nv /= anv;
+                        norm += (real(cell[j].c00) + real(cell[j].c11)) * nv;
+                    }
                 }
             }
 
@@ -553,7 +559,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             return eps;
         });
     } else {
-        if (SOLVER->custom_lattice) throw NotImplemented("Interpolation {} not implemented with custom lattice", interpolationMethodNames[interp]);
+        if (SOLVER->custom_lattice) throw NotImplemented(format("Interpolation {} with custom lattice", interpolationMethodNames[interp]));
 
         DataVector<Tensor3<dcomplex>> result(dest_mesh->size(), Tensor3<dcomplex>(0.));
         size_t n0 = symmetric_long()? nN0 : nN0+1, n1 = symmetric_tran()? nN1 : nN1+1;
@@ -737,6 +743,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 
     int dxl = 0, dyl = 0, dxt = 0, dyt = 0;
     if (field_interpolation != INTERPOLATION_FOURIER) {
+        if (SOLVER->custom_lattice) throw NotImplemented(format("Interpolation {} with custom lattice", interpolationMethodNames[field_interpolation]));
         if (symmetric_long()) {
             if (syml == E_TRAN) dxl = 1; else dyl = 1;
             for (size_t t = 0, end = n0*n1; t != end; t += n0) field[n0-1+t] = Vec<3,dcomplex>(0.,0.,0.);
@@ -745,8 +752,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
             if (symt == E_TRAN) dxt = 1; else dyt = 1;
             for (size_t l = 0, off = n0*(n1-1); l != N0; ++l) field[off+l] = Vec<3,dcomplex>(0.,0.,0.);
         }
-    } else if (SOLVER->custom_lattice) 
-        throw NotImplemented("Interpolation {} not implemented with custom lattice", interpolationMethodNames[field_interpolation]);
+    }
 
     if (which_field == FIELD_E) {
         for (int i1 = symmetric_tran()? 0 : -ord1; i1 <= ord1; ++i1) {

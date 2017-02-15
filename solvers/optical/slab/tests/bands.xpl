@@ -65,21 +65,22 @@ def browse():
 
 # Triangular lattice: K = [4*pi/(3),0] M = [pi, pi/(sqrt(3))]
 sqr3 = sqrt(3)
+sqr32 = sqr3 / 2.
 
 # Gamma -> M
 n = int(sqr3/2 * nk)
 wavevectors = [ (pi * k/n, pi/sqr3 * k/n) for k in range(n) ]
-graphpos = [ pi * sqr3/2 * k/n for k in range(n) ]
+graphpos = [ pi * sqr32 * k/n for k in range(n) ]
 
 # M -> K
 n = int(nk/2.)
 wavevectors.extend( [ (pi * ( 1 + 1./3.*k/n), pi/sqr3 * (n-k)/n) for k in range(n) ] )
-graphpos.extend( [ pi * (sqr3/2 + 0.5 * k/n) for k in range(n) ] )
+graphpos.extend( [ pi * (sqr32 + 0.5 * k/n) for k in range(n) ] )
 
 # K -> Gamma
 n = nk
 wavevectors.extend( [ (4*pi/3 * (n-k)/nk, 0.) for k in range(n+1) ] )
-graphpos.extend( [ pi * (sqr3/2 + 0.5 + 1. * k/n) for k in range(n+1) ] )
+graphpos.extend( [ pi * (sqr32 + 0.5 + 1. * k/n) for k in range(n+1) ] )
 
 
 
