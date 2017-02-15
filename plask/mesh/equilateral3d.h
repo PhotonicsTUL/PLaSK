@@ -9,7 +9,7 @@ This file contains equilateral mesh for 3D space.
 
 namespace plask {
 
-class EquilateralMesh3D: public RectilinearMesh3D {
+class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
   protected:    
     double trans[9];    ///< Transfromation matrix
