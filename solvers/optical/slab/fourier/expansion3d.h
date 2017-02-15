@@ -97,6 +97,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
   private:
 
+    Vec<3,double> shift;
+
     DataVector<Vec<3,dcomplex>> field;
     FFT::Backward2D fft_x, fft_y, fft_z;
 

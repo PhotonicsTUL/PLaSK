@@ -18,7 +18,7 @@ void ExpansionPW3D::init()
 {
     auto geometry = SOLVER->getGeometry();
 
-    RegularAxis long_mesh, tran_mesh;
+    RegularAxis axis0, axis1;
 
     periodic_long = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
     periodic_tran = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
@@ -114,7 +114,7 @@ void ExpansionPW3D::init()
         nM0 = size_t(round(SOLVER->oversampling_long * nN0));
         Ml = refl * nM0;
         double dx = 0.5 * L0 * (refl-1) / Ml;
-        long_mesh = RegularAxis(lo0-dx, hi0-dx-L0/Ml, Ml);
+        axis0 = RegularAxis(lo0-dx, hi0-dx-L0/Ml, Ml);
     } else {
         N0 = SOLVER->getLongSize() + 1;
         nN0 = 2 * SOLVER->getLongSize() + 1;
@@ -122,11 +122,11 @@ void ExpansionPW3D::init()
         Ml = refl * nM0;
         if (SOLVER->dct2()) {
             double dx = 0.25 * L0 / Ml;
-            long_mesh = RegularAxis(dx, hi0-dx, Ml);
+            axis0 = RegularAxis(dx, hi0-dx, Ml);
         } else {
             size_t nNa = 4 * SOLVER->getLongSize() + 1;
             double dx = 0.5 * L0 * (refl-1) / (refl*nNa);
-            long_mesh = RegularAxis(-dx, hi0+dx, Ml);
+            axis0 = RegularAxis(-dx, hi0+dx, Ml);
         }
     }                                                           // N = 3  nN = 5  refine = 5  M = 25
     if (!symmetric_tran()) {                                    //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
@@ -135,7 +135,7 @@ void ExpansionPW3D::init()
         nM1 = size_t(round(SOLVER->oversampling_tran * nN1));   // N = 3  nN = 5  refine = 4  M = 20
         Mt = reft * nM1;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         double dx = 0.5 * L1 * (reft-1) / Mt;                   //  ^ ^ ^ ^
-        tran_mesh = RegularAxis(lo1-dx, hi1-dx-L1/Mt, Mt);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        axis1 = RegularAxis(lo1-dx, hi1-dx-L1/Mt, Mt);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     } else {
         N1 = SOLVER->getTranSize() + 1;                         // N = 3  nN = 5  refine = 4  M = 20
         nN1 = 2 * SOLVER->getTranSize() + 1;                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
@@ -143,11 +143,11 @@ void ExpansionPW3D::init()
         Mt = reft * nM1;                                        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         if (SOLVER->dct2()) {
             double dx = 0.25 * L1 / Mt;
-            tran_mesh = RegularAxis(dx, hi1-dx, Mt);
+            axis1 = RegularAxis(dx, hi1-dx, Mt);
         } else {
             size_t nNa = 4 * SOLVER->getTranSize() + 1;
             double dx = 0.5 * L1 * (reft-1) / (reft*nNa);
-            tran_mesh = RegularAxis(-dx, hi1+dx, Mt);
+            axis1 = RegularAxis(-dx, hi1+dx, Mt);
         }
     }
 
@@ -191,16 +191,16 @@ void ExpansionPW3D::init()
         }
         double pb = lo0 + SOLVER->pml_long.size, pf = hi0 - SOLVER->pml_long.size;
         if (symmetric_long()) pib = 0;
-        else pib = std::lower_bound(long_mesh.begin(), long_mesh.end(), pb) - long_mesh.begin();
-        pif = std::lower_bound(long_mesh.begin(), long_mesh.end(), pf) - long_mesh.begin();
+        else pib = std::lower_bound(axis0.begin(), axis0.end(), pb) - axis0.begin();
+        pif = std::lower_bound(axis0.begin(), axis0.end(), pf) - axis0.begin();
         for (size_t i = 0; i != nM0; ++i) {
             for (size_t j = refl*i, end = refl*(i+1); j != end; ++j) {
                 dcomplex s = 1.;
                 if (j < pib) {
-                    double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
+                    double h = (pb - axis0[j]) / SOLVER->pml_long.size;
                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                 } else if (j > pif) {
-                    double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
+                    double h = (axis0[j] - pf) / SOLVER->pml_long.size;
                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                 }
                 lwork[i] += Tensor2<dcomplex>(s, 1./s);
@@ -242,16 +242,16 @@ void ExpansionPW3D::init()
         }
         double pl = lo1 + SOLVER->pml_tran.size, pr = hi1 - SOLVER->pml_tran.size;
         if (symmetric_tran()) pil = 0;
-        else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pl) - tran_mesh.begin();
-        pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pr) - tran_mesh.begin();
+        else pil = std::lower_bound(axis1.begin(), axis1.end(), pl) - axis1.begin();
+        pir = std::lower_bound(axis1.begin(), axis1.end(), pr) - axis1.begin();
         for (size_t i = 0; i != nM1; ++i) {
             for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
                 dcomplex s = 1.;
                 if (j < pil) {
-                    double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
+                    double h = (pl - axis1[j]) / SOLVER->pml_tran.size;
                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                 } else if (j > pir) {
-                    double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
+                    double h = (axis1[j] - pr) / SOLVER->pml_tran.size;
                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                 }
                 twork[i] += Tensor2<dcomplex>(s, 1./s);
@@ -288,10 +288,12 @@ void ExpansionPW3D::init()
     static const Vec<3,double> vec2(0., 0., 1.);
 
     mesh = plask::make_shared<EquilateralMesh3D>
-                           (plask::make_shared<RegularAxis>(long_mesh),
-                            plask::make_shared<RegularAxis>(tran_mesh),
+                           (plask::make_shared<RegularAxis>(axis0),
+                            plask::make_shared<RegularAxis>(axis1),
                             solver->verts, RectangularMesh<3>::ORDER_102,
                             vec0, vec1, vec2);
+
+    shift = lo0 * vec0 + lo1 * vec1;
 
     initialized = true;
 }
@@ -353,12 +355,9 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     if (isnan(lam))
         throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
 
-    double matv;
-    for (size_t i = 0; i != solver->stack.size(); ++i) {
-        if (solver->stack[i] == layer) {
-            matv = solver->verts->at(i);
-            break;
-        }
+    size_t matv;
+    for (matv = 0; matv != solver->stack.size(); ++matv) {
+        if (solver->stack[matv] == layer) break;
     }
 
     if (gain_connected && solver->lgained[layer]) {
@@ -393,12 +392,13 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
             double shift0 = 0.5 * (axis0->at(beg0) + axis0->at(end0-1));
 
             // Store epsilons for a single cell and compute surface normal
-            Vec<2> norm(0.,0.);
-            for (size_t t = beg1, j = 0; t != end1; ++t) {
-                for (size_t l = beg0; l != end0; ++l, ++j) {
-                    auto material = geometry->getMaterial(vec(axis0->at(l), axis1->at(t), matv));
+            Vec<3> norm(0., 0., 0.);
+            for (size_t j1 = beg1, j = 0; j1 != end1; ++j1) {
+                for (size_t j0 = beg0; j0 != end0; ++j0, ++j) {
+                    Vec<3,double> point = mesh->at(j0, j1, matv);
+                    auto material = geometry->getMaterial(point);
                     double T = 0.; int n1 = 0;
-                    for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->axis2->size(); ++v, ++k)
+                    for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k)
                         if (solver->stack[k] == layer) { T += temperature[v]; n1++; }
                     T /= n1;
                     cell[j] = material->NR(lam, T);
@@ -406,10 +406,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
                     if (gain_connected && solver->lgained[layer]) {
-                        auto roles = geometry->getRolesAt(vec(axis0->at(l), axis1->at(t), matv));
+                        auto roles = geometry->getRolesAt(point);
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             double g = 0.; int ng = 0;
-                            for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->axis2->size(); ++v, ++k)
+                            for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k)
                                 if (solver->stack[k] == layer) { g += gain[v]; ng++; }
                             double ni = glam * g/ng * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
@@ -423,11 +423,11 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     // Add PMLs
                     if (!periodic_long) {
                         dcomplex s = 1.;
-                        if (l < pib) {
-                            double h = (pb - axis0->at(l)) / SOLVER->pml_long.size;
+                        if (j0 < pib) {
+                            double h = (pb - axis0->at(j0)) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
-                        } else if (l > pif) {
-                            double h = (axis0->at(l) - pf) / SOLVER->pml_long.size;
+                        } else if (j0 > pif) {
+                            double h = (axis0->at(j0) - pf) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                         }
                         cell[j].c00 *= 1./s;
@@ -436,11 +436,11 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     }
                     if (!periodic_tran) {
                         dcomplex s = 1.;
-                        if (t < pil) {
-                            double h = (pl - axis1->at(t)) / SOLVER->pml_tran.size;
+                        if (j1 < pil) {
+                            double h = (pl - axis1->at(j1)) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
-                        } else if (t > pir) {
-                            double h = (axis1->at(t) - pr) / SOLVER->pml_tran.size;
+                        } else if (j1 > pir) {
+                            double h = (axis1->at(j1) - pr) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                         }
                         cell[j].c00 *= s;
@@ -448,7 +448,8 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         cell[j].c22 *= s;
                     }
 
-                    norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(axis0->at(l) - shift0, axis1->at(t) - shift1);
+                    //FIXME
+                    norm += (real(cell[j].c00) + real(cell[j].c11)) * mesh->fromMeshCoords(vec(axis0->at(j0) - shift0, axis1->at(j1) - shift1, 0.));
                 }
             }
 
@@ -534,17 +535,18 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
+            //TODO Check it!!!
+            Vec<3,double> point = dest_mesh->at(i) - shift;
             Tensor3<dcomplex> eps(0.);
             const int n1 = symmetric_tran()? nN1-1 : nN1/2,
                       n0 = symmetric_long()? nN0-1 : nN0/2;
-            double Lt = hi1-lo1; if (symmetric_tran()) Lt *= 2;
-            double Ll = hi0-lo0; if (symmetric_long()) Ll *= 2;
-            for (int kt = -n1; kt <= n1; ++kt) {
-                size_t t = (kt >= 0)? kt : (symmetric_tran())? -kt : kt + nN1;
-                const double phast = kt * (dest_mesh->at(i).c1-lo1) / Lt;
-                for (int kl = -n0; kl <= n0; ++kl) {
-                    size_t l = (kl >= 0)? kl : (symmetric_long())? -kl : kl + nN0;
-                    eps += coeffs[lay][nN0*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-lo0) / Ll + phast));
+            for (int k1 = -n1; k1 <= n1; ++k1) {
+                size_t i1 = (k1 >= 0)? k1 : (symmetric_tran())? -k1 : k1 + nN1;
+                const double phas1 = k1 * ((recip1.c0 * point.c0 + recip1.c1 * point.c1));
+                for (int k0 = -n0; k0 <= n0; ++k0) {
+                    size_t i0 = (k0 >= 0)? k0 : (symmetric_long())? -k0 : k0 + nN0;
+                    const double phas0 = k0 * ((recip0.c0 * point.c0 + recip0.c1 * point.c1));
+                    eps += coeffs[lay][nN0*i1+i0] * exp(I * (phas0 + phas1));
                 }
             }
             eps.c22 = 1. / eps.c22;
@@ -552,6 +554,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             return eps;
         });
     } else {
+        if (SOLVER->custom_lattice) throw NotImplemented("Interpolation {} not implemented with custom lattice", interpolationMethodNames[interp]);
+
         DataVector<Tensor3<dcomplex>> result(dest_mesh->size(), Tensor3<dcomplex>(0.));
         size_t n0 = symmetric_long()? nN0 : nN0+1, n1 = symmetric_tran()? nN1 : nN1+1;
         DataVector<Tensor3<dcomplex>> params(n0 * n1);
