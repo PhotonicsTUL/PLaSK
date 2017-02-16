@@ -190,12 +190,12 @@ from __future__ import print_function
 
 print(GAIN2.strained)
 
-coff = material.get('GaAs').CB()
-voff = material.get('GaAs').VB()
-cbo = material.get('InAlGaAs').CB()
-vbo = material.get('InAlGaAs').VB()
-cbq = material.get('InAlGaAs-QW').CB()
-vbq = material.get('InAlGaAs-QW').VB()
+# coff = material.get('GaAs').CB()
+# voff = material.get('GaAs').VB()
+# cbo = material.get('InAlGaAs').CB()
+# vbo = material.get('InAlGaAs').VB()
+# cbq = material.get('InAlGaAs-QW').CB()
+# vbq = material.get('InAlGaAs-QW').VB()
 
 pos = GEO.main.get_object_bboxes(GEO.QW1)[0].center
 
@@ -288,11 +288,14 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color='c', hh_color
     ylabel("Band Edges [eV]")
     if levels is not None:
         for l in levels['el']:
-            axhline(co+l, color=el_color, ls='--')
+            axhline(co+l, color=el_color, ls=':')
         for l in levels['hh']:
-            axhline(vo+l, color=hh_color, ls='--')
+            axhline(vo+l, color=hh_color, ls=':')
         for l in levels['lh']:
-            axhline(vo+l, color=lh_color, ls='--')
+            axhline(vo+l, color=lh_color, ls=':')
+    Fe, Fh = GAIN2.get_fermi_levels(conc)
+    axhline(Fe, color=el_color, ls='--')
+    axhline(Fh, color=hh_color, ls='--')
     gcf().canvas.set_window_title(title)
     #plt.get_current_fig_manager().window.showMaximized()
     tight_layout(0.5)
@@ -337,12 +340,17 @@ class Spec(object):
 spec2 = Spec(GAIN2)
 t2 = timeit(spec2, number=1)
 
-GAIN2.strained = True
-spec2s = Spec(GAIN2)
-spec2s()
-
 plot(lams, spec2.result, label=u"no strain")
-plot(lams, spec2s.result, label=u"strained")
+
+try:
+    GAIN2.strained = True
+    spec2s = Spec(GAIN2)
+    spec2s()
+except:
+    pass
+else:
+    plot(lams, spec2s.result, label=u"strained")
+
 legend(loc='best').draggable()
 xlabel("Wavelength [nm]")
 ylabel("Gain [1/cm]")
