@@ -69,7 +69,7 @@ except ImportError:
     pass
 else:
     _pylab = [k for k in pylab.__dict__ if not k.startswith('_')]
-    _pylab.append('aspect')
+    _pylab.extend(['aspect', 'window_title'])
     syntax['scanner'].append(
         ('pylab', _pylab,
          '(^|[^\\.\\w]|\\bplask\\.)', '[\x08\\W]')

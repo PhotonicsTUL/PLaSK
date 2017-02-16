@@ -55,15 +55,17 @@ class BandsTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    msh = mesh.Rectangular3D(linspace(-2., 2., 201), linspace(-2., 2., 201), [0.])
+    msh = mesh.Rectangular3D(linspace(-1.3, 1.3, 261), linspace(-1.5, 1.5, 301), [0.])
     refindex = OPTICAL.outRefractiveIndex(msh)
     (x0, y0), (x1, y1) = OPTICAL.lattice
     plot_field(refindex, None, plane='yx', comp='x', interpolation='nearest')
-    plot_geometry(OPTICAL.geometry, plane='yx', color='w')
+    plot_geometry(OPTICAL.geometry, plane='yx', color='w', periods=3)
     plot([0., x0], [0., y0], color='m')
     plot([0., x1], [0., y1], color='m')
     aspect('equal')
     gcf().canvas.set_window_title('Refractive Index')
+    xlim(-1.5, 1.5)
+    ylim(-1.3, 1.3)
     
     k0s = arange(2*pi*start, 2*pi*end+1e-12, 2*pi*step)
     
@@ -117,6 +119,9 @@ if __name__ == "__main__":
     results = array(results).T
     
     figure()
+    wavevectors = array(wavevectors)
+    plot(graphpos, sqrt(sum(wavevectors**2, 1)), 'k--')
+    
     try:
         reference = loadtxt('bands.dat', unpack=True)
     except IOError:
