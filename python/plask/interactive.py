@@ -115,7 +115,7 @@ def interact(ipython=None, argv=[]):
     """Initialize an embedded IPython or Python session. """
     import sys
     sys.argv = argv
-    global preexec_lines, banner
+    global preexec_lines, BANNER
 
     preexec_lines.append('from plask import *')
 
@@ -123,7 +123,7 @@ def interact(ipython=None, argv=[]):
 
     if ipython is False:
         ip = _init_python_session(argv)
-        mainloop = lambda: ip.interact(banner)
+        mainloop = lambda: ip.interact(BANNER)
     else:
         try:
             import IPython
@@ -132,7 +132,7 @@ def interact(ipython=None, argv=[]):
             if ipython is not True:
                 print (no_ipython)
                 ip = _init_python_session(argv)
-                mainloop = lambda: ip.interact(banner)
+                mainloop = lambda: ip.interact(BANNER)
             else:
                 raise RuntimeError("IPython 0.11 or newer is not available on this system")
         else:
