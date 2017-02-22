@@ -73,7 +73,10 @@ class _MaterialToColor(object):
         if axes is None:
             self._air_color = '#ffffff'
         else:
-            self._air_color = axes.get_axis_bgcolor()
+            try:
+                self._air_color = axes.get_facecolor()
+            except AttributeError:
+                self._air_color = axes.get_axis_bgcolor()
 
     def __call__(self, material):
         """

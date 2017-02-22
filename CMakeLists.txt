@@ -880,7 +880,8 @@ endif()
 
 # Settings for DEB and RPM generator
 if(UNIX)
-    set(CPACK_GENERATOR "DEB;RPM")
+    set(CPACK_GENERATOR "DEB;RPM;TBZ2")
+    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 
     if(NOT DEFINED CPACK_PACKAGE_NAME)
         set(CPACK_PACKAGE_NAME plask)
