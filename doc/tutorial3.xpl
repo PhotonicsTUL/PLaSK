@@ -88,7 +88,7 @@
     <condition value="300." place="bottom"/>
   </temperature>
   </thermal>
-  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
+  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <junction beta0="11" js0="1"/>
