@@ -19,18 +19,18 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
     /// Find inverse of the transformation matrix
     void findInverse() {
-        double det = trans[0] * (trans[4]*trans[8] - trans[5]*trans[7])
-                   + trans[1] * (trans[5]*trans[6] - trans[3]*trans[8])
-                   + trans[2] * (trans[3]*trans[7] - trans[4]*trans[6]);
-        inv[0] = det * ( trans[4]*trans[8] - trans[5]*trans[7]);
-        inv[1] = det * (-trans[1]*trans[8] + trans[2]*trans[7]);
-        inv[2] = det * ( trans[1]*trans[5] - trans[2]*trans[4]);
-        inv[3] = det * (-trans[3]*trans[8] + trans[5]*trans[6]);
-        inv[4] = det * ( trans[0]*trans[8] - trans[2]*trans[6]);
-        inv[5] = det * (-trans[0]*trans[5] + trans[2]*trans[3]);
-        inv[6] = det * ( trans[3]*trans[7] - trans[4]*trans[6]);
-        inv[7] = det * (-trans[0]*trans[7] + trans[1]*trans[6]);
-        inv[8] = det * ( trans[0]*trans[4] - trans[1]*trans[3]);
+        double idet = 1. / (trans[0] * (trans[4]*trans[8] - trans[5]*trans[7]) +
+                            trans[1] * (trans[5]*trans[6] - trans[3]*trans[8]) +
+                            trans[2] * (trans[3]*trans[7] - trans[4]*trans[6]));
+        inv[0] = idet * ( trans[4]*trans[8] - trans[5]*trans[7]);
+        inv[1] = idet * (-trans[1]*trans[8] + trans[2]*trans[7]);
+        inv[2] = idet * ( trans[1]*trans[5] - trans[2]*trans[4]);
+        inv[3] = idet * (-trans[3]*trans[8] + trans[5]*trans[6]);
+        inv[4] = idet * ( trans[0]*trans[8] - trans[2]*trans[6]);
+        inv[5] = idet * (-trans[0]*trans[5] + trans[2]*trans[3]);
+        inv[6] = idet * ( trans[3]*trans[7] - trans[4]*trans[6]);
+        inv[7] = idet * (-trans[0]*trans[7] + trans[1]*trans[6]);
+        inv[8] = idet * ( trans[0]*trans[4] - trans[1]*trans[3]);
     }
     
   public:
@@ -129,7 +129,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
         findInverse();
         fireChanged();
     }
-    
+
     /**
      * Transform point in the real coordinates to mesh coordinates
      * \param point point to transfrom

@@ -483,8 +483,8 @@ if(BUILD_PYTHON)
             file(GLOB_RECURSE gui_files RELATIVE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/gui/*.py)
             foreach(gui_file ${gui_files})
                 add_custom_command(OUTPUT ${PLASK_PATH}/${gui_file}
-                                    COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
-                                    DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
+                                   COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
+                                   DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
                 list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
                 list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
                 list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
@@ -507,6 +507,8 @@ if(BUILD_PYTHON)
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
             )
+            # This will make plaskgui work without install
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ../../../gui ${PLASK_PATH}/gui)
         endif()
 
         install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
