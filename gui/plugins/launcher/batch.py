@@ -132,8 +132,8 @@ else:
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
-            stdin, stdout, stderr = ssh.exec_command("{3}qsub -N {0}{1} -d {2}"
-                .format(quote(name), (' -q '+quote(queue)) if queue else '', quote(workdir), bp))
+            stdin, stdout, stderr = ssh.exec_command("{path}qsub -N {name}{queue} -d {dir}"
+                .format(name=quote(name), queue=(' -q '+quote(queue)) if queue else '', dir=quote(workdir), path=bp))
             try:
                 print("#!/bin/sh", file=stdin)
                 for oth in others:
@@ -165,13 +165,70 @@ else:
                     return True, "Submitted job(s):\n" + output
 
 
-    SYSTEMS = OrderedDict([('PBS/Torque', Torque)])
+    class Slurm(object):
+
+        @staticmethod
+        def get_queues(ssh, bp=''):
+            if bp:
+                if not bp.endswith('/'): bp += '/'
+                bp = quote(bp)
+            _, stdout, stderr = ssh.exec_command('{}sinfo -h -o "%R"'.format(bp))
+            if stdout.channel.recv_exit_status() == 0:
+                return sorted(line.strip() for line in stdout.read().decode('utf8').split("\n")[:-1])
+            else:
+                errors = stderr.read().decode('utf8').strip()
+                QMessageBox.critical(None, "Error Retrieving Partitions",
+                                           "Partition list could not be retrieved." +
+                                           ("\n\n" + errors) if errors else "")
+                return []
+
+
+        @staticmethod
+        def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, color, bp=''):
+            fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+            if bp:
+                if not bp.endswith('/'): bp += '/'
+                bp = quote(bp)
+            stdin, stdout, stderr = ssh.exec_command("{path}sbatch -J {name}{queue} -o {name}-%j.out -D {dir}"
+                .format(name=quote(name), queue=(' -p '+quote(queue)) if queue else '', dir=quote(workdir), path=bp))
+            try:
+                print("#!/bin/sh", file=stdin)
+                for oth in others:
+                    oth = oth.strip()
+                    if oth: print("#PBS", oth, file=stdin)
+                print("base64 -d <<\\_EOF_ | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}"
+                      .format(cmd=command,
+                              fname=fname,
+                              defs=' '.join(quote(d) for d in defs),
+                              args=' '.join(quote(a) for a in args),
+                              ll=loglevel, lc=' -lansi' if color else '',
+                              ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
+                gzipped = BytesIO()
+                with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
+                    gzip.write(document.get_content().encode('utf8'))
+                stdin.write(base64(gzipped.getvalue()).decode('ascii'))
+                print("_EOF_", file=stdin)
+                stdin.flush()
+                stdin.channel.shutdown_write()
+            except (OSError, IOError):
+                errors = stderr.read().decode('utf8').strip()
+                return False, errors
+            else:
+                if stderr.channel.recv_exit_status() != 0:
+                    errors = stderr.read().decode('utf8').strip()
+                    return False, errors
+                else:
+                    output = stdout.read().decode('utf8').strip()
+                    return True, "Submitted job(s):\n" + output
+
+
+    SYSTEMS = OrderedDict([('PBS/Torque', Torque), ('SLURM', Slurm)])
 
 
     class AccountEditDialog(QDialog):
 
         def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, color=False,
-                     program=None, bp=None, parent=None):
+                     program=None, bp=None, port=None, parent=None):
             super(AccountEditDialog, self).__init__(parent)
             self.launcher = launcher
 
@@ -201,6 +258,16 @@ else:
                 self.host_edit.setText(host)
             self.host_edit.textEdited.connect(self.userhost_edited)
             layout.addRow("&Host:", self.host_edit)
+
+            self.port_input = QSpinBox()
+            self.port_input.setMinimum(1)
+            self.port_input.setMaximum(65536)
+            self.port_input.setToolTip("TCP port to connect to (usually 22).")
+            if port is not None:
+                self.port_input.setValue(port)
+            else:
+                self.port_input.setValue(22)
+            layout.addRow("&Port:", self.port_input)
 
             self.user_edit = QLineEdit()
             self.user_edit.setToolTip("Username at the execution host.")
@@ -295,7 +362,7 @@ else:
                     self.name_edit.setText(self.host)
 
         def get_queues(self):
-            ssh = self.launcher.connect(self.host, self.user)
+            ssh = self.launcher.connect(self.host, self.user, self.port)
             if ssh is None: return
             self.queues_list.set_values(SYSTEMS[self.system].get_queues(ssh, self.bp_edit.text()))
 
@@ -312,7 +379,8 @@ else:
 
         @property
         def data(self):
-            return "{}@{}".format(self.user, self.host), self.system, self.queues, self.color, self.program, self.bp
+            return "{}@{}".format(self.user, self.host), self.system, self.queues, self.color, \
+                   self.program, self.bp, self.port
 
         @property
         def host(self):
@@ -321,6 +389,10 @@ else:
         @property
         def user(self):
             return self.user_edit.text()
+
+        @property
+        def port(self):
+            return self.port_input.value()
 
         @property
         def system(self):
@@ -367,7 +439,8 @@ else:
             self._load_accounts()
             self.accounts_combo = QComboBox()
             self.accounts_combo.addItems([s for s in self.accounts])
-            self.accounts_combo.setEditText(self._saved_account)
+            if self._saved_account is not None:
+                self.accounts_combo.setCurrentIndex(self._saved_account)
             self.accounts_combo.currentIndexChanged.connect(self.account_changed)
             self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
             accounts_layout.addWidget(self.accounts_combo)
@@ -484,15 +557,16 @@ else:
                     accounts = [accounts]
                 for account in accounts:
                     account = account.split(':')
-                    nf = 7
+                    nf = 8
                     account += [''] * (nf - len(account))
                     account[3] = account[3].split(',') if account[3] else []  # queues
                     try: account[4] = bool(eval(account[4]))  # color output
                     except (SyntaxError, ValueError): account[4] = False
+                    account[7] = int(account[7]) if account[7] else 22
                     self.accounts[account[0]] = account[1:]
 
         def _save_accounts(self):
-            data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}"
+            data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}:{1[6]}"
                              .format(k, v, ','.join(v[2]), int(v[3])) for k, v in self.accounts.items())
             if not data:
                 del CONFIG['launcher_batch/accounts']
@@ -571,10 +645,12 @@ else:
 
         def account_changed(self, account):
             if isinstance(account, int):
+                self._saved_account = account
                 account = self.accounts_combo.itemText(account)
+            else:
+                self._saved_account = self.accounts_combo.currentIndex()
             self.queue.clear()
             self.queue.addItems(self.accounts.get(account, [None,None,[]])[2])
-            self._saved_account = account
             if self._auto_workdir and self.filename is not None:
                 self.workdir.setText(self._workdirs.get(
                     (self.filename, self.accounts_combo.currentText()), ''))
@@ -623,7 +699,7 @@ else:
                 if add == QMessageBox.Yes:
                     Launcher.save_host_keys(client.get_host_keys())
 
-        def connect(self, host, user):
+        def connect(self, host, user, port):
             ssh = paramiko.SSHClient()
             ssh.load_system_host_keys()
             host_keys = ssh.get_host_keys()
@@ -644,7 +720,7 @@ else:
 
             while True:
                 try:
-                    ssh.connect(host, username=user, password=passwd, compress=True, timeout=15)
+                    ssh.connect(host, username=user, password=passwd, port=port, compress=True, timeout=15)
                 except Launcher.AbortException:
                     return
                 except paramiko.BadHostKeyException as err:
@@ -698,6 +774,7 @@ else:
             account_name = self.accounts_combo.currentText()
             account = self.accounts[account_name]
             user, host = account[0].split('@')
+            port = account[6]
             document = main_window.document
             workdir = self.workdir.text()
             if document.filename is not None:
@@ -715,7 +792,7 @@ else:
             loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                        [self.loglevel.currentIndex()]
 
-            ssh = self.connect(host, user)
+            ssh = self.connect(host, user, port)
             if ssh is None: return
 
             if not workdir:
@@ -739,7 +816,8 @@ else:
 
         def select_workdir(self):
             user, host = self.accounts[self.accounts_combo.currentText()][0].split('@')
-            ssh = self.connect(host, user)
+            port = self.accounts[self.accounts_combo.currentText()][6]
+            ssh = self.connect(host, user, port)
             if ssh is None: return
 
             workdir = self.workdir.text()
