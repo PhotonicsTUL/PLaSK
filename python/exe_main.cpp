@@ -387,6 +387,8 @@ int main(int argc, const char *argv[])
                 } else {
                     filename = "<stdin>";
                 }
+                py::object sys = py::import("sys");
+                sys.attr("argv")[0] = filename;
             }
             globals["__file__"] = filename;
 
