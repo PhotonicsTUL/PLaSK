@@ -58,7 +58,7 @@
         <rectangle material="AlGa(0.5)N" dtran="0.1" dvert="0.3"/>
       </shelf>
       <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
-      <rectangle material="GaN" dtran="2" dvert="1"/>
+      <rectangle role="substrate" material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
   <cartesian2d name="geo2d-copy">
@@ -265,7 +265,7 @@
   </electrical>
   <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="8" strained="yes"/>
+    <config lifetime="0.5" matrix-elem="8"/>
   </gain>
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>

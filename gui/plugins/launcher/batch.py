@@ -108,10 +108,75 @@ else:
             return ':'.join('{:02x}'.format(d) for d in data)
 
 
-    class Torque(object):
+    class Batch(object):
+        """
+        Base class for batch systems.
+        """
 
-        @staticmethod
-        def get_queues(ssh, bp=''):
+        batch = None
+        prefix = None
+        queue = None
+        array = None
+
+        @classmethod
+        def submit(cls, ssh, document, args, defs, loglevel, name, queue, command, workdir, array, others,
+                   color, compress, bp=''):
+            fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+            if bp:
+                if not bp.endswith('/'): bp += '/'
+                bp = quote(bp)
+            stdin, stdout, stderr = ssh.exec_command(cls.batch.format(
+                name=quote(name),
+                queue=(cls.queue+quote(queue)) if queue else '',
+                dir=quote(workdir),
+                array='' if array is None else cls.array.format(*array),
+                path=bp))
+            try:
+                print("#!/bin/sh", file=stdin)
+                for oth in others:
+                    oth = oth.strip()
+                    if oth: print(cls.prefix, oth, file=stdin)
+                command_line = "{cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}".format(
+                    cmd=command,
+                    fname=fname,
+                    defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
+                    ll=loglevel,
+                    lc=' -lansi' if color else '',
+                    ft='x' if isinstance(document, XPLDocument) else 'p')
+                if compress:
+                    print("base64 -d <<\\_EOF_ | gunzip | " + command_line, file=stdin)
+                    gzipped = BytesIO()
+                    with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
+                        gzip.write(document.get_content().encode('utf8'))
+                    stdin.write(base64(gzipped.getvalue()).decode('ascii'))
+                    print("_EOF_", file=stdin)
+                else:
+                    print(command_line + " <<\\_EOF_", file=stdin)
+                    stdin.write(document.get_content())
+                    print("_EOF_", file=stdin)
+                stdin.flush()
+                stdin.channel.shutdown_write()
+            except (OSError, IOError):
+                errors = stderr.read().decode('utf8').strip()
+                return False, errors
+            else:
+                if stderr.channel.recv_exit_status() != 0:
+                    errors = stderr.read().decode('utf8').strip()
+                    return False, errors
+                else:
+                    output = stdout.read().decode('utf8').strip()
+                    return True, "Submitted job(s):\n" + output
+
+
+    class Torque(Batch):
+
+        batch = "{path}qsub -N {name}{queue}{array} -d {dir}"
+        prefix = "#PBS"
+        queue = ' -q '
+        array = " -t {}-{}"
+
+        @classmethod
+        def get_queues(cls, ssh, bp=''):
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
@@ -126,49 +191,24 @@ else:
                 return []
 
 
-        @staticmethod
-        def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, color, bp=''):
-            fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            if bp:
-                if not bp.endswith('/'): bp += '/'
-                bp = quote(bp)
-            stdin, stdout, stderr = ssh.exec_command("{path}qsub -N {name}{queue} -d {dir}"
-                .format(name=quote(name), queue=(' -q '+quote(queue)) if queue else '', dir=quote(workdir), path=bp))
-            try:
-                print("#!/bin/sh", file=stdin)
-                for oth in others:
-                    oth = oth.strip()
-                    if oth: print("#PBS", oth, file=stdin)
-                print("base64 -d <<\\_EOF_ | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}"
-                      .format(cmd=command,
-                              fname=fname,
-                              defs=' '.join(quote(d) for d in defs),
-                              args=' '.join(quote(a) for a in args),
-                              ll=loglevel, lc=' -lansi' if color else '',
-                              ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
-                gzipped = BytesIO()
-                with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
-                    gzip.write(document.get_content().encode('utf8'))
-                stdin.write(base64(gzipped.getvalue()).decode('ascii'))
-                print("_EOF_", file=stdin)
-                stdin.flush()
-                stdin.channel.shutdown_write()
-            except (OSError, IOError):
-                errors = stderr.read().decode('utf8').strip()
-                return False, errors
-            else:
-                if stderr.channel.recv_exit_status() != 0:
-                    errors = stderr.read().decode('utf8').strip()
-                    return False, errors
-                else:
-                    output = stdout.read().decode('utf8').strip()
-                    return True, "Submitted job(s):\n" + output
 
+    class Slurm(Batch):
 
-    class Slurm(object):
+        batch1 = "{path}sbatch -J {name}{queue}{array} -o {name}-%j.out -D {dir}"
+        batch2 = "{path}sbatch -J {name}{queue}{array} -o {name}-%A_%a.out -D {dir}"
+        prefix = "#SBATCH"
+        queue = ' -p '
+        array = " -a {}-{}"
 
-        @staticmethod
-        def get_queues(ssh, bp=''):
+        @classmethod
+        def submit(cls, ssh, document, args, defs, loglevel, name, queue, command, workdir, array, others,
+                   color, compress, bp=''):
+            cls.batch = cls.batch1 if array is None else cls.batch2
+            return super(Slurm, cls).submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, array,
+                                            others, color, compress, bp)
+
+        @classmethod
+        def get_queues(cls, ssh, bp=''):
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
@@ -183,52 +223,13 @@ else:
                 return []
 
 
-        @staticmethod
-        def submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, others, color, bp=''):
-            fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            if bp:
-                if not bp.endswith('/'): bp += '/'
-                bp = quote(bp)
-            stdin, stdout, stderr = ssh.exec_command("{path}sbatch -J {name}{queue} -o {name}-%j.out -D {dir}"
-                .format(name=quote(name), queue=(' -p '+quote(queue)) if queue else '', dir=quote(workdir), path=bp))
-            try:
-                print("#!/bin/sh", file=stdin)
-                for oth in others:
-                    oth = oth.strip()
-                    if oth: print("#PBS", oth, file=stdin)
-                print("base64 -d <<\\_EOF_ | gunzip | {cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}"
-                      .format(cmd=command,
-                              fname=fname,
-                              defs=' '.join(quote(d) for d in defs),
-                              args=' '.join(quote(a) for a in args),
-                              ll=loglevel, lc=' -lansi' if color else '',
-                              ft='x' if isinstance(document, XPLDocument) else 'p'), file=stdin)
-                gzipped = BytesIO()
-                with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
-                    gzip.write(document.get_content().encode('utf8'))
-                stdin.write(base64(gzipped.getvalue()).decode('ascii'))
-                print("_EOF_", file=stdin)
-                stdin.flush()
-                stdin.channel.shutdown_write()
-            except (OSError, IOError):
-                errors = stderr.read().decode('utf8').strip()
-                return False, errors
-            else:
-                if stderr.channel.recv_exit_status() != 0:
-                    errors = stderr.read().decode('utf8').strip()
-                    return False, errors
-                else:
-                    output = stdout.read().decode('utf8').strip()
-                    return True, "Submitted job(s):\n" + output
-
-
     SYSTEMS = OrderedDict([('PBS/Torque', Torque), ('SLURM', Slurm)])
 
 
     class AccountEditDialog(QDialog):
 
         def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, color=False,
-                     program=None, bp=None, port=None, parent=None):
+                     program=None, bp=None, port=None, compress=None, parent=None):
             super(AccountEditDialog, self).__init__(parent)
             self.launcher = launcher
 
@@ -331,6 +332,13 @@ else:
                 self.bp_edit.setText(bp)
             alayout.addRow("Batch system pat&h:", self.bp_edit)
 
+            self.compress_checkbox = QCheckBox()
+            self.compress_checkbox.setToolTip("Compress script on sending to the batch system. This can make the scripts\n"
+                                           "stored in batch system queues smaller, however it may be harder to track\n"
+                                           "possible errors.")
+            self.compress_checkbox.setChecked(compress is None or compress)
+            alayout.addRow("Compr&ess Script:", self.compress_checkbox)
+
             layout.addRow(self.advanced)
             self.advanced.setVisible(False)
 
@@ -380,7 +388,7 @@ else:
         @property
         def data(self):
             return "{}@{}".format(self.user, self.host), self.system, self.queues, self.color, \
-                   self.program, self.bp, self.port
+                   self.program, self.bp, self.port, self.compress
 
         @property
         def host(self):
@@ -407,6 +415,10 @@ else:
             return self.color_checkbox.isChecked()
 
         @property
+        def compress(self):
+            return self.compress_checkbox.isChecked()
+
+        @property
         def program(self):
             return self.program_edit.text()
 
@@ -423,6 +435,7 @@ else:
             self._workdirs = {}
             self._saved_account = None
             self._saved_queue = None
+            self._saved_array = None
 
         def widget(self, main_window):
             widget = QWidget()
@@ -510,6 +523,48 @@ else:
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
+            self.array_check = QCheckBox()
+            self.array_check.setText("Run as A&rray")
+            layout.addWidget(self.array_check)
+
+            self.array_widget = QWidget()
+            array_layout = QHBoxLayout()
+            array_layout.setContentsMargins(0, 0, 0, 0)
+
+            self.array_from = QSpinBox()
+            self.array_from.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.array_from.setToolTip("First job array index.")
+            label = QLabel("Array  &start:")
+            label.setBuddy(self.array_from)
+            array_layout.addWidget(label)
+            array_layout.addWidget(self.array_from)
+
+            self.array_to = QSpinBox()
+            self.array_to.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.array_to.setToolTip("Last job array index.")
+            label = QLabel(" en&d:")
+            label.setBuddy(self.array_to)
+            array_layout.addWidget(label)
+            array_layout.addWidget(self.array_to)
+
+            if self._saved_array is not None:
+                self.array_check.setChecked(self._saved_array[0])
+                self.array_from.setValue(self._saved_array[1])
+                self.array_to.setValue(self._saved_array[2])
+            else:
+                self.array_check.setChecked(False)
+                self.array_from.setValue(0)
+                self.array_to.setValue(1)
+
+            self.array_check.stateChanged.connect(self.array_changed)
+            self.array_from.valueChanged.connect(self.array_changed)
+            self.array_to.valueChanged.connect(self.array_changed)
+
+            self.array_widget.setEnabled(self.array_check.isChecked())
+
+            self.array_widget.setLayout(array_layout)
+            layout.addWidget(self.array_widget)
+
             others_layout = QHBoxLayout()
             others_layout.setContentsMargins(0, 0, 0, 0)
             others_button = QToolButton()
@@ -557,17 +612,20 @@ else:
                     accounts = [accounts]
                 for account in accounts:
                     account = account.split(':')
-                    nf = 8
+                    nf = 9
                     account += [''] * (nf - len(account))
                     account[3] = account[3].split(',') if account[3] else []  # queues
                     try: account[4] = bool(eval(account[4]))  # color output
                     except (SyntaxError, ValueError): account[4] = False
                     account[7] = int(account[7]) if account[7] else 22
+                    try: account[8] = bool(eval(account[8]))  # compress script
+                    except (SyntaxError, ValueError): account[8] = True
                     self.accounts[account[0]] = account[1:]
 
         def _save_accounts(self):
-            data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}:{1[6]}"
-                             .format(k, v, ','.join(v[2]), int(v[3])) for k, v in self.accounts.items())
+            data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}:{1[6]}:{4}"
+                             .format(k, v, ','.join(v[2]), int(v[3]), int(v[7]))
+                             for k, v in self.accounts.items())
             if not data:
                 del CONFIG['launcher_batch/accounts']
             else:
@@ -593,6 +651,10 @@ else:
             else:
                 CONFIG['launcher_batch/working_dirs'] = data
             CONFIG.sync()
+
+        def array_changed(self):
+            self.array_widget.setEnabled(self.array_check.isChecked())
+            self._saved_array = self.array_check.isChecked(), self.array_from.value(), self.array_to.value()
 
         def account_add(self):
             dialog = AccountEditDialog(self)
@@ -783,6 +845,7 @@ else:
             system = account[1]
             queue = self._saved_queue = self.queue.currentText()
             color = account[3]
+            compress = account[7]
             command = account[4] if account[4] else 'plask'
             bp = account[5]
             name = self.jobname.text()
@@ -791,6 +854,7 @@ else:
             others = self.others.toPlainText().split("\n")
             loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                        [self.loglevel.currentIndex()]
+            array = (self.array_from.value(), self.array_to.value()) if self.array_check.isChecked() else None
 
             ssh = self.connect(host, user, port)
             if ssh is None: return
@@ -804,7 +868,7 @@ else:
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
             result, message = SYSTEMS[system].submit(ssh, document, args, defs, loglevel, name, queue,
-                                                     command, workdir, others, color, bp)
+                                                     command, workdir, array, others, color, compress, bp)
 
             if message: message = "\n\n" + message
             if result:

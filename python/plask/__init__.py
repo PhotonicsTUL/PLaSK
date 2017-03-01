@@ -448,4 +448,15 @@ import plask.algorithm
 
 ## ##  ## ##
 
+for IDX in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
+    if IDX in _os.environ:
+        try: IDX = int(_os.environ[IDX])
+        except ValueError: IDX = _os.environ[IDX]
+        break
+else:
+    IDX = None
+
+## ##  ## ##
 _plask.__xml__globals.update(globals())
+
+
