@@ -107,30 +107,41 @@ else:
         else:
             return ':'.join('{:02x}'.format(d) for d in data)
 
+    def _parse_bool(value, default):
+        try:
+            return bool(eval(value))
+        except (SyntaxError, ValueError):
+            return default
+
+    def _parse_int(value, default):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+
+
+    ACCOUNT_DATA = 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
 
     class Batch(object):
         """
         Base class for batch systems.
         """
 
-        batch = None
         prefix = None
-        queue = None
-        array = None
 
         @classmethod
-        def submit(cls, ssh, document, args, defs, loglevel, name, queue, command, workdir, array, others,
-                   color, compress, bp=''):
+        def batch(cls, name, queue, workdir, array, path):
+            return ''
+
+        @classmethod
+        def submit(cls, ssh, account, document, args, defs, loglevel, name, queue, workdir, array, others):
             fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+            bp = account['bp']
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
-            stdin, stdout, stderr = ssh.exec_command(cls.batch.format(
-                name=quote(name),
-                queue=(cls.queue+quote(queue)) if queue else '',
-                dir=quote(workdir),
-                array='' if array is None else cls.array.format(*array),
-                path=bp))
+            command = account['program'] or 'plask'
+            stdin, stdout, stderr = ssh.exec_command(cls.batch(name, queue, workdir, array, bp))
             try:
                 print("#!/bin/sh", file=stdin)
                 for oth in others:
@@ -141,9 +152,9 @@ else:
                     fname=fname,
                     defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                     ll=loglevel,
-                    lc=' -lansi' if color else '',
+                    lc=' -lansi' if account['color'] else '',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
-                if compress:
+                if account['compress']:
                     print("base64 -d <<\\_EOF_ | gunzip | " + command_line, file=stdin)
                     gzipped = BytesIO()
                     with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
@@ -168,44 +179,25 @@ else:
                     return True, "Submitted job(s):\n" + output
 
 
-    class Torque(Batch):
-
-        batch = "{path}qsub -N {name}{queue}{array} -d {dir}"
-        prefix = "#PBS"
-        queue = ' -q '
-        array = " -t {}-{}"
-
-        @classmethod
-        def get_queues(cls, ssh, bp=''):
-            if bp:
-                if not bp.endswith('/'): bp += '/'
-                bp = quote(bp)
-            _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
-            if stdout.channel.recv_exit_status() == 0:
-                return sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1])
-            else:
-                errors = stderr.read().decode('utf8').strip()
-                QMessageBox.critical(None, "Error Retrieving Queues",
-                                           "Queue list could not be retrieved." +
-                                           ("\n\n" + errors) if errors else "")
-                return []
-
-
-
     class Slurm(Batch):
 
-        batch1 = "{path}sbatch -J {name}{queue}{array} -o {name}-%j.out -D {dir}"
-        batch2 = "{path}sbatch -J {name}{queue}{array} -o {name}-%A_%a.out -D {dir}"
         prefix = "#SBATCH"
-        queue = ' -p '
-        array = " -a {}-{}"
 
         @classmethod
-        def submit(cls, ssh, document, args, defs, loglevel, name, queue, command, workdir, array, others,
-                   color, compress, bp=''):
-            cls.batch = cls.batch1 if array is None else cls.batch2
-            return super(Slurm, cls).submit(ssh, document, args, defs, loglevel, name, queue, command, workdir, array,
-                                            others, color, compress, bp)
+        def batch(cls, name, queue, workdir, array, path):
+            if array:
+                return "{path}sbatch -J {name}{queue}{array} -o {name}-%A_%a.out -D {dir}".format(
+                    name=quote(name),
+                    queue=(' -p ' + quote(queue)) if queue else '',
+                    dir=quote(workdir),
+                    array=' -a {}-{}'.format(*array),
+                    path=path)
+            else:
+                return "{path}sbatch -J {name}{queue} -o {name}-%j.out -D {dir}".format(
+                    name=quote(name),
+                    queue=(' -p ' + quote(queue)) if queue else '',
+                    dir=quote(workdir),
+                    path=path)
 
         @classmethod
         def get_queues(cls, ssh, bp=''):
@@ -223,18 +215,48 @@ else:
                 return []
 
 
-    SYSTEMS = OrderedDict([('PBS/Torque', Torque), ('SLURM', Slurm)])
+    class Torque(Batch):
+
+        prefix = "#PBS"
+
+        @classmethod
+        def batch(cls, name, queue, workdir, array, path):
+            return "{path}qsub -N {name}{queue}{array} -d {dir}".format(
+                name=quote(name),
+                queue=(' -q ' + quote(queue)) if queue else '',
+                dir=quote(workdir),
+                array='' if array is None else " -t {}-{}".format(*array),
+                path=path)
+
+        @classmethod
+        def get_queues(cls, ssh, bp=''):
+            if bp:
+                if not bp.endswith('/'): bp += '/'
+                bp = quote(bp)
+            _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
+            if stdout.channel.recv_exit_status() == 0:
+                return sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1])
+            else:
+                errors = stderr.read().decode('utf8').strip()
+                QMessageBox.critical(None, "Error Retrieving Queues",
+                                           "Queue list could not be retrieved." +
+                                           ("\n\n" + errors) if errors else "")
+                return []
+
+
+    SYSTEMS = OrderedDict([('SLURM', Slurm), ('PBS/Torque', Torque)])
 
 
     class AccountEditDialog(QDialog):
 
-        def __init__(self, launcher, name=None, userhost=None, system='Torque', queues=None, color=False,
-                     program=None, bp=None, port=None, compress=None, parent=None):
+        def __init__(self, launcher, name=None, account=None, parent=None):
             super(AccountEditDialog, self).__init__(parent)
             self.launcher = launcher
 
-            if userhost is not None:
-                user, host = userhost.split('@')
+            if account is None: account = {}
+
+            if 'userhost' in account:
+                user, host = account['userhost'].split('@')
             else:
                 user = host = None
 
@@ -264,10 +286,7 @@ else:
             self.port_input.setMinimum(1)
             self.port_input.setMaximum(65536)
             self.port_input.setToolTip("TCP port to connect to (usually 22).")
-            if port is not None:
-                self.port_input.setValue(port)
-            else:
-                self.port_input.setValue(22)
+            self.port_input.setValue(account.get('port', 22))
             layout.addRow("&Port:", self.port_input)
 
             self.user_edit = QLineEdit()
@@ -284,7 +303,7 @@ else:
                                         "the host administrator.")
             self.system_edit.addItems(systems)
             try:
-                self.system_edit.setCurrentIndex(systems.index(system))
+                self.system_edit.setCurrentIndex(systems.index(account.get('system', 'SLURM')))
             except ValueError:
                 pass
             layout.addRow("&Batch system:", self.system_edit)
@@ -297,8 +316,8 @@ else:
                                         "the host administrator.")
             self.queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
             qbox.addWidget(self.queues_list)
-            if queues is not None:
-                self.queues_list.set_values(queues)
+            if 'queues' in account:
+                self.queues_list.set_values(account['queues'])
             get_queues = QPushButton("&Retrieve")
             get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
                                   "you must first correctly fill-in host, user, and system fields.")
@@ -309,7 +328,7 @@ else:
             layout.addRow("Execution &Queues:", qwidget)
 
             self.color_checkbox = QCheckBox()
-            self.color_checkbox.setChecked(bool(color))
+            self.color_checkbox.setChecked(account.get('color', False))
             layout.addRow("Co&lor Output:", self.color_checkbox)
 
             self.advanced = QWidget(self)
@@ -320,23 +339,23 @@ else:
             self.program_edit = QLineEdit()
             self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
             self.program_edit.setPlaceholderText("plask")
-            if program is not None:
-                self.program_edit.setText(program)
+            if 'program' in account:
+                self.program_edit.setText(account['program'])
             alayout.addRow("Co&mmand:", self.program_edit)
 
             self.bp_edit = QLineEdit()
             self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
                                     "set this, however you may need to specify it if the submit command is\n"
                                     "located in a non-standard directory.")
-            if bp is not None:
-                self.bp_edit.setText(bp)
+            if 'bp' in account:
+                self.bp_edit.setText(account['bp'])
             alayout.addRow("Batch system pat&h:", self.bp_edit)
 
             self.compress_checkbox = QCheckBox()
             self.compress_checkbox.setToolTip("Compress script on sending to the batch system. This can make the scripts\n"
                                            "stored in batch system queues smaller, however it may be harder to track\n"
                                            "possible errors.")
-            self.compress_checkbox.setChecked(compress is None or compress)
+            self.compress_checkbox.setChecked(account.get('compress', True))
             alayout.addRow("Compr&ess Script:", self.compress_checkbox)
 
             layout.addRow(self.advanced)
@@ -387,8 +406,11 @@ else:
 
         @property
         def data(self):
-            return "{}@{}".format(self.user, self.host), self.system, self.queues, self.color, \
-                   self.program, self.bp, self.port, self.compress
+            return OrderedDict((key, getattr(self, key)) for key in ACCOUNT_DATA)
+
+        @property
+        def userhost(self):
+            return "{}@{}".format(self.user, self.host)
 
         @property
         def host(self):
@@ -480,7 +502,7 @@ else:
             self.queue = QComboBox()
             # self.queue.setEditable(True)
             self.queue.setToolTip("Select the execution queue to send your job to.")
-            queues = self.accounts.get(self.accounts_combo.currentText(), (None,None,[]))[2]
+            queues = self.accounts.get(self.accounts_combo.currentText(), {'queues': []})['queues']
             self.queue.addItems(queues)
             if self._saved_queue is not None:
                 try:
@@ -612,24 +634,26 @@ else:
                     accounts = [accounts]
                 for account in accounts:
                     account = account.split(':')
-                    nf = 9
-                    account += [''] * (nf - len(account))
-                    account[3] = account[3].split(',') if account[3] else []  # queues
-                    try: account[4] = bool(eval(account[4]))  # color output
-                    except (SyntaxError, ValueError): account[4] = False
-                    account[7] = int(account[7]) if account[7] else 22
-                    try: account[8] = bool(eval(account[8]))  # compress script
-                    except (SyntaxError, ValueError): account[8] = True
-                    self.accounts[account[0]] = account[1:]
+                    account += [''] * (len(ACCOUNT_DATA) - len(account) + 1)
+                    account_name, account = account[0], OrderedDict(zip(ACCOUNT_DATA, account[1:]))
+                    account['queues'] = account['queues'].split(',') if account['queues'] else []
+                    account['color'] = _parse_bool(account['color'], False)
+                    account['compress'] = _parse_bool(account['compress'], True)
+                    account['port'] = _parse_int(account['port'], 22)
+                    self.accounts[account_name] = account
 
         def _save_accounts(self):
-            data = '\n'.join("{0}:{1[0]}:{1[1]}:{2}:{3}:{1[4]}:{1[5]}:{1[6]}:{4}"
-                             .format(k, v, ','.join(v[2]), int(v[3]), int(v[7]))
-                             for k, v in self.accounts.items())
+            data = []
+            for name, account in self.accounts.items():
+                account = account.copy()
+                account['queues'] = ','.join(account['queues'])
+                account['color'] = int(account['color'])
+                account['compress'] = int(account['compress'])
+                data.append(name + ':' + ':'.join(str(v) for v in account.values()))
             if not data:
                 del CONFIG['launcher_batch/accounts']
             else:
-                CONFIG['launcher_batch/accounts'] = data
+                CONFIG['launcher_batch/accounts'] = '\n'.join(data)
             CONFIG.sync()
 
         def _load_workdirs(self):
@@ -672,7 +696,7 @@ else:
         def account_edit(self):
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
-            dialog = AccountEditDialog(self, old, *self.accounts[old])
+            dialog = AccountEditDialog(self, old, self.accounts[old])
             if dialog.exec_() == QDialog.Accepted:
                 new = dialog.name
                 if old != new:
@@ -712,7 +736,7 @@ else:
             else:
                 self._saved_account = self.accounts_combo.currentIndex()
             self.queue.clear()
-            self.queue.addItems(self.accounts.get(account, [None,None,[]])[2])
+            self.queue.addItems(self.accounts.get(account, {'queues': []})['queues'])
             if self._auto_workdir and self.filename is not None:
                 self.workdir.setText(self._workdirs.get(
                     (self.filename, self.accounts_combo.currentText()), ''))
@@ -835,19 +859,15 @@ else:
         def launch(self, main_window, args, defs):
             account_name = self.accounts_combo.currentText()
             account = self.accounts[account_name]
-            user, host = account[0].split('@')
-            port = account[6]
+            user, host = account['userhost'].split('@')
+            port = account['port']
             document = main_window.document
             workdir = self.workdir.text()
             if document.filename is not None:
                 self._workdirs[document.filename, account_name] = workdir
                 self._save_workdirs()
-            system = account[1]
+            system = account['system']
             queue = self._saved_queue = self.queue.currentText()
-            color = account[3]
-            compress = account[7]
-            command = account[4] if account[4] else 'plask'
-            bp = account[5]
             name = self.jobname.text()
             if not name:
                 name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
@@ -867,8 +887,8 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            result, message = SYSTEMS[system].submit(ssh, document, args, defs, loglevel, name, queue,
-                                                     command, workdir, array, others, color, compress, bp)
+            result, message = SYSTEMS[system].submit(ssh, account, document, args, defs, loglevel,
+                                                     name, queue, workdir, array, others)
 
             if message: message = "\n\n" + message
             if result:
@@ -879,8 +899,8 @@ else:
                                            "Could not submit job to {}.{}".format(host, message))
 
         def select_workdir(self):
-            user, host = self.accounts[self.accounts_combo.currentText()][0].split('@')
-            port = self.accounts[self.accounts_combo.currentText()][6]
+            user, host = self.accounts[self.accounts_combo.currentText()]['userhost'].split('@')
+            port = self.accounts[self.accounts_combo.currentText()]['port']
             ssh = self.connect(host, user, port)
             if ssh is None: return
 
