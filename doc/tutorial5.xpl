@@ -109,7 +109,7 @@ if not threshold:  # ‘threshold’ is False, so we want just an eigenmode...
     lam = FOURIER.modes[m].lam  # We retrieve the complex wavelength of the eignemode
     
     # Now we construct the line with interesting results (see http://thepythonguru.com/python-string-formatting/)
-    line = "{L:3.1f} {d:2.1f} {part}   {N}   {lam.real:.6f} {lam.imag:6.3f}".format(lam=lam, **DEF)
+    line = "{L:3.1f} {d:2.1f} {etched}   {N}   {lam.real:.6f} {lam.imag:6.3f}".format(lam=lam, **DEF)
     # We print the line to screen and append it to a file.
     print(line)
     output = open('losses.out', 'a')

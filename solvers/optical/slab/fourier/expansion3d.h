@@ -50,7 +50,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     std::vector<bool> diagonals;
 
     /// Mesh for getting material data
-    shared_ptr<EquilateralMesh3D> mesh;
+    shared_ptr<EquilateralMesh3D> mesh, gmesh;
 
     /**
      * Create new expansion

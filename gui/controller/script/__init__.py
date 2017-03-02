@@ -336,20 +336,19 @@ class ScriptController(SourceEditController):
         super(ScriptController, self).on_edit_enter()
 
     def rehighlight(self):
-        if (self.document.solvers and self.document.solvers.model.entries) or \
-                (self.document.defines and self.document.defines.model.entries):
-            current_syntax = {'formats': syntax['formats'],
-                              'partitions': syntax['partitions'],
-                              'scanner': copy(syntax['scanner'])}
-            current_syntax['scanner'][None] = copy(syntax['scanner'][None])
-            defines = [e.name for e in self.document.defines.model.entries]
-            if defines:
-                current_syntax['scanner'][None].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
+        current_syntax = {'formats': syntax['formats'],
+                          'partitions': syntax['partitions'],
+                          'scanner': copy(syntax['scanner'])}
+        current_syntax['scanner'][None] = copy(syntax['scanner'][None])
+        if self.document.defines is not None:
+            defines = ['IDX'] + [e.name for e in self.document.defines.model.entries]
+        else:
+            defines = ['IDX']
+        current_syntax['scanner'][None].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
+        if self.document.solvers is not None:
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
                 current_syntax['scanner'][None].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
-        else:
-            current_syntax = syntax
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
                                              *load_syntax(current_syntax, scheme),
                                              default_font=EDITOR_FONT)

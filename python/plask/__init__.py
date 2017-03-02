@@ -394,7 +394,8 @@ class StepProfile(object):
         result = ones(len(mesh), self.dtype) * self._default
         for xobj,val in self.steps.items():
             obj, pth = xobj if type(xobj) is tuple else (xobj, None)
-            obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
+            boxes = self._geometry.get_object_bboxes(obj, pth)
+            obj_iter = (_any(p in box for box in boxes) and self._geometry.object_contains(obj, pth, p) for p in mesh)
             result[fromiter(obj_iter, bool, len(mesh))] = val
         return result
 

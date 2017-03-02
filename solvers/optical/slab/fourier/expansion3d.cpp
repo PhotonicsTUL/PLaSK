@@ -293,6 +293,18 @@ void ExpansionPW3D::init()
                             solver->verts, RectangularMesh<3>::ORDER_102,
                             vec0, vec1, vec2);
 
+    if (SOLVER->inGain.hasProvider()) {
+        shared_ptr<OrderedAxis> gaxis(new OrderedAxis);
+        for (size_t i = 0; i != solver->verts->size(); ++i) {
+            if (solver->lgained[solver->stack[i]]) gaxis->addPoint(solver->verts->at(i));
+        }
+        gmesh = plask::make_shared<EquilateralMesh3D>
+                               (plask::make_shared<RegularAxis>(axis0),
+                                plask::make_shared<RegularAxis>(axis1),
+                                gaxis, RectangularMesh<3>::ORDER_102,
+                                vec0, vec1, vec2);
+    }
+
     shift = lo0 * vec0 + lo1 * vec1;
 
     initialized = true;
@@ -303,6 +315,7 @@ void ExpansionPW3D::reset() {
     initialized = false;
     k0 = klong = ktran = lam0 = NAN;
     mesh.reset();
+    gmesh.reset();
 }
 
 
@@ -312,7 +325,7 @@ void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;
-        gain = SOLVER->inGain(mesh, glam);
+        gain = SOLVER->inGain(gmesh, glam);
     }
 }
 
@@ -409,8 +422,11 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         auto roles = geometry->getRolesAt(point);
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             double g = 0.; int ng = 0;
-                            for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k)
-                                if (solver->stack[k] == layer) { g += gain[v]; ng++; }
+                            for (size_t k = 0, v = gmesh->index(j0, j1, 0); k != mesh->axis2->size(); ++k) {
+                                size_t l = solver->stack[k];
+                                if (l == layer) { g += gain[v]; ng++; }
+                                if (solver->lgained[l]) ++v;
+                            }
                             double ni = glam * g/ng * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
