@@ -220,9 +220,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     }
 
     /// Reset structure if input is changed
-    void onGainChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->clearModes();
-        this->recompute_gain_integrals = true;
+    void onGainChanged(ReceiverBase&, ReceiverBase::ChangeReason reason) {
+        if (reason == ReceiverBase::ChangeReason::REASON_VALUE) {
+            this->clearModes();
+            this->recompute_gain_integrals = true;
+        } else {
+            this->invalidate();
+        }
     }
 
   protected:
