@@ -467,7 +467,7 @@ else:
 
             self.filename = main_window.document.filename
 
-            label = QLabel("&Execution server:")
+            label = QLabel("&Execution account:")
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
@@ -497,7 +497,7 @@ else:
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
-            label = QLabel("Execution &Queue:")
+            label = QLabel("Execution &queue:")
             layout.addWidget(label)
             self.queue = QComboBox()
             # self.queue.setEditable(True)
@@ -514,7 +514,7 @@ else:
             layout.addWidget(self.queue)
             label.setBuddy(self.queue)
 
-            label = QLabel("Job &Name:")
+            label = QLabel("Job &name:")
             layout.addWidget(label)
             self.jobname = QLineEdit()
             self.jobname.setToolTip("Type a job name to use in the batch system.")
@@ -546,7 +546,7 @@ else:
             layout.addLayout(dirlayout)
 
             self.array_check = QCheckBox()
-            self.array_check.setText("Run as A&rray")
+            self.array_check.setText("Run as a&rray")
             layout.addWidget(self.array_check)
 
             self.array_widget = QWidget()
@@ -603,8 +603,8 @@ else:
             self.others.setVisible(False)
             self.others.setFixedHeight(4*self.others.fontMetrics().height())
             self.others.setToolTip("Other submit parameters. You can use them to precisely specify\n"
-                                   "requested resources, or create job arrays. Please refer to batch\n"
-                                   "system documentation for details.")
+                                   "requested resources etc. Please refer to batch system documentation\n"
+                                   "for details.")
             layout.addWidget(self.others)
 
             label = QLabel("&Log level:")
