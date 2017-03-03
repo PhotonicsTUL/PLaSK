@@ -99,7 +99,7 @@ void SlabSolver<BaseT>::setupLayers()
     struct LayerItem {
         shared_ptr<Material> material;
         std::set<std::string> roles;
-        bool operator==(const LayerItem& other) { return *this->material == *other.material && this->roles == other.roles; }
+        bool operator==(const LayerItem& other) { return *material == *other.material && roles == other.roles; }
         bool operator!=(const LayerItem& other) { return !(*this == other); }
     };
 
@@ -118,6 +118,7 @@ void SlabSolver<BaseT>::setupLayers()
 
     for (auto v: *verts) {
         bool gain = false;
+        bool unique = !group_layers || layers.size() == 0;
 
         std::vector<LayerItem> layer(points->axis0->size());
         for (size_t i = 0; i != points->axis0->size(); ++i) {
@@ -125,12 +126,12 @@ void SlabSolver<BaseT>::setupLayers()
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
+                else if (role == "unique") unique = true;
                 else if (role == "QW" || role == "QD" || role == "gain") { layer[i].roles.insert(role); gain = true; }
             }
         }
 
-        bool unique = true;
-        if (group_layers) {
+        if (!unique) {
             for (size_t i = 0; i != layers.size(); ++i) {
                 unique = false;
                 for (size_t j = 0; j != layers[i].size(); ++j) {
@@ -187,6 +188,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
 
     for (auto v: *verts) {
         bool gain = false;
+        bool unique = !group_layers || layers.size() == 0;
 
         std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());
         for (size_t i = 0; i != points->axis1->size(); ++i) {
@@ -197,13 +199,13 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {
                     if (role.substr(0,3) == "opt") layer[n].roles.insert(role);
+                    else if (role == "unique") unique = true;
                     else if (role == "QW" || role == "QD" || role == "gain") { layer[n].roles.insert(role); gain = true; }
                 }
             }
         }
 
-        bool unique = true;
-        if (group_layers) {
+        if (!unique) {
             for (size_t i = 0; i != layers.size(); ++i) {
                 unique = false;
                 for (size_t j = 0; j != layers[i].size(); ++j) {
