@@ -126,7 +126,7 @@ void SlabSolver<BaseT>::setupLayers()
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
-                else if (role == "unique") unique = true;
+                else if (role == "unique") { layer[i].roles.insert(role); unique = true; }
                 else if (role == "QW" || role == "QD" || role == "gain") { layer[i].roles.insert(role); gain = true; }
             }
         }
@@ -199,7 +199,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {
                     if (role.substr(0,3) == "opt") layer[n].roles.insert(role);
-                    else if (role == "unique") unique = true;
+                    else if (role == "unique") { layer[n].roles.insert(role); unique = true; }
                     else if (role == "QW" || role == "QD" || role == "gain") { layer[n].roles.insert(role); gain = true; }
                 }
             }
