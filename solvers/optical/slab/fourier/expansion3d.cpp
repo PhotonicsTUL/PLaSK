@@ -410,10 +410,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                 for (size_t j0 = beg0; j0 != end0; ++j0, ++j) {
                     Vec<3,double> point = mesh->at(j0, j1, matv);
                     auto material = geometry->getMaterial(point);
-                    double T = 0.; int n1 = 0;
-                    for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k)
-                        if (solver->stack[k] == layer) { T += temperature[v]; n1++; }
-                    T /= n1;
+                    double T = 0., W = 0.;
+                    for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k) {
+                        if (solver->stack[k] == layer) { 
+                            double w = (k == 0 || k == mesh->axis2->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
+                            T += w * temperature[v]; W += w;
+                        }
+                    }
+                    T /= W;
                     cell[j] = material->NR(lam, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
@@ -421,13 +425,16 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     if (gain_connected && solver->lgained[layer]) {
                         auto roles = geometry->getRolesAt(point);
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                            double g = 0.; int ng = 0;
+                            double g = 0.; W = 0.;
                             for (size_t k = 0, v = gmesh->index(j0, j1, 0); k != mesh->axis2->size(); ++k) {
                                 size_t l = solver->stack[k];
-                                if (l == layer) { g += gain[v]; ng++; }
+                                if (l == layer) { 
+                                    double w = (k == 0 || k == mesh->axis2->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
+                                    g += w * gain[v]; W += w; 
+                                }
                                 if (solver->lgained[l]) ++v;
                             }
-                            double ni = glam * g/ng * (0.25e-7/M_PI);
+                            double ni = glam * g/W * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
                             cell[j].c22.imag(ni);
