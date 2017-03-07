@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         'connects': "Define connections between computational solvers (Alt+C)",
         'script': "Edit control script for your computations (Alt+R)"}
 
-    opened = QtSignal()
+    shown = QtSignal()
     closing = QtSignal(QCloseEvent)
     closed = QtSignal()
     config_changed = QtSignal()
@@ -320,7 +320,7 @@ class MainWindow(QMainWindow):
         source_button.setDefaultAction(self.showsource_action)
         self.tabs.setCornerWidget(source_button, Qt.TopRightCorner)
 
-        self.opened.connect(self.init_pysparkle, Qt.QueuedConnection)
+        self.shown.connect(self.init_pysparkle, Qt.QueuedConnection)
 
         fs = int(1.3 * QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
@@ -347,7 +347,7 @@ class MainWindow(QMainWindow):
 
     def showEvent(self, event):
         super(MainWindow, self).showEvent(event)
-        self.opened.emit()
+        self.shown.emit()
 
     def _update_info_color(self):
         pal = self.info_table.palette()
@@ -640,6 +640,7 @@ class MainWindow(QMainWindow):
                                           "Check for &Updates Now...", self)
             action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
             self.menu.insertAction(self._pysparkle_place, action_check_update)
+        self.shown.disconnect(self.init_pysparkle)
 
     def about(self):
         msgbox = QMessageBox(QMessageBox.Information,
