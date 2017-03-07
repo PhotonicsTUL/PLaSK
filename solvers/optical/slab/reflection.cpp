@@ -359,7 +359,7 @@ void ReflectionTransfer::determineFields()
 
         mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
     }
-    
+
     allP = false;
     fields_determined = DETERMINED_RESONANT;
 
@@ -368,10 +368,10 @@ void ReflectionTransfer::determineFields()
 //     // Finally normalize fields
 //     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
 //         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
-//         
+//
 //         double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(n, 0.),
 //                                                                              getFieldVectorH(n, 0.)));
-// 
+//
 //         if (P < SMALL) {
 //             writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
 //                     (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
@@ -399,7 +399,8 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Obtain the physical fields at the last layer
     allP = true;
 
-    int start, end, inc;
+    size_t start, end;
+    ptrdiff_t inc;
     switch (side)
     {
         case INCIDENCE_TOP:    start = count-1; end = 0;       inc = -1; break;
@@ -494,13 +495,13 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         }
      }
 
-    // Replace F and B before the interface for consistency in getFieldVectorE and getFieldVectorH
+    // Replace F and B above the interface for consistency in getFieldVectorE and getFieldVectorH
     switch (side)
     {
         case INCIDENCE_TOP:    start = solver->interface; end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = solver->interface; break;
+        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, count); break;
     }
-    for (int n = start; n < end; n++) {
+    for (size_t n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
