@@ -38,7 +38,7 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry, extend_to_zero);
-    writelog(LOG_DETAIL, "mesh.Rectangular1D::SimpleGenerator: Generating new mesh ({0})", mesh->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular1D.SimpleGenerator: Generating new mesh ({0})", mesh->size());
     return mesh;
 }
 
@@ -68,7 +68,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<2>> RectangularMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, extend_to_zero);
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
@@ -104,7 +104,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    writelog(LOG_DETAIL, "mesh.Rectangular3D::SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
