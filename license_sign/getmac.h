@@ -106,14 +106,14 @@ inline std::vector<mac_address_t> getMacs() {
 
 namespace plask {
 
-inline std::string macToString(const mac_address_t& mac) {
+inline std::string macToString(const mac_address_t& mac, bool colons=false) {
     std::string res;
     res.reserve(2*6 + 5);
     for (unsigned char c: mac) {
         const char* to_hex = "0123456789ABCDEF";
         res += to_hex[c / 16]; //upper half of byte
         res += to_hex[c % 16]; //lower half of byte
-        if (res.size() != 2*6 + 5) res += ':';
+        if (colons && res.size() != 2*6 + 5) res += ':';
     }
     return res;
 }

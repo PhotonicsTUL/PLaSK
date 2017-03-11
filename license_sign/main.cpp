@@ -6,7 +6,7 @@
 #include "getmac.h"
 
 void print_macs() {
-    std::cout << std::endl << "Note: Detected mac adresses:" << std::endl;
+    std::cout << std::endl << "Note: Detected system ids:" << std::endl;
     for (auto& m: plask::getMacs()) std::cout << ' ' << plask::macToString(m) << std::endl;
 }
 

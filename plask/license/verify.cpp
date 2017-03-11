@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 
 #include "../utils/system.h"
 
@@ -16,7 +17,8 @@
 #include "verify.h"
 
 #define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
-#define PLASK_LICENSE_MAC_TAG_NAME "mac"
+#define PLASK_LICENSE_MAC_TAG_NAME "system"
+#define PLASK_LICENSE_MACS_TAG_NAME "systems"
 
 #define PLASK_LICENSE_USER_TAG_NAME "name"
 #define PLASK_LICENSE_EMAIL_TAG_NAME "email"
@@ -107,6 +109,17 @@ void LicenseVerifier::verify() {
                             if (!macs) macs = getMacs();
                             if (std::find(macs->begin(), macs->end(), macFromString(src.getTextContent())) == macs->end())
                                 src.throwException("License error: Hardware verification error.");
+                        } else if (src.getNodeName() == PLASK_LICENSE_MACS_TAG_NAME) {
+                            if (!macs) macs = getMacs();
+                            bool found = false;
+                            std::string values = src.getTextContent();
+                            for (auto val: boost::tokenizer<>(values)) {
+                                if (std::find(macs->begin(), macs->end(), macFromString(val)) != macs->end()) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) src.throwException("License error: Hardware verification error.");
                         }
                     }
         ))
