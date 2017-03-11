@@ -458,6 +458,7 @@ else:
             self._saved_account = None
             self._saved_queue = None
             self._saved_array = None
+            self._saved_params = None
 
         def widget(self, main_window):
             widget = QWidget()
@@ -587,25 +588,27 @@ else:
             self.array_widget.setLayout(array_layout)
             layout.addWidget(self.array_widget)
 
-            others_layout = QHBoxLayout()
-            others_layout.setContentsMargins(0, 0, 0, 0)
-            others_button = QToolButton()
-            others_button.setIcon(QIcon.fromTheme('menu-down'))
-            others_button.setCheckable(True)
-            others_button.setChecked(False)
-            others_button.toggled.connect(lambda visible: self.show_others(widget, visible))
+            params_layout = QHBoxLayout()
+            params_layout.setContentsMargins(0, 0, 0, 0)
+            params_button = QToolButton()
+            params_button.setIcon(QIcon.fromTheme('menu-down'))
+            params_button.setCheckable(True)
+            params_button.setChecked(False)
+            params_button.toggled.connect(lambda visible: self.show_others(widget, visible))
             label = QLabel("Other submit &parameters:")
-            label.setBuddy(others_button)
-            others_layout.addWidget(label)
-            others_layout.addWidget(others_button)
-            layout.addLayout(others_layout)
-            self.others = QPlainTextEdit()
-            self.others.setVisible(False)
-            self.others.setFixedHeight(4*self.others.fontMetrics().height())
-            self.others.setToolTip("Other submit parameters. You can use them to precisely specify\n"
+            label.setBuddy(params_button)
+            params_layout.addWidget(label)
+            params_layout.addWidget(params_button)
+            layout.addLayout(params_layout)
+            self.params = QPlainTextEdit()
+            self.params.setVisible(False)
+            self.params.setFixedHeight(4 * self.params.fontMetrics().height())
+            self.params.setToolTip("Other submit parameters. You can use them to precisely specify\n"
                                    "requested resources etc. Please refer to batch system documentation\n"
                                    "for details.")
-            layout.addWidget(self.others)
+            if self._saved_params is not None:
+                self.params.setPlainText("\n".join(self._saved_params))
+            layout.addWidget(self.params)
 
             label = QLabel("&Log level:")
             layout.addWidget(label)
@@ -746,7 +749,7 @@ else:
 
         def show_others(self, widget, visible):
             dialog = widget.parent()
-            self.others.setVisible(visible)
+            self.params.setVisible(visible)
             widget.adjustSize()
             dialog.setFixedHeight(dialog.sizeHint().height())
             dialog.adjustSize()
@@ -871,7 +874,7 @@ else:
             name = self.jobname.text()
             if not name:
                 name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            others = self.others.toPlainText().split("\n")
+            self._saved_params = self.params.toPlainText().split("\n")
             loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                        [self.loglevel.currentIndex()]
             array = (self.array_from.value(), self.array_to.value()) if self.array_check.isChecked() else None
@@ -888,7 +891,7 @@ else:
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
             result, message = SYSTEMS[system].submit(ssh, account, document, args, defs, loglevel,
-                                                     name, queue, workdir, array, others)
+                                                     name, queue, workdir, array, self._saved_params )
 
             if message: message = "\n\n" + message
             if result:
