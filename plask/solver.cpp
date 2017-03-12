@@ -14,7 +14,7 @@ void Solver::parseStandardConfiguration(XMLReader& source, Manager& manager, con
 }
 
 bool Solver::initCalculation() {
-    #ifdef LICENSE_CHECKING
+    #ifdef LICENSE_CHECK
         if (!verified) { license_verifier.verify(); verified = true; }
     #endif
     if (!initialized) {

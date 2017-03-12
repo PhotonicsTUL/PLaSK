@@ -38,7 +38,7 @@
 #endif
 
 // License check
-#cmakedefine LICENSE_CHECKING
+#cmakedefine LICENSE_CHECK
 
 // Export cppformat symbols in libplask (affects only windows)
 // #cmakedefine PLASK_EXPORTS_CPPFORMAT

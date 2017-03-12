@@ -105,7 +105,7 @@ if(WIN32)
     set(USE_MANIFEST "msvcr90" CACHE STRING "Manifest to include into Windows executables")
 endif()
 
-option(LICENSE_CHECKING "Perform license check" OFF)
+option(LICENSE_CHECK "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 

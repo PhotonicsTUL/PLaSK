@@ -26,7 +26,7 @@
 
 namespace plask {
 
-#ifdef LICENSE_CHECKING
+#ifdef LICENSE_CHECK
 PLASK_API LicenseVerifier license_verifier;
 #endif
 

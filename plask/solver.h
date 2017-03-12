@@ -499,7 +499,7 @@ class PLASK_API Solver {
     /// @c true only if solver is initialized
     bool initialized;
 
-    #ifdef LICENSE_CHECKING
+    #ifdef LICENSE_CHECK
       private:
         /// Indicates whether the license has been already checked for this solver
         bool verified;
@@ -535,7 +535,7 @@ class PLASK_API Solver {
      * @param name Id of the instance of this solver
      */
     Solver(const std::string& name=""): solver_name(name), initialized(false)
-    #ifdef LICENSE_CHECKING
+    #ifdef LICENSE_CHECK
         , verified(false)
     #endif
     {}

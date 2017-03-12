@@ -49,7 +49,7 @@ class PLASK_API LicenseVerifier {
     std::string getExpiration() { return expiration; }
 };
 
-#ifdef LICENSE_CHECKING
+#ifdef LICENSE_CHECK
     extern PLASK_API LicenseVerifier license_verifier;
 #endif
 

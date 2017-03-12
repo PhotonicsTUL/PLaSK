@@ -481,7 +481,7 @@ BOOST_PYTHON_MODULE(_plask)
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
 
-#ifdef LICENSE_CHECKING
+#ifdef LICENSE_CHECK
     py::dict license;
     license["user"] = plask::license_verifier.getUser();
     license["date"] = plask::license_verifier.getExpiration();
