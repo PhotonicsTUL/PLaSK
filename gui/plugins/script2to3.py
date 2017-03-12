@@ -63,6 +63,6 @@ else:
                 msgbox.setIcon(QMessageBox.Information)
                 msgbox.exec_()
 
-    if gui.OPERATIONS:
-        gui.OPERATIONS.append(None)
-    gui.OPERATIONS.append(RefactorAction)
+    if gui.ACTIONS:
+        gui.ACTIONS.append(None)
+    gui.ACTIONS.append(RefactorAction)

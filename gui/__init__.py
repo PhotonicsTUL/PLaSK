@@ -23,7 +23,8 @@ if __name__ == '__main__':
     import gui
     gui.main()
 
-OPERATIONS = []
+ACTIONS = []
+HELP_ACTIONS = []
 
 try:
     unicode = unicode
@@ -267,9 +268,9 @@ class MainWindow(QMainWindow):
         self.menu.addAction(launch_action)
         self.menu.addSeparator()
         self.menu.addAction(plot_material_action)
-        if OPERATIONS:
+        if ACTIONS:
             self.menu.addSeparator()
-            for op in OPERATIONS:   # for plugins use
+            for op in ACTIONS:   # for plugins use
                 if op is not None:
                     self.menu.addAction(op(self))
                 else:
@@ -277,6 +278,11 @@ class MainWindow(QMainWindow):
         self.menu.addSeparator()
         self.menu.addAction(about_action)
         self.menu.addAction(help_action)
+        for op in HELP_ACTIONS:   # for plugins use
+            if op is not None:
+                self.menu.addAction(op(self))
+            else:
+                self.menu.addSeparator()
         self._pysparkle_place = self.menu.addSeparator()
         self.menu.addAction(settings_action)
         self.menu.addSeparator()
