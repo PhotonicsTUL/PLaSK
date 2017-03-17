@@ -17,6 +17,7 @@ import subprocess
 import pkgutil
 import webbrowser
 from datetime import datetime
+from uuid import getnode
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -237,7 +238,7 @@ class MainWindow(QMainWindow):
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
-        about_action = QAction(QIcon.fromTheme('dialog-information'), '&About..', self)
+        about_action = QAction(QIcon.fromTheme('dialog-information'), 'A&bout..', self)
         about_action.setStatusTip('Show information about PLaSK')
         about_action.triggered.connect(self.about)
 
@@ -674,7 +675,13 @@ class MainWindow(QMainWindow):
                     try: date = date.decode('utf8')
                     except AttributeError: pass
                     details += u"<br/>\nLicense active until " + date
-            msgbox.setInformativeText(details)
+                details += '<br/>'
+            else:
+                details += '<br/><br/>'
+        else:
+            details = ''
+        details += "Your system ID is {}".format(LICENSE['systemid'])
+        msgbox.setInformativeText(details)
         # msgbox.setDetailedText(LICENSE["text"])
         msgbox.adjustSize()
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
@@ -755,8 +762,12 @@ except NameError:
     _ls = LICENSE.rfind(' ')
     LICENSE = dict(user=LICENSE[:_ls], date=LICENSE[_ls+1:])
 else:
-    try: LICENSE = plask.license
-    except AttributeError: LICENSE = dict(user='', date='')
+    try:
+        LICENSE = plask.license
+    except AttributeError:
+        LICENSE = dict(user='', date='')
+if 'systemid' not in LICENSE:
+    LICENSE['systemid'] = "{:X}".format(getnode())
 
 
 def main():

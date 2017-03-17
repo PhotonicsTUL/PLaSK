@@ -10,6 +10,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
+import os.path
 from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import quoteattr
@@ -169,6 +171,10 @@ class SolversModel(TableModel):
             else:
                 return factory(element=element, parent=self)
 
+    def set_file_xml_element(self, element, filename=None):
+        update_solvers(filename)
+        super(SolversModel, self).set_file_xml_element(element, filename)
+
     def set_xml_element(self, element, undoable=True):
         self._set_entries([] if element is None else [self.construct_solver(item) for item in element], undoable)
 
@@ -239,3 +245,20 @@ class SolversModel(TableModel):
                 res.append(Info('Duplicated solver name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
                                 Info.ERROR, cols=[2], rows=indexes))
         return res
+
+
+def update_solvers(filename):
+    """
+    Try to load local solvers definitions
+    """
+    if filename is not None:
+        cwd = os.path.dirname(filename)
+    else:
+        cwd = '.'
+    solvers_file = os.path.join(cwd, 'solvers.xml')
+    if os.path.isfile(solvers_file):
+        from .autosolver import load_xml
+        try:
+            load_xml(solvers_file, False)
+        except:
+            pass

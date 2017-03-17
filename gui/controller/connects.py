@@ -16,7 +16,7 @@ from .table import TableController
 from .defines import DefinesCompletionDelegate
 
 from ..model.connects import ConnectsModel
-from ..model.solvers import SOLVERS
+from ..model.solvers import SOLVERS, update_solvers
 
 
 class FlowDelegate(DefinesCompletionDelegate):

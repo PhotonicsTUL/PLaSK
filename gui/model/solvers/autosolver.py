@@ -10,7 +10,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#coding: utf8
 
 import os
 from lxml import etree
@@ -246,10 +245,13 @@ def _iter_tags(parent, xns):
             yield t
 
 
-def _load_xml(filename):
+def load_xml(filename, cat=True):
 
-    cat = os.path.basename(_d(filename))
-    if cat == 'skel': return
+    if cat:
+        cat = os.path.basename(_d(filename))
+        if cat == 'skel': return
+    else:
+        cat = None
 
     dom = etree.parse(filename)
     root = dom.getroot()
@@ -267,6 +269,8 @@ def _load_xml(filename):
         if name is None: return
 
         cat = solver.attrib.get('category', cat)
+        if cat is None:
+            raise ValueError('Unspecified category')
         lib = solver.attrib.get('lib', os.path.basename(filename)[:-4])
 
         m = solver.find(xns+'mesh')
@@ -326,4 +330,4 @@ from os.path import dirname as _d
 for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(_d(__file__)))), 'solvers')):
     for _f in _files:
         if _f.endswith('.xml'):
-            _load_xml(os.path.join(_dirname, _f))
+            load_xml(os.path.join(_dirname, _f))

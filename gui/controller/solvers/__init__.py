@@ -75,7 +75,7 @@ class FilterController(Controller):
         self.model.what = self.what.currentText()
 
 
-from ...model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS, suffix, SUFFIXES
+from ...model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS, suffix, SUFFIXES, update_solvers
 
 
 class SolversController(Controller):
@@ -155,6 +155,7 @@ class SolversController(Controller):
             self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
+        update_solvers(self.document.filename)
         self.solvers_table.selectionModel().clear()   # model could have completly changed
         if self._last_index is not None:
             self.solvers_table.selectRow(self._last_index)

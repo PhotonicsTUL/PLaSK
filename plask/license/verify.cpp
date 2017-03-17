@@ -153,6 +153,11 @@ void LicenseVerifier::readData() {
                        organisation = src.getTextContent();
                    else if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME)
                        expiration = src.getTextContent();
+                   else if (src.getNodeName() == PLASK_LICENSE_MAC_TAG_NAME || src.getNodeName() == PLASK_LICENSE_MACS_TAG_NAME) {
+                       auto macs = getMacs();
+                       if (!macs.empty())
+                           system = macToString(macs.front());
+                   }
                }
     );
 

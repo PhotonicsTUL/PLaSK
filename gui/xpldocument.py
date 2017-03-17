@@ -66,7 +66,7 @@ class XPLDocument(object):
         self.solvers = GUIAndSourceController(SolversController(self))
         self.connects = GUIAndSourceController(ConnectsController(self))
         self.loglevel = 'detail'
-        self.other_changes = False  #changes which are not in undo stacks
+        self.other_changes = False  # changes which are not in undo stacks
 
         self.controllers = (
             self.defines,
