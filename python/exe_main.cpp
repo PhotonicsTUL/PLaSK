@@ -193,6 +193,20 @@ void endPlask() {
     py::object atexit = py::import("atexit");
     if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
         atexit.attr("_run_exitfuncs")();
+    py::object sys(py::import("sys"));
+    py::dict modules(sys.attr("modules"));
+    py::object mpi(modules.get("mpi4py.MPI"));
+    if (mpi != py::object()) {
+        try {
+            bool initialized = py::extract<bool>(mpi.attr("Is_initialized")());
+            bool finalized = py::extract<bool>(mpi.attr("Is_finalized")());
+            if (initialized && !finalized) {
+                mpi.attr("Finalize")();
+            }
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+    }
 }
 
 
