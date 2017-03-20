@@ -187,7 +187,12 @@ int handlePythonException(const char* scriptname=nullptr) {
 void endPlask() {
     // PyEval_RestoreThread(mainTS);
     fixMatplotlibBug();
-    Py_Finalize(); // Py_Finalize is not supported by Boost
+
+    // Py_Finalize is not supported by Boost, however we should call atexit hooks
+    //Py_Finalize();
+    py::object atexit = py::import("atexit");
+    if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
+        atexit.attr("_run_exitfuncs")();
 }
 
 

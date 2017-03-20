@@ -801,7 +801,7 @@ def main():
     if icons_theme == 'system':
         icons_path = QIcon.themeSearchPaths()[:-1]
         if not QIcon.themeName():
-            QIcon.setThemeName('hicolor')
+            QIcon.setThemeName('breeze')
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
         icons_path = []
