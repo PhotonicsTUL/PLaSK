@@ -167,6 +167,35 @@ static inline void fixMatplotlibBug() {
 #endif
 }
 
+static inline void finalizeMPI() {
+    py::object sys(py::import("sys"));
+    py::dict modules(sys.attr("modules"));
+    py::object mpi(modules.get("mpi4py.MPI"));
+    if (mpi != py::object()) {
+        try {
+            bool initialized = py::extract<bool>(mpi.attr("Is_initialized")());
+            bool finalized = py::extract<bool>(mpi.attr("Is_finalized")());
+            if (initialized && !finalized) {
+                mpi.attr("Finalize")();
+            }
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+    }
+    mpi = modules.get("boost.mpi");
+    if (mpi != py::object()) {
+        try {
+            bool initialized = py::extract<bool>(mpi.attr("initialized")());
+            bool finalized = py::extract<bool>(mpi.attr("finalized")());
+            if (initialized && !finalized) {
+                mpi.attr("finalize")();
+            }
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+    }
+}
+
 
 //******************************************************************************
 int handlePythonException(const char* scriptname=nullptr) {
@@ -193,20 +222,7 @@ void endPlask() {
     py::object atexit = py::import("atexit");
     if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
         atexit.attr("_run_exitfuncs")();
-    py::object sys(py::import("sys"));
-    py::dict modules(sys.attr("modules"));
-    py::object mpi(modules.get("mpi4py.MPI"));
-    if (mpi != py::object()) {
-        try {
-            bool initialized = py::extract<bool>(mpi.attr("Is_initialized")());
-            bool finalized = py::extract<bool>(mpi.attr("Is_finalized")());
-            if (initialized && !finalized) {
-                mpi.attr("Finalize")();
-            }
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-        }
-    }
+    finalizeMPI();
 }
 
 
