@@ -1,1 +1,292 @@
-For internal use by Photonics Group at Lodz University of Technology only.
+﻿BETA TEST AGREEMENT
+(„The Agreement”)
+
+This Agreement is concluded and entered into ______________________, by and between:
+
+Lodz University of Technology, Faculty of Technical Physics, Information 
+Technology and Applied Mathematics, Institute of Physics, the university having its 
+principal office at ul. Wólczańska 219, 90-924 Lodz, Poland, with the NIP number: 
+727 002 18 95, hereinafter referred to as the “University” represented by Prof. Robert 
+Szarzała.
+
+and
+
+___________________________________________________________________________________________
+a corporation having its principal place of business at:
+___________________________________________________________________________________________
+hereinafter referred as to the “Tester”, 
+represented by: ___________________________________________________________________________
+
+Collectively referred to as the “Parties”
+separately each referred to as the “Party” 
+
+
+                                      Preamble
+
+    Whereas the University has developed a piece of computer software called 
+“PLaSK” – Photonic Laser Simulation Kit and related documentation, collectively named 
+the "Program"; the Program embodies and reflects certain trade secrets of the University; 
+The Tester wishes to test and evaluate the Program and the University is willing to deliver 
+a copy of the Program to the Tester, for the sole purpose of conducting such testing and 
+evaluation under the terms and conditions set forth herein. This Agreement sets forth the 
+terms and conditions for the beta installation, use, test and support of the Program at the 
+Tester’s site prior to the Program’s formal release.
+    Now, therefore, in consideration of the premises hereof, and the mutual promises 
+and obligations herein, the parties hereto, intending to be legally bound, hereby agree as 
+follows:
+
+
+                                       § 1.
+
+                                    Definitions
+
+Program refers to  the University computer software named “PLaSK”, and the 
+Documentation.
+
+Beta Test Period refers to the period of time during which the testing of and 
+adjustments to the Program contemplated hereunder will be undertaken. 
+The Software refers to the computer programs provided by the University as part of the 
+Program.
+
+The Documentation refers to such supporting written materials as the University may in 
+its discretion provide to the Tester in connection with their use of the Program. 
+
+
+                                       § 2.
+
+                                    Obligation
+
+1. The University shall deliver to the Tester, on or about, one copy of the Program, 
+   accompanied by one set of end - documentation, sufficient to allow operation of the 
+   Program by the Tester on the Tester's computers.
+
+2. The Tester shall conduct an evaluation of the Program on the basis of the testing and 
+   demonstration of the Program that takes place at his facility. The Tester shall 
+   complete the evaluation by the end of the test period. The Tester acknowledges that 
+   the program is not being offered for sale or licensed for commercial use.
+
+3. The Tester shall not provide the Program to any third party (including any consulting 
+   software developers and vendors) without the written approval of the University. 
+   Upon approval by the University, the third party shall execute a beta testing 
+   agreement with the University.
+
+
+                                       § 3.
+
+                                   Test period
+
+1. The Beta testing period begins upon the signing of this agreement and ends on 
+   _______________________________.
+
+
+                                       § 4.
+
+                               Proprietary protection
+
+1. The Tester acknowledges that the Program is being lent to him for beta testing and 
+   that the University retains ownership of all rights, title and interest to the Program, 
+   the Program design and Documentation, and the intellectual property rights therein 
+   and thereto (with no prejudice to any and all patent rights, design rights, copyrights 
+   and trade secret rights). The Tester agrees not to:
+
+   a)  copy, modify, or reverse engineer the Program code or design, make derivative 
+       works based upon the Program, or use the Program to develop any Programs, 
+       without the University’s prior written approval;
+
+   b)  sell, license, rent, or transfer the Program to any third party. The University
+       hereby reserves, and the Tester hereby agrees, the right to have a security 
+       interest in the Programs delivered under this Agreement. If requested by the 
+       University, the Tester agrees to execute and deliver financing statements or 
+       any other instruments, recordings or filings deemed necessary by the 
+       University to protect and preserve its rights, title and interest in and to the 
+       Programs under applicable law. 
+
+2. The University hereby grants to the Tester and the Tester accepts a personal, non-
+   transferable, non-exclusive license to use the Software subject for the Beta Test 
+   Period solely for the purpose of testing and evaluating the Software. The Program 
+   and the documentation are released to the Tester for the sole purpose of testing and 
+   evaluation. 
+
+3. The Tester shall use the Program and the documentation solely for such purpose, and 
+   shall not, without the prior written approval of the University, allow any third party to 
+   use, or itself use, the Program or such documentation for any other purpose or for 
+   the benefit of any third party whatsoever.
+
+4. This Agreement conveys to the Tester only limited rights of use, fully revocable in 
+   accordance with the provisions of this Agreement. Except for such right of use, the 
+   Tester shall not assert any right, title, or interest in or to the Program or any pertinent 
+   documentation.
+
+5. The University hereby represents, and the Tester hereby acknowledges, that the 
+   Program contains substantial trade secrets of the University (including without 
+   limitation algorithms, methods, and structure and design elements); such trade secrets 
+   have been entrusted to the Tester for use only as expressly authorized under this 
+   Agreement. Tester agrees to hold all of University's trade secrets in confidence, and 
+   not disclose them to any third parties. Under no circumstances may the Tester 
+   decompile, reverse engineer, or "unlock" (as the term is generally used in the industry) 
+   the Program. 
+
+6. The Tester is not permitted to modify, alter or adopt the Program or the 
+   documentation.
+
+7. The University claims and reserves to itself all rights and benefits afforded under 
+   Polish copyright law and all international copyright conventions in the Program and 
+   any pertinent documentation as restricted, unpublished works.
+
+8. The Tester shall make every effort, consistent with the practices and procedures 
+   under which it protects its own most valuable proprietary information and materials, 
+   to protect the Program and any pertinent documentation and associated trade secrets 
+   against any unauthorized disclosure or unlawful use or copying.
+
+9. Upon termination of this Agreement the Tester shall return to the University the 
+   Program and any pertinent documentation. All copies of the Program shall be deleted 
+   from the Tester’s computers and all hard copies created within test period must be 
+   destroyed.
+
+10.The Tester is allowed to publish and present results of its evaluation but cannot 
+   publish or present the University’s confidential information. The Tester will release 
+   copies of any publication or presentation to the University at least 10 days before 
+   submission of the proposed publication or presentation. During that time, the 
+   University will have the right to review the material for confidential information 
+   provided by the University.
+
+
+                                          § 5.
+
+                                       Termination
+
+1. Notwithstanding the foregoing, this Agreement may be terminated immediately by 
+   the University in the event of the Tester’s breach of any of the material provisions of 
+   this Agreement. 
+
+2. Upon termination of this Agreement, the Tester shall immediately cease use of the 
+   Program and shall, at its expense, return to the University all Proprietary Information 
+   and data (including all copies thereof) in the Tester's possession or custody or control 
+   at such a time, and certify same in writing. 
+
+3. Any obligations that by their nature continue after the termination of this Agreement 
+   shall remain binding upon the parties.
+
+
+                                          § 6.
+
+                                       Responsibility
+
+1. The Program (including the software, if any, and documentation) is provided 
+   hereunder "as is". The Program is a test product and its accuracy and reliability are 
+   not guaranteed. The Tester shall not rely exclusively on the Program for any reason. 
+   The University makes and the Tester receives no warranties in connection with the 
+   Program, or modifications or improvements thereto, delivered hereunder, express, 
+   implied, statutory or in any other provision of this agreement or communication 
+   between the parties. The Tester specifically disclaims all implied warranties, including 
+   warranties of merchantability, non-infringement and fitness for a particular purpose, 
+   or arising from a course of dealing, usage or trade practice.
+
+2. The University shall not be responsible for any loss or damage to the Tester or any 
+   third parties caused by the Program. The University shall not be liable for any direct, 
+   indirect, special, incidental or consequential damage, whether based on contract or 
+   tort or any other legal theory, arising out of any use of program or any performance 
+   of this agreement, even if the University has been informed of the possibility thereof.
+
+
+                                          § 7.
+
+                                Confidential information
+
+1. The Tester acknowledges that, in the course of using the Program and performing its 
+   duties under this Agreement, it may obtain information relating to the Program and 
+   to the University which is of a confidential and proprietary nature ("Proprietary 
+   Information"). Such Proprietary Information may include, but is not limited to, know 
+   how, invention techniques, processes, programs, schematics, software source 
+   documents, data, trade secrets, Customer lists, financial information, and sales and 
+   marketing plans or information which Tester knows or has reason to know is 
+   confidential, proprietary or trade secret information of the University. The Tester 
+   shall at all times, both during the term of this Agreement and for a period of at least 
+   three 3 years after its termination, keep in trust and confidence all such Proprietary 
+   Information, and shall not use such Proprietary Information other than as expressly 
+   authorized by the University under this Agreement, nor shall the Tester disclose any 
+   such Proprietary Information to third parties without the University written consent. 
+
+2. The Tester further agrees to immediately return to the University all Proprietary 
+   Information (including copies thereof) in the Tester's possession, custody, or control 
+   upon termination of this Agreement at any time and for any reason. The obligations 
+   of confidentiality shall not apply to information which 
+   a.  has entered the public domain except where such entry is the result of the 
+   Tester’s breach of this Agreement; 
+   b.  prior to disclosure hereunder was already in the Tester's possession; or 
+   c.  subsequent to disclosure hereunder is obtained by the Tester on a non-
+   confidential basis from a third party who has the right to disclose such 
+   information to the Tester. 
+
+
+                                          § 8.
+
+                                       Penalty fees
+
+1. In the event of breach of the Agreement – paragraph § 4.
+                                           § 7.
+    the Tester will pay to 
+   the University penalty fees in the sum of 60 000 USD, as equal to three times the 
+   estimated yearly commercial license fee. The penalty fee shall be due and payable 
+   within fourteen days of receiving the demand. 
+
+2. The University is entitled to seek supplementary compensation covering the penalty 
+   fees actually incurred.  
+
+3. Additionally the Tester will pay to the University any reasonable attorneys' fees and 
+   other costs and expenses incurred by such other party in connection with the 
+   enforcement of any provisions of this Agreement. 
+
+
+                                          § 9.
+
+                            Choice of law and Jurisdiction
+
+1. This Agreement shall be governed by and construed under and pursuant to the laws 
+   of the Republic of Poland, exclusive of the laws relating to conflict of laws. 
+
+2. The Polish courts located in Lodz in Poland, shall have exclusive jurisdiction over any 
+   dispute arising hereunder, and the parties hereby consent to the personal jurisdiction 
+   of such courts. 
+
+3. The parties specifically disclaim the United Nations Convention on Contracts for the 
+   International Sale of Goods.
+
+
+                                          § 10.
+
+                                         General
+
+1. This Agreement is the complete agreement between the parties hereto concerning the 
+   subject matter of this Agreement and replaces any prior oral or written 
+   communications between the parties. There are no conditions, understandings, 
+   agreements, representations, or warranties, expressed or implied, which are not 
+   specified herein. This Agreement may only be modified by a written document 
+   executed by the parties hereto. 
+
+2. The parties hereto have caused this Agreement to be duly executed. Each party 
+   warrants and represents that its respective signatories whose signatures appear below 
+   have been and are, on the date of signature, duly authorized to execute this 
+   Agreement.
+
+3. All notices required or permitted under this Agreement will be in writing and will be 
+   deemed given when: 
+   a.  delivered personally; 
+   b.  sent by registered post or certified mail, return receipt requested,
+
+4. All communications will be sent to the addresses set forth in the cover sheet of this 
+   Agreement.
+
+5. Neither party has the right or authority to, and shall not, assume or create any 
+   obligation of any nature whatsoever on behalf of the other party or bind the other 
+   party in any respect whatsoever. 
+
+6. This Agreement has been drawn up in English version in two identical copies, with 
+   one copy for each Party.
+
+
+      On behalf of the University:                       On behalf of the Tester:
+
+
+
+   _________________________________                _________________________________
