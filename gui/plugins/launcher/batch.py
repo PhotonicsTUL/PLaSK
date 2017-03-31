@@ -110,7 +110,7 @@ else:
     def _parse_bool(value, default):
         try:
             return bool(eval(value))
-        except (SyntaxError, ValueError):
+        except (SyntaxError, ValueError, TypeError):
             return default
 
     def _parse_int(value, default):
@@ -120,41 +120,280 @@ else:
             return default
 
 
-    ACCOUNT_DATA = 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
+    SYSTEMS = OrderedDict()
 
-    class Batch(object):
+    def batchsystem(cls):
+        SYSTEMS[cls.NAME] = cls
+        return cls
+
+
+    class Account(object):
         """
-        Base class for batch systems.
+        Base class for account data.
         """
 
-        prefix = None
+        SUBMIT_OPTION = None
+        NAME = None
+
+        def __init__(self, userhost=None, port=22, program='', color=None, compress=None, bp='', mpirun=''):
+            self.userhost = userhost
+            self.port = port
+            self.program = program
+            self.color = _parse_bool(color, False)
+            self.compress = _parse_bool(compress, True)
+            self.bp = bp
+            self.mpirun = mpirun
+
+        @staticmethod
+        def load(data):
+            data = data.split(':')
+            try:
+                port = int(data[2])
+            except ValueError:
+                #      1          2         3        4         5       6       7        8
+                # 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
+                return data[0], SYSTEMS[data[2]](data[1],
+                                                 _parse_int(data[7], 22),
+                                                 data[5],
+                                                 _parse_bool(data[4], False),
+                                                 _parse_bool(data[8], True),
+                                                 data[6],
+                                                 '',
+                                                 data[3])
+            else:
+                return data[0], SYSTEMS[data[2]](data[1], port, *data[4:])
+
+        def save(self, name):
+            return [name, self.port, self.program, int(self.color), int(self.compress), self.bp, self.mpirun]
+
+        class EditDialog(QDialog):
+
+            def __init__(self, account=None, name=None, parent=None):
+                super(Account.EditDialog, self).__init__(parent)
+
+                if account is None:
+                    account = Account()
+
+                if account.userhost:
+                    user, host = account.userhost.split('@')
+                else:
+                    user = host = None
+
+                self.setWindowTitle("Add" if name is None else "Edit" + " Remote Server")
+
+                layout = QFormLayout()
+                self.setLayout(layout)
+
+                self.name_edit = QLineEdit()
+                self.name_edit.setToolTip("Friendly name of the account.")
+                if name is not None:
+                    self.name_edit.setText(name)
+                    self.autoname = False
+                else:
+                    self.autoname = True
+                self.name_edit.textEdited.connect(self.name_edited)
+                layout.addRow("&Name:", self.name_edit)
+
+                self.host_edit = QLineEdit()
+                self.host_edit.setToolTip("Hostname to execute the batch job at.")
+                if host is not None:
+                    self.host_edit.setText(host)
+                self.host_edit.textEdited.connect(self.userhost_edited)
+                layout.addRow("&Host:", self.host_edit)
+
+                self.port_input = QSpinBox()
+                self.port_input.setMinimum(1)
+                self.port_input.setMaximum(65536)
+                self.port_input.setToolTip("TCP port to connect to (usually 22).")
+                self.port_input.setValue(account.port)
+                layout.addRow("&Port:", self.port_input)
+
+                self.user_edit = QLineEdit()
+                self.user_edit.setToolTip("Username at the execution host.")
+                if user is not None:
+                    self.user_edit.setText(user)
+                self.user_edit.textEdited.connect(self.userhost_edited)
+                layout.addRow("&User:", self.user_edit)
+
+                self.systems_combo = QComboBox()
+                self.systems_combo.setToolTip("Batch job scheduling system at the execution host.\n"
+                                            "If you are not sure about the correct value, contact\n"
+                                            "the host administrator.")
+                systems = list(SYSTEMS.keys())
+                self.systems_combo.addItems(systems)
+                try:
+                    systems_index = systems.index(account.NAME)
+                    self.systems_combo.setCurrentIndex(systems_index)
+                except ValueError:
+                    systems_index = 0
+                self.systems_combo.currentIndexChanged.connect(self.system_changed)
+                layout.addRow("&Batch system:", self.systems_combo)
+
+                self.account_widgets = []
+                for cls in SYSTEMS.values():
+                    swidget = QWidget()
+                    slayout = QFormLayout()
+                    slayout.setContentsMargins(0, 0, 0, 0)
+                    for label, widget, name, getter in cls.get_config_widgets(account, self, swidget):
+                        setattr(self, name, getter)
+                        slayout.addRow(label, widget)
+                    swidget.setLayout(slayout)
+                    self.account_widgets.append(swidget)
+                    swidget.setVisible(False)
+                    layout.addRow(swidget)
+                self.account_widgets[systems_index].setVisible(True)
+
+                self.color_checkbox = QCheckBox()
+                self.color_checkbox.setChecked(account.color)
+                layout.addRow("Co&lor Output:", self.color_checkbox)
+
+                self.advanced_widget = QWidget(self)
+                alayout = QFormLayout()
+                alayout.setContentsMargins(0, 0, 0, 0)
+                self.advanced_widget.setLayout(alayout)
+
+                self.program_edit = QLineEdit()
+                self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
+                self.program_edit.setPlaceholderText("plask")
+                if account.program:
+                    self.program_edit.setText(account.program)
+                alayout.addRow("&Command:", self.program_edit)
+
+                self.mpirun_edit = QLineEdit()
+                self.mpirun_edit.setToolTip("Command to start MPI tasks. Usually 'mpirun' (this is the default value).")
+                self.mpirun_edit.setPlaceholderText("mpirun")
+                if account.mpirun:
+                    self.mpirun_edit.setText(account.mpirun)
+                alayout.addRow("&MPI runner:", self.mpirun_edit)
+
+                self.bp_edit = QLineEdit()
+                self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
+                                        "set this, however you may need to specify it if the submit command is\n"
+                                        "located in a non-standard directory.")
+                if account.bp:
+                    self.bp_edit.setText(account.bp)
+                alayout.addRow("Batch system pat&h:", self.bp_edit)
+
+                self.compress_checkbox = QCheckBox()
+                self.compress_checkbox.setToolTip(
+                    "Compress script on sending to the batch system. This can make the scripts\n"
+                    "stored in batch system queues smaller, however it may be harder to track\n"
+                    "possible errors.")
+                self.compress_checkbox.setChecked(account.compress)
+                alayout.addRow("Compr&ess Script:", self.compress_checkbox)
+
+                layout.addRow(self.advanced_widget)
+                self.advanced_widget.setVisible(False)
+
+                abutton = QPushButton("&Advanced...")
+                abutton.setCheckable(True)
+                abutton.toggled.connect(self.show_advanced)
+
+                buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+                buttons.addButton(abutton, QDialogButtonBox.ActionRole)
+                buttons.accepted.connect(self.accept)
+                buttons.rejected.connect(self.reject)
+                layout.addRow(buttons)
+
+                self.host_edit.setFocus()
+
+            def system_changed(self, index):
+                for i,w in enumerate(self.account_widgets):
+                    w.setVisible(i == index)
+                self.setFixedHeight(self.sizeHint().height())
+                self.adjustSize()
+
+            def show_advanced(self, show):
+                self.advanced_widget.setVisible(show)
+                self.setFixedHeight(self.sizeHint().height())
+                self.adjustSize()
+
+            def name_edited(self):
+                self.autoname = False
+
+            def userhost_edited(self):
+                if self.autoname:
+                    if self.user:
+                        self.name_edit.setText("{}@{}".format(self.user, self.host))
+                    else:
+                        self.name_edit.setText(self.host)
+
+            # def accept(self):
+            #     queues = ' '.join(self.queues_list.get_values())
+            #     if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
+            #         QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
+            #     else:
+            #         super(Account.EditDialog, self).accept()
+
+            @property
+            def name(self):
+                return self.name_edit.text()
+
+            @property
+            def userhost(self):
+                return "{}@{}".format(self.user, self.host)
+
+            @property
+            def host(self):
+                return self.host_edit.text()
+
+            @property
+            def user(self):
+                return self.user_edit.text()
+
+            @property
+            def port(self):
+                return self.port_input.value()
+
+            @property
+            def system(self):
+                return self.systems_combo.currentText()
+
+            @property
+            def mpirun(self):
+                return self.mpirun_edit.currentText()
+
+            @property
+            def color(self):
+                return self.color_checkbox.isChecked()
+
+            @property
+            def compress(self):
+                return self.compress_checkbox.isChecked()
+
+            @property
+            def program(self):
+                return self.program_edit.text()
+
+            @property
+            def bp(self):
+                return self.bp_edit.text()
 
         @classmethod
-        def batch(cls, name, queue, workdir, array, path):
+        def batch(cls, name, workdir, array, path):
             return ''
 
-        @classmethod
-        def submit(cls, ssh, account, document, args, defs, loglevel, name, queue, workdir, array, others):
+        def submit(self, ssh, document, args, defs, loglevel, name, workdir, array, others):
             fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            bp = account['bp']
+            bp = self.bp
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
-            command = account['program'] or 'plask'
-            stdin, stdout, stderr = ssh.exec_command(cls.batch(name, queue, workdir, array, bp))
+            command = self.program or 'plask'
+            stdin, stdout, stderr = ssh.exec_command(self.batch(name, workdir, array, bp))
             try:
                 print("#!/bin/sh", file=stdin)
                 for oth in others:
                     oth = oth.strip()
-                    if oth: print(cls.prefix, oth, file=stdin)
+                    if oth: print(self.SUBMIT_OPTION, oth, file=stdin)
                 command_line = "{cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}".format(
                     cmd=command,
                     fname=fname,
                     defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                     ll=loglevel,
-                    lc=' -lansi' if account['color'] else '',
+                    lc=' -lansi' if self.color else '',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
-                if account['compress']:
+                if self.compress:
                     print("base64 -d <<\\_EOF_ | gunzip | " + command_line, file=stdin)
                     gzipped = BytesIO()
                     with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
@@ -178,24 +417,45 @@ else:
                     output = stdout.read().decode('utf8').strip()
                     return True, "Submitted job(s):\n" + output
 
+        @classmethod
+        def get_config_widgets(cls, account, dialog, parent=None):
+            return []
 
-    class Slurm(Batch):
 
-        prefix = "#SBATCH"
+    @batchsystem
+    class Slurm(Account):
+
+        SUBMIT_OPTION = "#SBATCH"
+        NAME = 'SLURM'
+
+        def __init__(self, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
+                     partitions=None, qos=None):
+            super(Slurm, self).__init__(userhost, port, program, color, compress, bp, mpirun)
+            if partitions:
+                self.partitions = partitions if isinstance(partitions, list) else partitions.split(',')
+            else:
+                self.partitions = []
+            if qos:
+                self.qos = qos if isinstance(qos, list) else qos.split(',')
+            else:
+                self.qos = []
+
+        def save(self, name):
+            data = super(Slurm, self).save(name)
+            data.append(','.join(self.partitions))
+            data.append(','.join(self.qos))
 
         @classmethod
-        def batch(cls, name, queue, workdir, array, path):
+        def batch(cls, name, workdir, array, path):
             if array:
-                return "{path}sbatch -J {name}{queue}{array} -o {name}-%A_%a.out -D {dir}".format(
+                return "{path}sbatch -J {name} {array} -o {name}-%A_%a.out -D {dir}".format(
                     name=quote(name),
-                    queue=(' -p ' + quote(queue)) if queue else '',
                     dir=quote(workdir),
-                    array=' -a {}-{}'.format(*array),
+                    array='-a {}-{}'.format(*array),
                     path=path)
             else:
-                return "{path}sbatch -J {name}{queue} -o {name}-%j.out -D {dir}".format(
+                return "{path}sbatch -J {name} -o {name}-%j.out -D {dir}".format(
                     name=quote(name),
-                    queue=(' -p ' + quote(queue)) if queue else '',
                     dir=quote(workdir),
                     path=path)
 
@@ -215,245 +475,83 @@ else:
                 return []
 
 
-    class Torque(Batch):
+    @batchsystem
+    class Torque(Account):
 
-        prefix = "#PBS"
+        SUBMIT_OPTION = "#PBS"
+        NAME = 'PBS/Torque'
+
+        def __init__(self, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
+                     queues=None):
+            super(Torque, self).__init__(userhost, port, program, color, compress, bp, mpirun)
+            if queues:
+                self.queues = queues if isinstance(queues, list) else queues.split(',')
+            else:
+                self.queues = []
+
+        def save(self, name):
+            data = super(Torque, self).save(name)
+            data.append(','.join(self.queues))
 
         @classmethod
-        def batch(cls, name, queue, workdir, array, path):
-            return "{path}qsub -N {name}{queue}{array} -d {dir}".format(
+        def batch(cls, name, workdir, array, path):
+            return "{path}qsub -N {name}{array} -d {dir}".format(
                 name=quote(name),
-                queue=(' -q ' + quote(queue)) if queue else '',
                 dir=quote(workdir),
                 array='' if array is None else " -t {}-{}".format(*array),
                 path=path)
 
         @classmethod
-        def get_queues(cls, ssh, bp=''):
+        def get_config_widgets(cls, account, dialog, parent=None):
+            qbox = QVBoxLayout()
+            qbox.setContentsMargins(0, 0, 0, 0)
+            queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
+            queues_list.setToolTip("List of available queues at the execution host.\n"
+                                   "If you are not sure about the correct value, contact\n"
+                                   "the host administrator.")
+            queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            qbox.addWidget(queues_list)
+            try:
+                if account.queues:
+                    queues_list.set_values(account.queues)
+            except AttributeError:
+                pass
+            get_queues = QPushButton("&Retrieve")
+            get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
+                                  "you must first correctly fill-in host, user, and system fields.")
+            get_queues.pressed.connect(cls._get_queues)
+            qbox.addWidget(get_queues)
+            qwidget = QWidget()
+            qwidget.setLayout(qbox)
+
+            return [("&Queues:", qwidget, 'queues', lambda: queues_list.get_values())]
+
+        @classmethod
+        def _get_queues(cls, dialog):
+            ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
+            if ssh is None: return
+
+            bp = dialog.bp_edit.text()
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
             _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
             if stdout.channel.recv_exit_status() == 0:
-                return sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1])
+                dialog.queues_list.set_values(
+                    sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1]))
             else:
                 errors = stderr.read().decode('utf8').strip()
                 QMessageBox.critical(None, "Error Retrieving Queues",
                                            "Queue list could not be retrieved." +
                                            ("\n\n" + errors) if errors else "")
-                return []
-
-
-    SYSTEMS = OrderedDict([('SLURM', Slurm), ('PBS/Torque', Torque)])
-
-
-    class AccountEditDialog(QDialog):
-
-        def __init__(self, launcher, name=None, account=None, parent=None):
-            super(AccountEditDialog, self).__init__(parent)
-            self.launcher = launcher
-
-            if account is None: account = {}
-
-            if 'userhost' in account:
-                user, host = account['userhost'].split('@')
-            else:
-                user = host = None
-
-            self.setWindowTitle("Add" if name is None else "Edit" + " Remote Server")
-
-            layout = QFormLayout()
-            self.setLayout(layout)
-
-            self.name_edit = QLineEdit()
-            self.name_edit.setToolTip("Friendly name of the account.")
-            if name is not None:
-                self.name_edit.setText(name)
-                self.autoname = False
-            else:
-                self.autoname = True
-            self.name_edit.textEdited.connect(self.name_edited)
-            layout.addRow("&Name:", self.name_edit)
-
-            self.host_edit = QLineEdit()
-            self.host_edit.setToolTip("Hostname to execute the batch job at.")
-            if host is not None:
-                self.host_edit.setText(host)
-            self.host_edit.textEdited.connect(self.userhost_edited)
-            layout.addRow("&Host:", self.host_edit)
-
-            self.port_input = QSpinBox()
-            self.port_input.setMinimum(1)
-            self.port_input.setMaximum(65536)
-            self.port_input.setToolTip("TCP port to connect to (usually 22).")
-            self.port_input.setValue(account.get('port', 22))
-            layout.addRow("&Port:", self.port_input)
-
-            self.user_edit = QLineEdit()
-            self.user_edit.setToolTip("Username at the execution host.")
-            if user is not None:
-                self.user_edit.setText(user)
-            self.user_edit.textEdited.connect(self.userhost_edited)
-            layout.addRow("&User:", self.user_edit)
-
-            self.system_edit = QComboBox()
-            systems = list(SYSTEMS.keys())
-            self.system_edit.setToolTip("Batch job scheduling system at the execution host.\n"
-                                        "If you are not sure about the correct value, contact\n"
-                                        "the host administrator.")
-            self.system_edit.addItems(systems)
-            try:
-                self.system_edit.setCurrentIndex(systems.index(account.get('system', 'SLURM')))
-            except ValueError:
-                pass
-            layout.addRow("&Batch system:", self.system_edit)
-
-            qbox = QVBoxLayout()
-            qbox.setContentsMargins(0, 0, 0, 0)
-            self.queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
-            self.queues_list.setToolTip("List of available queues at the execution host.\n"
-                                        "If you are not sure about the correct value, contact\n"
-                                        "the host administrator.")
-            self.queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-            qbox.addWidget(self.queues_list)
-            if 'queues' in account:
-                self.queues_list.set_values(account['queues'])
-            get_queues = QPushButton("&Retrieve")
-            get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
-                                  "you must first correctly fill-in host, user, and system fields.")
-            get_queues.pressed.connect(self.get_queues)
-            qbox.addWidget(get_queues)
-            qwidget = QWidget()
-            qwidget.setLayout(qbox)
-            layout.addRow("Execution &Queues:", qwidget)
-
-            self.color_checkbox = QCheckBox()
-            self.color_checkbox.setChecked(account.get('color', False))
-            layout.addRow("Co&lor Output:", self.color_checkbox)
-
-            self.advanced = QWidget(self)
-            alayout = QFormLayout()
-            alayout.setContentsMargins(0, 0, 0, 0)
-            self.advanced.setLayout(alayout)
-
-            self.program_edit = QLineEdit()
-            self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
-            self.program_edit.setPlaceholderText("plask")
-            if 'program' in account:
-                self.program_edit.setText(account['program'])
-            alayout.addRow("Co&mmand:", self.program_edit)
-
-            self.bp_edit = QLineEdit()
-            self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
-                                    "set this, however you may need to specify it if the submit command is\n"
-                                    "located in a non-standard directory.")
-            if 'bp' in account:
-                self.bp_edit.setText(account['bp'])
-            alayout.addRow("Batch system pat&h:", self.bp_edit)
-
-            self.compress_checkbox = QCheckBox()
-            self.compress_checkbox.setToolTip("Compress script on sending to the batch system. This can make the scripts\n"
-                                           "stored in batch system queues smaller, however it may be harder to track\n"
-                                           "possible errors.")
-            self.compress_checkbox.setChecked(account.get('compress', True))
-            alayout.addRow("Compr&ess Script:", self.compress_checkbox)
-
-            layout.addRow(self.advanced)
-            self.advanced.setVisible(False)
-
-            abutton = QPushButton("&Advanced...")
-            abutton.setCheckable(True)
-            abutton.toggled.connect(self.show_advanced)
-
-            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-            buttons.addButton(abutton, QDialogButtonBox.ActionRole)
-            buttons.accepted.connect(self.accept)
-            buttons.rejected.connect(self.reject)
-            layout.addRow(buttons)
-
-            self.host_edit.setFocus()
-
-        def show_advanced(self, show):
-            self.advanced.setVisible(show)
-            self.setFixedHeight(self.sizeHint().height())
-            self.adjustSize()
-
-        def name_edited(self):
-            self.autoname = False
-
-        def userhost_edited(self):
-            if self.autoname:
-                if self.user:
-                    self.name_edit.setText("{}@{}".format(self.user, self.host))
-                else:
-                    self.name_edit.setText(self.host)
-
-        def get_queues(self):
-            ssh = self.launcher.connect(self.host, self.user, self.port)
-            if ssh is None: return
-            self.queues_list.set_values(SYSTEMS[self.system].get_queues(ssh, self.bp_edit.text()))
-
-        def accept(self):
-            queues = ' '.join(self.queues_list.get_values())
-            if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
-                QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
-            else:
-                super(AccountEditDialog, self).accept()
-
-        @property
-        def name(self):
-            return self.name_edit.text()
-
-        @property
-        def data(self):
-            return OrderedDict((key, getattr(self, key)) for key in ACCOUNT_DATA)
-
-        @property
-        def userhost(self):
-            return "{}@{}".format(self.user, self.host)
-
-        @property
-        def host(self):
-            return self.host_edit.text()
-
-        @property
-        def user(self):
-            return self.user_edit.text()
-
-        @property
-        def port(self):
-            return self.port_input.value()
-
-        @property
-        def system(self):
-            return self.system_edit.currentText()
-
-        @property
-        def queues(self):
-            return self.queues_list.get_values()
-
-        @property
-        def color(self):
-            return self.color_checkbox.isChecked()
-
-        @property
-        def compress(self):
-            return self.compress_checkbox.isChecked()
-
-        @property
-        def program(self):
-            return self.program_edit.text()
-
-        @property
-        def bp(self):
-            return self.bp_edit.text()
 
 
     class Launcher(object):
         name = "Remote Batch Job"
 
+        _passwd_cache = {}
+
         def __init__(self):
-            self._passwd_cache = {}
             self._workdirs = {}
             self._saved_account = None
             self._saved_queue = None
@@ -498,22 +596,23 @@ else:
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
-            label = QLabel("Execution &queue:")
-            layout.addWidget(label)
-            self.queue = QComboBox()
-            # self.queue.setEditable(True)
-            self.queue.setToolTip("Select the execution queue to send your job to.")
-            queues = self.accounts.get(self.accounts_combo.currentText(), {'queues': []})['queues']
-            self.queue.addItems(queues)
-            if self._saved_queue is not None:
-                try:
-                    qi = queues.index(self._saved_queue)
-                except (IndexError, ValueError):
-                    pass
-                else:
-                    self.queue.setCurrentIndex(qi)
-            layout.addWidget(self.queue)
-            label.setBuddy(self.queue)
+            # TODO
+            # label = QLabel("Execution &queue:")
+            # layout.addWidget(label)
+            # self.queue = QComboBox()
+            # # self.queue.setEditable(True)
+            # self.queue.setToolTip("Select the execution queue to send your job to.")
+            # queues = self.accounts.get(self.accounts_combo.currentText(), {'queues': []})['queues']
+            # self.queue.addItems(queues)
+            # if self._saved_queue is not None:
+            #     try:
+            #         qi = queues.index(self._saved_queue)
+            #     except (IndexError, ValueError):
+            #         pass
+            #     else:
+            #         self.queue.setCurrentIndex(qi)
+            # layout.addWidget(self.queue)
+            # label.setBuddy(self.queue)
 
             label = QLabel("Job &name:")
             layout.addWidget(label)
@@ -635,24 +734,14 @@ else:
                 accounts = accounts.split('\n')
                 if not isinstance(accounts, list):
                     accounts = [accounts]
-                for account in accounts:
-                    account = account.split(':')
-                    account += [''] * (len(ACCOUNT_DATA) - len(account) + 1)
-                    account_name, account = account[0], OrderedDict(zip(ACCOUNT_DATA, account[1:]))
-                    account['queues'] = account['queues'].split(',') if account['queues'] else []
-                    account['color'] = _parse_bool(account['color'], False)
-                    account['compress'] = _parse_bool(account['compress'], True)
-                    account['port'] = _parse_int(account['port'], 22)
-                    self.accounts[account_name] = account
+                for data in accounts:
+                    name, account = Account.load(data)
+                    self.accounts[name] = account
 
         def _save_accounts(self):
             data = []
             for name, account in self.accounts.items():
-                account = account.copy()
-                account['queues'] = ','.join(account['queues'])
-                account['color'] = int(account['color'])
-                account['compress'] = int(account['compress'])
-                data.append(name + ':' + ':'.join(str(v) for v in account.values()))
+                data.append(account.save(name))
             if not data:
                 del CONFIG['launcher_batch/accounts']
             else:
@@ -684,7 +773,7 @@ else:
             self._saved_array = self.array_check.isChecked(), self.array_from.value(), self.array_to.value()
 
         def account_add(self):
-            dialog = AccountEditDialog(self)
+            dialog = Account.EditDialog()
             if dialog.exec_() == QDialog.Accepted:
                 account = dialog.name
                 if account not in self.accounts:
@@ -699,7 +788,7 @@ else:
         def account_edit(self):
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
-            dialog = AccountEditDialog(self, old, self.accounts[old])
+            dialog = Account.EditDialog(self.accounts[old], old)
             if dialog.exec_() == QDialog.Accepted:
                 new = dialog.name
                 if old != new:
@@ -738,8 +827,8 @@ else:
                 account = self.accounts_combo.itemText(account)
             else:
                 self._saved_account = self.accounts_combo.currentIndex()
-            self.queue.clear()
-            self.queue.addItems(self.accounts.get(account, {'queues': []})['queues'])
+            # self.queue.clear()
+            # self.queue.addItems(self.accounts.get(account, {'queues': []})['queues'])
             if self._auto_workdir and self.filename is not None:
                 self.workdir.setText(self._workdirs.get(
                     (self.filename, self.accounts_combo.currentText()), ''))
@@ -758,7 +847,7 @@ else:
             pass
 
         @staticmethod
-        def save_host_keys(host_keys):
+        def _save_host_keys(host_keys):
             keylist = []
             for host, keys in host_keys.items():
                 for keytype, key in keys.items():
@@ -786,9 +875,10 @@ else:
                     raise Launcher.AbortException(u'Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
                 if add == QMessageBox.Yes:
-                    Launcher.save_host_keys(client.get_host_keys())
+                    Launcher._save_host_keys(client.get_host_keys())
 
-        def connect(self, host, user, port):
+        @classmethod
+        def connect(cls, host, user, port):
             ssh = paramiko.SSHClient()
             ssh.load_system_host_keys()
             host_keys = ssh.get_host_keys()
@@ -803,9 +893,9 @@ else:
                     if e is not None:
                         for h in e.hostnames:
                             host_keys.add(h, e.key.get_name(), e.key)
-            ssh.set_missing_host_key_policy(self.AskAddPolicy())
+            ssh.set_missing_host_key_policy(cls.AskAddPolicy())
 
-            passwd = self._passwd_cache.get((host, user), '')
+            passwd = cls._passwd_cache.get((host, user), '')
 
             while True:
                 try:
@@ -835,14 +925,14 @@ else:
                         return
                     ssh.get_host_keys().add(err.hostname, err.key.get_name(), err.key)
                     if add == QMessageBox.Yes:
-                        self.save_host_keys(ssh.get_host_keys())
+                        cls._save_host_keys(ssh.get_host_keys())
                 except paramiko.AuthenticationException:
                     dialog = QInputDialog()
                     dialog.setLabelText("Password required for {}@{}. Please enter valid password:"
                                         .format(user, host))
                     dialog.setTextEchoMode(QLineEdit.Password)
                     if dialog.exec_() == QDialog.Accepted:
-                        passwd = self._passwd_cache[host, user] = dialog.textValue()
+                        passwd = cls._passwd_cache[host, user] = dialog.textValue()
                     else:
                         return
                 except Exception as err:
@@ -862,15 +952,14 @@ else:
         def launch(self, main_window, args, defs):
             account_name = self.accounts_combo.currentText()
             account = self.accounts[account_name]
-            user, host = account['userhost'].split('@')
-            port = account['port']
+            user, host = account.userhost.split('@')
+            port = account.port
             document = main_window.document
             workdir = self.workdir.text()
             if document.filename is not None:
                 self._workdirs[document.filename, account_name] = workdir
                 self._save_workdirs()
-            system = account['system']
-            queue = self._saved_queue = self.queue.currentText()
+            # queue = self._saved_queue = self.queue.currentText()
             name = self.jobname.text()
             if not name:
                 name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
@@ -890,8 +979,8 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            result, message = SYSTEMS[system].submit(ssh, account, document, args, defs, loglevel,
-                                                     name, queue, workdir, array, self._saved_params )
+            result, message = account.submit(ssh, document, args, defs, loglevel,
+                                             name, workdir, array, self._saved_params)
 
             if message: message = "\n\n" + message
             if result:
