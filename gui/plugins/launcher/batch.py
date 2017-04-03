@@ -143,6 +143,16 @@ else:
             self.compress = _parse_bool(compress, True)
             self.bp = bp
             self.mpirun = mpirun
+            self._widget = None
+
+        def update(self, source):
+            self.userhost = source.userhost
+            self.port = source.port
+            self.program = source.program
+            self.color = source.color
+            self.compress = source.compress
+            self.bp = source.bp
+            self.mpirun = source.mpirun
 
         @staticmethod
         def load(data):
@@ -161,10 +171,11 @@ else:
                                                  '',
                                                  data[3])
             else:
-                return data[0], SYSTEMS[data[2]](data[1], port, *data[4:])
+                return data[0], SYSTEMS[data[3]](data[1], port, *data[4:])
 
         def save(self, name):
-            return [name, self.port, self.program, int(self.color), int(self.compress), self.bp, self.mpirun]
+            return [name, self.userhost, self.port, self.__class__.NAME, self.program,
+                    int(self.color), int(self.compress), self.bp, self.mpirun]
 
         class EditDialog(QDialog):
 
@@ -229,42 +240,40 @@ else:
                 self.systems_combo.currentIndexChanged.connect(self.system_changed)
                 layout.addRow("&Batch system:", self.systems_combo)
 
-                self.account_widgets = []
+                self._system_widgets = []
+                self._getters = {}
                 for cls in SYSTEMS.values():
-                    swidget = QWidget()
-                    slayout = QFormLayout()
-                    slayout.setContentsMargins(0, 0, 0, 0)
-                    for label, widget, name, getter in cls.get_config_widgets(account, self, swidget):
-                        setattr(self, name, getter)
-                        slayout.addRow(label, widget)
-                    swidget.setLayout(slayout)
-                    self.account_widgets.append(swidget)
-                    swidget.setVisible(False)
-                    layout.addRow(swidget)
-                self.account_widgets[systems_index].setVisible(True)
+                    widgets = []
+                    for label, widget, name, getter in cls.config_widgets(account, self, self):
+                        self._getters[name] = getter
+                        layout.addRow(label, widget)
+                        widget.setVisible(False)
+                        widgets.append(widget)
+                        layout.labelForField(widget).setVisible(False)
+                    self._system_widgets.append(widgets)
+                self._set_rows_visibility(self._system_widgets[systems_index], True, layout)
 
                 self.color_checkbox = QCheckBox()
                 self.color_checkbox.setChecked(account.color)
                 layout.addRow("Co&lor Output:", self.color_checkbox)
 
-                self.advanced_widget = QWidget(self)
-                alayout = QFormLayout()
-                alayout.setContentsMargins(0, 0, 0, 0)
-                self.advanced_widget.setLayout(alayout)
+                self._advanced_widgets = []
 
                 self.program_edit = QLineEdit()
                 self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
                 self.program_edit.setPlaceholderText("plask")
                 if account.program:
                     self.program_edit.setText(account.program)
-                alayout.addRow("&Command:", self.program_edit)
+                layout.addRow("&Command:", self.program_edit)
+                self._advanced_widgets.append(self.program_edit)
 
                 self.mpirun_edit = QLineEdit()
                 self.mpirun_edit.setToolTip("Command to start MPI tasks. Usually 'mpirun' (this is the default value).")
                 self.mpirun_edit.setPlaceholderText("mpirun")
                 if account.mpirun:
                     self.mpirun_edit.setText(account.mpirun)
-                alayout.addRow("&MPI runner:", self.mpirun_edit)
+                layout.addRow("&MPI runner:", self.mpirun_edit)
+                self._advanced_widgets.append(self.mpirun_edit)
 
                 self.bp_edit = QLineEdit()
                 self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
@@ -272,7 +281,8 @@ else:
                                         "located in a non-standard directory.")
                 if account.bp:
                     self.bp_edit.setText(account.bp)
-                alayout.addRow("Batch system pat&h:", self.bp_edit)
+                layout.addRow("Batch system pat&h:", self.bp_edit)
+                self._advanced_widgets.append(self.bp_edit)
 
                 self.compress_checkbox = QCheckBox()
                 self.compress_checkbox.setToolTip(
@@ -280,10 +290,10 @@ else:
                     "stored in batch system queues smaller, however it may be harder to track\n"
                     "possible errors.")
                 self.compress_checkbox.setChecked(account.compress)
-                alayout.addRow("Compr&ess Script:", self.compress_checkbox)
+                layout.addRow("Compr&ess Script:", self.compress_checkbox)
+                self._advanced_widgets.append(self.compress_checkbox)
 
-                layout.addRow(self.advanced_widget)
-                self.advanced_widget.setVisible(False)
+                self._set_rows_visibility(self._advanced_widgets, False)
 
                 abutton = QPushButton("&Advanced...")
                 abutton.setCheckable(True)
@@ -297,14 +307,22 @@ else:
 
                 self.host_edit.setFocus()
 
+            def _set_rows_visibility(self, widgets, state, layout=None):
+                if layout is None:
+                    layout = self.layout()
+                for widget in widgets:
+                    widget.setVisible(state)
+                    layout.labelForField(widget).setVisible(state)
+
             def system_changed(self, index):
-                for i,w in enumerate(self.account_widgets):
-                    w.setVisible(i == index)
+                for widgets in self._system_widgets:
+                    self._set_rows_visibility(widgets, False)
+                self._set_rows_visibility(self._system_widgets[index], True)
                 self.setFixedHeight(self.sizeHint().height())
                 self.adjustSize()
 
             def show_advanced(self, show):
-                self.advanced_widget.setVisible(show)
+                self._set_rows_visibility(self._advanced_widgets, show)
                 self.setFixedHeight(self.sizeHint().height())
                 self.adjustSize()
 
@@ -318,12 +336,19 @@ else:
                     else:
                         self.name_edit.setText(self.host)
 
-            # def accept(self):
-            #     queues = ' '.join(self.queues_list.get_values())
-            #     if any(':' in s for s in (self.name, self.host, self.user, queues, self.bp)) or ',' in queues:
-            #         QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
-            #     else:
-            #         super(Account.EditDialog, self).accept()
+            def accept(self):
+                dynamic = ' '.join(str(g()) for g in self._getters.values())
+                if any(':' in s for s in (self.name, self.host, self.user, self.bp, self.program, self.mpirun,
+                                          dynamic)):
+                    QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
+                else:
+                    super(Account.EditDialog, self).accept()
+
+            def __getattr__(self, attr):
+                if attr in self._getters:
+                    return self._getters[attr]()
+                else:
+                    super(Account.EditDialog, self).__getattr__(attr)
 
             @property
             def name(self):
@@ -351,7 +376,7 @@ else:
 
             @property
             def mpirun(self):
-                return self.mpirun_edit.currentText()
+                return self.mpirun_edit.text()
 
             @property
             def color(self):
@@ -417,8 +442,13 @@ else:
                     output = stdout.read().decode('utf8').strip()
                     return True, "Submitted job(s):\n" + output
 
+        def widget(self):
+            if self._widget is None:
+                self._widget = QWidget()
+            return self._widget
+
         @classmethod
-        def get_config_widgets(cls, account, dialog, parent=None):
+        def config_widgets(cls, self, dialog, parent=None):
             return []
 
 
@@ -440,10 +470,22 @@ else:
             else:
                 self.qos = []
 
+        def update(self, source):
+            super(Slurm, self).update(source)
+            self.partitions = source.partitions
+            self.qos = source.qos
+            if self.widget is not None:
+                self.partition_combo.clear()
+                self.partition_combo.addItems(self.partitions)
+            if self.widget is not None:
+                self.qos_combo.clear()
+                self.qos_combo.addItems(self.qos)
+
         def save(self, name):
             data = super(Slurm, self).save(name)
             data.append(','.join(self.partitions))
             data.append(','.join(self.qos))
+            return data
 
         @classmethod
         def batch(cls, name, workdir, array, path):
@@ -459,20 +501,85 @@ else:
                     dir=quote(workdir),
                     path=path)
 
+        def widget(self):
+            if self._widget is None:
+                self._widget = QWidget()
+                layout = QVBoxLayout()
+                # layout = QGridLayout()
+                # layout.setColumnStretch(0, 1)
+                # layout.setColumnStretch(1, 1000)
+                layout.setContentsMargins(0, 0, 0, 0)
+                label = QLabel("&Partition:", self._widget)
+                layout.addWidget(label)#, 0, 0)
+                self.partition_combo = QComboBox(self._widget)
+                self.partition_combo.setToolTip("Select the partition to send your job to.")
+                self.partition_combo.addItems(self.partitions)
+                layout.addWidget(self.partition_combo)#, 0, 1)
+                label.setBuddy(self.partition_combo)
+                label = QLabel("&QOS:", self._widget)
+                layout.addWidget(label)#, 1, 0)
+                self.qos_combo = QComboBox(self._widget)
+                self.qos_combo.setToolTip("Select the QOS to send your job to.")
+                self.qos_combo.addItems(self.qos)
+                layout.addWidget(self.qos_combo)#, 1, 1)
+                label.setBuddy(self.qos_combo)
+                self._widget.setLayout(layout)
+            return self._widget
+
+        @staticmethod
+        def _config_list(account, dialog, attr, name, label):
+            box = QVBoxLayout()
+            box.setContentsMargins(0, 0, 0, 0)
+            list_edit = MultiLineEdit(movable=True, placeholder='[{} name]'.format(attr))
+            list_edit.setToolTip("List of available {} at the execution host.\n"
+                                 "If you are not sure about the correct value, contact\n"
+                                 "the host administrator.".format(name))
+            list_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            box.addWidget(list_edit)
+            try:
+                if getattr(account, attr):
+                    list_edit.set_values(getattr(account, attr))
+            except AttributeError:
+                pass
+            get_partitions = QPushButton("&Retrieve")
+            get_partitions.setToolTip("Retrieve the list of {} automatically. To use this,\n"
+                                      "you must first correctly fill-in host, user, and system fields.".format(name))
+            get_partitions.pressed.connect(lambda: Slurm._retrieve_list(dialog, name, list_edit))
+            box.addWidget(get_partitions)
+            widget = QWidget()
+            widget.setLayout(box)
+
+            return label, widget, attr, lambda: list_edit.get_values()
+
         @classmethod
-        def get_queues(cls, ssh, bp=''):
+        def config_widgets(cls, self, dialog, parent=None):
+            return [Slurm._config_list(self, dialog, 'partitions', 'partitions', '&Partition'),
+                    Slurm._config_list(self, dialog, 'qos', 'QOS', '&QOS')]
+
+        _retrieve_commands = {'partitions': '{}sinfo -h -o "%R"',
+                              'QOS': '{}sacctmgr -Pn list qos format=name'}
+
+        @staticmethod
+        def _retrieve_list(dialog, what, list_edit):
+            ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
+            if ssh is None: return
+
+            command = Slurm._retrieve_commands[what]
+            what = what[1].upper() + what[1:]
+
+            bp = dialog.bp
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
-            _, stdout, stderr = ssh.exec_command('{}sinfo -h -o "%R"'.format(bp))
+            _, stdout, stderr = ssh.exec_command(command.format(bp))
             if stdout.channel.recv_exit_status() == 0:
-                return sorted(line.strip() for line in stdout.read().decode('utf8').split("\n")[:-1])
+                list_edit.set_values(
+                    sorted(line.strip() for line in stdout.read().decode('utf8').split("\n")[:-1]))
             else:
                 errors = stderr.read().decode('utf8').strip()
-                QMessageBox.critical(None, "Error Retrieving Partitions",
-                                           "Partition list could not be retrieved." +
+                QMessageBox.critical(None, "Error Retrieving {}".format(what),
+                                           "{} list could not be retrieved.".format(what) +
                                            ("\n\n" + errors) if errors else "")
-                return []
 
 
     @batchsystem
@@ -489,9 +596,17 @@ else:
             else:
                 self.queues = []
 
+        def update(self, source):
+            super(Torque, self).update(source)
+            self.queues = source.queues
+            if self.widget is not None:
+                self.queue_combo.clear()
+                self.queue_combo.addItems(self.queues)
+
         def save(self, name):
             data = super(Torque, self).save(name)
             data.append(','.join(self.queues))
+            return data
 
         @classmethod
         def batch(cls, name, workdir, array, path):
@@ -501,8 +616,30 @@ else:
                 array='' if array is None else " -t {}-{}".format(*array),
                 path=path)
 
+        def widget(self):
+            if self._widget is None:
+                self._widget = QWidget()
+                layout = QVBoxLayout()
+                layout.setContentsMargins(0, 0, 0, 0)
+                label = QLabel("Execution &queue:", self._widget)
+                layout.addWidget(label)
+                self.queue_combo = QComboBox(self._widget)
+                self.queue_combo.setToolTip("Select the execution queue to send your job to.")
+                self.queue_combo.addItems(self.queues)
+                # if self._saved_queue is not None:
+                #     try:
+                #         qi = queues.index(self._saved_queue)
+                #     except (IndexError, ValueError):
+                #         pass
+                #     else:
+                #         self.queue.setCurrentIndex(qi)
+                layout.addWidget(self.queue_combo)
+                label.setBuddy(self.queue_combo)
+                self._widget.setLayout(layout)
+            return self._widget
+
         @classmethod
-        def get_config_widgets(cls, account, dialog, parent=None):
+        def config_widgets(cls, self, dialog, parent=None):
             qbox = QVBoxLayout()
             qbox.setContentsMargins(0, 0, 0, 0)
             queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
@@ -512,32 +649,32 @@ else:
             queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
             qbox.addWidget(queues_list)
             try:
-                if account.queues:
-                    queues_list.set_values(account.queues)
+                if self.queues:
+                    queues_list.set_values(self.queues)
             except AttributeError:
                 pass
             get_queues = QPushButton("&Retrieve")
             get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
                                   "you must first correctly fill-in host, user, and system fields.")
-            get_queues.pressed.connect(cls._get_queues)
+            get_queues.pressed.connect(lambda: cls._get_queues(dialog, queues_list))
             qbox.addWidget(get_queues)
             qwidget = QWidget()
             qwidget.setLayout(qbox)
 
             return [("&Queues:", qwidget, 'queues', lambda: queues_list.get_values())]
 
-        @classmethod
-        def _get_queues(cls, dialog):
+        @staticmethod
+        def _get_queues(dialog, queues_list):
             ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
             if ssh is None: return
 
-            bp = dialog.bp_edit.text()
+            bp = dialog.bp
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
             _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
             if stdout.channel.recv_exit_status() == 0:
-                dialog.queues_list.set_values(
+                queues_list.set_values(
                     sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1]))
             else:
                 errors = stderr.read().decode('utf8').strip()
@@ -558,11 +695,13 @@ else:
             self._saved_array = None
             self._saved_params = None
 
-        def widget(self, main_window):
+        def widget(self, main_window, parent):
             widget = QWidget()
             layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
+
+            self.dialog = parent
 
             self.filename = main_window.document.filename
 
@@ -596,23 +735,18 @@ else:
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
-            # TODO
-            # label = QLabel("Execution &queue:")
-            # layout.addWidget(label)
-            # self.queue = QComboBox()
-            # # self.queue.setEditable(True)
-            # self.queue.setToolTip("Select the execution queue to send your job to.")
-            # queues = self.accounts.get(self.accounts_combo.currentText(), {'queues': []})['queues']
-            # self.queue.addItems(queues)
-            # if self._saved_queue is not None:
-            #     try:
-            #         qi = queues.index(self._saved_queue)
-            #     except (IndexError, ValueError):
-            #         pass
-            #     else:
-            #         self.queue.setCurrentIndex(qi)
-            # layout.addWidget(self.queue)
-            # label.setBuddy(self.queue)
+            self.accounts_layout = QVBoxLayout()
+            self.accounts_layout.setContentsMargins(0, 0, 0, 0)
+            accounts_widget = QWidget()
+            accounts_widget.setLayout(self.accounts_layout)
+            self.account_widgets = []
+            for account in self.accounts.values():
+                aw = account.widget()
+                self.account_widgets.append(aw)
+                self.accounts_layout.addWidget(aw)
+                aw.setVisible(False)
+            self.account_widgets[self.accounts_combo.currentIndex()].setVisible(True)
+            layout.addWidget(accounts_widget)
 
             label = QLabel("Job &name:")
             layout.addWidget(label)
@@ -645,9 +779,12 @@ else:
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
+            layout2 = QHBoxLayout()
+            layout2.setContentsMargins(0, 0, 0, 0)
+
             self.array_check = QCheckBox()
-            self.array_check.setText("Run as a&rray")
-            layout.addWidget(self.array_check)
+            self.array_check.setText("A&rray")
+            layout2.addWidget(self.array_check)
 
             self.array_widget = QWidget()
             array_layout = QHBoxLayout()
@@ -656,7 +793,7 @@ else:
             self.array_from = QSpinBox()
             self.array_from.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.array_from.setToolTip("First job array index.")
-            label = QLabel("Array  &start:")
+            label = QLabel("&start:")
             label.setBuddy(self.array_from)
             array_layout.addWidget(label)
             array_layout.addWidget(self.array_from)
@@ -685,7 +822,8 @@ else:
             self.array_widget.setEnabled(self.array_check.isChecked())
 
             self.array_widget.setLayout(array_layout)
-            layout.addWidget(self.array_widget)
+            layout2.addWidget(self.array_widget)
+            layout.addLayout(layout2)
 
             params_layout = QHBoxLayout()
             params_layout.setContentsMargins(0, 0, 0, 0)
@@ -745,7 +883,7 @@ else:
             if not data:
                 del CONFIG['launcher_batch/accounts']
             else:
-                CONFIG['launcher_batch/accounts'] = '\n'.join(data)
+                CONFIG['launcher_batch/accounts'] = '\n'.join(':'.join(str(i) for i in dat) for dat in data)
             CONFIG.sync()
 
         def _load_workdirs(self):
@@ -777,8 +915,12 @@ else:
             if dialog.exec_() == QDialog.Accepted:
                 account = dialog.name
                 if account not in self.accounts:
-                    self.accounts[account] = dialog.data
+                    self.accounts[account] = SYSTEMS[dialog.system]()
+                    self.accounts[account].update(dialog)
                     self.accounts_combo.addItem(account)
+                    widget = self.accounts[account].widget()
+                    self.account_widgets.append(widget)
+                    self.accounts_layout.addWidget(widget)
                     self.accounts_combo.setCurrentIndex(self.accounts_combo.count()-1)
                 else:
                     QMessageBox.critical(None, "Add Error",
@@ -791,24 +933,29 @@ else:
             dialog = Account.EditDialog(self.accounts[old], old)
             if dialog.exec_() == QDialog.Accepted:
                 new = dialog.name
-                if old != new:
-                    if new in self.accounts:
-                        QMessageBox.critical(None, "Edit Error",
-                                                   "Execution account '{}' already in the list.".format(new))
-                    else:
-                        newdata = dialog.data
-                        for i in range(len(self.accounts)):
-                            k, v = self.accounts.popitem(False)
-                            if k == old:
-                                self.accounts[new] = newdata
-                            else:
-                                self.accounts[k] = v
-                        self.accounts_combo.setItemText(idx, new)
-                        self.account_changed(new)
-                        self._save_accounts()
+                if new != old and new in self.accounts:
+                    QMessageBox.critical(None, "Edit Error",
+                                               "Execution account '{}' already in the list.".format(new))
                 else:
-                    self.accounts[old] = dialog.data
-                    self.account_changed(old)
+                    if dialog.system == self.accounts[old].NAME:
+                        account = self.accounts[old]
+                    else:
+                        account = SYSTEMS[dialog.system]()
+                    account.update(dialog)
+                    for i in range(len(self.accounts)):
+                        k, v = self.accounts.popitem(False)
+                        if k == old:
+                            self.accounts[new] = account
+                            widget = account.widget()
+                            if self.account_widgets[i] != widget:
+                                self.accounts_layout.removeWidget(self.account_widgets[i])
+                                self.account_widgets[i].setParent(None)  # delete the widget
+                                self.account_widgets[i] = widget
+                                self.accounts_layout.insertWidget(i, widget)
+                        else:
+                            self.accounts[k] = v
+                    self.accounts_combo.setItemText(idx, new)
+                    self.account_changed(new)
                     self._save_accounts()
 
         def account_remove(self):
@@ -817,21 +964,25 @@ else:
                                                 "Do you really want to remove the account '{}'?".format(current),
                                                 QMessageBox.Yes | QMessageBox.No)
             if confirm == QMessageBox.Yes:
-                self.accounts_combo.removeItem(list(self.accounts.keys()).index(current))
+                index = list(self.accounts.keys()).index(current)
+                self.accounts_combo.removeItem(index)
+                del self.account_widgets[index]
                 del self.accounts[current]
                 self._save_accounts()
 
         def account_changed(self, account):
             if isinstance(account, int):
                 self._saved_account = account
-                account = self.accounts_combo.itemText(account)
             else:
                 self._saved_account = self.accounts_combo.currentIndex()
-            # self.queue.clear()
-            # self.queue.addItems(self.accounts.get(account, {'queues': []})['queues'])
+            for aw in self.account_widgets:
+                aw.setVisible(False)
+            self.account_widgets[self._saved_account].setVisible(True)
             if self._auto_workdir and self.filename is not None:
                 self.workdir.setText(self._workdirs.get(
                     (self.filename, self.accounts_combo.currentText()), ''))
+            self.dialog.setFixedHeight(self.dialog.sizeHint().height())
+            self.dialog.adjustSize()
 
         def workdir_edited(self):
             self._auto_workdir = False
@@ -991,8 +1142,8 @@ else:
                                            "Could not submit job to {}.{}".format(host, message))
 
         def select_workdir(self):
-            user, host = self.accounts[self.accounts_combo.currentText()]['userhost'].split('@')
-            port = self.accounts[self.accounts_combo.currentText()]['port']
+            user, host = self.accounts[self.accounts_combo.currentText()].userhost.split('@')
+            port = self.accounts[self.accounts_combo.currentText()].port
             ssh = self.connect(host, user, port)
             if ssh is None: return
 

@@ -70,7 +70,7 @@ class LaunchDialog(QDialog):
         self.layout.addWidget(args_label)
         self.layout.addWidget(self.args)
 
-        self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
+        self.launcher_widgets = [l.widget(window, self) for l in LAUNCHERS]
         global current_launcher
         if current_launcher is None:
             current_launcher = combo.findText(CONFIG['launcher/default'])

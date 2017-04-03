@@ -360,7 +360,7 @@ class Launcher(object):
     def __init__(self):
         self.dirname = None
 
-    def widget(self, main_window):
+    def widget(self, main_window, parent):
         widget = QWidget()
         layout = QVBoxLayout()
         widget.setLayout(layout)
