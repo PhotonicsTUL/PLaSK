@@ -174,8 +174,8 @@ else:
                 return data[0], SYSTEMS[data[3]](data[1], port, *data[4:])
 
         def save(self, name):
-            return [name, self.userhost, self.port, self.__class__.NAME, self.program,
-                    int(self.color), int(self.compress), self.bp, self.mpirun]
+            return ':'.join((name, self.userhost, str(self.port), self.__class__.NAME, self.program,
+                             str(int(self.color)), str(int(self.compress)), self.bp, self.mpirun))
 
         class EditDialog(QDialog):
 
@@ -450,6 +450,52 @@ else:
         def config_widgets(cls, self, dialog, parent=None):
             return []
 
+        @classmethod
+        def _config_list(cls, account, dialog, attr, name, label, command):
+            box = QVBoxLayout()
+            box.setContentsMargins(0, 0, 0, 0)
+            list_edit = MultiLineEdit(movable=True, placeholder='[{} name]'.format(attr))
+            list_edit.setToolTip("List of available {} at the execution host.\n"
+                                 "If you are not sure about the correct value, contact\n"
+                                 "the host administrator.".format(name))
+            list_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            box.addWidget(list_edit)
+            try:
+                if getattr(account, attr):
+                    list_edit.set_values(getattr(account, attr))
+            except AttributeError:
+                pass
+            get_partitions = QPushButton("&Retrieve")
+            get_partitions.setToolTip("Retrieve the list of {} automatically. To use this,\n"
+                                      "you must first correctly fill-in host, user, and system fields.".format(name))
+            get_partitions.pressed.connect(lambda: cls._retrieve_list(dialog, name, list_edit, command))
+            box.addWidget(get_partitions)
+            widget = QWidget()
+            widget.setLayout(box)
+
+            return label, widget, attr, lambda: list_edit.get_values()
+
+        @classmethod
+        def _retrieve_list(cls, dialog, what, list_edit, command):
+            ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
+            if ssh is None: return
+
+            what = what[1].upper() + what[1:]
+
+            bp = dialog.bp
+            if bp:
+                if not bp.endswith('/'): bp += '/'
+                bp = quote(bp)
+            _, stdout, stderr = ssh.exec_command(command.format(bp))
+            if stdout.channel.recv_exit_status() == 0:
+                list_edit.set_values(
+                    sorted(line.strip() for line in stdout.read().decode('utf8').split("\n")[:-1]))
+            else:
+                errors = stderr.read().decode('utf8').strip()
+                QMessageBox.critical(None, "Error Retrieving {}".format(what),
+                                           "{} list could not be retrieved.".format(what) +
+                                           ("\n\n" + errors) if errors else "")
+
 
     @batchsystem
     class Slurm(Account):
@@ -485,16 +531,13 @@ else:
                 self.qos_combo.setVisible(bool(self.qos))
 
         def save(self, name):
-            data = super(Slurm, self).save(name)
-            data.append(','.join(self.partitions))
-            data.append(','.join(self.qos))
-            return data
+            return super(Slurm, self).save(name) + ':' + ','.join(self.partitions) + ':' + ','.join(self.qos)
 
         def batch(self, name, workdir, array, path):
             partition = '' if self.partition_combo is None or not self.partitions else \
-                quote('-p' + self.partitions[self.partition_combo.currentIndex()])
+                ' ' + quote('-p' + self.partitions[self.partition_combo.currentIndex()])
             qos = '' if self.qos_combo is None or not self.qos else \
-                quote('--qos=' + self.qos[self.qos_combo.currentIndex()])
+                ' ' + quote('--qos=' + self.qos[self.qos_combo.currentIndex()])
 
             if array:
                 return "{path}sbatch -J {name}{partition}{qos} {array} -o {name}-%A_%a.out -D {dir}".format(
@@ -543,60 +586,10 @@ else:
                 self._widget.setLayout(layout)
             return self._widget
 
-        @staticmethod
-        def _config_list(account, dialog, attr, name, label):
-            box = QVBoxLayout()
-            box.setContentsMargins(0, 0, 0, 0)
-            list_edit = MultiLineEdit(movable=True, placeholder='[{} name]'.format(attr))
-            list_edit.setToolTip("List of available {} at the execution host.\n"
-                                 "If you are not sure about the correct value, contact\n"
-                                 "the host administrator.".format(name))
-            list_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-            box.addWidget(list_edit)
-            try:
-                if getattr(account, attr):
-                    list_edit.set_values(getattr(account, attr))
-            except AttributeError:
-                pass
-            get_partitions = QPushButton("&Retrieve")
-            get_partitions.setToolTip("Retrieve the list of {} automatically. To use this,\n"
-                                      "you must first correctly fill-in host, user, and system fields.".format(name))
-            get_partitions.pressed.connect(lambda: Slurm._retrieve_list(dialog, name, list_edit))
-            box.addWidget(get_partitions)
-            widget = QWidget()
-            widget.setLayout(box)
-
-            return label, widget, attr, lambda: list_edit.get_values()
-
         @classmethod
         def config_widgets(cls, self, dialog, parent=None):
-            return [Slurm._config_list(self, dialog, 'partitions', 'partitions', '&Partition'),
-                    Slurm._config_list(self, dialog, 'qos', 'QOS', '&QOS')]
-
-        _retrieve_commands = {'partitions': '{}sinfo -h -o "%R"',
-                              'QOS': '{}sacctmgr -Pn list qos format=name'}
-
-        @staticmethod
-        def _retrieve_list(dialog, what, list_edit):
-            ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
-            if ssh is None: return
-
-            command = Slurm._retrieve_commands[what]
-            what = what[1].upper() + what[1:]
-
-            bp = dialog.bp
-            if bp:
-                if not bp.endswith('/'): bp += '/'
-                bp = quote(bp)
-            _, stdout, stderr = ssh.exec_command(command.format(bp))
-            if stdout.channel.recv_exit_status() == 0:
-                list_edit.set_values(
-                    sorted(line.strip() for line in stdout.read().decode('utf8').split("\n")[:-1]))
-            else:
-                errors = stderr.read().decode('utf8').strip()
-                QMessageBox.critical(None, "Error Retrieving {}".format(what),
-                                           "{} list could not be retrieved.".format(what) +
-                                           ("\n\n" + errors) if errors else "")
+            return [cls._config_list(self, dialog, 'partitions', 'partitions', '&Partitions:', '{}sinfo -h -o "%R"'),
+                    cls._config_list(self, dialog, 'qos', 'QOS', '&QOS:', '{}sacctmgr -Pn list qos format=name')]
 
 
     @batchsystem
@@ -622,13 +615,11 @@ else:
                 self.queue_combo.addItems(self.queues)
 
         def save(self, name):
-            data = super(Torque, self).save(name)
-            data.append(','.join(self.queues))
-            return data
+            return super(Torque, self).save(name) + ':' + ','.join(self.queues)
 
         def batch(self, name, workdir, array, path):
             queue = '' if self.queue_combo is None or not self.queues else \
-                quote('-q' + self.queues[self.queue_combo.currentIndex()])
+                ' ' + quote('-q' + self.queues[self.queue_combo.currentIndex()])
 
             return "{path}qsub -N {name}{queue}{array} -d {dir}".format(
                 name=quote(name),
@@ -661,47 +652,8 @@ else:
 
         @classmethod
         def config_widgets(cls, self, dialog, parent=None):
-            qbox = QVBoxLayout()
-            qbox.setContentsMargins(0, 0, 0, 0)
-            queues_list = MultiLineEdit(movable=True, placeholder='[queue name]')
-            queues_list.setToolTip("List of available queues at the execution host.\n"
-                                   "If you are not sure about the correct value, contact\n"
-                                   "the host administrator.")
-            queues_list.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-            qbox.addWidget(queues_list)
-            try:
-                if self.queues:
-                    queues_list.set_values(self.queues)
-            except AttributeError:
-                pass
-            get_queues = QPushButton("&Retrieve")
-            get_queues.setToolTip("Retrieve the list of available queues automatically. To use this,\n"
-                                  "you must first correctly fill-in host, user, and system fields.")
-            get_queues.pressed.connect(lambda: cls._get_queues(dialog, queues_list))
-            qbox.addWidget(get_queues)
-            qwidget = QWidget()
-            qwidget.setLayout(qbox)
-
-            return [("&Queues:", qwidget, 'queues', lambda: queues_list.get_values())]
-
-        @staticmethod
-        def _get_queues(dialog, queues_list):
-            ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
-            if ssh is None: return
-
-            bp = dialog.bp
-            if bp:
-                if not bp.endswith('/'): bp += '/'
-                bp = quote(bp)
-            _, stdout, stderr = ssh.exec_command("{}qstat -Q".format(bp))
-            if stdout.channel.recv_exit_status() == 0:
-                queues_list.set_values(
-                    sorted(line.split()[0] for line in stdout.read().decode('utf8').split("\n")[2:-1]))
-            else:
-                errors = stderr.read().decode('utf8').strip()
-                QMessageBox.critical(None, "Error Retrieving Queues",
-                                           "Queue list could not be retrieved." +
-                                           ("\n\n" + errors) if errors else "")
+            return [cls._config_list(self, dialog, 'queues', 'queues', '&Queues:',
+                                     "{}qstat -Q | cut -d' ' -f1 | tail -n+3")]
 
 
     class Launcher(object):
@@ -730,7 +682,7 @@ else:
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
-            self._load_accounts()
+            self.load_accounts()
             self.accounts_combo = QComboBox()
             self.accounts_combo.addItems([s for s in self.accounts])
             if self._saved_account is not None:
@@ -886,7 +838,7 @@ else:
 
             return widget
 
-        def _load_accounts(self):
+        def load_accounts(self):
             accounts = CONFIG['launcher_batch/accounts']
             self.accounts = OrderedDict()
             if accounts is not None:
@@ -897,14 +849,14 @@ else:
                     name, account = Account.load(data)
                     self.accounts[name] = account
 
-        def _save_accounts(self):
+        def save_accounts(self):
             data = []
             for name, account in self.accounts.items():
                 data.append(account.save(name))
             if not data:
                 del CONFIG['launcher_batch/accounts']
             else:
-                CONFIG['launcher_batch/accounts'] = '\n'.join(':'.join(str(i) for i in dat) for dat in data)
+                CONFIG['launcher_batch/accounts'] = '\n'.join(data)
             CONFIG.sync()
 
         def _load_workdirs(self):
@@ -946,7 +898,7 @@ else:
                 else:
                     QMessageBox.critical(None, "Add Error",
                                                "Execution account '{}' already in the list.".format(account))
-                self._save_accounts()
+                self.save_accounts()
 
         def account_edit(self):
             old = self.accounts_combo.currentText()
@@ -977,7 +929,7 @@ else:
                             self.accounts[k] = v
                     self.accounts_combo.setItemText(idx, new)
                     self.account_changed(new)
-                    self._save_accounts()
+                    self.save_accounts()
 
         def account_remove(self):
             current = self.accounts_combo.currentText()
@@ -989,7 +941,7 @@ else:
                 self.accounts_combo.removeItem(index)
                 del self.account_widgets[index]
                 del self.accounts[current]
-                self._save_accounts()
+                self.save_accounts()
 
         def account_changed(self, account):
             if isinstance(account, int):
