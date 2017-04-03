@@ -394,8 +394,7 @@ else:
             def bp(self):
                 return self.bp_edit.text()
 
-        @classmethod
-        def batch(cls, name, workdir, array, path):
+        def batch(self, name, workdir, array, path):
             return ''
 
         def submit(self, ssh, document, args, defs, loglevel, name, workdir, array, others):
@@ -469,6 +468,7 @@ else:
                 self.qos = qos if isinstance(qos, list) else qos.split(',')
             else:
                 self.qos = []
+            self.partition_combo = self.qos_combo = None
 
         def update(self, source):
             super(Slurm, self).update(source)
@@ -477,9 +477,12 @@ else:
             if self.widget is not None:
                 self.partition_combo.clear()
                 self.partition_combo.addItems(self.partitions)
-            if self.widget is not None:
+                self.partitions_label.setVisible(bool(self.partitions))
+                self.partitions_combo.setVisible(bool(self.partitions))
                 self.qos_combo.clear()
                 self.qos_combo.addItems(self.qos)
+                self.qos_label.setVisible(bool(self.qos))
+                self.qos_combo.setVisible(bool(self.qos))
 
         def save(self, name):
             data = super(Slurm, self).save(name)
@@ -487,17 +490,25 @@ else:
             data.append(','.join(self.qos))
             return data
 
-        @classmethod
-        def batch(cls, name, workdir, array, path):
+        def batch(self, name, workdir, array, path):
+            partition = '' if self.partition_combo is None or not self.partitions else \
+                quote('-p' + self.partitions[self.partition_combo.currentIndex()])
+            qos = '' if self.qos_combo is None or not self.qos else \
+                quote('--qos=' + self.qos[self.qos_combo.currentIndex()])
+
             if array:
-                return "{path}sbatch -J {name} {array} -o {name}-%A_%a.out -D {dir}".format(
+                return "{path}sbatch -J {name}{partition}{qos} {array} -o {name}-%A_%a.out -D {dir}".format(
                     name=quote(name),
+                    partition=partition,
+                    qos=qos,
                     dir=quote(workdir),
                     array='-a {}-{}'.format(*array),
                     path=path)
             else:
-                return "{path}sbatch -J {name} -o {name}-%j.out -D {dir}".format(
+                return "{path}sbatch -J {name}{partition}{qos} -o {name}-%j.out -D {dir}".format(
                     name=quote(name),
+                    partition=partition,
+                    qos=qos,
                     dir=quote(workdir),
                     path=path)
 
@@ -509,20 +520,26 @@ else:
                 # layout.setColumnStretch(0, 1)
                 # layout.setColumnStretch(1, 1000)
                 layout.setContentsMargins(0, 0, 0, 0)
-                label = QLabel("&Partition:", self._widget)
-                layout.addWidget(label)#, 0, 0)
+                self.partition_label = QLabel("&Partition:", self._widget)
+                layout.addWidget(self.partition_label)#, 0, 0)
                 self.partition_combo = QComboBox(self._widget)
                 self.partition_combo.setToolTip("Select the partition to send your job to.")
                 self.partition_combo.addItems(self.partitions)
+                self.partition_label.setBuddy(self.partition_combo)
                 layout.addWidget(self.partition_combo)#, 0, 1)
-                label.setBuddy(self.partition_combo)
+                if not self.partitions:
+                    self.partition_label.setVisible(False)
+                    self.partition_combo.setVisible(False)
                 label = QLabel("&QOS:", self._widget)
                 layout.addWidget(label)#, 1, 0)
                 self.qos_combo = QComboBox(self._widget)
                 self.qos_combo.setToolTip("Select the QOS to send your job to.")
                 self.qos_combo.addItems(self.qos)
-                layout.addWidget(self.qos_combo)#, 1, 1)
                 label.setBuddy(self.qos_combo)
+                layout.addWidget(self.qos_combo)#, 1, 1)
+                if not self.qos:
+                    self.qos_label.setVisible(False)
+                    self.qos_combo.setVisible(False)
                 self._widget.setLayout(layout)
             return self._widget
 
@@ -595,6 +612,7 @@ else:
                 self.queues = queues if isinstance(queues, list) else queues.split(',')
             else:
                 self.queues = []
+            self.queue_combo = None
 
         def update(self, source):
             super(Torque, self).update(source)
@@ -608,10 +626,13 @@ else:
             data.append(','.join(self.queues))
             return data
 
-        @classmethod
-        def batch(cls, name, workdir, array, path):
-            return "{path}qsub -N {name}{array} -d {dir}".format(
+        def batch(self, name, workdir, array, path):
+            queue = '' if self.queue_combo is None or not self.queues else \
+                quote('-q' + self.queues[self.queue_combo.currentIndex()])
+
+            return "{path}qsub -N {name}{queue}{array} -d {dir}".format(
                 name=quote(name),
+                queue=queue,
                 dir=quote(workdir),
                 array='' if array is None else " -t {}-{}".format(*array),
                 path=path)
