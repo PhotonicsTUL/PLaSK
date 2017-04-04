@@ -17,10 +17,12 @@ import sys
 import os
 from stat import S_ISDIR
 
+from gui.qt.QtCore import Qt
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
 from gui.utils.widgets import MultiLineEdit
+from gui.utils.qsignals import BlockQtSignals
 
 try:
     import paramiko
@@ -144,6 +146,7 @@ else:
             self.bp = bp
             self.mpirun = mpirun
             self._widget = None
+            self._params = {}
 
         def update(self, source):
             self.userhost = source.userhost
@@ -295,7 +298,7 @@ else:
 
                 self._set_rows_visibility(self._advanced_widgets, False)
 
-                abutton = QPushButton("&Advanced...")
+                abutton = QPushButton("Ad&vanced...")
                 abutton.setCheckable(True)
                 abutton.toggled.connect(self.show_advanced)
 
@@ -394,22 +397,37 @@ else:
             def bp(self):
                 return self.bp_edit.text()
 
-        def batch(self, name, workdir, array, path):
+        def get_params(self, filename):
+            return {}
+
+        def save_params(self):
+            pass
+
+        def batch(self, name, params, path):
             return ''
 
-        def submit(self, ssh, document, args, defs, loglevel, name, workdir, array, others):
+        def submit(self, ssh, document, args, defs, loglevel, name, params):
             fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
             bp = self.bp
             if bp:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
             command = self.program or 'plask'
-            stdin, stdout, stderr = ssh.exec_command(self.batch(name, workdir, array, bp))
+            stdin, stdout, stderr = ssh.exec_command(self.batch(name, params, bp))
             try:
                 print("#!/bin/sh", file=stdin)
-                for oth in others:
+                for oth in params['other']:
                     oth = oth.strip()
                     if oth: print(self.SUBMIT_OPTION, oth, file=stdin)
+                for mod in params['modules']:
+                    if not mod.startswith('-'):
+                        print('module add', mod, file=stdin)
+                    else:
+                        print('module del', mod[1:], file=stdin)
+                # if params['mpi']:
+                #     command_line = (self.mpirun if self.mpirun else 'mpirun') + ' '
+                # else:
+                #     command_line = ''
                 command_line = "{cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}".format(
                     cmd=command,
                     fname=fname,
@@ -420,7 +438,7 @@ else:
                 if self.compress:
                     print("base64 -d <<\\_EOF_ | gunzip | " + command_line, file=stdin)
                     gzipped = BytesIO()
-                    with GzipFile(fileobj=gzipped, filename=name, mode='wb') as gzip:
+                    with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
                         gzip.write(document.get_content().encode('utf8'))
                     stdin.write(base64(gzipped.getvalue()).decode('ascii'))
                     print("_EOF_", file=stdin)
@@ -523,8 +541,8 @@ else:
             if self.widget is not None:
                 self.partition_combo.clear()
                 self.partition_combo.addItems(self.partitions)
-                self.partitions_label.setVisible(bool(self.partitions))
-                self.partitions_combo.setVisible(bool(self.partitions))
+                self.partition_label.setVisible(bool(self.partitions))
+                self.partition_combo.setVisible(bool(self.partitions))
                 self.qos_combo.clear()
                 self.qos_combo.addItems(self.qos)
                 self.qos_label.setVisible(bool(self.qos))
@@ -533,27 +551,24 @@ else:
         def save(self, name):
             return super(Slurm, self).save(name) + ':' + ','.join(self.partitions) + ':' + ','.join(self.qos)
 
-        def batch(self, name, workdir, array, path):
+        def batch(self, name, params, path):
+            name = quote(name)
             partition = '' if self.partition_combo is None or not self.partitions else \
                 ' ' + quote('-p' + self.partitions[self.partition_combo.currentIndex()])
             qos = '' if self.qos_combo is None or not self.qos else \
                 ' ' + quote('--qos=' + self.qos[self.qos_combo.currentIndex()])
+            wall = (' ' + quote('--time=' + params['wall'])) if params['wall'] else ''
+            mem = (' ' + quote('--mem=' + params['mem'])) if params['mem'] else ''
+            cpus = ' -c {}'.format(params['cpus']) if params['cpus'] else ''
+            nodes = ' -n {}'.format(params['nodes']) if params['nodes'] else ''
+            dir = quote(params['workdir'])
 
-            if array:
-                return "{path}sbatch -J {name}{partition}{qos} {array} -o {name}-%A_%a.out -D {dir}".format(
-                    name=quote(name),
-                    partition=partition,
-                    qos=qos,
-                    dir=quote(workdir),
-                    array='-a {}-{}'.format(*array),
-                    path=path)
+            if params['array']:
+                output = "{0} -a {1[0]}-{1[1]}".format(quote(name+"-%A_%a.out"), params['array'])
             else:
-                return "{path}sbatch -J {name}{partition}{qos} -o {name}-%j.out -D {dir}".format(
-                    name=quote(name),
-                    partition=partition,
-                    qos=qos,
-                    dir=quote(workdir),
-                    path=path)
+                output = quote("{}-%j.out".format(name))
+            return "{path}sbatch -J {name}{partition}{qos}{wall}{mem}{cpus}{nodes} -o {output} -D {dir}" \
+                .format(**locals())
 
         def widget(self):
             if self._widget is None:
@@ -573,12 +588,12 @@ else:
                 if not self.partitions:
                     self.partition_label.setVisible(False)
                     self.partition_combo.setVisible(False)
-                label = QLabel("&QOS:", self._widget)
-                layout.addWidget(label)#, 1, 0)
+                self.qos_label = QLabel("&QOS:", self._widget)
+                layout.addWidget(self.qos_label)#, 1, 0)
                 self.qos_combo = QComboBox(self._widget)
                 self.qos_combo.setToolTip("Select the QOS to send your job to.")
                 self.qos_combo.addItems(self.qos)
-                label.setBuddy(self.qos_combo)
+                self.qos_label.setBuddy(self.qos_combo)
                 layout.addWidget(self.qos_combo)#, 1, 1)
                 if not self.qos:
                     self.qos_label.setVisible(False)
@@ -617,15 +632,28 @@ else:
         def save(self, name):
             return super(Torque, self).save(name) + ':' + ','.join(self.queues)
 
-        def batch(self, name, workdir, array, path):
+        def batch(self, name, params, path):
+            name = quote(name)
             queue = '' if self.queue_combo is None or not self.queues else \
-                ' ' + quote('-q' + self.queues[self.queue_combo.currentIndex()])
+                ' -q ' + quote(self.queues[self.queue_combo.currentIndex()])
+            res = ['walltime=' + params['wall']] if params['wall'] else []
+            if params['mem']: res.append('pmem=' + params['mem'])
+            if params['nodes']:
+                nodes = 'nodes={}'.format(params['nodes'])
+                if params['cpus']:
+                    nodes += ':ppn={}'.format(params['cpus'])
+                res.append(nodes)
+            elif params['cpus']:
+                res.append('nodes=1:ppn={}'.format(params['cpus']))
+            if res:
+                res = ' -l ' + quote(','.join(res))
 
-            return "{path}qsub -N {name}{queue}{array} -d {dir}".format(
+            return "{path}qsub -N {name}{queue}{res}{array} -d {dir}".format(
                 name=quote(name),
                 queue=queue,
-                dir=quote(workdir),
-                array='' if array is None else " -t {}-{}".format(*array),
+                res=res,
+                dir=quote(params['workdir']),
+                array='' if params['array'] is None else " -t {}-{}".format(*params['array']),
                 path=path)
 
         def widget(self):
@@ -662,23 +690,18 @@ else:
         _passwd_cache = {}
 
         def __init__(self):
-            self._workdirs = {}
             self._saved_account = None
-            self._saved_queue = None
-            self._saved_array = None
-            self._saved_params = None
+            self._params_changed = {}
 
-        def widget(self, main_window, parent):
-            widget = QWidget()
+        def widget(self, main_window, parent=None):
+            widget = QWidget(parent)
             layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
 
-            self.dialog = parent
-
             self.filename = main_window.document.filename
 
-            label = QLabel("&Execution account:")
+            label = QLabel("E&xecution account:")
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
@@ -708,6 +731,15 @@ else:
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
+            label = QLabel("Job &name:")
+            layout.addWidget(label)
+            self.jobname = QLineEdit()
+            self.jobname.setToolTip("Type a job name to use in the batch system.")
+            self.jobname.setPlaceholderText(os.path.basename(self.filename)
+                                            if self.filename is not None else 'unnamed')
+            layout.addWidget(self.jobname)
+            label.setBuddy(self.jobname)
+
             self.accounts_layout = QVBoxLayout()
             self.accounts_layout.setContentsMargins(0, 0, 0, 0)
             accounts_widget = QWidget()
@@ -721,16 +753,79 @@ else:
             self.account_widgets[self.accounts_combo.currentIndex()].setVisible(True)
             layout.addWidget(accounts_widget)
 
-            label = QLabel("Job &name:")
-            layout.addWidget(label)
-            self.jobname = QLineEdit()
-            self.jobname.setToolTip("Type a job name to use in the batch system.")
-            self.jobname.setPlaceholderText(os.path.basename(self.filename)
-                                            if self.filename is not None else 'unnamed')
-            layout.addWidget(self.jobname)
-            label.setBuddy(self.jobname)
+            grid_layout = QGridLayout()
+            label = QLabel("Wall &time:")
+            grid_layout.addWidget(label, 0, 0, Qt.AlignRight)
+            self.wall_time = QLineEdit()
+            self.wall_time.textEdited.connect(lambda: self._param_editted('wall'))
+            label.setBuddy(self.wall_time)
+            grid_layout.addWidget(self.wall_time, 0, 1)
+            label = QLabel("M&em limit:")
+            grid_layout.addWidget(label, 1, 0, Qt.AlignRight)
+            self.memory = QLineEdit()
+            self.memory.textEdited.connect(lambda: self._param_editted('mem'))
+            label.setBuddy(self.memory)
+            grid_layout.addWidget(self.memory, 1, 1)
+            label = QLabel("&CPUs/node:")
+            grid_layout.addWidget(label, 0, 2, Qt.AlignRight)
+            self.cpus = QSpinBox()
+            self.cpus.setMinimum(0)
+            self.cpus.setSpecialValueText("default")
+            self.cpus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.cpus.setAlignment(Qt.AlignRight)
+            self.cpus.valueChanged.connect(lambda: self._param_editted('cpus'))
+            label.setBuddy(self.cpus)
+            grid_layout.addWidget(self.cpus, 0, 3)
+            label = QLabel("&Nodes:")
+            grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
+            self.nodes = QSpinBox()
+            self.nodes.setMinimum(0)
+            self.nodes.setSpecialValueText("default")
+            self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.nodes.setAlignment(Qt.AlignRight)
+            self.nodes.valueChanged.connect(lambda: self._param_editted('nodes'))
+            label.setBuddy(self.nodes)
+            grid_layout.addWidget(self.nodes, 1, 3)
+            self.mpi = QCheckBox()
+            self.mpi.setText("&MPI")
+            grid_layout.addWidget(self.mpi, 1, 4)
+            layout.addLayout(grid_layout)
 
-            self._load_workdirs()
+            array_layout = QHBoxLayout()
+            array_layout.setContentsMargins(0, 0, 0, 0)
+            self.array = QCheckBox()
+            self.array.setText("A&rray")
+            array_layout.addWidget(self.array)
+            self.array_widget = QWidget()
+            array_widget_layout = QHBoxLayout()
+            array_widget_layout.setContentsMargins(0, 0, 0, 0)
+            self.array_from = QSpinBox()
+            self.array_from.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.array_from.setAlignment(Qt.AlignRight)
+            self.array_from.setToolTip("First job array index.")
+            label = QLabel("&start:")
+            label.setBuddy(self.array_from)
+            array_widget_layout.addWidget(label)
+            array_widget_layout.addWidget(self.array_from)
+            self.array_to = QSpinBox()
+            self.array_to.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.array_to.setAlignment(Qt.AlignRight)
+            self.array_to.setToolTip("Last job array index.")
+            label = QLabel(" en&d:")
+            label.setBuddy(self.array_to)
+            array_widget_layout.addWidget(label)
+            array_widget_layout.addWidget(self.array_to)
+            self.array.setChecked(False)
+            self.array_from.setValue(0)
+            self.array_to.setValue(1)
+            self.array.stateChanged.connect(self.array_changed)
+            self.array_from.valueChanged.connect(self.array_changed)
+            self.array_to.valueChanged.connect(self.array_changed)
+            self.array_widget.setEnabled(self.array.isChecked())
+            self.array_widget.setLayout(array_widget_layout)
+            array_layout.addWidget(self.array_widget)
+            layout.addLayout(array_layout)
+
             label = QLabel("&Working directory:")
             layout.addWidget(label)
             self.workdir = QLineEdit()
@@ -738,12 +833,8 @@ else:
                                     "If the directory starts with / it is consider as an absolute path,\n"
                                     "otherwise it is relative to your home directory. If the directory\n"
                                     "does not exists, it is automatically created.")
-            if self.filename is not None:
-                self.workdir.setText(self._workdirs.get(
-                    (self.filename, self.accounts_combo.currentText()), ''))
+            self.workdir.textEdited.connect(lambda: self._param_editted('workir'))
             label.setBuddy(self.workdir)
-            self._auto_workdir = True
-            self.workdir.textEdited.connect(self.workdir_edited)
             dirbutton = QPushButton()
             dirbutton.setIcon(QIcon.fromTheme('folder-open'))
             dirbutton.pressed.connect(self.select_workdir)
@@ -752,73 +843,48 @@ else:
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
-            layout2 = QHBoxLayout()
-            layout2.setContentsMargins(0, 0, 0, 0)
-
-            self.array_check = QCheckBox()
-            self.array_check.setText("A&rray")
-            layout2.addWidget(self.array_check)
-
-            self.array_widget = QWidget()
-            array_layout = QHBoxLayout()
-            array_layout.setContentsMargins(0, 0, 0, 0)
-
-            self.array_from = QSpinBox()
-            self.array_from.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.array_from.setToolTip("First job array index.")
-            label = QLabel("&start:")
-            label.setBuddy(self.array_from)
-            array_layout.addWidget(label)
-            array_layout.addWidget(self.array_from)
-
-            self.array_to = QSpinBox()
-            self.array_to.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.array_to.setToolTip("Last job array index.")
-            label = QLabel(" en&d:")
-            label.setBuddy(self.array_to)
-            array_layout.addWidget(label)
-            array_layout.addWidget(self.array_to)
-
-            if self._saved_array is not None:
-                self.array_check.setChecked(self._saved_array[0])
-                self.array_from.setValue(self._saved_array[1])
-                self.array_to.setValue(self._saved_array[2])
-            else:
-                self.array_check.setChecked(False)
-                self.array_from.setValue(0)
-                self.array_to.setValue(1)
-
-            self.array_check.stateChanged.connect(self.array_changed)
-            self.array_from.valueChanged.connect(self.array_changed)
-            self.array_to.valueChanged.connect(self.array_changed)
-
-            self.array_widget.setEnabled(self.array_check.isChecked())
-
-            self.array_widget.setLayout(array_layout)
-            layout2.addWidget(self.array_widget)
-            layout.addLayout(layout2)
-
-            params_layout = QHBoxLayout()
-            params_layout.setContentsMargins(0, 0, 0, 0)
+            other_params_layout = QHBoxLayout()
+            other_params_layout.setContentsMargins(0, 0, 0, 0)
             params_button = QToolButton()
             params_button.setIcon(QIcon.fromTheme('menu-down'))
             params_button.setCheckable(True)
             params_button.setChecked(False)
-            params_button.toggled.connect(lambda visible: self.show_others(widget, visible))
+            params_button.toggled.connect(lambda visible: self.show_optional(self.other_params, visible))
             label = QLabel("Other submit &parameters:")
             label.setBuddy(params_button)
-            params_layout.addWidget(label)
-            params_layout.addWidget(params_button)
-            layout.addLayout(params_layout)
-            self.params = QPlainTextEdit()
-            self.params.setVisible(False)
-            self.params.setFixedHeight(4 * self.params.fontMetrics().height())
-            self.params.setToolTip("Other submit parameters. You can use them to precisely specify\n"
+            other_params_layout.addWidget(label)
+            other_params_layout.addWidget(params_button)
+            layout.addLayout(other_params_layout)
+            self.other_params = QLineEdit()
+            self.other_params.setVisible(False)
+            self.other_params.setToolTip("Other submit parameters. You can use them to precisely specify\n"
                                    "requested resources etc. Please refer to batch system documentation\n"
                                    "for details.")
-            if self._saved_params is not None:
-                self.params.setPlainText("\n".join(self._saved_params))
-            layout.addWidget(self.params)
+            layout.addWidget(self.other_params)
+            self.other_params.textEdited.connect(lambda: self._param_editted('other'))
+
+            modules_layout = QHBoxLayout()
+            modules_layout.setContentsMargins(0, 0, 0, 0)
+            modules_button = QToolButton()
+            modules_button.setIcon(QIcon.fromTheme('menu-down'))
+            modules_button.setCheckable(True)
+            modules_button.setChecked(False)
+            modules_button.toggled.connect(lambda visible: self.show_optional(self.modules, visible))
+            label = QLabel("Environmental &Modules:")
+            label.setBuddy(modules_button)
+            modules_layout.addWidget(label)
+            modules_layout.addWidget(modules_button)
+            layout.addLayout(modules_layout)
+            self.modules = QPlainTextEdit()
+            self.modules.setVisible(False)
+            self.modules.setFixedHeight(3 * self.modules.fontMetrics().height())
+            self.modules.setToolTip("Many HPC clusters use LMOD modules to set-up computation environment.\n"
+                                    "Here you can specify a list of such modules to load before launching PLaSK.\n"
+                                    "Just put one module name or module/version (i.e. openblas/0.2.19) per line.\n"
+                                    "You can also remove default modules by adding '-' before the module name\n"
+                                    "(i.e. -mpich).")
+            self.modules.textChanged.connect(lambda: self._param_editted('modules'))
+            layout.addWidget(self.modules)
 
             label = QLabel("&Log level:")
             layout.addWidget(label)
@@ -836,7 +902,31 @@ else:
             label.setBuddy(self.loglevel)
             layout.addWidget(self.loglevel)
 
+            self._widget = widget
+
+            self.set_params(tuple(self.accounts.values())[self.accounts_combo.currentIndex()].get_params(self.filename))
+
             return widget
+
+        def _param_editted(self, param):
+            self._params_changed[param] = True
+
+        def set_params(self, params):
+            with BlockQtSignals(self._widget):
+                self.workdir.setText(params.get('workdir', ''))
+                self.wall_time.setText(params.get('wall', ''))
+                self.memory.setText(params.get('mem', ''))
+                self.cpus.setValue(params.get('cpus', 1))
+                self.nodes.setValue(params.get('nodes', 1))
+                self.mpi.setChecked(params.get('mpi', False))
+                if params.get('array') is None:
+                    self.array.setChecked(False)
+                else:
+                    self.array.setChecked(True)
+                    self.array_from.setValue(params.get('array', (0,1))[0])
+                    self.array_to.setValue(params.get('array', (0,1))[1])
+                self.other_params.setText(params.get('other', ''))
+                self.modules.setPlainText(params.get('modules', ''))
 
         def load_accounts(self):
             accounts = CONFIG['launcher_batch/accounts']
@@ -859,29 +949,9 @@ else:
                 CONFIG['launcher_batch/accounts'] = '\n'.join(data)
             CONFIG.sync()
 
-        def _load_workdirs(self):
-            workdirs = CONFIG['launcher_batch/working_dirs']
-            if workdirs is not None:
-                workdirs = workdirs.split('\n')
-                if not isinstance(workdirs, list):
-                    workdirs = [workdirs]
-                for workdir in workdirs:
-                    fn, ac, wd = workdir.split(';')[:3]
-                    if os.path.isfile(fn) and ac in self.accounts:
-                        self._workdirs[fn, ac] = wd
-
-        def _save_workdirs(self):
-            data = '\n'.join(u"{0[0]};{0[1]};{1}".format(k,v) for k,v in self._workdirs.items()
-                             if os.path.isfile(k[0]) and k[1] in self.accounts)
-            if not data:
-                del CONFIG['launcher_batch/working_dirs']
-            else:
-                CONFIG['launcher_batch/working_dirs'] = data
-            CONFIG.sync()
-
         def array_changed(self):
-            self.array_widget.setEnabled(self.array_check.isChecked())
-            self._saved_array = self.array_check.isChecked(), self.array_from.value(), self.array_to.value()
+            self.array_widget.setEnabled(self.array.isChecked())
+            self._params_changed['array'] = True
 
         def account_add(self):
             dialog = Account.EditDialog()
@@ -931,6 +1001,7 @@ else:
                     self.account_changed(new)
                     self.save_accounts()
 
+
         def account_remove(self):
             current = self.accounts_combo.currentText()
             confirm = QMessageBox.warning(None, "Remove Account?",
@@ -943,27 +1014,24 @@ else:
                 del self.accounts[current]
                 self.save_accounts()
 
-        def account_changed(self, account):
-            if isinstance(account, int):
-                self._saved_account = account
+        def account_changed(self, index):
+            if isinstance(index, int):
+                self._saved_account = index
             else:
                 self._saved_account = self.accounts_combo.currentIndex()
             for aw in self.account_widgets:
                 aw.setVisible(False)
             self.account_widgets[self._saved_account].setVisible(True)
-            if self._auto_workdir and self.filename is not None:
-                self.workdir.setText(self._workdirs.get(
-                    (self.filename, self.accounts_combo.currentText()), ''))
-            self.dialog.setFixedHeight(self.dialog.sizeHint().height())
-            self.dialog.adjustSize()
+            self.set_params(list(self.accounts.values())[self._saved_account].get_params(self.filename))
+            self._adjust_window_size()
 
-        def workdir_edited(self):
-            self._auto_workdir = False
+        def show_optional(self, field, visible):
+            field.setVisible(visible)
+            self._adjust_window_size()
 
-        def show_others(self, widget, visible):
-            dialog = widget.parent()
-            self.params.setVisible(visible)
-            widget.adjustSize()
+        def _adjust_window_size(self):
+            dialog = self._widget.parent()
+            self._widget.adjustSize()
             dialog.setFixedHeight(dialog.sizeHint().height())
             dialog.adjustSize()
 
@@ -1079,22 +1147,21 @@ else:
             user, host = account.userhost.split('@')
             port = account.port
             document = main_window.document
-            workdir = self.workdir.text()
-            if document.filename is not None:
-                self._workdirs[document.filename, account_name] = workdir
-                self._save_workdirs()
-            # queue = self._saved_queue = self.queue.currentText()
-            name = self.jobname.text()
-            if not name:
-                name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            self._saved_params = self.params.toPlainText().split("\n")
             loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
                        [self.loglevel.currentIndex()]
-            array = (self.array_from.value(), self.array_to.value()) if self.array_check.isChecked() else None
 
             ssh = self.connect(host, user, port)
             if ssh is None: return
 
+            # if document.filename is not None:
+                # self._workdirs[document.filename, account_name] = workdir
+                # self._save_workdirs()
+            name = self.jobname.text()
+            if not name:
+                name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+            # self._saved_params = self.params.toPlainText().split("\n")
+
+            workdir = self.workdir.text()
             if not workdir:
                 _, stdout, _ = ssh.exec_command("pwd")
                 workdir = stdout.read().decode('utf8').strip()
@@ -1103,8 +1170,17 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            result, message = account.submit(ssh, document, args, defs, loglevel,
-                                             name, workdir, array, self._saved_params)
+            params = {'workdir': workdir,
+                      'wall': self.wall_time.text(),
+                      'mem': self.memory.text(),
+                      'cpus': self.cpus.value(),
+                      'nodes': self.nodes.value(),
+                      'mpi': self.mpi.isChecked(),
+                      'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
+                      'other': self.other_params.text(),
+                      'modules': self.modules.toPlainText()}
+
+            result, message = account.submit(ssh, document, args, defs, loglevel, name, params)
 
             if message: message = "\n\n" + message
             if result:
@@ -1132,7 +1208,7 @@ else:
             dialog = RemoteDirDialog(sftp, host, workdir)
             if dialog.exec_() == QDialog.Accepted:
                 self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
-                self._auto_workdir = False
+                self._params_changed['workdir'] = True
 
 
     class RemoteDirDialog(QDialog):
