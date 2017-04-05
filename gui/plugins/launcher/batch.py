@@ -426,6 +426,15 @@ else:
         def batch(self, name, params, path):
             return ''
 
+        def tmpfile(self, fname, array):
+            return fname
+
+        def _compress(self, document, fname, stdin):
+            gzipped = BytesIO()
+            with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
+                gzip.write(document.get_content().encode('utf8'))
+            stdin.write(base64(gzipped.getvalue()).decode('ascii'))
+
         def submit(self, ssh, document, args, defs, loglevel, name, params):
             fname = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
             bp = self.bp
@@ -444,28 +453,37 @@ else:
                         print('module add', mod, file=stdin)
                     else:
                         print('module del', mod[1:], file=stdin)
-                # if params['mpi']:
-                #     command_line = (self.mpirun if self.mpirun else 'mpirun') + ' '
-                # else:
-                #     command_line = ''
-                command_line = "{cmd} -{ft} -l{ll}{lc} {defs} -:{fname} {args}".format(
+                if params['mpi']:
+                    command = (self.mpirun or 'mpirun') + ' ' + command
+                if params['nodes'] > 1:
+                    fname2 = self.tmpfile(fname, params['array'] is not None)
+                else:
+                    fname2 = '-:' + fname
+                command_line = "{cmd} -{ft} -l{ll}{lc} {defs} {fname} {args}".format(
                     cmd=command,
-                    fname=fname,
+                    fname=fname2,
                     defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                     ll=loglevel,
                     lc=' -lansi' if self.color else '',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
-                if self.compress:
-                    print("base64 -d <<\\_EOF_ | gunzip | " + command_line, file=stdin)
-                    gzipped = BytesIO()
-                    with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
-                        gzip.write(document.get_content().encode('utf8'))
-                    stdin.write(base64(gzipped.getvalue()).decode('ascii'))
+                if params['nodes'] <= 1:
+                    if self.compress:
+                        print("base64 -d <<\\_EOF_ | gunzip |", command_line, file=stdin)
+                        self._compress(document, fname, stdin)
+                    else:
+                        print(command_line, "<<\\_EOF_", file=stdin)
+                        stdin.write(document.get_content())
                     print("_EOF_", file=stdin)
                 else:
-                    print(command_line + " <<\\_EOF_", file=stdin)
-                    stdin.write(document.get_content())
+                    if self.compress:
+                        print("base64 -d <<\\_EOF_ | gunzip >", fname2, file=stdin)
+                        self._compress(document, fname, stdin)
+                    else:
+                        print("cat <<\\_EOF_ >", fname2, file=stdin)
+                        stdin.write(document.get_content())
                     print("_EOF_", file=stdin)
+                    print(command_line, file=stdin)
+                    print("rm", fname2, file=stdin)
                 stdin.flush()
                 stdin.channel.shutdown_write()
             except (OSError, IOError):
@@ -621,6 +639,12 @@ else:
             return "{path}sbatch -J {name}{partition}{qos}{wall}{mem}{cpus}{nodes} -o {output} -D {dir}" \
                 .format(**locals())
 
+        def tmpfile(self, fname, array):
+            if array:
+                return "{}-${{SLURM_ARRAY_JOB_ID}}_${{SLURM_ARRAY_TASK_ID}}{}".format(*os.path.splitext(fname))
+            else:
+                return "{}-${{SLURM_JOB_ID}}{}".format(*os.path.splitext(fname))
+
         def widget(self):
             if self._widget is None:
                 self._widget = QWidget()
@@ -725,6 +749,12 @@ else:
                 array='' if params['array'] is None else " -t {}-{}".format(*params['array']),
                 path=path)
 
+        def tmpfile(self, fname, array):
+            if array:
+                return "{}.${{PBS_JOBID}}-${{PBS_ARRAYID}}{}".format(*os.path.splitext(os.fname))
+            else:
+                return "{}.${{PBS_JOBID}}{}".format(*os.path.splitext(fname))
+
         def widget(self):
             if self._widget is None:
                 self._widget = QWidget()
@@ -814,7 +844,7 @@ else:
             layout.addWidget(label)
             self.jobname = QLineEdit()
             self.jobname.setToolTip("Type a job name to use in the batch system.")
-            self.jobname.setPlaceholderText(os.path.basename(self.filename)
+            self.jobname.setPlaceholderText(os.path.splitext(os.path.basename(self.filename))[0]
                                             if self.filename is not None else 'unnamed')
             layout.addWidget(self.jobname)
             label.setBuddy(self.jobname)
@@ -1266,7 +1296,8 @@ else:
 
             name = self.jobname.text()
             if not name:
-                name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
+                name = os.path.splitext(os.path.basename(document.filename))[0] if document.filename is not None \
+                    else 'unnamed'
 
             params = self.get_params()
 
