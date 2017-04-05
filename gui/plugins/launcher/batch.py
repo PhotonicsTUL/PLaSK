@@ -25,6 +25,11 @@ from gui.utils.widgets import MultiLineEdit
 from gui.utils.qsignals import BlockQtSignals
 
 try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+try:
     import paramiko
 
 except ImportError:
@@ -125,7 +130,7 @@ else:
     SYSTEMS = OrderedDict()
 
     def batchsystem(cls):
-        SYSTEMS[cls.NAME] = cls
+        SYSTEMS[cls.SYSTEM] = cls
         return cls
 
 
@@ -135,18 +140,23 @@ else:
         """
 
         SUBMIT_OPTION = None
-        NAME = None
+        SYSTEM = None
 
-        def __init__(self, userhost=None, port=22, program='', color=None, compress=None, bp='', mpirun=''):
+        def __init__(self, name, userhost=None, port=None, program='', color=None, compress=None, bp='', mpirun='',
+                     params=None):
+            self.name = name
             self.userhost = userhost
-            self.port = port
+            self.port = _parse_int(port, 22)
             self.program = program
             self.color = _parse_bool(color, False)
             self.compress = _parse_bool(compress, True)
             self.bp = bp
             self.mpirun = mpirun
             self._widget = None
-            self._params = {}
+            if params is None:
+                self.params = {}
+            else:
+                self.params = params
 
         def update(self, source):
             self.userhost = source.userhost
@@ -158,37 +168,32 @@ else:
             self.mpirun = source.mpirun
 
         @staticmethod
-        def load(data):
-            data = data.split(':')
-            try:
-                port = int(data[2])
-            except ValueError:
-                #      1          2         3        4         5       6       7        8
-                # 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
-                return data[0], SYSTEMS[data[2]](data[1],
-                                                 _parse_int(data[7], 22),
-                                                 data[5],
-                                                 _parse_bool(data[4], False),
-                                                 _parse_bool(data[8], True),
-                                                 data[6],
-                                                 '',
-                                                 data[3])
-            else:
-                return data[0], SYSTEMS[data[3]](data[1], port, *data[4:])
+        def load_old(data):
+            #      1         2         3         4        5     6         7         8
+            # 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
+            return SYSTEMS[data[2]](data[0], data[1], data[7], data[5], False, True, data[6], '', data[3])
 
-        def save(self, name):
-            return ':'.join((name, self.userhost, str(self.port), self.__class__.NAME, self.program,
-                             str(int(self.color)), str(int(self.compress)), self.bp, self.mpirun))
+        @staticmethod
+        def load(name, config):
+            kwargs = dict(config)
+            system = kwargs.pop('system')
+            if 'params' in kwargs:
+                try:
+                    kwargs['params']= pickle.loads(CONFIG.get('params', '').encode())
+                except (pickle.PickleError, EOFError):
+                    del kwargs['params']
+            return SYSTEMS[system](name, **kwargs)
+
+        def save(self):
+            return dict(userhost=self.userhost, port=self.port, system=self.__class__.SYSTEM, program=self.program,
+                        color=int(self.color), compress=int(self.compress), bp=self.bp, mpirun=self.mpirun)
 
         class EditDialog(QDialog):
 
             def __init__(self, account=None, name=None, parent=None):
                 super(Account.EditDialog, self).__init__(parent)
 
-                if account is None:
-                    account = Account()
-
-                if account.userhost:
+                if account is not None and account.userhost:
                     user, host = account.userhost.split('@')
                 else:
                     user = host = None
@@ -219,7 +224,10 @@ else:
                 self.port_input.setMinimum(1)
                 self.port_input.setMaximum(65536)
                 self.port_input.setToolTip("TCP port to connect to (usually 22).")
-                self.port_input.setValue(account.port)
+                if account is not None:
+                    self.port_input.setValue(account.port)
+                else:
+                    self.port_input.setValue(22)
                 layout.addRow("&Port:", self.port_input)
 
                 self.user_edit = QLineEdit()
@@ -236,8 +244,11 @@ else:
                 systems = list(SYSTEMS.keys())
                 self.systems_combo.addItems(systems)
                 try:
-                    systems_index = systems.index(account.NAME)
-                    self.systems_combo.setCurrentIndex(systems_index)
+                    if account is not None:
+                        systems_index = systems.index(account.SYSTEM)
+                        self.systems_combo.setCurrentIndex(systems_index)
+                    else:
+                        systems_index = 0
                 except ValueError:
                     systems_index = 0
                 self.systems_combo.currentIndexChanged.connect(self.system_changed)
@@ -257,7 +268,8 @@ else:
                 self._set_rows_visibility(self._system_widgets[systems_index], True, layout)
 
                 self.color_checkbox = QCheckBox()
-                self.color_checkbox.setChecked(account.color)
+                if account is not None:
+                    self.color_checkbox.setChecked(account.color)
                 layout.addRow("Co&lor Output:", self.color_checkbox)
 
                 self._advanced_widgets = []
@@ -265,7 +277,7 @@ else:
                 self.program_edit = QLineEdit()
                 self.program_edit.setToolTip("Path to PLaSK executable. If left blank 'plask' will be used.")
                 self.program_edit.setPlaceholderText("plask")
-                if account.program:
+                if account is not None and account.program:
                     self.program_edit.setText(account.program)
                 layout.addRow("&Command:", self.program_edit)
                 self._advanced_widgets.append(self.program_edit)
@@ -273,7 +285,7 @@ else:
                 self.mpirun_edit = QLineEdit()
                 self.mpirun_edit.setToolTip("Command to start MPI tasks. Usually 'mpirun' (this is the default value).")
                 self.mpirun_edit.setPlaceholderText("mpirun")
-                if account.mpirun:
+                if account is not None and account.mpirun:
                     self.mpirun_edit.setText(account.mpirun)
                 layout.addRow("&MPI runner:", self.mpirun_edit)
                 self._advanced_widgets.append(self.mpirun_edit)
@@ -282,7 +294,7 @@ else:
                 self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
                                         "set this, however you may need to specify it if the submit command is\n"
                                         "located in a non-standard directory.")
-                if account.bp:
+                if account is not None and account.bp:
                     self.bp_edit.setText(account.bp)
                 layout.addRow("Batch system pat&h:", self.bp_edit)
                 self._advanced_widgets.append(self.bp_edit)
@@ -292,7 +304,10 @@ else:
                     "Compress script on sending to the batch system. This can make the scripts\n"
                     "stored in batch system queues smaller, however it may be harder to track\n"
                     "possible errors.")
-                self.compress_checkbox.setChecked(account.compress)
+                if account is not None:
+                    self.compress_checkbox.setChecked(account.compress)
+                else:
+                    self.compress_checkbox.setChecked(True)
                 layout.addRow("Compr&ess Script:", self.compress_checkbox)
                 self._advanced_widgets.append(self.compress_checkbox)
 
@@ -400,8 +415,13 @@ else:
         def get_params(self, filename):
             return {}
 
+        def update_widget(self, params):
+            return
+
         def save_params(self):
-            pass
+            key = 'launcher_batch/accounts/{}/params'.format(self.name)
+            CONFIG[key] = pickle.dumps(self.params, 0).decode()
+            CONFIG.sync()
 
         def batch(self, name, params, path):
             return ''
@@ -419,7 +439,7 @@ else:
                 for oth in params['other']:
                     oth = oth.strip()
                     if oth: print(self.SUBMIT_OPTION, oth, file=stdin)
-                for mod in params['modules']:
+                for mod in params['modules'].splitlines():
                     if not mod.startswith('-'):
                         print('module add', mod, file=stdin)
                     else:
@@ -464,6 +484,10 @@ else:
                 self._widget = QWidget()
             return self._widget
 
+        def exit(self):
+            self._widget = None
+            self.save_params()
+
         @classmethod
         def config_widgets(cls, self, dialog, parent=None):
             return []
@@ -478,11 +502,9 @@ else:
                                  "the host administrator.".format(name))
             list_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
             box.addWidget(list_edit)
-            try:
-                if getattr(account, attr):
+            if account is not None:
+                if getattr(account, attr, None):
                     list_edit.set_values(getattr(account, attr))
-            except AttributeError:
-                pass
             get_partitions = QPushButton("&Retrieve")
             get_partitions.setToolTip("Retrieve the list of {} automatically. To use this,\n"
                                       "you must first correctly fill-in host, user, and system fields.".format(name))
@@ -498,7 +520,7 @@ else:
             ssh = Launcher.connect(dialog.host, dialog.user, dialog.port)
             if ssh is None: return
 
-            what = what[1].upper() + what[1:]
+            what = what[0].upper() + what[1:]
 
             bp = dialog.bp
             if bp:
@@ -519,11 +541,11 @@ else:
     class Slurm(Account):
 
         SUBMIT_OPTION = "#SBATCH"
-        NAME = 'SLURM'
+        SYSTEM = 'SLURM'
 
-        def __init__(self, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
-                     partitions=None, qos=None):
-            super(Slurm, self).__init__(userhost, port, program, color, compress, bp, mpirun)
+        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
+                     partitions=None, qos=None, params=None):
+            super(Slurm, self).__init__(name, userhost, port, program, color, compress, bp, mpirun, params)
             if partitions:
                 self.partitions = partitions if isinstance(partitions, list) else partitions.split(',')
             else:
@@ -538,18 +560,47 @@ else:
             super(Slurm, self).update(source)
             self.partitions = source.partitions
             self.qos = source.qos
-            if self.widget is not None:
+            if self._widget is not None:
+                partition = self.partition_combo.currentText()
                 self.partition_combo.clear()
                 self.partition_combo.addItems(self.partitions)
                 self.partition_label.setVisible(bool(self.partitions))
                 self.partition_combo.setVisible(bool(self.partitions))
+                try:
+                    self.partition_combo.setCurrentIndex(self.partitions.index(partition))
+                except ValueError:
+                    pass
+                qos = self.qos_combo.currentText()
                 self.qos_combo.clear()
                 self.qos_combo.addItems(self.qos)
                 self.qos_label.setVisible(bool(self.qos))
                 self.qos_combo.setVisible(bool(self.qos))
+                try:
+                    self.qos_combo.setCurrentIndex(self.qos.index(qos))
+                except ValueError:
+                    pass
 
-        def save(self, name):
-            return super(Slurm, self).save(name) + ':' + ','.join(self.partitions) + ':' + ','.join(self.qos)
+        def save(self):
+            data = super(Slurm, self).save()
+            data['partitions'] = ','.join(self.partitions)
+            data['qos'] = ','.join(self.qos)
+            return data
+
+        def update_widget(self, params):
+            if self._widget is not None:
+                try: self.partition_combo.setCurrentIndex(self.partitions.index(params.get('partition')))
+                except ValueError: pass
+                try: self.qos_combo.setCurrentIndex(self.qos.index(params.get('qos')))
+                except ValueError: pass
+
+        def get_params(self):
+            params = {}
+            if self._widget is not None:
+                if self.partitions:
+                    params['partition'] = self.partitions[self.partition_combo.currentIndex()]
+                if self.qos:
+                    params['qos'] = self.qos[self.qos_combo.currentIndex()]
+            return params
 
         def batch(self, name, params, path):
             name = quote(name)
@@ -611,11 +662,11 @@ else:
     class Torque(Account):
 
         SUBMIT_OPTION = "#PBS"
-        NAME = 'PBS/Torque'
+        SYSTEM = 'PBS/Torque'
 
-        def __init__(self, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
-                     queues=None):
-            super(Torque, self).__init__(userhost, port, program, color, compress, bp, mpirun)
+        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
+                     queues=None, params=None):
+            super(Torque, self).__init__(name, userhost, port, program, color, compress, bp, mpirun, params)
             if queues:
                 self.queues = queues if isinstance(queues, list) else queues.split(',')
             else:
@@ -625,12 +676,30 @@ else:
         def update(self, source):
             super(Torque, self).update(source)
             self.queues = source.queues
-            if self.widget is not None:
+            if self._widget is not None:
+                queue = self.queue_combo.currentText()
                 self.queue_combo.clear()
                 self.queue_combo.addItems(self.queues)
+                try:
+                    self.queue_combo.setCurrentIndex(self.queues.index(queue))
+                except ValueError:
+                    pass
 
-        def save(self, name):
-            return super(Torque, self).save(name) + ':' + ','.join(self.queues)
+        def save(self):
+            data = super(Torque, self).save()
+            data['queues'] = ','.join(self.queues)
+            return data
+
+        def update_widget(self, params):
+            if self._widget is not None:
+                try: self.queue_combo.setCurrentIndex(self.queues.index(params.get('queue')))
+                except ValueError: pass
+
+        def get_params(self):
+            params = {}
+            if self._widget is not None and self.queues:
+                params['queue'] = self.queues[self.queue_combo.currentIndex()]
+            return params
 
         def batch(self, name, params, path):
             name = quote(name)
@@ -690,11 +759,20 @@ else:
         _passwd_cache = {}
 
         def __init__(self):
-            self._saved_account = None
-            self._params_changed = {}
+            self._current_account = None
+            self.load_accounts()
+
+        class Widget(QWidget):
+            def __init__(self, launcher, parent=None):
+                self.launcher = launcher
+                super(Launcher.Widget, self).__init__(parent)
+            def hideEvent(self, event):
+                self.launcher.accounts[self.launcher._current_account].params[self.launcher.filename] = \
+                    self.launcher.get_params()
+                super(Launcher.Widget, self).hideEvent(event)
 
         def widget(self, main_window, parent=None):
-            widget = QWidget(parent)
+            widget = Launcher.Widget(self, parent)
             layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
@@ -705,11 +783,12 @@ else:
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
-            self.load_accounts()
             self.accounts_combo = QComboBox()
-            self.accounts_combo.addItems([s for s in self.accounts])
-            if self._saved_account is not None:
-                self.accounts_combo.setCurrentIndex(self._saved_account)
+            self.accounts_combo.addItems([a.name for a in self.accounts])
+            if self._current_account is not None:
+                self.accounts_combo.setCurrentIndex(self._current_account)
+            else:
+                self._current_account = self.accounts_combo.currentIndex()
             self.accounts_combo.currentIndexChanged.connect(self.account_changed)
             self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
             accounts_layout.addWidget(self.accounts_combo)
@@ -745,25 +824,28 @@ else:
             accounts_widget = QWidget()
             accounts_widget.setLayout(self.accounts_layout)
             self.account_widgets = []
-            for account in self.accounts.values():
+            for account in self.accounts:
                 aw = account.widget()
                 self.account_widgets.append(aw)
                 self.accounts_layout.addWidget(aw)
                 aw.setVisible(False)
-            self.account_widgets[self.accounts_combo.currentIndex()].setVisible(True)
+            if self.accounts:
+                self.account_widgets[self.accounts_combo.currentIndex()].setVisible(True)
             layout.addWidget(accounts_widget)
 
             grid_layout = QGridLayout()
             label = QLabel("Wall &time:")
             grid_layout.addWidget(label, 0, 0, Qt.AlignRight)
             self.wall_time = QLineEdit()
-            self.wall_time.textEdited.connect(lambda: self._param_editted('wall'))
+            self.wall_time.setToolTip("Total time your computation will run. Refer to the batch system\n"
+                                      "documentation for the allowed format of this field.")
             label.setBuddy(self.wall_time)
             grid_layout.addWidget(self.wall_time, 0, 1)
             label = QLabel("M&em limit:")
             grid_layout.addWidget(label, 1, 0, Qt.AlignRight)
             self.memory = QLineEdit()
-            self.memory.textEdited.connect(lambda: self._param_editted('mem'))
+            self.memory.setToolTip("Total computer memory on each node your job will require. Refer to\n"
+                                   "the batch system documentation for the allowed format of this field.")
             label.setBuddy(self.memory)
             grid_layout.addWidget(self.memory, 1, 1)
             label = QLabel("&CPUs/node:")
@@ -773,21 +855,28 @@ else:
             self.cpus.setSpecialValueText("default")
             self.cpus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.cpus.setAlignment(Qt.AlignRight)
-            self.cpus.valueChanged.connect(lambda: self._param_editted('cpus'))
+            self.cpus.setToolTip("Number of CPUs on each node your job will utilize.")
             label.setBuddy(self.cpus)
             grid_layout.addWidget(self.cpus, 0, 3)
             label = QLabel("&Nodes:")
             grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
             self.nodes = QSpinBox()
             self.nodes.setMinimum(0)
-            self.nodes.setSpecialValueText("default")
+            # self.nodes.setSpecialValueText("default")
             self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.nodes.setAlignment(Qt.AlignRight)
-            self.nodes.valueChanged.connect(lambda: self._param_editted('nodes'))
+            self.cpus.setToolTip("Number of independent nodes your job will allocate. By general PLaSK\n"
+                                 "does not operate on multiple nodes, so 1 is usually the best choice.\n"
+                                 "However, you may have written your Python script in such way that it\n"
+                                 "performs calculations on multiple nodes e.g. using MPI (MPI4Py).\n"
+                                 "Note: if you set it to anything larger than 1, make sure, the working\n"
+                                 "directory is accessible from all the nodes.")
             label.setBuddy(self.nodes)
             grid_layout.addWidget(self.nodes, 1, 3)
             self.mpi = QCheckBox()
             self.mpi.setText("&MPI")
+            self.mpi.setToolTip("Check this if you are using MPI in your script (e.g. MPI4Py)\n"
+                                "and you want to use 'runmpi' command to start PLaSK.")
             grid_layout.addWidget(self.mpi, 1, 4)
             layout.addLayout(grid_layout)
 
@@ -795,6 +884,8 @@ else:
             array_layout.setContentsMargins(0, 0, 0, 0)
             self.array = QCheckBox()
             self.array.setText("A&rray")
+            self.array.setToolTip("Check this if you want to launch computations multiple times using an array.\n"
+                                  "Refer to your batch system documentation for details on job arrays.")
             array_layout.addWidget(self.array)
             self.array_widget = QWidget()
             array_widget_layout = QHBoxLayout()
@@ -818,9 +909,7 @@ else:
             self.array.setChecked(False)
             self.array_from.setValue(0)
             self.array_to.setValue(1)
-            self.array.stateChanged.connect(self.array_changed)
-            self.array_from.valueChanged.connect(self.array_changed)
-            self.array_to.valueChanged.connect(self.array_changed)
+            self.array.stateChanged.connect(lambda: self.array_widget.setEnabled(self.array.isChecked()))
             self.array_widget.setEnabled(self.array.isChecked())
             self.array_widget.setLayout(array_widget_layout)
             array_layout.addWidget(self.array_widget)
@@ -833,7 +922,6 @@ else:
                                     "If the directory starts with / it is consider as an absolute path,\n"
                                     "otherwise it is relative to your home directory. If the directory\n"
                                     "does not exists, it is automatically created.")
-            self.workdir.textEdited.connect(lambda: self._param_editted('workir'))
             label.setBuddy(self.workdir)
             dirbutton = QPushButton()
             dirbutton.setIcon(QIcon.fromTheme('folder-open'))
@@ -858,10 +946,9 @@ else:
             self.other_params = QLineEdit()
             self.other_params.setVisible(False)
             self.other_params.setToolTip("Other submit parameters. You can use them to precisely specify\n"
-                                   "requested resources etc. Please refer to batch system documentation\n"
-                                   "for details.")
+                                         "requested resources etc. Please refer to batch system documentation\n"
+                                         "for details.")
             layout.addWidget(self.other_params)
-            self.other_params.textEdited.connect(lambda: self._param_editted('other'))
 
             modules_layout = QHBoxLayout()
             modules_layout.setContentsMargins(0, 0, 0, 0)
@@ -880,10 +967,9 @@ else:
             self.modules.setFixedHeight(3 * self.modules.fontMetrics().height())
             self.modules.setToolTip("Many HPC clusters use LMOD modules to set-up computation environment.\n"
                                     "Here you can specify a list of such modules to load before launching PLaSK.\n"
-                                    "Just put one module name or module/version (i.e. openblas/0.2.19) per line.\n"
+                                    "Just put one module name or module/version (e.g. 'openblas/0.2.19') per line.\n"
                                     "You can also remove default modules by adding '-' before the module name\n"
-                                    "(i.e. -mpich).")
-            self.modules.textChanged.connect(lambda: self._param_editted('modules'))
+                                    "(e.g. '-mpich').")
             layout.addWidget(self.modules)
 
             label = QLabel("&Log level:")
@@ -904,125 +990,149 @@ else:
 
             self._widget = widget
 
-            self.set_params(tuple(self.accounts.values())[self.accounts_combo.currentIndex()].get_params(self.filename))
+            if self.accounts:
+                self.update_params()
+                for account in self.accounts:
+                    account.update_widget(account.params.get(self.filename, {}))
 
+            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             return widget
 
-        def _param_editted(self, param):
-            self._params_changed[param] = True
+        def exit(self, visible):
+            for account in self.accounts:
+                account.exit()
 
-        def set_params(self, params):
+        def get_params(self):
+            params = {'workdir': self.workdir.text(),
+                      'wall': self.wall_time.text(),
+                      'mem': self.memory.text(),
+                      'cpus': self.cpus.value(),
+                      'nodes': self.nodes.value(),
+                      'mpi': self.mpi.isChecked(),
+                      'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
+                      'other': self.other_params.text(),
+                      'modules': self.modules.toPlainText()}
+            if self._current_account is not None:
+                params.update(self.accounts[self._current_account].get_params())
+            return params
+
+        def update_params(self):
+            params = self.accounts[self._current_account].params.get(self.filename, {})
             with BlockQtSignals(self._widget):
                 self.workdir.setText(params.get('workdir', ''))
                 self.wall_time.setText(params.get('wall', ''))
                 self.memory.setText(params.get('mem', ''))
-                self.cpus.setValue(params.get('cpus', 1))
-                self.nodes.setValue(params.get('nodes', 1))
-                self.mpi.setChecked(params.get('mpi', False))
+                self.cpus.setValue(int(params.get('cpus', 1)))
+                self.nodes.setValue(int(params.get('nodes', 1)))
+                self.mpi.setChecked(bool(int(params.get('mpi', 0))))
                 if params.get('array') is None:
                     self.array.setChecked(False)
                 else:
                     self.array.setChecked(True)
-                    self.array_from.setValue(params.get('array', (0,1))[0])
-                    self.array_to.setValue(params.get('array', (0,1))[1])
+                    self.array_from.setValue(int(params.get('array', (0,1))[0]))
+                    self.array_to.setValue(int(params.get('array', (0,1))[1]))
                 self.other_params.setText(params.get('other', ''))
                 self.modules.setPlainText(params.get('modules', ''))
 
         def load_accounts(self):
+            self.accounts = []
             accounts = CONFIG['launcher_batch/accounts']
-            self.accounts = OrderedDict()
             if accounts is not None:
                 accounts = accounts.split('\n')
                 if not isinstance(accounts, list):
                     accounts = [accounts]
-                for data in accounts:
-                    name, account = Account.load(data)
-                    self.accounts[name] = account
+                for account in accounts:
+                    account = account.split(':')
+                    self.accounts.append(Account.load_old(account))
+            else:
+                with CONFIG.group('launcher_batch/accounts') as config:
+                    for name, account in config.groups:
+                        self.accounts.append(Account.load(name, account))
 
         def save_accounts(self):
-            data = []
-            for name, account in self.accounts.items():
-                data.append(account.save(name))
-            if not data:
-                del CONFIG['launcher_batch/accounts']
-            else:
-                CONFIG['launcher_batch/accounts'] = '\n'.join(data)
+            del CONFIG['launcher_batch/accounts']
+            with CONFIG.group('launcher_batch/accounts') as config:
+                for account in self.accounts:
+                    with config.group(account.name) as group:
+                        for k, v in account.save().items():
+                            group[k] = v
             CONFIG.sync()
-
-        def array_changed(self):
-            self.array_widget.setEnabled(self.array.isChecked())
-            self._params_changed['array'] = True
 
         def account_add(self):
             dialog = Account.EditDialog()
             if dialog.exec_() == QDialog.Accepted:
-                account = dialog.name
-                if account not in self.accounts:
-                    self.accounts[account] = SYSTEMS[dialog.system]()
-                    self.accounts[account].update(dialog)
-                    self.accounts_combo.addItem(account)
-                    widget = self.accounts[account].widget()
+                name = dialog.name
+                if name not in self.accounts:
+                    account = SYSTEMS[dialog.system](name)
+                    account.update(dialog)
+                    self.accounts.append(account)
+                    self.accounts_combo.addItem(name)
+                    widget = account.widget()
                     self.account_widgets.append(widget)
                     self.accounts_layout.addWidget(widget)
-                    self.accounts_combo.setCurrentIndex(self.accounts_combo.count()-1)
+                    index = self.accounts_combo.count() - 1
+                    self.accounts_combo.setCurrentIndex(index)
+                    self.account_changed(index)
                 else:
                     QMessageBox.critical(None, "Add Error",
-                                               "Execution account '{}' already in the list.".format(account))
+                                               "Execution account '{}' already in the list.".format(name))
                 self.save_accounts()
 
         def account_edit(self):
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
-            dialog = Account.EditDialog(self.accounts[old], old)
+            dialog = Account.EditDialog(self.accounts[idx], old)
             if dialog.exec_() == QDialog.Accepted:
                 new = dialog.name
-                if new != old and new in self.accounts:
+                if new != old and new in (a.name for a in self.accounts):
                     QMessageBox.critical(None, "Edit Error",
                                                "Execution account '{}' already in the list.".format(new))
                 else:
-                    if dialog.system == self.accounts[old].NAME:
-                        account = self.accounts[old]
-                    else:
-                        account = SYSTEMS[dialog.system]()
-                    account.update(dialog)
-                    for i in range(len(self.accounts)):
-                        k, v = self.accounts.popitem(False)
-                        if k == old:
-                            self.accounts[new] = account
-                            widget = account.widget()
-                            if self.account_widgets[i] != widget:
-                                self.accounts_layout.removeWidget(self.account_widgets[i])
-                                self.account_widgets[i].setParent(None)  # delete the widget
-                                self.account_widgets[i] = widget
-                                self.accounts_layout.insertWidget(i, widget)
-                        else:
-                            self.accounts[k] = v
+                    if dialog.system != self.accounts[idx].SYSTEM:
+                        self.accounts[idx].del_params()
+                        self.accounts[idx] = SYSTEMS[dialog.system](new)
+                    elif new != old:
+                        self.accounts[idx].name = new
+                    self.accounts[idx].update(dialog)
+                    widget = self.accounts[idx].widget()
+                    if self.account_widgets[idx] != widget:
+                        self.accounts_layout.removeWidget(self.account_widgets[idx])
+                        self.account_widgets[idx].setParent(None)  # delete the widget
+                        self.account_widgets[idx] = widget
+                        self.accounts_layout.insertWidget(idx, widget)
                     self.accounts_combo.setItemText(idx, new)
                     self.account_changed(new)
                     self.save_accounts()
 
-
         def account_remove(self):
-            current = self.accounts_combo.currentText()
             confirm = QMessageBox.warning(None, "Remove Account?",
-                                                "Do you really want to remove the account '{}'?".format(current),
-                                                QMessageBox.Yes | QMessageBox.No)
+                                          "Do you really want to remove the account '{}'?"
+                                          .format(self.accounts[self._current_account].name),
+                                          QMessageBox.Yes | QMessageBox.No)
             if confirm == QMessageBox.Yes:
-                index = list(self.accounts.keys()).index(current)
-                self.accounts_combo.removeItem(index)
-                del self.account_widgets[index]
-                del self.accounts[current]
+                self.accounts_layout.removeWidget(self.account_widgets[self._current_account])
+                self.account_widgets[self._current_account].setParent(None)  # delete the widget
+                del self.account_widgets[self._current_account]
+                self.accounts[self._current_account].del_params()
+                del self.accounts[self._current_account]
+                idx = self._current_account
+                self._current_account = None
+                self.accounts_combo.removeItem(idx)
+                self.account_changed(self.accounts_combo.currentIndex())
                 self.save_accounts()
+                self._adjust_window_size()
 
         def account_changed(self, index):
+            if self._current_account is not None:
+                self.accounts[self._current_account].params[self.filename] = self.get_params()
             if isinstance(index, int):
-                self._saved_account = index
+                self._current_account = index
             else:
-                self._saved_account = self.accounts_combo.currentIndex()
+                self._current_account = self.accounts_combo.currentIndex()
             for aw in self.account_widgets:
                 aw.setVisible(False)
-            self.account_widgets[self._saved_account].setVisible(True)
-            self.set_params(list(self.accounts.values())[self._saved_account].get_params(self.filename))
+            self.account_widgets[self._current_account].setVisible(True)
+            self.update_params()
             self._adjust_window_size()
 
         def show_optional(self, field, visible):
@@ -1031,7 +1141,9 @@ else:
 
         def _adjust_window_size(self):
             dialog = self._widget.parent()
+            width = self._widget.width()
             self._widget.adjustSize()
+            self._widget.setFixedWidth(width)
             dialog.setFixedHeight(dialog.sizeHint().height())
             dialog.adjustSize()
 
@@ -1142,8 +1254,7 @@ else:
                     return ssh
 
         def launch(self, main_window, args, defs):
-            account_name = self.accounts_combo.currentText()
-            account = self.accounts[account_name]
+            account = self.accounts[self.accounts_combo.currentIndex()]
             user, host = account.userhost.split('@')
             port = account.port
             document = main_window.document
@@ -1153,15 +1264,13 @@ else:
             ssh = self.connect(host, user, port)
             if ssh is None: return
 
-            # if document.filename is not None:
-                # self._workdirs[document.filename, account_name] = workdir
-                # self._save_workdirs()
             name = self.jobname.text()
             if not name:
                 name = os.path.basename(document.filename) if document.filename is not None else 'unnamed'
-            # self._saved_params = self.params.toPlainText().split("\n")
 
-            workdir = self.workdir.text()
+            params = self.get_params()
+
+            workdir = params['workdir']
             if not workdir:
                 _, stdout, _ = ssh.exec_command("pwd")
                 workdir = stdout.read().decode('utf8').strip()
@@ -1170,17 +1279,9 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            params = {'workdir': workdir,
-                      'wall': self.wall_time.text(),
-                      'mem': self.memory.text(),
-                      'cpus': self.cpus.value(),
-                      'nodes': self.nodes.value(),
-                      'mpi': self.mpi.isChecked(),
-                      'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
-                      'other': self.other_params.text(),
-                      'modules': self.modules.toPlainText()}
-
             result, message = account.submit(ssh, document, args, defs, loglevel, name, params)
+
+            account.save_params()
 
             if message: message = "\n\n" + message
             if result:
@@ -1191,8 +1292,11 @@ else:
                                            "Could not submit job to {}.{}".format(host, message))
 
         def select_workdir(self):
-            user, host = self.accounts[self.accounts_combo.currentText()].userhost.split('@')
-            port = self.accounts[self.accounts_combo.currentText()].port
+            if self._current_account is None:
+                return
+
+            user, host = self.accounts[self._current_account].userhost.split('@')
+            port = self.accounts[self._current_account].port
             ssh = self.connect(host, user, port)
             if ssh is None: return
 
@@ -1208,7 +1312,6 @@ else:
             dialog = RemoteDirDialog(sftp, host, workdir)
             if dialog.exec_() == QDialog.Accepted:
                 self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
-                self._params_changed['workdir'] = True
 
 
     class RemoteDirDialog(QDialog):
