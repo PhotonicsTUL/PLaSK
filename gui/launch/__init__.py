@@ -70,7 +70,7 @@ class LaunchDialog(QDialog):
         self.layout.addWidget(args_label)
         self.layout.addWidget(self.args)
 
-        self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
+        self.launcher_widgets = [l.widget(window, self) for l in LAUNCHERS]
         global current_launcher
         if current_launcher is None:
             current_launcher = combo.findText(CONFIG['launcher/default'])
@@ -113,6 +113,7 @@ def launch_plask(window):
     dialog = LaunchDialog(window)
     global _launch_args
     result = dialog.exec_()
+    launcher = LAUNCHERS[current_launcher]
     _launch_args = dialog.args.text()
     if result == QDialog.Accepted:
         launch_defs = []
@@ -132,5 +133,9 @@ def launch_plask(window):
                 value = '='.join(items[1:]).strip()
                 if value:
                     launch_defs.append('{}={}'.format(name, value))
-        launcher = LAUNCHERS[current_launcher]
         launcher.launch(window, shlex.split(_launch_args), launch_defs)
+    for launch in LAUNCHERS:
+        try:
+            launch.exit(launch is launcher)
+        except AttributeError:
+            pass

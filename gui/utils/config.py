@@ -315,6 +315,31 @@ class Config(object):
         except TypeError:
             return current
 
+    def __iter__(self):
+        for key in self.qsettings.childKeys():
+            yield key, self.qsettings.value(key)
+
+    class _Group(object):
+        def __init__(self, config, group):
+            self.config = config
+            self.group = group
+
+        def __enter__(self):
+            self.config.qsettings.beginGroup(self.group)
+            return self.config
+
+        def __exit__(self, exception_type, exception_value, traceback):
+            self.config.qsettings.endGroup()
+
+    def group(self, group):
+        return self._Group(self, group)
+
+    @property
+    def groups(self):
+        for key in self.qsettings.childGroups():
+            with self._Group(self, key) as group:
+                yield key, group
+
     def __setitem__(self, key, value):
         self.qsettings.setValue(key, value)
 

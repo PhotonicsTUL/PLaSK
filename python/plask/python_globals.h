@@ -237,6 +237,9 @@ struct LoggingConfig
 
     LogLevel getLogLevel() const { return maxLoglevel; }
     void setLogLevel(LogLevel level) { if (!forcedLoglevel) maxLoglevel = level; }
+
+    py::object getPrefix() const;
+    void setPrefix(py::object prefix);
 };
 
 
@@ -313,9 +316,9 @@ struct Overriden
     PyObject* self;
 
     Overriden() {}
-    
+
     Overriden(PyObject* self): self(self) {}
-    
+
     bool overriden(char const* name) const {
         py::converter::registration const& r = py::converter::registered<Material>::converters;
         PyTypeObject* class_object = r.get_class_object();

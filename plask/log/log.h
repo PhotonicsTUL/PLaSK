@@ -61,6 +61,11 @@ class PLASK_API Logger {
     template<typename... Args>
     friend void writelog(LogLevel level, const std::string& msg, Args&&... params);
 
+  protected:
+
+    /// Prefix to add to every log line
+    std::string prefix;
+
   public:
 
     enum ColorMode {
@@ -71,7 +76,14 @@ class PLASK_API Logger {
 #endif
     };
 
+    /// Log coloring mode
     ColorMode color;
+
+    /// Get prefix
+    std::string getPrefix() const { return prefix.substr(1); }
+
+    /// Set prefix, parsing special fields
+    virtual void setPrefix(const std::string& value);
 
     Logger(): silent(false), color(
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)

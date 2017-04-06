@@ -3,6 +3,8 @@
 #include <frameobject.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/asio/ip/host_name.hpp>
+
 #include <boost/python/enum.hpp>
 #include <boost/python/raw_function.hpp>
 
@@ -47,6 +49,8 @@ struct PythonSysLogger: public plask::Logger {
     unsigned short previous_color;
 #endif
 
+    void setPrefix(const std::string& value) override;
+
     const char* head(plask::LogLevel level);
 
     PythonSysLogger();
@@ -54,6 +58,32 @@ struct PythonSysLogger: public plask::Logger {
     virtual void writelog(plask::LogLevel level, const std::string& msg) override;
 
 };
+
+
+void PythonSysLogger::setPrefix(const std::string& value) {
+    if (value == "__host__" || value == "__hostname__") {
+        prefix = boost::asio::ip::host_name() + " : ";
+    } else if (value == "__mpi4py__") {
+        try {
+            py::object mpi = py::import("mpi4py.MPI");
+            int rank = py::extract<int>(mpi.attr("COMM_WORLD").attr("Get_rank")());
+            prefix = format("{} : ", rank);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+    } else if (value == "__boostmpi__") {
+        try {
+            py::object mpi = py::import("boost.mpi");
+            int rank = py::extract<int>(mpi.attr("rank"));
+            prefix = format("{} : ", rank);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+    } else {
+        prefix = value + " : ";
+    }
+}
+
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
@@ -171,24 +201,24 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s%s" ANSI_DEFAULT "\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStderr("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s%s" ANSI_DEFAULT "\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStdout("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
         if (dest == DEST_STDERR) {
-            PySys_WriteStderr("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
         } else {
-            PySys_WriteStdout("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), previous_color);
         }
 #endif
     } else {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s%s\n", head(level), pyinfo.c_str(), msg.c_str());
+            PySys_WriteStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
     }
 }
 
@@ -257,6 +287,19 @@ void LoggingConfig::setLoggingDest(py::object dest) {
     throw TypeError("Setting output for current logging system does not make sense.");
 }
 
+py::object LoggingConfig::getPrefix() const {
+    std::string prefix = default_logger->getPrefix();
+    if (!prefix.length()) return py::object();
+    else return py::object(prefix);
+}
+void LoggingConfig::setPrefix(py::object prefix) {
+    if (prefix == py::object())
+        default_logger->setPrefix("");
+    else
+        default_logger->setPrefix(py::extract<std::string>(prefix));
+}
+
+
 py::object print_log(py::tuple args, py::dict kwargs) {
     bool kw = kwargs.has_key("level");
     if (py::len(kwargs) > (kw ? 1 : 0)) {
@@ -320,6 +363,7 @@ void register_python_log()
         " or 'none').")
         .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination ('stderr' or 'stdout').")
         .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, "Maximum log level.")
+        .add_property("prefix", &LoggingConfig::getPrefix, &LoggingConfig::setPrefix, "Log prefix.")
         .def("use_python", createPythonLogger,
              "Use Python for log output.\n\n"
              "By default PLaSK uses system calls for printing. This is more efficient,\n"

@@ -228,7 +228,6 @@
 </grids>
 
 <solvers>
-  <thermal name="test" solver="Test" lib="solvers"/>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>

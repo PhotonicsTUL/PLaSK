@@ -92,7 +92,8 @@ py::list axeslist_by_name(const std::string& axes_names) {
 std::string Config::__str__() const {
     return  "axes:        " + axes_name()
         + "\nlog.colors:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
-        + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
+        + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("__str__")))
+        + "\nlog.prefix:   " + std::string(py::extract<std::string>(LoggingConfig().getPrefix().attr("__str__")()))
         + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
     ;
 }
@@ -101,7 +102,8 @@ std::string Config:: __repr__() const {
     return
         format("config.axes = '{}'", axes_name()) +
            + "\nlog.colors = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
-           + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
+           + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("__str__")))
+           + "\nlog.prefix:   " + std::string(py::extract<std::string>(LoggingConfig().getPrefix().attr("__repr__")()))
            + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
     ;
 }
@@ -181,15 +183,16 @@ inline static void register_config()
 
                       "        Setting any of the above levels will instruct PLaSK to print only\n"
                       "        information of the specified level and above. It is recommended to\n"
-                      "        always set the logging level at least to 'WARNING'.\n\n"
+                      "        always set the logging level at least to 'WARNING'. This setting is\n"
+                      "        ignored when the plask option :option:`-l` is specified.\n\n"
+
+                      "**prefix**\n"
+                      "        Prefix added before each log message. It can be used to identify tasks\n"
+                      "        in parallel computations.\n"
 
                       "**output**\n"
                       "        Stream to which the log messages are printed. Can be either **stderr**\n"
-                      "        (which is the default) or **stdout** (turned on for interactive mode).\n\n"
-
-                      "Usually you should only want to change the :attr:`config.log.level` value.\n"
-                      "However this setting is ignored when the plask option :option:`-l`\n"
-                      "is specified.\n"
+                      "        (which is the default) or **stdout** (turned on for interactive mode).\n"
                      );
     py::scope().attr("config") = Config();
 }

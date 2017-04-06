@@ -83,7 +83,7 @@ static void from_import_all(const char* name, py::object& dest)
 
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
-static py::object initPlask(int argc, const char* argv[])
+static py::object initPlask(int argc, const char* argv[], const std::string& logprefix="")
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
@@ -91,6 +91,7 @@ static py::object initPlask(int argc, const char* argv[])
     // Initialize Python
     Py_Initialize();
 
+    if (logprefix.length()) plask::default_logger->setPrefix(logprefix);
 
     // Add search paths
     py::object sys = py::import("sys");
@@ -181,6 +182,7 @@ static inline void finalizeMPI() {
         } catch (py::error_already_set) {
             PyErr_Clear();
         }
+        return;
     }
     mpi = modules.get("boost.mpi");
     if (mpi != py::object()) {
@@ -193,6 +195,7 @@ static inline void finalizeMPI() {
         } catch (py::error_already_set) {
             PyErr_Clear();
         }
+        return;
     }
 }
 
@@ -255,6 +258,7 @@ int main(int argc, const char *argv[])
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
     const char* log_color = nullptr;
+    std::string log_prefix;
     bool python_logger = true;
 
     enum {
@@ -289,6 +293,7 @@ int main(int argc, const char *argv[])
                 else if (ll == "nopython" || ll == "nopy") { python_logger = false; }
                 else if (ll == "ansi") { log_color = "ansi"; }
                 else if (ll == "mono") { log_color = "none"; }
+                else if (ll.substr(0, 7) == "prefix=") { log_prefix = ll.substr(7); }
                 else {
                     fprintf(stderr, "Bad log level specified\n");
                     return 4;
@@ -354,7 +359,7 @@ int main(int argc, const char *argv[])
 
     // Initalize python and load the plask module
     try {
-        initPlask(argc-1, argv+1);
+        initPlask(argc-1, argv+1, log_prefix);
     } catch (plask::CriticalException) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();

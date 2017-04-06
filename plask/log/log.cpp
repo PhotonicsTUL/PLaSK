@@ -1,5 +1,6 @@
 #include <cstdio>
-using namespace std;
+
+#include <boost/asio/ip/host_name.hpp>
 
 #include "log.h"
 
@@ -25,6 +26,13 @@ PLASK_API LogLevel maxLoglevel = LOG_DEBUG;
 
 PLASK_API bool forcedLoglevel = false;
 
+
+void Logger::setPrefix(const std::string& value) {
+    if (value == "__host__" || value == "__hostname__")
+        prefix = " " + boost::asio::ip::host_name() + " : ";
+    else
+        prefix = value + " : ";
+}
 
 struct StderrLogger: public plask::Logger {
 
@@ -134,20 +142,20 @@ void StderrLogger::writelog(LogLevel level, const std::string& msg) {
     static OmpLock loglock;
     OmpLockGuard<OmpLock> guard(loglock);
 #endif
-    
+
     static LogLevel prev_level; static std::string prev_msg;
     if (level == prev_level && msg == prev_msg) return;
     prev_level = level; prev_msg = msg;
 
     if (color == COLOR_ANSI) {
-        fprintf(stderr, "%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+        fprintf(stderr, "%s: %s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), msg.c_str());
     #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
-        fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
+        fprintf(stderr, "%s: %s%s\n", head(level), prefix.c_str(), msg.c_str());
         SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
     #endif
     } else {
-        fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
+        fprintf(stderr, "%s: %s%s\n", head(level), prefix.c_str(), msg.c_str());
     }
 }
 

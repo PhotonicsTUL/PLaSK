@@ -360,8 +360,8 @@ class Launcher(object):
     def __init__(self):
         self.dirname = None
 
-    def widget(self, main_window):
-        widget = QWidget()
+    def widget(self, main_window, parent=None):
+        widget = QWidget(parent)
         layout = QVBoxLayout()
         widget.setLayout(layout)
         layout.addWidget(QLabel("Working directory:"))
