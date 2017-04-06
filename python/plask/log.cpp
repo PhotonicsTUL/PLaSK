@@ -3,7 +3,6 @@
 #include <frameobject.h>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/asio/ip/host_name.hpp>
 
 #include <boost/python/enum.hpp>
 #include <boost/python/raw_function.hpp>
@@ -62,7 +61,7 @@ struct PythonSysLogger: public plask::Logger {
 
 void PythonSysLogger::setPrefix(const std::string& value) {
     if (value == "__host__" || value == "__hostname__") {
-        prefix = boost::asio::ip::host_name() + " : ";
+        prefix = host_name() + " : ";
     } else if (value == "__mpi4py__") {
         try {
             py::object mpi = py::import("mpi4py.MPI");

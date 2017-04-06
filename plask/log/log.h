@@ -9,6 +9,8 @@
 
 namespace plask {
 
+PLASK_API std::string host_name();
+    
 enum LogLevel {
     LOG_CRITICAL_ERROR = 0, ///< Exceptions and errors unconditionally interrupting program flow
     LOG_ERROR = 1,          ///< Non-critical errors (e.g. failed convergence etc.), user can decide if the program should continue

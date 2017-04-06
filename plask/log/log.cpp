@@ -1,7 +1,5 @@
 #include <cstdio>
 
-#include <boost/asio/ip/host_name.hpp>
-
 #include "log.h"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -16,6 +14,12 @@
 #   include "../parallel.h"
 #endif
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#   include <Windows.h>
+#else
+#   include <unistd.h>
+#endif
+
 namespace plask {
 
 #ifdef NDEBUG
@@ -26,10 +30,24 @@ PLASK_API LogLevel maxLoglevel = LOG_DEBUG;
 
 PLASK_API bool forcedLoglevel = false;
 
-
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    PLASK_API std::string host_name() {
+        DWORD size = 1024;
+        char name[size];
+        GetComputerNameEx(ComputerNameDnsHostname, name, &size);
+        return std::string(name);
+    }
+#else
+    PLASK_API std::string host_name() {
+        char name[1024];
+        ::gethostname(name, sizeof(name));
+        return std::string(name);
+    }
+#endif
+    
 void Logger::setPrefix(const std::string& value) {
     if (value == "__host__" || value == "__hostname__")
-        prefix = " " + boost::asio::ip::host_name() + " : ";
+        prefix = " " + host_name() + " : ";
     else
         prefix = value + " : ";
 }
