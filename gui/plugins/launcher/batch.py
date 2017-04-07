@@ -449,10 +449,12 @@ else:
                     oth = oth.strip()
                     if oth: print(self.SUBMIT_OPTION, oth, file=stdin)
                 for mod in params['modules'].splitlines():
-                    if not mod.startswith('-'):
-                        print('module add', mod, file=stdin)
-                    else:
+                    if mod.startswith('-'):
                         print('module del', mod[1:], file=stdin)
+                    elif mod.startswith('+'):
+                        print('module add', mod[1:], file=stdin)
+                    else:
+                        print('module add', mod, file=stdin)
                 if params['mpi']:
                     command = (self.mpirun or 'mpirun') + ' ' + command
                 if params['nodes'] > 1:
