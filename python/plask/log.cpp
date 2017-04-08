@@ -1,5 +1,7 @@
 #include "python_globals.h"
 
+#include <cstdlib>
+
 #include <frameobject.h>
 
 #include <boost/algorithm/string.hpp>
@@ -60,8 +62,21 @@ struct PythonSysLogger: public plask::Logger {
 
 
 void PythonSysLogger::setPrefix(const std::string& value) {
-    if (value == "__host__" || value == "__hostname__") {
+    if (value == "") {
+        prefix = "";
+    } else if (value == "__host__" || value == "__hostname__") {
         prefix = host_name() + " : ";
+    } else if (value == "__procid__") {
+        if (const char* env = std::getenv("PMI_RANK"))
+            prefix = std::string(env) + " : ";
+        else if (const char* env = std::getenv("OMPI_COMM_WORLD_RANK"))
+            prefix = std::string(env) + " : ";
+        else if (const char* env = std::getenv("SLURM_PROCID"))
+            prefix = std::string(env) + " : ";
+        else if (const char* env = std::getenv("PBS_VNODENUM"))
+            prefix = std::string(env) + " : ";
+        else
+            prefix = "";
     } else if (value == "__mpi4py__") {
         try {
             py::object mpi = py::import("mpi4py.MPI");

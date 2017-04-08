@@ -46,7 +46,9 @@ PLASK_API bool forcedLoglevel = false;
 #endif
     
 void Logger::setPrefix(const std::string& value) {
-    if (value == "__host__" || value == "__hostname__")
+    if (value == "")
+        prefix = "";
+    else if (value == "__host__" || value == "__hostname__")
         prefix = " " + host_name() + " : ";
     else
         prefix = value + " : ";

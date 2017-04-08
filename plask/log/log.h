@@ -82,7 +82,11 @@ class PLASK_API Logger {
     ColorMode color;
 
     /// Get prefix
-    std::string getPrefix() const { return prefix.substr(1); }
+    std::string getPrefix() const { 
+        size_t len = prefix.length();
+        if (len) return prefix.substr(0, len-3);
+        else return prefix;
+    }
 
     /// Set prefix, parsing special fields
     virtual void setPrefix(const std::string& value);

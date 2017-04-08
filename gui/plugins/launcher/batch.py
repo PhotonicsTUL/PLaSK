@@ -141,9 +141,11 @@ else:
 
         SUBMIT_OPTION = None
         SYSTEM = None
+        RUN1 = ''
+        RUNN = 'mpirun'
 
-        def __init__(self, name, userhost=None, port=None, program='', color=None, compress=None, bp='', mpirun='',
-                     params=None):
+        def __init__(self, name, userhost=None, port=None, program='', color=None, compress=None, bp='',
+                     run1='', runn='', params=None):
             self.name = name
             self.userhost = userhost
             self.port = _parse_int(port, 22)
@@ -151,7 +153,8 @@ else:
             self.color = _parse_bool(color, False)
             self.compress = _parse_bool(compress, True)
             self.bp = bp
-            self.mpirun = mpirun
+            self.run1 = run1
+            self.runn = runn
             self._widget = None
             if params is None:
                 self.params = {}
@@ -165,7 +168,7 @@ else:
             self.color = source.color
             self.compress = source.compress
             self.bp = source.bp
-            self.mpirun = source.mpirun
+            self.runn = source.runn
 
         @staticmethod
         def load_old(data):
@@ -182,11 +185,13 @@ else:
                     kwargs['params']= pickle.loads(CONFIG.get('params', '').encode())
                 except (pickle.PickleError, EOFError):
                     del kwargs['params']
+            if 'mpirun' in kwargs:
+                kwargs['runn'] = kwargs.pop('mpirun')
             return SYSTEMS[system](name, **kwargs)
 
         def save(self):
             return dict(userhost=self.userhost, port=self.port, system=self.__class__.SYSTEM, program=self.program,
-                        color=int(self.color), compress=int(self.compress), bp=self.bp, mpirun=self.mpirun)
+                        color=int(self.color), compress=int(self.compress), bp=self.bp, run1=self.run1, runn=self.runn)
 
         class EditDialog(QDialog):
 
@@ -256,7 +261,8 @@ else:
 
                 self._system_widgets = []
                 self._getters = {}
-                for cls in SYSTEMS.values():
+                self.systems = list(SYSTEMS.values())
+                for cls in self.systems:
                     widgets = []
                     for label, widget, name, getter in cls.config_widgets(account, self, self):
                         self._getters[name] = getter
@@ -282,13 +288,22 @@ else:
                 layout.addRow("&Command:", self.program_edit)
                 self._advanced_widgets.append(self.program_edit)
 
-                self.mpirun_edit = QLineEdit()
-                self.mpirun_edit.setToolTip("Command to start MPI tasks. Usually 'mpirun' (this is the default value).")
-                self.mpirun_edit.setPlaceholderText("mpirun")
-                if account is not None and account.mpirun:
-                    self.mpirun_edit.setText(account.mpirun)
-                layout.addRow("&MPI runner:", self.mpirun_edit)
-                self._advanced_widgets.append(self.mpirun_edit)
+                self.run1_edit = QLineEdit()
+                self.run1_edit.setToolTip("Command to start single-node tasks (e.g. 'prun', 'srun'). Can be blank.")
+                self.run1_edit.setPlaceholderText(self.systems[systems_index].RUN1)
+                if account is not None and account.run1:
+                    self.run1_edit.setText(account.run1)
+                layout.addRow("&Single runner:", self.run1_edit)
+                self._advanced_widgets.append(self.run1_edit)
+
+                self.runn_edit = QLineEdit()
+                self.runn_edit.setToolTip("Command to start multi-node tasks (e.g. 'prun', 'srun', 'runn'). "
+                                          "Can be blank.")
+                self.runn_edit.setPlaceholderText(self.systems[systems_index].RUNN)
+                if account is not None and account.runn:
+                    self.runn_edit.setText(account.runn)
+                layout.addRow("&Multi runner:", self.runn_edit)
+                self._advanced_widgets.append(self.runn_edit)
 
                 self.bp_edit = QLineEdit()
                 self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
@@ -337,6 +352,8 @@ else:
                     self._set_rows_visibility(widgets, False)
                 self._set_rows_visibility(self._system_widgets[index], True)
                 self.setFixedHeight(self.sizeHint().height())
+                self.run1_edit.setPlaceholderText(self.systems[index].RUN1)
+                self.runn_edit.setPlaceholderText(self.systems[index].RUNN)
                 self.adjustSize()
 
             def show_advanced(self, show):
@@ -356,7 +373,7 @@ else:
 
             def accept(self):
                 dynamic = ' '.join(str(g()) for g in self._getters.values())
-                if any(':' in s for s in (self.name, self.host, self.user, self.bp, self.program, self.mpirun,
+                if any(':' in s for s in (self.name, self.host, self.user, self.bp, self.program, self.runn,
                                           dynamic)):
                     QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
                 else:
@@ -393,8 +410,12 @@ else:
                 return self.systems_combo.currentText()
 
             @property
-            def mpirun(self):
-                return self.mpirun_edit.text()
+            def run1(self):
+                return self.run1_edit.text()
+
+            @property
+            def runn(self):
+                return self.runn_edit.text()
 
             @property
             def color(self):
@@ -455,19 +476,20 @@ else:
                         print('module add', mod[1:], file=stdin)
                     else:
                         print('module add', mod, file=stdin)
-                if params['mpi']:
-                    command = (self.mpirun or 'mpirun') + ' ' + command
-                if params['nodes'] > 1:
-                    fname2 = self.tmpfile(fname, params['array'] is not None)
-                else:
+                if params['nodes'] == 1:
+                    run = self.run1 or self.RUN1
                     fname2 = '-:' + fname
-                command_line = "{cmd} -{ft} -l{ll}{lc}{lm} {defs} {fname} {args}".format(
+                else:
+                    run = self.runn or self.RUNN
+                    fname2 = self.tmpfile(fname, params['array'] is not None)
+                command_line = "{run}{cmd} -{ft} -l{ll}{lc}{lm} {defs} {fname} {args}".format(
+                    run=(run+' ') if run else '',
                     cmd=command,
                     fname=fname2,
                     defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                     ll=loglevel,
                     lc=' -lansi' if self.color else '',
-                    lm=' -lprefix=__mpi4py__' if params['mpi'] else'',
+                    lm=' -lprefix=__procid__' if params['nodes'] > 1 else'',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
                 if params['nodes'] <= 1:
                     if self.compress:
@@ -563,10 +585,12 @@ else:
 
         SUBMIT_OPTION = "#SBATCH"
         SYSTEM = 'SLURM'
+        RUN1 = 'srun'
+        RUNN = 'srun'
 
-        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
-                     partitions=None, qos=None, params=None):
-            super(Slurm, self).__init__(name, userhost, port, program, color, compress, bp, mpirun, params)
+        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
+                     run1='', runn='', partitions=None, qos=None, params=None):
+            super(Slurm, self).__init__(name, userhost, port, program, color, compress, bp, run1, runn, params)
             if partitions:
                 self.partitions = partitions if isinstance(partitions, list) else partitions.split(',')
             else:
@@ -690,10 +714,11 @@ else:
 
         SUBMIT_OPTION = "#PBS"
         SYSTEM = 'PBS/Torque'
+        RUNN = 'pbsdsh'
 
-        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='', mpirun='',
-                     queues=None, params=None):
-            super(Torque, self).__init__(name, userhost, port, program, color, compress, bp, mpirun, params)
+        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
+                     run1='', runn='', queues=None, params=None):
+            super(Torque, self).__init__(name, userhost, port, program, color, compress, bp, run1, runn, params)
             if queues:
                 self.queues = queues if isinstance(queues, list) else queues.split(',')
             else:
@@ -906,12 +931,6 @@ else:
                                  "directory is accessible from all the nodes.")
             label.setBuddy(self.nodes)
             grid_layout.addWidget(self.nodes, 1, 3)
-            self.mpi = QCheckBox()
-            self.mpi.setText("&MPI")
-            self.mpi.setToolTip("Check this if you are using MPI in your script (e.g. MPI4Py)\n"
-                                "and you want to use 'runmpi' command to start PLaSK.")
-            grid_layout.addWidget(self.mpi, 1, 4)
-            layout.addLayout(grid_layout)
 
             array_layout = QHBoxLayout()
             array_layout.setContentsMargins(0, 0, 0, 0)
@@ -1041,7 +1060,6 @@ else:
                       'mem': self.memory.text(),
                       'cpus': self.cpus.value(),
                       'nodes': self.nodes.value(),
-                      'mpi': self.mpi.isChecked(),
                       'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
                       'other': self.other_params.text(),
                       'modules': self.modules.toPlainText()}
@@ -1057,7 +1075,6 @@ else:
                 self.memory.setText(params.get('mem', ''))
                 self.cpus.setValue(int(params.get('cpus', 1)))
                 self.nodes.setValue(int(params.get('nodes', 1)))
-                self.mpi.setChecked(bool(int(params.get('mpi', 0))))
                 if params.get('array') is None:
                     self.array.setChecked(False)
                 else:

@@ -135,7 +135,7 @@ class TableModelEditMethods(object):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
-        if self.is_read_only() or not index.isValid() or value == self.data(index):
+        if self.is_read_only() or not index.isValid() or v6alue == self.data(index):
             return False
         self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
