@@ -182,7 +182,7 @@ else:
             system = kwargs.pop('system')
             if 'params' in kwargs:
                 try:
-                    kwargs['params']= pickle.loads(CONFIG.get('params', '').encode())
+                    kwargs['params'] = pickle.loads(CONFIG.get('params', '').encode())
                 except (pickle.PickleError, EOFError):
                     del kwargs['params']
             if 'mpirun' in kwargs:
@@ -918,7 +918,7 @@ else:
             label = QLabel("&Nodes:")
             grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
             self.nodes = QSpinBox()
-            self.nodes.setMinimum(0)
+            self.nodes.setMinimum(1)
             # self.nodes.setSpecialValueText("default")
             self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.nodes.setAlignment(Qt.AlignRight)
@@ -930,6 +930,7 @@ else:
                                  "directory is accessible from all the nodes.")
             label.setBuddy(self.nodes)
             grid_layout.addWidget(self.nodes, 1, 3)
+            layout.addLayout(grid_layout)
 
             array_layout = QHBoxLayout()
             array_layout.setContentsMargins(0, 0, 0, 0)
