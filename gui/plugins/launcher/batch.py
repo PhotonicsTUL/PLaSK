@@ -168,6 +168,7 @@ else:
             self.color = source.color
             self.compress = source.compress
             self.bp = source.bp
+            self.run1 = source.run1
             self.runn = source.runn
 
         @staticmethod
@@ -584,7 +585,6 @@ else:
 
         SUBMIT_OPTION = "#SBATCH"
         SYSTEM = 'SLURM'
-        RUN1 = 'srun'
         RUNN = 'srun'
 
         def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
@@ -905,8 +905,23 @@ else:
                                    "the batch system documentation for the allowed format of this field.")
             label.setBuddy(self.memory)
             grid_layout.addWidget(self.memory, 1, 1)
-            label = QLabel("&CPUs/node:")
+            label = QLabel("&Nodes:")
             grid_layout.addWidget(label, 0, 2, Qt.AlignRight)
+            self.nodes = QSpinBox()
+            self.nodes.setMinimum(1)
+            # self.nodes.setSpecialValueText("default")
+            self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.nodes.setAlignment(Qt.AlignRight)
+            self.nodes.setToolTip("Number of independent nodes your job will allocate. By general PLaSK\n"
+                                 "does not operate on multiple nodes, so 1 is usually the best choice.\n"
+                                 "However, you may have written your Python script in such way that it\n"
+                                 "performs calculations on multiple nodes e.g. using MPI (MPI4Py).\n"
+                                 "Note: if you set it to anything larger than 1, make sure, the working\n"
+                                 "directory is accessible from all the nodes.")
+            label.setBuddy(self.nodes)
+            grid_layout.addWidget(self.nodes, 0, 3)
+            label = QLabel("&CPUs/node:")
+            grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
             self.cpus = QSpinBox()
             self.cpus.setMinimum(0)
             self.cpus.setSpecialValueText("default")
@@ -914,22 +929,7 @@ else:
             self.cpus.setAlignment(Qt.AlignRight)
             self.cpus.setToolTip("Number of CPUs on each node your job will utilize.")
             label.setBuddy(self.cpus)
-            grid_layout.addWidget(self.cpus, 0, 3)
-            label = QLabel("&Nodes:")
-            grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
-            self.nodes = QSpinBox()
-            self.nodes.setMinimum(1)
-            # self.nodes.setSpecialValueText("default")
-            self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.nodes.setAlignment(Qt.AlignRight)
-            self.cpus.setToolTip("Number of independent nodes your job will allocate. By general PLaSK\n"
-                                 "does not operate on multiple nodes, so 1 is usually the best choice.\n"
-                                 "However, you may have written your Python script in such way that it\n"
-                                 "performs calculations on multiple nodes e.g. using MPI (MPI4Py).\n"
-                                 "Note: if you set it to anything larger than 1, make sure, the working\n"
-                                 "directory is accessible from all the nodes.")
-            label.setBuddy(self.nodes)
-            grid_layout.addWidget(self.nodes, 1, 3)
+            grid_layout.addWidget(self.cpus, 1, 3)
             layout.addLayout(grid_layout)
 
             array_layout = QHBoxLayout()
