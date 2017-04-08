@@ -340,10 +340,9 @@ class ScriptController(SourceEditController):
                           'partitions': syntax['partitions'],
                           'scanner': copy(syntax['scanner'])}
         current_syntax['scanner'][None] = copy(syntax['scanner'][None])
+        defines = ['ARRAYID', 'PROCID']
         if self.document.defines is not None:
-            defines = ['IDX'] + [e.name for e in self.document.defines.model.entries]
-        else:
-            defines = ['IDX']
+            defines += [e.name for e in self.document.defines.model.entries]
         current_syntax['scanner'][None].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
         if self.document.solvers is not None:
             solvers = [e.name for e in self.document.solvers.model.entries]

@@ -81,23 +81,7 @@ class PLASK_API Logger {
     /// Log coloring mode
     ColorMode color;
 
-    /// Get prefix
-    std::string getPrefix() const { 
-        size_t len = prefix.length();
-        if (len) return prefix.substr(0, len-3);
-        else return prefix;
-    }
-
-    /// Set prefix, parsing special fields
-    virtual void setPrefix(const std::string& value);
-
-    Logger(): silent(false), color(
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-        Logger::COLOR_WINDOWS
-#else
-        isatty(fileno(stderr))? Logger::COLOR_ANSI : Logger::COLOR_NONE
-#endif
-    ) {}
+    Logger();
 
     virtual ~Logger() {}
 

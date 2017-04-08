@@ -237,9 +237,6 @@ struct LoggingConfig
 
     LogLevel getLogLevel() const { return maxLoglevel; }
     void setLogLevel(LogLevel level) { if (!forcedLoglevel) maxLoglevel = level; }
-
-    py::object getPrefix() const;
-    void setPrefix(py::object prefix);
 };
 
 

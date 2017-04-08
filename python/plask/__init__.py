@@ -449,13 +449,21 @@ import plask.algorithm
 
 ## ##  ## ##
 
-for IDX in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
-    if IDX in _os.environ:
-        try: IDX = int(_os.environ[IDX])
-        except ValueError: IDX = _os.environ[IDX]
+for ARRAYID in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
+    if ARRAYID in _os.environ:
+        try: ARRAYID = int(_os.environ[ARRAYID])
+        except ValueError: ARRAYID = _os.environ[ARRAYID]
         break
 else:
-    IDX = None
+    ARRAYID = None
+
+for PROCID in 'PMI_RANK', 'OMPI_COMM_WORLD_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
+    if PROCID in _os.environ:
+        try: PROCID = int(_os.environ[PROCID])
+        except ValueError: PROCID = _os.environ[PROCID]
+        break
+else:
+    PROCID = None
 
 ## ##  ## ##
 _plask.__xml__globals.update(globals())

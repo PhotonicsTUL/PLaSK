@@ -45,13 +45,23 @@ PLASK_API bool forcedLoglevel = false;
     }
 #endif
     
-void Logger::setPrefix(const std::string& value) {
-    if (value == "")
-        prefix = "";
-    else if (value == "__host__" || value == "__hostname__")
-        prefix = " " + host_name() + " : ";
+Logger::Logger(): silent(false), color(
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        Logger::COLOR_WINDOWS
+#   else
+        isatty(fileno(stderr))? Logger::COLOR_ANSI : Logger::COLOR_NONE
+#   endif
+    ) {
+    if (const char* env = std::getenv("PMI_RANK"))
+        prefix = std::string(env) + " : ";
+    else if (const char* env = std::getenv("OMPI_COMM_WORLD_RANK"))
+        prefix = std::string(env) + " : ";
+    else if (const char* env = std::getenv("SLURM_PROCID"))
+        prefix = std::string(env) + " : ";
+    else if (const char* env = std::getenv("PBS_VNODENUM"))
+        prefix = std::string(env) + " : ";
     else
-        prefix = value + " : ";
+        prefix = "";
 }
 
 struct StderrLogger: public plask::Logger {

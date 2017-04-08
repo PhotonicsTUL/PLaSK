@@ -482,14 +482,13 @@ else:
                 else:
                     run = self.runn or self.RUNN
                     fname2 = self.tmpfile(fname, params['array'] is not None)
-                command_line = "{run}{cmd} -{ft} -l{ll}{lc}{lm} {defs} {fname} {args}".format(
+                command_line = "{run}{cmd} -{ft} -l{ll}{lc} {defs} {fname} {args}".format(
                     run=(run+' ') if run else '',
                     cmd=command,
                     fname=fname2,
                     defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                     ll=loglevel,
                     lc=' -lansi' if self.color else '',
-                    lm=' -lprefix=__procid__' if params['nodes'] > 1 else'',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
                 if params['nodes'] <= 1:
                     if self.compress:
