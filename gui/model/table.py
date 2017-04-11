@@ -135,7 +135,7 @@ class TableModelEditMethods(object):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
-        if self.is_read_only() or not index.isValid() or v6alue == self.data(index):
+        if self.is_read_only() or not index.isValid() or value == self.data(index):
             return False
         self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
         return True
@@ -160,7 +160,7 @@ class TableModelEditMethods(object):
         def undo(self):
             self._set_entries(self.old_entries)
 
-    def _set_entries(self, new_entries, undoable = True):
+    def _set_entries(self, new_entries, undoable=True):
         command = TableModel.SetEntriesCommand(self, new_entries)
         if undoable:
             self._exec_command(command)

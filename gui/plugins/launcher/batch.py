@@ -816,7 +816,7 @@ else:
         _passwd_cache = {}
 
         def __init__(self):
-            self._current_account = None
+            self.current_account = None
             self.load_accounts()
 
         class Widget(QWidget):
@@ -824,8 +824,9 @@ else:
                 self.launcher = launcher
                 super(Launcher.Widget, self).__init__(parent)
             def hideEvent(self, event):
-                self.launcher.accounts[self.launcher._current_account].params[self.launcher.filename] = \
-                    self.launcher.get_params()
+                if self.launcher.accounts and self.launcher.current_account is not None:
+                    self.launcher.accounts[self.launcher.current_account].params[self.launcher.filename] = \
+                        self.launcher.get_params()
                 super(Launcher.Widget, self).hideEvent(event)
 
         def widget(self, main_window, parent=None):
@@ -842,10 +843,10 @@ else:
             accounts_layout.setContentsMargins(0, 0, 0, 0)
             self.accounts_combo = QComboBox()
             self.accounts_combo.addItems([a.name for a in self.accounts])
-            if self._current_account is not None:
-                self.accounts_combo.setCurrentIndex(self._current_account)
+            if self.current_account is not None:
+                self.accounts_combo.setCurrentIndex(self.current_account)
             else:
-                self._current_account = self.accounts_combo.currentIndex()
+                self.current_account = self.accounts_combo.currentIndex()
             self.accounts_combo.currentIndexChanged.connect(self.account_changed)
             self.accounts_combo.setToolTip("Select the remote server and user to send the job to.")
             accounts_layout.addWidget(self.accounts_combo)
@@ -854,16 +855,18 @@ else:
             account_add.setToolTip("Add new remote server.")
             account_add.pressed.connect(self.account_add)
             accounts_layout.addWidget(account_add)
-            account_edit = QToolButton()
-            account_edit.setIcon(QIcon.fromTheme('document-edit'))
-            account_edit.setToolTip("Edit the current remote server.")
-            account_edit.pressed.connect(self.account_edit)
-            accounts_layout.addWidget(account_edit)
-            account_remove = QToolButton()
-            account_remove.setIcon(QIcon.fromTheme('list-remove'))
-            account_remove.setToolTip("Remove the current remote server.")
-            account_remove.pressed.connect(self.account_remove)
-            accounts_layout.addWidget(account_remove)
+            self.account_edit_button = QToolButton()
+            self.account_edit_button.setIcon(QIcon.fromTheme('document-edit'))
+            self.account_edit_button.setToolTip("Edit the current remote server.")
+            self.account_edit_button.pressed.connect(self.account_edit)
+            self.account_edit_button.setEnabled(bool(self.accounts))
+            accounts_layout.addWidget(self.account_edit_button)
+            self.account_remove_button = QToolButton()
+            self.account_remove_button.setIcon(QIcon.fromTheme('list-remove'))
+            self.account_remove_button.setToolTip("Remove the current remote server.")
+            self.account_remove_button.pressed.connect(self.account_remove)
+            self.account_remove_button.setEnabled(bool(self.accounts))
+            accounts_layout.addWidget(self.account_remove_button)
             layout.addLayout(accounts_layout)
             label.setBuddy(self.accounts_combo)
 
@@ -1063,12 +1066,14 @@ else:
                       'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
                       'other': self.other_params.text(),
                       'modules': self.modules.toPlainText()}
-            if self._current_account is not None:
-                params.update(self.accounts[self._current_account].get_params())
+            if self.accounts and self.current_account is not None:
+                params.update(self.accounts[self.current_account].get_params())
             return params
 
         def update_params(self):
-            params = self.accounts[self._current_account].params.get(self.filename, {})
+            if not self.accounts or self.current_account is None:
+                return
+            params = self.accounts[self.current_account].params.get(self.filename, {})
             with BlockQtSignals(self._widget):
                 self.workdir.setText(params.get('workdir', ''))
                 self.wall_time.setText(params.get('wall', ''))
@@ -1122,6 +1127,8 @@ else:
                     self.accounts_layout.addWidget(widget)
                     index = self.accounts_combo.count() - 1
                     self.accounts_combo.setCurrentIndex(index)
+                    self.account_edit_button.setEnabled(True)
+                    self.account_remove_button.setEnabled(True)
                     self.account_changed(index)
                 else:
                     QMessageBox.critical(None, "Add Error",
@@ -1157,31 +1164,34 @@ else:
         def account_remove(self):
             confirm = QMessageBox.warning(None, "Remove Account?",
                                           "Do you really want to remove the account '{}'?"
-                                          .format(self.accounts[self._current_account].name),
+                                          .format(self.accounts[self.current_account].name),
                                           QMessageBox.Yes | QMessageBox.No)
             if confirm == QMessageBox.Yes:
-                self.accounts_layout.removeWidget(self.account_widgets[self._current_account])
-                self.account_widgets[self._current_account].setParent(None)  # delete the widget
-                del self.account_widgets[self._current_account]
-                self.accounts[self._current_account].del_params()
-                del self.accounts[self._current_account]
-                idx = self._current_account
-                self._current_account = None
+                self.accounts_layout.removeWidget(self.account_widgets[self.current_account])
+                self.account_widgets[self.current_account].setParent(None)  # delete the widget
+                del self.account_widgets[self.current_account]
+                del self.accounts[self.current_account]
+                idx = self.current_account
+                self.current_account = None
                 self.accounts_combo.removeItem(idx)
                 self.account_changed(self.accounts_combo.currentIndex())
                 self.save_accounts()
+                if not self.accounts:
+                    self.account_edit_button.setEnabled(False)
+                    self.account_remove_button.setEnabled(False)
                 self._adjust_window_size()
 
         def account_changed(self, index):
-            if self._current_account is not None:
-                self.accounts[self._current_account].params[self.filename] = self.get_params()
+            if self.accounts and self.current_account is not None:
+                self.accounts[self.current_account].params[self.filename] = self.get_params()
             if isinstance(index, int):
-                self._current_account = index
+                self.current_account = index
             else:
-                self._current_account = self.accounts_combo.currentIndex()
+                self.current_account = self.accounts_combo.currentIndex()
             for aw in self.account_widgets:
                 aw.setVisible(False)
-            self.account_widgets[self._current_account].setVisible(True)
+            if self.account_widgets:
+                self.account_widgets[self.current_account].setVisible(True)
             self.update_params()
             self._adjust_window_size()
 
@@ -1343,11 +1353,11 @@ else:
                                            "Could not submit job to {}.{}".format(host, message))
 
         def select_workdir(self):
-            if self._current_account is None:
+            if self.current_account is None:
                 return
 
-            user, host = self.accounts[self._current_account].userhost.split('@')
-            port = self.accounts[self._current_account].port
+            user, host = self.accounts[self.current_account].userhost.split('@')
+            port = self.accounts[self.current_account].port
             ssh = self.connect(host, user, port)
             if ssh is None: return
 
