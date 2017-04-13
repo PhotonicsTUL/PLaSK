@@ -356,7 +356,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                  ref1 = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
     const size_t Ml = ref0 * nM0,  Mt = ref1 * nM1;
     size_t nN = nN0 * nN1, nM = nM0 * nM1;
-    const double normlim = min(L0/nM0, L1/nM1) * 1e-9;
+    const double normlim = min(L0/nM0, L1/nM1) * 1e-6;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points) in thread {3}",
@@ -412,7 +412,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     auto material = geometry->getMaterial(point);
                     double T = 0., W = 0.;
                     for (size_t k = 0, v = mesh->index(j0, j1, 0); k != mesh->axis2->size(); ++v, ++k) {
-                        if (solver->stack[k] == layer) { 
+                        if (solver->stack[k] == layer) {
                             double w = (k == 0 || k == mesh->axis2->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
                             T += w * temperature[v]; W += w;
                         }
@@ -428,9 +428,9 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                             double g = 0.; W = 0.;
                             for (size_t k = 0, v = gmesh->index(j0, j1, 0); k != mesh->axis2->size(); ++k) {
                                 size_t l = solver->stack[k];
-                                if (l == layer) { 
+                                if (l == layer) {
                                     double w = (k == 0 || k == mesh->axis2->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
-                                    g += w * gain[v]; W += w; 
+                                    g += w * gain[v]; W += w;
                                 }
                                 if (solver->lgained[l]) ++v;
                             }
@@ -471,7 +471,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         cell[j].c22 *= s;
                     }
 
-                    // we compute surface normals basing on the orientation 
+                    // we compute surface normals basing on the orientation
                     // of the vector pointing to the sub-mesh point
                     auto nv = mesh->fromMeshCoords(vec(axis0->at(j0) - shift0, axis1->at(j1) - shift1, 0.));
                     double anv = abs(nv);

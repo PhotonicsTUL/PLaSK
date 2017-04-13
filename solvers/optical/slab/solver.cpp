@@ -116,13 +116,13 @@ void SlabSolver<BaseT>::setupLayers()
     stack.reserve(verts->size());
     lcount = 0;
 
-    for (auto v: *verts) {
+    for (size_t v = 0; v != verts->size(); ++v) {
         bool gain = false;
         bool unique = !group_layers || layers.size() == 0;
 
         std::vector<LayerItem> layer(points->axis0->size());
         for (size_t i = 0; i != points->axis0->size(); ++i) {
-            Vec<2> p(points->axis0->at(i), v);
+            Vec<2> p(points->axis0->at(i), verts->at(v));
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
@@ -132,16 +132,16 @@ void SlabSolver<BaseT>::setupLayers()
         }
 
         if (!unique) {
-            for (size_t i = 0; i != layers.size(); ++i) {
+            for (size_t l = 0; l != layers.size(); ++l) {
                 unique = false;
-                for (size_t j = 0; j != layers[i].size(); ++j) {
-                    if (layers[i][j] != layer[j]) {
+                for (size_t i = 0; i != layers[l].size(); ++i) {
+                    if (layers[l][i] != layer[i]) {
                         unique = true;
                         break;
                     }
                 }
                 if (!unique) {
-                    stack.push_back(i);
+                    stack.push_back(l);
                     break;
                 }
             }
@@ -155,7 +155,6 @@ void SlabSolver<BaseT>::setupLayers()
 
     assert(vbounds.size() == stack.size()-1);
     assert(verts->size() == stack.size());
-
 
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 }
@@ -186,7 +185,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
     stack.reserve(verts->size());
     lcount = 0;
 
-    for (auto v: *verts) {
+    for (size_t v = 0; v != verts->size(); ++v) {
         bool gain = false;
         bool unique = !group_layers || layers.size() == 0;
 
@@ -194,7 +193,7 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
         for (size_t i = 0; i != points->axis1->size(); ++i) {
             size_t offs = i * points->axis0->size();
             for (size_t j = 0; j != points->axis0->size(); ++j) {
-                Vec<3> p(points->axis0->at(j), points->axis1->at(i), v);
+                Vec<3> p(points->axis0->at(j), points->axis1->at(i), verts->at(v));
                 size_t n = offs + j;
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {
@@ -206,16 +205,16 @@ void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
         }
 
         if (!unique) {
-            for (size_t i = 0; i != layers.size(); ++i) {
+            for (size_t l = 0; l != layers.size(); ++l) {
                 unique = false;
-                for (size_t j = 0; j != layers[i].size(); ++j) {
-                    if (layers[i][j] != layer[j]) {
+                for (size_t i = 0; i != layers[l].size(); ++i) {
+                    if (layers[l][i] != layer[i]) {
                         unique = true;
                         break;
                     }
                 }
                 if (!unique) {
-                    stack.push_back(i);
+                    stack.push_back(l);
                     break;
                 }
             }

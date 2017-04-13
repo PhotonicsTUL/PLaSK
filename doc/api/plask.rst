@@ -55,6 +55,15 @@ Functions
    plot_mesh
    plot_boundary
 
+Constants
+=========
+
+======= ===============================================================================================
+ARRAYID Array index in batch submission system. ``None`` if the job is not a part of an array.
+PROCID  Process index for parallel computations (eg. MPI). ``None`` if this is a regular or serial job.
+======= ===============================================================================================
+
+
 Descriptions
 ============
 
