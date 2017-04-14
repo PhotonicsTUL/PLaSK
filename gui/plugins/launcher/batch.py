@@ -1146,7 +1146,6 @@ else:
                                                "Execution account '{}' already in the list.".format(new))
                 else:
                     if dialog.system != self.accounts[idx].SYSTEM:
-                        self.accounts[idx].del_params()
                         self.accounts[idx] = SYSTEMS[dialog.system](new)
                     elif new != old:
                         self.accounts[idx].name = new

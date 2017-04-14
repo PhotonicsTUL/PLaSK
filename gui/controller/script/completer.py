@@ -67,7 +67,7 @@ class CompletionsController(QCompleter):
             task.start()
 
     def show_completion_popup(self, completion_prefix, completions):
-        if completions:
+        if completions is not None:
             self.setModel(CompletionsModel(completions))
             if completion_prefix != self.completionPrefix():
                 self.setCompletionPrefix(completion_prefix)
