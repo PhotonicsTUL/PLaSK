@@ -99,7 +99,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     if (error) std::rethrow_exception(error);
 
     #ifdef OPENMP_FOUND
-        write_debug("{}: Entering into single region of reflection search in thread {:d}", solver->getId(), omp_get_thread_num());
+        write_debug("{}: Entering into single region of reflection search", solver->getId());
     #endif
 
     // If we do not use emitting, we have to set field at the edge to 0 and the apply PML

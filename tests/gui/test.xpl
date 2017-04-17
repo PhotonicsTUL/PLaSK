@@ -17,6 +17,7 @@
 <materials>
   <material name="test" base="semiconductor">
     <A>0.1 * T + 0.02 * (T-300)**2</A>
+    <NR>3.6, 3.6, 3.4, 0.0</NR>
   </material>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" complex="yes">
     <nr>3.621</nr>

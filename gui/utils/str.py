@@ -22,21 +22,20 @@ def empty_to_none(str):
 def none_to_empty(str):
     return '' if str is None else str
 
+_re_br = re.compile("<br */>\s*")
 _re_i = re.compile("<i>(.*?)</i>")
-_re_sub = re.compile("<sub>(.*?)</sub>")
-_re_sup = re.compile("<sup>(.*?)</sup>")
+_re_sub = re.compile("<sub>\$?(.*?)\$?</sub>")
+_re_sup = re.compile("<sup>\$?(.*?)\$?</sup>")
 
 
 def html_to_tex(s):
     """Poor man's HTML to MathText conversion"""
-    # s = s.replace(" ", "\/")
+    # s = s.replace(" ", "\/")ipython
+
+    s = _re_br.sub("\n", s)
     s = _re_i.sub(r"$\g<1>$", s)
     s = _re_sub.sub(r"$_{\g<1>}$", s)
     s = _re_sup.sub(r"$^{\g<1>}$", s)
-    l = s.split('$')
-    if len(l) < 2:
-        return s
-    if s.startswith('$'): l.insert(0, '')
-    if s.endswith('$'): l.append('')
-    return l[0] + '$' + ''.join(l[1:-1]) + '$' + l[-1]
+    s = s.replace("$$", "")
+    return s
 

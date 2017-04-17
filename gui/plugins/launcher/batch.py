@@ -464,9 +464,9 @@ else:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
             command = self.program or 'plask'
-            stdin, stdout, stderr = ssh.exec_command(self.batch(name, params, bp))
+            stdin, stdout, stderr = ssh.exec_command("/bin/bash -l -c " + quote(self.batch(name, params, bp)))
             try:
-                print("#!/bin/sh", file=stdin)
+                print("#!/bin/bash", file=stdin)
                 for oth in params['other']:
                     oth = oth.strip()
                     if oth: print(self.SUBMIT_OPTION, oth, file=stdin)

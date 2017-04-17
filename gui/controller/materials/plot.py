@@ -456,7 +456,7 @@ class MaterialPlot(QWidget):
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.axes.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)
-        self.axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
+        self.axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0]
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
         self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
