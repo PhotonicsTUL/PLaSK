@@ -23,6 +23,8 @@ if QT_API == 'PyQt5':
 else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
+from ... import _DEBUG
+
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
@@ -436,7 +438,9 @@ class MaterialPlot(QWidget):
             self.axes.plot(plot_range, [self.vals(a) for a in plot_range])
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
-
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
             self.label.hide()

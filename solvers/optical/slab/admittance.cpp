@@ -89,6 +89,8 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     // save the Y matrix for 1-st layer
     storeY(start);
 
+    if (start == end) return;
+    
     // Declare temporary matrixH) on 'work' array
     cmatrix wrk(N, N, work);
 
@@ -176,8 +178,7 @@ void AdmittanceTransfer::determineFields()
         // each pass for below and above the interface
 
         int start, end, inc;
-        switch (pass)
-        {
+        switch (pass) {
             case 0: start = solver->interface-1; end = -1;    inc =  1; break;
             case 1: start = solver->interface;   end = count; inc = -1; break;
         }
@@ -365,5 +366,55 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
     mult_matrix_by_vector(diagonalizer->TH(solver->stack[n]), H, result);
     return result;
 }
+
+
+cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, IncidentDirection direction)
+{
+    int curr, prev;
+
+    initDiagonalization();
+    
+    switch (direction) {
+        case INCIDENCE_TOP:
+            findAdmittance(0, solver->stack.size()-1);
+            curr = solver->stack[solver->stack.size()-1];
+            prev = solver->stack[solver->stack.size()-2];
+            break;
+        case INCIDENCE_BOTTOM:
+            findAdmittance(solver->stack.size()-1, 0);
+            curr = solver->stack[0];
+            prev = solver->stack[1];
+            break;
+    }
+
+    int N = diagonalizer->matrixSize();
+    int NN = N * N;
+    cmatrix wrk(N, N, work);  // we have Y, temp and wrk
+
+    // Transfer to the outermost layer: 
+    if (prev != curr) {
+        mult_matrix_by_matrix(Y, diagonalizer->invTE(prev), temp);   // Y = tH × Y × tE¯¹
+        mult_matrix_by_matrix(temp, diagonalizer->TE(curr), Y);      // ...
+        mult_matrix_by_matrix(diagonalizer->TH(prev), Y, temp);      // ...
+        mult_matrix_by_matrix(diagonalizer->invTH(curr), temp, Y);   // ...
+    }
+
+//     for (size_t i = 0; i != NN; ++i) work[i] = - Y[i];               // wrk = - Y
+//     for (size_t i = 0; i != N; ++i) wrk(i,i) += 1.;                  // wrk = I - Y
+//     for (size_t i = 0; i != N; ++i) Y(i,i) += 1.;                    // Y = I + Y
+//     cvector reflected = Y * incident;
+//     invmult(wrk, reflected);
+//     return reflected;
+
+    temp = inv(Y);
+    for (size_t i = 0; i != NN; ++i) work[i] = temp[i];              // wrk = Y¯¹
+    for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y¯¹ - I
+    for (size_t i = 0; i != N; ++i) temp(i,i) += 1.;                 // Y = I + Y¯¹
+    cvector reflected = temp * incident;
+    invmult(wrk, reflected);
+    return reflected;
+}
+
+
 
 }}} // namespace plask::solvers::slab
