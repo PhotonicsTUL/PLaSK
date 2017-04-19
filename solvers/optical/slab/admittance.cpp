@@ -90,7 +90,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     storeY(start);
 
     if (start == end) return;
-    
+
     // Declare temporary matrixH) on 'work' array
     cmatrix wrk(N, N, work);
 
@@ -368,13 +368,13 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
 }
 
 
-cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, IncidentDirection direction)
+cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, IncidentDirection side)
 {
     int curr, prev;
 
     initDiagonalization();
-    
-    switch (direction) {
+
+    switch (side) {
         case INCIDENCE_TOP:
             findAdmittance(0, solver->stack.size()-1);
             curr = solver->stack[solver->stack.size()-1];
@@ -391,7 +391,7 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
     int NN = N * N;
     cmatrix wrk(N, N, work);  // we have Y, temp and wrk
 
-    // Transfer to the outermost layer: 
+    // Transfer to the outermost layer:
     if (prev != curr) {
         mult_matrix_by_matrix(Y, diagonalizer->invTE(prev), temp);   // Y = tH × Y × tE¯¹
         mult_matrix_by_matrix(temp, diagonalizer->TE(curr), Y);      // ...
@@ -399,22 +399,166 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
         mult_matrix_by_matrix(diagonalizer->invTH(curr), temp, Y);   // ...
     }
 
-//     for (size_t i = 0; i != NN; ++i) work[i] = - Y[i];               // wrk = - Y
-//     for (size_t i = 0; i != N; ++i) wrk(i,i) += 1.;                  // wrk = I - Y
-//     for (size_t i = 0; i != N; ++i) Y(i,i) += 1.;                    // Y = I + Y
-//     cvector reflected = Y * incident;
+    std::copy_n(Y.data(), NN, work);                                 // wrk = Y
+    for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y - I
+    cvector reflected = incident.copy();
+    add_mult_matrix_by_vector(Y, incident, reflected);               // R = (I + Y) × P
+    invmult(wrk, reflected);
+    reflected *= -1.;
+    return reflected;
+
+//     std::fill_n(temp.data(), NN, dcomplex(0.));
+//     for (int i = 0; i < N; i++) temp(i, i) = 1;
+//     std::copy_n(Y.data(), NN, work);
+//     invmult(wrk, temp);
+//     std::copy_n(temp.data(), NN, work);                                 // wrk = Y¯¹
+//     for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y¯¹ - I
+//     for (size_t i = 0; i != N; ++i) temp(i,i) += 1.;                 // Y = I + Y¯¹
+//     cvector reflected = temp * incident;
 //     invmult(wrk, reflected);
 //     return reflected;
-
-    temp = inv(Y);
-    for (size_t i = 0; i != NN; ++i) work[i] = temp[i];              // wrk = Y¯¹
-    for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y¯¹ - I
-    for (size_t i = 0; i != N; ++i) temp(i,i) += 1.;                 // Y = I + Y¯¹
-    cvector reflected = temp * incident;
-    invmult(wrk, reflected);
-    return reflected;
 }
 
+void AdmittanceTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
+{
+    if (fields_determined == DETERMINED_REFLECTED) return;
+
+    writelog(LOG_DETAIL, solver->getId() + ": Determining reflected optical fields");
+
+    int N = diagonalizer->matrixSize();
+    int N0 = diagonalizer->source()->matrixSize();
+    size_t count = solver->stack.size();
+
+    int NN = N*N;
+
+    // Assign all the required space
+    cdiagonal gamma, y1(N), y2(N);
+
+    // Assign the space for the field vectors
+    fields.resize(count);
+
+    // Temporary vector for storing fields in the real domain
+    cvector tv(N0);
+
+    int start, end, inc;
+    switch (side) {
+        case INCIDENCE_TOP:    start = count-1; end = -1; inc = -1; break;
+        case INCIDENCE_BOTTOM: start = 0; end = count; inc =  1;    break;
+    }
+
+    // Obtain the physical fields at the incident-side layer
+    needAllY = true;
+    fields[start].Ed = getReflectionVector(incident, side);
+    fields[start].Ed += incident;
+    fields[start].Hd = Y * fields[start].Ed;
+
+//     fields[start].E0 =
+//
+//     // Declare temporary matrix on 'work' array
+//     cmatrix wrk(N, N, work);
+//
+//     for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
+//     {
+//         // each pass for below and above the interface
+//
+//         // Ed[start] = invTE[start] E
+//         fields[start].Ed = cvector(N);
+//         mult_matrix_by_vector(diagonalizer->invTE(solver->stack[start]), E, fields[start].Ed);
+//
+//         for (int n = start; n != end; n -= inc)
+//         {
+//             int curr = solver->stack[n];
+//
+//             double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
+//             gamma = diagonalizer->Gamma(curr);
+//             get_y1(gamma, H, y1);
+//             get_y2(gamma, H, y2);
+//
+//             // wrk = Y[n] + y1
+//             cmatrix Y = getY(n);
+//             for (int i = 0; i < NN; i++) wrk[i] = Y[i];
+//             for (int i = 0; i < N; i++) wrk (i,i) += y1[i];
+//
+//             // E0[n] = wrk * Ed[n]
+//             fields[n].E0 = cvector(N);
+//             mult_matrix_by_vector(wrk, fields[n].Ed, fields[n].E0);
+//
+//             // E0[n] = - inv(y2) * E0[0]
+//             for (int i = 0; i < N; i++) {
+//                 if (abs(y2[i]) < SMALL)         // Actually we cannot really compute E0 in this case.
+//                     fields[n].E0[i] = 0.;       // So let's cheat a little, as the field cannot
+//                 else                            // increase to the boundaries.
+//                     fields[n].E0[i] /= - y2[i];
+//             }
+//
+//             if (n != end+inc) { // not the last layer
+//                 int prev = solver->stack[n-inc];
+//                 // Ed[n-inc] = invTE[n-inc] * TE[n] * E0[n]
+//                 fields[n-inc].Ed = cvector(N);
+//                 mult_matrix_by_vector(diagonalizer->TE(curr), fields[n].E0, tv);
+//                 mult_matrix_by_vector(diagonalizer->invTE(prev), tv, fields[n-inc].Ed);
+//             } else {
+//                 fields[n].H0 = cvector(N);
+//                 for (int i = 0; i < N; i++)
+//                     //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
+//                     fields[end+inc].H0[i] = double(inc) *
+//                                                  (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
+//             }
+//
+//             // Now compute the magnetic fields
+//
+//             // Hd[n] = Y[n] * Ed[n]
+//             fields[n].Hd = cvector(N);
+//             mult_matrix_by_vector(Y, fields[n].Ed, fields[n].Hd);
+//
+//             if (n != start) {
+//                 int next = solver->stack[n+inc];
+//                 // H0[n+inc] = invTH[n+inc] * TH[n] * Hd[n]
+//                 fields[n+inc].H0 = cvector(N);
+//                 mult_matrix_by_vector(diagonalizer->TH(curr), fields[n].Hd, tv);
+//                 mult_matrix_by_vector(diagonalizer->invTH(next), tv, fields[n+inc].H0);
+//             }
+//
+//             // An alternative method is to find the H0 from the following equation:
+//             // H0 = y1 * E0 + y2 * Ed
+//             // for (int i = 0; i < N; i++)
+//             //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
+//             // However in some cases this can make the magnetic field discontinous
+//         }
+//     }
+//
+//     // Now fill the Y matrix with the one from the interface (necessary for interfaceField*)
+//     memcpy(Y.data(), getY(solver->interface-1).data(), NN*sizeof(dcomplex));
+//
+//     needAllY = false;
+//     fields_determined = DETERMINED_RESONANT;
+//
+//     // Finally normalize fields
+//     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
+//         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
+//         int l = solver->stack[n];
+//
+//         cvector hv(N0);
+//         mult_matrix_by_vector(diagonalizer->TE(l), fields[n].Ed, tv);
+//         mult_matrix_by_vector(diagonalizer->TH(l), fields[n].Hd, hv);
+//
+//         double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(tv, hv));
+//
+//         if (P < SMALL) {
+//             writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
+//                     (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
+//         } else {
+//             P = 1. / sqrt(P);
+//             for (size_t i = 0; i < count; ++i) {
+//                 fields[i].E0 *= P;
+//                 fields[i].H0 *= P;
+//                 fields[i].Ed *= P;
+//                 fields[i].Hd *= P;
+//             }
+//         }
+//     }
+
+}
 
 
 }}} // namespace plask::solvers::slab

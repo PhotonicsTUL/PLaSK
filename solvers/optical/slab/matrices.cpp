@@ -53,7 +53,7 @@ cmatrix inv(cmatrix& A)
     int N = A.rows();
 
     // Simply call invmult(A, I)
-    cmatrix result(N, N);
+    cmatrix result(N, N, 0.);
     for (int i = 0; i < N; i++) result(i, i) = 1;
 
     invmult(A, result);

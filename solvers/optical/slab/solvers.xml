@@ -31,7 +31,7 @@
     <tag name="mode" label="Mode Properties">
       Mode properties.
       <attr name="wavelength" label="Wavelength" type="float" unit="nm">Light wavelength.</attr>
-          <group label="Wavevector" unit="µm&lt;sup&gt;-1&lt;/sup&gt;">
+      <group label="Wavevector" unit="µm&lt;sup&gt;-1&lt;/sup&gt;">
         <attr name="k-long" label="Longitudinal" type="float" default="0">Longitudinal wave-vector component.</attr>
         <attr name="k-tran" label="Transverse" type="float" default="0">Transverse wave-vector component.</attr>
       </group>
@@ -248,7 +248,7 @@
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
     </tag>
-
+attr.getparent()
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
@@ -266,22 +266,6 @@
       </attr>
     </tag>
 
-    <tag name="lattice" label="Custom Lattice Vectors">
-        If this tag is absent, the computations are performed over the whole
-        geometry (either periodic or with optional PMLs) closed in a rectangular box.
-        If present, is specifies the lateral lattice vectors. In such case, the geometry
-        must be periodic and no symmetry must be set. It is the user's responsibility 
-        to ensure that the defined geometry matches the specified lattice.
-        <group label="First lattice vector" unit="µm">
-          <attr name="long0" label="Longitudinal" type="float">Longitudinal first lattice vector component.</attr>
-          <attr name="tran0" label="Transverse" type="float">Transverse first lattice vector component.</attr>
-        </group>
-        <group label="Second lattice vector" unit="µm">
-          <attr name="long1" label="Longitudinal" type="float">Longitudinal second lattice vector component.</attr>
-          <attr name="tran1" label="Transverse" type="float">Transverse secondc lattice vector component.</attr>
-        </group>
-    </tag>
-      
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
       Parameters of the global root-finding algorithm.
       <attr name="method" label="Root finding method" type="choice" default="muller">
