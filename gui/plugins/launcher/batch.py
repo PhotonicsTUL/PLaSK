@@ -1204,9 +1204,10 @@ else:
 
         def _adjust_window_size(self):
             dialog = self._widget.parent()
+            if dialog is None: return
             width = self._widget.width()
             self._widget.adjustSize()
-            self._widget.setFixedWidth(width)
+            self._widget.setMinimumWidth(width)
             dialog.setFixedHeight(dialog.sizeHint().height())
             dialog.adjustSize()
 
