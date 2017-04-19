@@ -88,10 +88,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Type of discrete cosine transform. Can be only 1 or two
     int dct;
 
-    bool custom_lattice;                ///< Flag indicaing if the solver uses custom lattice vectors
-    Vec<3,double> vec0,                 ///< First basis vector if \c custom_lattice is \c true
-                  vec1;                 ///< Second basis vector if \c custom_lattice is \c true
-
   public:
 
     /// Class responsoble for computing expansion coefficients
@@ -247,33 +243,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
 
-    /// Set custom lattice vectors
-    void setCustomLattice(double x0, double y0, double x1, double y1) {
-        this->invalidate();
-        custom_lattice = true;
-        vec0 = vec(x0, y0, 0.);
-        vec1 = vec(x1, y1, 0.);
-    }
-
-    /// Clear custom lattice
-    void clearCustomLattice() {
-        this->invalidate();
-        custom_lattice = false;
-    }
-
-    /// Return true if the solver has custom lattice
-    bool hasCustomLattice() const {
-        return custom_lattice;
-    }
-    
-    /// Get custom lattice vectors
-    std::tuple<Vec<3,double>,Vec<3,double>> getCustomLattice() const {
-        if (custom_lattice)
-            return std::make_tuple(vec0, vec1);
-        else
-            return std::make_tuple(vec(0.,0.,0.), vec(0.,0.,0.));
-    }
-
     // /// Get mesh at which material parameters are sampled along longitudinal axis
     // RegularAxis getLongMesh() const { return expansion.mesh->lon(); }
     //
@@ -283,7 +252,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     Expansion& getExpansion() override { return expansion; }
 
     /// Return minor field coefficients dimension
-    size_t minor() const { return expansion.N0; }
+    size_t minor() const { return expansion.Nl; }
 
   private:
 

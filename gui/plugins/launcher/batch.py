@@ -988,15 +988,15 @@ else:
 
             other_params_layout = QHBoxLayout()
             other_params_layout.setContentsMargins(0, 0, 0, 0)
-            params_button = QToolButton()
-            params_button.setIcon(QIcon.fromTheme('menu-down'))
-            params_button.setCheckable(True)
-            params_button.setChecked(False)
-            params_button.toggled.connect(lambda visible: self.show_optional(self.other_params, visible))
+            self.params_button = QToolButton()
+            self.params_button.setIcon(QIcon.fromTheme('menu-down'))
+            self.params_button.setCheckable(True)
+            self.params_button.setChecked(False)
+            self.params_button.toggled.connect(lambda visible: self.show_optional(self.other_params, visible))
             label = QLabel("Other submit &parameters:")
-            label.setBuddy(params_button)
+            label.setBuddy(self.params_button)
             other_params_layout.addWidget(label)
-            other_params_layout.addWidget(params_button)
+            other_params_layout.addWidget(self.params_button)
             layout.addLayout(other_params_layout)
             self.other_params = QLineEdit()
             self.other_params.setVisible(False)
@@ -1007,15 +1007,15 @@ else:
 
             modules_layout = QHBoxLayout()
             modules_layout.setContentsMargins(0, 0, 0, 0)
-            modules_button = QToolButton()
-            modules_button.setIcon(QIcon.fromTheme('menu-down'))
-            modules_button.setCheckable(True)
-            modules_button.setChecked(False)
-            modules_button.toggled.connect(lambda visible: self.show_optional(self.modules, visible))
+            self.modules_button = QToolButton()
+            self.modules_button.setIcon(QIcon.fromTheme('menu-down'))
+            self.modules_button.setCheckable(True)
+            self.modules_button.setChecked(False)
+            self.modules_button.toggled.connect(lambda visible: self.show_optional(self.modules, visible))
             label = QLabel("Environmental &Modules:")
-            label.setBuddy(modules_button)
+            label.setBuddy(self.modules_button)
             modules_layout.addWidget(label)
-            modules_layout.addWidget(modules_button)
+            modules_layout.addWidget(self.modules_button)
             layout.addLayout(modules_layout)
             self.modules = QPlainTextEdit()
             self.modules.setVisible(False)
@@ -1088,6 +1088,8 @@ else:
                     self.array_to.setValue(int(params.get('array', (0,1))[1]))
                 self.other_params.setText(params.get('other', ''))
                 self.modules.setPlainText(params.get('modules', ''))
+                self.show_optional(self.other_params, bool(params.get('other')), self.params_button)
+                self.show_optional(self.modules, bool(params.get('modules')), self.modules_button)
 
         def load_accounts(self):
             self.accounts = []
@@ -1194,8 +1196,10 @@ else:
             self.update_params()
             self._adjust_window_size()
 
-        def show_optional(self, field, visible):
+        def show_optional(self, field, visible, button=None):
             field.setVisible(visible)
+            if button is not None:
+                button.setChecked(visible)
             self._adjust_window_size()
 
         def _adjust_window_size(self):
