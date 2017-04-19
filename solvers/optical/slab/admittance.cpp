@@ -399,24 +399,25 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
         mult_matrix_by_matrix(diagonalizer->invTH(curr), temp, Y);   // ...
     }
 
-    std::copy_n(Y.data(), NN, work);                                 // wrk = Y
-    for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y - I
-    cvector reflected = incident.copy();
-    add_mult_matrix_by_vector(Y, incident, reflected);               // R = (I + Y) × P
-    invmult(wrk, reflected);
-    reflected *= -1.;
-    return reflected;
-
-//     std::fill_n(temp.data(), NN, dcomplex(0.));
-//     for (int i = 0; i < N; i++) temp(i, i) = 1;
-//     std::copy_n(Y.data(), NN, work);
-//     invmult(wrk, temp);
-//     std::copy_n(temp.data(), NN, work);                                 // wrk = Y¯¹
-//     for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y¯¹ - I
-//     for (size_t i = 0; i != N; ++i) temp(i,i) += 1.;                 // Y = I + Y¯¹
-//     cvector reflected = temp * incident;
+//     std::copy_n(Y.data(), NN, work);                                 // wrk = Y
+//     for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y - I
+//     cvector reflected = incident.copy();
+//     add_mult_matrix_by_vector(Y, incident, reflected);               // R = P + Y P
 //     invmult(wrk, reflected);
+//     reflected *= -1.;
 //     return reflected;
+
+    // Seems more stable (why???)
+    std::copy_n(Y.data(), NN, work);
+    std::fill_n(temp.data(), NN, dcomplex(0.));
+    for (int i = 0; i < N; i++) temp(i, i) = 1;
+    invmult(wrk, temp);                                              // temp = Y¯¹
+    std::copy_n(temp.data(), NN, work);                              // wrk = Y¯¹
+    for (size_t i = 0; i != N; ++i) wrk(i,i) -= 1.;                  // wrk = Y¯¹ - I
+    for (size_t i = 0; i != N; ++i) temp(i,i) += 1.;                 // temp = Y¯¹ + I
+    cvector reflected = temp * incident;
+    invmult(wrk, reflected);                                         // R = [Y¯¹-I]¯¹ [Y¯¹+I] P
+    return reflected;
 }
 
 void AdmittanceTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
