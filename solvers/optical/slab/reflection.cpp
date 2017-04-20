@@ -33,7 +33,7 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     int N0 = diagonalizer->source()->matrixSize();
     int N = diagonalizer->matrixSize(); // <= N0
     int NN = N*N;
-    cmatrix wrk(N, N0, work);    // matrix object for the workspace
+    cmatrix work(N, N0, wrk);    // matrix object for the workspace
 
     findReflection(start, end, false);
 
@@ -60,9 +60,9 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     }
 
     // M for the half of the structure
-    mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), wrk);  // wrk = temp * invTE[end]
+    mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), work); // work = temp * invTE[end]
     zgemm('N','N', N0, N0, N, mfac, diagonalizer->TH(solver->stack[end]).data(), N0,
-          work, N, add?1.:0., M.data(), N0);                                    // M = mfac * TH[end] * wrk
+          wrk, N, add?1.:0., M.data(), N0);                                     // M = mfac * TH[end] * work
 }
 
 
@@ -79,7 +79,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     int N = diagonalizer->matrixSize();
     int NN = N*N;
 
-    cmatrix wrk(N, N0, work);    // matrix object for the workspace
+    cmatrix work(N, N0, wrk);    // matrix object for the workspace
 
     cdiagonal gamma;
 
@@ -141,8 +141,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             assert(!diagonalizer->invTE(solver->stack[n]).isnan());
             for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
             if (solver->stack[n] != solver->stack[n+inc]) {
-                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);      // wrk = TE[n] * P
-                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
+                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, work);     // work = TE[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), work, temp);// temp = invTE[n+1] * work (= A)
             } else {
                 std::copy_n(P.data(), NN, temp.data());
             }
@@ -160,8 +160,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             }
 
             if (solver->stack[n] != solver->stack[n+inc]) {
-                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);      // wrk = TH[n] * P
-                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, P);// P = invTH[n+1] * wrk (= P)
+                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, work);     // work = TH[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), work, P);// P = invTH[n+1] * work (= P)
             }
 
             // temp := temp-P, P := temp+P
@@ -248,7 +248,7 @@ void ReflectionTransfer::determineFields()
     allP = true; interface_field = nullptr;
     auto E = getInterfaceVector();
 
-    cvector temp(work, N);
+    cvector temp(wrk, N);
 
     for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
     {
@@ -377,7 +377,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Temporary and initial data
     int N = diagonalizer->matrixSize();
     int N0 = diagonalizer->source()->matrixSize();
-    cvector temp(work, N);
+    cvector temp(wrk, N);
     cdiagonal gamma;
 
     int curr = solver->stack[start];

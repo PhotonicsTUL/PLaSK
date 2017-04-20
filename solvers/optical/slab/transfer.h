@@ -46,9 +46,9 @@ struct PLASK_SOLVER_API Transfer {
     cmatrix temp;                               ///< Temporary matrix
 
     dcomplex* evals;                            ///< Found eigenvalues of matrix M
-    double* rwork;                              ///< Temporary space
-    int lwork;                                  ///< Temporary space
-    dcomplex* work;                             ///< Temporary space
+    double* rwrk;                               ///< Temporary space
+    int lwrk;                                   ///< Temporary space
+    dcomplex* wrk;                              ///< Temporary space
 
     /// Solver containing this transfer
     SlabBase* solver;

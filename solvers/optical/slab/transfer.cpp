@@ -18,9 +18,9 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion):
 
     // ...and eigenvalues determination
     evals = aligned_new_array<dcomplex>(N0);
-    rwork = aligned_new_array<double>(2*N0);
-    lwork = max(2, N0*N0);
-    work = aligned_new_array<dcomplex>(lwork);
+    rwrk = aligned_new_array<double>(2*N0);
+    lwrk = max(2, N0*N0);
+    wrk = aligned_new_array<dcomplex>(lwrk);
 
     // Nothing found so far
     fields_determined = DETERMINED_NOTHING;
@@ -31,8 +31,8 @@ Transfer::~Transfer()
 {
     int N0 = diagonalizer->source()->matrixSize();
     aligned_delete_array<dcomplex>(N0, evals); evals = nullptr;
-    aligned_delete_array<double>(2*N0, rwork); rwork = nullptr;
-    aligned_delete_array<dcomplex>(lwork, work); work = nullptr;
+    aligned_delete_array<double>(2*N0, rwrk); rwrk = nullptr;
+    aligned_delete_array<dcomplex>(lwrk, wrk); wrk = nullptr;
 }
 
 
@@ -64,7 +64,7 @@ dcomplex Transfer::determinant()
 
     // Find the eigenvalues of M using LAPACK
     int info;
-    zgeev('N', 'N', N, M.data(), N, evals, nullptr, 1, nullptr, 1, work, lwork, rwork, info);
+    zgeev('N', 'N', N, M.data(), N, evals, nullptr, 1, nullptr, 1, wrk, lwrk, rwrk, info);
     if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
 
     //TODO add some consideration for degenerate modes
@@ -112,7 +112,7 @@ const_cvector Transfer::getInterfaceVector()
 
         // Find the eigenvalues of M using LAPACK
         int info;
-        zgeev('N', 'V', N, M.data(), N, evals, nullptr, 1, interface_field_matrix.data(), N, work, lwork, rwork, info);
+        zgeev('N', 'V', N, M.data(), N, evals, nullptr, 1, interface_field_matrix.data(), N, wrk, lwrk, rwrk, info);
         if (info != 0) throw ComputationError(solver->getId(), "Interface field: zgeev failed");
 
         // Find the number of the smallest eigenvalue
