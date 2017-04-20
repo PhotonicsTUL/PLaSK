@@ -520,19 +520,19 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         static size_t size() { return 1; }
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults();
+            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*M_PI / wavelength);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
 
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults();
+            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*M_PI / wavelength);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
 
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults();
+            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*M_PI / wavelength);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }

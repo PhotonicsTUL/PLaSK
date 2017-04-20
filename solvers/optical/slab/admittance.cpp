@@ -457,10 +457,14 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     get_y1(gamma, solver->vpml.dist, y1);
     get_y2(gamma, solver->vpml.dist, y2);
 
-    fields[start].Ed = cvector(N);
+    for (int i = 0; i != N; ++i) Y(i,i) -= y1[i];
+    fields[start].Ed = Y * fields[start].E0;
+    for (int i = 0; i < N; i++) {
+        double ay2 = abs(y2[i]);
+        if (ay2 < SMALL || ay2 > 1e9) fields[start].Ed[i] = 0.; // avoid artifacts
+        else fields[start].Ed[i] /= y2[i];
+    }
     fields[start].Hd = cvector(N);
-    for (int i = 0; i != N; ++i)
-        fields[start].Ed[i] = (fields[start].H0[i] - y1[i] * fields[start].E0[i]) / y2[i];
     for (int i = 0; i != N; ++i)
         fields[start].Hd[i] = - y2[i] * fields[start].E0[i] - y1[i] * fields[start].Ed[i];
 
@@ -481,7 +485,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
 
         // work = Y[n] + y1
         cmatrix Y = getY(n);
-        for (int i = 0; i < NN; i++) work[i] = Y[i];
+        std::copy_n(Y.data(), NN, work.data());
         for (int i = 0; i < N; i++) work (i,i) += y1[i];
 
         // E0[n] = work * Ed[n]
@@ -499,22 +503,20 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
         if (n != end+inc) {                 // not the last layer
             int prev = solver->stack[n-inc];
             // Ed[n-inc] = invTE[n-inc] * TE[n] * E0[n]
-            fields[n-inc].Ed = cvector(N);
             mult_matrix_by_vector(diagonalizer->TE(curr), fields[n].E0, tv);
-            mult_matrix_by_vector(diagonalizer->invTE(prev), tv, fields[n-inc].Ed);
+            fields[n-inc].Ed = diagonalizer->invTE(prev) * tv;
         } else {
             fields[n].H0 = cvector(N);
             for (int i = 0; i < N; i++)
                 //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
                 fields[end+inc].H0[i] = double(inc) *
-                                                (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
+                                        (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
         }
 
         // Now compute the magnetic fields
 
         // Hd[n] = Y[n] * Ed[n]
-        fields[n].Hd = cvector(N);
-        mult_matrix_by_vector(Y, fields[n].Ed, fields[n].Hd);
+        fields[n].Hd = Y * fields[n].Ed;
 
         if (n != start-inc) {
             int next = solver->stack[n+inc];
