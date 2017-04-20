@@ -454,18 +454,15 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     // A = E(0)   B = -H(0)
 
     gamma = diagonalizer->Gamma(solver->stack[start]);
+    get_y1(gamma, solver->vpml.dist, y1);
+    get_y2(gamma, solver->vpml.dist, y2);
+
     fields[start].Ed = cvector(N);
     fields[start].Hd = cvector(N);
-    for (int i = 0; i != N; ++i) {
-//TODO!!!!
-        dcomplex gam = gamma[i];
-        if (real(gam) < -SMALL) gam = -gam;
-        if (imag(gam) > SMALL) gam = -gam;
-        dcomplex p = I * gam * solver->vpml.dist;
-        dcomplex ch = cosh(p), sh = sinh(p);
-        fields[start].Ed[i] = fields[start].E0[i] * ch - fields[start].H0[i] * sh;
-        fields[start].Hd[i] = fields[start].H0[i] * ch - fields[start].E0[i] * sh;
-    }
+    for (int i = 0; i != N; ++i)
+        fields[start].Ed[i] = (fields[start].H0[i] - y1[i] * fields[start].E0[i]) / y2[i];
+    for (int i = 0; i != N; ++i)
+        fields[start].Hd[i] = - y2[i] * fields[start].E0[i] - y1[i] * fields[start].Ed[i];
 
     // Declare temporary matrix on 'wrk' array
     cmatrix work(N, N, wrk);
