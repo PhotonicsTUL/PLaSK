@@ -32,13 +32,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
   public:
 
-    cvector getReflectionVector(const cvector& incident, IncidentDirection direction) override {
-        throw NotImplemented("Reflection calculations are not supported by the admittance transfer method");
-    }
+    cvector getReflectionVector(const cvector& incident, IncidentDirection side) override;
 
-    cvector getTransmissionVector(const cvector& incident, IncidentDirection side) override {
-        throw NotImplemented("Reflection calculations are not supported by the admittance transfer method");
-    }
+    cvector getTransmissionVector(const cvector& incident, IncidentDirection side) override;
 
     AdmittanceTransfer(SlabBase* solver, Expansion& expansion);
 
@@ -48,9 +44,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     void determineFields() override;
 
-    void determineReflectedFields(const cvector& incident, IncidentDirection side) override {
-        throw NotImplemented("Reflection calculations are not supported by the admittance transfer method");
-    }
+    void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
     cvector getFieldVectorE(double z, int n) override;
 

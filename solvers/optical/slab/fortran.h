@@ -100,12 +100,22 @@ F77SUB zpptrf(const char& uplo, const int& n, dcomplex* ap, int& info);
 // using the Cholesky factorization A = U**H*U or A = L*L**H computed by zpptrf
 #define zpptrs F77_GLOBAL(zpptrs,ZPPTRS)
 F77SUB zpptrs(const char& uplo, const int& n, const int& nrhs, dcomplex* ap,
-                  dcomplex* b, const int& ldb, int& info);
+              dcomplex* b, const int& ldb, int& info);
 
 // perform a series of row interchanges on the matrix A.
 #define zlaswp F77_GLOBAL(zlaswp,ZLASWP)
 F77SUB zlaswp(const int& n, dcomplex* a, const int& lda, const int& k1, const int& k2,
               const int* ipiv, const int& incx);
+
+// compute row and column scalings intended to equilibrate a M-by-N matrix A and reduce its condition number
+#define zgeequ F77_GLOBAL(zgeequ,ZGEEQU)
+F77SUB zgeequ(const int& m, const int& n, const dcomplex* a, const int& lda, double* r, double* c,
+              double& rowcnd, double& colcnd, double& amax, int& info);
+
+// equilibrate a general M by N matrix A using the row and column scaling factors in the vectors R and C
+#define zlaqge F77_GLOBAL(zlaqge,ZLAQGE)
+F77SUB zlaqge(const int& m, const int& n, dcomplex* a, const int& lda, const double* r, const double* c,
+              const double& rowcnd, const double& colcnd, const double& amax, char& equed);
 
 
 // ARPACK subroutines
