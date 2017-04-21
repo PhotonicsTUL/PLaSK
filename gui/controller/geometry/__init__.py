@@ -492,10 +492,10 @@ class GeometryController(Controller):
             self._current_controller = self._current_index.internalPointer().get_controller(self.document, self.model)
             widget = self._current_controller.get_widget()
             self.parent_for_editor_widget.setWidget(widget)
-            widget.setFixedWidth(self.parent_for_editor_widget.size().width()-2)
             widget.update()
-            h = widget.height()
-            self.vertical_splitter.moveSplitter(self.vertical_splitter.height()-h-12, 1)
+            split = max(self.vertical_splitter.height() - widget.height() - 12, 256)
+            self.parent_for_editor_widget.resize(QSize(0, 0))  # make sure resizeEvent will be triggered
+            self.vertical_splitter.moveSplitter(split, 1)  # it will resize parent_for_editor_widget back
             self._current_controller.on_edit_enter()
         self.update_actions()
 

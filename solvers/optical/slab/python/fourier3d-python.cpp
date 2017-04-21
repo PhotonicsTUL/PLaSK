@@ -404,8 +404,8 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 
 static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
@@ -414,8 +414,8 @@ static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, dou
 
 static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
@@ -424,8 +424,8 @@ static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, d
 
 static py::object FourierSolver3D_reflectedCoefficients(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedCoefficients(polarization, incidence);

@@ -311,8 +311,8 @@ static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) 
 
 static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
@@ -321,8 +321,8 @@ static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, dou
 
 static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
@@ -331,8 +331,8 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
 
 static py::object FourierSolver2D_reflectedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getReflectedCoefficients(polarization, incidence);
@@ -341,8 +341,8 @@ static py::object FourierSolver2D_reflectedCoefficients(FourierSolver2D& self, d
 
 static py::object FourierSolver2D_transmittedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
         self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
     auto data = self.getTransmittedCoefficients(polarization, incidence);
