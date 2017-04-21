@@ -1207,7 +1207,7 @@ else:
             if dialog is None: return
             width = self._widget.width()
             self._widget.adjustSize()
-            self._widget.setMinimumWidth(width)
+            self._widget.setFixedWidth(width)
             dialog.setFixedHeight(dialog.sizeHint().height())
             dialog.adjustSize()
 
