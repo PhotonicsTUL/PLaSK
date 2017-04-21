@@ -9,16 +9,13 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-void SlabBase::initTransfer(Expansion& expansion, bool emitting) {
+void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
     switch (transfer_method) {
-        case Transfer::METHOD_REFLECTION:
-            emitting = true; break;
-        case Transfer::METHOD_ADMITTANCE:
-            emitting = false; break;
-        default:
-            break;
+        case Transfer::METHOD_REFLECTION: reflection = true; break;
+        case Transfer::METHOD_ADMITTANCE: reflection = false; break;
+        default: break;
     }
-    if (emitting) {
+    if (reflection) {
         if (!this->transfer || !dynamic_cast<ReflectionTransfer*>(this->transfer.get()) ||
             this->transfer->diagonalizer->source() != &expansion)
         this->transfer.reset(new ReflectionTransfer(this, expansion));

@@ -192,7 +192,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     expansion.setLam0(this->lam0);
     initCalculation();
     ensureInterface();
-    initTransfer(expansion, false);
+    if (!transfer) initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
@@ -316,7 +316,7 @@ cvector FourierSolver3D::getReflectedCoefficients(Expansion::Component polarizat
 {
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic_long || !expansion.periodic_tran)
         throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
@@ -331,7 +331,7 @@ cvector FourierSolver3D::getTransmittedCoefficients(Expansion::Component polariz
 {
     if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic_long || !expansion.periodic_tran)
         throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");

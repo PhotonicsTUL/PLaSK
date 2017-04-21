@@ -63,7 +63,7 @@ struct PLASK_SOLVER_API Expansion {
 
     /// Set lam0
     void setLam0(double lam) {
-        if (lam != lam0) {  // if lam0 == NAN, this is always unequal
+        if (lam != lam0 && !(isnan(lam0) && isnan(lam))) {
             lam0 = lam;
             solver->recompute_integrals = true;
             solver->clearFields();

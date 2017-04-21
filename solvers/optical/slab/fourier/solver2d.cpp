@@ -167,7 +167,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
     expansion.setLam0(this->lam0);
     initCalculation();
     ensureInterface();
-    initTransfer(expansion, false);
+    if (!transfer) initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
     switch (what) {
         case FourierSolver2D::WHAT_WAVELENGTH:
@@ -212,9 +212,8 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     double kt = real(expansion.ktran), kl = real(expansion.beta);
 
     if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
-    clearFields();
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
@@ -269,9 +268,8 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     double kt = real(ktran), kl = real(beta);
 
     if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    clearFields();
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
@@ -327,9 +325,8 @@ cvector FourierSolver2D::getReflectedCoefficients(Expansion::Component polarizat
     size_t idx;
 
     if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
-    clearFields();
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
@@ -343,9 +340,8 @@ cvector FourierSolver2D::getTransmittedCoefficients(Expansion::Component polariz
     size_t idx;
 
     if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    clearFields();
     initCalculation();
-    initTransfer(expansion, true);
+    if (!transfer) initTransfer(expansion, true);
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");

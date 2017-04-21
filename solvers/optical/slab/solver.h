@@ -72,7 +72,8 @@ struct PLASK_SOLVER_API SlabBase {
     /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
     std::unique_ptr<Transfer> transfer;
 
-    void initTransfer(Expansion& expansion, bool emitting);
+    /// Initialize transfer class
+    void initTransfer(Expansion& expansion, bool reflection);
 
 #ifdef NDEBUG
   public:
@@ -375,7 +376,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     dcomplex getDeterminant() {
         this->initCalculation();
         ensureInterface();
-        initTransfer(getExpansion(), false);
+        if (!transfer) initTransfer(getExpansion(), false);
         return transfer->determinant();
     }
 

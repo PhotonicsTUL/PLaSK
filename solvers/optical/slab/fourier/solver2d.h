@@ -344,7 +344,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -360,7 +360,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -376,7 +376,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -411,7 +411,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
         initCalculation();
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldVectorE(incidentVector(polarization), incident, z);
     }
 
@@ -424,7 +424,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     cvector getReflectedFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
         initCalculation();
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldVectorH(incidentVector(polarization), incident, z);
     }
 

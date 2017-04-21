@@ -340,7 +340,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -356,7 +356,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -372,7 +372,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                 const shared_ptr<const MeshD<3>>& dst_mesh,
                                                 InterpolationMethod method) {
         assert(initialized);
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -407,7 +407,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      */
     cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
         initCalculation();
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         expansion.setLam0(lam0);
         expansion.setK0(k0);
         expansion.setKlong(klong);
@@ -426,7 +426,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      */
     cvector getReflectedFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection incident, double z) {
         initCalculation();
-        initTransfer(expansion, true);
+        if (!transfer) initTransfer(expansion, true);
         return transfer->getReflectedFieldVectorH(incidentVector(polarization), incident, z);
     }
 
