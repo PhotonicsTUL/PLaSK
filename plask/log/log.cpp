@@ -52,9 +52,9 @@ Logger::Logger(): silent(false), color(
         isatty(fileno(stderr))? Logger::COLOR_ANSI : Logger::COLOR_NONE
 #   endif
     ) {
-    if (const char* env = std::getenv("PMI_RANK"))
+    if (const char* env = std::getenv("OMPI_COMM_WORLD_RANK"))
         prefix = std::string(env) + " : ";
-    else if (const char* env = std::getenv("OMPI_COMM_WORLD_RANK"))
+    else if (const char* env = std::getenv("PMI_RANK"))
         prefix = std::string(env) + " : ";
     else if (const char* env = std::getenv("SLURM_PROCID"))
         prefix = std::string(env) + " : ";

@@ -457,7 +457,7 @@ for ARRAYID in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_I
 else:
     ARRAYID = None
 
-for PROCID in 'PMI_RANK', 'OMPI_COMM_WORLD_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
+for PROCID in 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
     if PROCID in _os.environ:
         try: PROCID = int(_os.environ[PROCID])
         except ValueError: PROCID = _os.environ[PROCID]
