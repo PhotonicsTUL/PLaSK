@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import sys
 import os
+import re
 from stat import S_ISDIR
 
 from gui.qt.QtCore import Qt
@@ -587,6 +588,8 @@ else:
         SYSTEM = 'SLURM'
         RUNN = 'srun'
 
+        _value_suffix_re = re.compile("([\d.]*)(\D*)")
+
         def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
                      run1='', runn='', partitions=None, qos=None, params=None):
             super(Slurm, self).__init__(name, userhost, port, program, color, compress, bp, run1, runn, params)
@@ -653,10 +656,28 @@ else:
             qos = '' if self.qos_combo is None or not self.qos else \
                 ' ' + quote('--qos=' + self.qos[self.qos_combo.currentIndex()])
             wall = (' ' + quote('--time=' + params['wall'])) if params['wall'] else ''
-            mem = (' ' + quote('--mem=' + params['mem'])) if params['mem'] else ''
             cpus = ' -c {}'.format(params['cpus']) if params['cpus'] else ''
             nodes = ' -n {}'.format(params['nodes']) if params['nodes'] else ''
             dir = quote(params['workdir'])
+
+            if params['mem']:
+                m = Slurm._value_suffix_re.match(params['mem'])
+                if params['nodes'] > 1 and m is not None:
+                    val, suf = m.groups()
+                    val = float(val)
+                    try:
+                        rank = ['K', 'M', 'G', 'T'].index(suf[0].upper())
+                    except ValueError:
+                        pass
+                    else:
+                        val *= 1024**rank
+                        suf = 'K'
+                    c = params['cpus'] or 1
+                    mem = ' ' + quote('--mem-per-cpu={:.0f}{}'.format(val/c, suf))
+                else:
+                    mem = ' ' + quote('--mem=' + params['mem'])
+            else:
+                mem = ''
 
             if params['array']:
                 output = "{0} -a {1[0]}-{1[1]}".format(quote(name+"-%A_%a.out"), params['array'])
@@ -916,11 +937,11 @@ else:
             self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.nodes.setAlignment(Qt.AlignRight)
             self.nodes.setToolTip("Number of independent nodes your job will allocate. By general PLaSK\n"
-                                 "does not operate on multiple nodes, so 1 is usually the best choice.\n"
-                                 "However, you may have written your Python script in such way that it\n"
-                                 "performs calculations on multiple nodes e.g. using MPI (MPI4Py).\n"
-                                 "Note: if you set it to anything larger than 1, make sure, the working\n"
-                                 "directory is accessible from all the nodes.")
+                                  "does not operate on multiple nodes, so 1 is usually the best choice.\n"
+                                  "However, you may have written your Python script in such way that it\n"
+                                  "performs calculations on multiple nodes e.g. using MPI (MPI4Py).\n"
+                                  "Note: if you set it to anything larger than 1, make sure, the working\n"
+                                  "directory is accessible from all the nodes.")
             label.setBuddy(self.nodes)
             grid_layout.addWidget(self.nodes, 0, 3)
             label = QLabel("&CPUs/node:")
