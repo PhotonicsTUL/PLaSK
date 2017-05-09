@@ -257,6 +257,8 @@ class PlaceDelegate(QStyledItemDelegate):
         if opts is None:
             ed = QLineEdit(parent)
             return ed
+        else:
+            opts = list(opts)
 
         combo = QComboBox(parent)
         combo.setInsertPolicy(QComboBox.NoInsert)
