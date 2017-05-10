@@ -357,22 +357,26 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
     int ordl = getLongSize(), ordt = getTranSize();
-    for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
-        for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
+    for (int t = -ordt; t <= ordt; ++t) {
+        for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
             //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
             double gx = l*bl-kl, gy = t*bt-kt;
             dcomplex Ex = reflected[ix], Ey = reflected[iy];
+            if (expansion.symmetric_long() && l < 0) {
+                if (expansion.symmetry_long == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
+            }
+            if (expansion.symmetric_tran() && t < 0) {
+                if (expansion.symmetry_tran == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
+            }
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            if (expansion.symmetric_tran() && t > 0) S *= 2.;
-            if (expansion.symmetric_long() && l > 0) S *= 2.;
             result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
         }
     }
@@ -405,22 +409,26 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
     int ordl = getLongSize(), ordt = getTranSize();
-    for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
-        for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
+    for (int t = -ordt; t <= ordt; ++t) {
+        for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
             //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
             double gx = l*bl-kl, gy = t*bt-kt;
             dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
+            if (expansion.symmetric_long() && l < 0) {
+                if (expansion.symmetry_long == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
+            }
+            if (expansion.symmetric_tran() && t < 0) {
+                if (expansion.symmetry_tran == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
+            }
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            if (expansion.symmetric_tran() && t > 0) S *= 2.;
-            if (expansion.symmetric_long() && l > 0) S *= 2.;
             result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
         }
     }

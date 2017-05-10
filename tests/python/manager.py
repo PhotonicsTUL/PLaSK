@@ -23,7 +23,7 @@ class Manager(unittest.TestCase):
             <grids>
                 <mesh type="rectangular2d" name="lin">
                     <axis0>1, 2, 3</axis0>
-                    <axis1 type="rectilinear" start="10" stop="30" num="3"/>
+                    <axis1 type="ordered" start="10" stop="30" num="3"/>
                 </mesh>
                 <mesh type="rectangular2d" name="reg">
                     <axis0 start="10" stop="30" num="3"/>
