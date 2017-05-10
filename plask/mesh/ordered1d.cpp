@@ -125,7 +125,7 @@ shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
          reader.requireTagEnd();
     } else {
          std::string data = reader.requireTextInCurrentTag();
-         for (auto point: boost::tokenizer<>(data)) {
+         for (auto point: boost::tokenizer<boost::char_separator<char>>(data, boost::char_separator<char>(" ,;\t\n"))) {
              try {
                  double val = boost::lexical_cast<double>(point);
                  result->addPoint(val);

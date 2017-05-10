@@ -83,8 +83,8 @@ static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
         boost::optional<std::string> type = reader.getAttribute("type");
         if (type) {
             if (*type == "regular") axis[node[4]-'0'] = readRegularMeshAxis(reader);
-            else if (*type == "rectilinear") axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
-            else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"rectilinear\"");
+            else if (*type == "ordered") axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
+            else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"ordered\"");
         } else {
             if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMeshAxis(reader);
             else axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
