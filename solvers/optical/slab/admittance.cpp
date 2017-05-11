@@ -412,7 +412,7 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
     for (size_t i = 0; i != N; ++i) reflected[i] = wrk[i] * incident[i];
     invmult(temp, reflected);
     for (size_t i = 0; i != N; ++i)
-        reflected[i] = - 2. * reflected[i] - incident[i];                               // R = 2 [I-Y]¯¹ P - P
+        reflected[i] = - 2. * reflected[i] - incident[i];                               // R = - 2 [Y-I]¯¹ P - P
     return reflected;
 }
 
@@ -429,7 +429,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     int NN = N*N;
 
     // Assign all the required space
-    cdiagonal gamma, y1(N), y2(N);
+    cdiagonal gamma, y1(N), iy2(N);
 
     // Assign the space for the field vectors
     fields.resize(count);
@@ -455,18 +455,24 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
 
     gamma = diagonalizer->Gamma(solver->stack[start]);
     get_y1(gamma, solver->vpml.dist, y1);
-    get_y2(gamma, solver->vpml.dist, y2);
 
     for (int i = 0; i != N; ++i) Y(i,i) -= y1[i];
     fields[start].Ed = Y * fields[start].E0;
-    for (int i = 0; i < N; i++) {
-        double ay2 = abs(y2[i]);
-        if (ay2 < SMALL || ay2 > 1e9) fields[start].Ed[i] = 0.; // avoid artifacts
-        else fields[start].Ed[i] /= y2[i];
-    }
     fields[start].Hd = cvector(N);
-    for (int i = 0; i != N; ++i)
-        fields[start].Hd[i] = - y2[i] * fields[start].E0[i] - y1[i] * fields[start].Ed[i];
+    for (int i = 0; i < N; i++) {
+        dcomplex s = - sinh(I*gamma[i]*solver->vpml.dist);
+        double as = abs(s);
+        if (isinf(real(s)) || isinf(imag(s)) || as > 1./SMALL) {
+            fields[start].Ed[i] = 0.;
+            fields[start].Hd[i] = 0.;
+        } else {
+            if (as < SMALL) {
+                writelog(LOG_WARNING, "{}: Cannot compute fields at the structure input side (try changing vpml.dist a bit)", solver->getId());
+            }
+            fields[start].Ed[i] *= s;
+            fields[start].Hd[i] = - fields[start].E0[i] / s - y1[i] * fields[start].Ed[i];
+        }
+    }
 
     // Declare temporary matrix on 'wrk' array
     cmatrix work(N, N, wrk);
@@ -481,7 +487,6 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
         double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
         gamma = diagonalizer->Gamma(curr);
         get_y1(gamma, H, y1);
-        get_y2(gamma, H, y2);
 
         // work = Y[n] + y1
         cmatrix Y = getY(n);
@@ -494,10 +499,12 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
 
         // E0[n] = - inv(y2) * E0[0]
         for (int i = 0; i < N; i++) {
-            if (abs(y2[i]) < SMALL)         // Actually we cannot really compute E0 in this case.
-                fields[n].E0[i] = 0.;       // So let's cheat a little, as the field cannot
-            else                            // increase to the boundaries.
-                fields[n].E0[i] /= - y2[i];
+            iy2[i] = sinh(I*gamma[i]*H);
+            if (isinf(real(iy2[i])) || isinf(imag(iy2[i])) || abs(iy2[i]) > 1./SMALL) {
+                fields[n].E0[i] = 0.;           // Actually we cannot really compute E0 in this case.
+            } else {                            // So let's cheat a little, as the field cannot
+                fields[n].E0[i] *= iy2[i];      // increase to the boundaries.
+            }
         }
 
         if (n != end+inc) {                 // not the last layer
@@ -510,7 +517,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
             for (int i = 0; i < N; i++)
                 //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
                 fields[end+inc].H0[i] = double(inc) *
-                                        (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
+                                        (y1[i] * fields[end+inc].E0[i] - fields[end+inc].Ed[i]) / iy2[i];
         }
 
         // Now compute the magnetic fields

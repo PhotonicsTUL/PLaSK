@@ -82,7 +82,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
         for (int i = 0; i < N; i++) {
             dcomplex t = tanh(I*gamma[i]*d);
             if (isinf(real(t)) || isinf(imag(t))) y1[i] = 0.;
-            else if (t == 0.) throw ComputationError(solver->getId(), "y1 has some infinite value");
+            else if (abs(t) < SMALL)
+                throw ComputationError(solver->getId(),
+                                       "Matrix y1 has some infinite value (try changing wavelength or layer thickness a bit)");
             else y1[i] = 1. / t;
         }
     }
@@ -94,7 +96,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
         for (int i = 0; i < N; i++) {
             dcomplex s = sinh(I*gamma[i]*d);
             if (isinf(real(s)) || isinf(imag(s))) y2[i] = 0.;
-            else if (s == 0.) throw ComputationError(solver->getId(), "y2 has some infinite value");
+            else if (abs(s) < SMALL)
+                throw ComputationError(solver->getId(),
+                                       "Matrix y2 has some infinite value (try changing wavelength or layer thickness a bit)");
             else y2[i] = - 1. / s;
         }
     }

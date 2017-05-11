@@ -166,7 +166,7 @@ void FourierSolver3D::onInitialize()
 {
     this->setupLayers();
     if (this->interface == size_t(-1))
-        Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack",
+        Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack)",
                                      this->stack.size());
     else
         Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack, interface after {1} layer{2})",
