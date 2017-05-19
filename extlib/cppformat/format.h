@@ -790,9 +790,9 @@ struct FMT_API BasicData {
   static const char DIGITS[];
 };
 
-extern template const uint64_t BasicData<void>::POWERS_OF_10_32[];
+extern template const uint32_t BasicData<void>::POWERS_OF_10_32[];
 extern template const uint64_t BasicData<void>::POWERS_OF_10_64[];
-extern template const uint64_t BasicData<void>::DIGITS[];
+extern template const char BasicData<void>::DIGITS[];
 
 typedef BasicData<> Data;
 
