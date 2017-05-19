@@ -24,22 +24,32 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         dcomplex k0;                    ///< Stored mode frequency
         int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
+        double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionBessel& expansion): lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1e-9) {}
+        Mode(const ExpansionBessel& expansion, double tolx): 
+            lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1e-9), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
-            return m == other.m && is_zero(k0 - other.k0) && is_zero(lam0 - other.lam0) &&
+            return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
 
         bool operator==(const ExpansionBessel& other) const {
-            return m == other.m && is_zero(k0 - other.k0) && is_zero(lam0 - other.lam0) &&
+            return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
 
         template <typename T>
         bool operator!=(const T& other) const {
             return !(*this == other);
+        }
+        
+      private:
+    
+        /// Compare mode arguments
+        template <typename T>
+        bool is_equal(T a, T b) const {
+            return abs(a-b) <= tolx;
         }
     };
 
@@ -166,7 +176,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
-        Mode mode(expansion);
+        Mode mode(expansion, root.tolx);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);

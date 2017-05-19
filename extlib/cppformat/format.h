@@ -790,6 +790,10 @@ struct FMT_API BasicData {
   static const char DIGITS[];
 };
 
+extern template const uint64_t BasicData<void>::POWERS_OF_10_32[];
+extern template const uint64_t BasicData<void>::POWERS_OF_10_64[];
+extern template const uint64_t BasicData<void>::DIGITS[];
+
 typedef BasicData<> Data;
 
 #if FMT_GCC_VERSION >= 400 || FMT_HAS_BUILTIN(__builtin_clz)

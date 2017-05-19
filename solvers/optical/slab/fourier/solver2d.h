@@ -4,7 +4,6 @@
 #include <plask/plask.hpp>
 
 #include "../solver.h"
-#include "../reflection.h"
 #include "expansion2d.h"
 
 namespace plask { namespace solvers { namespace slab {
@@ -34,25 +33,27 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         dcomplex beta;                          ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
+        double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionPW2D& expansion):
+        Mode(const ExpansionPW2D& expansion, double tolx):
             symmetry(expansion.symmetry),
             polarization(expansion.polarization),
             lam0(expansion.lam0),
             k0(expansion.k0),
             beta(expansion.beta),
             ktran(expansion.ktran),
-            power(1.) {}
-
+            power(1.),
+            tolx(tolx) {}
+            
         bool operator==(const Mode& other) const {
-            return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
+            return is_equal(k0, other.k0) && is_equal(beta, other.beta) && is_equal(ktran, other.ktran)
                 && symmetry == other.symmetry && polarization == other.polarization &&
                 ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
         }
 
         bool operator==(const ExpansionPW2D& other) const {
-            return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
+            return is_equal(k0, other.k0) && is_equal(beta, other.beta) && is_equal(ktran, other.ktran)
                 && symmetry == other.symmetry && polarization == other.polarization &&
                 ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
@@ -61,6 +62,14 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         template <typename T>
         bool operator!=(const T& other) const {
             return !(*this == other);
+        }
+        
+      private:
+    
+        /// Compare mode arguments
+        template <typename T>
+        bool is_equal(T a, T b) const {
+            return abs(a-b) <= tolx;
         }
     };
 
@@ -444,7 +453,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             writelog(LOG_WARNING, "Mode fields are not normalized");
             warn = false;
         }
-        Mode mode(expansion);
+        Mode mode(expansion, root.tolx);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);

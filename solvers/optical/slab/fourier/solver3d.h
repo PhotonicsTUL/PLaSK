@@ -34,25 +34,27 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         dcomplex klong;                         ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
         double power;                           ///< Mode power [mW]
+        double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionPW3D& expansion):
+        Mode(const ExpansionPW3D& expansion, double tolx):
             symmetry_long(expansion.symmetry_long),
             symmetry_tran(expansion.symmetry_tran),
             lam0(expansion.lam0),
             k0(expansion.k0),
             klong(expansion.klong),
             ktran(expansion.ktran),
-            power(1.) {}
+            power(1.),
+            tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
-            return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
+            return is_equal(k0, other.k0) && is_equal(klong, other.klong) && is_equal(ktran, other.ktran)
                 && symmetry_long == other.symmetry_long && symmetry_tran == other.symmetry_tran &&
                 ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
         }
 
         bool operator==(const ExpansionPW3D& other) const {
-            return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
+            return is_equal(k0, other.k0) && is_equal(klong, other.klong) && is_equal(ktran, other.ktran)
                 && symmetry_long == other.symmetry_long && symmetry_tran == other.symmetry_tran &&
                 ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0)
             ;
@@ -61,6 +63,14 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         template <typename T>
         bool operator!=(const T& other) const {
             return !(*this == other);
+        }
+        
+      private:
+    
+        /// Compare mode arguments
+        template <typename T>
+        bool is_equal(T a, T b) const {
+            return abs(a-b) <= tolx;
         }
     };
 
@@ -446,7 +456,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             writelog(LOG_WARNING, "Mode fields are not normalized unless emission is set to 'top' or 'bottom'");
             warn = false;
         }
-        Mode mode(expansion);
+        Mode mode(expansion, root.tolx);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;
         modes.push_back(mode);
