@@ -192,7 +192,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
                 }, "neff");
             break;
         case FourierSolver2D::WHAT_KTRAN:
-            if (expansion.separated())
+            if (expansion.symmetric())
                 throw Exception("{0}: Cannot search for transverse wavevector with symmetry", getId());
             expansion.setK0(k0);
             expansion.setBeta(beta);
