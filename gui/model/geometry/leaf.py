@@ -55,8 +55,8 @@ class GNLeaf(GNObject):
             #    res.append(('bottom / top materials', '{} / {}'.format(self.material_bottom, self.material_top)))
             #else:
             res.append('materials:')
-            res.append(('bottom', self.material_bottom))
             res.append(('top', self.material_top))
+            res.append(('bottom', self.material_bottom))
             if self.material_shape is not None: res.append(('shape', self.material_shape))
             res.append(None)
         return res

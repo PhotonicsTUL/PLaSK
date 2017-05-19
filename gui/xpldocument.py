@@ -50,6 +50,8 @@ from .utils.config import CONFIG
 class XPLDocument(object):
 
     SECTION_NAMES = ['defines', 'materials', 'geometry', 'grids', 'solvers', 'connects', 'script']
+    NAME = "PLaSK structure data"
+    EXT = "xpl"
 
     def __init__(self, window, filename=None):
         self.window = window

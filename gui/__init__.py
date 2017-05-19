@@ -479,12 +479,14 @@ class MainWindow(QMainWindow):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save():
             return False
-        flt = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
+        flt = "{} (*.{})".format(self.document.NAME, self.document.EXT)
         filename = QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or CURRENT_DIR, flt)
         if type(filename) is tuple:
             filename = filename[0]
         if not filename:
             return False
+        if self.document.filename is None and not filename.endswith('.'+self.document.EXT):
+                filename += '.' + self.document.EXT
         return self._save_document(filename)
 
     def before_save(self):

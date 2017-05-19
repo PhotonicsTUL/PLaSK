@@ -28,6 +28,8 @@ class _Dummy(object):
 class PyDocument(object):
 
     SECTION_NAMES = ["script"]
+    NAME = "Python script"
+    EXT = "py"
 
     def __init__(self, window, filename=None):
         self.window = window
