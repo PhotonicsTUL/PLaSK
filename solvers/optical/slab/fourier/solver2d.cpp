@@ -187,7 +187,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
             expansion.setKtran(ktran);
             clearFields();
             root = getRootDigger([this](const dcomplex& x) {
-                    expansion.beta = x * expansion.k0;
+                    expansion.setBeta(x * expansion.k0);
                     return transfer->determinant();
                 }, "neff");
             break;
@@ -196,7 +196,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
                 throw Exception("{0}: Cannot search for transverse wavevector with symmetry", getId());
             expansion.setK0(k0);
             expansion.setBeta(beta);
-            root = getRootDigger([this](const dcomplex& x) { expansion.beta = x; return transfer->determinant(); }, "ktran");
+            root = getRootDigger([this](const dcomplex& x) { expansion.setKtran(x); return transfer->determinant(); }, "ktran");
             break;
     }
     root->find(start);
