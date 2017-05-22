@@ -95,7 +95,7 @@ struct PLASK_SOLVER_API SlabBase {
     std::vector<std::size_t> stack;
 
     /// Position of the matching interface
-    size_t interface;
+    ptrdiff_t interface;
 
     /// Reference wavelength used for getting material parameters [nm]
     double lam0;
@@ -128,7 +128,7 @@ struct PLASK_SOLVER_API SlabBase {
     SlabBase():
         emission(EMISSION_UNSPECIFIED),
         transfer_method(Transfer::METHOD_AUTO),
-        interface(size_t(-1)),
+        interface(-1),
         lam0(NAN),
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),

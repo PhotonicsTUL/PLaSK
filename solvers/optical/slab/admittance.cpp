@@ -437,7 +437,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     // Temporary vector for storing fields in the real domain
     cvector tv(N0);
 
-    int start, end, inc;
+    ptrdiff_t start, end, inc;
     switch (side) {
         case INCIDENCE_TOP:    start = count-1; end = -1; inc = 1; break;
         case INCIDENCE_BOTTOM: start = 0; end = count; inc = -1;   break;
@@ -543,9 +543,9 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     // Finally revert fields at one side of the interface
     switch (side) {
         case INCIDENCE_TOP:    start = solver->interface; end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = solver->interface; break;
+        case INCIDENCE_BOTTOM: start = 0; end = int(solver->interface); break;
     }
-    for (size_t n = start; n < end; ++n) {
+    for (ptrdiff_t n = start; n < end; ++n) {
         std::swap(fields[n].E0, fields[n].Ed);
         std::swap(fields[n].H0, fields[n].Hd);
         // TODO should I revert H?

@@ -13,17 +13,17 @@ struct CMatrix_Python {
     cmatrix data;
     CMatrix_Python(const cmatrix& data): data(data) {}
     CMatrix_Python(const CMatrix_Python& src): data(src.data) {}
-    
+
     static PyObject* convert(const cmatrix& self) {
         npy_intp dims[2] = { self.rows(), self.cols() };
         npy_intp strides[2] = { sizeof(dcomplex), self.rows() * sizeof(dcomplex) };
-        
+
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {CMatrix_Python(self)};
-        py::incref(oself.ptr());        
+        py::incref(oself.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
         return arr;
     }
@@ -33,17 +33,17 @@ struct CDiagonal_Python {
     cdiagonal data;
     CDiagonal_Python(const cdiagonal& data): data(data) {}
     CDiagonal_Python(const CDiagonal_Python& src): data(src.data) {}
-    
+
     static PyObject* convert(const cdiagonal& self) {
         npy_intp dims[1] = {self.size()};
         npy_intp strides[1] = {sizeof(dcomplex)};
-        
+
         PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {CDiagonal_Python(self)};
-        py::incref(oself.ptr());        
+        py::incref(oself.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
         return arr;
     }
@@ -109,7 +109,7 @@ BOOST_PYTHON_MODULE(slab)
         .def_readwrite("lambd", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
         .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller and Brent methods only).")
     ;
-    
+
     export_FourierSolver2D();
     export_FourierSolver3D();
     export_BesselSolverCyl();

@@ -362,7 +362,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Obtain the physical fields at the last layer
     allP = true;
 
-    size_t start, end;
+    ptrdiff_t start, end;
     ptrdiff_t inc;
     switch (side)
     {
@@ -462,9 +462,9 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     switch (side)
     {
         case INCIDENCE_TOP:    start = solver->interface; end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, count); break;
+        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
     }
-    for (size_t n = start; n < end; n++) {
+    for (int n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
