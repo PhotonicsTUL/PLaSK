@@ -177,7 +177,6 @@ size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     if (!initialized) {
-        initCalculation();
         stageOne();
     }
     Mode mode(this, m);

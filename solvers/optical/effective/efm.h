@@ -387,7 +387,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \param clambda complex wavelength of the mode
      * \return index of the set mode
      */
-    size_t setMode(plask::dcomplex clambda, int m=0);
+    size_t setMode(dcomplex clambda, int m=0);
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
@@ -405,7 +405,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void clearModes() {
         modes.clear();
     }
-    
+
     /**
      * Return total amount of energy absorbed by the matter in a unit time.
      * \param mode mode to analyze

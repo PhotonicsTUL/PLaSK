@@ -311,7 +311,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     void clearModes() {
         modes.clear();
     }
-    
+
     /**
      * Compute field weights
      * \param mode mode to consider

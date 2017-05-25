@@ -224,7 +224,6 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
 size_t EffectiveIndex2D::setMode(dcomplex neff, Symmetry sym)
 {
     if (!initialized) {
-        initCalculation();
         stageOne();
     }
     Mode mode(this, sym);

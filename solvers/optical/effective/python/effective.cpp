@@ -141,6 +141,10 @@ std::vector<size_t> EffectiveIndex2D_findModes(EffectiveIndex2D& self, dcomplex 
     return self.findModes(neff1, neff2, parseSymmetry(symmetry), resteps, imsteps, eps);
 }
 
+static size_t EffectiveIndex2D_setMode(EffectiveIndex2D& self, py::object neff, py::object symmetry) {
+    return self.setMode(py::extract<dcomplex>(neff), parseSymmetry(symmetry));
+}
+
 std::string EffectiveIndex2D_Mode_str(const EffectiveIndex2D::Mode& self) {
     std::string sym;
     switch (self.symmetry) {
@@ -269,7 +273,7 @@ BOOST_PYTHON_MODULE(effective)
                    u8"    list of integers: List of the indices in the :attr:`modes` list of the found\n"
                    u8"    modes.\n",
                    (arg("start")=0., arg("end")=0., arg("symmetry")=py::object(), arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9)));
-        METHOD(set_mode, setMode,
+        solver.def("set_mode", EffectiveIndex2D_setMode,
                u8"Set the current mode the specified effective index.\n\n"
                u8"Args:\n"
                u8"    neff (complex): Mode effective index.\n"
