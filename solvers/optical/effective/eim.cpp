@@ -224,7 +224,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
 size_t EffectiveIndex2D::setMode(dcomplex neff, Symmetry sym)
 {
     if (!initialized) {
-        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
+        initCalculation();
         stageOne();
     }
     Mode mode(this, sym);
@@ -273,7 +273,7 @@ void EffectiveIndex2D::onInitialize()
 
 void EffectiveIndex2D::onInvalidate()
 {
-    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
     modes.clear();
     outNeff.fireChanged();
     outLightMagnitude.fireChanged();
@@ -296,7 +296,7 @@ void EffectiveIndex2D::updateCache()
             if (mesh->axis0->at(0) == 0.) xbegin = 1;
         }
 
-        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
         modes.clear();
 
         double w = real(2e3*M_PI / k0);

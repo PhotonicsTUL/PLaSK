@@ -177,7 +177,7 @@ size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     if (!initialized) {
-        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
+        initCalculation();
         stageOne();
     }
     Mode mode(this, m);
@@ -227,7 +227,7 @@ void EffectiveFrequencyCyl::onInitialize()
 
 void EffectiveFrequencyCyl::onInvalidate()
 {
-    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
     modes.clear();
     outWavelength.fireChanged();
     outLoss.fireChanged();
@@ -249,7 +249,7 @@ void EffectiveFrequencyCyl::updateCache()
         }
         if (abs(mesh->axis0->at(0)) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
         modes.clear();
 
         old_k0 = k0;

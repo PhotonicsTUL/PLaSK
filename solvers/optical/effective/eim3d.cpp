@@ -269,7 +269,7 @@
 //
 // void EffectiveIndex3D::onInvalidate()
 // {
-//     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+//     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
 //     modes.clear();
 //     outNeff.fireChanged();
 //     outLightMagnitude.fireChanged();
@@ -291,7 +291,7 @@
 //             if (mesh->axis0->at(0) == 0.) xbegin = 1;
 //         }
 //
-//         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+//         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
 //         modes.clear();
 //
 //         double w = real(2e3*M_PI / k0);
