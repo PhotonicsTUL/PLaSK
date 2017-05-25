@@ -223,9 +223,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
 
 size_t EffectiveIndex2D::setMode(dcomplex neff, Symmetry sym)
 {
-    if (!initialized) {
-        stageOne();
-    }
+    stageOne();
     Mode mode(this, sym);
     mode.neff = neff;
     double det = abs(detS(neff, mode));

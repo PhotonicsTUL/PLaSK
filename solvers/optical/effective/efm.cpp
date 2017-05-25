@@ -176,9 +176,7 @@ std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex 
 size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
-    if (!initialized) {
-        stageOne();
-    }
+    stageOne();
     Mode mode(this, m);
     mode.lam = clambda;
     double det = abs(detS(mode.lam, mode));

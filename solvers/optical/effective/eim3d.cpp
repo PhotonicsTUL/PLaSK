@@ -219,10 +219,7 @@
 //
 // size_t EffectiveIndex3D::setMode(dcomplex neff, Symmetry symmetry_tran, Symmetry symmetry_long)
 // {
-//     if (!initialized) {
-//         writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
-//         stageOne();
-//     }
+//     stageOne();
 //     Mode mode(this, symmetry_tran);
 //     mode.neff = neff;
 //     double det = abs(detS(neff, mode));
