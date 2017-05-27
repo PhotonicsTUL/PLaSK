@@ -9,6 +9,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from lxml import etree
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -17,10 +23,11 @@ from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
-from ..table import table_with_manipulators
+from ..table import table_and_manipulators
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.grids import GridsModel
+from ...model.grids import GridsModel, construct_grid
 from ...model.info import Info
+from ...utils.xml import XML_parser
 
 try:
     unicode = unicode
@@ -60,7 +67,8 @@ class GridsController(Controller):
         self.grids_table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.grids_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         table_edit_shortcut(self.grids_table, 0, 'n')
-        self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and Generators"))
+        table, toolbar = table_and_manipulators(self.grids_table, self.splitter, title="Meshes and Generators")
+        self.splitter.addWidget(table)
         self.grids_table.setVisible(False)
         try:
             self.grids_table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
@@ -78,9 +86,14 @@ class GridsController(Controller):
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
             # self.mesh_preview.layout().addWidget(self.status_bar)
             self.vertical_splitter.addWidget(self.mesh_preview)
-
+            self.generate_mesh_action = QAction(QIcon.fromTheme('document-save'), "Make mesh", toolbar)
+            self.generate_mesh_action.triggered.connect(self.generate_mesh)
+            self.generate_mesh_action.setEnabled(False)
+            toolbar.addSeparator()
+            toolbar.addAction(self.generate_mesh_action)
         else:
             self.mesh_preview = None
+            self.generate_mesh_action = None
 
         self.parent_for_editor_widget = QStackedWidget()
         self.vertical_splitter.addWidget(self.parent_for_editor_widget)
@@ -100,6 +113,7 @@ class GridsController(Controller):
 
         self.model.changed.connect(self.on_model_change)
 
+        self.selected_geometry = None
         self.plotted_geometry = None
         self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
@@ -192,10 +206,15 @@ class GridsController(Controller):
                 else:
                     self.mesh_preview.clear()
                     self.show_update_required()
+                self.generate_mesh_action.setEnabled(self._current_controller.model.is_generator and
+                                                     self.plotted_geometry is not None)
         self.vertical_splitter.setSizes([100000,1])
         return True
 
     def show_update_required(self):
+        self.plotted_mesh = None
+        self.plotted_geometry = None
+        self.generate_mesh_action.setEnabled(False)
         if self._current_controller is not None:
             self.model.info_message("Mesh changed: click here to update the plot", Info.INFO, action=self.plot)
             # self.status_bar.setText("Press Alt+P to update the plot")
@@ -216,30 +235,32 @@ class GridsController(Controller):
 
     def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
         self.mesh_preview.clear()
+        if plask is None: return
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
-        if plask is None:
-            return
         manager = plask.Manager(draft=True)
         try:
             manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             try:
-                selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
-                if selected_geometry:
-                    self.plotted_geometry = manager.geo[selected_geometry]
+                self.selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
+                if self.selected_geometry:
+                    self.plotted_geometry = manager.geo[self.selected_geometry]
                 else:
                     self.plotted_geometry = None
             except KeyError:
                 self.plotted_geometry = None
+                self.selected_geometry = None
             if model.is_mesh:
                 mesh = manager.msh[model.name]
             elif model.is_generator:
                 if self.plotted_geometry is None:
+                    self.generate_mesh_action.setEnabled(False)
                     if ignore_no_geometry:
                         mesh = None
                     else:
                         raise ValueError("You must select geometry to preview generators")
                 else:
+                    self.generate_mesh_action.setEnabled(True)
                     mesh = manager.msg[model.name](self.plotted_geometry)
             else:
                 mesh = None
@@ -273,6 +294,34 @@ class GridsController(Controller):
     def plot(self):
         if self._current_controller is not None:
             self.plot_mesh(self._current_controller.model, set_limits=self.plotted_geometry is None)
+
+    def generate_mesh(self):
+        from ... import _DEBUG
+        if plask is None: return
+        manager = plask.Manager(draft=True)
+        try:
+            manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+            mesh = manager.msg[self._current_controller.model.name](self.plotted_geometry)
+            name = self._current_controller.model.name + '-' + self.selected_geometry
+            xml = plask.XmlWriter({}, {name: mesh}, {})
+            if _DEBUG:
+                print(xml)
+            mesh_model = construct_grid(self.model,
+                                        etree.parse(StringIO(str(xml)), XML_parser).getroot().find('grids/mesh'))
+            mesh_model.geometry_name = self.selected_geometry
+            index = self.grids_table.selectionModel().currentIndex()
+            if index.isValid():
+                row = self.model.insert(index.row()+1, mesh_model)
+            else:
+                row = self.model.insert(len(self.model.entries), mesh_model)
+            if row is not None: self.grids_table.selectRow(row)
+
+        except Exception as e:
+            QMessageBox.critical(None, "Mesh Generation Error",
+                                 "Could not generate mesh with specified generator:\n\n{}".format(str(e)))
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
 
 
 class GridController(Controller):
