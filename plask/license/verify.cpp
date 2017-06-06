@@ -22,7 +22,8 @@
 
 #define PLASK_LICENSE_USER_TAG_NAME "name"
 #define PLASK_LICENSE_EMAIL_TAG_NAME "email"
-#define PLASK_LICENSE_ORGANISATION_TAG_NAME "organisation"
+#define PLASK_LICENSE_INSTITUTION_TAG_NAME "institution"
+#define PLASK_LICENSE_INSTITUTION_OBSOLETE_TAG_NAME "organisation"
 
 namespace plask {
 
@@ -138,7 +139,7 @@ void LicenseVerifier::verify() {
 
 void LicenseVerifier::readData() {
 
-    std::string organisation, email;
+    std::string email;
     if (content.empty()) return;
 
     XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
@@ -149,8 +150,9 @@ void LicenseVerifier::readData() {
                        user = src.getTextContent();
                    else if (src.getNodeName() == PLASK_LICENSE_EMAIL_TAG_NAME)
                        email = src.getTextContent();
-                   else if (src.getNodeName() == PLASK_LICENSE_ORGANISATION_TAG_NAME)
-                       organisation = src.getTextContent();
+                   else if (src.getNodeName() == PLASK_LICENSE_INSTITUTION_TAG_NAME ||
+                            src.getNodeName() == PLASK_LICENSE_INSTITUTION_OBSOLETE_TAG_NAME)
+                       institution = src.getTextContent();
                    else if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME)
                        expiration = src.getTextContent();
                    else if (src.getNodeName() == PLASK_LICENSE_MAC_TAG_NAME || src.getNodeName() == PLASK_LICENSE_MACS_TAG_NAME) {
@@ -167,10 +169,6 @@ void LicenseVerifier::readData() {
         } else {
             user = email;
         }
-    }
-    if (!organisation.empty()) {
-        if (!user.empty()) user += " ";
-        user += organisation;
     }
 }
 

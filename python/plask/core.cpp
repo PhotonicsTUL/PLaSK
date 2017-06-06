@@ -481,6 +481,7 @@ BOOST_PYTHON_MODULE(_plask)
 #ifdef LICENSE_CHECK
     py::dict license;
     license["user"] = plask::license_verifier.getUser();
+    license["institution"] = plask::license_verifier.getInstitution();
     license["date"] = plask::license_verifier.getExpiration();
     license["systemid"] = plask::license_verifier.getSystemId();
     scope.attr("license") = license;

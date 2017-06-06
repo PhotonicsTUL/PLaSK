@@ -22,6 +22,7 @@ namespace py = boost::python;
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>
 #  include <fcntl.h>
+#  include <windows.h>
 #endif
 
 //******************************************************************************
@@ -123,8 +124,14 @@ static py::object initPlask(int argc, const char* argv[])
     plask::writelog(plask::LOG_INFO, PLASK_BANNER);
     plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 #ifdef LICENSE_CHECK
-    std::string user = plask::license_verifier.getUser(), expiration = plask::license_verifier.getExpiration();
-    if (user != "") plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
+    std::string user = plask::license_verifier.getUser();
+    if (user != "") {
+        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration();
+        if (!institution.empty())
+            plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution, (expiration != "")? " (until "+expiration+")" : "");
+        else
+            plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
+    }
 #endif
 
     sys.attr("modules")["plask._plask"] = _plask;
@@ -231,6 +238,10 @@ void endPlask() {
 int main(int argc, const char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
+
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+        SetConsoleOutputCP(CP_UTF8);
+#   endif
 
     if (argc > 1 && std::string(argv[1]) == "-V") {
         printf("PLaSK " PLASK_VERSION "\n");

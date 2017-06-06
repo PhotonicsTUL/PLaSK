@@ -21,7 +21,7 @@ namespace plask {
 class PLASK_API LicenseVerifier {
 
     std::string filename, content;
-    std::string user, expiration, system;
+    std::string user, institution, expiration, system;
 
     /// Parse date from the string in format DD/MM/YYYY.
     static std::time_t extractDate(const std::string& s);
@@ -44,6 +44,9 @@ class PLASK_API LicenseVerifier {
 
     /// Get formatted name of the license user
     std::string getUser() { return user; }
+
+    /// Get formatted name of the license institution
+    std::string getInstitution() { return institution; }
 
     /// Get formatted expiration date
     std::string getExpiration() { return expiration; }

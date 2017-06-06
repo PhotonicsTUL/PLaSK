@@ -669,9 +669,17 @@ class MainWindow(QMainWindow):
         msgbox.setTextFormat(Qt.RichText)
         if VERSION is not None:
             details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)\n".format(QT_API)
-            if LICENSE['user']:
-                details += u"<br/>\n<br/>\nLicensed to:<br/>\n{}".format(
-                    LICENSE['user'].replace('<', '&lt;').replace('>', '&gt;'))
+            user = LICENSE['user']
+            if user:
+                try: user = user.decode('utf8')
+                except AttributeError: pass
+                institution = LICENSE['institution']
+                if institution:
+                    try: institution = institution.decode('utf8')
+                    except AttributeError: pass
+                    institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
+                details += u"<br/>\n<br/>\nLicensed to:<br/>\n{}{}".format(
+                    user.replace('<', '&lt;').replace('>', '&gt;'), institution)
                 if LICENSE['date']:
                     date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
                     try: date = date.decode('utf8')
