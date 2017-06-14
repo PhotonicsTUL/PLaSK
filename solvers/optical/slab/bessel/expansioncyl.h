@@ -18,12 +18,12 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     bool initialized;                   ///< Expansion is initialized
 
     bool m_changed;                     ///< m has changed and init2 must be called
-    
+
     /// Horizontal axis with separate integration intervals.
     /// material functions contain discontinuities at these points
     OrderedAxis rbounds;
 
-    ///  Argument coefficients for Bessel expansion base (zeros of Bessel function)
+    ///  Argument coefficients for Bessel expansion base (zeros of Bessel function for finite domain)
     std::vector<double> factors;
 
     /// Mesh for getting material data
@@ -35,25 +35,20 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
      */
     ExpansionBessel(BesselSolverCyl* solver);
 
-    /// Fill factors with Bessel zeros
-    void computeBesselZeros();
-
     /// Init expansion
     void init1();
 
     /// Perform m-specific initialization
-    void init2();
-    
+    virtual void init2() = 0;
+
     /// Free allocated memory
-    void reset();
+    virtual void reset();
 
     bool diagonalQE(size_t l) const override {
         return diagonals[l];
     }
 
     size_t matrixSize() const override;
-
-    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 
@@ -183,9 +178,6 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     /// Computed integrals
     std::vector<Integrals> layers_integrals;
 
-    /// Integrals for magnetic permeability
-    Integrals mu_integrals;
-
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
 
@@ -230,15 +222,6 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     cmatrix epsTpm(size_t layer);
     cmatrix epsDm(size_t layer);
     cmatrix epsDp(size_t layer);
-
-    cmatrix muVmm();
-    cmatrix muVpp();
-    cmatrix muTmm();
-    cmatrix muTpp();
-    cmatrix muTmp();
-    cmatrix muTpm();
-    cmatrix muDm();
-    cmatrix muDp();
 #endif
 
 };

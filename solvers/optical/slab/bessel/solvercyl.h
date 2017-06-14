@@ -5,7 +5,7 @@
 
 #include "../solver.h"
 #include "../reflection.h"
-#include "expansioncyl.h"
+#include "expansioncyl-fini.h"
 
 
 namespace plask { namespace solvers { namespace slab {
@@ -16,6 +16,7 @@ namespace plask { namespace solvers { namespace slab {
 struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>> {
 
     friend struct ExpansionBessel;
+    friend struct ExpansionBesselFini;
 
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
@@ -26,7 +27,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         double power;                   ///< Mode power [mW]
         double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionBessel& expansion, double tolx): 
+        Mode(const ExpansionBessel& expansion, double tolx):
             lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1e-9), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
@@ -43,9 +44,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         bool operator!=(const T& other) const {
             return !(*this == other);
         }
-        
+
       private:
-    
+
         /// Compare mode arguments
         template <typename T>
         bool is_equal(T a, T b) const {
@@ -75,7 +76,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
   public:
 
     /// Class responsible for computing expansion coefficients
-    ExpansionBessel expansion;
+    ExpansionBesselFini expansion;
 
     /// Computed modes
     std::vector<Mode> modes;
