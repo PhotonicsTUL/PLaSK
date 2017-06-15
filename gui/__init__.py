@@ -13,6 +13,7 @@
 # GNU General Public License for more details.
 import sys
 import os
+import re
 import subprocess
 import pkgutil
 import webbrowser
@@ -668,30 +669,32 @@ class MainWindow(QMainWindow):
         """)
         msgbox.setTextFormat(Qt.RichText)
         if VERSION is not None:
-            details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)\n".format(QT_API)
-            user = LICENSE['user']
-            if user:
-                try: user = user.decode('utf8')
-                except AttributeError: pass
-                institution = LICENSE['institution']
-                if institution:
-                    try: institution = institution.decode('utf8')
-                    except AttributeError: pass
-                    institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
-                details += u"<br/>\n<br/>\nLicensed to:<br/>\n{}{}".format(
-                    user.replace('<', '&lt;').replace('>', '&gt;'), institution)
-                if LICENSE['date']:
-                    date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
-                    try: date = date.decode('utf8')
-                    except AttributeError: pass
-                    details += u"<br/>\nLicense active until " + date
-                details += '<br/>'
-            else:
-                details += '<br/><br/>'
+            details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
-            details = ''
+            details = ""
+        user = LICENSE['user']
+        if user:
+            try: user = user.decode('utf8')
+            except AttributeError: pass
+            institution = LICENSE['institution']
+            if institution:
+                try: institution = institution.decode('utf8')
+                except AttributeError: pass
+                institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
+            details += u"Licensed to:<br/>\n{}{}".format(
+                user.replace('<', '&lt;').replace('>', '&gt;'), institution)
+            if LICENSE['date']:
+                date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
+                try: date = date.decode('utf8')
+                except AttributeError: pass
+                details += u"<br/>\nLicense active until " + date
+            details += '<br/>\n'
         details += "Your system ID is {}".format(LICENSE['systemid'])
-        msgbox.setInformativeText(details)
+        note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
+               'your clipboard.</span>'
+        msgbox.setInformativeText(details + note)
+        details = re.sub('<[^>]+>', '', details).replace('&lt;', '<').replace('&gt;', '>')
+        QApplication.clipboard().setText(details)
         # msgbox.setDetailedText(LICENSE["text"])
         msgbox.adjustSize()
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())

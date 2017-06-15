@@ -51,26 +51,27 @@ class AttrGroup(list):
 
 
 class Attr(object):
-    def __init__(self, name, label, help, default=None):
+    def __init__(self, tag, name, label, help, default=None):
+        self.tag = tag
         self.name = name
         self.label = label
         self.help = help
         self.default = default
-
+        self.conflicts = set()
 
 class AttrMulti(Attr):
     pass
 
 
 class AttrChoice(Attr):
-    def __init__(self, name, label, help, choices, default=None):
-        super(AttrChoice, self).__init__(name, label, help, default)
+    def __init__(self, tag, name, label, help, choices, default=None):
+        super(AttrChoice, self).__init__(tag, name, label, help, default)
         self.choices = choices
 
 
 class AttrBool(AttrChoice):
-    def __init__(self, name, label, help, default=None):
-        super(AttrBool, self).__init__(name, label, help, ('yes', 'no'), default)
+    def __init__(self, tag, name, label, help, default=None):
+        super(AttrBool, self).__init__(tag, name, label, help, ('yes', 'no'), default)
 
 
 class AttrGeometryObject(Attr):
@@ -81,7 +82,7 @@ class AttrGeometryPath(Attr):
     pass
 
 
-def read_attr(attr, xns):
+def read_attr(tn, attr, xns):
         an = attr.attrib['name']
         al = attr.attrib['label']
         ah = attr.text
@@ -96,20 +97,25 @@ def read_attr(attr, xns):
             at += u' [{}]'.format(au)
         if at == u'choice':
             ac = tuple(ch.text.strip() for ch in attr.findall(xns+'choice'))
-            return AttrChoice(an, al, ah, ac, ad)
+            result = AttrChoice(tn, an, al, ah, ac, ad)
         elif at == u'bool':
-            return AttrBool(an, al, ah, ad)
+            result = AttrBool(tn, an, al, ah, ad)
         elif at == u'geometry object':
-            return AttrGeometryObject(an, al, ah)
+            result = AttrGeometryObject(tn, an, al, ah)
         elif at == u'geometry path':
-            return AttrGeometryPath(an, al, ah)
+            result = AttrGeometryPath(tn, an, al, ah)
         else:
             if at:
                 ah += u' ({})'.format(at)
             if an.endswith('#'):
-                return AttrMulti(an, al, ah)
+                result = AttrMulti(tn, an, al, ah)
             else:
-                return Attr(an, al, ah, ad)
+                result = Attr(tn, an, al, ah, ad)
+        for conflict in attr.findall(xns+'conflicts'):
+            ct = conflict.attrib.get('tag', tn)
+            ca = conflict.attrib['attr']
+            result.conflicts.add((ct, ca))
+        return result
 
 
 class SchemaTag(object):
@@ -289,7 +295,7 @@ def load_xml(filename, cat=True):
             attrs = AttrList()
             for attr in tag.iterchildren(xns+'attr', xns+'group'):
                 if attr.tag == xns+'attr':
-                    attrs.append(read_attr(attr, xns))
+                    attrs.append(read_attr(tn, attr, xns))
                 elif attr.tag == xns+'group':
                     gl = attr.attrib['label']
                     gu = attr.attrib.get('unit')
@@ -297,7 +303,7 @@ def load_xml(filename, cat=True):
                         gl += u' [{}]'.format(gu)
                     group = AttrGroup(gl)
                     for attr in attr.findall(xns+'attr'):
-                        group.append(read_attr(attr, xns))
+                        group.append(read_attr(tn, attr, xns))
                     attrs.append(group)
             schema.append(SchemaTag(tn, tl, attrs))
 

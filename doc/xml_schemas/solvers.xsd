@@ -83,6 +83,13 @@
   <xs:element name="choice" type="xs:string">
   </xs:element>
 
+  <xs:element name="conflicts">
+    <xs:complexType>
+      <xs:attribute name="attr" type="xs:string" use="required"/>
+      <xs:attribute name="tag" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="group">
     <xs:complexType mixed="true">
       <xs:sequence>
@@ -97,6 +104,7 @@
     <xs:complexType mixed="true">
       <xs:sequence>
         <xs:element ref="choice" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="conflicts" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="label" type="xs:string" use="required"/>

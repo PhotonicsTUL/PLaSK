@@ -22,6 +22,7 @@ from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
 from .indenter import indent, unindent, autoindent
 
+SCHEME = {}
 
 def update_xml_scheme():
     global SCHEME
@@ -314,7 +315,7 @@ class SourceWidget(QWidget):
                 return False
             else:
                 self.editor.setTextCursor(found)
-                pal.setColor(QPalette.Base, QColor("#dfd"))
+                pal.setColor(QPalette.Base, QColorSCHEME("#dfd"))
                 self.find_edit.setPalette(pal)
                 self._highlight_matches()
                 return True

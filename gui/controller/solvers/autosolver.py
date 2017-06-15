@@ -12,6 +12,7 @@
 from copy import deepcopy
 
 from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
@@ -53,34 +54,53 @@ def set_attr_list(model, group, attr, values):
             data[attr+str(i)] = value
 
 
+def set_conflict(widget, conflict):
+    with BlockQtSignals(widget):
+        widget.setEnabled(not conflict)
+        color = QPalette().color(QPalette.Normal, QPalette.Window if conflict else QPalette.Base)
+        palette = widget.palette()
+        palette.setColor(QPalette.Base, color)
+        widget.setPalette(palette)
+        try:
+            if conflict:
+                placeholder = widget.placeholderText()
+                if placeholder:
+                    widget._placeholder = placeholder
+                widget.setPlaceholderText("")
+            else:
+                widget.setPlaceholderText(widget._placeholder)
+        except AttributeError:
+            pass
+
+
 class SolverAutoWidget(VerticalScrollArea):
 
-    def _change_attr(self, group, attr, value, label=None):
+    def _change_attr(self, group, name, value, attr=None):
         node = self.controller.solver_model
         def set_solver_attr(value):
-            if attr is None:
+            if name is None:
                 node.data[group] = value
             else:
-                node.data[group][attr] = value
+                node.data[group][name] = value
         model = self.controller.section_model
-        old_value = node.data[group] if attr is None else node.data[group][attr]
+        old_value = node.data[group] if name is None else node.data[group][name]
         value = empty_to_none(value)
         if value != old_value:
             model.undo_stack.push(UndoCommandWithSetter(
                 model, set_solver_attr, value, old_value,
-                u"change solver's {}".format('attribute' if label is None else label.strip())
+                u"change solver's {}".format('attribute' if attr is None else attr.label.strip())
             ))
 
-    def _change_multi_attr(self, group, attr, values, label=None):
+    def _change_multi_attr(self, group, name, values, attr=None):
         node = self.controller.solver_model
         def set_solver_attr(vals):
-            set_attr_list(node, group, attr, vals)
+            set_attr_list(node, group, name, vals)
         model = self.controller.section_model
-        old_values= get_attr_list(node, group, attr)
+        old_values = get_attr_list(node, group, name)
         if values != old_values:
             model.undo_stack.push(UndoCommandWithSetter(
                 model, set_solver_attr, values, old_values,
-                u"change solver's {}".format('attribute' if label is None else label.strip())
+                u"change solver's {}".format('attribute' if attr is None else attr.label.strip())
             ))
 
     def _change_node_field(self, field_name, value):
@@ -114,8 +134,8 @@ class SolverAutoWidget(VerticalScrollArea):
             edit = ComboBox()
             edit.setEditable(True)
             edit.addItems([''] + list(attr.choices))
-            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
-                                         self._change_attr(group, name, edit.currentText(), label))
+            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
+                                         self._change_attr(group, name, edit.currentText(), attr))
             edit.setCompleter(defines)
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
@@ -132,14 +152,14 @@ class SolverAutoWidget(VerticalScrollArea):
                 edit = MultiLineEdit(movable=True)
                 # edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                 # edit.textChanged.connect(self.controller.fire_changed)
-                edit.change_cb = lambda edit=edit, group=group, name=attr.name, label=attr.label: \
-                    self._change_multi_attr(group, name, edit.get_values(), label)
+                edit.change_cb = lambda edit=edit, group=group, name=attr.name, attr=attr: \
+                    self._change_multi_attr(group, name, edit.get_values(), attr)
             else:
                 edit = QLineEdit()
                 edit.setCompleter(defines)
                 # edit.textEdited.connect(self.controller.fire_changed)
-                edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, label=attr.label:
-                                             self._change_attr(group, name, edit.text(), label))
+                edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
+                                             self._change_attr(group, name, edit.text(), attr))
                 if attr.default is not None:
                     edit.setPlaceholderText(attr.default)
         edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;<br/>{}'.format(
@@ -244,6 +264,8 @@ class SolverAutoWidget(VerticalScrollArea):
             with BlockQtSignals(self.mesh):
                 self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
                 self.mesh.setEditText(model.mesh)
+        for edit in self.controls.values():
+            set_conflict(edit, False)
         for schema in model.schema:
             group = schema.name
             if isinstance(schema, SchemaTag):
@@ -252,7 +274,8 @@ class SolverAutoWidget(VerticalScrollArea):
                     edit = self.controls[group, attr]
                     with BlockQtSignals(edit):
                         if isinstance(item, AttrMulti):
-                            edit.set_values(get_attr_list(model, group, attr))
+                            value = get_attr_list(model, group, attr)
+                            edit.set_values(value)
                         else:
                             value = model.data[group][attr]
                             if isinstance(item, AttrGeometryObject):
@@ -272,6 +295,12 @@ class SolverAutoWidget(VerticalScrollArea):
                                 edit.setEditText(value)
                             else:
                                 edit.setText(value)
+                        if value:
+                            set_conflict(edit, False)
+                            for conflict in item.conflicts:
+                                conflicting = self.controls.get(conflict)
+                                if conflicting is not None:
+                                    set_conflict(conflicting, True)
             elif isinstance(schema, SchemaBoundaryConditions):
                 self.controls[group].setText("     View / Edit  ({})".format(len(model.data[group])))
             else:

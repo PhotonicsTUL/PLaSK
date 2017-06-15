@@ -140,43 +140,55 @@
       <attr name="size" label="Expansion sizes" type="int" default="12">
         Expansion sizes along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal expansion size’ (&lt;tt&gt;size-long&lt;/tt&gt;) and ‘Transverse expansion size’ (&lt;tt&gt;size-tran&lt;/tt&gt;)
+          <conflicts attr="size-tran"/>
+          <conflicts attr="size-long"/>
       </attr>
       <group label="Expansion sizes">
         <attr name="size-long" label="Longitudinal" type="int">
           Expansion size along longitudinal axis.
           You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
+          <conflicts attr="size"/>
         </attr>
         <attr name="size-tran" label="Transverse" type="int">
           Expansion size along transverse axis.
           You cannot set this attribute together with ‘Expansion sizes’ (&lt;tt&gt;size&lt;/tt&gt;).
+          <conflicts attr="size"/>
         </attr>
       </group>
       <attr name="refine" label="Averaging points" type="int" default="16">
         Number of refinement points for refractive index averaging along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal averaging points’ (&lt;tt&gt;refine-long&lt;/tt&gt;) and ‘Transverse averaging points’ (&lt;tt&gt;refine-tran&lt;/tt&gt;) .
+          <conflicts attr="refine-tran"/>
+          <conflicts attr="refine-long"/>
       </attr>
       <group label="Averaging points">
         <attr name="refine-long" label="Longitudinal" type="int">
           Number of refinement points for refractive index averaging along longitudinal axis.
           You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+          <conflicts attr="refine"/>
         </attr>
         <attr name="refine-tran" label="Transverse" type="int">
           Number of refinement points for refractive index averaging along transverse axis.
           You cannot set this attribute together with ‘Averaging points’ (&lt;tt&gt;refine&lt;/tt&gt;).
+          <conflicts attr="refine"/>
         </attr>
       </group>
       <attr name="oversampling" label="Oversampling" type="float" default="1">
         Factor by which the number of coefficients is increased for FFT along longitudinal and transverse directions.
         You cannot set this attribute together with ‘Longitudinal oversampling’ (&lt;tt&gt;oversampling-long&lt;/tt&gt;) and ‘Transverse oversampling’ (&lt;tt&gt;oversampling-tran&lt;/tt&gt;) .
+          <conflicts attr="oversampling-long"/>
+          <conflicts attr="oversampling-tran"/>
       </attr>
       <group label="Oversampling">
         <attr name="oversampling-long" label="Longitudinal" type="float">
           Factor by which the number of coefficients is increased for FFT along longitudinal direction.
           You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
+          <conflicts attr="oversampling"/>
         </attr>
         <attr name="oversampling-tran" label="Transverse" type="float">
           Factor by which the number of coefficients is increased for FFT along transverse direction.
           You cannot set this attribute together with ‘Oversampling’ (&lt;tt&gt;oversampling&lt;/tt&gt;).
+          <conflicts attr="oversampling"/>
         </attr>
       </group>
       <attr name="dct" label="Symmetric transform type" type="choice" default="2">Type of discrete cosine transform for symmetric expansion.
@@ -239,7 +251,8 @@
         <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
         <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
-      </tag>
+      </tag>attr.getparent()
+
       <tag name="tran" label="Transverse PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
@@ -248,7 +261,7 @@
         <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
       </tag>
     </tag>
-attr.getparent()
+
     <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
@@ -256,7 +269,8 @@ attr.getparent()
       <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
-    <tag name="transfer" label="Transfer Algorithm Settings">
+    <tag name="transfer" label="Transattr.getparent()
+fer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice" default="auto">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.

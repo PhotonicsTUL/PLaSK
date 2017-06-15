@@ -275,6 +275,7 @@
   </optical>
   <optical name="fourier" solver="Fourier3D" lib="slab">
     <geometry ref="geo3d2"/>
+    <expansion refine-long="8" refine-tran="8" size="12"/>
     <pmls>
       <long factor="23"/>
       <tran factor="45"/>
