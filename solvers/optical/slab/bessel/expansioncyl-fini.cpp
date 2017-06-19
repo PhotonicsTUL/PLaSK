@@ -86,7 +86,7 @@ void ExpansionBesselFini::init2()
             if (j == abscissae_cache.size()) {
                 abscissae_cache.push_back(std::vector<double>());
                 weights_cache.push_back(DataVector<double>());
-                gaussData(n, abscissae_cache.back(), weights_cache.back());
+                gaussLegendre(n, abscissae_cache.back(), weights_cache.back());
             }
             assert(j < abscissae_cache.size());
             assert(j < weights_cache.size());

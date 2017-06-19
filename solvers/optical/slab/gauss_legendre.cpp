@@ -7,7 +7,7 @@ using boost::math::legendre_p;
 namespace plask { namespace solvers { namespace slab {
     
 
-void gaussData(size_t n, std::vector<double>& abscissae, DataVector<double>& weights)
+void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights)
 {
     int info;
 
