@@ -187,46 +187,46 @@ cmatrix BesselSolverCyl::epsDp(size_t layer) {
     return expansion.epsDp(layer);
 }
 
-cmatrix BesselSolverCyl::muVmm() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muVmm();
-}
-cmatrix BesselSolverCyl::muVpp() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muVpp();
-}
-cmatrix BesselSolverCyl::muTmm() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muTmm();
-}
-cmatrix BesselSolverCyl::muTpp() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muTpp();
-}
-cmatrix BesselSolverCyl::muTmp() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muTmp();
-}
-cmatrix BesselSolverCyl::muTpm() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muTpm();
-}
-cmatrix BesselSolverCyl::muDm() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muDm();
-}
-cmatrix BesselSolverCyl::muDp() {
-    initCalculation();
-    computeIntegrals();
-    return expansion.muDp();
-}
+// cmatrix BesselSolverCyl::muVmm() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muVmm();
+// }
+// cmatrix BesselSolverCyl::muVpp() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muVpp();
+// }
+// cmatrix BesselSolverCyl::muTmm() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muTmm();
+// }
+// cmatrix BesselSolverCyl::muTpp() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muTpp();
+// }
+// cmatrix BesselSolverCyl::muTmp() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muTmp();
+// }
+// cmatrix BesselSolverCyl::muTpm() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muTpm();
+// }
+// cmatrix BesselSolverCyl::muDm() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muDm();
+// }
+// cmatrix BesselSolverCyl::muDp() {
+//     initCalculation();
+//     computeIntegrals();
+//     return expansion.muDp();
+// }
 #endif
 
 

@@ -144,5 +144,18 @@ F77SUB zneupd(const int& rvec, const char& howmny, const int* select, dcomplex* 
 #define dsterf F77_GLOBAL(dsterf,DSTERF)
 F77SUB dsterf(const int& n, double* d, double* e, int& info);
 
+// DSTEGR computes selected eigenvalues and, optionally, eigenvectors
+// of a real symmetric tridiagonal matrix T.
+#define dstegr F77_GLOBAL(dstegr,DSTEGR)
+F77SUB dstegr(const char& jobz, const char& range, const int& n, double* d, double* e,
+              const double& vl, const double& vu, const int& il, const int& iu, const double& abstol,
+              int& m, double* w, double* z, const int& ldz, int* isuppz, double* work, const int& lwork,
+              int& iwork, const int& liwork, int& info);
+
+// DSTEDC computes all eigenvalues and, optionally, eigenvectors of a
+// symmetric tridiagonal matrix using the divide and conquer method.
+#define dstedc F77_GLOBAL(dstedc,DSTEDC)
+F77SUB dstedc(const char& compz, const int& n, double* d, double* e, double* z, const int& ldz,
+              double* work, const int& lwork, int* iwork, const int& liwork, int& info);
 
 #endif // PLASK__SOLVER_VSLAB_FORTRAN_H

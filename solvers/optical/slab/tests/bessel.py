@@ -50,10 +50,13 @@ class Disk(unittest.TestCase):
         self.solver.size = N
 
         self.solver.pml.dist = 10./f - R
-
         self.solver.pml.size = 2.
         self.solver.pml.factor = 1.-2.j
         self.solver.pml.shape = 0
+
+        self.solver.pml.dist = 10./f - R + 2.
+        self.solver.pml.size = 0.
+        self.solver.pml.factor = 1.
 
         self.solver.lam0 = 1550/f
 
@@ -137,7 +140,8 @@ class Disk(unittest.TestCase):
         m = self.solver.find_mode(1550/self.f)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam, 1148.5-529.7j, 0 )
+        #self.assertAlmostEqual( self.solver.modes[m].lam, 1148.5-529.7j, 0 )
+        self.assertAlmostEqual( self.solver.modes[m].lam, 1575.2-159.7j, 0 )
 
 
 if __name__ == "__main__":

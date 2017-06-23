@@ -198,6 +198,148 @@ void ExpansionBesselFini::reset()
 }
 
 
+void ExpansionBesselFini::layerIntegrals(size_t layer, double lam, double glam)
+{
+    if (isnan(real(k0)) || isnan(imag(k0)))
+        throw BadInput(SOLVER->getId(), "No wavelength specified");
+
+    auto geometry = SOLVER->getGeometry();
+
+    auto raxis = mesh->tran();
+
+    #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d} in thread {:d}", layer, omp_get_thread_num());
+    #else
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}", layer);
+    #endif
+
+    if (isnan(lam))
+        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+
+    size_t nr = raxis->size(), N = SOLVER->size;
+    double ib = 1. / rbounds[rbounds.size()-1];
+
+    if (gain_connected && solver->lgained[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+        if (isnan(glam)) glam = lam;
+    }
+
+    double matz;
+    for (size_t i = 0; i != solver->stack.size(); ++i) {
+        if (solver->stack[i] == layer) {
+            matz = solver->verts->at(i);
+            break;
+        }
+    }
+
+    Integrals& integrals = layers_integrals[layer];
+    integrals.reset(N);
+
+    // For checking if the layer is uniform
+    Tensor3<dcomplex> EPS;
+    diagonals[layer] = true;
+
+
+    size_t pmli = raxis->size();
+    double pmlr;
+    if (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.) {
+        size_t pmlseg = segments.size()-1;
+        pmli -= segments[pmlseg].weights.size();
+        pmlr = rbounds[pmlseg];
+    }
+
+    // Compute integrals
+    for (size_t ri = 0, wi = 0, seg = 0, nw = segments[0].weights.size(); ri != nr; ++ri, ++wi) {
+        if (wi == nw) {
+            nw = segments[++seg].weights.size();
+            wi = 0;
+        }
+        double r = raxis->at(ri);
+        double w = segments[seg].weights[wi] * segments[seg].D;
+
+        auto material = geometry->getMaterial(vec(r, matz));
+        double T = 0., W = 0.;
+        for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+            if (solver->stack[k] == layer) {
+                double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
+                T += w * temperature[v]; W += w;
+            }
+        }
+        T /= W;
+        Tensor3<dcomplex> eps = material->NR(lam, T);
+        if (eps.c01 != 0.)
+            throw BadInput(solver->getId(), "Non-diagonal anisotropy not allowed for this solver");
+        if (gain_connected &&  solver->lgained[layer]) {
+            auto roles = geometry->getRolesAt(vec(r, matz));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                double g = 0.; W = 0.;
+                for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+                    if (solver->stack[k] == layer) {
+                        double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
+                        g += w * gain[v]; W += w;
+                    }
+                }
+                double ni = glam * g/W * (0.25e-7/M_PI);
+                eps.c00.imag(ni); eps.c11.imag(ni); eps.c22.imag(ni);
+            }
+        }
+        eps.sqr_inplace();
+        if (ri >= pmli) {
+            dcomplex f = 1. + (SOLVER->pml.factor - 1.) * pow((r-pmlr)/SOLVER->pml.size, SOLVER->pml.order);
+            eps.c00 *= f;
+            eps.c11 /= f;
+            eps.c22 *= f;
+        }
+        dcomplex ieps = 1. / eps.c22;
+        dcomplex epsa = 0.5 * (eps.c11 + eps.c00), deps = 0.5 * (eps.c11 - eps.c00);
+        iepsilons[layer][ri] = ieps;
+
+        if (ri == 0)
+            EPS = eps;
+        else {
+            auto delta = eps - EPS;
+            if (!is_zero(delta.c00) || !is_zero(delta.c11) || !is_zero(delta.c22) || !is_zero(deps)) diagonals[layer] = false;
+        }
+
+        epsa *= w; deps *= w; ieps *= w;
+
+        for (int i = 0; i < N; ++i) {
+            double g = factors[i] * ib; double gr = g*r;
+            double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
+                   Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
+            for (int j = i; j < N; ++j) {
+                double k = factors[j] * ib; double kr = k*r;
+                double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
+                integrals.Vmm(i,j) += r * Jmg * ieps * Jmk;
+                integrals.Vpp(i,j) += r * Jpg * ieps * Jpk;
+                integrals.Tmm(i,j) += r * Jmg * epsa * Jmk;
+                integrals.Tpp(i,j) += r * Jpg * epsa * Jpk;
+                integrals.Tmp(i,j) += r * Jmg * deps * Jpk;
+                integrals.Tpm(i,j) += r * Jpg * deps * Jmk;
+                integrals.Dm(i,j) -= ieps * (0.5*r*(g*(Jm2g-Jg)*Jk + k*Jmg*(Jmk-Jpk)) + Jmg*Jk);
+                integrals.Dp(i,j)  -= ieps * (0.5*r*(g*(Jg-Jp2g)*Jk + k*Jpg*(Jmk-Jpk)) + Jpg*Jk);
+                if (j != i) {
+                    double Jm2k = cyl_bessel_j(m-2, kr), Jp2k = cyl_bessel_j(m+2, kr);
+                    integrals.Dm(j,i) -= ieps * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
+                    integrals.Dp(j,i)  -= ieps * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
+                }
+            }
+        }
+    }
+
+    if (diagonals[layer]) {
+        SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
+        integrals.zero();
+        dcomplex epst = 0.5 * (EPS.c00 + EPS.c11), iepsv = 1. / EPS.c22;
+        for (int i = 0; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
+            integrals.Vmm(i,i) = integrals.Vpp(i,i) = eta * iepsv;
+            integrals.Tmm(i,i) = integrals.Tpp(i,i) = eta * epst;
+        }
+    }
+}
+
+
 void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 {
     size_t N = SOLVER->size;
@@ -216,9 +358,9 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
             RH(is, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) + mu.Tpp(i,j) - mu.Tpm(i,j));
             RH(ip, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) - mu.Tpp(i,j) + mu.Tpm(i,j));
             RH(is, jp) = i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) - mu.Tpp(i,j) - mu.Tpm(i,j))
-                                - ik0 * k* (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j)));
+                                - ik0 * k * (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j)));
             RH(ip, jp) = i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) + mu.Tpp(i,j) + mu.Tpm(i,j))
-                                  - ik0 * k* (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j)));
+                                  - ik0 * k * (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j)));
         }
     }
 
@@ -229,9 +371,9 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
             size_t js = idxs(j); size_t jp = idxp(j);
             double k = factors[j] / b;
             RE(is, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j))
-                                - ik0 * k* (k * (mu.Vmm(i,j) + mu.Vpp(i,j)) + mu.Dm(i,j) - mu.Dp(i,j)));
+                                - ik0 * k * (k * (mu.Vmm(i,j) + mu.Vpp(i,j)) + mu.Dm(i,j) - mu.Dp(i,j)));
             RE(ip, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j))
-                                - ik0 * k* (k * (mu.Vmm(i,j) - mu.Vpp(i,j)) + mu.Dm(i,j) + mu.Dp(i,j)));
+                                - ik0 * k * (k * (mu.Vmm(i,j) - mu.Vpp(i,j)) + mu.Dm(i,j) + mu.Dp(i,j)));
             RE(is, jp) = i2eta *  k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
             RE(ip, jp) = i2eta *  k0 * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
         }
@@ -241,6 +383,71 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
 
 #ifndef NDEBUG
+cmatrix ExpansionBesselFini::epsVmm(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Vmm(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsVpp(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Vpp(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsTmm(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Tmm(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsTpp(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Tpp(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsTmp(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Tmp(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsTpm(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Tpm(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsDm(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Dm(i,j);
+    return result;
+}
+cmatrix ExpansionBesselFini::epsDp(size_t layer) {
+    size_t N = SOLVER->size;
+    cmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].Dp(i,j);
+    return result;
+}
+
 cmatrix ExpansionBesselFini::muVmm() {
     size_t N = SOLVER->size;
     cmatrix result(N, N, 0.);

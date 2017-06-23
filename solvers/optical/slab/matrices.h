@@ -124,6 +124,13 @@ class Matrix {
         return false;
     }
 
+    T* begin() const {
+        return data_;
+    }
+
+    T* end() const {
+        return data_ + r*c;
+    }
 };
 
 
@@ -219,6 +226,13 @@ class MatrixDiagonal {
         return false;
     }
 
+    T* begin() const {
+        return data_;
+    }
+
+    T* end() const {
+        return data_ + siz;
+    }
 };
 
 //**************************************************************************

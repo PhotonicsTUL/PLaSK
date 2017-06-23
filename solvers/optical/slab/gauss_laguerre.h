@@ -10,9 +10,9 @@ namespace plask { namespace solvers { namespace slab {
  * \param n quadrature order
  * \param[out] abscissae computed abscissae
  * \param[out] weights corresponding weights
- * \param[in] alpha alpha parameter
+ * \param[in] scale scale parameter in the $\exp(sx)$ weight
  */
-void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights, double alpha);
+void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights, double scale=1.);
 
 }}} // # namespace plask::solvers::slab
 

@@ -265,14 +265,14 @@ void export_BesselSolverCyl()
     METHOD(epsDm, epsDm, "J_{m-1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
     METHOD(epsDp, epsDp, "J_{m+1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
 
-    METHOD(muVmm, muVmm, "J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr");
-    METHOD(muVpp, muVpp, "J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr");
-    METHOD(muTmm, muTmm, "J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
-    METHOD(muTpp, muTpp, "J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
-    METHOD(muTmp, muTmp, "J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
-    METHOD(muTpm, muTpm, "J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
-    METHOD(muDm, muDm, "J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
-    METHOD(muDp, muDp, "J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
+//     METHOD(muVmm, muVmm, "J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr");
+//     METHOD(muVpp, muVpp, "J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr");
+//     METHOD(muTmm, muTmm, "J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
+//     METHOD(muTpp, muTpp, "J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
+//     METHOD(muTmp, muTmp, "J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
+//     METHOD(muTpm, muTpm, "J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
+//     METHOD(muDm, muDm, "J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
+//     METHOD(muDp, muDp, "J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
 #endif
 
     py::scope scope = solver;

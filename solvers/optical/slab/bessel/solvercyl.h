@@ -6,6 +6,7 @@
 #include "../solver.h"
 #include "../reflection.h"
 #include "expansioncyl-fini.h"
+#include "expansioncyl-infini.h"
 
 
 namespace plask { namespace solvers { namespace slab {
@@ -17,6 +18,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     friend struct ExpansionBessel;
     friend struct ExpansionBesselFini;
+    friend struct ExpansionBesselInfini;
 
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
@@ -242,14 +244,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     cmatrix epsDm(size_t layer);
     cmatrix epsDp(size_t layer);
 
-    cmatrix muVmm();
-    cmatrix muVpp();
-    cmatrix muTmm();
-    cmatrix muTpp();
-    cmatrix muTmp();
-    cmatrix muTpm();
-    cmatrix muDm();
-    cmatrix muDp();
+//     cmatrix muVmm();
+//     cmatrix muVpp();
+//     cmatrix muTmm();
+//     cmatrix muTpp();
+//     cmatrix muTmp();
+//     cmatrix muTpm();
+//     cmatrix muDm();
+//     cmatrix muDp();
 #endif
 
 };
@@ -258,4 +260,4 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
 }}} // # namespace plask::solvers::slab
 
-#endif // PLASK__SOLVER__SSLAB_SOLVERCYL_H
+#endif // PLASK__SOLVER__SLAB_SOLVERCYL_H

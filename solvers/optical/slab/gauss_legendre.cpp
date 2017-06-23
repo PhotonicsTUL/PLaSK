@@ -5,7 +5,7 @@
 using boost::math::legendre_p;
 
 namespace plask { namespace solvers { namespace slab {
-    
+
 
 void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights)
 {
@@ -13,7 +13,7 @@ void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>&
 
     abscissae.assign(n, 0.);
     weights.reset(n);
-    
+
     for (size_t i = 1; i != n; ++i)
         weights[i-1] = 0.5 / std::sqrt(1. - 0.25/(i*i));
 
@@ -29,5 +29,5 @@ void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>&
         *w = 2. * (1. - (*x)*(*x)) / (nn * P*P);
     }
 }
-     
+
 }}} // # namespace plask::solvers::slab
