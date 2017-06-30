@@ -82,14 +82,14 @@ public:
 
     /**
      * Find position nearest to @p to_find.
-     * @param to_find
+     * @param to_find position to find
      * @return position pos for which abs(*pos-to_find) is minimal
      */
     native_const_iterator findNearest(double to_find) const;
 
     /**
      * Find index nearest to @p to_find.
-     * @param to_find
+     * @param to_find position to find
      * @return index i for which abs((*this)[i]-to_find) is minimal
      */
     std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
@@ -157,7 +157,7 @@ public:
     /// @return number of points in mesh
     virtual std::size_t size() const override { return points.size(); }
 
-	virtual double at(std::size_t index) const override { assert(index < points.size()); return points[index]; }
+    virtual double at(std::size_t index) const override { assert(index < points.size()); return points[index]; }
 
     // @return true only if there are no points in mesh
     //bool empty() const { return points.empty(); }
