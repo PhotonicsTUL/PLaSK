@@ -20,6 +20,11 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     friend struct ExpansionBesselFini;
     friend struct ExpansionBesselInfini;
 
+    enum BesselDomain {
+        DOMAIN_FINITE,
+        DOMAIN_INFINITE
+    };
+
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
@@ -29,17 +34,17 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         double power;                   ///< Mode power [mW]
         double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionBessel& expansion, double tolx):
-            lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1e-9), tolx(tolx) {}
+        Mode(const std::unique_ptr<ExpansionBessel>& expansion, double tolx):
+            lam0(expansion->lam0), k0(expansion->k0), m(expansion->m), power(1e-9), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
             return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
 
-        bool operator==(const ExpansionBessel& other) const {
-            return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&
-                   ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
+        bool operator==(const std::unique_ptr<ExpansionBessel>& other) const {
+            return m == other->m && is_equal(k0, other->k0) && is_equal(lam0, other->lam0) &&
+                   ((isnan(lam0) && isnan(other->lam0)) || lam0 == other->lam0);
         }
 
         template <typename T>
@@ -58,6 +63,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
   protected:
 
+    /// Domain over which the field is expanded (finite or infinite)
+    BesselDomain domain;
+
     /// Angular dependency index
     int m;
 
@@ -69,7 +77,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     void onInvalidate() override;
 
     void computeIntegrals() override {
-        expansion.computeIntegrals();
+        expansion->computeIntegrals();
     }
 
     /// Type of discrete cosine transform. Can be only 1 or two
@@ -78,7 +86,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
   public:
 
     /// Class responsible for computing expansion coefficients
-    ExpansionBesselFini expansion;
+    std::unique_ptr<ExpansionBessel> expansion;
 
     /// Computed modes
     std::vector<Mode> modes;
@@ -88,10 +96,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     }
 
     void setExpansionDefaults(bool with_k0=true) override {
-        expansion.setLam0(getLam0());
+        expansion->setLam0(getLam0());
         if (with_k0) {
-            expansion.setK0(getK0());
-            expansion.setM(getM());
+            expansion->setK0(getK0());
+            expansion->setM(getM());
         }
     }
 
@@ -130,6 +138,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         invalidate();
     }
 
+    /// Get current domain
+    BesselDomain getDomain() const { return domain; }
+    /// Set new domain
+    void setDomain(BesselDomain dom) {
+        domain = dom;
+        invalidate();
+    }
+
     /// Get order of the orthogonal base
     unsigned getM() const { return m; }
     /// Set order of the orthogonal base
@@ -144,7 +160,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         return (2e3*M_PI / modes[n].k0).real();
     }
 
-    Expansion& getExpansion() override { return expansion; }
+    Expansion& getExpansion() override { return *expansion; }
 
     /**
      * Compute electric field coefficients for given \a z
@@ -195,9 +211,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     void applyMode(const Mode& mode) {
         writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", mode.m, str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)"));
-        expansion.setLam0(mode.lam0);
-        expansion.setK0(mode.k0);
-        expansion.setM(mode.m);
+        expansion->setLam0(mode.lam0);
+        expansion->setK0(mode.k0);
+        expansion->setM(mode.m);
     }
 
     /**

@@ -42,7 +42,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     virtual void init2() = 0;
 
     /// Estimate required integration order
-    void estimateIntegrals();
+    void init3();
 
     /// Free allocated memory
     virtual void reset();

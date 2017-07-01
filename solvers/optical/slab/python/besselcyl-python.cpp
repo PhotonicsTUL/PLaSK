@@ -16,7 +16,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
-    auto* expansion = &self->expansion;
+    auto* expansion = self->expansion.get();
 
     enum What {
         WHAT_NOTHING = 0,
@@ -65,12 +65,12 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI / x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion->setK0(2e3*M_PI / x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->expansion.setK0(x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion->setK0(x); return self->getDeterminant(); },
                 array
             );
     }
@@ -81,7 +81,7 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
-    auto* expansion = &self->expansion;
+    auto* expansion = self->expansion.get();
 
     int m = self->getM();
 
@@ -126,6 +126,11 @@ void export_BesselSolverCyl()
 {
     plask_import_array();
 
+    py_enum<typename BesselSolverCyl::BesselDomain>()
+        .value("FINITE", BesselSolverCyl::DOMAIN_FINITE)
+        .value("INFINITE", BesselSolverCyl::DOMAIN_INFINITE)
+    ;
+
     CLASS(BesselSolverCyl, "BesselCyl",
         "Optical Solver using Bessel expansion in cylindrical coordinates.\n\n"
         "It calculates optical modes and optical field distribution using Bessel slab method\n"
@@ -134,6 +139,7 @@ void export_BesselSolverCyl()
 //     solver.add_property("material_mesh", &__Class__::getMesh, "Regular mesh with points in which material is sampled.");
     PROVIDER(outWavelength, "");
     PROVIDER(outLoss, "");
+    RW_PROPERTY(domain, getDomain, setDomain, "Computational domain ('finite' or 'infinite').");
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
     solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"

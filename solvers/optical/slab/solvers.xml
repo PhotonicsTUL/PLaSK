@@ -327,6 +327,12 @@ fer Algorithm Settings">
         If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
+      <attr name="domain" label="Computational domain" type="choice" default="finite">
+          Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over a finite domain
+          (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
+          <choice>finite</choice>
+          <choice>infinite</choice>
+      </attr>
       <attr name="size" label="Expansion size" type="int" default="12">Expansion size.</attr>
       <attr name="group-layers" label="Layers grouping" type="bool" default="yes">
         Should similar layers be grouped for better performance.

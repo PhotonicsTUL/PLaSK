@@ -62,7 +62,7 @@ void ExpansionBessel::reset()
 }
 
 
-void ExpansionBessel::estimateIntegrals() {
+void ExpansionBessel::init3() {
     size_t nseg = rbounds.size() - 1;
 
     // Estimate necessary number of integration points

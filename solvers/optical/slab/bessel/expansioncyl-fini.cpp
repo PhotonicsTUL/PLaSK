@@ -48,7 +48,7 @@ void ExpansionBesselFini::init2()
     SOLVER->writelog(LOG_DETAIL, "Preparing Bessel functions for m = {}", m);
     computeBesselZeros();
 
-    estimateIntegrals();
+    init3();
 
     auto raxis = mesh->axis0;
 

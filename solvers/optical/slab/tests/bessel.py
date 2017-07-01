@@ -60,6 +60,8 @@ class Disk(unittest.TestCase):
 
         self.solver.lam0 = 1550/f
 
+        #self.solver.domain = 'infinite'
+
         self.layer = 0
 
     def plot_geometry(self):

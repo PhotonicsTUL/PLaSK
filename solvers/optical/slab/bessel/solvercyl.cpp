@@ -1,12 +1,15 @@
+#include <memory>
+
 #include "solvercyl.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 
-BesselSolverCyl::BesselSolverCyl(const std::string& name): SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
+BesselSolverCyl::BesselSolverCyl(const std::string& name):
+    SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
+    domain(DOMAIN_FINITE),
     m(1),
     size(12),
-    expansion(this),
     integral_error(1e-6),
     max_itegration_points(1000),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
@@ -23,6 +26,10 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "expansion") {
+            domain = reader.enumAttribute<BesselDomain>("domain")
+                .value("finite", DOMAIN_FINITE)
+                .value("infinite", DOMAIN_INFINITE)
+                .get(domain);
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0", NAN);
@@ -92,8 +99,16 @@ void BesselSolverCyl::onInitialize()
     else
         Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack, interface after {1} layer{2})",
                                      this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    switch (domain) {
+        case DOMAIN_FINITE:
+            expansion.reset(new ExpansionBesselFini(this));
+            break;
+        case DOMAIN_INFINITE:
+            expansion.reset(new ExpansionBesselInfini(this));
+            break;
+    }
     setExpansionDefaults();
-    expansion.init1();
+    expansion->init1();
     this->recompute_integrals = true;
 }
 
@@ -101,7 +116,7 @@ void BesselSolverCyl::onInitialize()
 void BesselSolverCyl::onInvalidate()
 {
     modes.clear();
-    expansion.reset();
+    expansion->reset();
     transfer.reset();
 }
 
@@ -110,10 +125,10 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
     initCalculation();
     ensureInterface();
-    expansion.setLam0(this->lam0);
-    expansion.setM(m);
-    initTransfer(expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
+    expansion->setLam0(this->lam0);
+    expansion->setM(m);
+    initTransfer(*expansion, false);
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion->setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
     root->find(start);
     return insertMode();
 }
@@ -149,83 +164,83 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 cmatrix BesselSolverCyl::epsVmm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsVmm(layer);
+    return expansion->epsVmm(layer);
 }
 cmatrix BesselSolverCyl::epsVpp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsVpp(layer);
+    return expansion->epsVpp(layer);
 }
 cmatrix BesselSolverCyl::epsTmm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsTmm(layer);
+    return expansion->epsTmm(layer);
 }
 cmatrix BesselSolverCyl::epsTpp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsTpp(layer);
+    return expansion->epsTpp(layer);
 }
 cmatrix BesselSolverCyl::epsTmp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsTmp(layer);
+    return expansion->epsTmp(layer);
 }
 cmatrix BesselSolverCyl::epsTpm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsTpm(layer);
+    return expansion->epsTpm(layer);
 }
 cmatrix BesselSolverCyl::epsDm(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsDm(layer);
+    return expansion->epsDm(layer);
 }
 cmatrix BesselSolverCyl::epsDp(size_t layer) {
     initCalculation();
     computeIntegrals();
-    return expansion.epsDp(layer);
+    return expansion->epsDp(layer);
 }
 
 // cmatrix BesselSolverCyl::muVmm() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muVmm();
+//     return expansion->muVmm();
 // }
 // cmatrix BesselSolverCyl::muVpp() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muVpp();
+//     return expansion->muVpp();
 // }
 // cmatrix BesselSolverCyl::muTmm() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muTmm();
+//     return expansion->muTmm();
 // }
 // cmatrix BesselSolverCyl::muTpp() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muTpp();
+//     return expansion->muTpp();
 // }
 // cmatrix BesselSolverCyl::muTmp() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muTmp();
+//     return expansion->muTmp();
 // }
 // cmatrix BesselSolverCyl::muTpm() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muTpm();
+//     return expansion->muTpm();
 // }
 // cmatrix BesselSolverCyl::muDm() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muDm();
+//     return expansion->muDm();
 // }
 // cmatrix BesselSolverCyl::muDp() {
 //     initCalculation();
 //     computeIntegrals();
-//     return expansion.muDp();
+//     return expansion->muDp();
 // }
 #endif
 

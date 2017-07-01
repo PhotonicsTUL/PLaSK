@@ -29,7 +29,7 @@ void ExpansionBesselInfini::init2()
     double b = rbounds[rbounds.size()-1];
     kdelts /= b;
 
-    estimateIntegrals();
+    init3();
 }
 
 
