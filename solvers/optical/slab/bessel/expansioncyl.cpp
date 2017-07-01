@@ -56,7 +56,7 @@ void ExpansionBessel::reset()
     layers_integrals.clear();
     segments.clear();
     iepsilons.clear();
-    factors.clear();
+    kpts.clear();
     initialized = false;
     mesh.reset();
 }
@@ -66,7 +66,7 @@ void ExpansionBessel::estimateIntegrals() {
     size_t nseg = rbounds.size() - 1;
 
     // Estimate necessary number of integration points
-    double k = factors[factors.size()-1];
+    double k = kpts[kpts.size()-1];
 
     double expected = cyl_bessel_j(m+1, k) * rbounds[rbounds.size()-1];
     expected = 0.5 * expected*expected;
@@ -261,11 +261,11 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         epsa *= w; deps *= w; ieps *= w;
 
         for (int i = 0; i < N; ++i) {
-            double g = factors[i] * ib; double gr = g*r;
+            double g = kpts[i] * ib; double gr = g*r;
             double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
                    Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
             for (int j = i; j < N; ++j) {
-                double k = factors[j] * ib; double kr = k*r;
+                double k = kpts[j] * ib; double kr = k*r;
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                 integrals.Vmm(i,j) += r * Jmg * ieps * Jmk;
                 integrals.Vpp(i,j) += r * Jpg * ieps * Jpk;
@@ -289,7 +289,7 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         integrals.zero();
         if (finite) {
             for (int i = 0; i < N; ++i) {
-                double eta = cyl_bessel_j(m+1, factors[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
+                double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
                 integrals.Vmm(i,i) = integrals.Vpp(i,i) = eta * ieps0;
                 integrals.Tmm(i,i) = integrals.Tpp(i,i) = eta * epsa0;
             }
@@ -385,7 +385,7 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
 
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
-    double b = rbounds[rbounds.size()-1];
+    double ib = 1. / rbounds[rbounds.size()-1];
     const dcomplex fz = dcomplex(0,2) / k0;
 
     auto src_mesh = plask::make_shared<RectangularMesh<2>>(mesh->tran(), plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
@@ -400,14 +400,14 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                 double r = dest_mesh->at(i)[0];
                 Vec<3,dcomplex> result {0., 0., 0.};
                 for (size_t j = 0; j != N; ++j) {
-                    double kr = r * factors[j] / b;
+                    double k = kpts[j] * ib;
+                    double kr = k * r;
                     double Jm = cyl_bessel_j(m-1, kr),
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
                     result.c0 -= A * E[idxp(j)] + B * E[idxs(j)];   // E_p
                     result.c1 += A * E[idxs(j)] + B * E[idxp(j)];   // E_r
-                    double k = factors[j] / b;
                     result.c2 += fz * k * ieps[i] * J * H[idxp(j)]; // E_z
                 }
                 return result;
@@ -421,15 +421,15 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                 if (r > r0) imu = 1. / (1. + (SOLVER->pml.factor - 1.) * pow((r-r0)/SOLVER->pml.size, SOLVER->pml.order));
                 Vec<3,dcomplex> result {0., 0., 0.};
                 for (size_t j = 0; j != N; ++j) {
-                    double kr = r * factors[j] / b;
+                    double k = kpts[j] * ib;
+                    double kr = k * r;
                     double Jm = cyl_bessel_j(m-1, kr),
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
                     result.c0 += A * H[idxs(j)] + B * H[idxp(j)];   // H_p
                     result.c1 += A * H[idxp(j)] + B * H[idxs(j)];   // H_r
-                    double k = factors[j] / b;
-                    result.c2 += fz * k * imu * J * E[idxs(j)];           // H_z
+                    result.c2 += fz * k * imu * J * E[idxs(j)];     // H_z
                 }
                 return result;
             });

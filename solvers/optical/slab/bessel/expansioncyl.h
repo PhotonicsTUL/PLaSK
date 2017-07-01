@@ -24,7 +24,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     OrderedAxis rbounds;
 
     /// Argument coefficients for Bessel expansion base (zeros of Bessel function for finite domain)
-    std::vector<double> factors;
+    std::vector<double> kpts;
 
     /// Mesh for getting material data
     shared_ptr<RectangularMesh<2>> mesh;

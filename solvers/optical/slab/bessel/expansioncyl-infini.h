@@ -17,6 +17,8 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
     /// Reference epsilons
     std::vector<std::pair<dcomplex, dcomplex>> eps0;
 
+    DataVector<double> kdelts;
+
   public:
 
     /**

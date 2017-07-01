@@ -18,7 +18,7 @@ struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
      */
     ExpansionBesselFini(BesselSolverCyl* solver);
 
-    /// Fill factors with Bessel zeros
+    /// Fill kpts with Bessel zeros
     void computeBesselZeros();
 
     /// Perform m-specific initialization
