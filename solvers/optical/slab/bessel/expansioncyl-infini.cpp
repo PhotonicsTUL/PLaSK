@@ -23,11 +23,18 @@ void ExpansionBesselInfini::init2()
     eps0.resize(solver->lcount);
 
     size_t N = SOLVER->size;
+    double b = rbounds[rbounds.size()-1];
 
     // TODO better and configurable!
     gaussLaguerre(N, kpts, kdelts);
-    double b = rbounds[rbounds.size()-1];
     kdelts /= b;
+
+//     // k = 0 ... N/b
+//     kpts.resize(N);
+//     kdelts.reset(N, 1./b);
+//     for (size_t i = 0; i < N; i++) {
+//         kpts[i] = 0.5 + i;
+//     }
 
     init3();
 }
@@ -42,7 +49,7 @@ void ExpansionBesselInfini::reset()
 
 void ExpansionBesselInfini::layerIntegrals(size_t layer, double lam, double glam)
 {
-    eps0[layer] = integrateLayer(layer, lam, glam, true);
+    eps0[layer] = integrateLayer(layer, lam, glam, false);
 }
 
 
@@ -68,7 +75,7 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
             RH(ip, jp) = - fk * (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j));
         }
         RH(is, is)  = k0;
-        RH(ip, ip) += k0 - g*g * eps0[layer].second;
+        RH(ip, ip) += k0 - g*g * ik0 * eps0[layer].second;
     }
 
     for (size_t i = 0; i != N; ++i) {
@@ -85,7 +92,7 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
         }
         dcomplex k0eps = k0 * eps0[layer].first;
         RE(ip, ip) += k0eps;
-        RE(is, is) += k0eps - ik0 * g * g;
+        RE(is, is) += k0eps - g*g * ik0;
     }
 }
 

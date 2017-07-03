@@ -203,8 +203,12 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
     } else {
         double T = getT(layer, mesh->tran()->size()-1);
         Tensor3<dcomplex> eps0 = geometry->getMaterial(vec(rbounds[rbounds.size()-1] + 0.001, matz))->NR(lam, T);
+        eps0.sqr_inplace();
         epsa0 = 0.5 * (eps0.c00 + eps0.c11);
         ieps0 = 1. / eps0.c22;
+        if (abs(epsa0.imag()) < SMALL) epsa0.imag(0.);
+        if (abs(ieps0.imag()) < SMALL) ieps0.imag(0.);
+        writelog(LOG_DEBUG, "Reference refractive index for layer {} is {} / {}", layer, str(sqrt(epsa0)), str(sqrt(1./ieps0)));
     }
 
     // Compute integrals
@@ -406,9 +410,11 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
-                    result.c0 -= A * E[idxp(j)] + B * E[idxs(j)];   // E_p
-                    result.c1 += A * E[idxs(j)] + B * E[idxp(j)];   // E_r
-                    result.c2 += fz * k * ieps[i] * J * H[idxp(j)]; // E_z
+                    size_t js = idxs(j);
+                    size_t jp = idxp(j);
+                    result.c0 -= A * E[jp] + B * E[js];         // E_p
+                    result.c1 += A * E[js] + B * E[jp];         // E_r
+                    result.c2 += fz * k * ieps[i] * J * H[jp];  // E_z
                 }
                 return result;
             });
@@ -427,9 +433,11 @@ LazyData<Vec<3,dcomplex>> ExpansionBessel::getField(size_t l,
                            Jp = cyl_bessel_j(m+1, kr),
                            J = cyl_bessel_j(m, kr);
                     double A = Jm + Jp, B = Jm - Jp;
-                    result.c0 += A * H[idxs(j)] + B * H[idxp(j)];   // H_p
-                    result.c1 += A * H[idxp(j)] + B * H[idxs(j)];   // H_r
-                    result.c2 += fz * k * imu * J * E[idxs(j)];     // H_z
+                    size_t js = idxs(j);
+                    size_t jp = idxp(j);
+                    result.c0 += A * H[js] + B * H[jp];     // H_p
+                    result.c1 += A * H[jp] + B * H[js];     // H_r
+                    result.c2 += fz * k * imu * J * E[js];  // H_z
                 }
                 return result;
             });

@@ -1,14 +1,16 @@
 <plask loglevel="debug">
 
 <defines>
+  <define name="domain" value="'infinite'"/>
   <define name="m" value="0"/>
-  <define name="mesa" value="10."/>
+  <define name="mesa" value="20."/>
   <define name="x" value="0.03185 #3"/>
-  <define name="aprt" value="2."/>
-  <define name="estart" value="978.5"/>
-  <define name="bstart" value="{estart}"/>
-  <define name="N0" value="100"/>
+  <define name="aprt" value="8."/>
+  <define name="estart" value="980.5"/>
+  <define name="bstart" value="980.7"/>
+  <define name="N0" value="20"/>
   <define name="pml" value="1."/>
+  <define name="det" value="False"/>
 </defines>
 
 <materials>
@@ -70,7 +72,7 @@
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion lam0="980." size="{N0}"/>
+    <expansion domain="{domain}" lam0="980." size="{N0 if N0 is not None else 20}"/>
     <interface object="QW"/>
     <pml dist="30." factor="{pml}" size="2."/>
   </optical>
@@ -86,8 +88,24 @@ profile[GEO.active] = 0.
 bessel.inGain = profile.outGain
 efm.inGain = profile.outGain
 
-em = efm.find_mode(estart, m=m)
-elam = efm.modes[em].lam
+efm.find_mode(estart, m=m)
+elam = efm.modes[0].lam
+
+def plot_determinant(solver, m):
+    lams = linspace(978., 981., 61)
+    dets = solver.get_determinant(lam=lams, m=m)
+    figure()
+    plot(lams, abs(dets))
+    yscale('log')
+    xlabel("Wavelength [nm]")
+    ylabel("Determinant")
+
+if det:
+    plot_determinant(efm, m)
+    window_title("Determinant EFM")
+    plot_determinant(bessel, m+1)
+    window_title("Determinant Bessel")
+
 
 box = GEO.vcsel.bbox
 z = GEO.vcsel.get_object_bboxes(GEO.QW)[0].center.z
@@ -95,26 +113,32 @@ rmsh = mesh.Rectangular2D(linspace(-10., 10., 2001), [z])
 
 desc = u" (aprt:{:.1f}µm PML:{})".format(aprt, pml)
 
-efield = efm.outLightMagnitude(em, rmsh)
+efield = efm.outLightMagnitude(rmsh)
 
-NN = range(20, max(151,N0+1), 10)
-lams = []
-times = []
 
-figure()
-for N in NN:
-    bessel.size = N
-    try:
-        t = timeit(lambda: bessel.find_mode(bstart, m=m+1), number=1)
-    except ComputationError:
-        NN = NN[:len(lams)]
-        break
-    else:
-        times.append(t)
-        lams.append(bessel.modes[0].lam)
-        mag = bessel.outLightMagnitude(rmsh)
-        plot_profile(mag/max(mag), label=str(N))
-
+if N0 is None:
+    NN = range(4, 41, 2)
+    lams = []
+    times = []
+    figure()
+    for N in NN:
+        bessel.size = N
+        try:
+            t = timeit(lambda: bessel.find_mode(bstart, m=m+1), number=1)
+        except ComputationError:
+            NN = NN[:len(lams)]
+            break
+        else:
+            times.append(t)
+            lams.append(bessel.modes[0].lam)
+            mag = bessel.outLightMagnitude(rmsh)
+            plot_profile(mag/max(mag), label=str(N))
+else:
+    figure()
+    bessel.find_mode(bstart, m=m+1)
+    mag = bessel.outLightMagnitude(rmsh)
+    plot_profile(mag/max(mag), label="Bessel")
+    
 plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
 legend(loc='best')
@@ -122,85 +146,87 @@ ylabel("Light magnitude [a.u.]")
 gcf().canvas.set_window_title(u"Mode profiles — base" + desc)
 tight_layout(0.2)
 
-lams = array(lams)
+if N0 is None:
+    lams = array(lams)
+    figure()
+    plot(NN, real(lams), '-', color=cc[0])
+    plot(NN, real(lams), '.', color=cc[0])
+    axhline(real(elam), ls='--', color=cc[0])
+    gca().ticklabel_format(useOffset=False)
+    xlabel("Base size")
+    ylabel("Resonant wavelength [nm]", color=cc[0])
+    twinx()
+    Q = - 0.5 * real(lams) / imag(lams)
+    plot(NN, Q, '-', color=cc[1])
+    plot(NN, Q, '.', color=cc[1])
+    axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
+    gca().ticklabel_format(useOffset=False)
+    ylabel("Q-factor [-]", color=cc[1])
+    gcf().canvas.set_window_title(u"Convergence — base" + desc)
+    tight_layout(0.2)
+    
+    figure()
+    plot(NN, times, '-', color=cc[2])
+    plot(NN, times, '.', color=cc[2])
+    xlabel("Base size")
+    ylabel("Computation time [s]")
+    gcf().canvas.set_window_title(u"Computation time — base" + desc)
+    tight_layout(0.2)
+    
+    bessel.size = 20
 
-figure()
-plot(NN, real(lams), '-', color=cc[0])
-plot(NN, real(lams), '.', color=cc[0])
-axhline(real(elam), ls='--', color=cc[0])
-gca().ticklabel_format(useOffset=False)
-xlabel("Base size")
-ylabel("Resonant wavelength [nm]", color=cc[0])
-twinx()
-Q = - 0.5 * real(lams) / imag(lams)
-plot(NN, Q, '-', color=cc[1])
-plot(NN, Q, '.', color=cc[1])
-axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
-gca().ticklabel_format(useOffset=False)
-ylabel("Q-factor [-]", color=cc[1])
-gcf().canvas.set_window_title(u"Convergence — base" + desc)
-tight_layout(0.2)
-
-figure()
-plot(NN, times, '-', color=cc[2])
-plot(NN, times, '.', color=cc[2])
-xlabel("Base size")
-ylabel("Computation time [s]")
-gcf().canvas.set_window_title(u"Computation time — base" + desc)
-tight_layout(0.2)
+else:
+    print("EFM:     lam = {:.2f}nm  Q = {:.0f}".format(elam.real, - 0.5 * real(elam) / imag(elam)))
+    blam = bessel.modes[0].lam
+    print("Bessel:  lam = {:.2f}nm  Q = {:.0f}".format(blam.real, - 0.5 * real(blam) / imag(blam)))
 
 
-bessel.size = N0
+if mesa is None:
+    mesas = arange(10., 81., 5.)
+    lams = []
+    figure()
+    for mesa in mesas:
+        GEO.dbr_gaas.width = mesa
+        GEO.dbr_algaas.width = mesa
+        GEO.x1.width = mesa
+        GEO.x.width = mesa
+        GEO.cavity.width = mesa
+        GEO.alox.width = mesa - aprt/2
+        GEO.inactive.width = mesa - aprt/2
+        try:
+            bessel.find_mode(bstart, m=m+1)
+        except ComputationError:
+            mesas = mesas[:len(lams)]
+            break
+        else:
+            lams.append(bessel.modes[0].lam)
+            mag = bessel.outLightMagnitude(rmsh)
+            plot_profile(mag/max(mag), label=u"{} µm".format(mesa))
+    plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
-mesas = arange(10., 81., 5.)
-
-lams = []
-
-figure()
-for mesa in mesas:
-    GEO.dbr_gaas.width = mesa
-    GEO.dbr_algaas.width = mesa
-    GEO.x1.width = mesa
-    GEO.x.width = mesa
-    GEO.cavity.width = mesa
-    GEO.alox.width = mesa - aprt/2
-    GEO.inactive.width = mesa - aprt/2
-    try:
-        bessel.find_mode(bstart, m=m+1)
-    except ComputationError:
-        mesas = mesas[:len(lams)]
-        break
-    else:
-        lams.append(bessel.modes[0].lam)
-        mag = bessel.outLightMagnitude(rmsh)
-        plot_profile(mag/max(mag), label=u"{} µm".format(mesa))
-
-plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
-
-legend(loc='best')
-ylabel("Light magnitude [a.u.]")
-gcf().canvas.set_window_title(u"Mode profiles — mesa" + desc)
-tight_layout(0.2)
-
-lams = array(lams)
-
-figure()
-plot(mesas, real(lams), '-', color=cc[0])
-plot(mesas, real(lams), '.', color=cc[0])
-axhline(real(elam), ls='--', color=cc[0])
-gca().ticklabel_format(useOffset=False)
-xlabel(u"Mesa size [µm]")
-ylabel("Resonant wavelength [nm]", color=cc[0])
-twinx()
-Q = - 0.5 * real(lams) / imag(lams)
-plot(mesas, Q, '-', color=cc[1])
-plot(mesas, Q, '.', color=cc[1])
-axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
-gca().ticklabel_format(useOffset=False)
-ylabel("Q-factor [-]", color=cc[1])
-gcf().canvas.set_window_title(u"Convergence — mesa" + desc)
-tight_layout(0.2)
-
+    legend(loc='best')
+    ylabel("Light magnitude [a.u.]")
+    gcf().canvas.set_window_title(u"Mode profiles — mesa" + desc)
+    tight_layout(0.2)
+    
+    lams = array(lams)
+    
+    figure()
+    plot(mesas, real(lams), '-', color=cc[0])
+    plot(mesas, real(lams), '.', color=cc[0])
+    axhline(real(elam), ls='--', color=cc[0])
+    gca().ticklabel_format(useOffset=False)
+    xlabel(u"Mesa size [µm]")
+    ylabel("Resonant wavelength [nm]", color=cc[0])
+    twinx()
+    Q = - 0.5 * real(lams) / imag(lams)
+    plot(mesas, Q, '-', color=cc[1])
+    plot(mesas, Q, '.', color=cc[1])
+    axhline(-0.5*real(elam)/imag(elam), ls='--', color=cc[1])
+    gca().ticklabel_format(useOffset=False)
+    ylabel("Q-factor [-]", color=cc[1])
+    gcf().canvas.set_window_title(u"Convergence — mesa" + desc)
+    tight_layout(0.2)
 
 show()
 ]]></script>
