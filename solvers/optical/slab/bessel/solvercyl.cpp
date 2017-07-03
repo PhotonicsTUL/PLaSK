@@ -10,8 +10,9 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
     domain(DOMAIN_FINITE),
     m(1),
     size(12),
+    kscale(1.),
     integral_error(1e-6),
-    max_itegration_points(1000),
+    max_integration_points(1000),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
@@ -35,7 +36,20 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
-            max_itegration_points = reader.getAttribute<size_t>("integrals-points", max_itegration_points);
+            max_integration_points = reader.getAttribute<size_t>("integrals-points", max_integration_points);
+            if (reader.hasAttribute("k-ranges")) {
+                std::vector<double> kpts;
+                std::string data = reader.requireAttribute("k-ranges");
+                for (auto point: boost::tokenizer<boost::char_separator<char>>(data, boost::char_separator<char>(" ,;\t\n[]"))) {
+                    try {
+                        kpts.push_back(boost::lexical_cast<double>(point));
+                    } catch (boost::bad_lexical_cast) {
+                        throw XMLException(reader, format("Value '{0}' cannot be converted to float", point));
+                    }
+                }
+                kpoints = kpts;
+            }
+            kscale = reader.getAttribute<double>("k-scale", 1.);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

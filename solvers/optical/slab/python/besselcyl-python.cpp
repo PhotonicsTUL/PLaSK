@@ -120,6 +120,9 @@ static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 
+std::vector<double> BesselSolverCyl_getKpoints(const BesselSolverCyl& self) {
+    return self.getKpoints();
+}
 
 
 void export_BesselSolverCyl()
@@ -141,6 +144,12 @@ void export_BesselSolverCyl()
     PROVIDER(outLoss, "");
     RW_PROPERTY(domain, getDomain, setDomain, "Computational domain ('finite' or 'infinite').");
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+    RW_PROPERTY(kscale, getKscale, setKscale,
+                "Scale factor for automatically determined wavector ranges (based on\n"
+                "Gauss-Laguerre quadratures).");
+    solver.add_property("kranges", BesselSolverCyl_getKpoints, &__Class__::setKpoints,
+                "Horizontal wavevectors ranges for substituting integration (Hankel\n"
+                "transform) with summation in infinite domain.");
     solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"

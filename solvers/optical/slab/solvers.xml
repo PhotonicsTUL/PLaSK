@@ -328,10 +328,10 @@ fer Algorithm Settings">
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
       <attr name="domain" label="Computational domain" type="choice" default="finite">
-          Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over a finite domain
-          (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
-          <choice>finite</choice>
-          <choice>infinite</choice>
+        Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over a finite domain
+        (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
+        <choice>finite</choice>
+        <choice>infinite</choice>
       </attr>
       <attr name="size" label="Expansion size" type="int" default="12">Expansion size.</attr>
       <attr name="group-layers" label="Layers grouping" type="bool" default="yes">
@@ -342,6 +342,12 @@ fer Algorithm Settings">
       </attr>
       <attr name="integrals-points" label="Maximum integration points" type="int" default="1000">
         Maximum number of points each element is sampled for computing Bessel functions integrals.
+      </attr>
+      <attr name="k-ranges" label="Horizontal wavevectors" type="string">
+        Horizontal wavevectors ranges for substituting integration (Hankel transform) with summation in infinite domain.
+      </attr>
+      <attr name="k-scale" label="Auto wavevectors scaling" type="double">
+        Scale factor for automatically determined wavector ranges (based on Gauss-Laguerre quadratures).
       </attr>
     </tag>
 

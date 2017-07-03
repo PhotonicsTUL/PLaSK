@@ -5,42 +5,42 @@
 
 namespace plask {
 
-void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
+void Geometry::setEdges(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
 {
     boost::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("edges");
-    if (v) setAllBorders(*edge::Strategy::fromStrUnique(*v, materialsDB));
+    if (v) setAllEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
     v = borderValuesGetter("planar");
-    if (v) setPlanarBorders(*edge::Strategy::fromStrUnique(*v, materialsDB));
+    if (v) setPlanarEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = axesNames[dir_nr];
         v = borderValuesGetter(axis_name);
-        if (v) setBorders(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
+        if (v) setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
         v_lo = borderValuesGetter(axis_name + "-lo");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-            if (v_lo) throw BadInput("setBorders", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
+            if (v_lo) throw BadInput("setEdges", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
             else v_lo = v;
         }
         v_hi = borderValuesGetter(axis_name + "-hi");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-            if (v_hi) throw BadInput("setBorders", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
+            if (v_hi) throw BadInput("setEdges", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
             else v_hi = v;
         }
         try {
             if (v_lo && v_hi) {
-                setBorders(Direction(dir_nr),  *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                setEdges(Direction(dir_nr),  *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
             } else {
-                if (v_lo) setBorder(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
-                if (v_hi) setBorder(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                if (v_lo) setEdge(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
+                if (v_hi) setEdge(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
             }
         } catch (DimensionError) {
-            throw BadInput("setBorders", "Axis '{0}' is not allowed for this space", axis_name);
+            throw BadInput("setEdges", "Axis '{0}' is not allowed for this space", axis_name);
         }
     }
 }
 
-void Geometry::storeBorderInXML(XMLWriter::Element &dest_xml_object, Geometry::Direction direction, bool higher) const {
-    const edge::Strategy& b = this->getBorder(direction, higher);
+void Geometry::storeEdgeInXML(XMLWriter::Element &dest_xml_object, Geometry::Direction direction, bool higher) const {
+    const edge::Strategy& b = this->getEdge(direction, higher);
     if (b.type() != edge::Strategy::DEFAULT)
         dest_xml_object.attr(this->alternativeDirectionName(direction, higher), b.str());
 }
@@ -89,18 +89,18 @@ std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::
 template <>
 void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
     dest_xml_object.attr("axes", axes.str());
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
+    this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, false);
+    this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, true);
+    this->storeEdgeInXML(dest_xml_object, DIRECTION_VERT, false);
+    this->storeEdgeInXML(dest_xml_object, DIRECTION_VERT, true);
 }
 
 template <>
 void GeometryD<3>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
     dest_xml_object.attr("axes", axes.str());
     for (int dir = 0; dir < 3; ++dir) {
-        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
-        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), true);
+        this->storeEdgeInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
+        this->storeEdgeInXML(dest_xml_object, plask::Geometry::Direction(dir), true);
     }
 }
 
@@ -150,14 +150,14 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
     fireChildrenChanged();
 }
 
-// Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path, bool copyBorders) const {
+// Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path, bool copyEdges) const {
 //     auto shifts = getChild()->getObjectPositions(object, path);
 //     // auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
 //     // if (!new_child) {
 //     //     new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
 //     //     new_child->translation = - new_child->translation;
 //     // }
-//     // if (copyBorders) {
+//     // if (copyEdges) {
 //     //     std::unique_ptr<Geometry2DCartesian> result(new Geometry2DCartesian(*this));
 //     //     result->extrusion = plask::make_shared<Extrusion>(new_child, getExtrusion()->length);
 //     //     return result.release();
@@ -165,7 +165,7 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 //     //     return new Geometry2DCartesian(new_child, getExtrusion()->length);
 // }
 
-void Geometry2DCartesian::setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
+void Geometry2DCartesian::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.setStrategies(border_lo, border_hi);
@@ -174,7 +174,7 @@ void Geometry2DCartesian::setBorders(Direction direction, const edge::Strategy& 
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCartesian::setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) {
+void Geometry2DCartesian::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.set(higher, border_to_set);
@@ -183,15 +183,15 @@ void Geometry2DCartesian::setBorder(Direction direction, bool higher, const edge
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool higher) const {
+const edge::Strategy& Geometry2DCartesian::getEdge(Direction direction, bool higher) const {
     Primitive<3>::ensureIsValid2DDirection(direction);
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
 shared_ptr<GeometryObject> Geometry2DCartesian::shallowCopy() const {
     shared_ptr<Geometry2DCartesian> result = make_shared<Geometry2DCartesian>(static_pointer_cast<Extrusion>(this->extrusion->shallowCopy()));
-    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     result->frontMaterial = frontMaterial;
     result->backMaterial = backMaterial;
     return result;
@@ -201,8 +201,8 @@ shared_ptr<GeometryObject> Geometry2DCartesian::deepCopy(std::map<const Geometry
     auto found = copied.find(this);
     if (found != copied.end()) return found->second;
     shared_ptr<Geometry2DCartesian> result = make_shared<Geometry2DCartesian>(static_pointer_cast<Extrusion>(this->extrusion->deepCopy(copied)));
-    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     result->frontMaterial = frontMaterial;
     result->backMaterial = backMaterial;
     copied[this] = result;
@@ -267,51 +267,51 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
     fireChildrenChanged();
 }
 
-// Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyBorders) const {
+// Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyEdges) const {
 // }
 
-void Geometry2DCylindrical::setBorders(Direction direction, const edge::Strategy& border_to_set) {
+void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.setBoth(dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast) {
-            throw BadInput("setBorders", "Wrong edge type for inner or outer edge");
+            throw BadInput("setEdges", "Wrong edge type for inner or outer edge");
         }
     } else
         bottomup.setBoth(border_to_set);
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setBorders(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
+void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setBorder(Direction direction, bool higher, const edge::Strategy& border_to_set) {
+void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction, higher);
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast) {
-            throw BadInput("setBorder", "Wrong edge type for inner or outer edge");
+            throw BadInput("setEdge", "Wrong edge type for inner or outer edge");
         }
     } else
         bottomup.set(higher, border_to_set);
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bool higher) const {
+const edge::Strategy& Geometry2DCylindrical::getEdge(Direction direction, bool higher) const {
     ensureBoundDirIsProper(direction, higher);
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
 shared_ptr<GeometryObject> Geometry2DCylindrical::shallowCopy() const {
     shared_ptr<Geometry2DCylindrical> result = make_shared<Geometry2DCylindrical>(static_pointer_cast<Revolution>(static_pointer_cast<Revolution>(this->revolution->shallowCopy())));
-    result->setBorders(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     return result;
 }
 
@@ -319,8 +319,8 @@ shared_ptr<GeometryObject> Geometry2DCylindrical::deepCopy(std::map<const Geomet
     auto found = copied.find(this);
     if (found != copied.end()) return found->second;
     shared_ptr<Geometry2DCylindrical> result = make_shared<Geometry2DCylindrical>(static_pointer_cast<Revolution>(this->revolution->deepCopy(copied)));
-    result->setBorders(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     copied[this] = result;
     return result;
 }
@@ -332,7 +332,7 @@ void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, Writ
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
 }
 
-void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_lo, const edge::Strategy &border_hi) {
+void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_lo, const edge::Strategy &border_hi) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setStrategies(border_lo, border_hi); break;
         case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
@@ -341,7 +341,7 @@ void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_lo
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_to_set) {
+void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setBoth(border_to_set); break;
         case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
@@ -350,7 +350,7 @@ void Geometry3D::setBorders(Direction direction, const edge::Strategy &border_to
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setBorder(Direction direction, bool higher, const edge::Strategy &border_to_set) {
+void Geometry3D::setEdge(Direction direction, bool higher, const edge::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.set(higher, border_to_set); break;
         case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
@@ -359,7 +359,7 @@ void Geometry3D::setBorder(Direction direction, bool higher, const edge::Strateg
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy &Geometry3D::getBorder(Direction direction, bool higher) const {
+const edge::Strategy &Geometry3D::getEdge(Direction direction, bool higher) const {
     switch (direction) {
         case DIRECTION_LONG: return backfront.get(higher);
         case DIRECTION_TRAN: return leftright.get(higher);
@@ -407,9 +407,9 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 
 shared_ptr<GeometryObject> Geometry3D::shallowCopy() const {
     shared_ptr<Geometry3D> result = make_shared<Geometry3D>(this->child);
-    result->setBorders(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
-    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     return result;
 }
 
@@ -417,14 +417,14 @@ shared_ptr<GeometryObject> Geometry3D::deepCopy(std::map<const GeometryObject*, 
     auto found = copied.find(this);
     if (found != copied.end()) return found->second;
     shared_ptr<Geometry3D> result = make_shared<Geometry3D>(static_pointer_cast<GeometryObjectD<3>>(this->child->deepCopy(copied)));
-    result->setBorders(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
-    result->setBorders(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
-    result->setBorders(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->setEdges(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
     copied[this] = result;
     return result;
 }
 
-// Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {
+// Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyEdges) const {
 // }
 
 

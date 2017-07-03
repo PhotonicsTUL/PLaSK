@@ -95,7 +95,7 @@ void ExpansionBessel::init3() {
         std::vector<double> points;
         size_t j, n = 0;
         double sum;
-        for (j = 0; err > max_error && n <= SOLVER->max_itegration_points; ++j) {
+        for (j = 0; err > max_error && n <= SOLVER->max_integration_points; ++j) {
             n = 4 * (j+1) - 1;
             if (j == abscissae_cache.size()) {
                 abscissae_cache.push_back(std::vector<double>());

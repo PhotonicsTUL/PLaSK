@@ -103,8 +103,8 @@ static bool objectIncludes2_3D(const Geometry3D& self, const GeometryObject& obj
 
 
 
-static void _Space_setBorders(Geometry& self, py::dict edges, std::set<std::string>& parsed, const std::string& err_msg) {
-   self.setBorders(
+static void _Space_setEdges(Geometry& self, py::dict edges, std::set<std::string>& parsed, const std::string& err_msg) {
+   self.setEdges(
         [&](const std::string& s)->boost::optional<std::string> {
             std::string str = s;
             std::replace(str.begin(), str.end(), '-', '_');
@@ -177,7 +177,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
     parsed_kwargs.insert("geometry");
     parsed_kwargs.insert("length");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -212,7 +212,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -238,7 +238,7 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -250,9 +250,9 @@ static typename Primitive<S::DIM>::Box Space_childBoundingBox(const S& self) {
     return self.getChildBoundingBox();
 }
 
-static void Space_setBorders(Geometry& self, py::dict edges) {
+static void Space_setEdges(Geometry& self, py::dict edges) {
     std::set<std::string> parsed;
-    _Space_setBorders(self, edges, parsed, "unexpected edge name '{}'");
+    _Space_setEdges(self, edges, parsed, "unexpected edge name '{}'");
 }
 
 struct EdgesProxy : public std::map<std::string, py::object> {
@@ -290,11 +290,11 @@ struct EdgesProxy : public std::map<std::string, py::object> {
 
 
 inline static py::object _border(const Geometry& self, Geometry::Direction direction, bool higher) {
-    auto str = self.getBorder(direction, higher).str();
+    auto str = self.getEdge(direction, higher).str();
     return (str=="null") ? py::object() : py::object(str);
 }
 
-static EdgesProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) {
+static EdgesProxy Geometry2DCartesian_getEdges(const Geometry2DCartesian& self) {
     EdgesProxy edges;
     edges["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
     edges["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
@@ -303,7 +303,7 @@ static EdgesProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& self
     return edges;
 }
 
-static EdgesProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
+static EdgesProxy Geometry2DCylindrical_getEdges(const Geometry2DCylindrical& self) {
     EdgesProxy edges;
     edges["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
     edges["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
@@ -312,7 +312,7 @@ static EdgesProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& 
     return edges;
 }
 
-static EdgesProxy Geometry3D_getBorders(const Geometry3D& self) {
+static EdgesProxy Geometry3D_getEdges(const Geometry3D& self) {
     EdgesProxy edges;
     edges["back"] = _border(self, Geometry::DIRECTION_LONG, false);
     edges["front"] = _border(self, Geometry::DIRECTION_LONG, true);
@@ -384,7 +384,7 @@ static bool Geometry3D_hasRoleAt(const Geometry3D& self, const std::string& role
 //     std::set<std::string> parsed;
 //     parsed.insert("object");
 //     parsed.insert("path");
-//     _Space_setBorders(*space, kwargs, parsed, "unexpected edge name '{}'");
+//     _Space_setEdges(*space, kwargs, parsed, "unexpected edge name '{}'");
 //
 //     return shared_ptr<S>(space);
 // }
@@ -448,7 +448,7 @@ void register_calculation_spaces() {
                       u8"Material at the positive side of the axis along the extrusion.")
         .add_property("back_material", &Geometry2DCartesian::getBackMaterial, &Geometry2DCartesian::setBackMaterial,
                       u8"Material at the negative side of the axis along the extrusion.")
-        .add_property("edges", &Geometry2DCartesian_getBorders, &Space_setBorders,
+        .add_property("edges", &Geometry2DCartesian_getEdges, &Space_setEdges,
                       u8"Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry2DCartesian::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, (py::arg("c0"), "c1"),
@@ -670,7 +670,7 @@ void register_calculation_spaces() {
                        u8"for the points that do not belong to any object in the geometry tree.\n"
                        u8"any object in the geometry tree.\n"
                       )
-        .add_property("edges", &Geometry2DCylindrical_getBorders, &Space_setBorders,
+        .add_property("edges", &Geometry2DCylindrical_getEdges, &Space_setEdges,
                       "Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry2DCylindrical::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, (py::arg("c0"), "c1"),
@@ -890,7 +890,7 @@ void register_calculation_spaces() {
                        u8"This material is returned by :meth:`~plask.geometry.Cartesian3D.get_material`\n"
                        u8"for the points that do not belong to any object in the geometry tree.\n"
                       )
-        .add_property("edges", &Geometry3D_getBorders, &Space_setBorders,
+        .add_property("edges", &Geometry3D_getEdges, &Space_setEdges,
                       "Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry3D::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry3D>::call, (py::arg("c0"), "c1", "c2"),

@@ -80,8 +80,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         expansion->computeIntegrals();
     }
 
-    /// Type of discrete cosine transform. Can be only 1 or two
-    int dct;
+    /// Scale for k-points for infinite expansion
+    double kscale;
+
+    /// Custom k-ranges for infinite expansion
+    std::vector<double> kpoints;
+
+//     /// Type of discrete cosine transform. Can be only 1 or two
+//     int dct;
 
   public:
 
@@ -107,7 +113,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     double integral_error;
 
     /// Maximum number of integration points in a single segemnt
-    size_t max_itegration_points;
+    size_t max_integration_points;
 
     /// Lateral PMLs
     PML pml;
@@ -137,6 +143,21 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         size = n;
         invalidate();
     }
+
+    /// Get current kranges
+    const std::vector<double>& getKpoints() const {
+        return kpoints;
+    }
+    /// Set new kranges
+    void setKpoints(const std::vector<double>& kpts) {
+        kpoints = kpts;
+        invalidate();
+    }
+
+    /// Get scale for automatic k-ranges
+    double getKscale() const { return kscale; }
+    /// Set scale for automatic k-ranges
+    void setKscale(double s) { kscale = s; }
 
     /// Get current domain
     BesselDomain getDomain() const { return domain; }

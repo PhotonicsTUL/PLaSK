@@ -143,7 +143,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * Check if EVENT_EDGES flag is set, which mean that edges connected with source could changed.
          * @return @c true only if EVENT_EDGES flag is set
          */
-        bool hasChangedBorders() const { return hasFlag(EVENT_EDGES); }
+        bool hasChangedEdges() const { return hasFlag(EVENT_EDGES); }
 
         /**
          * Get original source of event which can differ from source if event was delegated.

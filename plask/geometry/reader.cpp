@@ -196,7 +196,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         boost::optional<double> l = source.getAttribute<double>("length");
         shared_ptr<Geometry2DCartesian> cartesian2d = plask::make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
-        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
                               auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         if (l) {
@@ -217,7 +217,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = plask::make_shared<Geometry2DCylindrical>();
-        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
                               auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         auto child = readExactlyOneChild<GeometryObject>();
@@ -234,7 +234,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = plask::make_shared<Geometry3D>();
-        result->setBorders([&](const std::string& s) -> boost::optional<std::string> {
+        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
                               auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(

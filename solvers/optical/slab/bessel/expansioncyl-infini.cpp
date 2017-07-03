@@ -20,21 +20,29 @@ void ExpansionBesselInfini::init2()
 {
     SOLVER->writelog(LOG_DETAIL, "Preparing Bessel functions for m = {}", m);
 
+    if (SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::DEFAULT &&
+        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::SIMPLE &&
+        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::EXTEND)
+        throw BadInput(solver->getId(), "Outer geometry edge must be 'extend' or a simple material");
+
     eps0.resize(solver->lcount);
 
     size_t N = SOLVER->size;
     double b = rbounds[rbounds.size()-1];
 
-    // TODO better and configurable!
-    gaussLaguerre(N, kpts, kdelts);
-    kdelts /= b;
-
-//     // k = 0 ... N/b
-//     kpts.resize(N);
-//     kdelts.reset(N, 1./b);
-//     for (size_t i = 0; i < N; i++) {
-//         kpts[i] = 0.5 + i;
-//     }
+    if (SOLVER->kpoints.empty()) {
+        gaussLaguerre(N, kpts, kdelts, SOLVER->kscale);
+        kdelts /= b;
+    } else {
+        if (SOLVER->kpoints.size() != N+1)
+            throw BadInput(solver->getId(), "Wrong number of k-ranges specified (must be {})", N+1);
+        kpts.resize(N);
+        kdelts.reset(N);
+        for (size_t i = 0; i != N; ++i) {
+            kpts[i] = 0.5 * b * (SOLVER->kpoints[i+1] + SOLVER->kpoints[i]);
+            kdelts[i] = SOLVER->kpoints[i+1] - SOLVER->kpoints[i];
+        }
+    }
 
     init3();
 }
