@@ -5,11 +5,11 @@
   <define name="m" value="0"/>
   <define name="mesa" value="20."/>
   <define name="x" value="0.03185 #3"/>
-  <define name="aprt" value="8."/>
+  <define name="aprt" value="4."/>
   <define name="estart" value="980.5"/>
   <define name="bstart" value="980.7"/>
-  <define name="N0" value="20"/>
-  <define name="pml" value="1."/>
+  <define name="N0" value="10"/>
+  <define name="pml" value="1.-2j"/>
   <define name="det" value="False"/>
 </defines>
 
@@ -72,7 +72,7 @@
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion domain="{domain}" lam0="980." size="{N0 if N0 is not None else 20}"/>
+    <expansion domain="{domain}" k-method="uniform" k-scale="5" lam0="980." size="{N0 if N0 is not None else 20}"/>
     <interface object="QW"/>
     <pml dist="30." factor="{pml}" size="2."/>
   </optical>

@@ -25,6 +25,12 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         DOMAIN_INFINITE
     };
 
+    enum InfiniteWavevectors {
+        WAVEVECTORS_UNIFORM,
+        WAVEVECTORS_LAGUERRE,
+        WAVEVECTORS_LEGENDRE
+    };
+
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
@@ -83,8 +89,8 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Scale for k-points for infinite expansion
     double kscale;
 
-    /// Custom k-ranges for infinite expansion
-    std::vector<double> kpoints;
+    /// How integration points and weight should be computed
+    InfiniteWavevectors kmethod;
 
 //     /// Type of discrete cosine transform. Can be only 1 or two
 //     int dct;
@@ -144,20 +150,15 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         invalidate();
     }
 
-    /// Get current kranges
-    const std::vector<double>& getKpoints() const {
-        return kpoints;
-    }
-    /// Set new kranges
-    void setKpoints(const std::vector<double>& kpts) {
-        kpoints = kpts;
-        invalidate();
-    }
-
-    /// Get scale for automatic k-ranges
+    /// Get scale for infinite wavevectors
     double getKscale() const { return kscale; }
-    /// Set scale for automatic k-ranges
+    /// Set scale for infinite wavevectors
     void setKscale(double s) { kscale = s; }
+
+    /// Get method of infinite k-space integration
+    InfiniteWavevectors getKmethod() const { return kmethod; }
+    /// Set method of infinite k-space integration
+    void setKmethod(InfiniteWavevectors k) { kmethod = k; }
 
     /// Get current domain
     BesselDomain getDomain() const { return domain; }

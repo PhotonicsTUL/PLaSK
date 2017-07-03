@@ -343,11 +343,15 @@ fer Algorithm Settings">
       <attr name="integrals-points" label="Maximum integration points" type="int" default="1000">
         Maximum number of points each element is sampled for computing Bessel functions integrals.
       </attr>
-      <attr name="k-ranges" label="Horizontal wavevectors" type="string">
-        Horizontal wavevectors ranges for substituting integration (Hankel transform) with summation in infinite domain.
+      <attr name="k-method" label="Wavevectors selection method" type="choice" default="laguerre">
+        Method of selecting wavevectors for numerical Hankel transform in infinite domain.
+        <choice>uniform</choice>
+        <choice>legendre</choice>
+        <choice>laguerre</choice>
       </attr>
-      <attr name="k-scale" label="Auto wavevectors scaling" type="double">
-        Scale factor for automatically determined wavector ranges (based on Gauss-Laguerre quadratures).
+      <attr name="k-scale" label="Wavevectors scaling" type="double" default="5">
+        Scale factor for wavectors used in infinite domain. For uniform and Legendre method this value times the expansion size
+        divided by the geometry width is a maximum considered wavevector.
       </attr>
     </tag>
 
@@ -359,7 +363,7 @@ fer Algorithm Settings">
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="pml" label="Radial PMLs">
+    <tag name="pml" label="Finite Domain Radial PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
       <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>

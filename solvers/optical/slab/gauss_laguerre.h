@@ -1,5 +1,5 @@
-#ifndef PLASK__SOLVER__SLAB_GAUSS_LEGENDRE_H
-#define PLASK__SOLVER__SLAB_GAUSS_LEGENDRE_H
+#ifndef PLASK__SOLVER__SLAB_GAUSS_LAGUERRE_H
+#define PLASK__SOLVER__SLAB_GAUSS_LAGUERRE_H
 
 #include <plask/plask.hpp>
 
@@ -16,4 +16,4 @@ void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>&
 
 }}} // # namespace plask::solvers::slab
 
-#endif // PLASK__SOLVER__SLAB_GAUSS_LEGENDRE_H
+#endif // PLASK__SOLVER__SLAB_GAUSS_LAGUERRE_H

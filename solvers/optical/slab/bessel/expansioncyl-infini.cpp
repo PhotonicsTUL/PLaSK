@@ -2,6 +2,7 @@
 #include "solvercyl.h"
 #include "zeros-data.h"
 
+#include "../gauss_legendre.h"
 #include "../gauss_laguerre.h"
 
 #include <boost/math/special_functions/bessel.hpp>
@@ -28,20 +29,23 @@ void ExpansionBesselInfini::init2()
     eps0.resize(solver->lcount);
 
     size_t N = SOLVER->size;
-    double b = rbounds[rbounds.size()-1];
+    double ib = 1. / rbounds[rbounds.size()-1];
 
-    if (SOLVER->kpoints.empty()) {
-        gaussLaguerre(N, kpts, kdelts, SOLVER->kscale);
-        kdelts /= b;
-    } else {
-        if (SOLVER->kpoints.size() != N+1)
-            throw BadInput(solver->getId(), "Wrong number of k-ranges specified (must be {})", N+1);
-        kpts.resize(N);
-        kdelts.reset(N);
-        for (size_t i = 0; i != N; ++i) {
-            kpts[i] = 0.5 * b * (SOLVER->kpoints[i+1] + SOLVER->kpoints[i]);
-            kdelts[i] = SOLVER->kpoints[i+1] - SOLVER->kpoints[i];
-        }
+    switch (SOLVER->kmethod) {
+        case BesselSolverCyl::WAVEVECTORS_UNIFORM:
+            kpts.resize(N);
+            kdelts.reset(N, SOLVER->kscale * ib);
+            for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + i) * SOLVER->kscale;
+            break;
+        case BesselSolverCyl::WAVEVECTORS_LAGUERRE:
+            gaussLaguerre(N, kpts, kdelts, 1. / (SOLVER->kscale));
+            kdelts *= ib;
+            break;
+        case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
+            gaussLegendre(N, kpts, kdelts);
+            for (double& k: kpts) k = 0.5 * N * SOLVER->kscale * (1. + k);
+            kdelts *= 0.5 * N * SOLVER->kscale * ib;
+            break;
     }
 
     init3();
