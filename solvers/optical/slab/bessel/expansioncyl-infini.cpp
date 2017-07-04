@@ -41,11 +41,11 @@ void ExpansionBesselInfini::init2()
             gaussLaguerre(N, kpts, kdelts, 1. / (SOLVER->kscale));
             kdelts *= ib;
             break;
-        case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
-            gaussLegendre(N, kpts, kdelts);
-            for (double& k: kpts) k = 0.5 * N * SOLVER->kscale * (1. + k);
-            kdelts *= 0.5 * N * SOLVER->kscale * ib;
-            break;
+        // case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
+        //     gaussLegendre(N, kpts, kdelts);
+        //     for (double& k: kpts) k = 0.5 * N * SOLVER->kscale * (1. + k);
+        //     kdelts *= 0.5 * N * SOLVER->kscale * ib;
+        //     break;
     }
 
     init3();

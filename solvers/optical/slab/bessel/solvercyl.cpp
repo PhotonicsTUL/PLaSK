@@ -7,11 +7,11 @@ namespace plask { namespace solvers { namespace slab {
 
 BesselSolverCyl::BesselSolverCyl(const std::string& name):
     SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
-    domain(DOMAIN_FINITE),
+    domain(DOMAIN_INFINITE),
     m(1),
     size(12),
     kscale(5.),
-    kmethod(WAVEVECTORS_LAGUERRE),
+    kmethod(WAVEVECTORS_UNIFORM),
     integral_error(1e-6),
     max_integration_points(1000),
     outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
@@ -41,8 +41,8 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             kscale = reader.getAttribute<double>("k-scale", kscale);
             kmethod = reader.enumAttribute<InfiniteWavevectors>("k-method")
                 .value("uniform", WAVEVECTORS_UNIFORM)
-                .value("legendre", WAVEVECTORS_LEGENDRE)
                 .value("laguerre", WAVEVECTORS_LAGUERRE)
+                // .value("legendre", WAVEVECTORS_LEGENDRE)
                 .get(kmethod);
             reader.requireTagEnd();
         } else if (param == "interface") {

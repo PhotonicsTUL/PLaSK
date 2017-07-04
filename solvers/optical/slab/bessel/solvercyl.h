@@ -27,8 +27,8 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     enum InfiniteWavevectors {
         WAVEVECTORS_UNIFORM,
-        WAVEVECTORS_LAGUERRE,
-        WAVEVECTORS_LEGENDRE
+        // WAVEVECTORS_LEGENDRE,
+        WAVEVECTORS_LAGUERRE
     };
 
     std::string getClassName() const override { return "optical.BesselCyl"; }

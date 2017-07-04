@@ -327,7 +327,7 @@ fer Algorithm Settings">
         If this attribute is set to 'yes', material parameters are always recomputed for layers with gains.
         This allows to set 'lam0' for better efficiency and still update gain for slight changes of wavelength.
       </attr>
-      <attr name="domain" label="Computational domain" type="choice" default="finite">
+      <attr name="domain" label="Computational domain" type="choice" default="infinite">
         Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over a finite domain
         (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
         <choice>finite</choice>
@@ -343,15 +343,14 @@ fer Algorithm Settings">
       <attr name="integrals-points" label="Maximum integration points" type="int" default="1000">
         Maximum number of points each element is sampled for computing Bessel functions integrals.
       </attr>
-      <attr name="k-method" label="Wavevectors selection method" type="choice" default="laguerre">
+      <attr name="k-method" label="Wavevectors selection method" type="choice" default="uniform">
         Method of selecting wavevectors for numerical Hankel transform in infinite domain.
         <choice>uniform</choice>
-        <choice>legendre</choice>
         <choice>laguerre</choice>
       </attr>
       <attr name="k-scale" label="Wavevectors scaling" type="double" default="5">
-        Scale factor for wavectors used in infinite domain. For uniform and Legendre method this value times the expansion size
-        divided by the geometry width is a maximum considered wavevector.
+        Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and
+        divided by the geometry width it is a maximum considered wavevector.
       </attr>
     </tag>
 
@@ -363,15 +362,7 @@ fer Algorithm Settings">
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-    <tag name="pml" label="Finite Domain Radial PMLs">
-      Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
-      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm" default="20.000">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm" default="0.000">PML size.</attr>
-    </tag>
-
-    <tag name="vpml" label="Vertical PMLs">
+   <tag name="vpml" label="Vertical PMLs">
       Vertical absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
       <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
@@ -406,7 +397,15 @@ fer Algorithm Settings">
       <attr name="initial-range" label="Initial Muller range size" type="complex" default="0.001">Initial range size (Muller method only).</attr>
     </tag>
 
-    <flow>
+    <tag name="pml" label="Radial PMLs &lt;span style=&quot;font-weight: normal;&quot;&gt;(for finite domain only)&lt;/span&gt;">
+      Side absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
+      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="20.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="0.000">PML size.</attr>
+    </tag>
+
+     <flow>
       <receiver name="inTemperature"/>
       <receiver name="inGain"/>
       <provider name="outLightMagnitude"/>

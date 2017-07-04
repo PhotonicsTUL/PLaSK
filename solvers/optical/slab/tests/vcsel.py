@@ -81,7 +81,7 @@ class VCSEL(unittest.TestCase):
               </optical>
             </solvers>
           </plask>''')
-        self.solver = self.manager.solver.bessel
+        self.solver = self.manager.solvers.bessel
         self.solver.initialize()
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
@@ -91,7 +91,8 @@ class VCSEL(unittest.TestCase):
         m = self.solver.find_mode(980.1)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
-        #self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.76, 2 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02078, 3 )
         
     def plot_determinant(self):
         lams = linspace(979., 981., 201)
@@ -135,7 +136,7 @@ class VCSEL(unittest.TestCase):
         gcf().canvas.set_window_title("Mag")
         tight_layout(0.1)
 
-        z = self.solver.geometry.get_object_bboxes(self.manager.geometry.QW)[0].center.z
+        z = self.solver.geometry.get_object_bboxes(self.manager.geo.QW)[0].center.z
         arr = light.array
         r = msh.axis0[unravel_index(argmax(arr), arr.shape)[0]]
         rmsh = mesh.Rectangular2D(linspace(-box.right, box.right, 2001), [z])

@@ -138,13 +138,6 @@ class Disk(unittest.TestCase):
         plot(lams, abs(dets))
         yscale('log')
 
-    def testComputations(self):
-        m = self.solver.find_mode(1550/self.f)
-        self.assertEqual( m, 0 )
-        self.assertEqual( len(self.solver.modes), 1 )
-        #self.assertAlmostEqual( self.solver.modes[m].lam, 1148.5-529.7j, 0 )
-        self.assertAlmostEqual( self.solver.modes[m].lam, 1575.2-159.7j, 0 )
-
 
 if __name__ == "__main__":
 

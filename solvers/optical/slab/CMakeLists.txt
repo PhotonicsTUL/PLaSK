@@ -72,12 +72,12 @@ if(BUILD_TESTING)
 endif()
 
 add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
-add_python_test(solvers/optical/slab/bessel ${CMAKE_CURRENT_SOURCE_DIR}/tests/bessel.py)
+# add_python_test(solvers/optical/slab/bessel ${CMAKE_CURRENT_SOURCE_DIR}/tests/bessel.py)
 add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection2d.py)
 add_python_test(solvers/optical/slab/refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection3d.py)
 add_python_test(solvers/optical/slab/grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/grating.py)
 add_python_test(solvers/optical/slab/fresnel ${CMAKE_CURRENT_SOURCE_DIR}/tests/fresnel.py)
-# add_python_test(solvers/optical/slab/vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
+add_python_test(solvers/optical/slab/vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
 add_xpl_test(solvers/optical/slab/huang ${CMAKE_CURRENT_SOURCE_DIR}/tests/huang.xpl)
 
 

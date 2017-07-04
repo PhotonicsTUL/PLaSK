@@ -132,7 +132,7 @@ void export_BesselSolverCyl()
 
     py_enum<typename BesselSolverCyl::InfiniteWavevectors>()
         .value("UNIFORM", BesselSolverCyl::WAVEVECTORS_UNIFORM)
-        .value("LEGENDRE", BesselSolverCyl::WAVEVECTORS_LEGENDRE)
+        //.value("LEGENDRE", BesselSolverCyl::WAVEVECTORS_LEGENDRE)
         .value("LAGUERRE", BesselSolverCyl::WAVEVECTORS_LAGUERRE)
     ;
 
@@ -150,9 +150,8 @@ void export_BesselSolverCyl()
         "Method of selecting wavevectors for numerical Hankel transform in infinite\n"
         "domain.");
     RW_PROPERTY(kscale, getKscale, setKscale,
-                "Scale factor for wavectors used in infinite domain. For uniform and\n"
-                "Legendre method this value times the expansion size divided by the geometry\n"
-                "width is a maximum considered wavevector.");
+                "Scale factor for wavectors used in infinite domain. Multiplied by the expansions\n"
+                "size and divided by the geometry width it is a maximum considered wavevector.");
     solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
                 "Wavelength of the light [nm].\n\n"
                 "Use this property only if you are looking for anything else than\n"
