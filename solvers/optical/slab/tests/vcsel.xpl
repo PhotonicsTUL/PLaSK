@@ -11,6 +11,7 @@
   <define name="N0" value="10"/>
   <define name="pml" value="1.-2j"/>
   <define name="det" value="False"/>
+  <define name="scale" value="10"/>
 </defines>
 
 <materials>
@@ -72,7 +73,7 @@
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion domain="{domain}" k-method="uniform" k-scale="5" lam0="980." size="{N0 if N0 is not None else 20}"/>
+    <expansion domain="{domain}" k-method="uniform" k-scale="{scale}" lam0="980." size="{N0 if N0 is not None else 20}"/>
     <interface object="QW"/>
     <pml dist="30." factor="{pml}" size="2."/>
   </optical>

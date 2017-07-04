@@ -102,7 +102,7 @@ class VCSEL(unittest.TestCase):
         
     def plot_field(self):
         self.solver.find_mode(980.1, m=1)
-        print self.solver.modes[0]
+        print(self.solver.modes[0])
         box = self.solver.geometry.bbox
         msh = mesh.Rectangular2D(linspace(-box.right, box.right, 101),
                                  linspace(box.bottom, box.top, 1001))

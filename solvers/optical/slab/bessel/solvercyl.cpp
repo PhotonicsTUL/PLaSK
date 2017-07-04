@@ -10,7 +10,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
     domain(DOMAIN_INFINITE),
     m(1),
     size(12),
-    kscale(5.),
+    kscale(10.),
     kmethod(WAVEVECTORS_UNIFORM),
     integral_error(1e-6),
     max_integration_points(1000),
