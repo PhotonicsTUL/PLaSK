@@ -91,8 +91,10 @@ class VCSEL(unittest.TestCase):
         m = self.solver.find_mode(980.1)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.76, 2 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02078, 3 )
+        #self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.76, 2 )
+        #self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02078, 3 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.974, 2 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02116, 3 )
         
     def plot_determinant(self):
         lams = linspace(979., 981., 201)
