@@ -6,6 +6,7 @@
 
 #include <plask/geometry/space.h>
 #include <plask/geometry/path.h>
+#include <plask/mesh/mesh.h>
 
 // see: http://stackoverflow.com/questions/19987448/is-there-an-easy-way-to-write-utf-8-octets-in-visual-studio
 #ifndef _MSC_VER
@@ -85,21 +86,33 @@ static std::vector<shared_ptr<GeometryObject>> Space_getLeafs(S& self, const Pat
 }
 
 template <typename S>
-static bool objectIncludes1_2D(const S& self, const GeometryObject& object, const PathHints& path, double c0, double c1) {
+static bool objectIncludes_2D(const S& self, const GeometryObject& object, const PathHints& path, double c0, double c1) {
     return self.objectIncludes(object, path, Vec<2,double>(c0, c1));
 }
 template <typename S>
-static bool objectIncludes2_2D(const S& self, const GeometryObject& object, double c0, double c1) {
+static bool objectIncludes0_2D(const S& self, const GeometryObject& object, double c0, double c1) {
     return self.objectIncludes(object, Vec<2,double>(c0, c1));
 }
 
-static bool objectIncludes1_3D(const Geometry3D& self, const GeometryObject& object, const PathHints& path, double c0, double c1, double c2) {
+static bool objectIncludes_3D(const Geometry3D& self, const GeometryObject& object, const PathHints& path, double c0, double c1, double c2) {
     return self.objectIncludes(object, path, Vec<3,double>(c0, c1, c2));
 }
-static bool objectIncludes2_3D(const Geometry3D& self, const GeometryObject& object, double c0, double c1, double c2) {
+static bool objectIncludes0_3D(const Geometry3D& self, const GeometryObject& object, double c0, double c1, double c2) {
     return self.objectIncludes(object, Vec<3,double>(c0, c1, c2));
 }
 
+template <int dim>
+PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const PathHints* pth, const MeshD<dim>& mesh);
+
+template <typename S>
+PyObject* SpaceObjectIncludesPoints(const S& self, const GeometryObject& obj, const PathHints* pth, const MeshD<S::DIM>& mesh) {
+    return GeometryObjectIncludesPoints(self.getChild(), obj, pth, mesh);
+}
+
+template <typename S>
+PyObject* SpaceObjectIncludesPoints0(const S& self, const GeometryObject& obj, const MeshD<S::DIM>& mesh) {
+    return GeometryObjectIncludesPoints(self.getChild(), obj, nullptr, mesh);
+}
 
 
 
@@ -619,7 +632,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", (bool(Geometry2DCartesian::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCartesian::objectIncludes,
              (py::arg("object"), "point"))
-        .def("object_contains", &objectIncludes1_2D<Geometry2DCartesian>, (py::arg("object"), "path", "c0", "c1"),
+        .def("object_contains", &objectIncludes_2D<Geometry2DCartesian>, (py::arg("object"), "path", "c0", "c1"),
              u8"Test if the specified geometry object contains a point.\n\n"
              u8"The given geometry object must be located somewhere within the *self*\n"
              u8"geometry tree.\n\n"
@@ -629,10 +642,14 @@ void register_calculation_spaces() {
              u8"    point (plask.vector): Vector with local coordinates of the tested point.\n"
              u8"    c0 (float): Horizontal coordinate of the tested point.\n"
              u8"    c1 (float): Vertical coordinate of the tested point.\n"
+             u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
              u8"Returns:\n"
              u8"    bool: True if the specified geometry object contains the given point.\n"
+             u8"          If a mesh is tested, the return value is an array of bools.\n"
             )
-        .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"))
+        .def("object_contains", &objectIncludes0_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"))
+        .def("object_contains", &SpaceObjectIncludesPoints<Geometry2DCartesian>, (py::arg("object"), "path", "mesh"))
+        .def("object_contains", &SpaceObjectIncludesPoints0<Geometry2DCartesian>, (py::arg("object"), "mesh"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;
@@ -832,6 +849,7 @@ void register_calculation_spaces() {
              u8"    point (plask.vector): Vector with local coordinates of the tested point.\n"
              u8"    c0 (float): Horizontal coordinate of the tested point.\n"
              u8"    c1 (float): Vertical coordinate of the tested point.\n"
+             u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
              u8"Returns:\n"
              u8"    bool: True if the point has the role *role*.\n"
             )
@@ -841,7 +859,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", (bool(Geometry2DCylindrical::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCylindrical::objectIncludes,
              (py::arg("object"), "point"))
-        .def("object_contains", &objectIncludes1_2D<Geometry2DCylindrical>, (py::arg("object"), "path", "c0", "c1"),
+        .def("object_contains", &objectIncludes_2D<Geometry2DCylindrical>, (py::arg("object"), "path", "c0", "c1"),
              u8"Test if the specified geometry object contains a point.\n\n"
              u8"The given geometry object must be located somewhere within the *self*\n"
              u8"geometry tree.\n\n"
@@ -853,8 +871,11 @@ void register_calculation_spaces() {
              u8"    c1 (float): Vertical coordinate of the tested point.\n"
              u8"Returns:\n"
              u8"    bool: True if the specified geometry object contains the given point.\n"
+             u8"          If a mesh is tested, the return value is an array of bools.\n"
             )
-        .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"))
+        .def("object_contains", &objectIncludes0_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"))
+        .def("object_contains", &SpaceObjectIncludesPoints<Geometry2DCylindrical>, (py::arg("object"), "path", "mesh"))
+        .def("object_contains", &SpaceObjectIncludesPoints0<Geometry2DCylindrical>, (py::arg("object"), "mesh"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;
@@ -1056,8 +1077,10 @@ void register_calculation_spaces() {
              u8"    c0 (float): Longitudinal coordinate of the tested point.\n"
              u8"    c1 (float): Transverse coordinate of the tested point.\n"
              u8"    c2 (float): Vertical coordinate of the tested point.\n"
+             u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
              u8"Returns:\n"
              u8"    bool: True if the point has the role *role*.\n"
+             u8"          If a mesh is tested, the return value is an array of bools.\n"
             )
         .def("has_role", &Geometry3D_hasRoleAt, (py::arg("role"), "c0", "c1", "c2"))
         .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const PathHints&,const Vec<3>&)const)&Geometry3D::objectIncludes,
@@ -1065,7 +1088,7 @@ void register_calculation_spaces() {
             )
         .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const Vec<3>&)const)&Geometry3D::objectIncludes,
              (py::arg("object"), "point"))
-        .def("object_contains", &objectIncludes1_3D, (py::arg("object"), "path", "c0", "c1", "c2"),
+        .def("object_contains", &objectIncludes_3D, (py::arg("object"), "path", "c0", "c1", "c2"),
              u8"Test if the specified geometry object contains a point.\n\n"
              u8"The given geometry object must be located somewhere within the *self*\n"
              u8"geometry tree.\n\n"
@@ -1079,7 +1102,9 @@ void register_calculation_spaces() {
              u8"Returns:\n"
              u8"    bool: True if the specified geometry object contains the given point.\n"
             )
-        .def("object_contains", &objectIncludes2_3D, (py::arg("object"), "c0", "c1", "c2"))
+        .def("object_contains", &objectIncludes0_3D, (py::arg("object"), "c0", "c1", "c2"))
+        .def("object_contains", &SpaceObjectIncludesPoints<Geometry3D>, (py::arg("object"), "path", "mesh"))
+        .def("object_contains", &SpaceObjectIncludesPoints0<Geometry3D>, (py::arg("object"), "mesh"))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
     ;

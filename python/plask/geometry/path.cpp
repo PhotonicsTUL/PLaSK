@@ -7,6 +7,11 @@
 namespace plask { namespace python {
 
 template <typename... Args>
+static shared_ptr<PathHints> PathHints__init__(Args... args) {
+    return plask::make_shared<PathHints>(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
 static shared_ptr<Path> Path__init__(Args... args) {
     return plask::make_shared<Path>(std::forward<Args>(args)...);
 }
@@ -67,7 +72,7 @@ namespace detail {
         }
         return self->getChildNo(i);
     }
-    
+
     struct PathHint_from_Tuple {
         PathHint_from_Tuple() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<PathHints::Hint>());
@@ -80,8 +85,8 @@ namespace detail {
         }
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            py::handle<> first(PySequence_GetItem(obj, 0)); 
-            py::handle<> second(PySequence_GetItem(obj, 1)); 
+            py::handle<> first(PySequence_GetItem(obj, 0));
+            py::handle<> second(PySequence_GetItem(obj, 1));
             shared_ptr<GeometryObject> parent = py::extract<GeometryObject*>(first.get())()->shared_from_this();
             auto child = getItem(first.get(), py::extract<int>(second.get()));
             // Grab pointer to memory into which to construct the new PathHint
@@ -107,7 +112,7 @@ namespace detail {
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             PyObject *key, *value;
             Py_ssize_t pos = 0;
-            
+
             // Grab pointer to memory into which to construct the new PathHint
             void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints>*)data)->storage.bytes;
             PathHints* hints = new(storage) PathHints();
@@ -166,7 +171,11 @@ void register_geometry_path()
                           u8"Hint used for resolving ambiguities in a geometry tree.\n\n"
                           u8"PathHints is used to resolve ambiguities if any object is present in the"
                           u8"geometry\n tree more than once. It contains a set of PathHint objects holding\n"
-                          u8"weak references to containers and their items.")
+                          u8"weak references to containers and their items.", py::no_init)
+        .def("__init__", py::make_constructor(PathHints__init__<>))
+        .def("__init__", py::make_constructor(PathHints__init__<const PathHints::Hint&>))
+        .def("__init__", py::make_constructor(PathHints__init__<const GeometryObject&>))
+        .def("__init__", py::make_constructor(PathHints__init__<const GeometryObject::Subtree&>))
         .def("__repr__", &PathHints__repr__)
         .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, py::arg("hint"),
              "Append hint to the path.\n\n"
@@ -187,7 +196,7 @@ void register_geometry_path()
     detail::PathHint_from_Tuple();
     detail::PathHints_from_None();
     detail::PathHints_from_Dict();
-    
+
     py::class_<Path, shared_ptr<Path>>("Path",
                      u8"Sequence of objects in the geometry tree, used for resolving ambiguities.\n\n"
                      u8"Path is used to specify unique instance of every object in the geometry,\n"

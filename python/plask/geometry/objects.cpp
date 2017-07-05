@@ -3,7 +3,9 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/container.h>
 #include <plask/geometry/path.h>
+#include <plask/mesh/mesh.h>
 #include "../python_util/py_set.h"
+#include "../python_numpy.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"
@@ -30,11 +32,11 @@ template <> struct MethodsD<2> {
         return self.getPathsAt(Vec<2,double>(c0,c1), all);
     }
 
-    static bool objectIncludes1(const GeometryObjectD<2>& self, const GeometryObject& object, const PathHints& path, double c0, double c1) {
+    static bool objectIncludes(const GeometryObjectD<2>& self, const GeometryObject& object, const PathHints& path, double c0, double c1) {
         return self.objectIncludes(object, path, Vec<2,double>(c0,c1));
     }
 
-    static bool objectIncludes2(const GeometryObjectD<2>& self, const GeometryObject& object, double c0, double c1) {
+    static bool objectIncludes0(const GeometryObjectD<2>& self, const GeometryObject& object, double c0, double c1) {
         return self.objectIncludes(object, Vec<2,double>(c0,c1));
     }
 
@@ -64,11 +66,11 @@ template <> struct MethodsD<3> {
         return self.getPathsAt(Vec<3,double>(c0,c1,c2), all);
     }
 
-    static bool objectIncludes1(const GeometryObjectD<3>& self, const GeometryObject& object, const PathHints& path, double c0, double c1, double c2) {
+    static bool objectIncludes(const GeometryObjectD<3>& self, const GeometryObject& object, const PathHints& path, double c0, double c1, double c2) {
         return self.objectIncludes(object, path, Vec<3,double>(c0,c1,c2));
     }
 
-    static bool objectIncludes2(const GeometryObjectD<3>& self, const GeometryObject& object, double c0, double c1, double c2) {
+    static bool objectIncludes0(const GeometryObjectD<3>& self, const GeometryObject& object, double c0, double c1, double c2) {
         return self.objectIncludes(object, Vec<3,double>(c0,c1,c2));
     }
 
@@ -215,6 +217,36 @@ py::object GeometryObject_deepCopy(const py::object& oself, py::object omemo) {
     return result;
 }
 
+
+template <int dim>
+PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const PathHints* pth, const MeshD<dim>& mesh) {
+    npy_intp dims[1] = {mesh.size()};
+    PyObject* array = PyArray_SimpleNew(1, dims, NPY_BOOL);
+    char* data = static_cast<char*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(array)));
+
+    auto boxes = self->getObjectBoundingBoxes(obj, pth);
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < mesh.size(); ++i) {
+        auto p = mesh[i];
+        data[i] = 0;
+        for (const auto& box: boxes) {
+            if (box.contains(p) && self->objectIncludes(obj, pth, p)) {
+                data[i] = 1;
+                break;
+            }
+        }
+    }
+
+    return array;
+}
+
+template <int dim>
+PyObject* GeometryObjectIncludesPoints0(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const MeshD<dim>& mesh) {
+    return GeometryObjectIncludesPoints(self, obj, nullptr, mesh);
+}
+
+
 GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, contains,
     u8"Test if the geometry object contains a point.\n\n"
     u8"Args:\n"
@@ -244,8 +276,10 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, object_contains,
     u8"    point (plask.vector): Vector with local coordinates of the tested point.\n"
     u8"    c0 (float): Horizontal local coordinate of the tested point.\n"
     u8"    c1 (float): Vertical local coordinate of the tested point.\n"
+    u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
     u8"Returns:\n"
-    u8"    bool: True if the specified geometry object contains the given point.\n",
+    u8"    bool: True if the specified geometry object contains the given point.\n"
+    u8"          If a mesh is tested, the return value is an array of bools.\n",
 
     u8"Test if the specified geometry object contains a point.\n\n"
     u8"The given geometry object must be located somewhere within the *self*\n"
@@ -257,8 +291,10 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, object_contains,
     u8"    c0 (float): Longitudinal local coordinate of the tested point.\n"
     u8"    c1 (float): Transverse local coordinate of the tested point.\n"
     u8"    c2 (float): Vertical local coordinate of the tested point.\n"
+    u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
     u8"Returns:\n"
     u8"    bool: True if the specified geometry object contains the given point.\n"
+    u8"          If a mesh is tested, the return value is an array of bools.\n"
 )
 
 GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_material,
@@ -608,8 +644,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("object_contains", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const PathHints&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
              (py::arg("object"), "path", "point"), USE_23D_DOC(GeometryObjectD, object_contains))
         .def("object_contains", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes, (py::arg("object"), "point"))
-        .def("object_contains", &MethodsD<dim>::objectIncludes1, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")))
-        .def("object_contains", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))))
+        .def("object_contains", &MethodsD<dim>::objectIncludes, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")))
+        .def("object_contains", &MethodsD<dim>::objectIncludes0, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))))
+        .def("object_contains", &GeometryObjectIncludesPoints<dim>, (py::arg("object"), "path", "mesh"))
+        .def("object_contains", &GeometryObjectIncludesPoints0<dim>, (py::arg("object"), "mesh"))
 
         .add_property("role", &GeometryObject_getRole, &GeometryObject_setRole, "Role of the object. Valid only if the object has only one role.")
         .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "List of all the roles of the object.")
@@ -642,8 +680,11 @@ struct GeometryObjectSteps {
 
 };
 
+
 void register_geometry_object()
 {
+    plask_import_array();
+
     export_set<std::string>("string_set");
     py::delattr(py::scope(), "string_set");
 
