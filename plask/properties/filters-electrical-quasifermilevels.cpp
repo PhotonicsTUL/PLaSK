@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<ValenceBandEdge> registerValenceBandEdgeFilters;
+FiltersFactory::RegisterStandard<QuasiFermiLevels> registerQuasiFermiLevels;
 
 }   // namespace plask

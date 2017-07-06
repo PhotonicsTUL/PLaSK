@@ -27,7 +27,7 @@
 
 <geometry>
   <cartesian3d name="main" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
-    <clip left="0" back="0">
+    <clip back="0" left="0">
       <align xcenter="0" ycenter="0" top="{0.14895*24 + 0.13471}">
         <stack>
           <stack name="top-dbr" repeat="24">
@@ -112,9 +112,6 @@ if not threshold:  # ‘threshold’ is False, so we want just an eigenmode...
     line = "{L:3.1f} {d:2.1f} {etched}   {N}   {lam.real:.6f} {lam.imag:6.3f}".format(lam=lam, **DEF)
     # We print the line to screen and append it to a file.
     print(line)
-    output = open('losses.out', 'a')
-    output.write(line+"\n")
-    output.close()
 
 else: # Looking for the threshold...
 

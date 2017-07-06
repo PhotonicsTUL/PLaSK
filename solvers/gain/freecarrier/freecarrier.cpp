@@ -25,7 +25,7 @@ FreeCarrierGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double
 
 template <typename GeometryType>
 FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, MeshAxis>(name),
-    outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData, []{return 2;}),
+    outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData),
     lifetime(0.1),
     matrixelem(0.),
     T0(300.),

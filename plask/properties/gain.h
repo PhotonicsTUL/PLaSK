@@ -28,6 +28,7 @@ struct PLASK_API Gain : public MultiFieldProperty<double, double> {
         GAIN = 0,
         DGDN = 1
     };
+    static constexpr size_t NUM_VALS = 2;
     static constexpr const char* NAME = "material gain";
     static constexpr const char* UNIT = "1/cm";
     static inline double getDefaultValue() { return NAN; }

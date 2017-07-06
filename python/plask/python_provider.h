@@ -237,6 +237,7 @@ namespace detail {
             this->receiver_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
+            this->receiver_class.def("assign", &ReceiverT::template setConstValue<const std::vector<typename ReceiverT::ValueType>&>, py::arg("values"));
         }
     };
 
@@ -315,6 +316,7 @@ namespace detail {
             this->receiver_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
+            this->receiver_class.def("assign", &ReceiverT::template setConstValue<const std::vector<typename ReceiverT::ValueType>&>, py::arg("values"));
         }
 
       private:

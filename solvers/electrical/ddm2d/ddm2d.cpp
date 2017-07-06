@@ -62,10 +62,8 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //loopno(0),
     //maxerr(0.05),
     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
-    outQuasiFermiEnergyLevelForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons),
-    outQuasiFermiEnergyLevelForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles),
-    outConductionBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges),
-    outValenceBandEdge(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges),
+    outQuasiFermiLevels(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiLevels),
+    outBandEdges(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdges),
     outCurrentDensityForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
     outCurrentDensityForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles),
     outElectronConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getElectronConcentration),
@@ -1158,10 +1156,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     }
 
     outPotential.fireChanged();
-    outQuasiFermiEnergyLevelForElectrons.fireChanged();
-    outQuasiFermiEnergyLevelForHoles.fireChanged();
-    outConductionBandEdge.fireChanged();
-    outValenceBandEdge.fireChanged();
+    outQuasiFermiLevels.fireChanged();
+    outBandEdges.fireChanged();
     outCurrentDensityForElectrons.fireChanged();
     outCurrentDensityForHoles.fireChanged();
     outElectronConcentration.fireChanged();
@@ -1329,112 +1325,110 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotenti
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForElectrons(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiLevels(
+    QuasiFermiLevels::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!dvnFnEta) throw NoValue("Quasi-Fermi electron level");
-    this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
+    if (what == QuasiFermiLevels::ELECTRONS) {
+        if (!dvnFnEta) throw NoValue("Quasi-Fermi electron level");
+        this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
 
-    DataVector<double> dvnFn(size);
-    for (size_t i = 0; i != dvnFnEta.size(); ++i) {
-            if (dvnFnEta[i] > 0.) dvnFn[i] = log(dvnFnEta[i]) * mEx;
-            else dvnFn[i] = 0.;
+        DataVector<double> dvnFn(size);
+        for (size_t i = 0; i != dvnFnEta.size(); ++i) {
+                if (dvnFnEta[i] > 0.) dvnFn[i] = log(dvnFnEta[i]) * mEx;
+                else dvnFn[i] = 0.;
+        }
+
+        if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
+        return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
+    } else if (what == QuasiFermiLevels::HOLES) {
+        if (!dvnFpKsi) throw NoValue("Quasi-Fermi hole level");
+        this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
+
+        DataVector<double> dvnFp(size);
+        for (size_t i = 0; i != dvnFpKsi.size(); ++i) {
+            if (dvnFpKsi[i] > 0.) dvnFp[i] = - log(dvnFpKsi[i]) * mEx;
+            else dvnFp[i] = 0.;
+        }
+
+        if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
+        return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
     }
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
+    assert(0);
 }
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdges(
+    BandEdges::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    if (!dvnFpKsi) throw NoValue("Quasi-Fermi hole level");
-    this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
+    if (what == BandEdges::CONDUCTION) {
+        if (!dvnPsi) throw NoValue("Conduction band edge");
+        this->writelog(LOG_DEBUG, "Getting conduction band edge");
 
-    DataVector<double> dvnFp(size);
-    for (size_t i = 0; i != dvnFpKsi.size(); ++i) {
-        if (dvnFpKsi[i] > 0.) dvnFp[i] = - log(dvnFpKsi[i]) * mEx;
-        else dvnFp[i] = 0.;
+        DataVector<double> dvnEc(size, 0.);
+
+        auto iMeshE = (this->mesh)->getMidpointsMesh();
+        auto temperaturesE = inTemperature(iMeshE);
+
+        //double T(300.); // TODO
+        double T;
+
+        for (auto e: this->mesh->elements) {
+            size_t i = e.getIndex();
+            size_t loleftno = e.getLoLoIndex();
+            size_t lorghtno = e.getUpLoIndex();
+            size_t upleftno = e.getLoUpIndex();
+            size_t uprghtno = e.getUpUpIndex();
+
+            Vec <2,double> midpoint = e.getMidpoint();
+            auto material = this->geometry->getMaterial(midpoint);
+
+            T = temperaturesE[i]; // Temperature in the current element
+
+            dvnEc[loleftno] += material->CB(T, 0., '*') - dvnPsi[loleftno] * mEx;
+            dvnEc[lorghtno] += material->CB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
+            dvnEc[upleftno] += material->CB(T, 0., '*') - dvnPsi[upleftno] * mEx;
+            dvnEc[uprghtno] += material->CB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
+        }
+        divideByElements(dvnEc);
+
+        if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
+        return interpolate(this->mesh, dvnEc, dst_mesh, method, this->geometry); // here the conduction band edge is rescalled (*mEx)
+    } else if (what == BandEdges::VALENCE) {
+        if (!dvnPsi) throw NoValue("Valence band edge");
+        this->writelog(LOG_DEBUG, "Getting valence band edge");
+
+        DataVector<double> dvnEv(size, 0.);
+
+        auto iMeshE = (this->mesh)->getMidpointsMesh();
+        auto temperaturesE = inTemperature(iMeshE);
+
+        //double T(300.); // TODO
+        double T;
+
+        for (auto e: this->mesh->elements) {
+            size_t i = e.getIndex();
+            size_t loleftno = e.getLoLoIndex();
+            size_t lorghtno = e.getUpLoIndex();
+            size_t upleftno = e.getLoUpIndex();
+            size_t uprghtno = e.getUpUpIndex();
+
+            Vec<2,double> midpoint = e.getMidpoint();
+            auto material = this->geometry->getMaterial(midpoint);
+
+            T = temperaturesE[i]; // Temperature in the current element
+
+            dvnEv[loleftno] += material->VB(T, 0., '*') - dvnPsi[loleftno] * mEx;
+            dvnEv[lorghtno] += material->VB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
+            dvnEv[upleftno] += material->VB(T, 0., '*') - dvnPsi[upleftno] * mEx;
+            dvnEv[uprghtno] += material->VB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
+        }
+        divideByElements(dvnEv);
+
+        if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
+        return interpolate(this->mesh, dvnEv, dst_mesh, method, this->geometry); // here the valence band edge is rescalled (*mEx)
     }
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
-}
-
-
-template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getConductionBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (!dvnPsi) throw NoValue("Conduction band edge");
-    this->writelog(LOG_DEBUG, "Getting conduction band edge");
-
-    DataVector<double> dvnEc(size, 0.);
-
-    auto iMeshE = (this->mesh)->getMidpointsMesh();
-    auto temperaturesE = inTemperature(iMeshE);
-
-    //double T(300.); // TODO
-    double T;
-
-    for (auto e: this->mesh->elements) {
-        size_t i = e.getIndex();
-        size_t loleftno = e.getLoLoIndex();
-        size_t lorghtno = e.getUpLoIndex();
-        size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex();
-
-        Vec <2,double> midpoint = e.getMidpoint();
-        auto material = this->geometry->getMaterial(midpoint);
-
-        T = temperaturesE[i]; // Temperature in the current element
-
-        dvnEc[loleftno] += material->CB(T, 0., '*') - dvnPsi[loleftno] * mEx;
-        dvnEc[lorghtno] += material->CB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
-        dvnEc[upleftno] += material->CB(T, 0., '*') - dvnPsi[upleftno] * mEx;
-        dvnEc[uprghtno] += material->CB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
-    }
-    divideByElements(dvnEc);
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnEc, dst_mesh, method, this->geometry); // here the conduction band edge is rescalled (*mEx)
-}
-
-
-template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getValenceBandEdges(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (!dvnPsi) throw NoValue("Valence band edge");
-    this->writelog(LOG_DEBUG, "Getting valence band edge");
-
-    DataVector<double> dvnEv(size, 0.);
-
-    auto iMeshE = (this->mesh)->getMidpointsMesh();
-    auto temperaturesE = inTemperature(iMeshE);
-
-    //double T(300.); // TODO
-    double T;
-
-    for (auto e: this->mesh->elements) {
-        size_t i = e.getIndex();
-        size_t loleftno = e.getLoLoIndex();
-        size_t lorghtno = e.getUpLoIndex();
-        size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex();
-
-        Vec<2,double> midpoint = e.getMidpoint();
-        auto material = this->geometry->getMaterial(midpoint);
-
-        T = temperaturesE[i]; // Temperature in the current element
-
-        dvnEv[loleftno] += material->VB(T, 0., '*') - dvnPsi[loleftno] * mEx;
-        dvnEv[lorghtno] += material->VB(T, 0., '*') - dvnPsi[lorghtno] * mEx;
-        dvnEv[upleftno] += material->VB(T, 0., '*') - dvnPsi[upleftno] * mEx;
-        dvnEv[uprghtno] += material->VB(T, 0., '*') - dvnPsi[uprghtno] * mEx;
-    }
-    divideByElements(dvnEv);
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnEv, dst_mesh, method, this->geometry); // here the valence band edge is rescalled (*mEx)
+    assert(0);
 }
 
 

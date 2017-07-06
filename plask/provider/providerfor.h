@@ -557,7 +557,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     typedef PropertyT PropertyTag;
 
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const override { return NAME; }
+    const char* name() const override { return NAME; }
 
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
@@ -599,7 +599,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * Get provided value.
          * @return provided value
          */
-        virtual ProvidedType operator()(_ExtraParams...) const override { return value; }
+        ProvidedType operator()(_ExtraParams...) const override { return value; }
     };
 
     /**
@@ -655,7 +655,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * @return provided value
          * @throw NoValue if value is empty boost::optional
          */
-        virtual ProvidedType operator()(_ExtraParams...) const override {
+        ProvidedType operator()(_ExtraParams...) const override {
             ensureHasValue();
             return *value;
         }
@@ -686,7 +686,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyT::EnumType EnumType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const override { return NAME; }
+    const char* name() const override { return NAME; }
 
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
@@ -753,7 +753,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const override {
+        size_t size() const override {
             return values.size();
         }
 
@@ -761,7 +761,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get provided value.
          * @return provided value
          */
-        virtual ProvidedType operator()(EnumType num, _ExtraParams...) const override {
+        ProvidedType operator()(EnumType num, _ExtraParams...) const override {
             size_t n(num);
             if (n > values.size()) return default_value;
             return values[n];
@@ -799,6 +799,9 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 
         /// Construct value
         explicit WithValue(ProvidedType&& value): values({value}) {}
+
+        /// Construct values
+        WithValue(const std::vector<ProvidedType>& values): values(values) {}
 
         /// Construct values
         WithValue(const std::initializer_list<ProvidedType>& values): values(values) {}
@@ -841,7 +844,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const override {
+        size_t size() const override {
             return values.size();
         }
 
@@ -851,7 +854,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          * \throw NoValue if value is empty boost::optional
          */
-        virtual ProvidedType operator()(EnumType n, _ExtraParams...) const override {
+        ProvidedType operator()(EnumType n, _ExtraParams...) const override {
             ensureIndex(n);
             return values[n];
         }
@@ -867,9 +870,9 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         std::function<size_t()> sizeGetter;
 
         /**
-        * Create delegate provider
-        * \param functor delegate functor
-        */
+         * Create delegate provider
+         * \param functor delegate functor
+         */
         template<typename Functor, typename Sizer>
         Delegate(Functor functor, Sizer sizer): Base(functor), sizeGetter(sizer) {}
 
@@ -893,7 +896,23 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
 
-        virtual size_t size() const override {
+        /**
+         * Create delegate provider
+         * \param functor delegate functor
+         */
+        template<typename Functor>
+        Delegate(Functor functor): Base(functor), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
+
+        /**
+         * Create delegate provider
+         * \param object object of class with delegate method
+         * \param member delegate member method
+         * \param sizer class member returning number of the elements
+         */
+        template<typename ClassType, typename MemberType>
+        Delegate(ClassType* object, MemberType member): Base(object, member), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
+
+        size_t size() const override {
             return sizeGetter();
         }
 
@@ -915,7 +934,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     typedef SpaceT SpaceType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const override { return NAME; }
+    const char* name() const override { return NAME; }
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
@@ -1064,7 +1083,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * @param method method which should be use to do interpolation
          * @return values in points described by mesh @a dst_mesh
          */
-        virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
+        ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
             ensureHasCorrectValue();
             if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
             return interpolate(mesh_ptr, values, dst_mesh, method);
@@ -1102,7 +1121,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
+        ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
             return ProvidedType(dst_mesh->size(), value);
         }
     };
@@ -1121,7 +1140,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef typename PropertyT::EnumType EnumType;
     
     static constexpr const char* NAME = PropertyT::NAME;
-    virtual const char* name() const override { return NAME; }
+    const char* name() const override { return NAME; }
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
@@ -1383,7 +1402,30 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
 
-        virtual size_t size() const override {
+        /**
+         * Create delegate provider
+         * \param functor delegate functor
+         */
+        template<typename Functor>
+        Delegate(Functor functor): Base(functor), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
+
+        /**
+         * Create delegate provider
+         * \param object object of class with delegate method
+         * \param member delegate member method
+         */
+        template<typename ClassType, typename MemberType, typename Sizer>
+        Delegate(ClassType* object, MemberType member): Base(object, member), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
+
+        /**
+         * Create delegate provider
+         * \param object object of class with delegate method
+         * \param member delegate member method
+         */
+        template<typename ClassType, typename MemberType>
+        Delegate(ClassType* object, MemberType member): Base(object, member), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
+            
+        size_t size() const override {
             return sizeGetter();
         }
 
@@ -1401,26 +1443,50 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         typedef typename ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
 
         /// Provided value
-        ValueType value;
+        std::vector<ValueType> values;
 
-        //ConstProviderType(const ValueT& value): value(value) {}
+        // /**
+        //  * Constructor which delegates all parameters to the vector constructor.
+        //  * @param params ValueT constructor parameters, forwarded to value
+        //  */
+        // template<typename ...Args>
+        // ConstProviderType(Args&&... params): values(std::forward<Args>(params)...) {}
 
         /**
-         * Constructor which delegate all parameters to value constructor.
-         * @param params ValueT constructor parameters, forwarded to value
+         * Constructor with single value.
+         * @param value ValueT desired value
          */
-        template<typename ...Args>
-        ConstProviderType(Args&&... params): value(std::forward<Args>(params)...) {}
+        ConstProviderType(const ValueType& value): values({value}) {}
 
+        /**
+         * Constructor with single value.
+         * @param value ValueT desired value
+         */
+        ConstProviderType(ValueType&& value): values({std::move(value)}) {}
+
+        /**
+         * Constructor with multiple values
+         * @param values required values
+         */
+        ConstProviderType(const std::vector<ValueType>& values): values(values) {}
+        
+        /**
+         * Constructor with multiple values
+         * @param values required values
+         */
+        ConstProviderType(const std::initializer_list<ValueType>& values): values(values) {}
+        
+        
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(EnumType, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
-            return ProvidedType(dst_mesh->size(), value);
+        ProvidedType operator()(EnumType num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
+            if (num >= values.size()) throw BadInput(std::string("Provider for ") + PropertyT::NAME, "Value number too large");
+            return ProvidedType(dst_mesh->size(), values[num]);
         }
 
-        virtual size_t size() const override {
-            return 1;
+        size_t size() const override {
+            return values.size();
         }
     };
 };

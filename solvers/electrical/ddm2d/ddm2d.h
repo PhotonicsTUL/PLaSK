@@ -257,13 +257,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
-    typename ProviderFor<QuasiFermiEnergyLevelForElectrons, Geometry2DType>::Delegate outQuasiFermiEnergyLevelForElectrons;
+    typename ProviderFor<QuasiFermiLevels, Geometry2DType>::Delegate outQuasiFermiLevels;
 
-    typename ProviderFor<QuasiFermiEnergyLevelForHoles, Geometry2DType>::Delegate outQuasiFermiEnergyLevelForHoles;
-
-    typename ProviderFor<ConductionBandEdge, Geometry2DType>::Delegate outConductionBandEdge;
-
-    typename ProviderFor<ValenceBandEdge, Geometry2DType>::Delegate outValenceBandEdge;
+    typename ProviderFor<BandEdges, Geometry2DType>::Delegate outBandEdges;
 
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensityForElectrons;
 
@@ -355,28 +351,24 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     ~DriftDiffusionModel2DSolver();
 
   protected:
-    const LazyData<double> getPotentials(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getPotentials(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getQuasiFermiEnergyLevelsForElectrons(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getQuasiFermiLevels(QuasiFermiLevels::EnumType what, shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getQuasiFermiEnergyLevelsForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getBandEdges(BandEdges::EnumType what, shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<double> getConductionBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<double> getValenceBandEdges(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<Vec<2>> getCurrentDensitiesForElectrons(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<double> getHeatDensities(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<Vec<2>> getCurrentDensitiesForHoles(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<Vec<2>> getCurrentDensitiesForElectrons(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<double> getElectronConcentration(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
-    const LazyData<Vec<2>> getCurrentDensitiesForHoles(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
-
-    const LazyData<double> getElectronConcentration(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
-
-    const LazyData<double> getHoleConcentration(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<double> getHoleConcentration(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 
 /*
-    const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dest_mesh, InterpolationMethod method);
+    const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 */
 };
 

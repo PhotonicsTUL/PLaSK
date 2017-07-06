@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStandard<ConductionBandEdge> registerConductionBandEdgeFilters;
+FiltersFactory::RegisterStandard<BandEdges> registerBandEdgesFilters;
 
 }   // namespace plask

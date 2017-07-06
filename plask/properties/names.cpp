@@ -17,10 +17,8 @@ constexpr const char* CarriersConcentration::NAME;             constexpr const c
 constexpr const char* ElectronConcentration::NAME;             constexpr const char* ElectronConcentration::UNIT;
 constexpr const char* HoleConcentration::NAME;                 constexpr const char* HoleConcentration::UNIT;
 constexpr const char* Conductivity::NAME;                      constexpr const char* Conductivity::UNIT;
-constexpr const char* QuasiFermiEnergyLevelForElectrons::NAME; constexpr const char* QuasiFermiEnergyLevelForElectrons::UNIT;
-constexpr const char* QuasiFermiEnergyLevelForHoles::NAME;     constexpr const char* QuasiFermiEnergyLevelForHoles::UNIT;
-constexpr const char* ConductionBandEdge::NAME;                constexpr const char* ConductionBandEdge::UNIT;
-constexpr const char* ValenceBandEdge::NAME;                   constexpr const char* ValenceBandEdge::UNIT;
+constexpr const char* QuasiFermiLevels::NAME;                  constexpr const char* QuasiFermiLevels::UNIT;
+constexpr const char* BandEdges::NAME;                         constexpr const char* BandEdges::UNIT;
 
 constexpr const char* Gain::NAME;                              constexpr const char* Gain::UNIT;
 constexpr const char* Luminescence::NAME;                      constexpr const char* Luminescence::UNIT;

@@ -64,36 +64,31 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
 };
 
 /**
- * Quasi-Fermi energy level for electrons [eV]
+ * Quasi-Fermi levels for electrons and holes [eV]
  */
-struct PLASK_API QuasiFermiEnergyLevelForElectrons: public ScalarFieldProperty {
-    static constexpr const char* NAME = "quasi-Fermi energy level for electrons";
+struct PLASK_API QuasiFermiLevels: public MultiFieldProperty<double> {
+    enum EnumType {
+        ELECTRONS = 0,
+        HOLES = 1
+    };
+    static constexpr size_t NUM_VALS = 2;
+    static constexpr const char* NAME = "quasi-Fermi levels for electrons and holes";
     static constexpr const char* UNIT = "eV";
 };
 
 /**
- * Quasi-Fermi energy level for holes [eV]
+ * Conduction and valence band edges [eV]
  */
-struct PLASK_API QuasiFermiEnergyLevelForHoles: public ScalarFieldProperty {
-    static constexpr const char* NAME = "quasi-Fermi energy level for holes";
+struct PLASK_API BandEdges: public MultiFieldProperty<double> {
+    enum EnumType {
+        CONDUCTION = 0,
+        VALENCE = 1
+    };
+    static constexpr size_t NUM_VALS = 2;
+    static constexpr const char* NAME = "conduction and valence band edges";
     static constexpr const char* UNIT = "eV";
 };
 
-/**
- * Conduction band edge [eV]
- */
-struct PLASK_API ConductionBandEdge: public ScalarFieldProperty {
-    static constexpr const char* NAME = "conduction band edge";
-    static constexpr const char* UNIT = "eV";
-};
-
-/**
- * Valence band edge [eV]
- */
-struct PLASK_API ValenceBandEdge: public ScalarFieldProperty {
-    static constexpr const char* NAME = "valence band edge";
-    static constexpr const char* UNIT = "eV";
-};
 
 } // namespace plask
 
