@@ -114,6 +114,8 @@ void BesselSolverCyl::onInitialize()
         case DOMAIN_INFINITE:
             expansion.reset(new ExpansionBesselInfini(this));
             break;
+        default:
+            assert(0);
     }
     setExpansionDefaults();
     expansion->init1();

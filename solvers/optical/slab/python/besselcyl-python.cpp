@@ -16,7 +16,6 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
-    auto* expansion = self->expansion.get();
 
     enum What {
         WHAT_NOTHING = 0,
@@ -55,6 +54,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     }
 
     self->initCalculation();
+    auto* expansion = self->expansion.get();
 
     if (k0) expansion->setK0(*k0);
     expansion->setM(m);
@@ -81,7 +81,6 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
-    auto* expansion = self->expansion.get();
 
     int m = self->getM();
 
@@ -101,6 +100,7 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
     }
 
     self->initCalculation();
+    auto* expansion = self->expansion.get();
 
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     expansion->setM(m);
