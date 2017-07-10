@@ -27,8 +27,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     PROVIDER(outBandEdges, u8"");
     PROVIDER(outCurrentDensityForElectrons, u8"");
     PROVIDER(outCurrentDensityForHoles, u8"");
-    PROVIDER(outElectronConcentration, u8"");
-    PROVIDER(outHoleConcentration, u8"");
+    PROVIDER(outCarriersConcentration, u8"");
     PROVIDER(outHeat, u8"");
     /*PROVIDER(outConductivity, u8"");*/
     BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");

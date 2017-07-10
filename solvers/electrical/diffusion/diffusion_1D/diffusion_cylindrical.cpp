@@ -629,8 +629,11 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
 }
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
+const LazyData<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(CarriersConcentration::EnumType what, shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
 {
+    if (what != CarriersConcentration::MAJORITY || what != CarriersConcentration::PAIRS) {
+        return LazyData<double>(dest_mesh->size(), NAN);
+    }
     if (!n_present.data()) throw NoValue("Carriers concentration");
     return LazyData<double>(new FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }

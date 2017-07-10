@@ -348,7 +348,7 @@ fer Algorithm Settings">
         <choice>uniform</choice>
         <choice>laguerre</choice>
       </attr>
-      <attr name="k-scale" label="Wavevectors scaling" type="double" default="5">
+      <attr name="k-scale" label="Wavevectors scaling" type="double" default="10">
         Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and
         divided by the geometry width it is a maximum considered wavevector.
       </attr>

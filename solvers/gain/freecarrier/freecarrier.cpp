@@ -794,7 +794,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
-            concs.data = solver->inCarriersConcentration(temps.mesh, interp);
+            concs.data = solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
             std::exception_ptr error;
             #pragma omp parallel for
             for (plask::openmp_size_t i = 0; i < regpoints[reg]->size(); ++i) {

@@ -31,27 +31,18 @@ struct PLASK_API CurrentDensity: public VectorFieldProperty<> {
 };
 
 /**
- * Majority carriers concentration [1/cm^3]
- * It is not specified whether the carriers are electrons or holes
+ * Carriers concentration [1/cm^3]
+ * For majority carriers it is not specified whether the carriers are electrons or holes
  */
-struct PLASK_API CarriersConcentration: public ScalarFieldProperty {
+struct PLASK_API CarriersConcentration: public MultiFieldProperty<double> {
+    enum EnumType {
+        MAJORITY = 0,
+        PAIRS,
+        ELECTRONS,
+        HOLES
+    };
+    static constexpr size_t NUM_VALS = 4;
     static constexpr const char* NAME = "carriers concentration";
-    static constexpr const char* UNIT = "1/cm³";
-};
-
-/**
- * Electrons concentration [1/cm^3]
- */
-struct PLASK_API ElectronConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "electron concentration";
-    static constexpr const char* UNIT = "1/cm³";
-};
-
-/**
- * Holes concentration [1/cm^3]
- */
-struct PLASK_API HoleConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "hole concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
 
@@ -68,8 +59,8 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
  */
 struct PLASK_API QuasiFermiLevels: public MultiFieldProperty<double> {
     enum EnumType {
-        ELECTRONS = 0,
-        HOLES = 1
+        ELECTRONS,
+        HOLES
     };
     static constexpr size_t NUM_VALS = 2;
     static constexpr const char* NAME = "quasi-Fermi levels for electrons and holes";
@@ -81,9 +72,9 @@ struct PLASK_API QuasiFermiLevels: public MultiFieldProperty<double> {
  */
 struct PLASK_API BandEdges: public MultiFieldProperty<double> {
     enum EnumType {
-        CONDUCTION = 0,
-        VALENCE = 1,
-        SPIN_OFF = 2
+        CONDUCTION,
+        VALENCE,
+        SPIN_OFF
     };
     static constexpr size_t NUM_VALS = 2;
     static constexpr const char* NAME = "conduction and valence band edges";

@@ -122,7 +122,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     };
 
     /// Structure containing active region data for current used
-    struct ActiveRegionParams {
+    struct PLASK_SOLVER_API ActiveRegionParams {
         const ActiveRegionInfo& region;
         std::vector<double> U[3];          ///< Band levels
         std::vector<Tensor2<double>> M[3]; ///< Effective masses
@@ -387,7 +387,7 @@ struct GainSpectrum {
                 solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onChange);
                 solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onChange);
                 temp = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
-                conc = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
+                conc = solver->inCarriersConcentration(CarriersConcentration::PAIRS, plask::make_shared<const OnePointMesh<2>>(point))[0];
                 updateParams();
                 return;
             };
@@ -408,7 +408,7 @@ struct GainSpectrum {
 
     void onChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         temp = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(*point))[0];
-        conc = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(*point))[0];
+        conc = solver->inCarriersConcentration(CarriersConcentration::PAIRS, plask::make_shared<const OnePointMesh<2>>(*point))[0];
         updateParams();
     }
 

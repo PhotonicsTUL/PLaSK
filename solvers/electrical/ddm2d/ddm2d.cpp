@@ -66,8 +66,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     outBandEdges(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdges),
     outCurrentDensityForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
     outCurrentDensityForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles),
-    outElectronConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getElectronConcentration),
-    outHoleConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHoleConcentration),
+    outCarriersConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCarriersConcentration),
     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
     //outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
@@ -1160,8 +1159,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     outBandEdges.fireChanged();
     outCurrentDensityForElectrons.fireChanged();
     outCurrentDensityForHoles.fireChanged();
-    outElectronConcentration.fireChanged();
-    outHoleConcentration.fireChanged();
+    outCarriersConcentration.fireChanged();
     outHeat.fireChanged();
 
     return errorPsi + errorFn + errorFp;
@@ -1465,66 +1463,65 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
 
 
 template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getElectronConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarriersConcentration(
+    CarriersConcentration::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    if (!dveN) throw NoValue("Electron concentration");
-    this->writelog(LOG_DEBUG, "Getting electron concentration");
-
-    DataVector<double> dvnN(size, 0.);
+    DataVector<double> dvn(size, 0.);
 
     //double T(300.); // TODO
 
-    for (auto e: this->mesh->elements) {
-        size_t i = e.getIndex();
-        size_t loleftno = e.getLoLoIndex();
-        size_t lorghtno = e.getUpLoIndex();
-        size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex();
+    switch (what) {
+        case CarriersConcentration::ELECTRONS:
+            if (!dveN) throw NoValue("Electron concentration");
+            this->writelog(LOG_DEBUG, "Getting electron concentration");
 
-        //Vec <2,double> midpoint = e.getMidpoint();
-        //auto material = this->geometry->getMaterial(midpoint);
+            for (auto e: this->mesh->elements) {
+                size_t i = e.getIndex();
+                size_t loleftno = e.getLoLoIndex();
+                size_t lorghtno = e.getUpLoIndex();
+                size_t upleftno = e.getLoUpIndex();
+                size_t uprghtno = e.getUpUpIndex();
 
-        dvnN[loleftno] += dveN[i] * mNx;
-        dvnN[lorghtno] += dveN[i] * mNx;
-        dvnN[upleftno] += dveN[i] * mNx;
-        dvnN[uprghtno] += dveN[i] * mNx;
+                //Vec <2,double> midpoint = e.getMidpoint();
+                //auto material = this->geometry->getMaterial(midpoint);
+
+                dvn[loleftno] += dveN[i] * mNx;
+                dvn[lorghtno] += dveN[i] * mNx;
+                dvn[upleftno] += dveN[i] * mNx;
+                dvn[uprghtno] += dveN[i] * mNx;
+            }
+            divideByElements(dvn);
+
+            if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+            return interpolate(this->mesh, dvn, dst_mesh, method, this->geometry); // here the electron concentration is rescalled (*mNx)*/
+
+        case CarriersConcentration::HOLES:
+            if (!dveP) throw NoValue("Hole concentration");
+            this->writelog(LOG_DEBUG, "Getting hole concentration");
+
+            for (auto e: this->mesh->elements) {
+                size_t i = e.getIndex();
+                size_t loleftno = e.getLoLoIndex();
+                size_t lorghtno = e.getUpLoIndex();
+                size_t upleftno = e.getLoUpIndex();
+                size_t uprghtno = e.getUpUpIndex();
+
+                //Vec <2,double> midpoint = e.getMidpoint();
+                //auto material = this->geometry->getMaterial(midpoint);
+
+                dvn[loleftno] += dveP[i] * mNx;
+                dvn[lorghtno] += dveP[i] * mNx;
+                dvn[upleftno] += dveP[i] * mNx;
+                dvn[uprghtno] += dveP[i] * mNx;
+            }
+            divideByElements(dvn);
+
+            if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+            return interpolate(this->mesh, dvn, dst_mesh, method, this->geometry); // here the hole concentration is rescalled (*mNx)*/
+        
+        default:
+            throw NotImplemented("{}: Carriers concentration of this type", this->getId());
     }
-    divideByElements(dvnN);
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnN, dst_mesh, method, this->geometry); // here the electron concentration is rescalled (*mNx)*/
-}
-
-
-template <typename Geometry2DType>
-const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHoleConcentration(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (!dveP) throw NoValue("Hole concentration");
-    this->writelog(LOG_DEBUG, "Getting hole concentration");
-
-    DataVector<double> dvnP(size, 0.);
-
-    //double T(300.); // TODO
-
-    for (auto e: this->mesh->elements) {
-        size_t i = e.getIndex();
-        size_t loleftno = e.getLoLoIndex();
-        size_t lorghtno = e.getUpLoIndex();
-        size_t upleftno = e.getLoUpIndex();
-        size_t uprghtno = e.getUpUpIndex();
-
-        //Vec <2,double> midpoint = e.getMidpoint();
-        //auto material = this->geometry->getMaterial(midpoint);
-
-        dvnP[loleftno] += dveP[i] * mNx;
-        dvnP[lorghtno] += dveP[i] * mNx;
-        dvnP[upleftno] += dveP[i] * mNx;
-        dvnP[uprghtno] += dveP[i] * mNx;
-    }
-    divideByElements(dvnP);
-
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, dvnP, dst_mesh, method, this->geometry); // here the hole concentration is rescalled (*mNx)*/
 }
 
 

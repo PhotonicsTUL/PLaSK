@@ -154,7 +154,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         };
 
         /// Provide concentration from inside to the provider (outConcentration).
-        const LazyData<double> getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh,
+        const LazyData<double> getConcentration(CarriersConcentration::EnumType what, shared_ptr<const plask::MeshD<2>> dest_mesh,
                                                 InterpolationMethod interpolation=INTERPOLATION_DEFAULT ) const;
 
 }; // class FiniteElementMethodDiffusion2DSolver

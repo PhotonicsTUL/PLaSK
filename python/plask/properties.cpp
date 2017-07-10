@@ -20,8 +20,6 @@ void register_standard_properties_voltage();
 void register_standard_properties_current();
 
 void register_standard_properties_concentration_carriers();
-void register_standard_properties_concentration_electrons();
-void register_standard_properties_concentration_holes();
 void register_standard_properties_band_edges();
 
 void register_standard_properties_builtin_potential();
@@ -373,8 +371,6 @@ void register_standard_properties()
     register_standard_properties_voltage();
     register_standard_properties_current();
     register_standard_properties_concentration_carriers();
-    register_standard_properties_concentration_electrons();
-    register_standard_properties_concentration_holes();
 
     register_standard_properties_builtin_potential();
     register_standard_properties_quasi_Fermi_levels();

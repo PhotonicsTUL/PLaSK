@@ -15,8 +15,6 @@ constexpr const char* Voltage::NAME;                            constexpr const 
 constexpr const char* Potential::NAME;                          constexpr const char* Potential::UNIT;
 constexpr const char* CurrentDensity::NAME;                     constexpr const char* CurrentDensity::UNIT;
 constexpr const char* CarriersConcentration::NAME;              constexpr const char* CarriersConcentration::UNIT;
-constexpr const char* ElectronConcentration::NAME;              constexpr const char* ElectronConcentration::UNIT;
-constexpr const char* HoleConcentration::NAME;                  constexpr const char* HoleConcentration::UNIT;
 constexpr const char* Conductivity::NAME;                       constexpr const char* Conductivity::UNIT;
 constexpr const char* QuasiFermiLevels::NAME;                   constexpr const char* QuasiFermiLevels::UNIT;
 constexpr const char* BandEdges::NAME;                          constexpr const char* BandEdges::UNIT;
