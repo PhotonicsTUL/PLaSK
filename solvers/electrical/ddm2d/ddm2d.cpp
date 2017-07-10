@@ -1392,7 +1392,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
 
         if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
         return interpolate(this->mesh, dvnEc, dst_mesh, method, this->geometry); // here the conduction band edge is rescalled (*mEx)
-    } else if (what == BandEdges::VALENCE) {
+    } else if (what == BandEdges::VALENCE_LIGHT || what == BandEdges::VALENCE_HEAVY) {
         if (!dvnPsi) throw NoValue("Valence band edge");
         this->writelog(LOG_DEBUG, "Getting valence band edge");
 

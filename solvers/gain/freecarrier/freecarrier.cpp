@@ -303,6 +303,9 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
     Eg = std::numeric_limits<double>::max();
 
+    size_t mi;
+    double me;
+
     if (!solver->inBandEdges.hasProvider()) {
         solver->writelog(LOG_DETAIL, "Band edges taken from material database");
         size_t i = 0, mi;
@@ -314,27 +317,43 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
             U[EL].push_back(uel);
             U[HH].push_back(uhh);
             double eg = uel - uhh;
-            if (eg < Eg) {
-                Eg = eg;
-                mi = i;
-                me = e;
-            }
+            if (eg < Eg) { Eg = eg; mi = i; me = e; }
             U[LH].push_back(material->VB(T, e, 'G', 'L'));
             M[EL].push_back(material->Me(T, e));
             M[HH].push_back(material->Mhh(T, e));
             M[LH].push_back(material->Mlh(T, e));
             ++i;
         }
-        if (solver->matrixelem != 0.) {
-            Mt = solver->matrixelem;
-        } else {
-            double deltaSO = region.materials[mi]->Dso(T, me);
-            Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
-            if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
-        }
     } else {
         solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
-        //TODO
+        shared_ptr<Translation<2>> shifted(new Translation<2>(region.layers, region.origin));
+        auto mesh = makeGeometryGrid(shifted)->getMidpointsMesh();
+        assert(mesh->size() == mesh->axis1->size());
+        auto CB = solver->inBandEdges(BandEdges::CONDUCTION, mesh);
+        auto VB_H = solver->inBandEdges(BandEdges::VALENCE_HEAVY, mesh);
+        auto VB_L = solver->inBandEdges(BandEdges::VALENCE_LIGHT, mesh);
+        for (size_t i = 0; i != mesh->axis1->size(); ++i) {
+            auto material = region.materials[i];
+            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+            double uel = CB[i];
+            double uhh = VB_H[i];
+            U[EL].push_back(uel);
+            U[HH].push_back(uhh);
+            double eg = uel - uhh;
+            if (eg < Eg) { Eg = eg; mi = i; }
+            U[LH].push_back(VB_L[i]);
+            M[EL].push_back(material->Me(T, e));
+            M[HH].push_back(material->Mhh(T, e));
+            M[LH].push_back(material->Mlh(T, e));
+        }
+    }
+    if (solver->matrixelem != 0.) {
+        Mt = solver->matrixelem;
+    } else {
+        double deltaSO = region.materials[mi]->Dso(T, me);
+        Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
+        if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
     }
 }
 
