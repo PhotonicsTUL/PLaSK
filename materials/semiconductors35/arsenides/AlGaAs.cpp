@@ -231,15 +231,28 @@ double AlGaAs::cp(double T) const {
 Material::ConductivityType AlGaAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(AlGaAs, nr,
-            MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
+            //MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
-            MIComment("fit by Lukasz Piskorski")
+            //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIComment("fit by Leszek Frasunkiewicz")
             )
 double AlGaAs::nr(double wl, double T, double n) const {
-    double L2 = wl*wl*1e-6;
-    double nR296K = sqrt(1.+(9.659-2.604*Al)*L2/(L2-(0.137-0.069*Al)));
-    return ( nR296K + nR296K*(Al*4.6e-5+Ga*4.5e-5)*(T-296.) );
+    double A = -0.4490233379*Al + 3.25759049;
+    double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
+    double C = -304.7269552*Al*Al*Al + 335.1918592*Al*Al + 194.6726344*Al - 559.6098207;
+
+    //dn/dT
+    double Ad = 0.0003442176581*Al*Al*Al - 0.0005412098145*Al*Al + 0.00008671640556*Al + 0.0002093262406;
+    double Bd = 132.1382231*exp(-8.32822628*Al*Al*Al + 14.65496754*Al*Al - 7.135900438*Al);
+    double Cd = 117.24*Al -689.06;
+    double dndT = Ad*exp(Bd / (wl + Cd));
+
+    return ( A*exp(B / (wl + C)) + dndT*(T-296) );
+
+    // old
+    //double L2 = wl*wl*1e-6;
+    //double nR296K = sqrt(1.+(9.659-2.604*Al)*L2/(L2-(0.137-0.069*Al)));
+    //return ( nR296K + nR296K*(Al*4.6e-5+Ga*4.5e-5)*(T-296.) );
 }
 
 MI_PROPERTY(AlGaAs, absp,
