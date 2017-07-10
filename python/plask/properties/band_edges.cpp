@@ -11,6 +11,8 @@ void register_standard_properties_band_edges()
     py_enum<BandEdges::EnumType>()
         .value("CONDUCTION", BandEdges::CONDUCTION)
         .value("VALENCE", BandEdges::VALENCE)
+        .value("SPINOFF", BandEdges::SPIN_OFF)
+        .value("SPIN_OFF", BandEdges::SPIN_OFF)
     ;
 }
 

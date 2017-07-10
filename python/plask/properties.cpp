@@ -26,6 +26,7 @@ void register_standard_properties_band_edges();
 
 void register_standard_properties_builtin_potential();
 void register_standard_properties_quasi_Fermi_levels();
+void register_standard_properties_energy_levels();
 
 PLASK_PYTHON_API const char* docstring_receiver =
     "{0}Receiver{1}()\n\n"
@@ -377,8 +378,9 @@ void register_standard_properties()
 
     register_standard_properties_builtin_potential();
     register_standard_properties_quasi_Fermi_levels();
+    register_standard_properties_energy_levels();
     register_standard_properties_band_edges();
-    
+
     register_standard_properties_gain();
 
     register_standard_properties_optical();

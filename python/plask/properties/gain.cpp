@@ -15,7 +15,7 @@ void register_standard_properties_gain()
     registerProperty<Gain>();
     py_enum<Gain::EnumType>()
         .value("", Gain::GAIN)
-        .value("conc", Gain::DGDN)
+        .value("CONC", Gain::DGDN)
     ;
 }
 

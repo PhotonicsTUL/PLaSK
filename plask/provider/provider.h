@@ -354,7 +354,7 @@ public:
     const ProviderT* getProvider() const { return provider; }
 
     /// \return true if there is any provider connected
-    bool hasProvider() {
+    bool hasProvider() const {
         return provider;
     }
 
@@ -473,7 +473,7 @@ struct MultiValueProvider: public Provider {
 
     /// Type of value number
     typedef EnumT EnumType;
-    
+
     /**
      * Provided value getter.
      * @return provided value
@@ -556,7 +556,7 @@ struct MultiFieldProvider: public Provider {
 
     /// Type of value number
     typedef EnumT EnumType;
-    
+
     /**
      * Get number of values
      * \return number of values
@@ -679,12 +679,12 @@ template<typename _BaseClass, typename _Signature> struct PolymorphicDelegatePro
 template<typename _BaseClass, typename _Res, typename... _ArgTypes>
 struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _BaseClass {
 
-    
+
     /// Held external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
     PolymorphicDelegateProvider() = delete;
-    
+
     /**
      * Create delegate provider
      * \param functor delegate functor

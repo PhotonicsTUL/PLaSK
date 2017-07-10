@@ -133,40 +133,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
-        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet=false): region(region) {
-            size_t n = region.materials.size();
-            U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
-            M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
-            double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
-            Eg = std::numeric_limits<double>::max();
-            size_t i = 0, mi;
-            double me;
-            for (auto material: region.materials) {
-                OmpLockGuard<OmpNestLock> lockq = material->lock();
-                double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
-                double uel = material->CB(T, e, 'G'), uhh = material->VB(T, e, 'G', 'H');
-                U[EL].push_back(uel);
-                U[HH].push_back(uhh);
-                double eg = uel - uhh;
-                if (eg < Eg) {
-                    Eg = eg;
-                    mi = i;
-                    me = e;
-                }
-                U[LH].push_back(material->VB(T, e, 'G', 'L'));
-                M[EL].push_back(material->Me(T, e));
-                M[HH].push_back(material->Mhh(T, e));
-                M[LH].push_back(material->Mlh(T, e));
-                ++i;
-            }
-            if (solver->matrixelem != 0.) {
-                Mt = solver->matrixelem;
-            } else {
-                double deltaSO = region.materials[mi]->Dso(T, me);
-                Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
-                if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
-            }
-        }
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet=false);
 
         ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, bool quiet=false):
             ActiveRegionParams(solver, region, solver->T0, quiet) {}
@@ -213,8 +180,14 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     /// Receiver for carriers concentration in the active region
     ReceiverFor<CarriersConcentration,GeometryType> inCarriersConcentration;
 
+    /// Receiver for band edges
+    ReceiverFor<BandEdges,GeometryType> inBandEdges;
+
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
+
+    /// Provider for eergy levels
+//     typename ProviderFor<EnergyLevels>::Delegate outEnergyLevels;
 
     FreeCarrierGainSolver(const std::string& name="");
 
@@ -330,9 +303,16 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
      */
     const LazyData<double> getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
+    /**
+     * Compute the energy levels.
+     * \param num active region number
+     * \return energy levels for specified active region
+     */
+//     const EnergyLevels getEnergyLevels(size_t num=0);
+
   public:
 
-    std::vector<ActiveRegionParams> params0; ///< Reference active region params
+    std::vector<ActiveRegionParams> params0;    ///< Reference active region params
 
     bool quick_levels;                          ///< Are levels computed quickly based on estimates
 

@@ -26,6 +26,7 @@ FreeCarrierGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double
 template <typename GeometryType>
 FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, MeshAxis>(name),
     outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData),
+//     outEnergyLevels(this, &FreeCarrierGainSolver<GeometryType>::getEnergyLevels),
     lifetime(0.1),
     matrixelem(0.),
     T0(300.),
@@ -291,6 +292,50 @@ void FreeCarrierGainSolver<GeometryType>::ActiveRegionInfo::summarize(const Free
     totalqw = 0.;
     for (size_t i = 0; i < thicknesses.size(); ++i)
         if (isQW(i)) totalqw += thicknesses[i];
+}
+
+
+template <typename GeometryType>
+FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet): region(region) {
+    size_t n = region.materials.size();
+    U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
+    M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
+    double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
+    Eg = std::numeric_limits<double>::max();
+
+    if (!solver->inBandEdges.hasProvider()) {
+        solver->writelog(LOG_DETAIL, "Band edges taken from material database");
+        size_t i = 0, mi;
+        double me;
+        for (auto material: region.materials) {
+            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
+            double uel = material->CB(T, e, 'G'), uhh = material->VB(T, e, 'G', 'H');
+            U[EL].push_back(uel);
+            U[HH].push_back(uhh);
+            double eg = uel - uhh;
+            if (eg < Eg) {
+                Eg = eg;
+                mi = i;
+                me = e;
+            }
+            U[LH].push_back(material->VB(T, e, 'G', 'L'));
+            M[EL].push_back(material->Me(T, e));
+            M[HH].push_back(material->Mhh(T, e));
+            M[LH].push_back(material->Mlh(T, e));
+            ++i;
+        }
+        if (solver->matrixelem != 0.) {
+            Mt = solver->matrixelem;
+        } else {
+            double deltaSO = region.materials[mi]->Dso(T, me);
+            Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
+            if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
+        }
+    } else {
+        solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
+        //TODO
+    }
 }
 
 
@@ -843,6 +888,12 @@ shared_ptr<GainSpectrum<GeometryType>> FreeCarrierGainSolver<GeometryType>::getG
     this->initCalculation();
     return make_shared<GainSpectrum<GeometryType>>(this, point);
 }
+
+// // template <typename GeometryType>
+// // const EnergyLevels FreeCarrierGainSolver<GeometryType>::getEnergyLevels(size_t num)
+// // {
+// //     this->initCalculation();
+// // }
 
 
 template <> std::string FreeCarrierGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.FreeCarrier2D"; }

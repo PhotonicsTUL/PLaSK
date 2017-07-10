@@ -99,6 +99,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "properties/electrical.h"
 #include "properties/optical.h"
 #include "properties/gain.h"
+#include "properties/energylevels.h"
 
 #include "filters/filter.h"
 

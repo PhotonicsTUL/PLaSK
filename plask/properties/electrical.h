@@ -82,13 +82,13 @@ struct PLASK_API QuasiFermiLevels: public MultiFieldProperty<double> {
 struct PLASK_API BandEdges: public MultiFieldProperty<double> {
     enum EnumType {
         CONDUCTION = 0,
-        VALENCE = 1
+        VALENCE = 1,
+        SPIN_OFF = 2
     };
     static constexpr size_t NUM_VALS = 2;
     static constexpr const char* NAME = "conduction and valence band edges";
     static constexpr const char* UNIT = "eV";
 };
-
 
 } // namespace plask
 
