@@ -26,6 +26,7 @@ struct AlGaN_Si: public AlGaN {
     virtual double Nf(double T) const override; //TODO change to cm^(-3)
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
+    virtual ConductivityType condtype() const override;
     virtual Tensor2<double> thermk(double T, double t) const override;
     virtual double absp(double wl, double T) const override;
 

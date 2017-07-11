@@ -143,6 +143,8 @@ double InGaN::lattC(double T, char x) const {
     return (tLattC);
 }
 
+Material::ConductivityType InGaN::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool InGaN::isEqual(const Material &other) const {
     const InGaN& o = static_cast<const InGaN&>(other);
     return o.In == this->In;

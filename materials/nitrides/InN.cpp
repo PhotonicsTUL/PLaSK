@@ -104,6 +104,8 @@ double InN::VB(double T, double e, char point, char hole) const {
     return tVB;
 }
 
+Material::ConductivityType InN::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool InN::isEqual(const Material &other) const {
     return true;
 }

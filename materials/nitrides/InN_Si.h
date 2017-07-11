@@ -26,6 +26,7 @@ struct InN_Si: public InN {
     virtual double Nd() const override;
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

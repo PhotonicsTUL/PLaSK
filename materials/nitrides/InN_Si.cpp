@@ -62,6 +62,8 @@ Tensor2<double> InN_Si::cond(double T) const {
     return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
+Material::ConductivityType InN_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 bool InN_Si::isEqual(const Material &other) const {
     const InN_Si& o = static_cast<const InN_Si&>(other);
     return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && InN::isEqual(other);

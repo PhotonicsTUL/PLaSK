@@ -70,6 +70,8 @@ Tensor2<double> GaN_Si::cond(double T) const {
     return Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11);
 }
 
+Material::ConductivityType GaN_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(GaN_Si, thermk,
             MISeeClass<GaN>(MaterialInfo::thermk),
             MISource("Y. Oshima et al., Phys. Status Solidi C 4 (2007) 2215"),

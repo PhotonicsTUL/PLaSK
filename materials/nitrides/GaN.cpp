@@ -144,6 +144,8 @@ double GaN::VB(double T, double e, char point, char hole) const {
     return tVB;
 }
 
+Material::ConductivityType GaN::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool GaN::isEqual(const Material &other) const {
     return true;
 }

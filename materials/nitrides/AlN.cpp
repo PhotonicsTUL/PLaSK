@@ -97,6 +97,8 @@ Tensor2<double> AlN::Mlh(double T, double e) const {
     return (tMlh);
 }
 
+Material::ConductivityType AlN::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool AlN::isEqual(const Material &other) const {
     return true;
 }

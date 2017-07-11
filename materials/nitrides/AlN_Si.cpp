@@ -55,6 +55,8 @@ Tensor2<double> AlN_Si::cond(double T) const {
     return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
+Material::ConductivityType AlN_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(AlN_Si, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )

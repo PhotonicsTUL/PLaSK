@@ -45,6 +45,8 @@ Tensor2<double> AlGaN_Si::cond(double T) const {
     return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
+Material::ConductivityType AlGaN_Si::condtype() const { return Material::CONDUCTIVITY_N; }
+
 MI_PROPERTY(AlGaN_Si, thermk,
             MISeeClass<AlGaN>(MaterialInfo::thermk),
             MIComment("Si doping dependence for GaN")

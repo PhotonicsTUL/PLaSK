@@ -71,6 +71,8 @@ Tensor2<double> GaN_Mg::cond(double T) const {
     return Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11);
 }
 
+Material::ConductivityType GaN_Mg::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(GaN_Mg, absp,
             MISeeClass<GaN>(MaterialInfo::absp)
             )

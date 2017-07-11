@@ -31,6 +31,7 @@ struct AlGaN: public Semiconductor {
     Tensor2<double> Mhh(double T, double e) const override;
     Tensor2<double> Mlh(double T, double e) const override;
     double lattC(double T, char x) const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     bool isEqual(const Material& other) const override;

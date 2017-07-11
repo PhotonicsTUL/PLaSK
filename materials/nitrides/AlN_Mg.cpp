@@ -43,6 +43,8 @@ Tensor2<double> AlN_Mg::cond(double T) const {
     return (Tensor2<double>(tCond, tCond)); //TODO was Tensor2<double>(tCondt, tCond) - compilation error
 }
 
+Material::ConductivityType AlN_Mg::condtype() const { return Material::CONDUCTIVITY_P; }
+
 MI_PROPERTY(AlN_Mg, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )

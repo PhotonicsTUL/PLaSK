@@ -33,6 +33,7 @@ struct InGaN: public Semiconductor {
     double CB(double T, double e, char point) const override;
     double VB(double T, double e, char point, char hole) const override;
     double lattC(double T, char x) const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     bool isEqual(const Material& other) const override;

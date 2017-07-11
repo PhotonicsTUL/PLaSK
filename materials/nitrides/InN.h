@@ -28,6 +28,7 @@ struct InN: public Semiconductor {
     Tensor2<double> Mlh(double T, double e) const override;
     //double CB(double T, double e, char point) const override; // commented out since no return leads to UB - Piotr Beling [25.02.2016]
     double VB(double T, double e, char point, char hole) const override;
+    virtual ConductivityType condtype() const override;
 
 protected:
     bool isEqual(const Material& other) const override;

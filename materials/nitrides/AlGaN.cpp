@@ -114,6 +114,8 @@ double AlGaN::lattC(double T, char x) const {
     return (tLattC);
 }
 
+Material::ConductivityType AlGaN::condtype() const { return Material::CONDUCTIVITY_I; }
+
 bool AlGaN::isEqual(const Material &other) const {
     const AlGaN& o = static_cast<const AlGaN&>(other);
     return o.Al == this->Al;
