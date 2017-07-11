@@ -309,7 +309,6 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     if (!solver->inBandEdges.hasProvider()) {
         solver->writelog(LOG_DETAIL, "Band edges taken from material database");
         size_t i = 0, mi;
-        double me;
         for (auto material: region.materials) {
             OmpLockGuard<OmpNestLock> lockq = material->lock();
             double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
@@ -341,7 +340,7 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
             U[EL].push_back(uel);
             U[HH].push_back(uhh);
             double eg = uel - uhh;
-            if (eg < Eg) { Eg = eg; mi = i; }
+            if (eg < Eg) { Eg = eg; mi = i; me = e; }
             U[LH].push_back(VB_L[i]);
             M[EL].push_back(material->Me(T, e));
             M[HH].push_back(material->Mhh(T, e));
@@ -801,7 +800,6 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 
     void compute(double wavelength, InterpolationMethod interp)
     {
-        double hw = phys::h_eVc1e9 / wavelength;
         // Compute gains on mesh for each active region
         data.resize(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
@@ -809,32 +807,17 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 data[reg] = LazyData<double>(dest_mesh->size(), 0.);
                 continue;
             }
-            DataVector<double> values(regpoints[reg]->size());
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
-            std::exception_ptr error;
-            #pragma omp parallel for
-            for (plask::openmp_size_t i = 0; i < regpoints[reg]->size(); ++i) {
-                if (error) continue;
-                try {
-                    double T = temps[i];
-                    double nr = solver->regions[reg].averageNr(wavelength, T, concs[i]);
-                    ActiveRegionParams params(solver, solver->params0[reg], T, bool(i));
-                    values[i] = getValue(hw, concs[i], T, nr, params);
-                } catch(...) {
-                    #pragma omp critical
-                    error = std::current_exception();
-                }
-            }
-            if (error) std::rethrow_exception(error);
             data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
-                                    values, dest_mesh, interp, solver->geometry);
+                                    getValues(wavelength, interp, reg, concs, temps), dest_mesh, interp, solver->geometry);
         }
     }
 
-    virtual double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) = 0;
+    virtual DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                         const AveragedData& concs, const AveragedData& temps) = 0;
 
     size_t size() const override { return dest_mesh->size(); }
 
@@ -849,32 +832,94 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 template <typename GeometryT>
 struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<GeometryT>::DataBase
 {
+    using typename DataBase::AveragedData;
+    
     template <typename... Args>
     GainData(Args... args): DataBase(args...) {}
 
-    double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
+    DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                 const AveragedData& concs, const AveragedData& temps) override
     {
-        double Fc = NAN, Fv = NAN;
-        this->solver->findFermiLevels(Fc, Fv, conc, T, params);
-        return this->solver->getGain(hw, Fc, Fv, T, nr, params);
+        double hw = phys::h_eVc1e9 / wavelength;
+        DataVector<double> values(this->regpoints[reg]->size());
+        std::exception_ptr error;
+
+        if (this->solver->inQuasiFermiLevels.hasProvider()) {
+            AveragedData Fcs(temps); Fcs.name = "quasi Fermi level for electrons";
+            AveragedData Fvs(temps); Fvs.name = "quasi Fermi level for holes";
+            Fcs.data = this->solver->inQuasiFermiLevels(QuasiFermiLevels::ELECTRONS, temps.mesh, interp);
+            Fvs.data = this->solver->inQuasiFermiLevels(QuasiFermiLevels::HOLES, temps.mesh, interp);
+            #pragma omp parallel for
+            for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+                if (error) continue;
+                try {
+                    double T = temps[i];
+                    double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                    ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
+                    values[i] = this->solver->getGain(hw, Fcs[i], Fvs[i], T, nr, params);
+                } catch(...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
+            }
+            if (error) std::rethrow_exception(error);
+        } else {
+            #pragma omp parallel for
+            for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+                if (error) continue;
+                try {
+                    double T = temps[i];
+                    double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                    ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
+                    double Fc = NAN, Fv = NAN;
+                    this->solver->findFermiLevels(Fc, Fv, concs[i], T, params);
+                    values[i] = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+                } catch(...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
+            }
+            if (error) std::rethrow_exception(error);
+        }
+        return values;
     }
 };
 
 template <typename GeometryT>
 struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<GeometryT>::DataBase
 {
+    using typename DataBase::AveragedData;
+    
     template <typename... Args>
     DgdnData(Args... args): DataBase(args...) {}
 
-    double getValue(double hw, double conc, double T, double nr, const ActiveRegionParams& params) override
+    DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                 const AveragedData& concs, const AveragedData& temps) override
     {
+        double hw = phys::h_eVc1e9 / wavelength;
         const double h = 0.5 * DIFF_STEP;
-        double Fc = NAN, Fv = NAN;
-        this->solver->findFermiLevels(Fc, Fv, (1.-h)*conc, T, params);
-        double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
-        this->solver->findFermiLevels(Fc, Fv, (1.+h)*conc, T, params);
-        double gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
-        return (gain2 - gain1) / (2.*h*conc);
+        DataVector<double> values(this->regpoints[reg]->size());
+        std::exception_ptr error;
+        #pragma omp parallel for
+        for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+            if (error) continue;
+            try {
+                double T = temps[i];
+                double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
+                double Fc = NAN, Fv = NAN;
+                this->solver->findFermiLevels(Fc, Fv, (1.-h)*concs[i], T, params);
+                double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+                this->solver->findFermiLevels(Fc, Fv, (1.+h)*concs[i], T, params);
+                double gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+                values[i] = (gain2 - gain1) / (2.*h*concs[i]);
+            } catch(...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
+        }
+        if (error) std::rethrow_exception(error);
+        return values;
     }
 };
 

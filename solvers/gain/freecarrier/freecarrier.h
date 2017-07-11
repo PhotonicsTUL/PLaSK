@@ -183,6 +183,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     /// Receiver for band edges
     ReceiverFor<BandEdges,GeometryType> inBandEdges;
 
+    /// Receiver for quasi Fermi levels
+    ReceiverFor<QuasiFermiLevels,GeometryType> inQuasiFermiLevels;
+
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
