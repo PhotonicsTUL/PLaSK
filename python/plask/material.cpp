@@ -182,6 +182,16 @@ class PythonMaterial: public Material, Overriden
         return ((*base).*f)(args...);
     }
 
+    template <typename R, typename F, typename... Args>
+    inline R call_override(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
+        if (cached) return *cached;
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden(name)) {
+            return call_method<R>(name, args...);
+        }
+        throw MaterialMethodNotImplemented(this->name(), name);
+    }
+
   public:
     PythonMaterial(): base(new EmptyMaterial) {}
     PythonMaterial(shared_ptr<Material> base): base(base) {
@@ -309,8 +319,11 @@ class PythonMaterial: public Material, Overriden
     double lattC(double T, char x) const override { return call<double>("lattC", &Material::lattC, cache->lattC, T, x); }
     double Eg(double T, double e, char point) const override { return call<double>("Eg", &Material::Eg, cache->Eg, T, e, point); }
     double CB(double T, double e, char point) const override {
-        try { return call<double>("CB", &Material::CB, cache->CB, T, e, point); }
-        catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }  // D = µ kB T / e
+        try { return call_override<double>("CB", &Material::CB, cache->CB, T, e, point); }
+        catch (NotImplemented) {
+            try { return VB(T, e, point, 'H') + Eg(T, e, point); }
+            catch (NotImplemented) { return base->CB(T, e, point); }
+        }
     }
     double VB(double T, double e, char point, char hole) const override { return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
     double Dso(double T, double e) const override { return call<double>("Dso", &Material::Dso, cache->Dso, T, e); }
@@ -340,8 +353,11 @@ class PythonMaterial: public Material, Overriden
     double B(double T) const override { return call<double>("B", &Material::B, cache->B, T); }
     double C(double T) const override { return call<double>("C", &Material::C, cache->C, T); }
     double D(double T) const override {
-        if (overriden("mob")) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
-        return call<double>("D", &Material::D, cache->D, T);
+        try { return call_override<double>("D", &Material::D, cache->D, T); }
+        catch (NotImplemented) {
+            try { return mob(T).c00 * T * 8.6173423e-5; }   // D = µ kB T / e
+            catch (NotImplemented) { return base->D(T); }
+        }
     }
     Tensor2<double> thermk(double T, double t) const override { return call<Tensor2<double>>("thermk", &Material::thermk, cache->thermk, T, t); }
     double dens(double T) const override { return call<double>("dens", &Material::dens, cache->dens, T); }
@@ -349,35 +365,20 @@ class PythonMaterial: public Material, Overriden
     double nr(double wl, double T, double n) const override { return call<double>("nr", &Material::nr, cache->nr, wl, T, n); }
     double absp(double wl, double T) const override { return call<double>("absp", &Material::absp, cache->absp, wl, T); }
     dcomplex Nr(double wl, double T, double n) const override {
-        if (cache->Nr) return *cache->Nr;
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("Nr")) {
-            return call_method<dcomplex>("Nr", wl, T, n);
+        try { return call_override<dcomplex>("Nr", &Material::Nr, cache->Nr, wl, T, n); }
+        catch (NotImplemented) {
+            try { return dcomplex(                     call<double>("nr", &Material::nr, cache->nr, wl, T, n),
+                                  -7.95774715459e-09 * call<double>("absp", &Material::absp, cache->absp, wl,T) * wl
+                                 ); }
+            catch (NotImplemented) { return base->Nr(wl, T, n); }
         }
-        if (cache->nr || cache->absp || overriden("nr") || overriden("absp"))
-            return dcomplex(call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
-        return base->Nr(wl, T, n);
     }
     Tensor3<dcomplex> NR(double wl, double T, double n) const override {
-        if (cache->NR) return *cache->NR;
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("NR")) {
-            return call_method<Tensor3<dcomplex>>("NR", wl, T, n);
+        try { return call_override<Tensor3<dcomplex>>("NR", &Material::NR, cache->NR, wl, T, n); }
+        catch (NotImplemented) {
+            try { dcomplex nr = Nr(wl, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
+            catch (NotImplemented) { return base->NR(wl, T, n); }
         }
-        if (cache->Nr || overriden("Nr")) {
-            dcomplex nr;
-            if (cache->Nr)
-                nr = *cache->Nr;
-            else {
-                nr = call_method<dcomplex>("Nr", wl, T, n);
-            }
-            return Tensor3<dcomplex>(nr, nr, nr, 0.);
-        }
-        if (cache->nr || cache->absp || overriden("nr") || overriden("absp")) {
-            dcomplex nr (call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
-            return Tensor3<dcomplex>(nr, nr, nr, 0.);
-        }
-        return base->NR(wl, T, n);
     }
 
     Tensor2<double> mobe(double T) const override { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
@@ -593,10 +594,10 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         if (PyObject_HasAttrString(self.ptr(), name)) { \
             if (PyFunction_Check(py::object(self.attr(name)).ptr())) { \
                 try { \
-                    cache->fun.reset(py::extract<Type>(self.attr(name))()); \
+                    cache->fun.reset(py::extract<Type>(self.attr(name)())); \
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
                 } catch (py::error_already_set) { \
-                    throw TypeError("Cannot convert return value of static function '" name "' in material class '{}' to correct type", cls_name); \
+                    PyErr_Clear(); \
                 } \
             } else if (!PyMethod_Check(py::object(self.attr(name)).ptr())) { \
                 try { \

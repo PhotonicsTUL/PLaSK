@@ -489,6 +489,16 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     }
 
     /**
+     * Set provider to internal to provider of constant field.
+     * \param data data with field values in mesh points
+     */
+    template <typename Iterator, PropertyType propertyType = PropertyTag::propertyType>
+    typename std::enable_if<propertyType == MULTI_FIELD_PROPERTY>::type
+    setValues(Iterator begin, Iterator end) {
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::ConstProviderType(begin, end), true);
+    }
+
+    /**
      * Set provider to internal to provider of given field.
      * \param data data with field values in mesh points
      * \param mesh mesh value
@@ -799,9 +809,6 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 
         /// Construct value
         explicit WithValue(ProvidedType&& value): values({value}) {}
-
-        /// Construct values
-        WithValue(const std::vector<ProvidedType>& values): values(values) {}
 
         /// Construct values
         WithValue(const std::initializer_list<ProvidedType>& values): values(values) {}
@@ -1468,14 +1475,14 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * Constructor with multiple values
          * @param values required values
          */
-        ConstProviderType(const std::vector<ValueType>& values): values(values) {}
-        
-        /**
-         * Constructor with multiple values
-         * @param values required values
-         */
         ConstProviderType(const std::initializer_list<ValueType>& values): values(values) {}
         
+        /**
+         * Construct values from iterator
+         * \param begin,end iterator range
+         */
+        template <typename Iterator>
+        explicit ConstProviderType(const Iterator& begin, const Iterator& end): values(begin, end) {}
         
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method

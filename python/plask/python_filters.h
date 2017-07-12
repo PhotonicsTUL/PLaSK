@@ -61,7 +61,7 @@ namespace detail {
         template <typename ReceiverT>
         static inline PyObject* call(const py::object& self, ReceiverT& receiver, const py::object& value) {
             typedef detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename  ReceiverT::PropertyTag::ExtraParams> RegisterT;
-            RegisterT::assign(receiver, value);
+            RegisterT::setter(receiver, value);
             return py::incref(Py_None);
         }
     };

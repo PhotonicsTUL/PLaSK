@@ -195,6 +195,15 @@ inline static void register_config()
 // Globals for XML material
 PLASK_PYTHON_API py::dict* xml_globals;
 
+template <typename... Args>
+static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Args&&... args) {
+    typedef boost::tokenizer<boost::char_separator<char> > LineTokenizer;
+    std::string message = plask::format(msg, args...);
+    LineTokenizer tokenizer(message, boost::char_separator<char>("\n\r"));
+    for (LineTokenizer::const_iterator line = tokenizer.begin(), end = tokenizer.end(); line != end ; ++line)
+        plask::writelog(level, *line);
+}
+
 // Print Python exception to PLaSK logging system
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
@@ -224,7 +233,6 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
 
 
     std::string message = py::extract<std::string>(py::str(value));
-    boost::replace_all(message, "\n", " ");
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
@@ -247,12 +255,12 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
                     }
                 } else
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -263,12 +271,12 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
                 }
         } else
-            plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+            printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
     }
     return 1;
 }

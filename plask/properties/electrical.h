@@ -36,8 +36,8 @@ struct PLASK_API CurrentDensity: public VectorFieldProperty<> {
  */
 struct PLASK_API CarriersConcentration: public MultiFieldProperty<double> {
     enum EnumType {
-        MAJORITY = 0,
-        PAIRS,
+        PAIRS = 0,
+        MAJORITY,
         ELECTRONS,
         HOLES
     };

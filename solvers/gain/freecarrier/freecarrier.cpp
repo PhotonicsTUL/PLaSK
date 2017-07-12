@@ -177,6 +177,8 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
         ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
         if (region) {
             if (!added_bottom_cladding) {
+                if (r == 0)
+                    throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
                 // add layer below active region (cladding) LUKASZ
                 auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                 for (size_t cc = ileft; cc < iright; ++cc)
@@ -227,7 +229,7 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
         }
     }
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
-        throw Exception("{0}: Quantum-well at the edge of the structure.", this->getId());
+        throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 
     if (strained && !materialSubstrate)
         throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
@@ -303,12 +305,12 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     double substra = solver->strained? solver->materialSubstrate->lattC(T, 'a') : 0.;
     Eg = std::numeric_limits<double>::max();
 
-    size_t mi;
-    double me;
+    size_t mi = 0;
+    double me = 0;
 
     if (!solver->inBandEdges.hasProvider()) {
         solver->writelog(LOG_DETAIL, "Band edges taken from material database");
-        size_t i = 0, mi;
+        size_t i = 0;
         for (auto material: region.materials) {
             OmpLockGuard<OmpNestLock> lockq = material->lock();
             double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;

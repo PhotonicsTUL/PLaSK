@@ -135,7 +135,7 @@ namespace detail {
         static py::object __get__(const py::object& self, const py::object&, const py::object&) { return self; }
 
         static void __set__(ReceiverT& self, const py::object&, const py::object& value) {
-            RegisterT::assign(self, value);
+            RegisterT::setter(self, value);
         }
 
         RegisterReceiverBase(const std::string& suffix="", const std::string& space="") :
@@ -189,13 +189,13 @@ namespace detail {
     }
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>>:
     public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
 
-        static void assign(ReceiverT& self, const py::object& obj) {
+        static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
@@ -212,16 +212,22 @@ namespace detail {
     };
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>>:
     public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         typedef typename PropertyT::EnumType EnumType;
 
-        static void assign(ReceiverT& self, const py::object& obj) {
+        typedef RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
+        
+        static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
+            assign(self, obj);
+        }
+            
+        static void assign(ReceiverT& self, const py::object& obj) {
             if (assignMultipleValues(self, obj)) return;
             if (assignValue(self, obj)) return;
             throw TypeError("You can only assign {0} provider, or sequence of values of type '{1}'",
@@ -237,14 +243,14 @@ namespace detail {
             this->receiver_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
-            this->receiver_class.def("assign", &ReceiverT::template setConstValue<const std::vector<typename ReceiverT::ValueType>&>, py::arg("values"));
+            this->receiver_class.def("assign", &Class::assign, py::arg("values"));
         }
     };
 
     template <int DIMS, typename ReceiverT, typename... ExtraParams> struct ReceiverSetValueForMeshes;
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>>:
     public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag PropertyT;
@@ -253,7 +259,7 @@ namespace detail {
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
 
-        static void assign(ReceiverT& self, const py::object& obj) {
+        static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
@@ -283,7 +289,7 @@ namespace detail {
     };
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>>:
     public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag PropertyT;
@@ -293,10 +299,17 @@ namespace detail {
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
         typedef typename PropertyT::EnumType EnumType;
         
-        static void assign(ReceiverT& self, const py::object& obj) {
+        typedef RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
+        
+        static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
+            assign(self, obj);
+        }
+            
+        static void assign(ReceiverT& self, const py::object& obj) {
             if (assignValue(self, obj)) return;
+            if (assignMultipleValues(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError("You can only assign {0} provider, sequence of data, or constant of type '{1}'",
@@ -316,7 +329,7 @@ namespace detail {
             this->receiver_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
-            this->receiver_class.def("assign", &ReceiverT::template setConstValue<const std::vector<typename ReceiverT::ValueType>&>, py::arg("values"));
+            this->receiver_class.def("assign", &Class::assign, py::arg("values"));
         }
 
       private:
@@ -339,7 +352,7 @@ namespace detail {
         ReceiverSetter(ReceiverT ClassT::* field) : field(field) {}
 
         void operator()(Class& self, py::object obj) {
-            RegisterT::assign(self.*field, obj);
+            RegisterT::setter(self.*field, obj);
         }
 
       private:

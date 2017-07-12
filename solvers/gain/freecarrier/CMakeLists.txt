@@ -55,13 +55,14 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
 # below.
 #
-# enable_testing()
+enable_testing()
 
 # if(BUILD_TESTING)
 #     add_executable(simplegaintest tests/simplegaintest.cpp)
 #     target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
 #     add_solver_test(solvers/gain/simple simplegaintest)
 # endif()
+add_python_test(solvers/gain/freecarrier/gaas ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaas.py)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
