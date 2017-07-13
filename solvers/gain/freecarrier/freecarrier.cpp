@@ -298,7 +298,11 @@ void FreeCarrierGainSolver<GeometryType>::ActiveRegionInfo::summarize(const Free
 
 
 template <typename GeometryType>
-FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet): region(region) {
+FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(const FreeCarrierGainSolver* solver,
+                                                                            const ActiveRegionInfo& region, double T,
+                                                                            bool quiet, double mt):
+    region(region)
+{
     size_t n = region.materials.size();
     U[EL].reserve(n); U[HH].reserve(n); U[LH].reserve(n);
     M[EL].reserve(n); M[HH].reserve(n); M[LH].reserve(n);
@@ -309,7 +313,7 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     double me = 0;
 
     if (!solver->inBandEdges.hasProvider()) {
-        solver->writelog(LOG_DETAIL, "Band edges taken from material database");
+        if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from material database");
         size_t i = 0;
         for (auto material: region.materials) {
             OmpLockGuard<OmpNestLock> lockq = material->lock();
@@ -326,7 +330,7 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
             ++i;
         }
     } else {
-        solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
+        if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
         shared_ptr<Translation<2>> shifted(new Translation<2>(region.layers, region.origin));
         auto mesh = makeGeometryGrid(shifted)->getMidpointsMesh();
         assert(mesh->size() == mesh->axis1->size());
@@ -349,12 +353,16 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
             M[LH].push_back(material->Mlh(T, e));
         }
     }
-    if (solver->matrixelem != 0.) {
-        Mt = solver->matrixelem;
+    if (mt == 0.) {
+        if (solver->matrixelem != 0.) {
+            Mt = solver->matrixelem;
+        } else {
+            double deltaSO = region.materials[mi]->Dso(T, me);
+            Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
+            if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
+        }
     } else {
-        double deltaSO = region.materials[mi]->Dso(T, me);
-        Mt = (1./M[EL][mi].c11 - 1.) * (Eg + deltaSO) * Eg / (Eg + 0.666666666666667*deltaSO) / 2.;
-        if (!quiet) solver->writelog(LOG_DETAIL, "Estimated momentum matrix element to {:.2f} eV m0", Mt);
+        Mt = mt;
     }
 }
 
@@ -576,6 +584,9 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
                 this->writelog(LOG_DETAIL, "Estimated light hole levels for active region {:d} [eV]: {}", reg, str.str());
             }
         }
+        
+        if (params.levels[EL].empty()) throw Exception("{}: No electron levels found", this->getId());
+        if (params.levels[HH].empty() && params.levels[LH].empty()) throw Exception("{}: No hole levels found", this->getId());
     }
 }
 
@@ -846,11 +857,11 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
         DataVector<double> values(this->regpoints[reg]->size());
         std::exception_ptr error;
 
-        if (this->solver->inQuasiFermiLevels.hasProvider()) {
+        if (this->solver->inFermiLevels.hasProvider()) {
             AveragedData Fcs(temps); Fcs.name = "quasi Fermi level for electrons";
             AveragedData Fvs(temps); Fvs.name = "quasi Fermi level for holes";
-            Fcs.data = this->solver->inQuasiFermiLevels(QuasiFermiLevels::ELECTRONS, temps.mesh, interp);
-            Fvs.data = this->solver->inQuasiFermiLevels(QuasiFermiLevels::HOLES, temps.mesh, interp);
+            Fcs.data = this->solver->inFermiLevels(FermiLevels::ELECTRONS, temps.mesh, interp);
+            Fvs.data = this->solver->inFermiLevels(FermiLevels::HOLES, temps.mesh, interp);
             #pragma omp parallel for
             for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
                 if (error) continue;
@@ -931,14 +942,14 @@ template <typename GeometryType>
 const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (what == Gain::GAIN) {
-        this->writelog(LOG_DETAIL, "Calculating gain");
         this->initCalculation(); // This must be called before any calculation!
+        this->writelog(LOG_DETAIL, "Calculating gain");
         GainData* data = new GainData(this, dst_mesh);
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
         return LazyData<double>(data);
     } else if (what == Gain::DGDN) {
-        this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
         this->initCalculation(); // This must be called before any calculation!
+        this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
         DgdnData* data = new DgdnData(this, dst_mesh);
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
         return LazyData<double>(data);

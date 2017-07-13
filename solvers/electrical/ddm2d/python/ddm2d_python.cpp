@@ -23,7 +23,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     /*RO_PROPERTY(err, getErr, u8"Maximum estimated error");*/
     RECEIVER(inTemperature, u8"");
     PROVIDER(outPotential, u8"");
-    PROVIDER(outQuasiFermiLevels, u8"");
+    PROVIDER(outFermiLevels, u8"");
     PROVIDER(outBandEdges, u8"");
     PROVIDER(outCurrentDensityForElectrons, u8"");
     PROVIDER(outCurrentDensityForHoles, u8"");

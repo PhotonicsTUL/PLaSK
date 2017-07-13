@@ -133,13 +133,13 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         size_t nhh,                        ///< Number of electron–heavy hole pairs important for gain
                nlh;                        ///< Number of electron–light hole pairs important for gain
 
-        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet=false);
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, double T, bool quiet=false, double mt=0.);
 
-        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, bool quiet=false):
-            ActiveRegionParams(solver, region, solver->T0, quiet) {}
+        ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, bool quiet=false, double mt=0.):
+            ActiveRegionParams(solver, region, solver->T0, quiet, mt) {}
 
         explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T, bool quiet=false):
-            ActiveRegionParams(solver, ref.region, T, quiet) {
+            ActiveRegionParams(solver, ref.region, T, true, ref.Mt) {
                 nhh = ref.nhh;
                 nlh = ref.nlh;
                 for (size_t which = 0; which < 3; ++which) {
@@ -184,7 +184,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     ReceiverFor<BandEdges,GeometryType> inBandEdges;
 
     /// Receiver for quasi Fermi levels
-    ReceiverFor<QuasiFermiLevels,GeometryType> inQuasiFermiLevels;
+    ReceiverFor<FermiLevels,GeometryType> inFermiLevels;
 
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
@@ -280,7 +280,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     /// Invalidate the gain
     virtual void onInvalidate() override;
 
-    /// Notify that gain was chaged
+    /// Notify that gain was changed
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason)
     {
         outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain

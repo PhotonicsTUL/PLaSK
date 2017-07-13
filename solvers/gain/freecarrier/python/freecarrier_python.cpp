@@ -123,7 +123,7 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"          to one active region.\n"
         );
         solver.def("get_fermi_levels", &FreeCarrier_getFermiLevels<Geometry2DCartesian>, (arg("n"), arg("T")=py::object(), arg("reg")=0),
-            u8"Get quasi-Fermi levels.\n\n"
+            u8"Get quasi Fermi levels.\n\n"
             u8"Compute quasi-Fermi levels in specified active region.\n"
             u8"Args:\n"
             u8"    n (float): Carriers concentration to determine the levels for\n"
@@ -176,7 +176,7 @@ BOOST_PYTHON_MODULE(freecarrier)
 #endif
 //         RW_FIELD(quick_levels,
 //                  "Compute levels only once and simply shift for different temperatures?\n\n"
-//                  "Setting this to True strongly increases computation speed, but canis  make the results\n"
+//                  "Setting this to True strongly increases computation speed, but can make the results\n"
 //                  "less accurate for high temperatures.");
         solver.def("get_energy_levels", &FreeCarrier_getLevels<Geometry2DCylindrical>, arg("T")=py::object(),
             u8"Get energy levels in quantum wells.\n\n"
@@ -212,7 +212,9 @@ BOOST_PYTHON_MODULE(freecarrier)
                     u8"the geometry. The strain is computed by comparing the atomic lattice constants\n"
                     u8"of the substrate and the quantum wells.");
         RECEIVER(inTemperature, "");
+        RECEIVER(inBandEdges, "");
         RECEIVER(inCarriersConcentration, "");
+        RECEIVER(inFermiLevels, "");
         PROVIDER(outGain, "");
         solver.def("spectrum", &__Class__::getGainSpectrum, py::arg("point"), py::with_custodian_and_ward_postcall<0,1>(),
                    u8"Get gain spectrum at given point.\n\n"

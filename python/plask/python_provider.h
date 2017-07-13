@@ -151,6 +151,11 @@ namespace detail {
             receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>,
                                format(docstring_receiver_assign, property_name).c_str(),
                                py::arg("value"));
+#           if PY_VERSION_HEX >= 0x03000000
+                receiver_class.def("__bool__", &ReceiverT::hasProvider);
+#           else
+                receiver_class.def("__nonzero__", &ReceiverT::hasProvider);
+#           endif
             receiver_class.def("__get__", &__get__);
             receiver_class.def("__set__", &__set__);
         }

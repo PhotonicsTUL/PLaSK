@@ -7,10 +7,10 @@ namespace plask { namespace python {
 
 void register_standard_properties_quasi_Fermi_levels()
 {
-    registerProperty<QuasiFermiLevels>();
-    py_enum<QuasiFermiLevels::EnumType>()
-        .value("ELECTRONS", QuasiFermiLevels::ELECTRONS)
-        .value("HOLES", QuasiFermiLevels::HOLES)
+    registerProperty<FermiLevels>();
+    py_enum<FermiLevels::EnumType>()
+        .value("ELECTRONS", FermiLevels::ELECTRONS)
+        .value("HOLES", FermiLevels::HOLES)
     ;
 }
 

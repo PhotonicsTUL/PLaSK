@@ -257,7 +257,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
-    typename ProviderFor<QuasiFermiLevels, Geometry2DType>::Delegate outQuasiFermiLevels;
+    typename ProviderFor<FermiLevels, Geometry2DType>::Delegate outFermiLevels;
 
     typename ProviderFor<BandEdges, Geometry2DType>::Delegate outBandEdges;
 
@@ -351,7 +351,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
   protected:
     const LazyData<double> getPotentials(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const;
 
-    const LazyData<double> getQuasiFermiLevels(QuasiFermiLevels::EnumType what, shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const;
+    const LazyData<double> getFermiLevels(FermiLevels::EnumType what, shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const;
 
     const LazyData<double> getBandEdges(BandEdges::EnumType what, shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method);
 

@@ -62,7 +62,7 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     //loopno(0),
     //maxerr(0.05),
     outPotential(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials),
-    outQuasiFermiLevels(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiLevels),
+    outFermiLevels(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLevels),
     outBandEdges(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdges),
     outCurrentDensityForElectrons(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons),
     outCurrentDensityForHoles(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles),
@@ -1155,7 +1155,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     }
 
     outPotential.fireChanged();
-    outQuasiFermiLevels.fireChanged();
+    outFermiLevels.fireChanged();
     outBandEdges.fireChanged();
     outCurrentDensityForElectrons.fireChanged();
     outCurrentDensityForHoles.fireChanged();
@@ -1323,10 +1323,10 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotenti
 
 
 template <typename Geometry2DType>
-const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFermiLevels(
-    QuasiFermiLevels::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLevels(
+    FermiLevels::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (what == QuasiFermiLevels::ELECTRONS) {
+    if (what == FermiLevels::ELECTRONS) {
         if (!dvnFnEta) throw NoValue("Quasi-Fermi electron level");
         this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
 
@@ -1338,7 +1338,7 @@ const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getQuasiFer
 
         if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
         return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
-    } else if (what == QuasiFermiLevels::HOLES) {
+    } else if (what == FermiLevels::HOLES) {
         if (!dvnFpKsi) throw NoValue("Quasi-Fermi hole level");
         this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
 

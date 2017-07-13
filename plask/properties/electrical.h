@@ -57,7 +57,7 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
 /**
  * Quasi-Fermi levels for electrons and holes [eV]
  */
-struct PLASK_API QuasiFermiLevels: public MultiFieldProperty<double> {
+struct PLASK_API FermiLevels: public MultiFieldProperty<double> {
     enum EnumType {
         ELECTRONS,
         HOLES
