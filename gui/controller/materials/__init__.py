@@ -443,6 +443,13 @@ class MaterialsController(Controller):
             property_selection_model = self.properties_table.selectionModel()
             property_selection_model.selectionChanged.connect(self.property_selected)
             self.prop_splitter.setEnabled(True)
+            # self.properties_table.resizeColumnsToContents()
+            try:
+                self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
+            except AttributeError:
+                self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+            self.properties_table.resizeColumnToContents(1)
+            self.properties_table.resizeRowsToContents()
         else:
             #self.property_model.material = None
             self.selected_material = None
@@ -450,13 +457,6 @@ class MaterialsController(Controller):
             self.prop_splitter.setEnabled(False)
         if self.selected_material is not None:
             self.selected_material.dataChanged.connect(self.property_data_changed)
-        #self.properties_table.resizeColumnsToContents()
-        try:
-            self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
-        except AttributeError:
-            self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        self.properties_table.resizeColumnToContents(1)
-        self.properties_table.resizeRowsToContents()
 
     def property_selected(self, new_selection, old_selection):
         indexes = new_selection.indexes()

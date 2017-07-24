@@ -17,6 +17,7 @@ from .object import GNObjectController
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 
+
 class GNGeometryController(GNObjectController):
 
     def _borders_to_model_undoable(self):
@@ -24,19 +25,29 @@ class GNGeometryController(GNObjectController):
             [[empty_to_none(self.edges[dir][lh].currentText()) for lh in range(0, 2)] for dir in range(0, self.node.dim)],
             action_name='change geometry edges')
 
-    def construct_border_controllers(self, row_name=None):
-        hbox, group = self._construct_hbox(row_name)
-        res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'], change_cb=self._borders_to_model_undoable)
-                    for _ in range(0, 2))
-        for r in res:
-            r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        for w in res: hbox.addWidget(w)
-        return res if row_name else (res, group)
-
     def construct_form(self):
-        self.construct_group('Edges Settings')
-        self.edges = tuple(self.construct_border_controllers('{}/{}:'.format(lo.title(), hi.title()))
-                             for (lo, hi) in self.node.get_alternative_direction_names())
+        external = QGroupBox(self.form)
+        grid_layout = QGridLayout(external)
+        external.setTitle('Edges Settings')
+        self.vbox.addWidget(external)
+        external.setLayout(grid_layout)
+        # self._current_form = grid_layout
+        self.edges = []
+        row = 0
+        for lo, hi in self.node.get_alternative_direction_names():
+            label = QLabel("{}:".format(lo.title()))
+            grid_layout.addWidget(label, row, 0)
+            label = QLabel("{}:".format(hi.title()))
+            grid_layout.addWidget(label, row, 2)
+            res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'],
+                                                          change_cb=self._borders_to_model_undoable)
+                        for _ in range(0, 2))
+            for r in res:
+                r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            grid_layout.addWidget(res[0], row, 1)
+            grid_layout.addWidget(res[1], row, 3)
+            self.edges.append(res)
+            row += 1
         super(GNGeometryController, self).construct_form(roles=False)
 
     def fill_form(self):

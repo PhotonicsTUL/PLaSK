@@ -5,6 +5,7 @@ from ...utils.xml import attr_to_xml
 from ...utils.compat import next
 from ...utils.validators import can_be_float
 
+
 class GNGeometryBase(GNObject):
 
     def __init__(self, parent=None, dim=None):
@@ -21,7 +22,6 @@ class GNGeometryBase(GNObject):
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNGeometryBase, self)._attributes_from_xml(attribute_reader, conf)
         all_names = self.get_alternative_direction_names()
-        planar_names = all_names[:-1]
 
         b = attribute_reader.get('edges')
         if b is None:
@@ -30,7 +30,7 @@ class GNGeometryBase(GNObject):
             self.edges = [[b, b] for _ in range(0, self.dim)]
 
         b = attribute_reader.get('planar')
-        if b is not None:   #plana are all dirs except last (top/bottom)
+        if b is not None:   #planar are all dirs except last (top/bottom)
             self.edges = [[b, b] for _ in range(0, self.dim-1)]
 
         for axis_nr, axis_name in enumerate(conf.axes_names(dim=self.dim)):
