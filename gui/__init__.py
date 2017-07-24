@@ -672,18 +672,18 @@ class MainWindow(QMainWindow):
             details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
             details = ""
-        user = LICENSE['user']
+        user = LICENSE.get('user')
         if user:
             try: user = user.decode('utf8')
             except AttributeError: pass
-            institution = LICENSE['institution']
+            institution = LICENSE.get('institution')
             if institution:
                 try: institution = institution.decode('utf8')
                 except AttributeError: pass
                 institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
             details += u"Licensed to:<br/>\n{}{}".format(
                 user.replace('<', '&lt;').replace('>', '&gt;'), institution)
-            if LICENSE['date']:
+            if 'date' in LICENSE:
                 date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
                 try: date = date.decode('utf8')
                 except AttributeError: pass

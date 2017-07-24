@@ -33,7 +33,7 @@
 </materials>
 
 <geometry>
-  <cartesian2d name="geo2d" length="1000">
+  <cartesian2d name="geo2d" bottom="extend" length="1000">
     <stack name="stack2d">
       <shelf flat="no">
         <stack name="new">
