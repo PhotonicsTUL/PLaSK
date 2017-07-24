@@ -138,12 +138,12 @@ class TestStructureGain(unittest.TestCase):
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
         self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
 
-    #def test_fermi_levels_receiver(self):
-        #solver = FreeCarrierCyl("self.solver")
-        #solver.geometry = self.geometry
-        #solver.inCarriersConcentration = 0.
-        #solver.inFermiLevels = flow.FermiLevelsProviderCyl(self.get_fermi_level)
-        #self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+    def test_fermi_levels_receiver(self):
+        solver = FreeCarrierCyl("self.solver")
+        solver.geometry = self.geometry
+        solver.inCarriersConcentration = 0.
+        solver.inFermiLevels = flow.FermiLevelsProviderCyl(self.get_fermi_level)
+        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
 
 
 if __name__ == '__main__':

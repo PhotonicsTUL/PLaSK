@@ -754,7 +754,6 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 double v = data[mesh->index(i,j)];
                 if (isnan(v))
                     throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i,j));
-                v = max(v, 1e-6); // To avoid hangs
                 val += v;
             }
             return val * factor;
@@ -867,7 +866,8 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
                 if (error) continue;
                 try {
                     double T = temps[i];
-                    double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                    double conc = max(concs[i], 1e-6); // To avoid hangs
+                    double nr = this->solver->regions[reg].averageNr(wavelength, T, conc);
                     ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                     values[i] = this->solver->getGain(hw, Fcs[i], Fvs[i], T, nr, params);
                 } catch(...) {
@@ -882,10 +882,11 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
                 if (error) continue;
                 try {
                     double T = temps[i];
-                    double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                    double conc = max(concs[i], 1e-6); // To avoid hangs
+                    double nr = this->solver->regions[reg].averageNr(wavelength, T, conc);
                     ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                     double Fc = NAN, Fv = NAN;
-                    this->solver->findFermiLevels(Fc, Fv, concs[i], T, params);
+                    this->solver->findFermiLevels(Fc, Fv, conc, T, params);
                     values[i] = this->solver->getGain(hw, Fc, Fv, T, nr, params);
                 } catch(...) {
                     #pragma omp critical
@@ -918,14 +919,15 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
             if (error) continue;
             try {
                 double T = temps[i];
-                double nr = this->solver->regions[reg].averageNr(wavelength, T, concs[i]);
+                double conc = max(concs[i], 1e-6); // To avoid hangs
+                double nr = this->solver->regions[reg].averageNr(wavelength, T, conc);
                 ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                 double Fc = NAN, Fv = NAN;
-                this->solver->findFermiLevels(Fc, Fv, (1.-h)*concs[i], T, params);
+                this->solver->findFermiLevels(Fc, Fv, (1.-h)*conc, T, params);
                 double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
-                this->solver->findFermiLevels(Fc, Fv, (1.+h)*concs[i], T, params);
+                this->solver->findFermiLevels(Fc, Fv, (1.+h)*conc, T, params);
                 double gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
-                values[i] = (gain2 - gain1) / (2.*h*concs[i]);
+                values[i] = (gain2 - gain1) / (2.*h*conc);
             } catch(...) {
                 #pragma omp critical
                 error = std::current_exception();
