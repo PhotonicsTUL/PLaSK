@@ -266,6 +266,7 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
+    const char* runmodule = nullptr;
     const char* log_color = nullptr;
     bool python_logger = true;
 
@@ -312,6 +313,11 @@ int main(int argc, const char *argv[])
         } else if (arg == "-c") {
             command = argv[2];
             argv[2] = "-c";
+            --argc; ++argv;
+            break;
+        } else if (arg == "-m") {
+            runmodule = argv[2];
+            argv[2] = "-m";
             --argc; ++argv;
             break;
         } else if (arg == "-g") {
@@ -402,6 +408,30 @@ int main(int argc, const char *argv[])
             if (!result) py::throw_error_already_set();
             else Py_DECREF(result);
 
+        } catch (py::error_already_set) {
+            int exitcode = handlePythonException();
+            endPlask();
+            return exitcode;
+        } catch (...) {
+            endPlask();
+            return 0;
+        }
+
+    } else if (runmodule) { // run module specified in the command line
+
+        try {
+            if (!defs.empty()) {
+                PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
+                throw py::error_already_set();
+            }
+            py::object plask = py::import("plask");
+            globals["plask"] = plask;           // import plask
+            from_import_all("plask", globals);  // from plask import *
+
+            
+            py::object runpy = py::import("runpy");
+            py::object runasmain = runpy.attr("_run_module_as_main");
+            runasmain(runmodule, true);
         } catch (py::error_already_set) {
             int exitcode = handlePythonException();
             endPlask();

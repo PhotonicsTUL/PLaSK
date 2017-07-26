@@ -24,6 +24,20 @@ namespace plask { namespace python {
  */
 namespace detail {
 
+    template <typename T> struct isBasicData: std::false_type {};
+    template <typename T> struct isBasicData<const T>: isBasicData<typename std::remove_const<T>::type> {};
+    
+    template<> struct isBasicData<double> : std::true_type {};
+    template<> struct isBasicData<dcomplex> : std::true_type {};
+    template<> struct isBasicData<Vec<2,double>> : std::true_type {};
+    template<> struct isBasicData<Vec<2,dcomplex>> : std::true_type {};
+    template<> struct isBasicData<Vec<3,double>> : std::true_type {};
+    template<> struct isBasicData<Vec<3,dcomplex>> : std::true_type {};
+    template<> struct isBasicData<Tensor2<double>> : std::true_type {};
+    template<> struct isBasicData<Tensor2<dcomplex>> : std::true_type {};
+    template<> struct isBasicData<Tensor3<double>> : std::true_type {};
+    template<> struct isBasicData<Tensor3<dcomplex>> : std::true_type {};
+    
     template <typename T> struct basetype { typedef T type; };
     template <typename T, int dim> struct basetype<const Vec<dim,T>> { typedef T type; };
     template <typename T> struct basetype<const Tensor2<T>> { typedef T type; };
@@ -106,7 +120,7 @@ static T DataVectorWrap_getitem(const DataVectorWrap<T,dim>& self, std::ptrdiff_
 
 
 
-template <typename T, int dim>
+template <typename T, typename std::enable_if<detail::isBasicData<T>::value, int>::type dim>
 static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std::ptrdiff_t from, std::ptrdiff_t to) {
     if (from < 0) from = self.size() - from;
     if (to < 0) to = self.size() - to;
@@ -118,6 +132,21 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
     typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA((PyArrayObject*)arr.ptr()));
     for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
         *arr_data = *i;
+    return arr;
+}
+
+template <typename T, typename std::enable_if<not detail::isBasicData<T>::value, int>::type dim>
+static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std::ptrdiff_t from, std::ptrdiff_t to) {
+    if (from < 0) from = self.size() - from;
+    if (to < 0) to = self.size() - to;
+    if (from < 0) from = 0;
+    if (std::size_t(to) > self.size()) to = self.size();
+
+    npy_intp dims[] = { to-from };
+    py::object arr(py::handle<>(PyArray_SimpleNew(1, dims, NPY_OBJECT)));
+    PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr.ptr()));
+    for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
+        *arr_data = py::incref(py::object(*i).ptr());
     return arr;
 }
 
@@ -133,7 +162,7 @@ py::handle<> DataVector_dtype() {
 
 
 
-template <typename T, int dim>
+template <typename T, typename std::enable_if<detail::isBasicData<T>::value, int>::type dim>
 static py::object DataVectorWrap__array__(py::object oself, py::object dtype=py::object()) {
 
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
@@ -142,7 +171,7 @@ static py::object DataVectorWrap__array__(py::object oself, py::object dtype=py:
 
     const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
 
-    npy_intp dims[] = { self->mesh->size(), detail::type_dim<T>() };
+    npy_intp dims[] = { static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>() };
     npy_intp strides[] = { sizeof(T), sizeof(T) / detail::type_dim<T>() };
 
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
@@ -153,9 +182,19 @@ static py::object DataVectorWrap__array__(py::object oself, py::object dtype=py:
     return py::object(py::handle<>(arr));
 }
 
+template <typename T, typename std::enable_if<not detail::isBasicData<T>::value, int>::type dim>
+static py::object DataVectorWrap__array__(const DataVectorWrap<T,dim>& self, py::object dtype=py::object()) {
+
+    if (dtype != py::object()) throw ValueError("dtype for this data must not be specified");
+    
+    if (self.mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
+
+    return DataVectorWrap_getslice(self, 0, self.size());
+}
 
 
-template <typename T, typename MeshT, int dim>
+
+template <typename T, typename MeshT, typename std::enable_if<detail::isBasicData<T>::value, int>::type dim>
 static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
     shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(self->mesh);
     if (!mesh) return nullptr;
@@ -173,6 +212,23 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
                                 0,
                                 NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
+    return arr;
+}
+
+template <typename T, typename MeshT, typename std::enable_if<not detail::isBasicData<T>::value, int>::type dim>
+static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
+    shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(self->mesh);
+    if (!mesh) return nullptr;
+
+    std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
+
+    PyObject* arr = PyArray_SimpleNew(dims.size(), &dims.front(), NPY_OBJECT);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
+
+    PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr));
+    for (auto i = self->begin(); i < self->end(); ++i, ++arr_data)
+        *arr_data = py::incref(py::object(*i).ptr());
+
     return arr;
 }
 
@@ -378,8 +434,8 @@ static bool DataVectorWrap__eq__(const DataVectorWrap<T,dim>& vec1, const DataVe
 }
 
 template <typename T, int dim>
-void register_data_vector() {
-
+static inline py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>> register_data_vector_common()
+{
     py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>>
     data("_Data",
     "Data returned by field providers.\n\n"
@@ -452,6 +508,7 @@ void register_data_vector() {
         .def("__contains__", &DataVectorWrap_contains<const T,dim>)
         .def("__iter__", py::range(&DataVectorWrap_begin<const T,dim>, &DataVectorWrap_end<const T,dim>))
         .def("__array__", &DataVectorWrap__array__<const T,dim>, py::arg("dtype")=py::object())
+        .def("__eq__", &DataVectorWrap__eq__<const T,dim>)
         .add_property("array", &DataVectorWrap_Array<const T,dim>,
             "Array formatted by the mesh.\n\n"
 
@@ -487,6 +544,19 @@ void register_data_vector() {
             "    plask._Data: Interpolated data."
         )
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values.")
+    ;
+    data.attr("__name__") = "Data";
+    data.attr("__module__") = "plask";
+
+    return data; 
+}
+
+
+template <typename T, int dim>
+static inline typename std::enable_if<detail::isBasicData<T>::value>::type register_data_vector()
+{
+    auto data = register_data_vector_common<T,dim>();
+    data
         .def("__add__", &DataVectorWrap__add__<const T,dim>)
         .def("__sub__", &DataVectorWrap__sub__<const T,dim>)
         .def("__mul__", &DataVectorWrap__mul__<const T,dim>)
@@ -500,11 +570,15 @@ void register_data_vector() {
         // .def("__imul__", &DataVectorWrap__imul__<const T,dim>)
         // .def("__idiv__", &DataVectorWrap__idiv__<const T,dim>)
         // .def("__itruediv__", &DataVectorWrap__idiv__<const T,dim>)
-        .def("__eq__", &DataVectorWrap__eq__<const T,dim>)
     ;
-    data.attr("__name__") = "Data";
-    data.attr("__module__") = "plask";
 }
+
+template <typename T, int dim>
+static inline typename std::enable_if<not detail::isBasicData<T>::value>::type register_data_vector()
+{
+    /*auto data = */register_data_vector_common<T,dim>();
+}
+
 
 template <int dim>
 static inline void register_data_vectors_d() {
@@ -518,6 +592,8 @@ static inline void register_data_vectors_d() {
     register_data_vector<Tensor2<dcomplex>, dim>();
     register_data_vector<Tensor3<double>, dim>();
     register_data_vector<Tensor3<dcomplex>, dim>();
+    
+    register_data_vector<std::vector<double>, dim>();
 }
 
 void register_data_vectors() {
@@ -619,8 +695,16 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
 namespace python {
 
 template <typename T, int dim>
-PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(
-    const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method) {
+static inline typename std::enable_if<not detail::isBasicData<T>::value, DataVectorWrap<T,dim>>::type
+dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+{
+    throw NotImplemented("Data.interpolate for dtype {}", str(py::object(detail::dtype<T>())));
+}
+
+template <typename T, int dim>
+static inline typename std::enable_if<detail::isBasicData<T>::value, DataVectorWrap<T,dim>>::type
+dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+{
 
     if (self.mesh_changed) throw Exception("Cannot interpolate, mesh changed since data retrieval");
 
@@ -633,6 +717,14 @@ PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(
     throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
+
+template <typename T, int dim>
+PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(const DataVectorWrap<T,dim>& self,
+                                                       shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+{
+    return dataInterpolateImpl<T, dim>(self, dst_mesh, method);
+}
+
 
 }} // namespace plask::python
 

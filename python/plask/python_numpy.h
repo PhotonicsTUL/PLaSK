@@ -19,7 +19,7 @@ namespace plask { namespace python {
 // ----------------------------------------------------------------------------------------------------------------------
 // Get numpy typenums for some types
 namespace detail {
-    template <typename T> static inline constexpr int typenum();
+    template <typename T> static inline constexpr int typenum() { return NPY_OBJECT; }
     template <> inline constexpr int typenum<double>() { return NPY_DOUBLE; }
     template <> inline constexpr int typenum<dcomplex>() { return NPY_CDOUBLE; }
     template <> inline constexpr int typenum<Vec<2,double>>() { return NPY_DOUBLE; }

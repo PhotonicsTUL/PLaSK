@@ -7,18 +7,18 @@
 
 namespace plask {
 
-struct EnergyLevels;
-
 /**
  * Energy levels for electrons and holes [eV]
  */
-struct PLASK_API EnergyLevels: public MultiValueProperty<EnergyLevels> {
+struct PLASK_API EnergyLevels: public MultiFieldProperty<std::vector<double>> {
+    enum EnumType {
+        ELECTRONS,
+        HEAVY_HOLES,
+        LIGHT_HOLES
+    };
+    static constexpr size_t NUM_VALS = 3;
     static constexpr const char* NAME = "energy levels for electrons and holes";
     static constexpr const char* UNIT = "eV";
-
-    std::vector<double> electrons;
-    std::vector<double> heavy_holes;
-    std::vector<double> light_holes;
 };
 
 } // namespace plask
