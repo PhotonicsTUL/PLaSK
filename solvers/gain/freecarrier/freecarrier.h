@@ -190,7 +190,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
     /// Provider for eergy levels
-//     typename ProviderFor<EnergyLevels>::Delegate outEnergyLevels;
+    typename ProviderFor<EnergyLevels,GeometryType>::Delegate outEnergyLevels;
 
     FreeCarrierGainSolver(const std::string& name="");
 
@@ -311,7 +311,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
      * \param num active region number
      * \return energy levels for specified active region
      */
-//     const EnergyLevels getEnergyLevels(size_t num=0);
+    const LazyData<std::vector<double>> getEnergyLevels(EnergyLevels::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 

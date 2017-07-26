@@ -26,7 +26,7 @@ FreeCarrierGainSolver<GeometryType>::Level::Level(double E, const Tensor2<double
 template <typename GeometryType>
 FreeCarrierGainSolver<GeometryType>::FreeCarrierGainSolver(const std::string& name): SolverWithMesh<GeometryType, MeshAxis>(name),
     outGain(this, &FreeCarrierGainSolver<GeometryType>::getGainData),
-//     outEnergyLevels(this, &FreeCarrierGainSolver<GeometryType>::getEnergyLevels),
+    outEnergyLevels(this, &FreeCarrierGainSolver<GeometryType>::getEnergyLevels),
     lifetime(0.1),
     matrixelem(0.),
     T0(300.),
@@ -968,11 +968,13 @@ shared_ptr<GainSpectrum<GeometryType>> FreeCarrierGainSolver<GeometryType>::getG
     return make_shared<GainSpectrum<GeometryType>>(this, point);
 }
 
-// // template <typename GeometryType>
-// // const EnergyLevels FreeCarrierGainSolver<GeometryType>::getEnergyLevels(size_t num)
-// // {
-// //     this->initCalculation();
-// // }
+template <typename GeometryType>
+const LazyData<std::vector<double>> FreeCarrierGainSolver<GeometryType>::getEnergyLevels(EnergyLevels::EnumType what,
+                                                                         const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                                         InterpolationMethod interp)
+{
+    this->initCalculation();
+}
 
 
 template <> std::string FreeCarrierGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.FreeCarrier2D"; }
