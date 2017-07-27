@@ -46,7 +46,7 @@ namespace detail {
 // clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
                         std::is_trivially_default_constructible<T>()
 #else
-                        boost::has_trivial_default_constructor<T>()
+                        boost::has_trivial_default_constructor::type
 #endif
        );
     }
