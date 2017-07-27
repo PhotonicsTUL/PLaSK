@@ -216,6 +216,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         RECEIVER(inCarriersConcentration, "");
         RECEIVER(inFermiLevels, "");
         PROVIDER(outGain, "");
+        PROVIDER(outEnergyLevels, "");
         solver.def("spectrum", &__Class__::getGainSpectrum, py::arg("point"), py::with_custodian_and_ward_postcall<0,1>(),
                    u8"Get gain spectrum at given point.\n\n"
                    u8"Args:\n"

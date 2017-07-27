@@ -89,7 +89,7 @@ class TestStructureGain(unittest.TestCase):
         stack.prepend(active)
         stack.prepend(substrate)
         return geometry.Cylindrical2D(stack), active, well
-    
+
     def setUp(self):
         self.msh = mesh.Rectangular2D([0.], [1000.0100])
         self.geometry, self.active, well = self.build_geometry('Well', 'Barrier')
@@ -124,6 +124,11 @@ class TestStructureGain(unittest.TestCase):
         window_title("Band Edges")
         tight_layout(0.5)
 
+    def assertSequenceAlmostEqual(self, first, second, places=None, delta=None):
+        self.assertEqual(len(first), len(second))
+        for i in range(len(first)):
+            self.assertAlmostEqual(first[i], second[i], places=places, delta=delta)
+
     def test_gain(self):
         solver = FreeCarrierCyl("self.solver")
         solver.geometry = self.geometry
@@ -137,6 +142,19 @@ class TestStructureGain(unittest.TestCase):
         solver.inBandEdges = flow.BandEdgesProviderCyl(self.get_bands)
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
         self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+        self.assertSequenceAlmostEqual(
+            solver.outEnergyLevels('ELECTRONS', self.msh)[0],
+            [0.3337, 0.3337, 0.3337, 0.3337, 0.5259, 0.5259, 0.5263, 0.5263, 0.5979, 0.5987],
+        3)
+        self.assertSequenceAlmostEqual(
+            solver.outEnergyLevels('HEAVY_HOLES', self.msh)[0],
+            [-0.6166, -0.6166, -0.6166, -0.6166, -0.6561, -0.6561, -0.6562, -0.6562, -0.7174, -0.7174, -0.7174,
+            -0.7174, -0.7978, -0.7916, -0.7859, -0.7813, -0.7788, -0.7651, -0.7627, -0.7606, -0.7591, -0.7586],
+        3)
+        self.assertSequenceAlmostEqual(
+            solver.outEnergyLevels('LIGHT_HOLES', self.msh)[0],
+            [-0.6415, -0.6415, -0.6415, -0.6415, -0.7386, -0.7386, -0.7390, -0.7390, -0.7997, -0.7844, -0.7833],
+        3)
 
     def test_fermi_levels_receiver(self):
         solver = FreeCarrierCyl("self.solver")
@@ -148,8 +166,8 @@ class TestStructureGain(unittest.TestCase):
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)
-    instance = TestStructureGain('plot_bands')
-    instance.setUp()
-    instance.plot_bands()
-    show()
+    #instance = TestStructureGain('plot_bands')
+    #instance.setUp()
+    #instance.plot_bands()
+    #show()
     sys.exit(not test.result.wasSuccessful())

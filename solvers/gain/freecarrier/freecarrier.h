@@ -18,9 +18,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
 {
     /// Which level to compute
     enum WhichLevel: size_t {
-        EL = 0,
-        HH = 1,
-        LH = 2
+        EL = EnergyLevels::ELECTRONS,
+        HH = EnergyLevels::HEAVY_HOLES,
+        LH = EnergyLevels::LIGHT_HOLES
     };
 
     struct ActiveRegionParams;
@@ -292,9 +292,11 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
      */
     void detectActiveRegions();
 
-    struct DataBase;
+    template <typename DT> struct DataBase;
+    struct InterpolatedData;
     struct GainData;
     struct DgdnData;
+    struct EnergyLevelsData;
 
     /**
      * Compute the gain on the mesh. This method is called by gain provider.
@@ -308,10 +310,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
 
     /**
      * Compute the energy levels.
-     * \param num active region number
      * \return energy levels for specified active region
      */
-    const LazyData<std::vector<double>> getEnergyLevels(EnergyLevels::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<std::vector<double>> getEnergyLevels(EnergyLevels::EnumType which, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 

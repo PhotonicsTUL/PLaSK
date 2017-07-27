@@ -584,7 +584,7 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
                 this->writelog(LOG_DETAIL, "Estimated light hole levels for active region {:d} [eV]: {}", reg, str.str());
             }
         }
-        
+
         if (params.levels[EL].empty()) throw Exception("{}: No electron levels found", this->getId());
         if (params.levels[HH].empty() && params.levels[LH].empty()) throw Exception("{}: No hole levels found", this->getId());
     }
@@ -722,8 +722,8 @@ double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv
 static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));
 
 /// Base for lazy data implementation
-template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
+template <typename GeometryT> template <typename DT>
+struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
 {
     struct AveragedData {
         shared_ptr<const RectangularMesh<2>> mesh;
@@ -763,8 +763,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     typedef typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams ActiveRegionParams;
 
     FreeCarrierGainSolver<GeometryT>* solver;           ///< Solver
-    std::vector<shared_ptr<MeshAxis>> regpoints; ///< Points in each active region
-    std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
+    std::vector<shared_ptr<MeshAxis>> regpoints;        ///< Points in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
     void setupFromAxis(const shared_ptr<MeshAxis>& axis) {
@@ -810,44 +809,58 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     }
 
+    size_t size() const override { return dest_mesh->size(); }
+};
+
+template <typename GeometryT>
+struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGainSolver<GeometryT>::template DataBase<double>
+{
+    using typename DataBase<double>::AveragedData;
+
+    /// Computed interpolations in each active region
+    std::vector<LazyData<double>> data;
+
+    template <typename... Args>
+    InterpolatedData(Args... args): DataBase<double>(args...) {}
+
     void compute(double wavelength, InterpolationMethod interp)
     {
         // Compute gains on mesh for each active region
-        data.resize(solver->regions.size());
-        for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
-            if (regpoints[reg]->size() == 0) {
-                data[reg] = LazyData<double>(dest_mesh->size(), 0.);
+        this->data.resize(this->solver->regions.size());
+        for (size_t reg = 0; reg != this->solver->regions.size(); ++reg) {
+            if (this->regpoints[reg]->size() == 0) {
+                this->data[reg] = LazyData<double>(this->dest_mesh->size(), 0.);
                 continue;
             }
-            AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
+            AveragedData temps(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
-            temps.data = solver->inTemperature(temps.mesh, interp);
-            concs.data = solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
-            data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
-                                    getValues(wavelength, interp, reg, concs, temps), dest_mesh, interp, solver->geometry);
+            temps.data = this->solver->inTemperature(temps.mesh, interp);
+            concs.data = this->solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
+            this->data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(this->regpoints[reg], zero_axis),
+                                          getValues(wavelength, interp, reg, concs, temps),
+                                          this->dest_mesh, interp, this->solver->geometry);
         }
     }
 
     virtual DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
                                          const AveragedData& concs, const AveragedData& temps) = 0;
 
-    size_t size() const override { return dest_mesh->size(); }
-
     double at(size_t i) const override {
-        for (size_t reg = 0; reg != solver->regions.size(); ++reg)
-            if (solver->regions[reg].inQW(dest_mesh->at(i)))
-                return data[reg][i];
+        for (size_t reg = 0; reg != this->solver->regions.size(); ++reg)
+            if (this->solver->regions[reg].inQW(this->dest_mesh->at(i)))
+                return this->data[reg][i];
         return 0.;
     }
 };
 
+
 template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<GeometryT>::DataBase
+struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<GeometryT>::InterpolatedData
 {
-    using typename DataBase::AveragedData;
-    
+    using typename DataBase<double>::AveragedData;
+
     template <typename... Args>
-    GainData(Args... args): DataBase(args...) {}
+    GainData(Args... args): InterpolatedData(args...) {}
 
     DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
                                  const AveragedData& concs, const AveragedData& temps) override
@@ -900,12 +913,12 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
 };
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<GeometryT>::DataBase
+struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<GeometryT>::InterpolatedData
 {
-    using typename DataBase::AveragedData;
-    
+    using typename DataBase<double>::AveragedData;
+
     template <typename... Args>
-    DgdnData(Args... args): DataBase(args...) {}
+    DgdnData(Args... args): InterpolatedData(args...) {}
 
     DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
                                  const AveragedData& concs, const AveragedData& temps) override
@@ -941,7 +954,9 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
 
 
 template <typename GeometryType>
-const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what,
+                                                                        const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                                        double wavelength, InterpolationMethod interp)
 {
     if (what == Gain::GAIN) {
         this->initCalculation(); // This must be called before any calculation!
@@ -968,12 +983,51 @@ shared_ptr<GainSpectrum<GeometryType>> FreeCarrierGainSolver<GeometryType>::getG
     return make_shared<GainSpectrum<GeometryType>>(this, point);
 }
 
+
+template <typename GeometryT>
+struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGainSolver<GeometryT>::template DataBase<std::vector<double>>
+{
+    using typename DataBase<std::vector<double>>::AveragedData;
+
+    size_t which;
+    std::vector<LazyData<double>> temps;
+
+    EnergyLevelsData(EnergyLevels::EnumType which, FreeCarrierGainSolver<GeometryT>* solver,
+                     const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod interp):
+        DataBase<std::vector<double>>(solver, dst_mesh), which(size_t(which))
+    {
+        temps.reserve(solver->regions.size());
+        for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
+            AveragedData temp(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
+            temp.data = this->solver->inTemperature(temp.mesh, interp);
+            temps.emplace_back(interpolate(temp.mesh, DataVector<const double>(temp.data), this->dest_mesh, interp,
+                                           this->solver->geometry));
+        }
+    }
+
+    std::vector<double> at(size_t i) const override {
+        for (size_t reg = 0; reg != this->solver->regions.size(); ++reg)
+            if (this->solver->regions[reg].contains(this->dest_mesh->at(i))) {
+                double T = temps[reg][i];
+                ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
+                std::vector<double> result;
+                result.reserve(params.levels[which].size());
+                for (const auto& level: params.levels[which]) result.push_back(level.E);
+                return result;
+            }
+        return std::vector<double>();
+    }
+};
+
+
 template <typename GeometryType>
-const LazyData<std::vector<double>> FreeCarrierGainSolver<GeometryType>::getEnergyLevels(EnergyLevels::EnumType what,
+const LazyData<std::vector<double>> FreeCarrierGainSolver<GeometryType>::getEnergyLevels(EnergyLevels::EnumType which,
                                                                          const shared_ptr<const MeshD<2>>& dst_mesh,
                                                                          InterpolationMethod interp)
 {
     this->initCalculation();
+    EnergyLevelsData* data = new EnergyLevelsData(which, this, dst_mesh, getInterpolationMethod<INTERPOLATION_LINEAR>(interp));
+    return LazyData<std::vector<double>>(data);
 }
 
 

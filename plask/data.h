@@ -18,16 +18,43 @@ This file contains classes which can hold (or points to) datas.
 #include "memalloc.h"
 #include "exceptions.h"
 
+#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__) && !__GNUC__ > 4 && !(__GNUC__ == 4 && __GNUC_MINOR__ > 7)  //clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+#   include <boost/type_traits.hpp>
+#endif
+
 namespace plask {
 
 namespace detail {
 
     template <class T>
+    inline void do_construct_array(T* first, T* last, const std::false_type&) {
+        while(first != last) {
+            new(first) T();
+            ++first;
+        }
+    }
+
+    template <class T>
+    inline void do_construct_array(T*, T*, const std::true_type&) {
+    }
+
+    template <class T>
+    inline void construct_array(T* first, T* last) {
+       do_construct_array(first, last,
+#if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 7)  //clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+                        std::is_trivially_default_constructible<T>()
+#else
+                        boost::has_trivial_default_constructor<T>()
+#endif
+       );
+    }
+
+    template <class T>
     inline void do_destroy_array(T* first, T* last, const std::false_type&) {
-       while(first != last) {
-          first->~T();
-          ++first;
-       }
+        while(last != first) {
+            --last;
+            last->~T();
+        }
     }
 
     template <class T>
@@ -128,7 +155,9 @@ struct DataVector {
      * Reserve memory using aligned_malloc<T>(size) call.
      * @param size total size of the data
      */
-    explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {}
+    explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {
+        detail::construct_array(data_, data_ + size);
+    }
 
     /**
      * Create data vector with given @p size and fill all its' cells with given @p value.
@@ -346,6 +375,7 @@ struct DataVector {
         //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
         dec_ref();
         data_ = aligned_malloc<T>(size);
+        detail::construct_array(data_, data_ + size);
         gc_ = new Gc(1);
         size_ = size;
     }
