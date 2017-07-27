@@ -18,10 +18,7 @@ This file contains classes which can hold (or points to) datas.
 #include "memalloc.h"
 #include "exceptions.h"
 
-#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__) && !__GNUC__ > 4
-// clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
-#   include <boost/type_traits.hpp>
-#endif
+#include <boost/type_traits.hpp>
 
 namespace plask {
 
