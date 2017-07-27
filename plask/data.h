@@ -24,6 +24,8 @@ namespace plask {
 
 namespace detail {
 
+#if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4
+// clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
     template <class T>
     inline void do_construct_array(T* first, T* last, const std::false_type&) {
         while(first != last) {
@@ -39,14 +41,30 @@ namespace detail {
     template <class T>
     inline void construct_array(T* first, T* last) {
        do_construct_array(first, last,
-#if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4
-// clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
                         std::is_trivially_default_constructible<T>()
-#else
-                        typename boost::has_trivial_default_constructor<T>::type()
-#endif
        );
     }
+#else
+    template <class T>
+    inline void do_construct_array(T* first, T* last, const boost::false_type&) {
+        while(first != last) {
+            new(first) T();
+            ++first;
+        }
+    }
+
+    template <class T>
+    inline void do_construct_array(T*, T*, const boost::true_type&) {
+    }
+
+    template <class T>
+    inline void construct_array(T* first, T* last) {
+       do_construct_array(first, last,
+                        std::is_trivially_default_constructible<T>()
+                        typename boost::has_trivial_default_constructor<T>::type()
+       );
+    }
+#endif
 
     template <class T>
     inline void do_destroy_array(T* first, T* last, const std::false_type&) {
