@@ -40,9 +40,7 @@ namespace detail {
 
     template <class T>
     inline void construct_array(T* first, T* last) {
-       do_construct_array(first, last,
-                        std::is_trivially_default_constructible<T>()
-       );
+       do_construct_array(first, last, std::is_trivially_default_constructible<T>());
     }
 #else
     template <class T>
@@ -59,10 +57,7 @@ namespace detail {
 
     template <class T>
     inline void construct_array(T* first, T* last) {
-       do_construct_array(first, last,
-                        std::is_trivially_default_constructible<T>()
-                        typename boost::has_trivial_default_constructor<T>::type()
-       );
+       do_construct_array(first, last, typename boost::has_trivial_default_constructor<T>::type());
     }
 #endif
 
