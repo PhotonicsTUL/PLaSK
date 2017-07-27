@@ -73,12 +73,13 @@ class Well0(material.Material):
 class TestStructureGain(unittest.TestCase):
 
     def build_geometry(self, well_material, barrier_material):
-        substrate = geometry.Rectangle(20., 1000., 'GaAs')
+        substrate = geometry.Rectangle(20., 500., 'GaAs')
         substrate.role = 'substrate'
         well = geometry.Rectangle(20., 0.0060, well_material)
         well.role = 'QW'
         barrier = geometry.Rectangle(20., 0.0067, barrier_material)
         stack = geometry.Stack2D()
+        stack.prepend(substrate)
         stack.prepend(substrate)
         active = geometry.Stack2D()
         active.role = 'active'
@@ -87,6 +88,7 @@ class TestStructureGain(unittest.TestCase):
             active.prepend(well)
         active.prepend(barrier)
         stack.prepend(active)
+        stack.prepend(substrate)
         stack.prepend(substrate)
         return geometry.Cylindrical2D(stack), active, well
 
@@ -134,6 +136,8 @@ class TestStructureGain(unittest.TestCase):
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
         self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+        msh = mesh.Rectangular2D([0.], [100.])
+        self.assertEqual( len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0 )
 
     def test_band_edges_receiver(self):
         solver = FreeCarrierCyl("self.solver")
@@ -145,16 +149,16 @@ class TestStructureGain(unittest.TestCase):
         self.assertSequenceAlmostEqual(
             solver.outEnergyLevels('ELECTRONS', self.msh)[0],
             [0.3337, 0.3337, 0.3337, 0.3337, 0.5259, 0.5259, 0.5263, 0.5263, 0.5979, 0.5987],
-        3)
+        3 )
         self.assertSequenceAlmostEqual(
             solver.outEnergyLevels('HEAVY_HOLES', self.msh)[0],
             [-0.6166, -0.6166, -0.6166, -0.6166, -0.6561, -0.6561, -0.6562, -0.6562, -0.7174, -0.7174, -0.7174,
             -0.7174, -0.7978, -0.7916, -0.7859, -0.7813, -0.7788, -0.7651, -0.7627, -0.7606, -0.7591, -0.7586],
-        3)
+        3 )
         self.assertSequenceAlmostEqual(
             solver.outEnergyLevels('LIGHT_HOLES', self.msh)[0],
             [-0.6415, -0.6415, -0.6415, -0.6415, -0.7386, -0.7386, -0.7390, -0.7390, -0.7997, -0.7844, -0.7833],
-        3)
+        3 )
 
     def test_fermi_levels_receiver(self):
         solver = FreeCarrierCyl("self.solver")
