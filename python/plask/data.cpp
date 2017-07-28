@@ -657,13 +657,39 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
     }
 };
 
+
+template <>
+std::vector<double> InterpolationFlags::reflect<std::vector<double>>(int ax, std::vector<double> val) const {
+    if (sym[ax] & 14) {
+        std::vector<double> result(val);
+        for (double& r: result) r = -r;
+        return result;
+    }
+    else return val;
+}
+
+
 namespace python {
+
+#define INTERPOLATE_NEAREST(M) \
+    InterpolationAlgorithm<M<dim>, typename std::remove_const<T>::type, typename std::remove_const<T>::type, INTERPOLATION_NEAREST> \
+        ::interpolate(src_mesh, self, dst_mesh, InterpolationFlags())
 
 template <typename T, int dim>
 static inline typename std::enable_if<!detail::isBasicData<T>::value, DataVectorWrap<T,dim>>::type
 dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("Data.interpolate for dtype {}", str(py::object(detail::dtype<T>())));
+    if (method != INTERPOLATION_NEAREST)
+        writelog(LOG_WARNING, "Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
+
+    if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
+        return DataVectorWrap<T,dim>(INTERPOLATE_NEAREST(RectangularMesh), dst_mesh);
+    else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
+        return DataVectorWrap<T,dim>(INTERPOLATE_NEAREST(MeshWrap), dst_mesh);
+        // TODO add new mesh types here
+
+    throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
+                                typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
 
 template <typename T, int dim>

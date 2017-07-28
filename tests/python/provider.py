@@ -98,7 +98,7 @@ class PythonProviderTest(unittest.TestCase):
 
     def testCustomData(self):
         provider = plask.flow.TemperatureProvider2D(lambda *args: PythonProviderTest.CustomData())
-        msh = plask.mesh.Rectangular2D(numpy.arange(3), [0.])
+        msh = plask.mesh.Rectangular2D([0., 1., 2.], [0.])
         self.assertEqual( list(provider(msh)), [10., 20., 30.] )
 
 

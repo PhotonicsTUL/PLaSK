@@ -434,8 +434,7 @@ struct PythonLazyDataImpl: public LazyDataImpl<T> {
     {
         if (PyObject_HasAttrString(object.ptr(), "__len__")) {
             if (py::len(object) != len)
-                throw ValueError("Provided object has lenght {} while destination mesh has length {}",
-                                 py::len(object), len);
+                throw ValueError("Sizes of data ({}) and mesh ({}) do not match",  py::len(object), len);
         }
     }
 

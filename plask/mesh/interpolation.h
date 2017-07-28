@@ -173,7 +173,7 @@ public:
     {
         if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) {
             if (lo[0] < 0. && hi[0] > 0.)
-                throw Exception("interpolation: Symmetric geometry spans at both sides of lngitudinal axis");
+                throw Exception("interpolation: Symmetric geometry spans at both sides of longitudinal axis");
             if (!sym[0]) {
                 hi[0] = max(-lo[0], hi[0]); lo[0] = -hi[0];
             }
