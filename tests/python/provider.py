@@ -83,7 +83,7 @@ class PythonProviderTest(unittest.TestCase):
         self.binary_solver = plasktest.SimpleSolver()
         self.binary_solver.inTemperature = plask.Data(numpy.array([1., 2., 3., 4.]), plask.mesh.Rectangular2D([0., 4.], [0., 2.]))
 
-    def testAll(self):
+    def testSolver(self):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
         msh = plask.mesh.Rectangular2D(plask.mesh.Regular(0.,1., 2), plask.mesh.Regular(0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
@@ -91,6 +91,15 @@ class PythonProviderTest(unittest.TestCase):
         msh = plask.mesh.Rectangular2D([2.], [1.])
         self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
         self.assertEqual( list(self.binary_solver.inTemperature(msh, 'linear')), [2.5] )
+
+    class CustomData(object):
+        def __getitem__(self, i):
+            return 10. * (i + 1)
+
+    def testCustomData(self):
+        provider = plask.flow.TemperatureProvider2D(lambda *args: PythonProviderTest.CustomData())
+        msh = plask.mesh.Rectangular2D(numpy.arange(3), [0.])
+        self.assertEqual( list(provider(msh)), [10., 20., 30.] )
 
 
 class DataTest(unittest.TestCase):

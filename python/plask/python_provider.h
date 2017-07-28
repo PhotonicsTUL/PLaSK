@@ -225,13 +225,13 @@ namespace detail {
         typedef typename PropertyT::EnumType EnumType;
 
         typedef RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
-        
+
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             assign(self, obj);
         }
-            
+
         static void assign(ReceiverT& self, const py::object& obj) {
             if (assignMultipleValues(self, obj)) return;
             if (assignValue(self, obj)) return;
@@ -303,15 +303,15 @@ namespace detail {
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
         typedef typename PropertyT::EnumType EnumType;
-        
+
         typedef RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
-        
+
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             assign(self, obj);
         }
-            
+
         static void assign(ReceiverT& self, const py::object& obj) {
             if (assignValue(self, obj)) return;
             if (assignMultipleValues(self, obj)) return;
@@ -379,11 +379,11 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
         [this](_ExtraParams... params) -> ProvidedType {
             OmpLockGuard<OmpLock> lock(this->provider_omp_lock);
-            if (PyCallable_Check(this->function.ptr())) 
+            if (PyCallable_Check(this->function.ptr()))
                 return py::extract<ProvidedType>(this->function(params...));
             else
                 return py::extract<ProvidedType>(this->function);
-        }        
+        }
     ), function(function) {}
 
 };
@@ -423,6 +423,53 @@ DataVectorWrap<T,dim> PLASK_PYTHON_API dataInterpolate(
     const DataVectorWrap<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method);
 
 
+template <typename T>
+struct PythonLazyDataImpl: public LazyDataImpl<T> {
+
+    py::object object;
+    size_t len;
+    mutable OmpLock data_omp_lock;
+
+    PythonLazyDataImpl(const py::object& object, size_t len): object(object), len(len)
+    {
+        if (PyObject_HasAttrString(object.ptr(), "__len__")) {
+            if (py::len(object) != len)
+                throw ValueError("Provided object has lenght {} while destination mesh has length {}",
+                                 py::len(object), len);
+        }
+    }
+
+    T at(std::size_t index) const override {
+        OmpLockGuard<OmpLock> lock(data_omp_lock);
+        return py::extract<T>(object[index]);
+    }
+
+    std::size_t size() const override {
+        return len;
+    }
+
+};
+
+namespace detail {
+
+    template <typename ValueType, int dim>
+    static inline LazyData<ValueType> parseProviderReturnedValue(const py::object& value, const py::object& mesh) {
+        typedef DataVectorWrap<const ValueType, dim> VectorType;
+
+        py::extract<VectorType> data(value);
+        if (data.check()) return data();
+
+        try {
+            return py::extract<VectorType>(Data(value.ptr(), mesh))();
+        } catch (TypeError) {
+            PyErr_Clear();
+        }
+
+        return LazyData<ValueType>(new PythonLazyDataImpl<ValueType>(value, py::len(mesh)));
+    }
+
+}
+
 template <typename ProviderT, typename... _ExtraParams>
 struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
@@ -440,12 +487,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
             if (PyCallable_Check(this->function.ptr())) {
                 py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
                 py::object result = this->function(omesh, params..., method);
-                try {
-                    return py::extract<ReturnedType>(result)();
-                } catch (py::error_already_set) {
-                    PyErr_Clear();
-                    return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
-                }
+                return detail::parseProviderReturnedValue<typename ProviderT::ValueType, ProviderT::SpaceType::DIM>(result, omesh);
             } else {
                 ReturnedType data = py::extract<ReturnedType>(this->function);
                 if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -476,12 +518,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
             if (PyCallable_Check(this->function.ptr())) {
                 py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
                 py::object result = this->function(n, omesh, params..., method);
-                try {
-                    return py::extract<ReturnedType>(result)();
-                } catch (py::error_already_set) {
-                    PyErr_Clear();
-                    return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
-                }
+                return detail::parseProviderReturnedValue<typename ProviderT::ValueType, ProviderT::SpaceType::DIM>(result, omesh);
             } else {
                 ReturnedType data = py::extract<ReturnedType>(this->function[n]);
                 if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
