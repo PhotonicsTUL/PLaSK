@@ -31,18 +31,56 @@ class AfterBracketCompleter(QCompleter):
 
         lst = text.rsplit('{', 1)
         if len(lst) > 1:
-            path = '%s{%s}' % (lst[0], path)
-        else:
-            path = '{%s}' % path
+            path = '%s%s' % (lst[0], path)
 
         return path
 
     def splitPath(self, path):
-        path = path.rsplit('{', 1)[-1].lstrip(' ')
-        return [path]
+        path = path.rsplit('{', 1)
+        if len(path) > 1:
+            return ['{'+path[-1].lstrip(' ')]
+        elif isinstance(path, (list, tuple)):
+            return path
+        else:
+            return [path]
 
 
-def get_defines_completer(model, parent):
+class DefinesModelForCompleter(QAbstractTableModel):
+
+    def __init__(self, model, parent=None, strings=None):
+        super(DefinesModelForCompleter, self).__init__(parent)
+        self.strings = [] if strings is None else strings
+        self.defines = model
+
+    def data(self, index, role=Qt.EditRole):
+        col = index.column()
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            ls = len(self.strings)
+            if index.row() < ls:
+                if col == 0:
+                    return self.strings[index.row()]
+                else:
+                    return None
+            else:
+                if col == 0:
+                    return '{{{}}}'.format(self.defines.get(0, index.row()-ls))
+                else:
+                    return self.defines.get(col, index.row()-ls)
+        elif role == Qt.ForegroundRole and col != 0:
+            return QColor(Qt.gray)
+
+    def columnCount(self, parent=QModelIndex()):
+        return 2
+
+    def rowCount(self, parent=QModelIndex()):
+        if parent.isValid(): return 0
+        return len(self.strings) + len(self.defines.entries)
+
+
+def get_defines_completer(model, parent, strings=None):
+    if isinstance(model, QCompleter): model = model.model()
+    if isinstance(model, DefinesModelForCompleter): model = model.defines
+    model = DefinesModelForCompleter(model, parent, strings)
     completer = AfterBracketCompleter(model, parent)
     completer.setModel(model)  # PySide needs this
     tab = QTableView(parent)

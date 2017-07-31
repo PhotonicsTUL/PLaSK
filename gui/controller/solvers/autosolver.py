@@ -21,7 +21,8 @@ from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.autosolver import SchemaTag, AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.autosolver import SchemaTag,\
+    AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
 from . import Controller
@@ -136,7 +137,8 @@ class SolverAutoWidget(VerticalScrollArea):
             edit.addItems([''] + list(attr.choices))
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
                                          self._change_attr(group, name, edit.currentText(), attr))
-            edit.setCompleter(defines)
+            completer = get_defines_completer(defines, edit, strings=attr.choices)
+            edit.setCompleter(completer)
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
         elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath)):

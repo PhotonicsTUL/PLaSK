@@ -59,9 +59,18 @@
 
     <tag name="interface" label="Matching Interface Position in the Stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
-      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
-      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
+      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
+        <conflicts attr="position"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
+      </attr>
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
@@ -233,32 +242,69 @@
 
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
-      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
-      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
-      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
+        <conflicts attr="position"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
+      </attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.
+      </attr>
     </tag>
 
     <tag name="pmls" label="Longitudinal and Transverse PMLs">
       Side absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
-      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm" default="0.500">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm" default="1.000">PML size.</attr>
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.
+        <conflicts tag="pmls/long" attr="factor"/>
+        <conflicts tag="pmls/tran" attr="factor"/>
+      </attr>
+      <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+        <conflicts tag="pmls/long" attr="shape"/>
+        <conflicts tag="pmls/tran" attr="shape"/>
+      </attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="0.500">PML distance from the structure.
+        <conflicts tag="pmls/long" attr="dist"/>
+        <conflicts tag="pmls/tran" attr="dist"/>
+      </attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="1.000">PML size.
+        <conflicts tag="pmls/long" attr="size"/>
+        <conflicts tag="pmls/tran" attr="size"/>
+      </attr>
       <tag name="long" label="Longitudinal PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
-        <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-        <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
-      </tag>attr.getparent()
-
+        <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.
+          <conflicts tag="pmls" attr="factor"/>
+        </attr>
+        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+          <conflicts tag="shape" attr="factor"/>
+        </attr>
+        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.
+          <conflicts tag="dist" attr="factor"/>
+        </attr>
+        <attr name="size" label="Size" type="float" unit="µm">PML size.
+          <conflicts tag="size" attr="factor"/>
+        </attr>
+      </tag>
       <tag name="tran" label="Transverse PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
-        <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.</attr>
-        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
-        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.</attr>
-        <attr name="size" label="Size" type="float" unit="µm">PML size.</attr>
+        <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.
+          <conflicts tag="pmls" attr="factor"/>
+        </attr>
+        <attr name="shape" label="Shape order" type="float">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+          <conflicts tag="shape" attr="factor"/>
+        </attr>
+        <attr name="dist" label="Distance" type="float" unit="µm">PML distance from the structure.
+          <conflicts tag="dist" attr="factor"/>
+        </attr>
+        <attr name="size" label="Size" type="float" unit="µm">PML size.
+          <conflicts tag="size" attr="factor"/>
+        </attr>
       </tag>
     </tag>
 
@@ -269,8 +315,7 @@
       <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
-    <tag name="transfer" label="Transattr.getparent()
-fer Algorithm Settings">
+    <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice" default="auto">
         Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic, in which case the reflection computations will use reflection transfer and eigenmode search is done with admittance transfer.
@@ -348,7 +393,7 @@ fer Algorithm Settings">
         <choice>uniform</choice>
         <choice>laguerre</choice>
       </attr>
-      <attr name="k-scale" label="Wavevectors scaling" type="double" default="10">
+      <attr name="k-scale" label="Wavevectors scaling" type="float" default="10">
         Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and
         divided by the geometry width it is a maximum considered wavevector.
       </attr>
@@ -356,9 +401,18 @@ fer Algorithm Settings">
 
     <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
       Matching interface position in the stack.
-      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.</attr>
-      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.</attr>
-      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.</attr>
+      <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
+        <conflicts attr="position"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="object"/>
+      </attr>
+      <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
+      </attr>
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 

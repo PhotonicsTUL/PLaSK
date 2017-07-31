@@ -70,11 +70,11 @@
 
   <xs:element name="tag">
     <xs:complexType mixed="true">
-      <xs:sequence>
+      <xs:choice maxOccurs="unbounded">
         <xs:element ref="attr" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="tag" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="group" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
+      </xs:choice>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="label" type="xs:string" use="required"/>
     </xs:complexType>
