@@ -354,7 +354,8 @@ class MaterialsModel(TableModel):
                         properties.append((prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
-                    alloy = mat_attrib.get('alloy', False)
+                    alloy = mat_attrib.get('complex', False)  #TODO remove soon
+                    alloy = mat_attrib.get('alloy', alloy)
                     new_entries.append(MaterialsModel.Material(self, mat_attrib.get('name', ''),
                                                                base, properties, alloy))
             elif mat.tag in ('library', 'module'):

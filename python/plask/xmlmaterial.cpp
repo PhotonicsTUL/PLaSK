@@ -275,6 +275,13 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string base_name = reader.requireAttribute("base");
     bool alloy = reader.getAttribute<bool>("alloy", false);
 
+    //TODO Remove soon
+    if (reader.hasAttribute("complex")) {
+        if (reader.hasAttribute("alloy")) throw XMLException(reader, "Obsolete 'complex' attribute now allowed if 'alloy' is specified");
+        alloy = reader.getAttribute<bool>("complex", false);
+        writelog(LOG_WARNING, "XML line {} in <material>: attribute 'complex' is obsolete, use 'alloy' instead", reader.getLineNr());
+    }
+
     shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
     constructor->self = constructor;
 
