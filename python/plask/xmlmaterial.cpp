@@ -273,9 +273,9 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string material_name = reader.requireAttribute("name");
     std::string base_name = reader.requireAttribute("base");
-    bool complex = reader.getAttribute<bool>("complex", false);
+    bool alloy = reader.getAttribute<bool>("alloy", false);
 
-    shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, complex);
+    shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
     constructor->self = constructor;
 
     auto trim = [](const char* s) -> const char* {
@@ -392,7 +392,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 
-    if (complex)
+    if (alloy)
         materialsDB.addComplex(constructor);
     else
         materialsDB.addSimple(constructor);

@@ -19,7 +19,7 @@
     <A>0.1 * T + 0.02 * (T-300)**2</A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
   </material>
-  <material name="InGaAs_QW:Si" base="InGaAs:Si" complex="yes">
+  <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
     <nr>3.621</nr>
     <absp>0</absp>
     <A>110000000</A>

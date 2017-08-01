@@ -253,7 +253,7 @@ class MaterialsModel(TableModel):
         def add_to_xml(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
-            if self.cplx: mat.attrib['complex'] = 'yes'
+            if self.cplx: mat.attrib['alloy'] = 'yes'
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
 
@@ -354,9 +354,9 @@ class MaterialsModel(TableModel):
                         properties.append((prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
-                    cplx = mat_attrib.get('complex', False)
+                    alloy = mat_attrib.get('alloy', False)
                     new_entries.append(MaterialsModel.Material(self, mat_attrib.get('name', ''),
-                                                               base, properties, cplx))
+                                                               base, properties, alloy))
             elif mat.tag in ('library', 'module'):
                 new_entries.append(MaterialsModel.External(self, mat.tag, mat.attrib.get('name', '')))
         self._set_entries(new_entries, undoable)
@@ -385,9 +385,9 @@ class MaterialsModel(TableModel):
             if role == Qt.UserRole:
                 return True
             if role == Qt.ToolTipRole:
-                return "Check this box if material is complex (i.e. material, which you can specify composition of).\n" \
-                       "Its name must then consist of compound elements symbols with optional label and dopant, " \
-                       "separated by '_' and ':' respectively"
+                return "Check this box if material is a generic alloy (i.e. alloy material, which you can specify " \
+                       "composition of).\nIts name must then consist of compound elements symbols with optional "\
+                       "label and dopant, separated by '_' and ':' respectively"
         return super(MaterialsModel, self).data(index, role)
 
     def flags(self, index):

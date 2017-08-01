@@ -315,7 +315,7 @@ class SourceWidget(QWidget):
                 return False
             else:
                 self.editor.setTextCursor(found)
-                pal.setColor(QPalette.Base, QColorSCHEME("#dfd"))
+                pal.setColor(QPalette.Base, QColor("#dfd"))
                 self.find_edit.setPalette(pal)
                 self._highlight_matches()
                 return True
