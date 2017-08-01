@@ -80,16 +80,21 @@ LicenseVerifier::LicenseVerifier() {
     //SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, home);        // Vista+
     try_load_license(std::string(home) + "\\plask_license.xml")  ||
     try_load_license(std::string(home) + "\\plask\\license.xml")  ||
+    try_load_license(std::string(home) + "\\plask\\plask_license.xml")  ||
 #else
 #   define V "/"
     char* home = getenv("HOME");
     try_load_license(std::string(home) + "/.plask_license.xml")  ||
     try_load_license(std::string(home) + "/.plask/license.xml")  ||
+    try_load_license(std::string(home) + "/.plask/plask_license.xml")  ||
+    try_load_license(std::string(home) + "/.config/plask/license.xml")  ||
+    try_load_license(std::string(home) + "/.config/plask/plask_license.xml")  ||
     try_load_license("/etc/plask_license.xml")  ||
     try_load_license("/etc/plask/license.xml")  ||
+    try_load_license("/etc/plask/plask_license.xml")  ||
 #endif
     try_load_license(prefixPath() + V "plask_license.xml") ||
-    try_load_license(prefixPath() + V "etc" V "license.xml");
+    try_load_license(prefixPath() + V "etc" V "plask_license.xml");
     readData();
 }
 

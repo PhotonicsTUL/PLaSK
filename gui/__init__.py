@@ -18,6 +18,7 @@ import subprocess
 import pkgutil
 import webbrowser
 from datetime import datetime
+from lxml import etree
 from uuid import getnode
 
 if __name__ == '__main__':
@@ -239,13 +240,17 @@ class MainWindow(QMainWindow):
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
-        about_action = QAction(QIcon.fromTheme('dialog-information'), 'A&bout..', self)
+        about_action = QAction(QIcon.fromTheme('dialog-information'), 'A&bout...', self)
         about_action.setStatusTip('Show information about PLaSK')
         about_action.triggered.connect(self.about)
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
         help_action.triggered.connect(self.open_help)
+
+        install_license_action = QAction('Install License...', self)
+        install_license_action.setStatusTip('Install PLaSK license file into a proper location')
+        install_license_action.triggered.connect(self.install_license)
 
         exit_action = QAction(QIcon.fromTheme('application-exit'), 'E&xit', self)
         exit_action.setShortcut(QKeySequence.Quit)
@@ -285,6 +290,7 @@ class MainWindow(QMainWindow):
                 self.menu.addAction(op(self))
             else:
                 self.menu.addSeparator()
+        self.menu.addAction(install_license_action)
         self._pysparkle_place = self.menu.addSeparator()
         self.menu.addAction(settings_action)
         self.menu.addSeparator()
@@ -676,7 +682,7 @@ class MainWindow(QMainWindow):
         if user:
             try: user = user.decode('utf8')
             except AttributeError: pass
-            institution = LICENSE.get('institution')
+            institution = LICENSE.get('institution', '')
             if institution:
                 try: institution = institution.decode('utf8')
                 except AttributeError: pass
@@ -699,6 +705,57 @@ class MainWindow(QMainWindow):
         msgbox.adjustSize()
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
         msgbox.exec_()
+
+    def install_license(self):
+        filename = QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
+                                               "PLaSK license file (plask_license.xml)")
+        if type(filename) == tuple: filename = filename[0]
+        if not filename: return
+        from shutil import copy
+        dest = os.path.expanduser("~\\plask_license.xml") if os.name == 'nt' else \
+               os.path.expanduser("~/.plask_license.xml")
+        if os.path.lexists(dest):
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("License Exists")
+            msgbox.setText("The license file '{}' already exists. Do you want to replace it?".format(dest))
+            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msgbox.setIcon(QMessageBox.Question)
+            answer = msgbox.exec_()
+            if answer == QMessageBox.No: return
+        try:
+            copy(filename, dest)
+        except Exception as err:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("License Install Error")
+            msgbox.setText("The license file '{}' could not be installed.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.exec_()
+        else:
+            dom = etree.parse(filename)
+            root = dom.getroot()
+            xns = root.nsmap.get(None, '')
+            if xns: xns = '{' + xns + '}'
+            if root.tag != xns+'license': return
+            data = root.find(xns+'data')
+            name = data.find('name')
+            if name is not None: name = name.text
+            email = data.find('email')
+            if email is not None:
+                if name is None: LICENSE['user'] = email.text
+                else: LICENSE['user'] = (name + " <" + email.text + ">").encode('utf8')
+            institution = data.find('institution')
+            if institution is not None:
+                LICENSE['institution'] = institution.text.encode('utf8')
+            else:
+                del LICENSE['institution']
+            expiry = data.find('expiry')
+            if institution is not None:
+                LICENSE['date'] = expiry.text.encode('utf8')
+            else:
+                del LICENSE['date']
+            self.about()
 
 
 class GotoDialog(QDialog):
@@ -779,7 +836,7 @@ else:
         LICENSE = plask.license
     except AttributeError:
         LICENSE = dict(user='', date='')
-if 'systemid' not in LICENSE:
+if 'systemid' not in LICENSE or not LICENSE['systemid']:
     LICENSE['systemid'] = "{:X}".format(getnode())
 
 

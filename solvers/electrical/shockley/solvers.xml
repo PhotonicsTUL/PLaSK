@@ -100,8 +100,12 @@
     <bcond name="voltage" label="Voltage"/>
 
     <flow>
+      <receiver name="inWavelength"/>
       <receiver name="inTemperature"/>
+      <provider name="outVoltage"/>
       <provider name="outCurrentDensity"/>
+      <provider name="outHeat"/>
+      <provider name="outConductivity"/>
     </flow>
   </solver>
 
@@ -152,8 +156,12 @@
     <bcond name="voltage" label="Voltage"/>
 
     <flow>
+      <receiver name="inWavelength"/>
       <receiver name="inTemperature"/>
+      <provider name="outVoltage"/>
       <provider name="outCurrentDensity"/>
+      <provider name="outHeat"/>
+      <provider name="outConductivity"/>
     </flow>
   </solver>
 
