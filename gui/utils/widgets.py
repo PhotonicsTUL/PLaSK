@@ -285,13 +285,14 @@ class ComboBox(QComboBox):
 
     editingFinished = QtSignal()
 
-    #Please do not mix this two signals!
-    #currentIndexChanged is also emitted from very unexpected places like addItems, which ruins some my code (in Solver undo)
-    #Instead, just connect to both: editingFinished and currentIndexChanged
-    #PB
-    #def __init__(self, *args, **kwargs):
-    #    super(ComboBox, self).__init__(*args, **kwargs)
-    #    self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
+    # Please do not mix this two signals!
+    # currentIndexChanged is also emitted from very unexpected places like addItems,
+    #  which ruins some my code (in Solver undo)
+    # Instead, just connect to both: editingFinished and currentIndexChanged
+    # PB
+    # def __init__(self, *args, **kwargs):
+    #     super(ComboBox, self).__init__(*args, **kwargs)
+    #     self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
 
     def focusOutEvent(self, event):
         if not self.signalsBlocked(): self.editingFinished.emit()

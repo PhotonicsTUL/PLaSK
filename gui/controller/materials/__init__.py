@@ -149,7 +149,7 @@ class MaterialsComboBox(QComboBox):
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
-        if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent))
+        if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent, material_list))
         if material_list:
             self.addItems(material_list)
             self.setMaxVisibleItems(len(material_list))
@@ -431,7 +431,7 @@ class MaterialsController(Controller):
             row = self.model.insert(value=MaterialsModel.External(self.model, what))
         if row is not None: self.materials_table.selectRow(row)
 
-    def material_selected(self, new_selection, old_selection):
+    def material_selected(self, new_selection, old_selection=None):
         self.propedit.hide()
         indexes = new_selection.indexes()
         if self.selected_material is not None:
@@ -487,6 +487,11 @@ class MaterialsController(Controller):
         return self.splitter
 
     def on_edit_enter(self):
+        try:
+            row = self.model.entries.index(self.selected_material)
+            self.materials_table.selectRow(row)
+        except (ValueError, AttributeError):
+            self.materials_table.selectRow(0)
         self.materials_table.setFocus()
 
     def select_info(self, info):

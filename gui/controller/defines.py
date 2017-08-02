@@ -45,10 +45,10 @@ class AfterBracketCompleter(QCompleter):
             return [path]
 
 
-class DefinesModelForCompleter(QAbstractTableModel):
+class DefinesCompleterModel(QAbstractTableModel):
 
     def __init__(self, model, parent=None, strings=None):
-        super(DefinesModelForCompleter, self).__init__(parent)
+        super(DefinesCompleterModel, self).__init__(parent)
         self.strings = [] if strings is None else strings
         self.defines = model
 
@@ -66,7 +66,7 @@ class DefinesModelForCompleter(QAbstractTableModel):
                     return '{{{}}}'.format(self.defines.get(0, index.row()-ls))
                 else:
                     return self.defines.get(col, index.row()-ls)
-        elif role == Qt.ForegroundRole and col != 0:
+        elif role in (Qt.TextColorRole, Qt.ForegroundRole) and col != 0:
             return QColor(Qt.gray)
 
     def columnCount(self, parent=QModelIndex()):
@@ -76,11 +76,16 @@ class DefinesModelForCompleter(QAbstractTableModel):
         if parent.isValid(): return 0
         return len(self.strings) + len(self.defines.entries)
 
+    def headerData(self, col, orientation, role):
+        return self.defines.headerData(col, orientation, role)
+
 
 def get_defines_completer(model, parent, strings=None):
     if isinstance(model, QCompleter): model = model.model()
-    if isinstance(model, DefinesModelForCompleter): model = model.defines
-    model = DefinesModelForCompleter(model, parent, strings)
+    if isinstance(model, DefinesCompleterModel): model = model.defines
+    if strings is None and isinstance(parent, QComboBox):
+        strings = [parent.itemText(i) for i in range(parent.count())]
+    model = DefinesCompleterModel(model, parent, strings)
     completer = AfterBracketCompleter(model, parent)
     completer.setModel(model)  # PySide needs this
     tab = QTableView(parent)
@@ -105,40 +110,11 @@ def get_defines_completer(model, parent, strings=None):
     return completer
 
 
-class DefineHintsTableModel(QAbstractTableModel):
-
-    def __init__(self, defines_model, parent=None, *args):
-        QAbstractTableModel.__init__(self, parent, *args)   #QObject.parent(defines_model)
-        self.model = defines_model
-
-    def rowCount(self, parent=QModelIndex()):
-        return self.model.rowCount(parent)
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid() and index.column() == 1:
-            if role == Qt.FontRole:
-                font = QFont()
-                font.setItalic(True)
-                return font
-            if role == Qt.TextColorRole:
-                return QColor(90, 90, 90) #QColor(Qt.blue)
-        return self.model.data(index, role)
-
-    #def flags(self, index):
-    #    return super(DefineHintsTableModel, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
-
-    def columnCount(self, parent=QModelIndex()):
-        return 2
-
-    def headerData(self, col, orientation, role):
-        return self.model.headerData(col, orientation, role)
-
-
 class DefinesCompletionDelegate(QStyledItemDelegate):
 
     def __init__(self, model, parent):
         QStyledItemDelegate.__init__(self, parent)
-        self.model = DefineHintsTableModel(model, parent)
+        self.model = DefinesCompleterModel(model, parent)
         #self.model = model
 
     def createEditor(self, parent, option, index):

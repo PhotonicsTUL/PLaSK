@@ -255,7 +255,8 @@ class MaterialsModel(TableModel):
             if self.base: mat.attrib['base'] = self.base
             if self.cplx: mat.attrib['alloy'] = 'yes'
             for (n, v) in self.properties:
-                ElementTree.SubElement(mat, n).text = v
+                if n:
+                    ElementTree.SubElement(mat, n).text = v
 
         def rowCount(self, parent=QModelIndex()):
             if parent.isValid(): return 0

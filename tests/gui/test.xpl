@@ -28,7 +28,6 @@
     <D>10+0.016670*(T-300)</D>
   </material>
   <material name="name" base="semiconductor"/>
-  <material name="name2" base="semiconductor"/>
   <module name="mats"/>
 </materials>
 

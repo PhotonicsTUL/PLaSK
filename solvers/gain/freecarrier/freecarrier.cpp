@@ -765,6 +765,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
     FreeCarrierGainSolver<GeometryT>* solver;           ///< Solver
     std::vector<shared_ptr<MeshAxis>> regpoints;        ///< Points in each active region
     shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
+    InterpolationFlags interpolation_flags;             ///< Interpolation flags
 
     void setupFromAxis(const shared_ptr<MeshAxis>& axis) {
         regpoints.reserve(solver->regions.size());
@@ -785,7 +786,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
     }
 
     DataBase(FreeCarrierGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-        solver(solver), dest_mesh(dst_mesh)
+        solver(solver), dest_mesh(dst_mesh), interpolation_flags(solver->geometry)
     {
         // Create horizontal points lists
         if (solver->mesh) {
@@ -838,7 +839,7 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
             concs.data = this->solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
             this->data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(this->regpoints[reg], zero_axis),
                                           getValues(wavelength, interp, reg, concs, temps),
-                                          this->dest_mesh, interp, this->solver->geometry);
+                                          this->dest_mesh, interp, this->interpolation_flags);
         }
     }
 
@@ -847,7 +848,7 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
 
     double at(size_t i) const override {
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg)
-            if (this->solver->regions[reg].inQW(this->dest_mesh->at(i)))
+            if (this->solver->regions[reg].inQW(this->interpolation_flags.wrap(this->dest_mesh->at(i))))
                 return this->data[reg][i];
         return 0.;
     }
@@ -1007,7 +1008,7 @@ struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGai
 
     std::vector<double> at(size_t i) const override {
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg)
-            if (this->solver->regions[reg].contains(this->dest_mesh->at(i))) {
+            if (this->solver->regions[reg].contains(this->interpolation_flags.wrap(this->dest_mesh->at(i)))) {
                 double T = temps[reg][i];
                 ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                 std::vector<double> result;
