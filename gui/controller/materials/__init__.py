@@ -149,7 +149,8 @@ class MaterialsComboBox(QComboBox):
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
-        if defines_model is not None: self.setCompleter(get_defines_completer(defines_model, parent, material_list))
+        if defines_model is not None:
+            self.setCompleter(get_defines_completer(defines_model, parent, material_list))
         if material_list:
             self.addItems(material_list)
             self.setMaxVisibleItems(len(material_list))
@@ -178,7 +179,8 @@ class MaterialsComboBox(QComboBox):
             self.addItems(list_to_append)
 
     def append_materials_from_model(self, material_model, insert_separator=True):
-        self.append_list([e.name for e in material_model.entries], insert_separator)
+        self.append_list([e.name for e in material_model.entries if isinstance(e, MaterialsModel.Material)],
+                         insert_separator)
 
     def append_materials_from_db(self, db=None, insert_separator=True):
         self.append_list([m for m in sorted(db if db is not None else plask.material.db, key=lambda x: x.lower())

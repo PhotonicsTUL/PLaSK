@@ -169,6 +169,7 @@ class GNodeController(Controller):
         res.append_list(items)
         res.append_materials_from_model(self.document.materials.model)
         res.append_materials_from_db()
+        res.setCompleter(get_defines_completer(self.document.defines.model, res))
         res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
