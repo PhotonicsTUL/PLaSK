@@ -18,11 +18,14 @@ import os
 import re
 from stat import S_ISDIR
 
+import select
+
 from gui.qt.QtCore import Qt, QThread, QMutex
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
 from gui.launch.dock import OutputWindow
+
 
 try:
     import cPickle as pickle
@@ -108,6 +111,11 @@ else:
     except ImportError:
         from io import BytesIO
 
+    try:
+        import Xlib.support.connect as xlib_connect
+    except ImportError:
+        xlib_connect = None
+
     def hexlify(data):
         if isinstance(data, str):
             return ':'.join('{:02x}'.format(ord(d)) for d in data)
@@ -126,26 +134,26 @@ else:
         except ValueError:
             return default
 
+    X11_DEFAULT = False if os.name == 'nt' else True
 
     class Account(object):
         """
         Base class for account data.
         """
 
-        def __init__(self, name, userhost=None, port=22, program='', color=None, compress=None, directories=None):
+        def __init__(self, name, userhost=None, port=22, program='', x11=None, directories=None):
             self.name = name
             self.userhost = userhost
             self.port = _parse_int(port, 22)
             self.program = program
-            self.compress = _parse_bool(compress, True)
-            self._widget = None
+            self.x11 = _parse_bool(x11, X11_DEFAULT)
             self.directories = {} if directories is None else directories
 
         def update(self, source):
             self.userhost = source.userhost
             self.port = source.port
             self.program = source.program
-            self.compress = source.compress
+            self.x11 = source.x11
 
         @classmethod
         def load(cls, name, config):
@@ -155,10 +163,15 @@ else:
                     kwargs['directories'] = pickle.loads(CONFIG.get('directories', b'N.').encode())
                 except (pickle.PickleError, EOFError):
                     del kwargs['directories']
+            if 'compress' in kwargs:
+                del kwargs['compress']
+                del CONFIG['launcher_remote/accounts/{}/directories'.format(name)]
+                CONFIG.sync()
+
             return cls(name, **kwargs)
 
         def save(self):
-            return dict(userhost=self.userhost, port=self.port, program=self.program, compress=int(self.compress))
+            return dict(userhost=self.userhost, port=self.port, program=self.program, x11=int(self.x11))
 
         def save_params(self):
             key = 'launcher_remote/accounts/{}/directories'.format(self.name)
@@ -223,17 +236,17 @@ else:
                 layout.addRow("&Command:", self.program_edit)
                 self._advanced_widgets.append(self.program_edit)
 
-                self.compress_checkbox = QCheckBox()
-                self.compress_checkbox.setToolTip(
-                    "Compress script on sending to the batch system. This can make the scripts\n"
-                    "stored in batch system queues smaller, however, it may be harder to track\n"
-                    "possible errors.")
-                if account is not None:
-                    self.compress_checkbox.setChecked(account.compress)
-                else:
-                    self.compress_checkbox.setChecked(True)
-                layout.addRow("Compr&ess Script:", self.compress_checkbox)
-                self._advanced_widgets.append(self.compress_checkbox)
+                if xlib_connect is not None:
+                    self.x11_checkbox = QCheckBox()
+                    self.x11_checkbox.setToolTip(
+                        "Enable X11 forwarding. This allows to see graphical output from remote jobs, but requires "
+                        "a working X server. If you do not know what this means, leave the box unchanged.")
+                    if account is not None:
+                        self.x11_checkbox.setChecked(account.x11)
+                    else:
+                        self.x11_checkbox.setChecked(True)
+                    layout.addRow("&X11 Forwarding:", self.x11_checkbox)
+                    self._advanced_widgets.append(self.x11_checkbox)
 
                 self._set_rows_visibility(self._advanced_widgets, False)
 
@@ -292,8 +305,8 @@ else:
                 return self.port_input.value()
 
             @property
-            def compress(self):
-                return self.compress_checkbox.isChecked()
+            def x11(self):
+                return self.x11_checkbox.isChecked()
 
             @property
             def program(self):
@@ -302,37 +315,61 @@ else:
 
     class RemotePlaskThread(QThread):
 
-        def __init__(self, ssh, account, fname, dock, mutex, main_window, args, defs):
+        def x11_handler(self, channel, addrs):
+            src_addr, src_port = addrs
+            x11_fileno = channel.fileno()
+            local_x11_channel = xlib_connect.get_socket(*self.local_x11_display[:3])
+            local_x11_fileno = local_x11_channel.fileno()
+
+            # Register both x11 and local_x11 channels
+            self.x11_channels[x11_fileno] = channel, local_x11_channel
+            self.x11_channels[local_x11_fileno] = local_x11_channel, channel
+
+            self.poller.register(x11_fileno, select.POLLIN)
+            self.poller.register(local_x11_fileno, select.POLLIN)
+
+            self.transport._queue_incoming_channel(channel)
+
+        def __init__(self, ssh, account, fname, workdir, dock, mutex, main_window, args, defs):
             super(RemotePlaskThread, self).__init__()
             self.main_window = main_window
             document = main_window.document
 
             command = account.program or 'plask'
 
-            command_line = "{unzip}{cmd} -{ft} -ldebug {defs} -:{fname} {args}".format(
-                unzip="base64 -d | gunzip | " if account.compress else "",
+            command_line = "cd {dir}; {cmd} -{ft} -ldebug {defs} -:{fname} {args}".format(
+                dir=quote(workdir),
                 cmd=command,
                 fname=fname,
                 defs=' '.join(quote(d) for d in defs), args=' '.join(quote(a) for a in args),
                 ft='x' if isinstance(main_window.document, XPLDocument) else 'p')
 
             self.ssh = ssh
-            channel = ssh.get_transport().open_session()
-            channel.set_combine_stderr(True)
-            # channel.get_pty()
-            channel.exec_command(command_line)
-            stdin = channel.makefile('wb')
-            self.stdout = channel.makefile('rb')
+            self.transport = ssh.get_transport()
+            self.transport.set_keepalive(1)
+            self.session = self.transport.open_session()
+            self.session.set_combine_stderr(True)
+            # self.session.get_pty()
 
-            if account.compress:
-                gzipped = BytesIO()
-                with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
-                    gzip.write(document.get_content().encode('utf8'))
-                stdin.write(base64(gzipped.getvalue()).decode('ascii'))
-            else:
-                stdin.write(document.get_content())
+            self.poller = select.poll()
+            self.session_fileno = self.session.fileno()
+            self.poller.register(self.session_fileno)
+
+            self.x11_channels = {}
+            x11 = account.x11 and xlib_connect is not None
+            if x11:
+                self.local_x11_display = xlib_connect.get_display(os.environ['DISPLAY'])
+                self.session.request_x11(handler=self.x11_handler)
+
+            self.session.exec_command(command_line)
+
+            stdin = self.session.makefile('wb')
+            stdin.write(document.get_content())
             stdin.flush()
-            stdin.channel.shutdown_write()
+            self.session.shutdown_write()
+
+            if x11:
+                self.transport.accept()
 
             fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
             sep = os.path.sep
@@ -354,16 +391,42 @@ else:
             self.main_window.closed.disconnect(self.kill_process)
 
         def run(self):
-            while not self.stdout.channel.exit_status_ready():
-                line = self.stdout.readline().rstrip()
-                self.dock.parse_line(line, self.link)
-            out = self.stdout.read()
-            for line in out.splitlines():
-                self.dock.parse_line(line, self.link)
+            data = ''
+            while not self.session.exit_status_ready():
+                poll = self.poller.poll()
+                # if not poll:  # this should not happen, as we don't have a timeout.
+                #     break
+                for fd, event in poll:
+                    if fd == self.session_fileno:
+                        data = self.receive(data)
+                    elif fd in self.x11_channels:
+                        # data either on local/remote x11 channels/sockets
+                        sender, receiver = self.x11_channels[fd]
+                        # try:
+                        receiver.sendall(sender.recv(4096))
+                        # except:
+                        #     sender.close()
+                        #     receiver.close()
+                        #     self.x11_channels.remove(fd)
+            self.receive(data)
+
+        def receive(self, data):
+            while self.session.recv_ready():
+                data += self.session.recv(4096)
+                if data:
+                    lines = data.splitlines()
+                    if data[-1] != '\n':
+                        data = lines[-1]
+                        del lines[-1]
+                    else:
+                        data = ''
+                    for line in lines:
+                        self.dock.parse_line(line, self.link)
+            return data
 
         def kill_process(self):
             try:
-                self.stdout.channel.close()
+                self.session.close()
             except paramiko.SSHException:
                 pass
 
@@ -691,7 +754,6 @@ else:
                 _, stdout, _ = ssh.exec_command("pwd")
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
-            ssh.exec_command("cd {}".format(quote(workdir)))
 
             self.mutex = QMutex()
 
@@ -707,7 +769,7 @@ else:
                 dock.show()
                 dock.raise_()
 
-            dock.thread = RemotePlaskThread(ssh, account, filename, dock, self.mutex, main_window, args, defs)
+            dock.thread = RemotePlaskThread(ssh, account, filename, workdir, dock, self.mutex, main_window, args, defs)
             dock.thread.finished.connect(dock.thread_finished)
             dock.thread.start()
 

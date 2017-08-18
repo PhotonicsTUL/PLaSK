@@ -303,6 +303,11 @@
 </connects>
 
 <script><![CDATA[
+print_log('info', "START")
+
+# figure()
+# show()
+
 from scipy import optimize
 import sys
 
