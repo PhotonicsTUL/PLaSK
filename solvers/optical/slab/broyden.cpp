@@ -147,7 +147,7 @@ dcomplex RootBroyden::Broyden(dcomplex x)
 
         // compute p = - B**(-1) * F
         double M = real(Br)*imag(Bi) - imag(Br)*real(Bi);
-        if (M == 0) throw ComputationError(solver.getId(), "Broyden matrix singular");
+        if (M == 0) throw ComputationError(solver.getId(), "Singular Jacobian in Broyden method");
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step

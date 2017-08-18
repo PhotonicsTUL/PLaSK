@@ -44,9 +44,9 @@ except ImportError:
         def widget(self, main_window):
             message = QTextBrowser()
             message.setText("Remote batch job launcher cannot be used because Python module "
-                          "Paramiko is missing. Either install it manually from its "
-                          "<a href=\"http://www.paramiko.org/\">webpage</a> or press "
-                          "Ok to try to launch the installation for you.")
+                            "Paramiko is missing. Either install it manually from its "
+                            "<a href=\"http://www.paramiko.org/\">webpage</a> or press "
+                            "Ok to try to launch the installation for you.")
             message.setReadOnly(True)
             message.anchorClicked.connect(self._open_link)
             message.setOpenLinks(False)
@@ -196,7 +196,6 @@ else:
                         color=int(self.color), compress=int(self.compress), bp=self.bp, run1=self.run1, runn=self.runn)
 
         class EditDialog(QDialog):
-
             def __init__(self, account=None, name=None, parent=None):
                 super(Account.EditDialog, self).__init__(parent)
 
@@ -246,8 +245,8 @@ else:
 
                 self.systems_combo = QComboBox()
                 self.systems_combo.setToolTip("Batch job scheduling system at the execution host.\n"
-                                            "If you are not sure about the correct value, contact\n"
-                                            "the host administrator.")
+                                              "If you are not sure about the correct value, contact\n"
+                                              "the host administrator.")
                 systems = list(SYSTEMS.keys())
                 self.systems_combo.addItems(systems)
                 try:
@@ -309,7 +308,7 @@ else:
 
                 self.bp_edit = QLineEdit()
                 self.bp_edit.setToolTip("Path to directory with batch system utilities. Normally you don't need to\n"
-                                        "set this, however you may need to specify it if the submit command is\n"
+                                        "set this, however you may need to specify it, if the submit command is\n"
                                         "located in a non-standard directory.")
                 if account is not None and account.bp:
                     self.bp_edit.setText(account.bp)
@@ -319,7 +318,7 @@ else:
                 self.compress_checkbox = QCheckBox()
                 self.compress_checkbox.setToolTip(
                     "Compress script on sending to the batch system. This can make the scripts\n"
-                    "stored in batch system queues smaller, however it may be harder to track\n"
+                    "stored in batch system queues smaller, however, it may be harder to track\n"
                     "possible errors.")
                 if account is not None:
                     self.compress_checkbox.setChecked(account.compress)
@@ -373,13 +372,13 @@ else:
                     else:
                         self.name_edit.setText(self.host)
 
-            def accept(self):
-                dynamic = ' '.join(str(g()) for g in self._getters.values())
-                if any(':' in s for s in (self.name, self.host, self.user, self.bp, self.program, self.runn,
-                                          dynamic)):
-                    QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
-                else:
-                    super(Account.EditDialog, self).accept()
+            # def accept(self):
+            #     dynamic = ' '.join(str(g()) for g in self._getters.values())
+            #     if any('`:' in s for s in (self.name, self.host, self.user, self.bp, self.program, self.runn,
+            #                               dynamic)):
+            #         QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
+            #     else:
+            #         super(Account.EditDialog, self).accept()
 
             def __getattr__(self, attr):
                 if attr in self._getters:
@@ -452,7 +451,8 @@ else:
         def tmpfile(self, fname, array):
             return fname
 
-        def _compress(self, document, fname, stdin):
+        @staticmethod
+        def _compress(document, fname, stdin):
             gzipped = BytesIO()
             with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
                 gzip.write(document.get_content().encode('utf8'))
@@ -1474,5 +1474,6 @@ else:
                         sub.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
                         item.addChild(sub)
                 item.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicatorWhenChildless)
+
 
 LAUNCHERS.append(Launcher())
