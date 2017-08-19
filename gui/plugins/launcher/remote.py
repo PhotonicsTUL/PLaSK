@@ -11,21 +11,18 @@
 # GNU General Public License for more details.
 
 # coding utf:8
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import sys
 import os
 import re
-from stat import S_ISDIR
-
-import select
 
 from gui.qt.QtCore import Qt, QThread, QMutex
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
 from gui.launch.dock import OutputWindow
-
+from gui import _DEBUG
 
 try:
     import cPickle as pickle
@@ -91,6 +88,10 @@ else:
     import os.path
     from collections import OrderedDict
 
+    import select
+
+    from stat import S_ISDIR
+
     try:
         from shlex import quote
     except ImportError:
@@ -99,28 +100,82 @@ else:
     from gui.xpldocument import XPLDocument
     from gui.utils.config import CONFIG
 
-    from socket import timeout as TimeoutException
+    import platform
+    from socket import socket, AF_UNIX, AF_INET, SOCK_STREAM, \
+        error as SocketError, timeout as TimeoutException
+    try:
+        from fcntl import fcntl, F_SETFD, FD_CLOEXEC
+    except ImportError:
+        fcntl = None
 
-    from gzip import GzipFile
-    try:
-        from base64 import encodebytes as base64
-    except ImportError:
-        from base64 import encodestring as base64
-    try:
-        from StringIO import StringIO as BytesIO
-    except ImportError:
-        from io import BytesIO
+    uname = platform.uname()
+    if (uname[0] == 'Darwin') and ([int(x) for x in uname[2].split('.')] >= [9, 0]):
 
-    try:
-        import Xlib.support.connect as xlib_connect
-    except ImportError:
-        xlib_connect = None
+        display_re = re.compile(r'^(?P<proto>)(?P<host>[-:a-zA-Z0-9._/]*):(?P<dno>[0-9]+)(\.(?P<screen>[0-9]+))?$')
+
+    else:
+
+        display_re = re.compile(r'^((?P<proto>tcp|unix)/)?(?P<host>[-:a-zA-Z0-9._]*):(?P<dno>[0-9]+)(\.(?P<screen>[0-9]+))?$')
+
+    def get_x11_display(display=None):
+        # Use $DISPLAY if display isn't provided
+        if display is None:
+            display = os.environ.get('DISPLAY', '')
+        m = display_re.match(display)
+        if not m:
+            raise ValueError("Wrong DISPLAY variable: {}".format(display))
+        name = display
+        protocol, host, dno, screen = m.group('proto', 'host', 'dno', 'screen')
+        if protocol == 'tcp':
+            # Host is mandatory when protocol is TCP.
+            if not host:
+                raise ValueError("Wrong DISPLAY variable: {}".format(display))
+        elif protocol == 'unix':
+            # Clear host to force Unix socket connection.
+            host = ''
+        elif uname[0] == 'Windows' and host == '':
+            host = 'localhost'
+        else:
+            # Special case: `unix:0.0` is equivalent to `:0.0`.
+            if host == 'unix':
+                host = ''
+        dno = int(dno)
+        if screen:
+            screen = int(screen)
+        else:
+            screen = 0
+        return name, host, dno, screen
+
+
+    def get_x11_socket(dname, host, dno):
+        # Darwin funky socket
+        if (uname[0] == 'Darwin') and host and host.startswith('/private/tmp/'):
+            sock = socket(AF_UNIX, SOCK_STREAM)
+            sock.connect(dname)
+        # If hostname (or IP) is provided, use TCP socket
+        elif host:
+            sock = socket(AF_INET, SOCK_STREAM)
+            sock.connect((host, 6000 + dno))
+        # Else use Unix socket
+        else:
+            address = '/tmp/.X11-unix/X%d' % dno
+            if not os.path.exists(address):
+                # Use abstract address.
+                address = '\0' + address
+            sock = socket(AF_UNIX, SOCK_STREAM)
+            sock.connect(address)
+        # Make sure that the connection isn't inherited in child processes
+        if fcntl is not None:
+            fcntl(sock.fileno(), F_SETFD, FD_CLOEXEC)
+        return sock
+
 
     def hexlify(data):
         if isinstance(data, str):
             return ':'.join('{:02x}'.format(ord(d)) for d in data)
         else:
             return ':'.join('{:02x}'.format(d) for d in data)
+
 
     def _parse_bool(value, default):
         try:
@@ -134,20 +189,20 @@ else:
         except ValueError:
             return default
 
-    X11_DEFAULT = False if os.name == 'nt' else True
+    X11_DEFAULT = False if uname[0] == 'Windows' else True
 
     class Account(object):
         """
         Base class for account data.
         """
 
-        def __init__(self, name, userhost=None, port=22, program='', x11=None, directories=None):
+        def __init__(self, name, userhost=None, port=22, program='', x11=None, dirs=None):
             self.name = name
             self.userhost = userhost
             self.port = _parse_int(port, 22)
             self.program = program
             self.x11 = _parse_bool(x11, X11_DEFAULT)
-            self.directories = {} if directories is None else directories
+            self.dirs = {} if dirs is None else dirs
 
         def update(self, source):
             self.userhost = source.userhost
@@ -158,14 +213,11 @@ else:
         @classmethod
         def load(cls, name, config):
             kwargs = dict(config)
-            if 'directories' in kwargs:
+            if 'dirs' in kwargs:
                 try:
-                    kwargs['directories'] = pickle.loads(CONFIG.get('directories', b'N.').encode())
+                    kwargs['dirs'] = pickle.loads(CONFIG.get('dirs', b'N.').encode('iso-8859-1'))
                 except (pickle.PickleError, EOFError):
-                    del kwargs['directories']
-            if 'compress' in kwargs:
-                del kwargs['compress']
-                del CONFIG['launcher_remote/accounts/{}/directories'.format(name)]
+                    del kwargs['dirs']
                 CONFIG.sync()
 
             return cls(name, **kwargs)
@@ -173,9 +225,9 @@ else:
         def save(self):
             return dict(userhost=self.userhost, port=self.port, program=self.program, x11=int(self.x11))
 
-        def save_params(self):
-            key = 'launcher_remote/accounts/{}/directories'.format(self.name)
-            CONFIG[key] = pickle.dumps(self.directories, 0).decode()
+        def save_dirs(self):
+            key = 'launcher_remote/accounts/{}/dirs'.format(self.name)
+            CONFIG[key] = pickle.dumps(self.dirs, 0).decode('iso-8859-1')
             CONFIG.sync()
 
         class EditDialog(QDialog):
@@ -236,17 +288,16 @@ else:
                 layout.addRow("&Command:", self.program_edit)
                 self._advanced_widgets.append(self.program_edit)
 
-                if xlib_connect is not None:
-                    self.x11_checkbox = QCheckBox()
-                    self.x11_checkbox.setToolTip(
-                        "Enable X11 forwarding. This allows to see graphical output from remote jobs, but requires "
-                        "a working X server. If you do not know what this means, leave the box unchanged.")
-                    if account is not None:
-                        self.x11_checkbox.setChecked(account.x11)
-                    else:
-                        self.x11_checkbox.setChecked(True)
-                    layout.addRow("&X11 Forwarding:", self.x11_checkbox)
-                    self._advanced_widgets.append(self.x11_checkbox)
+                self.x11_checkbox = QCheckBox()
+                self.x11_checkbox.setToolTip(
+                    "Enable X11 forwarding. This allows to see graphical output from remote jobs, but requires "
+                    "a working X server. If you do not know what this means, leave the box unchanged.")
+                if account is not None:
+                    self.x11_checkbox.setChecked(account.x11)
+                else:
+                    self.x11_checkbox.setChecked(True)
+                layout.addRow("&X11 Forwarding:", self.x11_checkbox)
+                self._advanced_widgets.append(self.x11_checkbox)
 
                 self._set_rows_visibility(self._advanced_widgets, False)
 
@@ -315,29 +366,27 @@ else:
 
     class RemotePlaskThread(QThread):
 
-        def x11_handler(self, channel, addrs):
-            src_addr, src_port = addrs
-            x11_fileno = channel.fileno()
-            local_x11_channel = xlib_connect.get_socket(*self.local_x11_display[:3])
-            local_x11_fileno = local_x11_channel.fileno()
-
-            # Register both x11 and local_x11 channels
-            self.x11_channels[x11_fileno] = channel, local_x11_channel
-            self.x11_channels[local_x11_fileno] = local_x11_channel, channel
-
-            self.poller.register(x11_fileno, select.POLLIN)
-            self.poller.register(local_x11_fileno, select.POLLIN)
-
-            self.transport._queue_incoming_channel(channel)
+        def x11_handler(self, remote_channel, addrs):
+            try:
+                remote_fileno = remote_channel.fileno()
+                local_channel = get_x11_socket(*self.local_x11_display[:3])
+                local_fileno = local_channel.fileno()
+                self.connections[remote_fileno] = local_channel
+                self.connections[local_fileno] = remote_channel
+                self.channels.extend([remote_channel, local_channel])
+                self.transport._queue_incoming_channel(remote_channel)
+            except:
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()
 
         def __init__(self, ssh, account, fname, workdir, dock, mutex, main_window, args, defs):
             super(RemotePlaskThread, self).__init__()
             self.main_window = main_window
-            document = main_window.document
 
             command = account.program or 'plask'
 
-            command_line = "cd {dir}; {cmd} -{ft} -ldebug {defs} -:{fname} {args}".format(
+            self.command_line = "cd {dir}; {cmd} -{ft} -ldebug {defs} -:{fname} {args}".format(
                 dir=quote(workdir),
                 cmd=command,
                 fname=fname,
@@ -345,31 +394,7 @@ else:
                 ft='x' if isinstance(main_window.document, XPLDocument) else 'p')
 
             self.ssh = ssh
-            self.transport = ssh.get_transport()
-            self.transport.set_keepalive(1)
-            self.session = self.transport.open_session()
-            self.session.set_combine_stderr(True)
-            # self.session.get_pty()
-
-            self.poller = select.poll()
-            self.session_fileno = self.session.fileno()
-            self.poller.register(self.session_fileno)
-
-            self.x11_channels = {}
-            x11 = account.x11 and xlib_connect is not None
-            if x11:
-                self.local_x11_display = xlib_connect.get_display(os.environ['DISPLAY'])
-                self.session.request_x11(handler=self.x11_handler)
-
-            self.session.exec_command(command_line)
-
-            stdin = self.session.makefile('wb')
-            stdin.write(document.get_content())
-            stdin.flush()
-            self.session.shutdown_write()
-
-            if x11:
-                self.transport.accept()
+            self.x11 = account.x11
 
             fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
             sep = os.path.sep
@@ -377,7 +402,7 @@ else:
                 sep = '\\\\'
                 fd = fd.replace('\\', '\\\\')
             self.link = re.compile(
-                u'((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
+                '((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
 
             self.dock = dock
             self.mutex = mutex
@@ -391,23 +416,48 @@ else:
             self.main_window.closed.disconnect(self.kill_process)
 
         def run(self):
-            data = ''
+
+            self.transport = self.ssh.get_transport()
+            self.transport.set_keepalive(1)
+            self.session = self.transport.open_session()
+            self.session.set_combine_stderr(True)
+            # self.session.get_pty()
+
+            self.connections = {}
+            self.channels = [self.session]
+            if self.x11:
+                self.local_x11_display = get_x11_display()
+                self.session.request_x11(handler=self.x11_handler)
+
+            self.session.exec_command(self.command_line)
+
+            stdin = self.session.makefile('wb')
+            stdin.write(self.main_window.document.get_content())
+            stdin.flush()
+            self.session.shutdown_write()
+
+            if self.x11:
+                self.transport.accept()
+
+            data = b''
             while not self.session.exit_status_ready():
-                poll = self.poller.poll()
-                # if not poll:  # this should not happen, as we don't have a timeout.
-                #     break
-                for fd, event in poll:
-                    if fd == self.session_fileno:
+                readable, writable, exceptional = select.select(self.channels, [], [])
+                if len(self.transport.server_accepts) > 0:
+                    self.transport.accept()
+                for channel in readable:
+                    if channel is self.session:
                         data = self.receive(data)
-                    elif fd in self.x11_channels:
-                        # data either on local/remote x11 channels/sockets
-                        sender, receiver = self.x11_channels[fd]
-                        # try:
-                        receiver.sendall(sender.recv(4096))
-                        # except:
-                        #     sender.close()
-                        #     receiver.close()
-                        #     self.x11_channels.remove(fd)
+                    else:
+                        try:
+                            counterpart = self.connections[channel.fileno()]
+                            counterpart.sendall(channel.recv(4096))
+                        except SocketError:
+                            self.channels.remove(channel)
+                            self.channels.remove(counterpart)
+                            del self.connections[channel.fileno()]
+                            del self.connections[counterpart.fileno()]
+                            channel.close()
+                            counterpart.close()
             self.receive(data)
 
         def receive(self, data):
@@ -415,11 +465,11 @@ else:
                 data += self.session.recv(4096)
                 if data:
                     lines = data.splitlines()
-                    if data[-1] != '\n':
+                    if data[-1] != b'\n':
                         data = lines[-1]
                         del lines[-1]
                     else:
-                        data = ''
+                        data = b''
                     for line in lines:
                         self.dock.parse_line(line, self.link)
             return data
@@ -532,7 +582,7 @@ else:
 
             if self.accounts:
                 try:
-                    self.workdir.setText(self.accounts[self.current_account].directories.get(self.filename, ''))
+                    self.workdir.setText(self.accounts[self.current_account].dirs.get(self.filename, ''))
                 except:
                     pass
 
@@ -541,9 +591,9 @@ else:
 
         def exit(self, visible):
             if self.accounts and self.current_account is not None:
-                self.accounts[self.current_account].directories[self.filename] = self.workdir.text()
+                self.accounts[self.current_account].dirs[self.filename] = self.workdir.text()
             for account in self.accounts:
-                account.save_params()
+                account.save_dirs()
 
         def load_accounts(self):
             self.accounts = []
@@ -615,12 +665,12 @@ else:
 
         def account_changed(self, index):
             if self.accounts and self.current_account is not None:
-                self.accounts[self.current_account].directories[self.filename] = self.workdir.text()
+                self.accounts[self.current_account].dirs[self.filename] = self.workdir.text()
             if isinstance(index, int):
                 self.current_account = index
             else:
                 self.current_account = self.accounts_combo.currentIndex()
-            self.workdir.setText(self.accounts[self.current_account].directories.get(self.filename, ''))
+            self.workdir.setText(self.accounts[self.current_account].dirs.get(self.filename, ''))
 
         def show_optional(self, field, visible, button=None):
             field.setVisible(visible)
@@ -656,7 +706,7 @@ else:
                                                 .format(hostname, key.get_name()[4:], str(hexlify(key.get_fingerprint()))),
                                                  QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
                 if add == QMessageBox.Cancel:
-                    raise Launcher.AbortException(u'Server {} not found in known_hosts'.format(hostname))
+                    raise Launcher.AbortException('Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
                 if add == QMessageBox.Yes:
                     Launcher._save_host_keys(client.get_host_keys())
@@ -683,7 +733,7 @@ else:
 
             while True:
                 try:
-                    ssh.connect(host, username=user, password=passwd, port=port, compress=True, timeout=15)
+                    ssh.connect(host, username=user, password=passwd, port=port, compress=True, timeout=5)
                 except Launcher.AbortException:
                     return
                 except paramiko.BadHostKeyException as err:
@@ -744,8 +794,8 @@ else:
 
             workdir = self.workdir.text()
 
-            account.directories[self.filename] = workdir
-            account.save_params()
+            account.dirs[self.filename] = workdir
+            account.save_dirs()
 
             if not workdir:
                 _, stdout, _ = ssh.exec_command("pwd")

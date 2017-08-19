@@ -303,10 +303,16 @@
 </connects>
 
 <script><![CDATA[
+import os
+
 print_log('info', "START")
 
-# figure()
-# show()
+print_log('data', os.environ.get('DISPLAY'))
+
+figure()
+xx = linspace(0., 12., 1001)
+plot(xx, sin(xx))
+show()
 
 from scipy import optimize
 import sys

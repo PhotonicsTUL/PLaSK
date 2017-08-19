@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 # coding utf:8
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import sys
 import os
@@ -184,7 +184,7 @@ else:
             system = kwargs.pop('system')
             if 'params' in kwargs:
                 try:
-                    kwargs['params'] = pickle.loads(CONFIG.get('params', '').encode())
+                    kwargs['params'] = pickle.loads(CONFIG.get('params', '').encode('iso-8859-1'))
                 except (pickle.PickleError, EOFError):
                     del kwargs['params']
             if 'mpirun' in kwargs:
@@ -442,7 +442,7 @@ else:
 
         def save_params(self):
             key = 'launcher_batch/accounts/{}/params'.format(self.name)
-            CONFIG[key] = pickle.dumps(self.params, 0).decode()
+            CONFIG[key] = pickle.dumps(self.params, 0).decode('iso-8859-1')
             CONFIG.sync()
 
         def batch(self, name, params, path):
@@ -1263,7 +1263,7 @@ else:
                                                 .format(hostname, key.get_name()[4:], str(hexlify(key.get_fingerprint()))),
                                                  QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
                 if add == QMessageBox.Cancel:
-                    raise Launcher.AbortException(u'Server {} not found in known_hosts'.format(hostname))
+                    raise Launcher.AbortException('Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
                 if add == QMessageBox.Yes:
                     Launcher._save_host_keys(client.get_host_keys())
