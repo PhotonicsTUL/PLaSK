@@ -303,7 +303,10 @@
 </connects>
 
 <script><![CDATA[
+from __future__ import print_function
+
 import os
+import sys
 
 print_log('info', "START")
 
@@ -312,7 +315,16 @@ print_log('data', os.environ.get('DISPLAY'))
 figure()
 xx = linspace(0., 12., 1001)
 plot(xx, sin(xx))
+figure()
+xx = linspace(0., 12., 1001)
+plot(xx, cos(xx), color='C1')
 show()
+
+figure()
+xx = linspace(0., 12., 1001)
+plot(xx, sin(xx)/xx, color='C2')
+show()
+
 
 from scipy import optimize
 import sys
@@ -328,14 +340,14 @@ for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
 
-print(mesaRadius + 0)
+print(mesaRadius + 0, )
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
 
 # OPTICAL.find_mode
 
-print(f)
+print(f, file=sys.stderr)
 
 class A(object):
     
@@ -462,7 +474,7 @@ class A(object):
         self.a = 1
         
 a = A()
-print(a.a)
+print(a.a, file=sys.stderr)
 ]]></script>
 
 </plask>

@@ -39,7 +39,7 @@ def which(program):
 
 class PlaskThread(QThread):
 
-    def __init__(self, program, fname, dirname, dock, mutex, main_window, args, defs):
+    def __init__(self, program, fname, dirname, dock, main_window, args, defs):
         super(PlaskThread, self).__init__()
         self.main_window = main_window
         if CONFIG['workarounds/disable_omp']:
@@ -67,7 +67,6 @@ class PlaskThread(QThread):
             fd = fd.replace('\\', '\\\\')
         self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
         self.dock = dock
-        self.mutex = mutex
         try:
             self.terminated.connect(self.kill_process)
         except AttributeError:
@@ -173,8 +172,6 @@ class Launcher(object):
         else:
             dirname = os.path.dirname(filename)
 
-        self.mutex = QMutex()
-
         dock = OutputWindow(self, main_window)
         try:
             bottom_docked = [w for w in main_window.findChildren(QDockWidget)
@@ -187,7 +184,7 @@ class Launcher(object):
             dock.show()
             dock.raise_()
 
-        dock.thread = PlaskThread(program, filename, dirname, dock, self.mutex, main_window, args, defs)
+        dock.thread = PlaskThread(program, filename, dirname, dock, main_window, args, defs)
         dock.thread.finished.connect(dock.thread_finished)
         dock.thread.start()
 

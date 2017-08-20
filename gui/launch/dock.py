@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 from time import strftime
 
-from ..qt.QtCore import Qt, QTimer
+from ..qt.QtCore import Qt, QTimer, QMutex
 from ..qt.QtGui import QFont, QTextOption, QIcon, QTextCursor
 from ..qt.QtWidgets import QDockWidget, QTextBrowser, QToolBar, QAction, QMenu, QToolButton, QWidgetAction, \
     QVBoxLayout, QWidget, QMessageBox
@@ -161,6 +161,7 @@ class OutputWindow(QDockWidget):
         except AttributeError:
             pass
 
+        self.mutex = QMutex()
         self.thread = None
 
     def reconfig(self):
@@ -201,16 +202,16 @@ class OutputWindow(QDockWidget):
             line = link.sub(u'<a style="color: {}; text-decoration: none;" href="line:\\2">\\1\\2\\3</a>'.format(color),
                             line)
         try:
-            self.launcher.mutex.lock()
+            self.mutex.lock()
             self.lines.append((cat[:-1].strip(),
                                u'<span style="color:{};">{}</span>'.format(color, line)))
         finally:
-            self.launcher.mutex.unlock()
+            self.mutex.unlock()
 
     def update_output(self):
         move = self.messages.verticalScrollBar().value() == self.messages.verticalScrollBar().maximum()
         try:
-            self.launcher.mutex.lock()
+            self.mutex.lock()
             total_lines = len(self.lines)
             lines = []
             if self.printed_lines != total_lines:
@@ -229,7 +230,7 @@ class OutputWindow(QDockWidget):
             else:
                 move = False
         finally:
-            self.launcher.mutex.unlock()
+            self.mutex.unlock()
         if move:
             hpos = self.messages.horizontalScrollBar().value()
             self.messages.moveCursor(QTextCursor.End)

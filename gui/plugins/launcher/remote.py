@@ -17,7 +17,7 @@ import sys
 import os
 import re
 
-from gui.qt.QtCore import Qt, QThread, QMutex
+from gui.qt.QtCore import *
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
@@ -366,21 +366,7 @@ else:
 
     class RemotePlaskThread(QThread):
 
-        def x11_handler(self, remote_channel, addrs):
-            try:
-                remote_fileno = remote_channel.fileno()
-                local_channel = get_x11_socket(*self.local_x11_display[:3])
-                local_fileno = local_channel.fileno()
-                self.connections[remote_fileno] = local_channel
-                self.connections[local_fileno] = remote_channel
-                self.channels.extend([remote_channel, local_channel])
-                self.transport._queue_incoming_channel(remote_channel)
-            except:
-                if _DEBUG:
-                    import traceback
-                    traceback.print_exc()
-
-        def __init__(self, ssh, account, fname, workdir, dock, mutex, main_window, args, defs):
+        def __init__(self, ssh, account, fname, workdir, dock, main_window, args, defs):
             super(RemotePlaskThread, self).__init__()
             self.main_window = main_window
 
@@ -405,7 +391,7 @@ else:
                 '((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
 
             self.dock = dock
-            self.mutex = mutex
+
             try:
                 self.terminated.connect(self.kill_process)
             except AttributeError:
@@ -414,6 +400,28 @@ else:
 
         def __del__(self):
             self.main_window.closed.disconnect(self.kill_process)
+
+        def x11_handler(self, remote_channel, addrs=None):
+            if remote_channel is None:
+                return
+            try:
+                self.transport.lock.acquire()
+                remote_fileno = remote_channel.fileno()
+                local_channel = get_x11_socket(*self.local_x11_display[:3])
+                local_fileno = local_channel.fileno()
+                self.connections[remote_fileno] = local_channel
+                self.connections[local_fileno] = remote_channel
+                for chan in remote_channel, local_channel:
+                    if chan not in self.channels:
+                        self.channels.append(chan)
+                # self.transport._queue_incoming_channel(remote_channel)
+                self.transport.server_accept_cv.notify()
+            except:
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()
+            finally:
+                self.transport.lock.release()
 
         def run(self):
 
@@ -436,19 +444,20 @@ else:
             stdin.flush()
             self.session.shutdown_write()
 
-            if self.x11:
-                self.transport.accept()
-
             data = b''
             while not self.session.exit_status_ready():
-                readable, writable, exceptional = select.select(self.channels, [], [])
-                if len(self.transport.server_accepts) > 0:
-                    self.transport.accept()
-                for channel in readable:
+                try:
+                    self.transport.lock.acquire()
+                    channels = self.channels[:]
+                finally:
+                    self.transport.lock.release()
+                channels, _, _= select.select(channels, [], [], 1)
+                for channel in channels:
                     if channel is self.session:
                         data = self.receive(data)
                     else:
                         try:
+                            self.transport.lock.acquire()
                             counterpart = self.connections[channel.fileno()]
                             counterpart.sendall(channel.recv(4096))
                         except SocketError:
@@ -458,6 +467,8 @@ else:
                             del self.connections[counterpart.fileno()]
                             channel.close()
                             counterpart.close()
+                        finally:
+                            self.transport.lock.release()
             self.receive(data)
 
         def receive(self, data):
@@ -805,8 +816,6 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            self.mutex = QMutex()
-
             dock = OutputWindow(self, main_window, "Launch at " + account.name)
             try:
                 bottom_docked = [w for w in main_window.findChildren(QDockWidget)
@@ -819,7 +828,7 @@ else:
                 dock.show()
                 dock.raise_()
 
-            dock.thread = RemotePlaskThread(ssh, account, filename, workdir, dock, self.mutex, main_window, args, defs)
+            dock.thread = RemotePlaskThread(ssh, account, filename, workdir, dock, main_window, args, defs)
             dock.thread.finished.connect(dock.thread_finished)
             dock.thread.start()
 
