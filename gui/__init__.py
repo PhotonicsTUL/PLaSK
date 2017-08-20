@@ -881,7 +881,10 @@ def main():
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
-        loader.find_module(modname).load_module(modname)
+        try:
+            loader.find_module(modname).load_module(modname)
+        except:
+            pass
 
     if matplotlib:
         ft = QWidget().font()

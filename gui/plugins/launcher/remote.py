@@ -17,6 +17,9 @@ import sys
 import os
 import re
 
+import platform
+system = platform.uname()[0]
+
 from gui.qt.QtCore import *
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
@@ -35,7 +38,6 @@ try:
 except ImportError:
     import webbrowser
     import subprocess
-    import platform
 
     class Launcher(object):
         name = "Remote Process"
@@ -100,71 +102,56 @@ else:
     from gui.xpldocument import XPLDocument
     from gui.utils.config import CONFIG
 
-    import platform
-    from socket import socket, AF_UNIX, AF_INET, SOCK_STREAM, \
+    from socket import socket, AF_INET, SOCK_STREAM, \
         error as SocketError, timeout as TimeoutException
-    try:
+
+    if system != 'Windows':
         from fcntl import fcntl, F_SETFD, FD_CLOEXEC
-    except ImportError:
+        from socket import AF_UNIX
+    else:
         fcntl = None
 
-    uname = platform.uname()
-    if (uname[0] == 'Darwin') and ([int(x) for x in uname[2].split('.')] >= [9, 0]):
+    display_re = re.compile(r'^(?P<host>[^:/]*)(/(?P<proto>unix|tcp))?:(?P<disp>\d+)(\.(?P<screen>\d+))?$')
 
-        display_re = re.compile(r'^(?P<proto>)(?P<host>[-:a-zA-Z0-9._/]*):(?P<dno>[0-9]+)(\.(?P<screen>[0-9]+))?$')
-
-    else:
-
-        display_re = re.compile(r'^((?P<proto>tcp|unix)/)?(?P<host>[-:a-zA-Z0-9._]*):(?P<dno>[0-9]+)(\.(?P<screen>[0-9]+))?$')
-
-    def get_x11_display(display=None):
-        # Use $DISPLAY if display isn't provided
-        if display is None:
-            display = os.environ.get('DISPLAY', '')
+    def get_x11_display():
+        display = os.environ.get('DISPLAY', '')
         m = display_re.match(display)
         if not m:
             raise ValueError("Wrong DISPLAY variable: {}".format(display))
-        name = display
-        protocol, host, dno, screen = m.group('proto', 'host', 'dno', 'screen')
-        if protocol == 'tcp':
-            # Host is mandatory when protocol is TCP.
+        proto, host, disp, screen = m.group('proto', 'host', 'disp', 'screen')
+        if proto == 'tcp':
             if not host:
                 raise ValueError("Wrong DISPLAY variable: {}".format(display))
-        elif protocol == 'unix':
-            # Clear host to force Unix socket connection.
+        elif proto == 'unix':
             host = ''
-        elif uname[0] == 'Windows' and host == '':
-            host = 'localhost'
-        else:
-            # Special case: `unix:0.0` is equivalent to `:0.0`.
-            if host == 'unix':
-                host = ''
-        dno = int(dno)
+        elif (host == 'unix' and not proto) or not host:
+            host, proto = '', 'unix'
+        disp = int(disp)
         if screen:
             screen = int(screen)
         else:
             screen = 0
-        return name, host, dno, screen
+        return display, host, disp, screen
 
 
-    def get_x11_socket(dname, host, dno):
-        # Darwin funky socket
-        if (uname[0] == 'Darwin') and host and host.startswith('/private/tmp/'):
+    def get_x11_socket(dname, host, disp):
+        if system == 'Windows' or system == 'OpenVMS':
+            if host == '':
+                host = 'localhost'
+            sock = socket(AF_INET, SOCK_STREAM)
+            sock.connect((host, 6000 + disp))
+        elif system == 'Darwin' and host and host.startswith('/private/tmp/'):
             sock = socket(AF_UNIX, SOCK_STREAM)
             sock.connect(dname)
-        # If hostname (or IP) is provided, use TCP socket
         elif host:
             sock = socket(AF_INET, SOCK_STREAM)
-            sock.connect((host, 6000 + dno))
-        # Else use Unix socket
+            sock.connect((host, 6000 + disp))
         else:
-            address = '/tmp/.X11-unix/X%d' % dno
+            address = '/tmp/.X11-unix/X%d' % disp
             if not os.path.exists(address):
-                # Use abstract address.
                 address = '\0' + address
             sock = socket(AF_UNIX, SOCK_STREAM)
             sock.connect(address)
-        # Make sure that the connection isn't inherited in child processes
         if fcntl is not None:
             fcntl(sock.fileno(), F_SETFD, FD_CLOEXEC)
         return sock
@@ -189,7 +176,7 @@ else:
         except ValueError:
             return default
 
-    X11_DEFAULT = False if uname[0] == 'Windows' else True
+    X11_DEFAULT = False if system == 'Windows' else True
 
     class Account(object):
         """
@@ -381,6 +368,7 @@ else:
 
             self.ssh = ssh
             self.x11 = account.x11
+            self.local_x11_display = None
 
             fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
             sep = os.path.sep
@@ -407,7 +395,7 @@ else:
             try:
                 self.transport.lock.acquire()
                 remote_fileno = remote_channel.fileno()
-                local_channel = get_x11_socket(*self.local_x11_display[:3])
+                local_channel = get_x11_socket(*self.local_x11_display)
                 local_fileno = local_channel.fileno()
                 self.connections[remote_fileno] = local_channel
                 self.connections[local_fileno] = remote_channel
@@ -434,7 +422,8 @@ else:
             self.connections = {}
             self.channels = [self.session]
             if self.x11:
-                self.local_x11_display = get_x11_display()
+                if self.local_x11_display is None:
+                    self.local_x11_display = get_x11_display()[:3]
                 self.session.request_x11(handler=self.x11_handler)
 
             self.session.exec_command(self.command_line)
