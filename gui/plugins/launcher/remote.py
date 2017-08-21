@@ -215,7 +215,6 @@ else:
         def save_dirs(self):
             key = 'launcher_remote/accounts/{}/dirs'.format(self.name)
             CONFIG[key] = pickle.dumps(self.dirs, 0).decode('iso-8859-1')
-            CONFIG.sync()
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):
@@ -594,22 +593,26 @@ else:
                 self.accounts[self.current_account].dirs[self.filename] = self.workdir.text()
             for account in self.accounts:
                 account.save_dirs()
+            CONFIG.sync()
 
         def load_accounts(self):
             self.accounts = []
-            accounts = CONFIG['launcher_remote/accounts']
             with CONFIG.group('launcher_remote/accounts') as config:
                 for name, account in config.groups:
                     self.accounts.append(Account.load(name, account))
 
         def save_accounts(self):
             del CONFIG['launcher_remote/accounts']
+            CONFIG.sync()
             with CONFIG.group('launcher_remote/accounts') as config:
                 for account in self.accounts:
                     with config.group(account.name) as group:
                         for k, v in account.save().items():
                             group[k] = v
+            for account in self.accounts:
+                account.save_dirs()
             CONFIG.sync()
+
 
         def account_add(self):
             dialog = Account.EditDialog()
@@ -796,6 +799,7 @@ else:
 
             account.dirs[self.filename] = workdir
             account.save_dirs()
+            CONFIG.sync()
 
             if not workdir:
                 _, stdout, _ = ssh.exec_command("pwd")

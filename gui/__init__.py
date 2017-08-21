@@ -879,8 +879,14 @@ def main():
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QIcon.setThemeSearchPaths(icons_path)
 
-    plugins_dir = os.path.join(__path__[0], 'plugins')
-    for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
+    if os.name == 'nt':
+        plugin_dirs = [os.path.join(os.environ.get('SYSTEMDRIVE', 'C:'), r'ProgramData\PLaSK\gui\plugins')]
+        if 'LOCALAPPDATA' in os.environ:
+            plugin_dirs.insert(0, os.path.join(os.environ['LOCALAPPDATA'], r"PLaSK\gui\plugins"))
+    else:
+        plugin_dirs = [os.path.expanduser("~/.local/lib/plask/gui/plugins"), "/etc/plask/gui/plugins"]
+    plugin_dirs.append(os.path.join(__path__[0], 'plugins'))
+    for loader, modname, ispkg in pkgutil.walk_packages(plugin_dirs):
         try:
             loader.find_module(modname).load_module(modname)
         except:

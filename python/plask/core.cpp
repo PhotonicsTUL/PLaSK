@@ -4,11 +4,13 @@
 
 #include "python_globals.h"
 #include "python_numpy.h"
+#include "python_util/raw_constructor.h"
 #include <frameobject.h> // for Python traceback
 
 #include <plask/version.h>
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
+#include <plask/memory.h>
 #include <plask/solver.h>
 #include <plask/license/verify.h>
 
@@ -288,6 +290,31 @@ py::docstring_options doc_options(
     false   // show cpp signatures
 );
 
+
+/// Solver wrapper to be inherited from Python
+struct SolverWrap: public Solver {
+
+    PyObject* self;
+
+    SolverWrap(PyObject* self, const std::string& name): Solver(name), self(self) {}
+
+    static shared_ptr<Solver> init(const py::tuple& args, const py::dict& kwargs) {
+        PyObject* self;
+        const char* name = nullptr;
+        static const char *kwlist[] = { "self", "name", NULL };
+        if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwargs.ptr(), "O|s:__init__", (char**)kwlist, &self, &name))
+            throw py::error_already_set();
+
+        return plask::make_shared<SolverWrap>(self, name? name : "");
+    }
+
+    std::string getClassName() const override {
+        return py::extract<std::string>(PyObject_GetAttrString(PyObject_GetAttrString(self, "__class__"), "__name__"));
+    }
+
+};
+
+
 }} // namespace plask::python
 
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
@@ -406,6 +433,7 @@ BOOST_PYTHON_MODULE(_plask)
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>
     solver("Solver", "Base class for all solvers.", py::no_init);
     solver
+        .def("__init__", raw_constructor(&SolverWrap::init))
         .add_property("id", &plask::Solver::getId,
                       "Id of the solver object. (read only)\n\n"
                       "Example:\n"
