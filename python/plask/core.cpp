@@ -27,6 +27,8 @@ void initGeometry();
 void register_manager();
 void register_xml_writer();
 
+void register_xml_reader();
+
 void register_vectors();
 void register_mesh();
 void register_providers();
@@ -292,7 +294,7 @@ py::docstring_options doc_options(
 
 
 /// Solver wrapper to be inherited from Python
-struct SolverWrap: public Solver {
+struct SolverWrap: public Solver, Overriden {
 
     PyObject* self;
 
@@ -312,6 +314,29 @@ struct SolverWrap: public Solver {
         return py::extract<std::string>(PyObject_GetAttrString(PyObject_GetAttrString(self, "__class__"), "__name__"));
     }
 
+    void onInitialize() override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("on_initialize")) {
+            py::call_method<py::object>(self, "on_initialize");
+        }
+    }
+
+    void onInvalidate() override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("on_invalidate")) {
+            py::call_method<py::object>(self, "on_invalidate");
+        }
+    }
+
+    void loadConfiguration(XMLReader& source, Manager& manager) override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("load_xml")) {
+            py::call_method<py::object>(self, "load_xml", source, manager);
+        } else {
+            Solver::loadConfiguration(source, manager);
+        }
+
+    }
 };
 
 
@@ -407,6 +432,7 @@ BOOST_PYTHON_MODULE(_plask)
     // Manager
     register_manager();
     register_xml_writer();
+    register_xml_reader();
 
     // Vectors
     register_vectors();
@@ -455,6 +481,25 @@ BOOST_PYTHON_MODULE(_plask)
              "Set the solver back to uninitialized state.\n\n"
              "This method frees the memory allocated by the solver and sets\n"
              ":attr:`initialized` to *False*.")
+        .def("load_xml", &plask::Solver::loadConfiguration, (py::arg("xml"), "manager"),
+             "Load configuration from XML reader.\n\n"
+             "This method should be overriden in custom Python solvers.\n\n"
+             "Example:\n"
+             "    >>> def load_xml(self, xml, manager):\n"
+             "    ...     for tag in xml:\n"
+             "    ...         if tag.name == 'something':\n"
+             "    ...             for sub in tag:\n"
+             "    ...                 if sub.name == 'withtext':\n"
+             "    ...                     text = sub.text\n"
+             "    ...         elif tag.name == 'config':\n"
+             "    ...             a = tag.attrib[a]\n"
+             "    ...             b = tag.attrib.get(b, 0)\n"
+             "    ...         else:\n"
+             "    ...             self.read_xml_tag(tag, manager)\n")
+        .def("read_xml_tag", &plask::Solver::parseStandardConfiguration,
+             (py::arg("tag"), "manager", py::arg("msg")="solver configuration element"),
+             "Read standard configuration tags (geometry, mesh) from XML reader.\n\n"
+             "This method should be called from :meth:`load_xml`.")
     ;
     solver.attr("__module__") = "plask";
 
