@@ -71,7 +71,7 @@
 //         double power;                   ///< Mode power [mW]
 //
 //         Mode(EffectiveIndex3D* solver, Symmetry sym):
-//             solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1e-9) {
+//             solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
 //             setSymmetry(sym);
 //         }
 //

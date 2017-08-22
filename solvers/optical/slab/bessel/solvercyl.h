@@ -41,7 +41,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         double tolx;                            ///< Tolerance for mode comparison
 
         Mode(const std::unique_ptr<ExpansionBessel>& expansion, double tolx):
-            lam0(expansion->lam0), k0(expansion->k0), m(expansion->m), power(1e-9), tolx(tolx) {}
+            lam0(expansion->lam0), k0(expansion->k0), m(expansion->m), power(1.), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
             return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&

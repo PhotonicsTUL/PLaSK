@@ -71,7 +71,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         double power;                   ///< Mode power [mW]
 
         Mode(EffectiveIndex2D* solver, Symmetry sym):
-            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1e-9) {
+            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
             setSymmetry(sym);
         }
 

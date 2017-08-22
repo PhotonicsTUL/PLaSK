@@ -95,11 +95,8 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         dcomplex lam;                       ///< Stored wavelength
         double power;                       ///< Mode power [mW]
 
-        Mode(EffectiveFrequencyCyl* solver):
-            solver(solver), m(0), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1e-9) {}
-
-        Mode(EffectiveFrequencyCyl* solver, int m):
-            solver(solver), m(m), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1e-9) {}
+        Mode(EffectiveFrequencyCyl* solver, int m=0):
+            solver(solver), m(m), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1.) {}
 
         bool operator==(const Mode& other) const {
             return m == other.m && is_zero(lam - other.lam);
