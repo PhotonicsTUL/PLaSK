@@ -66,77 +66,77 @@ if __name__ == "__main__":
     gcf().canvas.set_window_title('Refractive Index')
     xlim(-1.5, 1.5)
     ylim(-1.3, 1.3)
-    
+
     k0s = arange(2*pi*start, 2*pi*end+1e-12, 2*pi*step)
-    
+
     def browse():
         dets = abs(OPTICAL.get_determinant(k0=k0s))
         mins = [k0s[i] for i in range(1, len(dets)-1) if dets[i-1] >= dets[i] and dets[i] < dets[i+1]]
         print_log('data', 'Approx. bands:', ', '.join('{:.2f}'.format(x) for x in mins))
         return mins
-    
+
     # Triangular lattice: K = [4*pi/(3),0] M = [pi, pi/(sqrt(3))]
     sqr3 = sqrt(3)
     sqr32 = sqr3 / 2.
-    
+
     # Gamma -> M
     n = int(sqr3/2 * nk)
     wavevectors = [ (pi * k/n, pi/sqr3 * k/n) for k in range(n) ]
     graphpos = [ pi * sqr32 * k/n for k in range(n) ]
-    
+
     # M -> K
     n = int(nk/2.)
     wavevectors.extend( [ (pi * ( 1 + 1./3.*k/n), pi/sqr3 * (n-k)/n) for k in range(n) ] )
     graphpos.extend( [ pi * (sqr32 + 0.5 * k/n) for k in range(n) ] )
-    
+
     # K -> Gamma
     n = nk
     wavevectors.extend( [ (4*pi/3 * (n-k)/nk, 0.) for k in range(n+1) ] )
     graphpos.extend( [ pi * (sqr32 + 0.5 + 1. * k/n) for k in range(n+1) ] )
-    
+
     ## Do the computations ##
-    
+
     results = []
-    
+
     with open('bands.out', 'w') as out:
         out.write("#_po__ _kx__ _ky__  omega/c\n")
-    
+
         for i,(K,pos) in enumerate(zip(wavevectors, graphpos)):
             OPTICAL.ktran, OPTICAL.klong = K
-    
+
             modes = set(OPTICAL.find_mode(k0=k0) for k0 in browse())
-    
+
             # test for spurious modes (not optimal method, but should work)
             bands = [k0 for k0 in (OPTICAL.modes[m].k0.real for m in modes) if k0 >= 0]
-    
+
             for k0 in bands:
                 results.append((pos, K[0], K[1], k0))
                 out.write("{:6.3f} {:5.3f} {:5.3f}  {:.4f}\n".format(pos, K[0], K[1], k0))
             out.flush()
-    
+
             print_log('result', K, ':', ' '.join(str(k0) for k0 in bands), "   [{:.1f}%]".format(100.*(i+1)/len(graphpos)))
-    
+
     results = array(results).T
-    
+
     figure()
     wavevectors = array(wavevectors)
     plot(graphpos, sqrt(sum(wavevectors**2, 1)), 'k--')
-    
+
     try:
         reference = loadtxt('bands.dat', unpack=True)
     except IOError:
         pass
     else:
         plot(reference[0], reference[3], '.', color='0.7')
-    
+
     plot(results[0], results[3], '.', color='maroon')
-    
+
     xticks([0., pi*sqr32, pi*(sqr32+0.5), pi*(sqr32+1.5)], ['$\\Gamma$', 'M', 'K', '$\\Gamma$'])
     xlim(0., pi*(sqr32+1.5))
     grid(axis='x')
-    
+
     ylabel("$\\omega/c$")
-    
+
     tight_layout(0.1)
     gcf().canvas.set_window_title('Photonic Bands')
     savefig('bands.png')
@@ -144,18 +144,18 @@ if __name__ == "__main__":
     def show_field(kt, kl, k0):
         OPTICAL.ktran, OPTICAL.klong = kt, kl
         m = OPTICAL.find_mode(k0=k0)
-        
+
         msh = mesh.Rectangular3D(linspace(-1.4, 1.4, 281), linspace(-1.5, 1.5, 301), [0.])
         field = OPTICAL.outLightMagnitude(m, msh)
-    
-        figure()    
+
+        figure()
         plot_field(field, None, plane='yx')
         plot_geometry(OPTICAL.geometry, plane='yx', color='w', periods=3)
         aspect('equal')
         gcf().canvas.set_window_title('Field @ {:.3f}'.format(OPTICAL.modes[m].k0.real))
-        
+
         ka = sqrt(OPTICAL.klong**2 + OPTICAL.ktran**2).real
-        
+
         plot([0., -OPTICAL.klong.real/ka], [0., OPTICAL.ktran.real/ka], color='m')
         xlim(-1.5, 1.5)
         ylim(1.4, -1.4)

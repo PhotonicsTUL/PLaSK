@@ -149,7 +149,7 @@ struct MaterialFromPythonString {
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-class PythonMaterial: public Material, Overriden
+class PythonMaterial: public Material, Overriden<Material>
 {
     shared_ptr<Material> base;
 

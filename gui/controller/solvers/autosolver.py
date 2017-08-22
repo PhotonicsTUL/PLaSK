@@ -187,7 +187,8 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.geometry = ComboBox()
         self.geometry.setEditable(True)
-        self.geometry.editingFinished.connect(lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
+        self.geometry.editingFinished.connect(
+            lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
         self.geometry.setCompleter(defines)
         self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                  u'Name of the existing geometry for use by this solver.')
@@ -357,14 +358,9 @@ class AutoSolverController(Controller):
     def on_edit_enter(self):
         with self.mute_changes():
             try:
-                if self.model.solver.endswith('2D'):
-                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian2d if g.name]
-                elif self.model.solver.endswith('Cyl'):
-                    geometries = [g.name for g in self.document.geometry.model.roots_cylindrical if g.name]
-                elif self.model.solver.endswith('3D'):
-                    geometries = [g.name for g in self.document.geometry.model.roots_cartesian3d if g.name]
-                else:
-                    raise AttributeError
+                geometries = [g.name for g in getattr(self.document.geometry.model,
+                                                      "roots_"+self.model.geometry_type.lower())
+                              if g.name]
             except AttributeError:
                 pass
             else:

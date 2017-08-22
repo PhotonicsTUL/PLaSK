@@ -143,3 +143,8 @@ class Vector(unittest.TestCase):
         self.assertEqual( self.b2 / 2, plask.vec(5, 10) )
         self.c2 /= 2
         self.assertEqual( self.c2, plask.vec(50, 100) )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

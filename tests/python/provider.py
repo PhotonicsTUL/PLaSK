@@ -152,3 +152,8 @@ class ProfileTest(unittest.TestCase):
         receiver.connect(profile1.outHeat + profile2.outHeat)
 
         self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]), mesh.Ordered([1, 3, 5])))), [1e7, 2e7, 1e7] )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

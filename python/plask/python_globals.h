@@ -304,6 +304,7 @@ extern PLASK_PYTHON_API OmpNestLock python_omp_lock;
 /**
  * Base class for methods that can be overriden form Python
  */
+template <typename T>
 struct Overriden
 {
     PyObject* self;
@@ -313,7 +314,7 @@ struct Overriden
     Overriden(PyObject* self): self(self) {}
 
     bool overriden(char const* name) const {
-        py::converter::registration const& r = py::converter::registered<Material>::converters;
+        py::converter::registration const& r = py::converter::registered<T>::converters;
         PyTypeObject* class_object = r.get_class_object();
         if (self) {
             py::handle<> mh(PyObject_GetAttrString(self, const_cast<char*>(name)));

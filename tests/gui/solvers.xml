@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <solver name="Test" category="thermal">
+  <solver name="Test" category="local" lib="something">
     Just a test solvers.xml file.
 
     <geometry type="Cartesian2D"/>

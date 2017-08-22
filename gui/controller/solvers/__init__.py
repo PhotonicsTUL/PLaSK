@@ -29,6 +29,7 @@ def _solvers_key(slv):
         i = len(SUFFIXES)
     return i, slv
 
+
 class FilterController(Controller):
 
     def __init__(self, document, model):
@@ -224,7 +225,6 @@ class NewSolverDialog(QDialog):
             for l in grps[:-1]:
                 i += l + 1
                 self.solver.insertSeparator(i)
-
 
 
 def get_new_solver():

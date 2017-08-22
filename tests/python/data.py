@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+import sys
 
 from numpy import *
 
@@ -19,3 +20,8 @@ class DataTest(unittest.TestCase):
         self.assertEqual( list(d1), [0., 1., 2., 3., 4., 5.] )
         self.assertEqual( list(d2), [0., 3., 1., 4., 2., 5.] )
         self.assertTrue( (d1.array == d2.array).all() )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

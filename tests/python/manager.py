@@ -1,48 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-
+import sys
 
 import plask
 
 
-class Manager(unittest.TestCase):
+class ManagerTest(unittest.TestCase):
 
     def setUp(self):
         self.manager = plask.Manager()
         self.manager.load('''
         <plask>
-            <geometry>
-                <cartesian2d name="Space-1" axes="xy">
-                    <stack name="Stack-2">
-                        <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
-                        <again ref="Block-3"/>
-                    </stack>
-                </cartesian2d>
-            </geometry>
-            <grids>
-                <mesh type="rectangular2d" name="lin">
-                    <axis0>1, 2, 3</axis0>
-                    <axis1 type="ordered" start="10" stop="30" num="3"/>
-                </mesh>
-                <mesh type="rectangular2d" name="reg">
-                    <axis0 start="10" stop="30" num="3"/>
-                    <axis1 start="1" stop="3" num="3"/>
-                </mesh>
-                <generator type="rectangular2d" method="divide" name="test">
-                    <prediv by="4"/>
-                    <postdiv by0="2" by1="3"/>
-                    <warnings missing="false"/>
-                </generator>
-                <generator type="rectangular2d" method="divide" name="refined">
-                    <postdiv by0="2"/>
-                    <warnings multiple="no"/>
-                    <refinements>
-                        <axis0 object="Block-3" at="1.0"/>
-                        <axis1 object="Block-3" path="Path-4" at="1.0"/>
-                    </refinements>
-                </generator>
-            </grids>
+          <geometry>
+            <cartesian2d name="Space-1" axes="xy">
+              <stack name="Stack-2">
+                <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
+                <again ref="Block-3"/>
+              </stack>
+            </cartesian2d>
+          </geometry>
+          <grids>
+            <mesh type="rectangular2d" name="lin">
+              <axis0>1, 2, 3</axis0>
+              <axis1 type="ordered" start="10" stop="30" num="3"/>
+            </mesh>
+            <mesh type="rectangular2d" name="reg">
+              <axis0 start="10" stop="30" num="3"/>
+              <axis1 start="1" stop="3" num="3"/>
+            </mesh>
+            <generator type="rectangular2d" method="divide" name="test">
+              <prediv by="4"/>
+              <postdiv by0="2" by1="3"/>
+              <warnings missing="false"/>
+            </generator>
+            <generator type="rectangular2d" method="divide" name="refined">
+              <postdiv by0="2"/>
+              <warnings multiple="no"/>
+              <refinements>
+                <axis0 object="Block-3" at="1.0"/>
+                <axis1 object="Block-3" path="Path-4" at="1.0"/>
+              </refinements>
+            </generator>
+          </grids>
         </plask>
         ''')
 
@@ -90,53 +90,53 @@ class Manager(unittest.TestCase):
         with self.assertRaises(plask.XMLError):
             manager.load('''
             <plask>
-                <geometry>
-                    <cartesian2d name="Space-1" axes="xy">
-                        <stack name="Stack-2">
-                            <item path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></item>
-                            <again ref="Block-3"/>
-                    </cartesian2d>
-                </geometry>
+              <geometry>
+                <cartesian2d name="Space-1" axes="xy">
+                  <stack name="Stack-2">
+                    <item path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></item>
+                    <again ref="Block-3"/>
+                </cartesian2d>
+              </geometry>
+            </plask>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.load('''
+              <plask>
+                <grids>
+                  <mesh type="rectangular2d" name="lin">
+                    <axis0>1, 2, 3</axis0>
+                    <axis0>10 20 30</axis0>
+                  </mesh>
+                </grids>
+              <plask>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.load('''
+            <plask>
+              <grids>
+                <generator type="rectangular2d" method="divide" name="test">
+                  <postdiv by="4" by0="2" by1="3"/>
+                </generator>
+              </grids>
             </plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.load('''
             <plask>
-                <grids>
-                    <mesh type="rectangular2d" name="lin">
-                        <axis0>1, 2, 3</axis0>
-                        <axis0>10 20 30</axis0>
-                    </mesh>
-                </grids>
-            <plask>
-            ''')
-        with self.assertRaises(plask.XMLError):
-            manager.load('''
-            <plask>
-                <grids>
-                    <generator type="rectangular2d" method="divide" name="test">
-                        <postdiv by="4" by0="2" by1="3"/>
-                    </generator>
-                </grids>
+              <grids>
+                <generator type="rectangular2d" method="divide" name="test">
+                  <postdiv bye="4"/>
+                </generator>
+              </grids>
             </plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.load('''
             <plask>
-                <grids>
-                    <generator type="rectangular2d" method="divide" name="test">
-                        <postdiv bye="4"/>
-                    </generator>
-                </grids>
-            </plask>
-            ''')
-        with self.assertRaises(plask.XMLError):
-            manager.load('''
-            <plask>
-                <geometry>
-                    <cartesian2d name="Space-2" axes="xy">
-                        <rectangle x="5" y="2" material="GaN" />
-                    </cartesian2d>
+              <geometry>
+                <cartesian2d name="Space-2" axes="xy">
+                  <rectangle x="5" y="2" material="GaN" />
+                </cartesian2d>
             </plask>
             ''')
 
@@ -145,13 +145,13 @@ class Manager(unittest.TestCase):
         manager = plask.Manager()
         manager.load('''
         <plask>
-            <solvers>
-                <plasktest lib="solvers" solver="InOut" name="output"/>
-                <plasktest lib="solvers" solver="InOut" name="input"/>
-            </solvers>
-            <connects>
-                <connect out="output.outWavelength" in="input.inWavelength"/>
-            </connects>
+          <solvers>
+            <plasktest lib="solvers" solver="InOut" name="output"/>
+            <plasktest lib="solvers" solver="InOut" name="input"/>
+          </solvers>
+          <connects>
+            <connect out="output.outWavelength" in="input.inWavelength"/>
+          </connects>
         </plask>
         ''')
         self.assertEqual( manager.solvers.output.inWavelength(0), 2 )
@@ -162,24 +162,24 @@ class Manager(unittest.TestCase):
         manager = plask.Manager()
         manager.load('''
         <plask>
-            <materials>
-                <material name="XmlMat" base="dielectric">
-                    <nr>1. + 0.001*T + 0.0001*wl</nr>
-                    <absp>1.</absp>
-                </material>
-                <material name="XmlMat:Mg" base="GaN:Mg">
-                    <nr>1. + 0.001*T + 0.0001*wl</nr>
-                    <absp>T * self.dc</absp>
-                </material>
-                <material name="XmlMatMg20" base="GaN:Mg=1e20">
-                    <nr>1. + 0.001*T + 0.0001*wl</nr>
-                    <absp>T * self.dc</absp>
-                </material>
-                <material name="XmlMatSimple" base="dielectric">
-                    <nr>3.5</nr>
-                    <absp>0.</absp>
-                </material>
-            </materials>
+          <materials>
+            <material name="XmlMat" base="dielectric">
+              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <absp>1.</absp>
+            </material>
+            <material name="XmlMat:Mg" base="GaN:Mg">
+              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <absp>T * self.dc</absp>
+            </material>
+            <material name="XmlMatMg20" base="GaN:Mg=1e20">
+              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <absp>T * self.dc</absp>
+            </material>
+            <material name="XmlMatSimple" base="dielectric">
+              <nr>3.5</nr>
+              <absp>0.</absp>
+            </material>
+          </materials>
         </plask>
         ''')
         material.update_factories()
@@ -209,7 +209,7 @@ class Manager(unittest.TestCase):
           <geometry>
             <cartesian2d axes="xy">
               <stack>
-              <rectangle name="block1" dx="5" dy="{sqrt(hh1)}" material="{mat}{'As'}"/>
+                <rectangle name="block1" dx="5" dy="{sqrt(hh1)}" material="{mat}{'As'}"/>
                 <rectangle name="block2" dx="{self.geo.block1.dims[0]}" dy="{h2}" material="GaAs"/>
               </stack>
             </cartesian2d>
@@ -220,3 +220,64 @@ class Manager(unittest.TestCase):
         self.assertEqual( manager.geo.block1.dims[1], 2 )
         self.assertEqual( manager.geo.block2.dims[0], 5 )
         self.assertEqual( manager.geo.block2.dims[1], 1 )
+
+
+
+class FakeModule(object):
+
+    class CustomSolver(Solver):
+        def load_xml(self, xml, manager):
+            for tag in xml:
+                if tag.name == 'something':
+                    for subtag in tag:
+                        if subtag.name == 'withtext':
+                            for item in subtag:
+                                self.text = item.text
+                elif tag.name == 'config':
+                    self.a = 2 * tag['a']
+                    self.b = tag.get('b', 0)
+                    self.c = tag['c']
+                elif tag.name == 'geometry':
+                    self.geometry = manager.geo[tag['ref']]
+
+sys.modules['fake'] = FakeModule
+
+
+class CustomSolverTest(unittest.TestCase):
+
+    def testCustomSolver(self):
+        manager = plask.Manager()
+        manager.load('''
+        <plask>
+          <geometry>
+            <cartesian2d name="main" axes="xy">
+              <stack>
+                <rectangle dx="5" dy="2" material="GaN" />
+              </stack>
+            </cartesian2d>
+          </geometry>
+          <solvers>
+            <local name="custom" solver="CustomSolver" lib="fake">
+              <geometry ref="main"/>
+              <something>
+                <withtext>
+                  <val>passed</val>
+                </withtext>
+              </something>
+              <config a="2" c="ok"/>
+            </local>
+          </solvers>
+        </plask>
+        ''')
+        solver = manager.solvers['custom']
+        self.assertIsInstance( solver, FakeModule.CustomSolver )
+        self.assertEqual( solver.text, "passed" )
+        self.assertEqual( solver.a, 4 )
+        self.assertEqual( solver.b, 0 )
+        self.assertEqual( solver.c, "ok" )
+        self.assertEqual( solver.geometry, manager.geo.main )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

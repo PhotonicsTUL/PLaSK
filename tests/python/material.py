@@ -223,18 +223,18 @@ class Material(unittest.TestCase):
         xmat = material.get('xmat')
         self.assertEqual( xmat.A(), 20. )
         self.assertEqual( xmat.thermk(), (90., 90.) )
-        
+
         @material.simple('bas')
         class Mat(material.Material):
             def thermk(self, T=300., h=infty):
                 val = 3. * self.base.thermk(T, h)[0]
                 return (val, val)
         mat = material.get('Mat')
-        self.assertEqual( Mat().thermk(), (135., 135.) )        
-        self.assertEqual( mat.thermk(), (135., 135.) )        
+        self.assertEqual( Mat().thermk(), (135., 135.) )
+        self.assertEqual( mat.thermk(), (135., 135.) )
 
 
-    def testXplComplex(self):
+    def testXmlAlloy(self):
         cond = material.get('Al(0.2)GaAs:Si=1e18').cond()
         plask.loadxpl('''
           <plask>
@@ -252,4 +252,8 @@ class Material(unittest.TestCase):
         algas = material.get('Al(0.2)GaAs:Si=1e18')
         self.assertEqual( algas.thermk(), (0.4, 0.4) )
         self.assertEqual( algas.cond(), cond )
-  
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

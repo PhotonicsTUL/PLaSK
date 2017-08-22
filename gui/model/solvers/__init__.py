@@ -24,12 +24,12 @@ from .. import TreeFragmentModel, Info
 
 SOLVERS = {}
 
-CATEGORIES = (
+CATEGORIES = [
     'thermal',
     'electrical',
     'gain',
     'optical'
-)
+]
 
 SUFFIXES = ('2D', 'Cyl', '3D')
 

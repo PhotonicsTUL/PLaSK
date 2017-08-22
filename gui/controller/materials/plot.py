@@ -420,7 +420,18 @@ class MaterialPlot(QWidget):
                     if mprop:
                         expr = mprop[0][1]
                         code = compile(expr, '', 'eval')
-                        self.vals = lambda a: eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
+                        class Material(object): pass
+                        mat = Material()
+                        for k, v in other_elements.items():
+                            setattr(mat, k, v)
+                        other_args['self'] = mat
+                        if plot_cat == 2:
+                            self.vals = lambda a: eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
+                        else:
+                            def f(a):
+                                setattr(mat, arg_name, a)
+                                return eval(code, numpy.__dict__, dict((), **other_args))
+                            self.vals = f
                         break
                     else:
                         material_name = material.base  # and we repeat the loop

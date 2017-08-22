@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 from numpy import *
 
@@ -305,3 +306,8 @@ class SmoothGenerator(unittest.TestCase):
         self.generator.large = 9.
         msh = self.generator(self.geometry)
         self.assertEqual( list(msh), [0., 2., 6., 14., 22., 30., 34., 36.] )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 
 import sys, os
@@ -7,7 +8,7 @@ if sys.version < "2.7":
     unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
 
 
-class Importing(unittest.TestCase):
+class TestImporting(unittest.TestCase):
 
     def setUp(self):
         self.builtin = '_plask' in sys.builtin_module_names
@@ -38,3 +39,9 @@ class Importing(unittest.TestCase):
            (we test only for built-in as with the module we would need to import division explicitly)'''
         if self.builtin:
             self.assertEqual(1/2, 0.5)
+    pass
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

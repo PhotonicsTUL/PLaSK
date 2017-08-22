@@ -3,6 +3,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "python_globals.h"
+#include "python_manager.h"
 #include "python_numpy.h"
 #include "python_util/raw_constructor.h"
 #include <frameobject.h> // for Python traceback
@@ -292,71 +293,6 @@ py::docstring_options doc_options(
     false   // show cpp signatures
 );
 
-
-/// Solver wrapper to be inherited from Python
-struct SolverWrap: public Solver, Overriden {
-
-    PyObject* self;
-
-    SolverWrap(PyObject* self, const std::string& name): Solver(name), self(self) {}
-
-    static shared_ptr<Solver> init(const py::tuple& args, const py::dict& kwargs) {
-        PyObject* self;
-        const char* name = nullptr;
-        static const char *kwlist[] = { "self", "name", NULL };
-        if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwargs.ptr(), "O|s:__init__", (char**)kwlist, &self, &name))
-            throw py::error_already_set();
-
-        return plask::make_shared<SolverWrap>(self, name? name : "");
-    }
-
-    std::string getClassName() const override {
-        return py::extract<std::string>(PyObject_GetAttrString(PyObject_GetAttrString(self, "__class__"), "__name__"));
-    }
-
-    void onInitialize() override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("on_initialize")) {
-            py::call_method<py::object>(self, "on_initialize");
-        }
-    }
-
-    void onInvalidate() override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("on_invalidate")) {
-            py::call_method<py::object>(self, "on_invalidate");
-        }
-    }
-
-    void loadConfiguration(XMLReader& source, Manager& manager) override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("load_xml")) {
-            py::call_method<py::object>(self, "load_xml", source, manager);
-        } else {
-            Solver::loadConfiguration(source, manager);
-        }
-
-    }
-};
-
-
-}} // namespace plask::python
-
-#ifdef PRINT_STACKTRACE_ON_EXCEPTION
-#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) //win32 support
-#       include <win_printstack.hpp>
-#   else
-#       include <backward.hpp>
-        void printStack(void) {
-            backward::StackTrace st;
-            st.load_here(256);
-            backward::Printer printer;
-            printer.address = true;
-            printer.print(st, stderr);
-        }
-#   endif
-#endif
-
 // struct IntFromInt64 {
 //     IntFromInt64() {
 //         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<int>());
@@ -414,6 +350,71 @@ struct SolverWrap: public Solver, Overriden {
 //     }
 // };
 // PyObject* DoubleFromComplex::ComplexWarning;
+
+
+/// Solver wrapper to be inherited from Python
+struct SolverWrap: public Solver, Overriden<Solver> {
+
+    SolverWrap(PyObject* self, const std::string& name): Solver(name), Overriden(self) {}
+
+    static shared_ptr<Solver> init(const py::tuple& args, const py::dict& kwargs) {
+        PyObject* self;
+        const char* name = nullptr;
+        static const char *kwlist[] = { "self", "name", NULL };
+        if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwargs.ptr(), "O|s:__init__", (char**)kwlist, &self, &name))
+            throw py::error_already_set();
+
+        return plask::make_shared<SolverWrap>(self, name? name : "");
+    }
+
+    std::string getClassName() const override {
+        return py::extract<std::string>(PyObject_GetAttrString(PyObject_GetAttrString(self, "__class__"), "__name__"));
+    }
+
+    void onInitialize() override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("on_initialize")) {
+            py::call_method<void>(self, "on_initialize");
+        }
+    }
+
+    void onInvalidate() override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("on_invalidate")) {
+            py::call_method<void>(self, "on_invalidate");
+        }
+    }
+
+    void loadConfiguration(XMLReader& source, Manager& manager) override {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (overriden("load_xml")) {
+            py::call_method<void>(self, "load_xml", boost::ref(source), boost::ref(manager));
+        } else {
+            Solver::loadConfiguration(source, manager);
+        }
+
+    }
+
+};
+
+
+}} // namespace plask::python
+
+
+#ifdef PRINT_STACKTRACE_ON_EXCEPTION
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) //win32 support
+#       include <win_printstack.hpp>
+#   else
+#       include <backward.hpp>
+        void printStack(void) {
+            backward::StackTrace st;
+            st.load_here(256);
+            backward::Printer printer;
+            printer.address = true;
+            printer.print(st, stderr);
+        }
+#   endif
+#endif
 
 
 BOOST_PYTHON_MODULE(_plask)
@@ -490,16 +491,12 @@ BOOST_PYTHON_MODULE(_plask)
              "    ...         if tag.name == 'something':\n"
              "    ...             for sub in tag:\n"
              "    ...                 if sub.name == 'withtext':\n"
-             "    ...                     text = sub.text\n"
+             "    ...                     self.text = sub.text\n"
              "    ...         elif tag.name == 'config':\n"
-             "    ...             a = tag.attrib[a]\n"
-             "    ...             b = tag.attrib.get(b, 0)\n"
-             "    ...         else:\n"
-             "    ...             self.read_xml_tag(tag, manager)\n")
-        .def("read_xml_tag", &plask::Solver::parseStandardConfiguration,
-             (py::arg("tag"), "manager", py::arg("msg")="solver configuration element"),
-             "Read standard configuration tags (geometry, mesh) from XML reader.\n\n"
-             "This method should be called from :meth:`load_xml`.")
+             "    ...             self.a = tag['a']\n"
+             "    ...             self.b = tag.get('b', 0)\n"
+             "    ...         elif tag.name == 'geometry':\n"
+             "    ...             self.geometry = manager.geo[tag['ref']]\n")
     ;
     solver.attr("__module__") = "plask";
 

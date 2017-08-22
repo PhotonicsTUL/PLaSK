@@ -21,7 +21,7 @@
   </material>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
     <nr>3.621</nr>
-    <absp>0</absp>
+    <thermk>self.In</thermk>
     <A>110000000</A>
     <B>7e-011-1.08e-12*(T-300)</B>
     <C>1e-029+1.4764e-33*(T-300)</C>
@@ -288,6 +288,9 @@
   <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
     <voltage/>
   </electrical>
+  <local name="test" solver="Test" lib="something">
+    <geometry ref="simple"/>
+  </local>
 </solvers>
 
 <connects>

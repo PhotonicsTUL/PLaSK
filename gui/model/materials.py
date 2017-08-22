@@ -34,10 +34,6 @@ else:
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
            [(u'T', u'temperature', 'K')])),
-    ('taue', (u'Monomolecular electrons lifetime <i>τ<sub>e</sub></i>', u'ns',
-           [(u'T', u'temperature', 'K')])),
-    ('tauh', (u'Monomolecular holes lifetime <i>A</i><sub><i>h</i></sub>', u'ns',
-           [(u'T', u'temperature', 'K')])),
     ('absp', (u'Absorption coefficient <i>α</i>', u'cm<sup>-1</sup>',
               [(u'wl', u'wavelength', 'nm'),
                (u'T', u'temperature', 'K')])),
@@ -149,6 +145,10 @@ MATERIALS_PROPERTES = OrderedDict((
              (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('Psp', (u'Spontaneous polarization <i>P<sub>sp</sub></i>', u'C/m<sup>2</sup>',
               [(u'T', u'temperature', 'K')])),
+    ('taue', (u'Monomolecular electrons lifetime <i>τ<sub>e</sub></i>', u'ns',
+           [(u'T', u'temperature', 'K')])),
+    ('tauh', (u'Monomolecular holes lifetime <i>A</i><sub><i>h</i></sub>', u'ns',
+           [(u'T', u'temperature', 'K')])),
     ('thermk', (u'Thermal conductivity in lateral and vertical directions <i>k</i>', u'W/(m K)',
                 [(u'T', u'temperature', 'K'),
                  (u'h', u'layer thickness', 'µm')])),
@@ -208,9 +208,9 @@ def material_html_help(property_name, with_unit=True, with_attr=False, font_size
     else:
         res += prop_help
         if with_unit and prop_unit is not None:
-            res += ' [' + prop_unit + ']'
+            res += u' [' + prop_unit + ']'
         if with_attr and prop_attr is not None and len(prop_attr) > 0:
-            res += '<br>' + ', '.join(['<b><i>{0:s}</i></b> - {1:s} [{2:s}]'.format(*attr) for attr in prop_attr])
+            res += u'<br>' + u', '.join([u'<b><i>{0:s}</i></b> - {1:s} [{2:s}]'.format(*attr) for attr in prop_attr])
     if font_size is not None: res += '</span>'
     return res
 

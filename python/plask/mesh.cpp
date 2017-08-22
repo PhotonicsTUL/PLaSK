@@ -17,11 +17,11 @@ template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
 template <int dim> typename MeshD<dim>::LocalCoords MeshWrap<dim>::at(std::size_t index) const {
-    return call_python<typename MeshD<dim>::LocalCoords>("__getitem__", index);
+    return this->template call_python<typename MeshD<dim>::LocalCoords>("__getitem__", index);
 }
 
 template <int dim> size_t MeshWrap<dim>::size() const {
-    return call_python<size_t>("__len__");
+    return this->template call_python<size_t>("__len__");
 }
 
 template <int dim> shared_ptr<MeshD<dim>> MeshWrap<dim>::__init__(py::tuple args, py::dict kwargs) {
@@ -38,11 +38,11 @@ template <int dim> shared_ptr<MeshD<dim>> MeshWrap<dim>::__init__(py::tuple args
 
 template <int dim>
 struct UnstructuredMesh: public MeshD<dim> {
-  
+
     py::object points;
-    
+
     UnstructuredMesh(const py::object& points): points(points) {}
-    
+
     typename MeshD<dim>::LocalCoords at(std::size_t index) const override {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         return py::extract<typename MeshD<dim>::LocalCoords>(points[index]);
@@ -57,7 +57,7 @@ struct UnstructuredMesh: public MeshD<dim> {
         py::class_<UnstructuredMesh<dim>, shared_ptr<UnstructuredMesh<dim>>,
                    py::bases<MeshD<dim>>>(NAME, DOCSTRING, py::init<const py::object&>());
     }
-    
+
     static const char* const NAME;
 
     static const char* const DOCSTRING;
@@ -177,7 +177,7 @@ void register_mesh()
 
     UnstructuredMesh<2>::register_class();
     UnstructuredMesh<3>::register_class();
-    
+
     register_mesh_rectangular();
 
     register_vector_of<OrderedAxis>("Ordered");

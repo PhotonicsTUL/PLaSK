@@ -2,6 +2,12 @@
 
 #include <plask/utils/xml/reader.h>
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 //     /**
@@ -196,15 +202,6 @@ namespace plask { namespace python {
 //     std::string requireTextInCurrentTag();
 //
 //     /**
-//      * Call requireNext() and next check if current element is text. Throw exception if it's not.
-//      * \return read text casted (by lexical_cast) to givent type T
-//      */
-//     template <typename T>
-//     inline T requireText() {
-//         return parse<T>(requireText());
-//     }
-//
-//     /**
 //      * Call requireNext() and next check if current element is text. Throw exception if it's not. Next require end of tag.
 //      * \return read text casted (by lexical_cast) to givent type T
 //      */
@@ -239,19 +236,84 @@ namespace plask { namespace python {
  *             if sub.name == "withtext":
  *                 text = sub.text
  *             else:
- *                 a = tag.attrib[a]
- *                 b = tag.attrib.get(b)
+ *                 a = tag[a]
+ *                 b = tag.get(b)
  *     else:
  *         self.read_xml_tag(tag, manager)
  *
 */
 
-static XMLReader* next(XMLReader* self) {
+namespace detail {
+
+    class XMLIterator {
+
+        XMLReader* reader;
+        size_t level;
+
+        inline size_t current_level() {
+            return reader->getLevel() - size_t(reader->getNodeType() == XMLReader::NODE_ELEMENT_END);
+        }
+
+      public:
+
+        XMLIterator(XMLReader* reader): reader(reader), level(reader->getLevel()) {}
+
+        XMLReader* next() {
+            for (size_t i = current_level(); i > level; --i) { reader->requireTagEnd(); }
+            if (!reader->requireTagOrEnd()) {
+                PyErr_SetString(PyExc_StopIteration, "");
+                py::throw_error_already_set();
+            }
+            return reader;
+        }
+    };
+
+    static XMLIterator XMLReader__iter__(XMLReader* reader) {
+        return XMLIterator(reader);
+    }
+
+    static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
+        auto value = reader->requireAttribute(key);
+        py::str obj(value);
+        try {
+            return py::eval(obj);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            return obj;
+        }
+    }
+
+    static py::object XMLReader_get(XMLReader* reader, const std::string& key, const py::object& deflt) {
+        auto value = reader->getAttribute(key);
+        if (value) {
+            py::str obj(*value);
+            try {
+                return py::eval(obj);
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                return obj;
+            }
+        }
+        else return deflt;
+    }
+
 }
 
 void register_xml_reader() {
 
-    py::class_<XMLReader, boost::noncopyable>("XmlReader", py::no_init)
+    py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XmlReader", py::no_init); xml
+        .def("__iter__", &detail::XMLReader__iter__)
+        .add_property("name", &XMLReader::getNodeName, "Current tag name.")
+        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, "Text in the current tag.")
+        .def("__getitem__", &detail::XMLReader__getitem__)
+        .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
+             (py::arg("key"), py::arg("default")=py::object()))
+    ;
+
+    py::scope scope(xml);
+
+    py::class_<detail::XMLIterator>("_Iterator", py::no_init)
+        .def(NEXT, &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>())
     ;
 }
 

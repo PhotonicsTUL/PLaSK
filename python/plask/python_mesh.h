@@ -15,10 +15,10 @@ namespace py = boost::python;
 
 /// Custom Python mesh
 template <int dim>
-struct MeshWrap: public MeshD<dim>, Overriden {
-  
-    MeshWrap(PyObject* self): Overriden(self) {}
-    
+struct MeshWrap: public MeshD<dim>, Overriden<MeshD<dim>> {
+
+    MeshWrap(PyObject* self): Overriden<MeshD<dim>> (self) {}
+
     typename MeshD<dim>::LocalCoords at(std::size_t index) const override;
 
     size_t size() const override;
@@ -90,7 +90,7 @@ struct ExportBoundary {
         ;
 
         detail::RegisterBoundaryConditions<MeshType, py::object>(false);
-        
+
         boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshType::Boundary>());
     }
 };

@@ -217,7 +217,7 @@ void PythonManager::loadDefines(XMLReader& reader)
 
 shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name)
 {
-    std::string module_name = category + "." + lib;
+    std::string module_name = (category == "local")? lib : category + "." + lib;
     py::object module = py::import(module_name.c_str());
     py::object solver = module.attr(solver_name.c_str())(name);
     return py::extract<shared_ptr<Solver>>(solver);
@@ -553,7 +553,25 @@ struct ManagerRoots {
 };
 
 void register_manager() {
-    py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
+    py::class_<Manager, shared_ptr<Manager>, boost::noncopyable>
+    manager("Manager", "Main input manager.\n", py::no_init); manager
+        .def_readonly("pth", &Manager::pathHints, "Dictionary of all named paths.")
+        .def_readonly("geo", &Manager::geometrics, "Dictionary of all named geometries and geometry objects.")
+        .def_readonly("msh", &Manager::meshes, "Dictionary of all named meshes.")
+        .def_readonly("msg", &Manager::generators, "Dictionary of all named mesh generators.")
+        .def_readonly("solvers", &Manager::solvers, "Dictionary of all named solvers.")
+        // .def_readonly("profiles", &Manager::profiles, "Dictionary of constant profiles")
+        .def_readonly("script", &Manager::script, "Script read from XML file.")
+        .def_readwrite("draft_material", &Manager::draft,
+                       "Flag indicating if unknown materials are allowed. If True then dummy material\n"
+                       "is created if the proper one cannot be found in the database.\n"
+                       "Otherwise an exception is raised.")
+        .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
+        .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
+                      "Root geometries.")
+    ;
+
+    py::class_<PythonManager, shared_ptr<PythonManager>, py::bases<Manager>, boost::noncopyable>("Manager",
         "Main input manager.\n\n"
 
         "Object of this class provides methods to read the XML file and fetch geometry\n"
@@ -572,7 +590,7 @@ void register_manager() {
         "    draft (bool): If *True* then partially incomplete XML is accepted\n"
         "                  (e.g. non-existent materials are allowed).\n",
 
-        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("draft")=false))); manager
+        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("draft")=false)))
         .def("load", &PythonManager_load,
              "Load data from source.\n\n"
              "Args:\n"
@@ -586,13 +604,6 @@ void register_manager() {
              "        If this parameter is given, only the listed sections of the XPL file are\n"
              "        read and the other ones are skipped.\n",
              (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
-        .def_readonly("pth", &PythonManager::pathHints, "Dictionary of all named paths.")
-        .def_readonly("geo", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects.")
-        .def_readonly("msh", &PythonManager::meshes, "Dictionary of all named meshes.")
-        .def_readonly("msg", &PythonManager::generators, "Dictionary of all named mesh generators.")
-        .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers.")
-        // .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
-        .def_readonly("script", &PythonManager::script, "Script read from XML file.")
         .def_readwrite("defs", &PythonManager::defs,
                        "Local defines.\n\n"
                        "This is a combination of the values specified in the :xml:tag:`<defines>`\n"
@@ -609,13 +620,6 @@ void register_manager() {
              "* mesh generators (:attr:`~plask.Manager.msg`): ``MSG``,\n\n"
              "* custom defines (:attr:`~plask.Manager.defs`): ``DEF``.\n",
              py::arg("target"))
-        .def_readwrite("draft_material", &Manager::draft,
-                       "Flag indicating if unknown materials are allowed. If True then dummy material\n"
-                       "is created if the proper one cannot be found in the database.\n"
-                       "Otherwise an exception is raised.")
-        .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
-        .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
-                      "Root geometries.")
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");

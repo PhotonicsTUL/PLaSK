@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-
+import sys
 
 import plask, plask.geometry
 import plasktest
@@ -47,3 +47,8 @@ class Geometrys(unittest.TestCase):
         s = plask.geometry.Cartesian2D(r)
         solver.geometry = s
         self.assertEqual( solver.geometry, s )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())

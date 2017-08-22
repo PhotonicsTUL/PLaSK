@@ -92,7 +92,7 @@ class GeometryPath(unittest.TestCase):
 
 
 class PathHints(unittest.TestCase):
-    
+
     def testHints(self):
         rect = plask.geometry.Rectangle(1,1,'GaAs')
         stack = plask.geometry.Stack2D()
@@ -104,7 +104,7 @@ class PathHints(unittest.TestCase):
         self.assertAlmostEqual( stack.get_leafs_positions((stack, 1))[0][1], 1. )
         self.assertAlmostEqual( stack.get_leafs_positions({stack: 2})[0][1], 2. )
         self.assertAlmostEqual( stack.get_leafs_positions({stack: (3,)})[0][1], 3. )
-        del stack, hint 
+        del stack, hint
         self.assertEqual( sys.getrefcount(rect), 2 )
 
 
@@ -254,3 +254,8 @@ class Edges(unittest.TestCase):
         self.assertEqual( space.get_material(-6., 1.), AlN )
         self.assertEqual( space.get_material(-7., 1.), AlN )
         self.assertEqual( space.get_material(-9., 1.), GaN )
+
+
+if __name__ == '__main__':
+    test = unittest.main(exit=False)
+    sys.exit(not test.result.wasSuccessful())
