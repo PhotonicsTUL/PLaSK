@@ -35,4 +35,5 @@ The available solvers are as follows:
    solvers/electrical
    solvers/gain
    solvers/optical
+   solvers/meta
    solvers/filters
