@@ -447,8 +447,8 @@ const static char* __doc__ =
     "    >>> v[0]\n"
     "    1\n\n"
 
-    "You may perfrom all the proper algebraic operations on PLaSK vectors like\n"
-    "addition, substraction, multiplication by scalar, multiplication by another\n"
+    "You may perform all the proper algebraic operations on PLaSK vectors like\n"
+    "addition, subtraction, multiplication by scalar, multiplication by another\n"
     "vector (which results in a dot product).\n\n"
 
     "Example:\n\n"

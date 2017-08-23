@@ -136,7 +136,10 @@ void register_mesh()
         "Meshes classes.\n\n"
     ;
 
-    py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh", "Base class for all meshes", py::no_init)
+    py::class_<MeshBase, shared_ptr<MeshBase>, boost::noncopyable>("Mesh", "Base class for all meshes", py::no_init);
+
+    py::class_<Mesh, shared_ptr<Mesh>, py::bases<MeshBase>, boost::noncopyable>("Mesh",
+        "Base class for all meshes", py::no_init)
         .def("__len__", &Mesh::size)
         .def("__nonzero__", &__nonempty__<Mesh>, "Return True if the mesh is empty")
     ;
@@ -166,7 +169,7 @@ void register_mesh()
     mesh3d.attr("dim") = 3;
     py::implicitly_convertible<shared_ptr<MeshD<3>>, shared_ptr<const MeshD<3>>>();
 
-    py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator",
+    py::class_<MeshGenerator, shared_ptr<MeshGenerator>, py::bases<MeshBase>, boost::noncopyable>("MeshGenerator",
         "Base class for all mesh generators", py::no_init)
     ;
     py::implicitly_convertible<shared_ptr<MeshGenerator>, shared_ptr<const MeshGenerator>>();

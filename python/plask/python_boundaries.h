@@ -4,6 +4,7 @@
 #include "python_globals.h"
 #include <plask/utils/format.h>
 #include <plask/mesh/boundary_conditions.h>
+#include <plask/manager.h>
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"
@@ -68,6 +69,10 @@ struct RegisterBoundaryConditions {
         self.insert(i, ConditionT(boundary, value));
     }
 
+    static void read_from_xml(BoundaryConditionsT& self, XMLReader& reader, Manager& manager) {
+        manager.readBoundaryConditions<MeshT, ValueT>(reader, self);
+    }
+
     struct Iter {
         BoundaryConditionsT& obj;
         ptrdiff_t i;
@@ -121,6 +126,9 @@ struct RegisterBoundaryConditions {
                 .def("insert", &insert, "Insert new boundary condition to the list at specified position.", (py::arg("index"), "place", "value"))
                 .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions.")
                 .def("__iter__", &__iter__)
+                .def("read_from_xml", &read_from_xml, (py::arg("xml"), "manager"),
+                     "Read boundary conditions from active XPL reader.\n\n"
+                     "This should only be used in overloaded :meth:`~Solver.load_xml method.\n")
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;

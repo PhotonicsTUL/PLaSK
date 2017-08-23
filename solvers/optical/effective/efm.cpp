@@ -72,19 +72,17 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
             if (found != manager.meshes.end()) {
                 auto mesh1 = dynamic_pointer_cast<MeshAxis>(found->second);
                 auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
-                if (mesh1) this->setHorizontalMesh(mesh1);
-                else if (mesh2) this->setMesh(mesh2);
-                else throw BadInput(this->getId(), "Mesh '{0}' of wrong type", *name);
-            } else {
-                auto found = manager.generators.find(*name);
-                if (found != manager.generators.end()) {
+                if (mesh1)
+                    this->setHorizontalMesh(mesh1);
+                else if (mesh2)
+                    this->setMesh(mesh2);
+                else {
                     auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
                     auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(plask::make_shared<RectangularMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
-                    else throw BadInput(this->getId(), "Mesh generator '{0}' of wrong type", *name);
-                } else
-                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '{0}' found", *name);
+                    else throw BadInput(this->getId(), "Mesh or generator '{0}' of wrong type", *name);
+                }
             }
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");

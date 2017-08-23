@@ -297,17 +297,44 @@ namespace detail {
         else return deflt;
     }
 
+
+    static py::object XMLReader_attribs(XMLReader* reader) {
+        py::dict result;
+        for (auto attr: reader->getAttributes()) {
+            py::str obj(attr.second);
+            try {
+                result[attr.first] = py::eval(obj);
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                result[attr.first] = obj;
+            }
+        }
+        return result;
+    }
+
+    static bool XMLReader__eq__(XMLReader* reader, const py::object& other) {
+        py::extract<std::string> name(other);
+        if (name.check()) return reader->getNodeName() == name();
+        py::extract<XMLReader*> other_reader(other);
+        if (other_reader.check()) return reader == other_reader();
+        return false;
+    }
+
 }
 
 void register_xml_reader() {
 
     py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XmlReader", py::no_init); xml
         .def("__iter__", &detail::XMLReader__iter__)
+        .def("__eq__", &detail::XMLReader__eq__)
         .add_property("name", &XMLReader::getNodeName, "Current tag name.")
         .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, "Text in the current tag.")
         .def("__getitem__", &detail::XMLReader__getitem__)
         .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=py::object()))
+        .add_property("attrs", &detail::XMLReader_attribs, "List of all the tag attributes.")
+        .def("__contains__", &XMLReader::hasAttribute)
+
     ;
 
     py::scope scope(xml);

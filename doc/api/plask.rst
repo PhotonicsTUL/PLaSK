@@ -33,6 +33,7 @@ Classes
    Data
    Manager
    StepProfile
+   Solver
    XmlWriter
 
 Functions

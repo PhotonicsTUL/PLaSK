@@ -74,11 +74,22 @@ class AttrBool(AttrChoice):
         super(AttrBool, self).__init__(tag, name, label, help, ('yes', 'no'), default)
 
 
+class AttrGeometry(Attr):
+    def __init__(self, tag, name, label, help, geometry_type, default=None):
+        super(AttrGeometry, self).__init__(tag, name, label, help, default)
+        self.type = geometry_type
+    pass
+
+
 class AttrGeometryObject(Attr):
     pass
 
 
 class AttrGeometryPath(Attr):
+    pass
+
+
+class AttrMesh(AttrChoice):
     pass
 
 
@@ -104,6 +115,11 @@ def read_attr(tn, attr, xns):
             result = AttrGeometryObject(tn, an, al, ah)
         elif at == u'geometry path':
             result = AttrGeometryPath(tn, an, al, ah)
+        elif at.startswith(u'geometry '):
+            result = AttrGeometry(tn, an, al, ah, at[9:])
+        elif at == u'mesh':
+            ac = tuple(ch.text.strip() for ch in attr.findall(xns + 'type'))
+            result = AttrMesh(tn, an, al, ah, ac)
         else:
             if at:
                 ah += u' ({})'.format(at)
@@ -129,13 +145,13 @@ class AutoSolver(Solver):
     """Model for solver with its configuration specified in a scheme file solvers.xml
        and automatically generated controller widget"""
 
-    def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_type=None, name='',
+    def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_types=None, name='',
                  parent=None, info_cb=None):
         super(AutoSolver, self).__init__(category, solver, name, parent, info_cb)
         self.lib = lib
         self.schema = schema
         self.geometry_type = geometry_type
-        self.mesh_type = mesh_type
+        self.mesh_types = mesh_types
         self.set_fresh_data()
 
     def set_fresh_data(self):
@@ -189,7 +205,7 @@ class AutoSolver(Solver):
         if el is not None:
             self.geometry = el.attrib.get('ref')
             #TODO report missing or mismatching geometry
-        if self.mesh_type:
+        if self.mesh_types:
             el = element.find('mesh')
             if el is not None:
                 self.mesh = el.attrib.get('ref')
@@ -227,18 +243,18 @@ class AutoSolver(Solver):
 
 class AutoSolverFactory(object):
 
-    def __init__(self, category, lib, solver, schema, geometry_type, mesh_type, providers, receivers):
+    def __init__(self, category, lib, solver, schema, geometry_type, mesh_types, providers, receivers):
         self.category = category
         self.solver = solver
         self.schema = schema
         self.geometry_type = geometry_type
-        self.mesh_type = mesh_type
+        self.mesh_types = mesh_types
         self.lib = lib
         self.providers = providers
         self.receivers = receivers
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
-        result = AutoSolver(self.category, self.schema, self.lib, self.solver, self.geometry_type, self.mesh_type,
+        result = AutoSolver(self.category, self.schema, self.lib, self.solver, self.geometry_type, self.mesh_types,
                             name, parent, info_cb)
         if element is not None:
             result.set_xml_element(element)
@@ -255,13 +271,7 @@ def _iter_tags(parent, xns):
             yield t
 
 
-def load_xml(filename, cat=True):
-
-    if cat:
-        cat = os.path.basename(_d(filename))
-        if cat == 'skel': return
-    else:
-        cat = None
+def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
     dom = etree.parse(filename)
     root = dom.getroot()
@@ -278,7 +288,7 @@ def load_xml(filename, cat=True):
         name = solver.attrib.get('name')
         if name is None: return
 
-        cat = solver.attrib.get('category', cat)
+        cat = solver.attrib.get('category')
         if cat is None:
             raise ValueError('Unspecified category')
         lib = solver.attrib.get('lib', os.path.basename(filename)[:-4])
@@ -287,15 +297,24 @@ def load_xml(filename, cat=True):
         try:
             geometry_type = g.attrib['type']
         except (KeyError, AttributeError):
-            if name.endswith('Cyl'):
-                geometry_type = "Cylindrical"
-            else:
-                geometry_type = "Cartesian" + name[-2:]
+            geometry_type = None
+            # if name.endswith('Cyl'):
+            #     geometry_type = "Cylindrical"
+            # else:
+            #     geometry_type = "Cartesian" + name[-2:]
 
+        mesh_types = set()
         m = solver.find(xns+'mesh')
-        try:
-            mesh_type = m.attrib['type']
-        except (KeyError, AttributeError):
+        if m is not None:
+            try:
+                mesh_type = m.attrib['type']
+            except (KeyError):
+                mesh_type = None
+            else:
+                mesh_types.add(mesh_type)
+            for t in m.findall(xns+'type'):
+                mesh_types.add(t.text)
+        else:
             mesh_type = None
 
         schema = []
@@ -317,15 +336,11 @@ def load_xml(filename, cat=True):
                     attrs.append(group)
             schema.append(SchemaTag(tn, tl, attrs))
 
-        try:
-            BCond = BCONDS[mesh_type]
-        except KeyError:
-            pass
-        else:
-            for bcond in solver.findall(xns+'bcond'):
-                values = bcond.attrib.get('values')
-                if values is not None: values = values.split(',')
-                schema.append(BCond(bcond.attrib['name'], bcond.attrib['label'], mesh_type, values))
+        for bcond in solver.findall(xns+'bcond'):
+            values = bcond.attrib.get('values')
+            if values is not None: values = values.split(',')
+            BCond = BCONDS[bcond.attrib.get('type', mesh_type)]
+            schema.append(BCond(bcond.attrib['name'], bcond.attrib['label'], mesh_type, values))
 
         flow = solver.find(xns+'flow')
         if flow is not None:
@@ -337,15 +352,16 @@ def load_xml(filename, cat=True):
             providers = []
             receivers = []
 
-        if cat not in CATEGORIES:
-            CATEGORIES.append(cat)
-        SOLVERS[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_type, providers, receivers)
+        if cat not in categories:
+            categories.append(cat)
+        solvers[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, providers, receivers)
 
 
 # Find XML files with solvers configuration
 from os.path import dirname as _d
 
 for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(_d(__file__)))), 'solvers')):
+    if os.path.split(_dirname)[-1] == 'skel': continue
     for _f in _files:
         if _f.endswith('.xml'):
             load_xml(os.path.join(_dirname, _f))

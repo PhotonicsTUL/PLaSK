@@ -148,23 +148,20 @@ private:
     std::map<std::string, PathHints> pathHints;
 
     /// Roots objects, geometries.
-    std::vector< shared_ptr<Geometry> > roots;
+    std::vector<shared_ptr<Geometry>> roots;
 
     /// Geometries and geometry objects by name.
-    std::map<std::string, shared_ptr<GeometryObject> > geometrics;
+    std::map<std::string, shared_ptr<GeometryObject>> geometrics;
 
     /// Meshes by name.
-    std::map< std::string, shared_ptr<Mesh> > meshes;
-
-    /// Meshes generators by name.
-    std::map< std::string, shared_ptr<MeshGenerator> > generators;
+    std::map< std::string, shared_ptr<MeshBase>> meshes;
 
     /// Solvers by name.
-    std::map< std::string, shared_ptr<Solver> > solvers;
+    std::map< std::string, shared_ptr<Solver>> solvers;
 
     /// Boundaries places by name.
     //TODO? move to special modules reader class to have more local scope?
-    std::map< std::string, boost::any > boundaries;
+    std::map< std::string, boost::any> boundaries;
 
     /// Script read from file
     std::string script;
@@ -318,7 +315,7 @@ private:
      * \param name name of calculation space to get
      * \return calculation space with given \p name or shared_ptr<Mesh>() if there is no mesh with given @p name
      */
-    shared_ptr<Mesh> getMesh(const std::string& name) const;
+    shared_ptr<MeshBase> getMesh(const std::string& name) const;
 
     /**
      * Get geometry trunk with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.

@@ -21,8 +21,8 @@ from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.autosolver import SchemaTag,\
-    AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath
+from ...model.solvers.autosolver import SchemaTag, \
+    AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
 from . import Controller
@@ -141,7 +141,7 @@ class SolverAutoWidget(VerticalScrollArea):
             edit.setCompleter(completer)
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
-        elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath)):
+        elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh)):
             edit = ComboBox()
             edit.setEditable(True)
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
@@ -177,32 +177,36 @@ class SolverAutoWidget(VerticalScrollArea):
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        label = QLabel("General")
-        font = label.font()
-        font.setBold(True)
-        label.setFont(font)
-        layout.addRow(label)
+        if controller.model.geometry_type or controller.model.mesh_types:
+            label = QLabel("General")
+            font = label.font()
+            font.setBold(True)
+            label.setFont(font)
+            layout.addRow(label)
 
         defines = get_defines_completer(self.controller.document.defines.model, self)
 
-        self.geometry = ComboBox()
-        self.geometry.setEditable(True)
-        self.geometry.editingFinished.connect(
-            lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
-        self.geometry.setCompleter(defines)
-        self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
-                                 u'Name of the existing geometry for use by this solver.')
-        #TODO add some graphical thumbnail
-        layout.addRow("Geometry:", self.geometry)
+        if controller.model.geometry_type is not None:
+            self.geometry = ComboBox()
+            self.geometry.setEditable(True)
+            self.geometry.editingFinished.connect(
+                lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
+            self.geometry.setCompleter(defines)
+            self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
+                                     u'Name of the existing geometry for use by this solver.')
+            #TODO add some graphical thumbnail
+            layout.addRow("Geometry:", self.geometry)
+        else:
+            self.geometry = None
 
-        if controller.model.mesh_type is not None:
+        if controller.model.mesh_types:
             self.mesh = ComboBox()
             self.mesh.setEditable(True)
             self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(defines)
             self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
                                  u'Name of the existing {} mesh for use by this solver.'
-                                 .format(controller.model.mesh_type))
+                                 .format(' or '.join(controller.model.mesh_types)))
             #TODO add some graphical thumbnail
             layout.addRow("Mesh:", self.mesh)
         else:
@@ -258,13 +262,42 @@ class SolverAutoWidget(VerticalScrollArea):
         main.setLayout(layout)
         self.setWidget(main)
 
+    def _get_grids(self, mesh_types):
+        if mesh_types is None:
+            grids = [m.name for m in self.controller.document.grids.model.entries if m.name]
+        else:
+            grids = []
+            for mesh_type in mesh_types:
+                mesh_type = mesh_type.lower()
+                grids.extend(m.name for m in self.controller.document.grids.model.entries
+                             if m.name and m.type == mesh_type)
+        return grids
+
     def load_data(self):
         model = self.controller.model
-        with BlockQtSignals(self.geometry):
-            self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
-            self.geometry.setEditText(model.geometry)
+        if self.geometry is not None:
+            with BlockQtSignals(self.geometry):
+                try:
+                    geometries = [g.name for g in getattr(self.controller.document.geometry.model,
+                                                          "roots_" + model.geometry_type.lower())
+                                  if g.name]
+                except AttributeError:
+                    pass
+                else:
+                    self.geometry.clear()
+                    self.geometry.addItems([''] + geometries)
+                self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
+                self.geometry.setEditText(model.geometry)
         if self.mesh is not None:
             with BlockQtSignals(self.mesh):
+                try:
+                    grids = self._get_grids(model.mesh_types)
+                except AttributeError:
+                    pass
+                else:
+                    if self.mesh is not None:
+                        self.mesh.clear()
+                        self.mesh.addItems([''] + grids)
                 self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
                 self.mesh.setEditText(model.mesh)
         for edit in self.controls.values():
@@ -281,7 +314,16 @@ class SolverAutoWidget(VerticalScrollArea):
                             edit.set_values(value)
                         else:
                             value = model.data[group][attr]
-                            if isinstance(item, AttrGeometryObject):
+                            if isinstance(item, AttrGeometry):
+                                try:
+                                    edit.clear()
+                                    geometries = [g.name for g in getattr(self.controller.document.geometry.model,
+                                                                          "roots_" + item.type)
+                                                  if g.name]
+                                    edit.addItems([''] + geometries)
+                                except AttributeError:
+                                    pass
+                            elif isinstance(item, AttrGeometryObject):
                                 try:
                                     edit.clear()
                                     edit.addItems([''] + list(self.controller.document.geometry.model.names()))
@@ -291,6 +333,12 @@ class SolverAutoWidget(VerticalScrollArea):
                                 try:
                                     edit.clear()
                                     edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
+                                except AttributeError:
+                                    pass
+                            elif isinstance(item, AttrMesh):
+                                try:
+                                    edit.clear()
+                                    edit.addItems([''] + list(self._get_grids(item.choices)))
                                 except AttributeError:
                                     pass
                             if type(edit) in (ComboBox, QComboBox):
@@ -357,29 +405,4 @@ class AutoSolverController(Controller):
 
     def on_edit_enter(self):
         with self.mute_changes():
-            try:
-                geometries = [g.name for g in getattr(self.document.geometry.model,
-                                                      "roots_"+self.model.geometry_type.lower())
-                              if g.name]
-            except AttributeError:
-                pass
-            else:
-                self.widget.geometry.clear()
-                self.widget.geometry.addItems([''] + geometries)
-            try:
-                grids = []
-                if self.model.mesh_type is not None:
-                    if ',' in self.model.mesh_type:
-                        mesh_types = (m.strip() for m in self.model.mesh_type.split(','))
-                    else:
-                        mesh_types = self.model.mesh_type,
-                    for mesh_type in mesh_types:
-                        mesh_type = mesh_type.lower()
-                        grids.extend(m.name for m in self.document.grids.model.entries if m.name and m.type == mesh_type)
-            except AttributeError:
-                pass
-            else:
-                if self.widget.mesh is not None:
-                    self.widget.mesh.clear()
-                    self.widget.mesh.addItems([''] + grids)
             self.widget.load_data()

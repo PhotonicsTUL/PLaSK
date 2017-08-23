@@ -16,7 +16,7 @@ from .table import TableController
 from .defines import DefinesCompletionDelegate
 
 from ..model.connects import ConnectsModel
-from ..model.solvers import SOLVERS, update_solvers
+from ..model.solvers import SOLVERS
 
 
 class FlowDelegate(DefinesCompletionDelegate):
@@ -44,7 +44,11 @@ class FlowDelegate(DefinesCompletionDelegate):
         items = []
         for solver in self.solvers_model.entries:
             try:
-                factory = SOLVERS.get((solver.category, solver.solver))
+                key = (solver.category, solver.solver)
+                if key in self.document.solvers.model.local_solvers:
+                    factory = self.document.solvers.model.local_solvers[key]
+                else:
+                    factory = SOLVERS.get(key)
             except AttributeError:
                 pass
             else:

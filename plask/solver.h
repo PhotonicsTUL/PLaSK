@@ -671,7 +671,7 @@ class SolverOver: public Solver {
      */
     template <typename MeshT, typename ConditionT>
     void readBoundaryConditions(Manager& manager, XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
-        manager.readBoundaryConditions<MeshT, ConditionT>(reader, dest, geometry);
+        manager.readBoundaryConditions<MeshT, ConditionT>(reader, dest);
     }
 
   public:
@@ -893,18 +893,13 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
         else reader.requireTagEnd();
         auto found = manager.meshes.find(*name);
         if (found != manager.meshes.end()) {
-            auto mesh = dynamic_pointer_cast<MeshT>(found->second);
-            if (!mesh) throw BadInput(this->getId(), "Mesh '{0}' of wrong type", *name);
-            this->setMesh(mesh);
-        }
-        else {
-            auto found = manager.generators.find(*name);
-            if (found != manager.generators.end()) {
+            if (shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(found->second)) {
+                this->setMesh(mesh);
+            } else {
                 auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
-                if (!generator) throw BadInput(this->getId(), "Mesh generator '{0}' of wrong type", *name);
+                if (!generator) throw BadInput(this->getId(), "Mesh mesh or generator '{0}' of wrong type", *name);
                 this->setMesh(generator);
-            } else
-                throw BadInput(this->getId(), "Neither mesh nor mesh generator '{0}' found", *name);
+            }
         }
     } else {
         SolverOver<SpaceT>::parseStandardConfiguration(reader, manager, expected_msg);

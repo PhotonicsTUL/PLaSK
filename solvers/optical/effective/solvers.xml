@@ -6,7 +6,10 @@
 
     <geometry type="Cartesian2D"/>
 
-    <mesh type="Rectangular2D, Ordered, Regular" optional="yes"/>
+    <mesh type="Rectangular2D" optional="yes">
+      <type>Ordered</type>
+      <type>Regular</type>
+    </mesh>
 
     <tag name="mode" label="Mode Properties">
       <attr name="polarization" label="Polarization" type="choice" default="TE">
@@ -81,7 +84,10 @@
 
     <geometry type="Cylindrical"/>
 
-    <mesh type="Rectangular2D, Ordered, Regular" optional="yes"/>
+    <mesh type="Rectangular2D" optional="yes">
+      <type>Ordered</type>
+      <type>Regular</type>
+    </mesh>
 
     <tag name="mode" label="Mode Properties">
       Mode properties.

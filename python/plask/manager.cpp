@@ -332,7 +332,7 @@ void PythonManager::export_dict(py::object self, py::object dict) {
     dict["PTH"] = self.attr("pth");
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
-    dict["MSG"] = self.attr("msg");
+    dict["MSG"] = self.attr("msh");  // TODO: Remove in the future
     dict["DEF"] = self.attr("defs");
 
     PythonManager* ths = py::extract<PythonManager*>(self);
@@ -557,8 +557,7 @@ void register_manager() {
     manager("Manager", "Main input manager.\n", py::no_init); manager
         .def_readonly("pth", &Manager::pathHints, "Dictionary of all named paths.")
         .def_readonly("geo", &Manager::geometrics, "Dictionary of all named geometries and geometry objects.")
-        .def_readonly("msh", &Manager::meshes, "Dictionary of all named meshes.")
-        .def_readonly("msg", &Manager::generators, "Dictionary of all named mesh generators.")
+        .def_readonly("msh", &Manager::meshes, "Dictionary of all named meshes and generators.")
         .def_readonly("solvers", &Manager::solvers, "Dictionary of all named solvers.")
         // .def_readonly("profiles", &Manager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &Manager::script, "Script read from XML file.")
@@ -570,6 +569,7 @@ void register_manager() {
         .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
                       "Root geometries.")
     ;
+    manager.attr("msg") = manager.attr("msh");  // TODO: Remove in the future
 
     py::class_<PythonManager, shared_ptr<PythonManager>, py::bases<Manager>, boost::noncopyable>("Manager",
         "Main input manager.\n\n"
@@ -616,15 +616,14 @@ void register_manager() {
              "under the following keys:\n\n"
              "* geometries and geometry objects (:attr:`~plask.Manager.geo`): ``GEO``,\n\n"
              "* paths to geometry objects (:attr:`~plask.Manager.pth`): ``PTH``,\n\n"
-             "* meshes (:attr:`~plask.Manager.msh`): ``MSH``,\n\n"
-             "* mesh generators (:attr:`~plask.Manager.msg`): ``MSG``,\n\n"
+             "* meshes and generators (:attr:`~plask.Manager.msh`): ``MSH``,\n\n"
              "* custom defines (:attr:`~plask.Manager.defs`): ``DEF``.\n",
              py::arg("target"))
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
     register_manager_dict<PathHints>("PathHints");
-    register_manager_dict<shared_ptr<Mesh>>("Meshes");
+    register_manager_dict<shared_ptr<MeshBase>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
     register_manager_dict<shared_ptr<Solver>>("Solvers");
 

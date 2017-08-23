@@ -115,7 +115,12 @@ namespace plask {
  * @see @ref meshes
  */
 
-struct PLASK_API Mesh: public Printable {
+/// Common base for meshes and generators
+struct PLASK_API MeshBase {
+    virtual ~MeshBase() {}
+};
+
+struct PLASK_API Mesh: public Printable, MeshBase {
 
 
     /**
@@ -300,7 +305,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<3>)
 template <int dim> class RectangularMesh {};
 
 /** Base class for every mesh generator */
-class PLASK_API MeshGenerator {
+class PLASK_API MeshGenerator: public MeshBase {
   public:
 
     /// Mesh generator event.

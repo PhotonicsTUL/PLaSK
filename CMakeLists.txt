@@ -606,10 +606,10 @@ if(BUILD_PYTHON)
                            DEPENDS ${lst})
         install(FILES ${PLASK_PATH}/solvers/${cat}/__init__.py DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
         list(APPEND solvers_packages ${PLASK_PATH}/solvers/${cat}/__init__.py)
-
         file(GLOB python_solvers_${cat} ${CMAKE_SOURCE_DIR}/solvers/${cat}/*.py)
         install(FILES ${python_solvers_${cat}} DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
     endforeach()
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/solvers/meta DESTINATION lib/plask/solvers COMPONENT solvers)
     add_custom_target(solvers-packages ALL DEPENDS ${solvers_packages})
 endif()
 

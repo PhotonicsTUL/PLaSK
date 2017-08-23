@@ -291,6 +291,9 @@
   <local name="test" solver="Test" lib="something">
     <geometry ref="simple"/>
   </local>
+  <meta name="meta" solver="ThermoElectric2D" lib="schockley">
+    <geometry electrical="geo2d-copy" thermal="geo2d"/>
+  </meta>
 </solvers>
 
 <connects>

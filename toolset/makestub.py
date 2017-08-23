@@ -10,7 +10,6 @@ import os
 import errno
 import re
 import collections
-import codecs
 
 
 INDENT = " " * 4
@@ -32,10 +31,10 @@ class StubCreator(object):
             self._doc = '"""\n' + doc + '"""\n\n'
         elif doc:
             lines = doc.splitlines()
-            if not lines[0].strip(): del lines[0]
-            if not lines[0].strip(): del lines[0]
-            if not lines[-1].strip(): del lines[-1]
-            if not lines[-1].strip(): del lines[-1]
+            if lines and not lines[0].strip(): del lines[0]
+            if lines and not lines[0].strip(): del lines[0]
+            if lines and not lines[-1].strip(): del lines[-1]
+            if lines and not lines[-1].strip(): del lines[-1]
             doc = "\n".join(depth * INDENT + l for l in lines)
             self.emit('"""\n{}\n{}"""'.format(doc, depth * INDENT), depth)
 
@@ -149,10 +148,11 @@ class StubCreator(object):
         try:
             args, varargs, keywords, defaults = getargspec(func)
         except TypeError as e:
-            doc = getattr(func, "__doc__", "").splitlines()
+            doc = getattr(func, "__doc__", "")
             arglist = []
             aftsig = False
             if doc:
+                doc = doc.splitlines()
                 for i,l in enumerate(doc):
                     if aftsig and not l.strip():
                         aftsig = False
@@ -228,14 +228,16 @@ if __name__ == "__main__":
             c = StubCreator(arg)
             c.create_stub_from_module(arg)
             path_comp = arg.split('.')
-            path = os.path.join(*path_comp[:-1])
-            try:
-                os.makedirs(path)
-            except OSError as exc: # Python >2.5
-                if exc.errno == errno.EEXIST and os.path.isdir(path):
-                    pass
-                else: raise
-            open(os.path.join(path, "__init__.py"), 'a+')
+            if len(path_comp) > 1:
+                path = os.path.join(*path_comp[:-1])
+                try:
+                    os.makedirs(path)
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir(path): pass
+                    else: raise
+                open(os.path.join(path, "__init__.py"), 'a+')
+            else:
+                path = ''
             try:
                 file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+', encoding='utf-8')
             except TypeError:

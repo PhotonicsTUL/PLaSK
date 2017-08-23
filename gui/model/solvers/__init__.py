@@ -28,7 +28,10 @@ CATEGORIES = [
     'thermal',
     'electrical',
     'gain',
-    'optical'
+    'optical',
+    None,
+    'meta',
+    None
 ]
 
 SUFFIXES = ('2D', 'Cyl', '3D')
@@ -157,6 +160,8 @@ class SolversModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(SolversModel, self).__init__('solvers', parent, info_cb, *args)
+        self.local_categories = []
+        self.local_solvers = {}
 
     def construct_solver(self, element):
         if element.tag == 'filter':
@@ -165,14 +170,18 @@ class SolversModel(TableModel):
             return filter
         else:
             try:
-                factory = SOLVERS[element.tag, element.attrib['solver']]
+                key = element.tag, element.attrib['solver']
+                if key in self.local_solvers:
+                    factory = self.local_solvers[key]
+                else:
+                    factory = SOLVERS[key]
             except KeyError:
                 return TreeFragmentSolver(element, self)
             else:
                 return factory(element=element, parent=self)
 
     def set_file_xml_element(self, element, filename=None):
-        update_solvers(filename)
+        update_solvers(filename, self)
         super(SolversModel, self).set_file_xml_element(element, filename)
 
     def set_xml_element(self, element, undoable=True):
@@ -213,13 +222,17 @@ class SolversModel(TableModel):
 
     def create_default_entry(self):
         from ...controller.solvers import get_new_solver
-        new_solver = get_new_solver()
+        new_solver = get_new_solver(self)
         if new_solver is not None:
             if new_solver['category'] == 'filter':
                 return FilterSolver(new_solver['solver'], new_solver['name'], parent=self)
             else:
                 try:
-                    factory = SOLVERS[new_solver['category'], new_solver['solver']]
+                    key = new_solver['category'], new_solver['solver']
+                    if key in self.local_solvers:
+                        factory = self.local_solvers[key]
+                    else:
+                        factory = SOLVERS[key]
                 except KeyError:
                     return TreeFragmentSolver.create_empty(parent=self, **new_solver)
                 else:
@@ -247,7 +260,7 @@ class SolversModel(TableModel):
         return res
 
 
-def update_solvers(filename):
+def update_solvers(filename, model):
     """
     Try to load local solvers definitions
     """
@@ -259,6 +272,6 @@ def update_solvers(filename):
     if os.path.isfile(solvers_file):
         from .autosolver import load_xml
         try:
-            load_xml(solvers_file, False)
+            load_xml(solvers_file, model.local_categories, model.local_solvers)
         except:
             pass

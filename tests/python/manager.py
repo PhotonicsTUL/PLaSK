@@ -68,7 +68,7 @@ class ManagerTest(unittest.TestCase):
 
 
     def testMesh(self):
-        self.assertEqual( len(self.manager.msh), 2 )
+        self.assertEqual( len(self.manager.msh), 4 )
         self.assertEqual( self.manager.msh.lin.axis0 , [1, 2, 3] )
         self.assertEqual( self.manager.msh.lin.axis1 , [10, 20, 30] )
         self.assertEqual( list(self.manager.msh["reg"].axis1) , [1, 2, 3] )
@@ -76,11 +76,11 @@ class ManagerTest(unittest.TestCase):
 
 
     def testGenerators(self):
-        self.assertEqual( tuple(self.manager.msg.test.prediv), (4,4) )
-        self.assertEqual( tuple(self.manager.msg.test.postdiv), (2,3) )
-        self.assertEqual( self.manager.msg.test.warn_missing, False )
+        self.assertEqual( tuple(self.manager.msh.test.prediv), (4,4) )
+        self.assertEqual( tuple(self.manager.msh.test.postdiv), (2,3) )
+        self.assertEqual( self.manager.msh.test.warn_missing, False )
 
-        mesh = self.manager.msg.refined.generate(self.manager.geo.Stack_2)
+        mesh = self.manager.msh.refined.generate(self.manager.geo.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
 
@@ -228,16 +228,17 @@ class FakeModule(object):
     class CustomSolver(Solver):
         def load_xml(self, xml, manager):
             for tag in xml:
-                if tag.name == 'something':
+                if tag == 'something':
                     for subtag in tag:
-                        if subtag.name == 'withtext':
+                        if subtag == 'withtext':
                             for item in subtag:
                                 self.text = item.text
-                elif tag.name == 'config':
+                elif tag == 'config':
+                    self.attrs = tag.attrs
                     self.a = 2 * tag['a']
                     self.b = tag.get('b', 0)
                     self.c = tag['c']
-                elif tag.name == 'geometry':
+                elif tag == 'geometry':
                     self.geometry = manager.geo[tag['ref']]
 
 sys.modules['fake'] = FakeModule
@@ -272,6 +273,7 @@ class CustomSolverTest(unittest.TestCase):
         solver = manager.solvers['custom']
         self.assertIsInstance( solver, FakeModule.CustomSolver )
         self.assertEqual( solver.text, "passed" )
+        self.assertEqual( solver.attrs, dict(a=2, c='ok') )
         self.assertEqual( solver.a, 4 )
         self.assertEqual( solver.b, 0 )
         self.assertEqual( solver.c, "ok" )

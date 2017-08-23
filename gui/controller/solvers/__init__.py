@@ -156,8 +156,8 @@ class SolversController(Controller):
             self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        update_solvers(self.document.filename)
-        self.solvers_table.selectionModel().clear()   # model could have completly changed
+        update_solvers(self.document.filename, self)
+        self.solvers_table.selectionModel().clear()   # model could have completely changed
         if self._last_index is not None:
             self.solvers_table.selectRow(self._last_index)
 
@@ -178,16 +178,23 @@ class SolversController(Controller):
 
 class NewSolverDialog(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, model, parent=None):
+
         super(NewSolverDialog, self).__init__(parent)
         self.setWindowTitle('Create New Solver')
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
+        self.model = model
+
         self.category = QComboBox()
-        self.category.addItems([c.title() for c in CATEGORIES])
+        categories = CATEGORIES + model.local_categories
+        categories += ([] if categories[-1] is None else [None])
+        self.category.addItems([c.title() for c in categories if c is not None])
         self.category.addItem("FILTER")
-        self.category.insertSeparator(len(CATEGORIES))
+        seps = (n for n,c in enumerate(categories) if c is None)
+        for sep in seps:
+            self.category.insertSeparator(sep)
         self.category.currentIndexChanged.connect(self.category_changed)
         layout.addRow("C&ategory:", self.category)
 
@@ -217,7 +224,9 @@ class NewSolverDialog(QDialog):
             self.solver.setEnabled(False)
         else:
             self.solver.setEnabled(True)
-            solvers = [slv for cat, slv in MODELS if cat == category]
+            models = MODELS
+            models.update(self.model.local_solvers)
+            solvers = [slv for cat, slv in models if cat == category]
             solvers.sort(key=_solvers_key)
             self.solver.addItems(solvers)
             grps = [len(list(g)) for _, g in groupby(solvers, suffix)]
@@ -227,8 +236,8 @@ class NewSolverDialog(QDialog):
                 self.solver.insertSeparator(i)
 
 
-def get_new_solver():
-    dialog = NewSolverDialog()
+def get_new_solver(model):
+    dialog = NewSolverDialog(model)
     if dialog.exec_() == QDialog.Accepted:
         return dict(category=dialog.category.currentText().lower(),
                     solver=dialog.solver.currentText(),

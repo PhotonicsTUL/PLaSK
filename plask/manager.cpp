@@ -98,7 +98,7 @@ shared_ptr<Geometry> Manager::getGeometry(const std::string& name) const {
     return result_it == geometrics.end() ? shared_ptr<Geometry>() : dynamic_pointer_cast<Geometry>(result_it->second);
 }
 
-shared_ptr<Mesh> Manager::getMesh(const std::string& name) const {
+shared_ptr<MeshBase> Manager::getMesh(const std::string& name) const {
     auto result_it = meshes.find(name);
     return result_it == meshes.end() ? shared_ptr<Mesh>() : result_it->second;
 }
@@ -179,7 +179,7 @@ void Manager::loadGrids(XMLReader &reader)
             std::string type = reader.requireAttribute("type");
             std::string name = reader.requireAttribute("name");
             BadId::throwIfBad("mesh", name, '-');
-            if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
+            if (meshes.find(name) != meshes.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "mesh")
@@ -191,12 +191,12 @@ void Manager::loadGrids(XMLReader &reader)
             std::string name = reader.requireAttribute("name");
             BadId::throwIfBad("generator", name, '-');
             std::string key = type + "." + method;
-            if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
+            if (meshes.find(name) != meshes.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "generator")
                 throw Exception("Internal error in {0} (method: {1}) mesh generator reader, after return reader not point to end of generator tag.", type, method);
-            generators[name] = generator;
+            meshes[name] = generator;
         } else
             throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
     }

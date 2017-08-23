@@ -20,6 +20,17 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="mesh_type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Ordered"/>
+      <xs:enumeration value="Regular"/>
+      <xs:enumeration value="Rectangular2D"/>
+      <xs:enumeration value="Rectangular3D"/>
+      <!--xs:enumeration value="Triangular2D"/>
+      <xs:enumeration value="Triangular3D"/-->
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:element name="solver">
     <xs:complexType mixed="true">
       <xs:choice maxOccurs="unbounded">
@@ -30,7 +41,7 @@
         <xs:element ref="flow"/>
       </xs:choice>
       <xs:attribute name="name" type="xs:string" use="required"/>
-      <xs:attribute name="category" type="xs:string" use="optional"/>
+      <xs:attribute name="category" type="xs:string" use="required"/>
       <xs:attribute name="lib" type="xs:string" use="optional"/>
       <xs:attribute name="obsolete" type="bool" use="optional"/>
     </xs:complexType>
@@ -51,19 +62,11 @@
   </xs:element>
 
   <xs:element name="mesh">
-    <xs:complexType>
-      <xs:attribute name="type" use="required">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="Ordered"/>
-            <xs:enumeration value="Regular"/>
-            <xs:enumeration value="Rectangular2D"/>
-            <xs:enumeration value="Rectangular3D"/>
-            <!--xs:enumeration value="Triangular2D"/>
-            <xs:enumeration value="Triangular3D"/-->
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="type" use="required" type="mesh_type"/>
       <xs:attribute name="optional" type="bool" use="optional"/>
     </xs:complexType>
   </xs:element>
@@ -81,6 +84,9 @@
   </xs:element>
 
   <xs:element name="choice" type="xs:string">
+  </xs:element>
+
+  <xs:element name="type" type="xs:string">
   </xs:element>
 
   <xs:element name="conflicts">
@@ -103,6 +109,7 @@
   <xs:element name="attr">
     <xs:complexType mixed="true">
       <xs:sequence>
+        <xs:element ref="type" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="choice" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="conflicts" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
@@ -119,9 +126,13 @@
             <xs:enumeration value="int"/>
             <xs:enumeration value="bool"/>
             <xs:enumeration value="choice"/>
+            <xs:enumeration value="geometry cartesian2d"/>
+            <xs:enumeration value="geometry cylindrical"/>
+            <xs:enumeration value="geometry cartesian3d"/>
             <xs:enumeration value="geometry object"/>
             <xs:enumeration value="geometry path"/>
             <xs:enumeration value="list of floats"/>
+            <xs:enumeration value="mesh"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
@@ -135,6 +146,7 @@
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="label" type="xs:string" use="required"/>
       <xs:attribute name="values" type="xs:string" use="optional"/>
+      <xs:attribute name="type" type="mesh_type" use="optional"/>
     </xs:complexType>
   </xs:element>
 

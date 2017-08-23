@@ -96,18 +96,18 @@ py::list axeslist_by_name(const std::string& axes_names) {
 
 std::string Config::__str__() const {
     return  "axes:        " + axes_name()
-        + "\nlog.colors:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
-        + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("__str__")))
-        + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
+        + "\nlog.colors:  " + str(LoggingConfig().getLoggingColor())
+        + "\nlog.level:   " + str(py::object(maxLoglevel))
+        + "\nlog.output:  " + str(LoggingConfig().getLoggingDest());
     ;
 }
 
 std::string Config:: __repr__() const {
     return
         format("config.axes = '{}'", axes_name()) +
-           + "\nlog.colors = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
-           + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("__str__")))
-           + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
+           + "\nlog.colors = " + str(LoggingConfig().getLoggingColor())
+           + "\nlog.level = LOG_" + str(py::object(maxLoglevel))
+           + "\nlog.output = " + str(LoggingConfig().getLoggingDest());
     ;
 }
 
@@ -458,7 +458,77 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Solvers
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>
-    solver("Solver", "Base class for all solvers.", py::no_init);
+    solver("Solver",
+           "Base class for all solvers.\n\n"
+
+           "Solver(name='')\n\n"
+
+           "Args:\n"
+           "    name: Solver name for its identification in logs.\n"
+
+           "You should inherit this class if you are creating custom Python solvers\n"
+           "in Python, which can read its configuration from the XPL file. Then you need to\n"
+           "override the :meth:`load_xml` method, which reads the configuration. If you\n"
+           "override :meth:`on_initialize` of :meth:`on_invalidate` methods, they will be\n"
+           "called once on the solver initialization/invalidation.\n\n"
+
+           "Example:\n"
+           "  .. code-block:: python\n\n"
+
+           "     class MySolver(Solver):\n\n"
+
+           "         def __init__(self, name=''):\n"
+           "             super(MySolver, self).__init__(name)\n"
+           "             self.param = 0.\n"
+           "             self.geometry = None\n"
+           "             self.mesh = None\n"
+           "             self.workspace = None\n"
+           "             self.bc = plask.mesh.Rectangular2D.BoundaryConditions()\n\n"
+
+           "         def load_xml(self, xml, manager):\n"
+           "             for tag in xml:\n"
+           "                 if tag == 'config':\n"
+           "                     self.param = tag.get('param', self.param)\n"
+           "                 elif tag == 'geometry':\n"
+           "                     self.geometry = manager.geo[tag['ref']]\n"
+           "                 elif tag == 'mesh':\n"
+           "                     self.mesh = manager.msh[tag['ref']]\n"
+           "                 elif tag == 'boundary':\n"
+           "                     self.bc.read_from_xml(tag, manager)\n\n"
+
+           "         def on_initialize(self):\n"
+           "             self.workspace = zeros(1000.)\n\n"
+
+           "         def on_invalidate(self):\n"
+           "             self.workspace = None\n\n"
+
+           "         def run_computations(self):\n"
+           "             pass\n\n"
+
+           "To make your solver visible in GUI, you must write the ``solvers.xml`` file\n"
+           "and put it in the same directory as your data file.\n\n"
+           "Example:\n"
+           "  .. code-block:: xml\n\n"
+           "     <?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
+           "     <solvers xmlns=\"http://phys.p.lodz.pl/solvers.xsd\">\n\n"
+
+           "       <solver name=\"MySolver\" category=\"local\" lib=\"mymodule\">\n\n"
+
+           "         <geometry type=\"Cartesian2D\"/>\n\n"
+
+           "         <mesh type=\"Rectangular2D\"/>\n\n"
+
+           "         <tag name=\"config\" label=\"Solver Configuration\">\n"
+           "           Configuration of the effective model of p-n junction.\n"
+           "           <attr name=\"param\" label=\"Parameter\" type=\"float\" unit=\"V\">\n"
+           "             Some voltage parameter.\n"
+           "           </attr>\n"
+           "         </tag>\n\n"
+
+           "         <bcond name=\"boundary\" label=\"Something\"/>\n\n"
+
+           "       </solver>\n"
+           "     </solvers>\n", py::no_init);
     solver
         .def("__init__", raw_constructor(&SolverWrap::init))
         .add_property("id", &plask::Solver::getId,
@@ -486,17 +556,22 @@ BOOST_PYTHON_MODULE(_plask)
              "Load configuration from XML reader.\n\n"
              "This method should be overriden in custom Python solvers.\n\n"
              "Example:\n"
-             "    >>> def load_xml(self, xml, manager):\n"
-             "    ...     for tag in xml:\n"
-             "    ...         if tag.name == 'something':\n"
-             "    ...             for sub in tag:\n"
-             "    ...                 if sub.name == 'withtext':\n"
-             "    ...                     self.text = sub.text\n"
-             "    ...         elif tag.name == 'config':\n"
-             "    ...             self.a = tag['a']\n"
-             "    ...             self.b = tag.get('b', 0)\n"
-             "    ...         elif tag.name == 'geometry':\n"
-             "    ...             self.geometry = manager.geo[tag['ref']]\n")
+             "  .. code-block:: python\n\n"
+             "     def load_xml(self, xml, manager):\n"
+             "         for tag in xml:\n"
+             "             if tag == 'config':\n"
+             "                 self.a = tag['a']\n"
+             "                 self.b = tag.get('b', 0)\n"
+             "                 if 'c' in tag:\n"
+             "                     self.c = tag['c']\n"
+             "             if tag == 'combined':\n"
+             "                 for subtag in tag:\n"
+             "                     if subtag == 'withtext':\n"
+             "                         self.data = subtag.attrs\n"
+             "                         # Text must be read last\n"
+             "                         self.text = subtag.text\n"
+             "             elif tag == 'geometry':\n"
+             "                 self.geometry = manager.geo[tag['ref']]\n")
     ;
     solver.attr("__module__") = "plask";
 
