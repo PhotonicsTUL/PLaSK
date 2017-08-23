@@ -601,6 +601,7 @@ if(BUILD_PYTHON)
     list(REMOVE_ITEM solvers_cats skel)
     foreach(cat ${solvers_cats})
         file(GLOB lst ${CMAKE_SOURCE_DIR}/solvers/${cat}/*/solvers.xml)
+        file(MAKE_DIRECTORY ${PLASK_PATH}/solvers/${cat})
         add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${cat}/__init__.py
                            COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/make_category_package.py ${CMAKE_SOURCE_DIR}/solvers/${cat} ${PLASK_PATH}/solvers/${cat}
                            DEPENDS ${lst})
