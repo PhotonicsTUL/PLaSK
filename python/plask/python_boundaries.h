@@ -128,7 +128,7 @@ struct RegisterBoundaryConditions {
                 .def("__iter__", &__iter__)
                 .def("read_from_xml", &read_from_xml, (py::arg("xml"), "manager"),
                      "Read boundary conditions from active XPL reader.\n\n"
-                     "This should only be used in overloaded :meth:`~Solver.load_xml method.\n")
+                     "This should only be used in the overloaded :meth:`plask.Solver.load_xml` method.\n")
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;

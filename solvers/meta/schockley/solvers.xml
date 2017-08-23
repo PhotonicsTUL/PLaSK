@@ -1,41 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <solver name="ThermoElectric2D" category="meta" lib="schockley">
-
-    <tag name="geometry" label="Geometry">
-      <attr name="thermal" label="Thermal" type="geometry cartesian2d">
-        Geometry used by the thermal solver.
-      </attr>
-      <attr name="electrical" label="Electrical" type="geometry cartesian2d">
-        Geometry used by the electrical solver.
-      </attr>
-    </tag>
-
-    <tag name="mesh" label="Mesh">
-      <attr name="thermal" label="Thermal" type="mesh">
-        Mesh used by the thermal solver.
-        <type>Rectangular2D</type>
-      </attr>
-      <attr name="electrical" label="Electrical" type="mesh">
-        Mesh used by the electrical solver.
-        <type>Rectangular2D</type>
-      </attr>
-    </tag>
-
+  <template name="ThermoElectric" category="meta" lib="schockley">
     <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
       <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m" default="5.0">Initial vertical conductivity of the junctions.</attr>
     </tag>
-
     <tag name="contacts" label="Properties of the Contacts">
       Properties of the contact layers.
       <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
-
     <tag name="loop" label="Loop Configuration">
       <attr name="tfreq" label="Thermal update frequency" default="6">
         Number of electrical iterations per single thermal step.
@@ -46,7 +23,6 @@
       <attr name="maxterr" label="Maximum temperature error" type="float" unit="K" default="0.05">Maximum allowed temperature error.</attr>
       <attr name="maxcerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
     </tag>
-
     <tag name="tmatrix" label="Thermal Matrix Solver">
       Matrix configuration for the thermal solver.
       <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
@@ -59,7 +35,6 @@
       <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
     <tag name="ematrix" label="Electrical Matrix Solver">
       Matrix configuration for the electrical solver.
       <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
@@ -72,32 +47,113 @@
       <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-    <bcond name="voltage" label="Voltage" type="Rectangular2D"/>
-
-    <bcond name="temperature" label="Temperature" type="Rectangular2D"/>
-
-    <bcond name="heatflux" label="Heat Flux" type="Rectangular2D"/>
-
-    <bcond name="convection" label="Convective" values="coeff,ambient" type="Rectangular2D">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
-
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient" type="Rectangular2D">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
-
     <flow>
       <provider name="outTemperature"/>
       <provider name="outHeatFlux"/>
       <provider name="outThermalConductivity"/>
       <provider name="outVoltage"/>
       <provider name="outCurrentDensity"/>
+      <provider name="outCurrentDensity"/>
       <provider name="outHeat"/>
       <provider name="outConductivity"/>
     </flow>
+  </template>
 
+  <solver name="ThermoElectric2D" category="meta" template="ThermoElectric">
+    <tag name="geometry" label="Geometry">
+      <attr name="thermal" label="Thermal" type="Cartesian2D geometry">
+        Geometry used by the thermal solver.
+      </attr>
+      <attr name="electrical" label="Electrical" type="Cartesian2D geometry">
+        Geometry used by the electrical solver.
+      </attr>
+    </tag>
+    <tag name="mesh" label="Mesh">
+      <attr name="thermal" label="Thermal" type="mesh">
+        Mesh used by the thermal solver.
+        <type>Rectangular2D</type>
+      </attr>
+      <attr name="electrical" label="Electrical" type="mesh">
+        Mesh used by the electrical solver.
+        <type>Rectangular2D</type>
+      </attr>
+    </tag>
+    <bcond name="voltage" label="Voltage" type="Rectangular2D"/>
+    <bcond name="temperature" label="Temperature" type="Rectangular2D"/>
+    <bcond name="heatflux" label="Heat Flux" type="Rectangular2D"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" type="Rectangular2D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" type="Rectangular2D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
   </solver>
+
+  <solver name="ThermoElectricCyl" category="meta" template="ThermoElectric">
+    <tag name="geometry" label="Geometry">
+      <attr name="thermal" label="Thermal" type="cylindrical geometry">
+        Geometry used by the thermal solver.
+      </attr>
+      <attr name="electrical" label="Electrical" type="cylindrical geometry">
+        Geometry used by the electrical solver.
+      </attr>
+    </tag>
+    <tag name="mesh" label="Mesh">
+      <attr name="thermal" label="Thermal" type="mesh">
+        Mesh used by the thermal solver.
+        <type>Rectangular2D</type>
+      </attr>
+      <attr name="electrical" label="Electrical" type="mesh">
+        Mesh used by the electrical solver.
+        <type>Rectangular2D</type>
+      </attr>
+    </tag>
+    <bcond name="voltage" label="Voltage" type="Rectangular2D"/>
+    <bcond name="temperature" label="Temperature" type="Rectangular2D"/>
+    <bcond name="heatflux" label="Heat Flux" type="Rectangular2D"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" type="Rectangular2D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" type="Rectangular2D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+  </solver>
+
+  <solver name="ThermoElectric3D" category="meta" template="ThermoElectric">
+    <tag name="geometry" label="Geometry">
+      <attr name="thermal" label="Thermal" type="Cartesian3D geometry">
+        Geometry used by the thermal solver.
+      </attr>
+      <attr name="electrical" label="Electrical" type="Cartesian3D geometry">
+        Geometry used by the electrical solver.
+      </attr>
+    </tag>
+    <tag name="mesh" label="Mesh">
+      <attr name="thermal" label="Thermal" type="mesh">
+        Mesh used by the thermal solver.
+        <type>Rectangular3D</type>
+      </attr>
+      <attr name="electrical" label="Electrical" type="mesh">
+        Mesh used by the electrical solver.
+        <type>Rectangular3D</type>
+      </attr>
+    </tag>
+    <bcond name="voltage" label="Voltage" type="Rectangular3D"/>
+    <bcond name="temperature" label="Temperature" type="Rectangular3D"/>
+    <bcond name="heatflux" label="Heat Flux" type="Rectangular3D"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" type="Rectangular3D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" type="Rectangular3D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+  </solver>
+
+
 </solvers>

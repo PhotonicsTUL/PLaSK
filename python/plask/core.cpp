@@ -510,23 +510,17 @@ BOOST_PYTHON_MODULE(_plask)
            "Example:\n"
            "  .. code-block:: xml\n\n"
            "     <?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
-           "     <solvers xmlns=\"http://phys.p.lodz.pl/solvers.xsd\">\n\n"
-
-           "       <solver name=\"MySolver\" category=\"local\" lib=\"mymodule\">\n\n"
-
-           "         <geometry type=\"Cartesian2D\"/>\n\n"
-
-           "         <mesh type=\"Rectangular2D\"/>\n\n"
-
+           "     <solvers xmlns=\"http://phys.p.lodz.pl/solvers.xsd\">\n"
+           "       <solver name=\"MySolver\" category=\"local\" lib=\"mymodule\">\n"
+           "         <geometry type=\"Cartesian2D\"/>\n"
+           "         <mesh type=\"Rectangular2D\"/>\n"
            "         <tag name=\"config\" label=\"Solver Configuration\">\n"
            "           Configuration of the effective model of p-n junction.\n"
            "           <attr name=\"param\" label=\"Parameter\" type=\"float\" unit=\"V\">\n"
            "             Some voltage parameter.\n"
            "           </attr>\n"
-           "         </tag>\n\n"
-
-           "         <bcond name=\"boundary\" label=\"Something\"/>\n\n"
-
+           "         </tag>\n"
+           "         <bcond name=\"boundary\" label=\"Something\"/>\n"
            "       </solver>\n"
            "     </solvers>\n", py::no_init);
     solver

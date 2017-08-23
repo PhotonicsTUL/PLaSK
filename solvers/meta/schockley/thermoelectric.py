@@ -12,8 +12,8 @@
 
 import plask
 
-from thermal.static import Static2D
-from electrical.shockley import Shockley2D
+from thermal.static import Static2D, StaticCyl, Static3D
+from electrical.shockley import Shockley2D, ShockleyCyl, Shockley3D
 
 
 # Get unique suffix for savefiles
@@ -49,12 +49,12 @@ def _h5_open(filename, group):
     return h5file, group
 
 
-class ThermoElectric2D(plask.Solver):
+class ThermoElectric(plask.Solver):
 
     def __init__(self, name):
-        super(ThermoElectric2D, self).__init__(name)
-        self.thermal = Static2D(name)
-        self.electrical = Shockley2D(name)
+        super(ThermoElectric, self).__init__(name)
+        self.thermal = self.Thermal(name)
+        self.electrical = self.Electrical(name)
         self.electrical.inTemperature = self.thermal.outTemperature
         self.thermal.inHeat = self.electrical.outHeat
 
@@ -312,3 +312,20 @@ class ThermoElectric2D(plask.Solver):
                               linestyle=plask.rc.grid.linestyle, linewidth=plask.rc.grid.linewidth,
                               color=plask.rc.grid.color, alpha=plask.rc.grid.alpha)
         plask.window_title("Current Density")
+
+
+class ThermoElectric2D(ThermoElectric):
+    Thermal = Static2D
+    Electrical = Shockley2D
+
+
+class ThermoElectricCyl(ThermoElectric):
+    Thermal = StaticCyl
+    Electrical = ShockleyCyl
+
+
+class ThermoElectric3D(ThermoElectric):
+    Thermal = Static3D
+    Electrical = Shockley3D
+
+

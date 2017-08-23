@@ -281,12 +281,22 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
     if root.tag != xns+'solvers': return
 
+    data = {}
+
     for solver in root:
-        if solver.tag != xns+'solver': continue
-        if solver.attrib.get('obsolete'): continue
+        if solver.tag not in (xns+'solver', xns+'template'):
+            continue
+        if solver.attrib.get('obsolete'):
+            continue
 
         name = solver.attrib.get('name')
         if name is None: return
+
+        schema = []
+        geometry_type = None
+        mesh_type = None
+        providers = []
+        receivers = []
 
         cat = solver.attrib.get('category')
         if cat is None:
@@ -297,7 +307,7 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
         try:
             geometry_type = g.attrib['type']
         except (KeyError, AttributeError):
-            geometry_type = None
+            pass
             # if name.endswith('Cyl'):
             #     geometry_type = "Cylindrical"
             # else:
@@ -314,10 +324,6 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
                 mesh_types.add(mesh_type)
             for t in m.findall(xns+'type'):
                 mesh_types.add(t.text)
-        else:
-            mesh_type = None
-
-        schema = []
 
         for tag in _iter_tags(solver, xns):
             tn, tl = tag.attrib['name'], tag.attrib['label']
@@ -344,17 +350,26 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
         flow = solver.find(xns+'flow')
         if flow is not None:
-            providers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][3:]))
-                         for e in flow.findall(xns+'provider')]
-            receivers = [(e.attrib['name'], e.attrib.get('for', e.attrib['name'][2:]))
-                         for e in flow.findall(xns+'receiver')]
-        else:
-            providers = []
-            receivers = []
+            providers.extend((e.attrib['name'], e.attrib.get('for', e.attrib['name'][3:]))
+                         for e in flow.findall(xns+'provider'))
+            receivers.extend((e.attrib['name'], e.attrib.get('for', e.attrib['name'][2:]))
+                         for e in flow.findall(xns+'receiver'))
 
-        if cat not in categories:
-            categories.append(cat)
-        solvers[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, providers, receivers)
+        template = solver.attrib.get('template')
+        if template and template in data:
+            s, g, m, p, r = data[template]
+            schema.extend(s)
+            if geometry_type is None: geometry_type = g
+            mesh_types.update(m)
+            providers.extend(p)
+            receivers.extend(r)
+
+        data[name] = schema, geometry_type, mesh_types, providers, receivers
+
+        if solver.tag == xns+'solver':
+            if cat not in categories:
+                categories.append(cat)
+            solvers[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, providers, receivers)
 
 
 # Find XML files with solvers configuration

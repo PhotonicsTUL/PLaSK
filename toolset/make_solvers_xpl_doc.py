@@ -51,6 +51,16 @@ def make_rst(dirname):
     if xns: xns = '{'+xns+'}'
 
     for solver in root.findall(xns+'solver'):
+        template = solver.attrib.get('template')
+        if template:
+            template = root.find('{0}solver[@name="{1}"]'.format(xns, template))
+            if template is None:
+                template = root.find('{0}template[@name="{1}"]'.format(xns, template))
+            if template is not None:
+                for tag in template:
+                    solver.append(tag)
+
+    for solver in root.findall(xns+'solver'):
         if solver.attrib.get('obsolete'): continue
 
         name = solver.attrib['name']
