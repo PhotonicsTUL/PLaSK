@@ -8,6 +8,20 @@
 
     <mesh type="Rectangular2D"/>
 
+    <bcond name="temperature" label="Temperature"/>
+
+    <bcond name="heatflux" label="Heat Flux"/>
+
+    <bcond name="convection" label="Convective" values="coeff,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
     <tag name="loop" label="Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="inittemp" label="Initial temperature" type="float" unit="K" default="300">Initial temperature used for the first computation.</attr>
@@ -26,20 +40,6 @@
       <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-    <bcond name="temperature" label="Temperature"/>
-
-    <bcond name="heatflux" label="Heat Flux"/>
-
-    <bcond name="convection" label="Convective" values="coeff,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
-
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
 
     <flow>
       <receiver name="inHeat"/>
@@ -55,6 +55,20 @@
 
     <mesh type="Rectangular2D"/>
 
+    <bcond name="temperature" label="Temperature"/>
+
+    <bcond name="heatflux" label="Heat Flux"/>
+
+    <bcond name="convection" label="Convective" values="coeff,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
     <tag name="loop" label="Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="inittemp" label="Initial temperature" type="float" unit="K" default="300">Initial temperature used for the first computation.</attr>
@@ -73,20 +87,6 @@
       <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-    <bcond name="temperature" label="Temperature"/>
-
-    <bcond name="heatflux" label="Heat Flux"/>
-
-    <bcond name="convection" label="Convective" values="coeff,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
-
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
 
     <flow>
       <receiver name="inHeat"/>
@@ -104,6 +104,20 @@
 
     <mesh type="Rectangular3D"/>
 
+    <bcond name="temperature" label="Temperature"/>
+
+    <bcond name="heatflux" label="Heat Flux"/>
+
+    <bcond name="convection" label="Convective" values="coeff,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+
     <tag name="loop" label="Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="inittemp" label="Initial temperature" type="float" unit="K" default="300">Initial temperature used for the first computation.</attr>
@@ -122,20 +136,6 @@
       <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-    <bcond name="temperature" label="Temperature"/>
-
-    <bcond name="heatflux" label="Heat Flux"/>
-
-    <bcond name="convection" label="Convective" values="coeff,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
-
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient">
-      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
-      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
-    </bcond>
 
     <flow>
       <receiver name="inHeat"/>

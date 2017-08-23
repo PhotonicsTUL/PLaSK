@@ -27,9 +27,13 @@ else:
 
 class SchemaBoundaryConditions(object):
 
-    def __init__(self, name, label, mesh_type, values=None):
+    def __init__(self, name, label, group, mesh_type, values=None):
         self.name = name
-        self.label = label + ' Boundary Conditions'
+        if group is None:
+            self.label = "Boundary Conditions"
+        else:
+            self.label = group + " Boundary Conditions"
+        self.label2 = label
         self.mesh_type = mesh_type
         self.keys = ('value',) if values is None else values
 

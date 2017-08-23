@@ -8,6 +8,8 @@
 
     <mesh type="Rectangular2D"/>
 
+    <bcond name="voltage" label="Voltage"/>
+
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="stat" label="Statistics" type="choice" default="Maxwell-Boltzmann">
@@ -51,8 +53,6 @@
       <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
-
-    <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inTemperature"/>

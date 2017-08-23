@@ -263,10 +263,10 @@ class AutoSolverFactory(object):
         return result
 
 
-def _iter_tags(parent, xns):
-    for tag in parent.findall(xns+'tag'):
+def _iter_tags(parent, ns):
+    for tag in parent.xpath('p:tag|p:bcond', namespaces={'p': ns}):
         yield tag
-        for t in _iter_tags(tag, xns):
+        for t in _iter_tags(tag, ns):
             t.attrib['name'] = tag.attrib['name'] + '/' + t.attrib['name']
             yield t
 
@@ -276,8 +276,8 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
     dom = etree.parse(filename)
     root = dom.getroot()
 
-    xns = root.nsmap.get(None, '')
-    if xns: xns = '{'+xns+'}'
+    ns = root.nsmap.get(None, '')
+    xns = '{'+ns+'}' if ns else ''
 
     if root.tag != xns+'solvers': return
 
@@ -325,28 +325,29 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
             for t in m.findall(xns+'type'):
                 mesh_types.add(t.text)
 
-        for tag in _iter_tags(solver, xns):
-            tn, tl = tag.attrib['name'], tag.attrib['label']
-            attrs = AttrList()
-            for attr in tag.iterchildren(xns+'attr', xns+'group'):
-                if attr.tag == xns+'attr':
-                    attrs.append(read_attr(tn, attr, xns))
-                elif attr.tag == xns+'group':
-                    gl = attr.attrib['label']
-                    gu = attr.attrib.get('unit')
-                    if gu is not None:
-                        gl += u' [{}]'.format(gu)
-                    group = AttrGroup(gl)
-                    for attr in attr.findall(xns+'attr'):
-                        group.append(read_attr(tn, attr, xns))
-                    attrs.append(group)
-            schema.append(SchemaTag(tn, tl, attrs))
-
-        for bcond in solver.findall(xns+'bcond'):
-            values = bcond.attrib.get('values')
-            if values is not None: values = values.split(',')
-            BCond = BCONDS[bcond.attrib.get('type', mesh_type)]
-            schema.append(BCond(bcond.attrib['name'], bcond.attrib['label'], mesh_type, values))
+        for tag in _iter_tags(solver, ns):
+            if tag.tag == xns+'tag':
+                tn, tl = tag.attrib['name'], tag.attrib['label']
+                attrs = AttrList()
+                for attr in tag.iterchildren(xns+'attr', xns+'group'):
+                    if attr.tag == xns+'attr':
+                        attrs.append(read_attr(tn, attr, xns))
+                    elif attr.tag == xns+'group':
+                        gl = attr.attrib['label']
+                        gu = attr.attrib.get('unit')
+                        if gu is not None:
+                            gl += u' [{}]'.format(gu)
+                        group = AttrGroup(gl)
+                        for attr in attr.findall(xns+'attr'):
+                            group.append(read_attr(tn, attr, xns))
+                        attrs.append(group)
+                schema.append(SchemaTag(tn, tl, attrs))
+            elif tag.tag == xns+'bcond':
+                values = tag.attrib.get('values')
+                if values is not None: values = values.split(',')
+                BCond = BCONDS[tag.attrib.get('type', mesh_type)]
+                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"),
+                                    mesh_type, values))
 
         flow = solver.find(xns+'flow')
         if flow is not None:

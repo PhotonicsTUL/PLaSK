@@ -47,18 +47,15 @@ def make_rst(dirname):
         return
 
     root = dom.getroot()
-    xns = root.nsmap.get(None, '')
-    if xns: xns = '{'+xns+'}'
+    ns = root.nsmap.get(None, '')
+    xns = '{'+ns+'}' if ns else ''
 
     for solver in root.findall(xns+'solver'):
-        template = solver.attrib.get('template')
-        if template:
-            template = root.find('{0}solver[@name="{1}"]'.format(xns, template))
-            if template is None:
-                template = root.find('{0}template[@name="{1}"]'.format(xns, template))
-            if template is not None:
-                for tag in template:
-                    solver.append(tag)
+        tname = solver.attrib.get('template')
+        if tname:
+            template = root.xpath('(p:solver|p:template)[@name="{1}"]'.format(xns, tname), namespaces={'p': ns})[0]
+            for tag in template:
+                solver.append(tag)
 
     for solver in root.findall(xns+'solver'):
         if solver.attrib.get('obsolete'): continue
@@ -114,60 +111,58 @@ def make_rst(dirname):
                 .format(mesh.attrib['type']))
 
         def write_tags(outer, level=2):
-            tags = outer.findall(xns+'tag') or []
-            bconds = outer.findall(xns+'bcond') or []
-
-            for tag in tags:
-                out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
-                out_text(tag, level+1)
-                attrs = tag.findall('.//'+xns+'attr')
-                if attrs:
-                    out()
-                    for attr in attrs:
-                        doc = u' '.join(line.strip() for line in html2rst(attr.text.strip()).split('\n'))
-                        req = 'required' in attr.attrib and attr.attrib['required'].lower() in ('yes', 'true')
-                        typ = attr.attrib.get('type')
-                        unit = attr.attrib.get('unit')
-                        if unit is None:
-                            unit = attr.getparent().attrib.get('unit')
-                        default = attr.attrib.get('default')
-                        if typ == 'choice':
-                            choices = [ch.text.strip() for ch in attr.findall(xns+'choice')]
-                            if len(choices) == 0:
-                                typ = u'choice'
-                            elif len(choices) == 1:
-                                typ = u"'\\ *{}*\\ '".format(choices[0])
-                            elif len(choices) == 2:
-                                typ = u"'\\ *{}*\\ ' or '\\ *{}*\\ '".format(choices[0], choices[1])
-                            else:
-                                typ = u"{}, or '\\ *{}*\\ '".format(
-                                    u', '.join(u"'\\ *{}*\\ '".format(ch) for ch in choices[:-1]), choices[-1])
-                        elif typ is not None:
+            for tag in outer:
+                if tag.tag == xns+'tag':
+                    out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
+                    out_text(tag, level+1)
+                    attrs = tag.findall('.//'+xns+'attr')
+                    if attrs:
+                        out()
+                        for attr in attrs:
+                            doc = u' '.join(line.strip() for line in html2rst(attr.text.strip()).split('\n'))
+                            req = 'required' in attr.attrib and attr.attrib['required'].lower() in ('yes', 'true')
+                            typ = attr.attrib.get('type')
+                            unit = attr.attrib.get('unit')
                             if unit is None:
-                                typ = u'{}'.format(html2rst(typ))
+                                unit = attr.getparent().attrib.get('unit')
+                            default = attr.attrib.get('default')
+                            if typ == 'choice':
+                                choices = [ch.text.strip() for ch in attr.findall(xns+'choice')]
+                                if len(choices) == 0:
+                                    typ = u'choice'
+                                elif len(choices) == 1:
+                                    typ = u"'\\ *{}*\\ '".format(choices[0])
+                                elif len(choices) == 2:
+                                    typ = u"'\\ *{}*\\ ' or '\\ *{}*\\ '".format(choices[0], choices[1])
+                                else:
+                                    typ = u"{}, or '\\ *{}*\\ '".format(
+                                        u', '.join(u"'\\ *{}*\\ '".format(ch) for ch in choices[:-1]), choices[-1])
+                            elif typ is not None:
+                                if unit is None:
+                                    typ = u'{}'.format(html2rst(typ))
+                                else:
+                                    typ = html2rst(u'{} [{}]'.format(typ, unit))
                             else:
-                                typ = html2rst(u'{} [{}]'.format(typ, unit))
-                        else:
-                            typ = ''
-                        if default is not None:
-                            try: float(default)
-                            except ValueError: default = u"is '\\ *" + default + u"*\\ '"
+                                typ = ''
+                            if default is not None:
+                                try: float(default)
+                                except ValueError: default = u"is '\\ *" + default + u"*\\ '"
+                                if typ:
+                                    typ = typ + u", default {}".format(default)
+                                else:
+                                    typ = u"default {}".format(default)
+                                if unit is not None:
+                                    typ += u" " + html2rst(unit)
                             if typ:
-                                typ = typ + u", default {}".format(default)
-                            else:
-                                typ = u"default {}".format(default)
-                            if unit is not None:
-                                typ += u" " + html2rst(unit)
-                        if typ:
-                            typ = u'(' + typ + u')'
-                        out(u'{}   :attr {}{}: {} {}'.format(u'   '*level, u'required ' if req else u'', attr.attrib['name'], doc, typ))
+                                typ = u'(' + typ + u')'
+                            out(u'{}   :attr {}{}: {} {}'.format(u'   '*level, u'required ' if req else u'', attr.attrib['name'], doc, typ))
 
-                write_tags(tag, level+1)
+                    write_tags(tag, level+1)
 
-            for bcond in bconds:
-                out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, bcond.attrib['name'], cat, name))
-                out(u'\n{}   {} boundary conditions. See subsection :ref:`sec-xpl-Boundary-conditions`.'.format('   '*level, bcond.attrib['label']))
-                out_text(bcond, level+1)
+                elif tag.tag == xns+'bcond':
+                    out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag.attrib['name'], cat, name))
+                    out(u'\n{}   {} boundary conditions. See subsection :ref:`sec-xpl-Boundary-conditions`.'.format('   '*level, tag.attrib['label']))
+                    out_text(tag, level+1)
 
         write_tags(solver)
 

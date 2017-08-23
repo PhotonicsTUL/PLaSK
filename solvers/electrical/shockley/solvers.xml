@@ -8,6 +8,8 @@
 
     <mesh type="Rectangular2D"/>
 
+    <bcond name="voltage" label="Voltage"/>
+
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="maxerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
@@ -44,8 +46,6 @@
       <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
-
-    <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inTemperature"/>
@@ -60,6 +60,8 @@
 
     <mesh type="Rectangular2D"/>
 
+    <bcond name="voltage" label="Voltage"/>
+
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
       <attr name="maxerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
@@ -96,8 +98,6 @@
       <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
-
-    <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inWavelength"/>
@@ -115,6 +115,8 @@
     <geometry type="Cartesian3D"/>
 
     <mesh type="Rectangular3D"/>
+
+    <bcond name="voltage" label="Voltage"/>
 
     <tag name="loop" label="Configuration of the Self-Consistent Loop">
       Configuration of the self-consistent loop.
@@ -152,8 +154,6 @@
       <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
-
-    <bcond name="voltage" label="Voltage"/>
 
     <flow>
       <receiver name="inWavelength"/>

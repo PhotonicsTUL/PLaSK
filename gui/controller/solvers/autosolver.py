@@ -214,14 +214,18 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controls = {}
 
+        last_label = None
         for schema in controller.model.schema:
             group = schema.name
             gname = group.split('/')[-1]
-            label = QLabel(schema.label)
-            font = label.font()
-            font.setBold(True)
-            label.setFont(font)
-            layout.addRow(label)
+            bc = isinstance(schema, SchemaBoundaryConditions)
+            if last_label != schema.label:
+                last_label = schema.label
+                label = QLabel(last_label)
+                font = label.font()
+                font.setBold(True)
+                label.setFont(font)
+                layout.addRow(label)
             if isinstance(schema, SchemaTag):
                 for attr in schema.attrs:
                     if isinstance(attr, AttrGroup):
@@ -240,12 +244,12 @@ class SolverAutoWidget(VerticalScrollArea):
                     else:
                         edit = self._add_attr(attr, defines, gname, group)
                     layout.addRow(attr.label + ':', edit)
-            elif isinstance(schema, SchemaBoundaryConditions):
+            elif bc:
                 edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: self.edit_boundary_conditions(schema))
                 self.controls[group] = edit
-                layout.addRow(edit)
+                layout.addRow(schema.label2 + ':', edit)
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
