@@ -237,9 +237,6 @@
         <place line="horizontal" at="10" start="0" stop="15"/>
       </condition>
     </temperature>
-    <heatflux/>
-    <convection/>
-    <radiation/>
   </thermal>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
@@ -248,8 +245,6 @@
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
-    <matrix itererr="2"/>
-    <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
     <voltage>
       <condition value="2.0">
         <place side="bottom" object="p-contact"/>
@@ -258,6 +253,8 @@
         <place side="top" object="n-contact"/>
       </condition>
     </voltage>
+    <matrix itererr="2"/>
+    <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
   <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">
     <geometry ref="GeoO"/>
@@ -285,14 +282,18 @@
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
   </optical>
-  <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
-    <voltage/>
-  </electrical>
+  <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d"/>
   <local name="test" solver="Test" lib="something">
     <geometry ref="simple"/>
   </local>
-  <meta name="meta" solver="ThermoElectric2D" lib="schockley">
+  <meta name="meta2" solver="ThermoElectric2D" lib="solvers">
     <geometry electrical="geo2d-copy" thermal="geo2d"/>
+  </meta>
+  <meta name="metac" solver="ThermoElectricCyl" lib="solvers"/>
+  <meta name="meta3" solver="ThermoElectric3D" lib="solvers">
+    <voltage>
+      <condition place="bottom" value="1.0"/>
+    </voltage>
   </meta>
 </solvers>
 

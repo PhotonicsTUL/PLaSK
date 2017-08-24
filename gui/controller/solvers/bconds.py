@@ -182,7 +182,7 @@ class BoundaryConditionsDialog(QDialog):
 
     def __init__(self, controller, schema, data, parent=None):
         super(BoundaryConditionsDialog, self).__init__(parent)
-        self.setWindowTitle(schema.label)
+        self.setWindowTitle(schema.label2 + " Boundary Conditions")
 
         self.schema = schema
         self.data = data

@@ -115,8 +115,8 @@ def read_attr(tn, attr, xns):
             result = AttrGeometryObject(tn, an, al, ah)
         elif at == u'geometry path':
             result = AttrGeometryPath(tn, an, al, ah)
-        elif at.startswith(u'geometry '):
-            result = AttrGeometry(tn, an, al, ah, at[9:])
+        elif at.endswith(u' geometry'):
+            result = AttrGeometry(tn, an, al, ah, at[:-9].lower())
         elif at == u'mesh':
             ac = tuple(ch.text.strip() for ch in attr.findall(xns + 'type'))
             result = AttrMesh(tn, an, al, ah, ac)
@@ -187,7 +187,9 @@ class AutoSolver(Solver):
                     else:
                         etree.SubElement(element, tag, attrs)
             elif isinstance(schema, SchemaBoundaryConditions):
-                element.append(schema.to_xml(data))
+                xml = schema.to_xml(data)
+                if xml is not None:
+                    element.append(xml)
             else:
                 if data:
                     if not isinstance(data, str): data = data.encode('utf8')
@@ -345,9 +347,9 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
             elif tag.tag == xns+'bcond':
                 values = tag.attrib.get('values')
                 if values is not None: values = values.split(',')
-                BCond = BCONDS[tag.attrib.get('type', mesh_type)]
-                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"),
-                                    mesh_type, values))
+                mt = tag.attrib.get('type', mesh_type)
+                BCond = BCONDS[mt]
+                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"), mt, values))
 
         flow = solver.find(xns+'flow')
         if flow is not None:

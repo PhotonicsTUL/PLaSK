@@ -136,15 +136,16 @@ class RectangularBC(SchemaBoundaryConditions):
             return RectangularBC.PlaceSide(side)
 
     def to_xml(self, conditions):
-        element = etree.Element(self.name)
-        for place,value in conditions:
-            cond = place.get_xml_element()
-            for key in self.keys:
-                val = value[key]
-                if val is not None:
-                    cond.attrib[key] = val
-            element.append(cond)
-        return element
+        if conditions:
+            element = etree.Element(self.name)
+            for place,value in conditions:
+                cond = place.get_xml_element()
+                for key in self.keys:
+                    val = value[key]
+                    if val is not None:
+                        cond.attrib[key] = val
+                element.append(cond)
+            return element
 
     def from_xml(self, element):
         conditions = []
@@ -195,7 +196,6 @@ class BoundaryConditionsModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
-
         if role in (Qt.DisplayRole, Qt.EditRole):
             try:
                 place, values = self.entries[index.row()]
@@ -208,15 +208,13 @@ class BoundaryConditionsModel(QAbstractTableModel):
                 return str(place)
             else:
                 return values[self.schema.keys[col-2]]
-
-
         # if role == Qt.ToolTipRole:
         #     return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
-        # if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
+        # if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   # maybe TextColorRole?
         #     max_level = -1
         #     c = index.column()
         #     for err in self.info_by_row.get(index.row(), []):
-        #         if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages hav decoration only in first column
+        #         if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages have decoration only in first column
         #             if err.level > max_level: max_level = err.level
         #     return info.info_level_icon(max_level)
 
@@ -265,6 +263,7 @@ class BoundaryConditionsModel(QAbstractTableModel):
         self.beginMoveRows(QModelIndex(), index2, index2, QModelIndex(), index1)
         self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
         self.endMoveRows()
+
 
 BCONDS = {
     'Rectangular2D': RectangularBC,

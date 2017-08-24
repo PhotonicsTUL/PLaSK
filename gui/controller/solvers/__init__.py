@@ -195,6 +195,7 @@ class NewSolverDialog(QDialog):
         seps = (n for n,c in enumerate(categories) if c is None)
         for sep in seps:
             self.category.insertSeparator(sep)
+        self.category.setCurrentIndex(5)
         self.category.currentIndexChanged.connect(self.category_changed)
         layout.addRow("C&ategory:", self.category)
 
