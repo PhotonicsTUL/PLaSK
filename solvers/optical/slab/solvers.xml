@@ -82,13 +82,6 @@
       <attr name="size" label="Size" type="float" unit="µm" default="1.000">PML size.</attr>
     </tag>
 
-    <tag name="vpml" label="Vertical PMLs">
-      Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
-    </tag>
-
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice" default="auto">
@@ -97,6 +90,13 @@
         <choice>reflection</choice>
         <choice>admittance</choice>
       </attr>
+    </tag>
+
+    <tag name="vpml" label="Vertical PMLs">
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
@@ -308,13 +308,6 @@
       </tag>
     </tag>
 
-    <tag name="vpml" label="Vertical PMLs">
-      Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
-    </tag>
-
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice" default="auto">
@@ -323,6 +316,13 @@
         <choice>reflection</choice>
         <choice>admittance</choice>
       </attr>
+    </tag>
+
+    <tag name="vpml" label="Vertical PMLs">
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">
@@ -416,13 +416,6 @@
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
     </tag>
 
-   <tag name="vpml" label="Vertical PMLs">
-      Vertical absorbing perfectly matched layer boundary conditions parameters.
-      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
-      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
-      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
-    </tag>
-
     <tag name="transfer" label="Transfer Algorithm Settings">
       Vertical field transfer settings.
       <attr name="method" label="Transfer method" type="choice" default="auto">
@@ -431,6 +424,13 @@
         <choice>reflection</choice>
         <choice>admittance</choice>
       </attr>
+    </tag>
+
+   <tag name="vpml" label="Vertical PMLs">
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+      <attr name="factor" label="Scaling factor" type="complex" default="1-2j">PML scaling factor.</attr>
+      <attr name="dist" label="Distance" type="float" unit="µm" default="10.000">PML distance from the structure.</attr>
+      <attr name="size" label="Size" type="float" unit="µm" default="2.000">PML size.</attr>
     </tag>
 
     <tag name="root" label="Parameters of the Root-Finding Algorithm">

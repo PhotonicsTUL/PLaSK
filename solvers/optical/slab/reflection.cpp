@@ -502,7 +502,10 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 
     for (int i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
-        E[i] = FF[i] * exp(phi) + BB[i] * exp(-phi);
+        dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
+        if ((isnan(ef.real()) || isnan(ef.imag())) && abs(FF[i].real()) < SMALL && abs(FF[i].imag()) < SMALL) ef = 0.;
+        if ((isnan(eb.real()) || isnan(eb.imag())) && abs(BB[i].real()) < SMALL && abs(BB[i].imag()) < SMALL) eb = 0.;
+        E[i] = ef + eb;
     }
 
     return diagonalizer->TE(solver->stack[n]) * E;
@@ -529,7 +532,10 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 
     for (int i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
-        H[i] = FF[i] * exp(phi) - BB[i] * exp(-phi);
+        dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
+        if ((isnan(ef.real()) || isnan(ef.imag())) && abs(FF[i].real()) < SMALL && abs(FF[i].imag()) < SMALL) ef = 0.;
+        if ((isnan(eb.real()) || isnan(eb.imag())) && abs(BB[i].real()) < SMALL && abs(BB[i].imag()) < SMALL) eb = 0.;
+        H[i] = ef - eb;
     }
 
     if (n == 0 || n == solver->vbounds.size()) {
