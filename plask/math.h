@@ -61,6 +61,10 @@ inline bool is_zero(dcomplex v) {
     return real(v)*real(v) + imag(v)*imag(v) < SMALL2;
 }
 
+/// Check if the complex number is NaN
+inline bool isnan(dcomplex v) {
+    return isnan(v.real()) || isnan(v.imag());
+}
 
 
 // C++ is lacking some operators

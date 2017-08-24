@@ -472,7 +472,9 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         for (int i = 0; i < N; i++) {
                 dcomplex phas = exp(-I*gamma[i]*H);
                 dcomplex t = B2[i] / phas;
+                if (isnan(t) && B2[i] == 0.) t = 0.;
                 B2[i] = F2[i] * phas;
+                if (isnan(B2[i]) && F2[i] == 0.) B2[i] = 0.;
                 F2[i] = t;
         }
     }
@@ -503,8 +505,10 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
     for (int i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
-        if ((isnan(ef.real()) || isnan(ef.imag())) && abs(FF[i].real()) < SMALL && abs(FF[i].imag()) < SMALL) ef = 0.;
-        if ((isnan(eb.real()) || isnan(eb.imag())) && abs(BB[i].real()) < SMALL && abs(BB[i].imag()) < SMALL) eb = 0.;
+        if (isnan(ef) && FF[i] == 0.) ef = 0.;
+        if (isnan(eb) && BB[i] == 0.) eb = 0.;
+        // if (isnan(ef)) std::cerr << "ef" << FF[i] << exp(phi) << " ";
+        // if (isnan(eb)) std::cerr << "eb" << BB[i] << exp(-phi) << " ";
         E[i] = ef + eb;
     }
 
@@ -533,8 +537,10 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
     for (int i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
-        if ((isnan(ef.real()) || isnan(ef.imag())) && abs(FF[i].real()) < SMALL && abs(FF[i].imag()) < SMALL) ef = 0.;
-        if ((isnan(eb.real()) || isnan(eb.imag())) && abs(BB[i].real()) < SMALL && abs(BB[i].imag()) < SMALL) eb = 0.;
+        if (isnan(ef) && FF[i] == 0.) ef = 0.;
+        if (isnan(eb) && BB[i] == 0.) eb = 0.;
+        // if (isnan(ef)) std::cerr << "ef" << FF[i] << exp(phi) << " ";
+        // if (isnan(eb)) std::cerr << "eb" << BB[i] << exp(-phi) << " ";
         H[i] = ef - eb;
     }
 

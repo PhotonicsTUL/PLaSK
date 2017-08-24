@@ -126,7 +126,7 @@ void ExpansionPW3D::init()
 
     if (symmetric_long()) SOLVER->writelog(LOG_DETAIL, "Longitudinal symmetry is {0}", (symmetry_long == E_TRAN)? "Etran" : "Elong");
     if (symmetric_tran()) SOLVER->writelog(LOG_DETAIL, "Transverse symmetry is {0}", (symmetry_tran == E_TRAN)? "Etran" : "Elong");
-    
+
     auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
 
     matFFT = FFT::Forward2D(4, nMl, nMt,

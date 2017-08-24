@@ -215,7 +215,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     if (!periodic) {
         double Tl = 0., Tr = 0., totalw = 0.;
         for (size_t i = 0, vl = pil * solver->verts->size(), vr = pir * solver->verts->size(); i != mesh->vert()->size(); ++vl, ++vr, ++i) {
-            if (solver->stack[i] == layer) { 
+            if (solver->stack[i] == layer) {
                 double w = (i == 0 || i == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[i] - solver->vbounds[i-1];
                 Tl += w * temperature[vl]; Tr += w * temperature[vr]; totalw += w;
             }
@@ -241,7 +241,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
             double T = 0., W = 0.;
             for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
-                if (solver->stack[k] == layer) { 
+                if (solver->stack[k] == layer) {
                     double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
                     T += w * temperature[v]; W += w;
                 }
@@ -259,7 +259,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
                         if (solver->stack[k] == layer) {
                             double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
-                            g += w * gain[v]; W += w; 
+                            g += w * gain[v]; W += w;
                         }
                     }
                     double ni = glam * g/W * (0.25e-7/M_PI);
