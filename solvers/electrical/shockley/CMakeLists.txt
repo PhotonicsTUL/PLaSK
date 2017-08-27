@@ -1,4 +1,3 @@
-
 # Set the project name in the style: plask/solvergroup/solverlib
 project(plask/electrical/fem)
 

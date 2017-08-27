@@ -13,7 +13,7 @@ Methods
 
 .. autosummary::
 {% for item in methods %}
-{%- if not item.startswith('_') %}
+{%- if not item.startswith('_') and item not in ['load_xpl', 'on_initialize', 'on_invalidate'] %}
    ~{{ fullname }}.{{ item }}
 {%- endif %}
 {%- endfor %}
@@ -69,7 +69,7 @@ Descriptions
 .. rubric:: Method Details
 
 {%- for item in methods %}
-{%- if not item.startswith('_') %}
+{%- if not item.startswith('_') and item not in ['load_xpl', 'on_initialize', 'on_invalidate']  %}
 
 .. automethod:: {{ fullname }}.{{ item }}
 

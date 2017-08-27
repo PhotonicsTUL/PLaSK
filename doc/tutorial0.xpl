@@ -23,10 +23,9 @@
 </grids>
 
 <solvers>
-  <meta name="SOLVER" solver="ThermoElectric2D" lib="schockley">
+  <meta name="SOLVER" solver="ThermoElectric2D" lib="shockley">
     <geometry electrical="main" thermal="main"/>
     <mesh electrical="default" thermal="default"/>
-    <junction beta0="19" js0="1"/>
     <voltage>
       <condition value="1.0">
         <place side="top" object="top-layer"/>
@@ -38,13 +37,14 @@
     <temperature>
       <condition place="bottom" value="300.0"/>
     </temperature>
-    <heatflux/>
-    <convection/>
-    <radiation/>
+    <junction beta0="19" js0="1"/>
   </meta>
 </solvers>
 
 <script><![CDATA[
+SOLVER.tfreq = 2
+print(SOLVER.tfreq, type(SOLVER.tfreq))
+
 SOLVER.compute()
 
 figure()

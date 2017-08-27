@@ -126,9 +126,9 @@ struct RegisterBoundaryConditions {
                 .def("insert", &insert, "Insert new boundary condition to the list at specified position.", (py::arg("index"), "place", "value"))
                 .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions.")
                 .def("__iter__", &__iter__)
-                .def("read_from_xml", &read_from_xml, (py::arg("xml"), "manager"),
+                .def("read_from_xpl", &read_from_xml, (py::arg("xml"), "manager"),
                      "Read boundary conditions from active XPL reader.\n\n"
-                     "This should only be used in the overloaded :meth:`plask.Solver.load_xml` method.\n")
+                     "This should only be used in the overloaded :meth:`plask.Solver.load_xpl` method.\n")
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;

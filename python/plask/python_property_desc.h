@@ -114,7 +114,7 @@ template <> constexpr const char* docstring_attr_provider<Gain>() { return
 
     "See also:\n\n"
     "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
+    "   Receiver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 template <>
 constexpr const char* docstring_provider_call_multi_param<Gain>() {

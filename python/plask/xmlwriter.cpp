@@ -11,15 +11,15 @@
 
 namespace plask { namespace python {
 
-struct XmlWriter
+struct XplWriter
 {
     py::object geometry, mesh, names;
 
   protected:
 
     struct PythonWriteXMLCallback: public GeometryObject::WriteXMLCallback {
-        XmlWriter* writer;
-        PythonWriteXMLCallback(XmlWriter* writer): writer(writer) {}
+        XplWriter* writer;
+        PythonWriteXMLCallback(XplWriter* writer): writer(writer) {}
         std::string getName(const GeometryObject& object, AxisNames& axesNames) const override {
             py::stl_input_iterator<std::string> end;
             for (auto name = py::stl_input_iterator<std::string>(writer->geometry); name != end; ++name)
@@ -64,7 +64,7 @@ struct XmlWriter
 
   public:
 
-    XmlWriter(const py::object& geo, const py::object& msh, const py::object& nams):
+    XplWriter(const py::object& geo, const py::object& msh, const py::object& nams):
         geometry(geo), mesh(msh), names(nams)
     {
         if (geometry == py::object()) geometry = py::dict();
@@ -101,28 +101,33 @@ struct XmlWriter
     }
 };
 
+XplWriter* XmlWriter(const py::object& geo, const py::object& msh, const py::object& nams) {
+    writelog(LOG_WARNING, "'XmlWriter' class has been renamed to 'XplWriter'. Please update your code!");
+    return new XplWriter(geo, msh, nams);
+}
+
 void register_xml_writer()
 {
-    py::class_<XmlWriter>("XmlWriter",
-                          "XML writer that can save existing geometries and meshes to the XML.\n\n"
+    py::class_<XplWriter>("XplWriter",
+                          "XPL writer that can save existing geometries and meshes to the XPL.\n\n"
                           "Objects of this class contain three dictionaries:\n"
-                          ":attr:`~plask.XmlWriter.geometry` and :attr:`~plask.XmlWriter.mesh`\n"
+                          ":attr:`~plask.XplWriter.geometry` and :attr:`~plask.XplWriter.mesh`\n"
                           "that should contain the geometries or meshes, which should be saved and\n"
-                          ":attr:`~plask.XmlWriter.names` with other geometry objects that should be\n"
-                          "explicitly named in the resulting XML. All these dictionaries must have strings\n"
+                          ":attr:`~plask.XplWriter.names` with other geometry objects that should be\n"
+                          "explicitly named in the resulting XPL. All these dictionaries must have strings\n"
                           "as their keys and corresponding objects as values.\n\n"
                           "Args:\n"
                           "    geo (dict): Dictionary with geometries that should be saved to the file.\n"
                           "    mesh (dict): Dictionary with meshes that should be saved to the file.\n"
                           "    names (dict): Dictionary with names of the geometry objects that should be\n"
                           "                  explicitly named in the file.\n\n"
-                          "The final xml can be simply retrieved as a string (``str(writer)``) or saved to\n"
-                          "an XPL file with the :meth:`~plask.XmlWriter.saveto` method.\n\n"
+                          "The final XPL can be simply retrieved as a string (``str(writer)``) or saved to\n"
+                          "a file with the :meth:`~plask.XplWriter.saveto` method.\n\n"
                           "Example:\n"
                           "    Create an XML file with a simple geometry:\n\n"
                           "    >>> rect = plask.geometry.Rectangle(2, 1, 'GaAs')\n"
                           "    >>> geo = plask.geometry.Cartesian2D(rect)\n"
-                          "    >>> xml = plask.XmlWriter({'geo': geo}, {}, {'rect': rect})\n"
+                          "    >>> xml = plask.XplWriter({'geo': geo}, {}, {'rect': rect})\n"
                           "    >>> print(xml)\n"
                           "    <plask>\n"
                           "      <geometry>\n"
@@ -135,16 +140,19 @@ void register_xml_writer()
                           "      <grids/>\n"
                           "    </plask>\n",
         py::init<py::object,py::object,py::object>((py::arg("geo")=py::object(), py::arg("msh")=py::object(), py::arg("names")=py::object())))
-        .def("__str__", &XmlWriter::__str__)
-        .def("saveto", &XmlWriter::saveto, py::arg("target"),
-            "Save the resulting XML to the file.\n\n"
+        .def("__str__", &XplWriter::__str__)
+        .def("saveto", &XplWriter::saveto, py::arg("target"),
+            "Save the resulting XPL to the file.\n\n"
             "Args:\n"
             "    target (string or file): A file name or an open file object to save to.\n")
-        .def_readwrite("geometry", &XmlWriter::geometry, "Dictionary with geometries that should be saved to the file.")
-        .def_readwrite("mesh", &XmlWriter::mesh, "Dictionary with meshes that should be saved to the file.")
-        .def_readwrite("names", &XmlWriter::names, "Dictionary with names of the geometry objects that should be explicitly named\n"
+        .def_readwrite("geometry", &XplWriter::geometry, "Dictionary with geometries that should be saved to the file.")
+        .def_readwrite("mesh", &XplWriter::mesh, "Dictionary with meshes that should be saved to the file.")
+        .def_readwrite("names", &XplWriter::names, "Dictionary with names of the geometry objects that should be explicitly named\n"
                                                    "in the file.")
     ;
+
+    py::def("XmlWriter", &XmlWriter, py::return_value_policy<py::manage_new_object>(),
+            (py::arg("geo")=py::object(), py::arg("msh")=py::object(), py::arg("names")=py::object()));
 }
 
 }} // namespace plask::python

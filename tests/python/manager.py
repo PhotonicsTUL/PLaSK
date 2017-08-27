@@ -226,8 +226,8 @@ class ManagerTest(unittest.TestCase):
 class FakeModule(object):
 
     class CustomSolver(Solver):
-        def load_xml(self, xml, manager):
-            for tag in xml:
+        def load_xpl(self, xpl, manager):
+            for tag in xpl:
                 if tag == 'something':
                     for subtag in tag:
                         if subtag == 'withtext':

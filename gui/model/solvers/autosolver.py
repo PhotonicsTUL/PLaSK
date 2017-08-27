@@ -303,7 +303,7 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
         cat = solver.attrib.get('category')
         if cat is None:
             raise ValueError('Unspecified category')
-        lib = solver.attrib.get('lib', os.path.basename(filename)[:-4])
+        lib = solver.attrib.get('lib')
 
         g = solver.find(xns+'geometry')
         try:
@@ -360,14 +360,17 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
         template = solver.attrib.get('template')
         if template and template in data:
-            s, g, m, p, r = data[template]
+            s, l, g, m, p, r = data[template]
             schema.extend(s)
             if geometry_type is None: geometry_type = g
             mesh_types.update(m)
             providers.extend(p)
             receivers.extend(r)
+            if lib is None: lib = l
+        else:
+            if lib is None: lib = os.path.basename(os.path.dirname(filename)[:-4])
 
-        data[name] = schema, geometry_type, mesh_types, providers, receivers
+        data[name] = schema, lib, geometry_type, mesh_types, providers, receivers
 
         if solver.tag == xns+'solver':
             if cat not in categories:

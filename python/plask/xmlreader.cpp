@@ -324,7 +324,7 @@ namespace detail {
 
 void register_xml_reader() {
 
-    py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XmlReader", py::no_init); xml
+    py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XplReader", py::no_init); xml
         .def("__iter__", &detail::XMLReader__iter__)
         .def("__eq__", &detail::XMLReader__eq__)
         .add_property("name", &XMLReader::getNodeName, "Current tag name.")

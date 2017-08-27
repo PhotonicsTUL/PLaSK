@@ -18,7 +18,6 @@ Modules
    material
    flow
    phys
-   algorithm
 
 Classes
 =======
@@ -34,7 +33,7 @@ Classes
    Manager
    StepProfile
    Solver
-   XmlWriter
+   XplWriter
 
 Functions
 =========
@@ -59,10 +58,11 @@ Functions
 Constants
 =========
 
-=========== ===============================================================================================
+=========== ==================================================================================================================================
+``JOBID``   Job index: either a job ID in batch submission system or a float indicating lauch time (that can be converted to ``time.time()``).
 ``ARRAYID`` Array index in batch submission system. ``None`` if the job is not a part of an array.
 ``PROCID``  Process index for parallel computations (eg. MPI). ``None`` if this is a regular or serial job.
-=========== ===============================================================================================
+=========== ==================================================================================================================================
 
 
 Descriptions

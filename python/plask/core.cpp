@@ -387,8 +387,8 @@ struct SolverWrap: public Solver, Overriden<Solver> {
 
     void loadConfiguration(XMLReader& source, Manager& manager) override {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden("load_xml")) {
-            py::call_method<void>(self, "load_xml", boost::ref(source), boost::ref(manager));
+        if (overriden("load_xpl")) {
+            py::call_method<void>(self, "load_xpl", boost::ref(source), boost::ref(manager));
         } else {
             Solver::loadConfiguration(source, manager);
         }
@@ -485,8 +485,8 @@ BOOST_PYTHON_MODULE(_plask)
            "             self.workspace = None\n"
            "             self.bc = plask.mesh.Rectangular2D.BoundaryConditions()\n\n"
 
-           "         def load_xml(self, xml, manager):\n"
-           "             for tag in xml:\n"
+           "         def load_xpl(self, xpl, manager):\n"
+           "             for tag in xpl:\n"
            "                 if tag == 'config':\n"
            "                     self.param = tag.get('param', self.param)\n"
            "                 elif tag == 'geometry':\n"
@@ -494,7 +494,7 @@ BOOST_PYTHON_MODULE(_plask)
            "                 elif tag == 'mesh':\n"
            "                     self.mesh = manager.msh[tag['ref']]\n"
            "                 elif tag == 'boundary':\n"
-           "                     self.bc.read_from_xml(tag, manager)\n\n"
+           "                     self.bc.read_from_xpl(tag, manager)\n\n"
 
            "         def on_initialize(self):\n"
            "             self.workspace = zeros(1000.)\n\n"
@@ -546,13 +546,13 @@ BOOST_PYTHON_MODULE(_plask)
              "Set the solver back to uninitialized state.\n\n"
              "This method frees the memory allocated by the solver and sets\n"
              ":attr:`initialized` to *False*.")
-        .def("load_xml", &plask::Solver::loadConfiguration, (py::arg("xml"), "manager"),
-             "Load configuration from XML reader.\n\n"
+        .def("load_xpl", &plask::Solver::loadConfiguration, (py::arg("xpl"), "manager"),
+             "Load configuration from XPL reader.\n\n"
              "This method should be overriden in custom Python solvers.\n\n"
              "Example:\n"
              "  .. code-block:: python\n\n"
-             "     def load_xml(self, xml, manager):\n"
-             "         for tag in xml:\n"
+             "     def load_xpl(self, xpl, manager):\n"
+             "         for tag in xpl:\n"
              "             if tag == 'config':\n"
              "                 self.a = tag['a']\n"
              "                 self.b = tag.get('b', 0)\n"

@@ -444,8 +444,6 @@ else:
 
 import plask.phys
 
-import plask.algorithm
-
 ## ##  ## ##
 
 for JOBID in 'JOB_ID', 'SLURM_JOB_ID', 'SLURM_JOBID', 'PBS_JOBID', 'LSB_JOBID', 'LOAD_STEP_ID':
@@ -480,3 +478,4 @@ else:
 _plask.__xml__globals.update(globals())
 
 
+## ##  ## ##

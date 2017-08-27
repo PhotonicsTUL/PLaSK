@@ -442,7 +442,7 @@ if(BUILD_PYTHON)
     file(REMOVE ${plask_stubs_files}) # wrong stubs can make build fail
     if(BUILD_GUI)
         if(CMAKE_CONFIGURATION_TYPES)
-            foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install licence for all configurations
+            foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install stubs for all configurations
                 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CONF}/share/plask/stubs)
             endforeach()
         else()
@@ -610,7 +610,6 @@ if(BUILD_PYTHON)
         file(GLOB python_solvers_${cat} ${CMAKE_SOURCE_DIR}/solvers/${cat}/*.py)
         install(FILES ${python_solvers_${cat}} DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
     endforeach()
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/solvers/meta DESTINATION lib/plask/solvers COMPONENT solvers)
     add_custom_target(solvers-packages ALL DEPENDS ${solvers_packages})
 endif()
 

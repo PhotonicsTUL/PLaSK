@@ -10,6 +10,8 @@ import collections as _collections
 import plask
 import numpy as _np
 
+plask.print_log('warning', "PLaSK algorithms are obsolete! Please use metasolvers instead.")
+
 #TODO 3D support for plot_ methods
 
 try:

@@ -19,7 +19,7 @@ get_filename_component(SOLVER_NAME ${SOLVER_DIR} NAME)
 get_filename_component(SOLVER_CATEGORY_NAME ${SOLVER_DIR} PATH)
 set(SOLVER_LIB_NAME "${SOLVER_CATEGORY_NAME}_${SOLVER_NAME}")
 
-# Obtain intermediate path list and to create necessary __init__.py files to mark packages
+# Obtain intermediate path to create necessary __init__.py files to mark packages
 get_filename_component(SOLVER_PATH ${SOLVER_DIR} PATH)
 set(PLASK_SOLVER_PATH "${PLASK_PATH}/solvers/${SOLVER_PATH}")
 
@@ -137,13 +137,46 @@ macro(make_default)
                             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
                             COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml
                             )
-        string(REPLACE "/" "_" SOLVER_MODULE ${SOLVER_DIR})
         add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT solvers)
     endif()
 
     if(BUILD_TESTING)
         add_custom_target(${SOLVER_LIBRARY}-test DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_TEST_DEPENDS})
+    endif()
+
+endmacro()
+
+
+# This is macro that sets all the targets automagically
+macro(make_pure_python)
+
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR})
+    file(GLOB sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py solvers.xml)
+    foreach(file ${sources})
+        list(APPEND python_targets ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file})
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
+                           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
+                           DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+        install(FILES ${file} DESTINATION lib/plask/solvers/${SOLVER_DIR} COMPONENT solvers)
+    endforeach()
+    add_custom_target(${SOLVER_LIBRARY} DEPENDS ${python_targets})
+
+    if(BUILD_GUI)
+        string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
+        set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
+        #message("plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}")
+        add_custom_command(OUTPUT ${SOLVER_STUB}
+                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
+                            DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
+                            )
+        install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
+        add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
+    endif()
+
+    if(BUILD_TESTING)
+        add_custom_target(${SOLVER_LIBRARY}-test DEPENDS ${SOLVER_LIBRARY} ${SOLVER_TEST_DEPENDS})
     endif()
 
 endmacro()

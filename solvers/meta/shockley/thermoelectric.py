@@ -12,19 +12,26 @@
 
 import plask
 
-from thermal.static import Static2D, StaticCyl, Static3D
-from electrical.shockley import Shockley2D, ShockleyCyl, Shockley3D
+import thermal.static
+import electrical.shockley
+
+
+class attribute(object):
+    def __init__(self, value):
+        self.value = value
+    def __repr__(self):
+        return str(self.value)
 
 
 # Get unique suffix for savefiles
 if plask.BATCH:
-    _suffix = "-{}".format(plask.JOBID)
+    suffix = "-{}".format(plask.JOBID)
 else:
     import time as _time
-    _suffix = _time.strftime("-%Y%m%d-%H%M", _time.localtime(plask.JOBID))
+    suffix = _time.strftime("-%Y%m%d-%H%M", _time.localtime(plask.JOBID))
 
 
-def _h5_open(filename, group):
+def h5open(filename, group):
     import h5py
     if filename is None:
         import sys
@@ -32,7 +39,7 @@ def _h5_open(filename, group):
         if filename.endswith('.py'): filename = filename[:-3]
         elif filename.endswith('.xpl'): filename = filename[:-4]
         elif filename == '': filename = 'console'
-        filename += _suffix + '.h5'
+        filename += suffix + '.h5'
     if type(filename) is h5py.File:
         h5file = filename
         filename = h5file.filename
@@ -58,18 +65,10 @@ class ThermoElectric(plask.Solver):
         self.electrical.inTemperature = self.thermal.outTemperature
         self.thermal.inHeat = self.electrical.outHeat
 
-        self.outTemperature = self.thermal.outTemperature
-        self.outHeatFlux = self.thermal.outHeatFlux
-        self.outThermalConductivity = self.thermal.outThermalConductivity
-        self.outVoltage = self.electrical.outVoltage
-        self.outCurrentDensity = self.electrical.outCurrentDensity
-        self.outHeat = self.electrical.outHeat
-        self.outConductivity = self.electrical.outConductivity
-
         self.tfreq = 6
 
-    def load_xml(self, xml, manager):
-        for tag in xml:
+    def load_xpl(self, xpl, manager):
+        for tag in xpl:
             if tag == 'geometry':
                 self.thermal.geometry = manager.geo[tag['thermal']]
                 self.electrical.geometry = manager.geo[tag['electrical']]
@@ -97,15 +96,15 @@ class ThermoElectric(plask.Solver):
                 if 'iterlim' in tag: self.electrical.iterlim = tag['iterlim']
                 if 'logfreq' in tag: self.electrical.logfreq = tag['logfreq']
             elif tag == 'temperature':
-                self.thermal.temperature_boundary.read_from_xml(tag, manager)
+                self.thermal.temperature_boundary.read_from_xpl(tag, manager)
             elif tag == 'heatflux':
-                self.thermal.heatflux_boundary.read_from_xml(tag, manager)
+                self.thermal.heatflux_boundary.read_from_xpl(tag, manager)
             elif tag == 'convection':
-                self.thermal.convection_boundary.read_from_xml(tag, manager)
+                self.thermal.convection_boundary.read_from_xpl(tag, manager)
             elif tag == 'radiation':
-                self.thermal.radiation_boundary.read_from_xml(tag, manager)
+                self.thermal.radiation_boundary.read_from_xpl(tag, manager)
             elif tag == 'voltage':
-                self.electrical.voltage_boundary.read_from_xml(tag, manager)
+                self.electrical.voltage_boundary.read_from_xpl(tag, manager)
 
     def on_initialize(self):
         pass
@@ -158,7 +157,7 @@ class ThermoElectric(plask.Solver):
 
             group (str): HDF5 group to save the data under.
         """
-        h5file, group = _h5_open(filename, group)
+        h5file, group = h5open(filename, group)
         tmesh = self.thermal.mesh
         vmesh = self.electrical.mesh
         jmesh = vmesh.get_midpoints()
@@ -314,18 +313,185 @@ class ThermoElectric(plask.Solver):
         plask.window_title("Current Density")
 
 
+
 class ThermoElectric2D(ThermoElectric):
-    Thermal = Static2D
-    Electrical = Shockley2D
+    """
+    Thermo-electric calculations solver without the optical part.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in a self-
+    consistent loop until desired convergence is reached.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    Thermal = thermal.static.Static2D
+    Electrical = electrical.shockley.Shockley2D
+
+    outTemperature = property(lambda self: self.thermal.outTemperature,
+                              doc=Thermal.outTemperature.__doc__)
+
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
+                           doc=Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=Thermal.outThermalConductivity.__doc__)
+
+    outVoltage = property(lambda self: self.electrical.outVoltage,
+                          doc=Electrical.outVoltage.__doc__)
+
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=Electrical.outCurrentDensity.__doc__)
+
+    outHeat = property(lambda self: self.electrical.outHeat,
+                       doc=Electrical.outHeat.__doc__)
+
+    outConductivity = property(lambda self: self.electrical.outConductivity,
+                              doc=Electrical.outConductivity.__doc__)
+
+    thermal = attribute(Thermal.__name__+"()")
+    """
+    :class:`thermal.static.Static2D` solver used for thermal calculations.
+    """
+
+    electrical = attribute(Electrical.__name__+"()")
+    """
+    :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
+    """
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+    
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
 
 
 class ThermoElectricCyl(ThermoElectric):
-    Thermal = StaticCyl
-    Electrical = ShockleyCyl
+    """
+    Thermo-electric calculations solver without the optical part.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in a self-
+    consistent loop until desired convergence is reached.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    Thermal = thermal.static.StaticCyl
+    Electrical = electrical.shockley.ShockleyCyl
+
+    outTemperature = property(lambda self: self.thermal.outTemperature,
+                              doc=Thermal.outTemperature.__doc__)
+
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
+                           doc=Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=Thermal.outThermalConductivity.__doc__)
+
+    outVoltage = property(lambda self: self.electrical.outVoltage,
+                          doc=Electrical.outVoltage.__doc__)
+
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=Electrical.outCurrentDensity.__doc__)
+
+    outHeat = property(lambda self: self.electrical.outHeat,
+                       doc=Electrical.outHeat.__doc__)
+
+    outConductivity = property(lambda self: self.electrical.outConductivity,
+                              doc=Electrical.outConductivity.__doc__)
+
+    thermal = attribute(Thermal.__name__+"()")
+    """
+    :class:`thermal.static.Static2D` solver used for thermal calculations.
+    """
+
+    electrical = attribute(Electrical.__name__+"()")
+    """
+    :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
+    """
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+    
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
 
 
 class ThermoElectric3D(ThermoElectric):
-    Thermal = Static3D
-    Electrical = Shockley3D
+    """
+    Thermo-electric calculations solver without the optical part.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in a self-
+    consistent loop until desired convergence is reached.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    Thermal = thermal.static.Static3D
+    Electrical = electrical.shockley.Shockley3D
+
+    outTemperature = property(lambda self: self.thermal.outTemperature,
+                              doc=Thermal.outTemperature.__doc__)
+
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
+                           doc=Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=Thermal.outThermalConductivity.__doc__)
+
+    outVoltage = property(lambda self: self.electrical.outVoltage,
+                          doc=Electrical.outVoltage.__doc__)
+
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=Electrical.outCurrentDensity.__doc__)
+
+    outHeat = property(lambda self: self.electrical.outHeat,
+                       doc=Electrical.outHeat.__doc__)
+
+    outConductivity = property(lambda self: self.electrical.outConductivity,
+                              doc=Electrical.outConductivity.__doc__)
+
+    thermal = attribute(Thermal.__name__+"()")
+    """
+    :class:`thermal.static.Static3D` solver used for thermal calculations.
+    """
+
+    electrical = attribute(Electrical.__name__+"()")
+    """
+    :class:`electrical.shockley.Shockley3D` solver used for electrical calculations.
+    """
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+    
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
 
 
+__all__ = 'ThermoElectric2D', 'ThermoElectricCyl', 'ThermoElectric3D'

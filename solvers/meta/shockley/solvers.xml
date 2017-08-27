@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
 
-  <template name="ThermoElectric" category="meta" lib="schockley">
+  <template name="ThermoElectric" category="meta" lib="shockley">
     <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
