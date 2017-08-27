@@ -24,6 +24,7 @@ class FlowDelegate(DefinesCompletionDelegate):
     def __init__(self, document, parent):
         super(FlowDelegate, self).__init__(document.defines.model, parent)
         self.solvers_model = document.solvers.model
+        self.document = document
 
     def createEditor(self, parent, option, index):
         items = self.get_slots()

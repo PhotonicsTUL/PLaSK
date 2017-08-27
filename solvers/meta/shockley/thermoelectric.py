@@ -113,7 +113,7 @@ class ThermoElectric(plask.Solver):
         self.thermal.invalidate()
         self.electrical.invalidate()
 
-    def compute(self, save=True, noinit=False):
+    def compute(self, save=True, invalidate=True):
         """
         Run calculations.
 
@@ -127,10 +127,10 @@ class ThermoElectric(plask.Solver):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this paramete
                 as a string.
-            noinit (bool): If this flas is set, solvers are not invalidated
-                           in the beginning of the computations.
+            invalidate (bool): If this flag is set, solvers are invalidated
+                               in the beginning of the computations.
         """
-        if not noinit:
+        if invalidate:
             self.thermal.invalidate()
             self.electrical.invalidate()
 
@@ -353,7 +353,7 @@ class ThermoElectric2D(ThermoElectric):
                        doc=Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                              doc=Electrical.outConductivity.__doc__)
+                               doc=Electrical.outConductivity.__doc__)
 
     thermal = attribute(Thermal.__name__+"()")
     """
@@ -413,7 +413,7 @@ class ThermoElectricCyl(ThermoElectric):
                        doc=Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                              doc=Electrical.outConductivity.__doc__)
+                               doc=Electrical.outConductivity.__doc__)
 
     thermal = attribute(Thermal.__name__+"()")
     """
@@ -473,7 +473,7 @@ class ThermoElectric3D(ThermoElectric):
                        doc=Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                              doc=Electrical.outConductivity.__doc__)
+                               doc=Electrical.outConductivity.__doc__)
 
     thermal = attribute(Thermal.__name__+"()")
     """
