@@ -16,6 +16,7 @@ from ...qt.QtGui import *
 from ..defines import get_defines_completer
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 from ...external.highlighter.xml import syntax
+from ...utils.config import CONFIG
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
@@ -174,15 +175,32 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controller = controller
 
+        use_toolbox = CONFIG['solvers/collapsible_config']
+
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
+        if use_toolbox:
+            main = QToolBox()
+        else:
+            main = QWidget()
+
         if controller.model.geometry_type or controller.model.mesh_types:
-            label = QLabel("General")
-            font = label.font()
-            font.setBold(True)
-            label.setFont(font)
-            layout.addRow(label)
+            if use_toolbox:
+                widget = QWidget()
+                color = QPalette().color(QPalette.Normal, QPalette.Window)
+                palette = widget.palette()
+                palette.setColor(QPalette.Base, color)
+                widget.setPalette(palette)
+                widget.setAutoFillBackground(True)
+                widget.setLayout(layout)
+                main.addItem(widget, "General")
+            else:
+                label = QLabel("General")
+                font = label.font()
+                font.setBold(True)
+                label.setFont(font)
+                layout.addRow(label)
 
         defines = get_defines_completer(self.controller.document.defines.model, self)
 
@@ -214,18 +232,25 @@ class SolverAutoWidget(VerticalScrollArea):
 
         self.controls = {}
 
-        last_label = None
+        last_header = None
         for schema in controller.model.schema:
             group = schema.name
             gname = group.split('/')[-1]
             bc = isinstance(schema, SchemaBoundaryConditions)
-            if last_label != schema.label:
-                last_label = schema.label
-                label = QLabel(last_label)
-                font = label.font()
-                font.setBold(True)
-                label.setFont(font)
-                layout.addRow(label)
+            if last_header != schema.label:
+                last_header = schema.label
+                if use_toolbox:
+                    widget = QWidget()
+                    layout = QFormLayout()
+                    layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+                    widget.setLayout(layout)
+                    main.addItem(widget, schema.label)
+                else:
+                    label = QLabel(last_header)
+                    font = label.font()
+                    font.setBold(True)
+                    label.setFont(font)
+                    layout.addRow(label)
             if isinstance(schema, SchemaTag):
                 for attr in schema.attrs:
                     if isinstance(attr, AttrGroup):
@@ -262,8 +287,8 @@ class SolverAutoWidget(VerticalScrollArea):
                 #edit.textChanged.connect(self.controller.fire_changed)
                 edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
 
-        main = QWidget()
-        main.setLayout(layout)
+        if not use_toolbox:
+            main.setLayout(layout)
         self.setWidget(main)
 
     def _get_grids(self, mesh_types):

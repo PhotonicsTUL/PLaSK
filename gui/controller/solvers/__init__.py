@@ -121,6 +121,13 @@ class SolversController(Controller):
         selection_model = self.solvers_table.selectionModel()
         selection_model.selectionChanged.connect(self.solver_selected)
 
+        self.document.window.config_changed.connect(self.reconfig)
+
+    def reconfig(self):
+        current_index = self._current_index
+        self._current_index = None
+        self.set_current_index(current_index)
+
     def set_current_index(self, new_index):
         """
             Try to change current script.
@@ -141,7 +148,6 @@ class SolversController(Controller):
             self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
             self._current_controller.on_edit_enter()
         return True
-
     def solver_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()

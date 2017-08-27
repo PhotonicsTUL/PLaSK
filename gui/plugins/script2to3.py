@@ -51,7 +51,10 @@ else:
                 msgbox.exec_()
             else:
                 editor.moveCursor(QTextCursor.Start)
-                editor.moveCursor(QTextCursor.End, True)
+                try:
+                    editor.moveCursor(QTextCursor.End, QTextCursor.KeepAnchor)
+                except (TypeError, AttributeError):
+                    editor.moveCursor(QTextCursor.End, True)
                 cursor = editor.textCursor()
                 cursor.insertText(unicode(node3)[:-1])
 

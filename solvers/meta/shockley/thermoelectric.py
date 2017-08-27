@@ -145,6 +145,12 @@ class ThermoElectric(plask.Solver):
         if save:
             self.save(None if save is True else save)
 
+    def get_total_current(self, nact=0):
+        """
+        Get total current flowing through active region [mA]
+        """
+        return self.electrical.get_total_current(nact)
+
     def save(self, filename=None, group='ThermoElectric'):
         """
         Save the computation results to the HDF5 file.

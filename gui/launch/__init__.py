@@ -46,15 +46,15 @@ class LaunchDialog(QDialog):
         if window.document.defines is not None:
             defines_layout = QHBoxLayout()
             defines_layout.setContentsMargins(0, 0, 0, 0)
-            defines_button = QToolButton()
-            defines_button.setIcon(QIcon.fromTheme('menu-down'))
-            defines_button.setCheckable(True)
-            defines_button.setChecked(_defs_visible)
-            defines_button.toggled.connect(self.show_defines)
+            self.defines_button = QToolButton()
+            self.defines_button.setCheckable(True)
+            self.defines_button.setChecked(_defs_visible)
+            self.defines_button.toggled.connect(self.show_defines)
+            self.defines_button.setArrowType(Qt.RightArrow)
             self.defs_label = QLabel("Temporary de&fines:", self)
-            self.defs_label.setBuddy(defines_button)
+            self.defs_label.setBuddy(self.defines_button)
+            defines_layout.addWidget(self.defines_button)
             defines_layout.addWidget(self.defs_label)
-            defines_layout.addWidget(defines_button)
             self.layout.addLayout(defines_layout)
 
             self.defines = QPlainTextEdit()
@@ -94,6 +94,7 @@ class LaunchDialog(QDialog):
         self.adjustSize()
 
     def show_defines(self, visible):
+        self.defines_button.setArrowType(Qt.DownArrow if visible else Qt.RightArrow)
         global _defs_visible
         _defs_visible = visible
         self.defines.setVisible(visible)

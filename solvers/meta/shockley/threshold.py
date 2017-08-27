@@ -10,7 +10,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import collections
+
 import plask
+from plask import *
+
+import thermal.static
+import electrical.shockley
+import electrical.diffusion
+import gain.freecarrier
+import optical.effective
 
 try:
     import scipy
@@ -21,71 +30,91 @@ except ImportError:
 else:
     import scipy.optimize
 
-from .thermoelectric import suffix, h5open, ThermoElectric
+from .thermoelectric import attribute, suffix, h5open, ThermoElectric
 
 
 class ThresholdSearch(ThermoElectric):
-    """
-    Solver for threshold search of semiconductor laser.
 
-    This solver performs thermo-electrical computations followed by
-    determination ot threshold current and optical analysis in order to
-    determine the threshold of a semiconductor laser. The search is
-    performed by scipy root finding algorithm in order to determine
-    the volatage and electric current ensuring no optical loss in the
-    laser cavity.
-
-    The computations can be executed using `compute` method, after which
-    the results may be save to the HDF5 file with `save` or presented visually
-    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
-    is *True* the fields are saved automatically after the computations.
-    The file name is based on the name of the executed script with suffix denoting
-    either the launch time or the identifier of a batch job if a batch system
-    (like SLURM, OpenPBS, or SGE) is used.
-    """
-
-    def __init__(self, thermal, electrical, diffusion, gain, optical,
-                 ivolt, vstart, optstart, optname=None, optargs=None, loss='auto', tfreq=6,
-                 vtol=1e-4, invalidate=False, quick=False, connect=False):
-        ThermoElectric.__init__(self, thermal, electrical, tfreq, connect)
-        if diffusion is not None:
-            self.diffusion = diffusion
-            if connect:
-                diffusion.inTemperature = thermal.outTemperature
-                diffusion.inCurrentDensity = electrical.outCurrentDensity
-        else:
-            self.diffusion = electrical
-        if connect:
-            gain.inTemperature = thermal.outTemperature
-            gain.inCarriersConcentration = diffusion.outCarriersConcentration
-            optical.inTemperature = thermal.outTemperature
-            optical.inGain = gain.outGain
-        self.gain = gain
-        self.optical = optical
-        self.vstart = vstart
-        self.ivb = ivolt
-        self.vtol = vtol
-        self.optstart = optstart
-        self.optname = optname
-        self.optargs = optargs if optargs is not None else {}
-        self.invalidate = invalidate
+    def __init__(self, name):
+        super(ThresholdSearch, self).__init__(name)
+        self.diffusion = self.Diffusion(name)
+        self.gain = self.Gain(name)
+        self.optical = self.Optical(name)
+        self.diffusion.inTemperature = self.thermal.outTemperature
+        self.diffusion.inCurrentDensity = self.electrical.outCurrentDensity
+        self.gain.inTemperature = self.thermal.outTemperature
+        self.gain.inCarriersConcentration = self.diffusion.outCarriersConcentration
+        self.optical.inTemperature = self.thermal.outTemperature
+        self.optical.inGain = self.gain.outGain
+        self.optname = None
+        self.loss = 'auto'
+        self.vtol = 1e-4
+        self.quick = False
         self.threshold_current = None
-        if quick:
-            raise NotImplemented('Quick threshold search not implemented')
-        if loss == 'auto':
-            if type(optical.geometry) == plask.geometry.Cartesian2D:
-                self.loss = 'neff'
-            elif type(optical.geometry) == plask.geometry.Cylindrical2D:
-                self.loss = 'loss'
-            else:
-                raise TypeError("Unable to automatically determine the mode of "
-                                "optical calculations in 3D")
-        else:
-            self.loss = loss
-        if self.loss not in ('neff', 'wavelength', 'loss'):
-            raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
 
-    def run(self, save=True, noinit=False):
+    def load_xpl(self, xpl, manager):
+        for tag in xpl:
+            if tag == 'geometry':
+                self.thermal.geometry = manager.geo[tag['thermal']]
+                self.electrical.geometry = self.diffusion.geometry = self.gain.geometry = manager.geo[tag['electrical']]
+                self.optical.geometry = manager.geo[tag['optical']]
+            elif tag == 'mesh':
+                self.thermal.mesh = manager.msh[tag['thermal']]
+                self.electrical.mesh = manager.msh[tag['electrical']]
+                self.diffusion.mesh = manager.msh[tag['diffusion']]
+                if 'optical' in tag: self.optical.mesh = manager.msh[tag['optical']]
+                if 'gain' in tag: self.gain.mesh = manager.msh[tag['gain']]
+            elif tag == 'junction':
+                if 'pnjcond' in tag: self.electrical.pnjcond = tag['pnjcond']
+                for key, val in tag.attrs.items():
+                    if key.startswith('beta') or key.startswith('js'):
+                        setattr(self.electrical, key, val)
+            elif tag == 'contacts':
+                if 'pcond' in tag: self.electrical.pcond = tag['pcond']
+                if 'ncond' in tag: self.electrical.ncond = tag['ncond']
+            elif tag == 'loop':
+                self.tfreq = tag.get('tfreq', self.tfreq)
+                if 'maxterr' in tag: self.thermal.maxerr = tag['maxterr']
+                if 'maxcerr' in tag: self.electrical.maxerr = tag['maxcerr']
+            elif tag == 'tmatrix':
+                if 'itererr' in tag: self.thermal.itererr = tag['itererr']
+                if 'iterlim' in tag: self.thermal.iterlim = tag['iterlim']
+                if 'logfreq' in tag: self.thermal.logfreq = tag['logfreq']
+            elif tag == 'ematrix':
+                if 'itererr' in tag: self.electrical.itererr = tag['itererr']
+                if 'iterlim' in tag: self.electrical.iterlim = tag['iterlim']
+                if 'logfreq' in tag: self.electrical.logfreq = tag['logfreq']
+            elif tag == 'temperature':
+                self.thermal.temperature_boundary.read_from_xpl(tag, manager)
+            elif tag == 'heatflux':
+                self.thermal.heatflux_boundary.read_from_xpl(tag, manager)
+            elif tag == 'convection':
+                self.thermal.convection_boundary.read_from_xpl(tag, manager)
+            elif tag == 'radiation':
+                self.thermal.radiation_boundary.read_from_xpl(tag, manager)
+            elif tag == 'voltage':
+                self.electrical.voltage_boundary.read_from_xpl(tag, manager)
+            elif tag == 'root':
+                self.ivb = tag['bcond']
+                self.vtol = tag.get('vtol', self.vtol)
+                # self.quick = tag.get('quick', self.quick)
+            elif tag == 'optical':
+                self.optstart = tag['start']
+                self.optname = tag['arg']
+
+
+    def on_initialize(self):
+        # if quick:
+        #     raise NotImplemented('Quick threshold search not implemented')
+        pass
+
+    def on_invalidate(self):
+        self.thermal.invalidate()
+        self.electrical.invalidate()
+        self.diffusion.invalidate()
+        self.optical.invalidate()
+
+    def compute(self, start, save=True, invalidate=True, **optargs):
         """
         Execute the algorithm.
 
@@ -100,18 +129,20 @@ class ThresholdSearch(ThermoElectric):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overriden by setting this parameted
                 as a string.
-            noinit (bool): If this flas is set, solvers are not invalidated
-                           in the beginning of the computations.
+            invalidate (bool): If this flag is set, solvers are invalidated
+                               in the beginning of the computations.
+            **optargs (dict): Other arguments for optical solver's ``find_mode``
+                              and ``get_determinant`` methods.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
             The threshold current can be then obtained by calling:
 
-            >>> electrical.get_total_current()
+            >>> solver.get_total_current()
             123.0
         """
 
-        if not noinit:
+        if invalidate:
             self.thermal.invalidate()
             self.electrical.invalidate()
             self.diffusion.invalidate()
@@ -120,7 +151,7 @@ class ThresholdSearch(ThermoElectric):
         def func(volt):
             """Function to search zero of"""
             self.electrical.voltage_boundary[self.ivb].value = volt
-            if self.invalidate:
+            if invalidate:
                 self.thermal.invalidate()
                 self.electrical.invalidate()
                 self.diffusion.invalidate()
@@ -133,7 +164,7 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
             try: self.diffusion.compute_threshold()
             except AttributeError: pass
-            optstart = self.optstart() if isinstance(self.optstart, _collections.Callable) else self.optstart
+            optstart = self.optstart() if isinstance(self.optstart, collections.Callable) else self.optstart
             if self.optname is None:
                 self.modeno = self.optical.find_mode(optstart, **self.optargs)
             else:
@@ -143,7 +174,7 @@ class ThresholdSearch(ThermoElectric):
             val = self.optical.modes[self.modeno].__getattribute__(self.loss)
             if self.loss != 'loss':
                 if self.loss == 'wavelength':
-                    val = (4e7*_np.pi / val).imag
+                    val = (4e7*pi / val).imag
                 else:
                     val = val.imag
             plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g}{}"
@@ -151,9 +182,9 @@ class ThresholdSearch(ThermoElectric):
             return val
 
         try:
-            vmin, vmax = self.vstart
+            vmin, vmax = start
         except TypeError:
-            result = scipy.optimize.newton(func, self.vstart, tol=self.vtol)
+            result = scipy.optimize.newton(func, start, tol=self.vtol)
         else:
             result = scipy.optimize.brentq(func, vmin, vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
@@ -175,8 +206,8 @@ class ThresholdSearch(ThermoElectric):
 
             group (str): HDF5 group to save the data under.
         """
-        h5file, group = _h5_open(filename, group)
-        ThermoElectric.save(self, h5file, group)
+        h5file, group = h5open(filename, group)
+        super(ThresholdSearch, self).save(h5file, group)
 
     def plot_optical_field(self, hpoints=800, vpoints=600, geometry_color=(0.75, 0.75, 0.75, 0.35), **kwargs):
         """
@@ -197,3 +228,76 @@ class ThresholdSearch(ThermoElectric):
         plask.plot_field(field)
         plask.plot_geometry(self.optical.geometry, color=geometry_color)
         plask.gcf().canvas.set_window_title("Light Intensity")
+
+
+class ThresholdSearchCyl(ThresholdSearch):
+    """
+    Solver for threshold search of semiconductor laser.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by scipy root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    Thermal = thermal.static.StaticCyl
+    Electrical = electrical.shockley.ShockleyCyl
+    Diffusion = electrical.diffusion.DiffusionCyl
+    Gain = gain.freecarrier.FreeCarrierCyl
+    Optical = optical.effective.EffectiveFrequencyCyl
+
+    outTemperature = property(lambda self: self.thermal.outTemperature,
+                              doc=Thermal.outTemperature.__doc__)
+
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
+                           doc=Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=Thermal.outThermalConductivity.__doc__)
+
+    outVoltage = property(lambda self: self.electrical.outVoltage,
+                          doc=Electrical.outVoltage.__doc__)
+
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=Electrical.outCurrentDensity.__doc__)
+
+    outHeat = property(lambda self: self.electrical.outHeat,
+                       doc=Electrical.outHeat.__doc__)
+
+    outConductivity = property(lambda self: self.electrical.outConductivity,
+                               doc=Electrical.outConductivity.__doc__)
+
+    thermal = attribute(Thermal.__name__+"()")
+    """
+    :class:`thermal.static.Static2D` solver used for thermal calculations.
+    """
+
+    electrical = attribute(Electrical.__name__+"()")
+    """
+    :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
+    """
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+    
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
+
+    def on_initialize(self):
+        super(ThresholdSearchCyl, self).on_initialize()
+        if self.loss == 'auto': self._loss = 'loss'
+        else:self._loss = self.loss
+        if self._loss not in ('neff', 'wavelength', 'loss'):
+            raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
