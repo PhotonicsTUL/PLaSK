@@ -21,7 +21,6 @@ PLaSK User Guide
     materials
     meshes
     solvers
-    algorithms
     results
     gui
     units

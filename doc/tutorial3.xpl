@@ -1,8 +1,8 @@
 <plask loglevel="detail">
 
 <defines>
-  <define name="mesa" value="40."/>
   <define name="aperture" value="8."/>
+  <define name="mesa" value="{4 * aperture}"/>
 </defines>
 
 <materials>
@@ -17,7 +17,7 @@
 </materials>
 
 <geometry>
-  <cylindrical2d name="GeoE" axes="r,z" bottom="GaAs:C=2e+18">
+  <cylindrical2d name="GeoE" axes="r,z">
     <stack>
       <item right="{mesa/2-1}">
         <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
@@ -120,8 +120,7 @@ plot_boundary(SOLVER.electrical.voltage_boundary, defmesh,
               SOLVER.electrical.geometry, color="b", marker="D")
 window_title("Electrical mesh")
 
-
-threshold_voltage = SOLVER.compute(1.5, save=False)
+threshold_voltage = SOLVER.compute(1.5)
 threshold_current = SOLVER.threshold_current
 print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
     .format(threshold_voltage, threshold_current))
@@ -138,7 +137,7 @@ new_aperture = 6.
 GEO.aperture.dr = new_aperture / 2.
 GEO.oxide.dr = (mesa - new_aperture) / 2.
 
-threshold_voltage = SOLVER.compute(1.5, save=False)
+threshold_voltage = SOLVER.compute(1.5)
 threshold_current = SOLVER.threshold_current
 print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
     .format(threshold_voltage, threshold_current))

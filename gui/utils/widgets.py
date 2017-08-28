@@ -375,7 +375,6 @@ class MultiLineEdit(QWidget):
         self.list_widget = QListWidget()
         self.list_widget.itemSelectionChanged.connect(self.selected)
         layout.addWidget(self.list_widget)
-        # buttons = QVBoxLayout()
         buttons = QGridLayout()
         buttons.setContentsMargins(0, 0, 0, 0)
         buttons.setSpacing(1)
@@ -399,9 +398,6 @@ class MultiLineEdit(QWidget):
         act.triggered.connect(self.remove_item)
         act.setShortcutContext(Qt.WidgetShortcut)
         self.list_widget.addAction(act)
-        shortcut = QShortcut(Qt.Key_Enter, self.list_widget)
-        shortcut.activated.connect(self.edit_item)
-        shortcut.setContext(Qt.WidgetShortcut)
         self._movable = movable
         if movable:
             self.up = QToolButton()
@@ -429,7 +425,17 @@ class MultiLineEdit(QWidget):
             self.down = None
         layout.addLayout(buttons)
         self.selected()
-
+        # act = QAction(self.list_widget)
+        # act.setShortcut(QKeySequence(Qt.Key_Return))
+        # act.triggered.connect(self.edit_item)
+        # act.setShortcutContext(Qt.WidgetShortcut)
+        # self.list_widget.addAction(act)
+        self.list_widget.itemSelectionChanged.connect(self.selected)
+        self.list_widget.itemChanged.connect(self.item_changed)
+        self.list_widget.setEditTriggers(QAbstractItemView.CurrentChanged |
+                                         QAbstractItemView.SelectedClicked |
+                                         QAbstractItemView.DoubleClicked |
+                                         QAbstractItemView.EditKeyPressed)
         self.list_widget.setFixedHeight(60)
 
     def selected(self):
