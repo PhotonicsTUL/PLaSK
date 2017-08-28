@@ -327,9 +327,3 @@ You can download the complete file from this tutorial: :download:`tutorial1.xpl 
 .. |applications-graphics| image:: applications-graphics.png
    :align: middle
    :alt: plot
-
-
-Algorithms
-----------
-
-Thermo-electric calculations described in this tutorial can be done much easier using :ref:`PLaSK algorithm <sec-algorithms>` :py:class:`~plask.algorithm.ThermoElectric`. You can see an equivalent script to the one presented here in the file :download:`tutorial1a.xpl <tutorial1a.xpl>` A more advanced algorithm is presented in tutorial ref:`sec-full-threshold-analysis-of-VCSEL`.

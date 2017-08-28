@@ -171,12 +171,12 @@ All the examples here have been presented as fragments of the XML code. Every el
 Manual refinements of the divide mesh generator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We could now run our calculations. However, it is a good habit, to check the geometries for any design flaws and the grids for proper density. To do this, we write a simple script in the *Script* section that will just draw the ``GeoTE`` geometry and the ``default`` mesh with the boundary conditions:
+We could now run our calculations. However, it is a good habit, to check the geometries for any design flaws and the grids for proper density. To do this, we write a simple script in the *Script* section that will just draw the ``GeoE`` geometry and the ``default`` mesh with the boundary conditions:
 
 .. code-block:: python
 
-   plot_geometry(GEO.GeoTE, margin=0.01)
-   defmesh = MSG.default(GEO.GeoTE.item)
+   plot_geometry(GEO.GeoE, margin=0.01)
+   defmesh = MSG.default(GEO.GeoE.item)
    plot_mesh(defmesh, color="0.75")
    plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
                  ELECTRICAL.geometry, color="b", marker="D")
