@@ -12,3 +12,4 @@
 # GNU General Public License for more details.
 
 from .thermoelectric import *
+from .threshold import *

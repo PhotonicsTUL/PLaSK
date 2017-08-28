@@ -29,11 +29,11 @@
       <attr name="Raug" label="Auger recombination" type="bool" default="no">Consider Auger recombination.</attr>
       <attr name="Pol" label="Polarization effects" type="bool" default="no">Polarization effects.</attr>
       <attr name="FullIon" label="Complete ionization of dopants" type="bool" default="yes">Complete ionization of dopants.</attr>
-      <attr name="maxerrVi" label="Max initial potential update" type="float" unit="V" default="1e-6">Limit for the initial potential estimate updates.</attr>
-      <attr name="maxerrV0" label="Max built-in potential update" type="float" unit="V" default="1e-6">Limit for the built-in potential updates.</attr>
-      <attr name="maxerrV" label="Max potential update" type="float" unit="V" default="1e-6">Limit for the potential updates.</attr>
-      <attr name="maxerrFn" label="Max &lt;i&gt;F&lt;sub&gt;n&lt;/sub&gt;&lt;/i&gt; update" type="float" unit="eV" default="1e-4">Limit for the electrons quasi-Fermi level updates.</attr>
-      <attr name="maxerrFp" label="Max &lt;i&gt;F&lt;sub&gt;p&lt;/sub&gt;&lt;/i&gt; update" type="float" unit="eV" default="1e-4">Limit for the holes quasi-Fermi level updates.</attr>
+      <attr name="maxerrVi" label="Max. initial potential update" type="float" unit="V" default="1e-6">Limit for the initial potential estimate updates.</attr>
+      <attr name="maxerrV0" label="Max. built-in potential update" type="float" unit="V" default="1e-6">Limit for the built-in potential updates.</attr>
+      <attr name="maxerrV" label="Max. potential update" type="float" unit="V" default="1e-6">Limit for the potential updates.</attr>
+      <attr name="maxerrFn" label="Max. &lt;i&gt;F&lt;sub&gt;n&lt;/sub&gt;&lt;/i&gt; update" type="float" unit="eV" default="1e-4">Limit for the electrons quasi-Fermi level updates.</attr>
+      <attr name="maxerrFp" label="Max. &lt;i&gt;F&lt;sub&gt;p&lt;/sub&gt;&lt;/i&gt; update" type="float" unit="eV" default="1e-4">Limit for the holes quasi-Fermi level updates.</attr>
       <attr name="loopsVi" label="Initial potential loop limit" type="int" default="10000">Loops limit for the initial potential estimate.</attr>
       <attr name="loopsV0" label="Built-in potential loop limit" type="int" default="200">Loops limit for the built-in potential.</attr>
       <attr name="loopsV" label="Potential loop limit" type="int" default="3">Loops limit for the potential.</attr>
@@ -49,8 +49,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 

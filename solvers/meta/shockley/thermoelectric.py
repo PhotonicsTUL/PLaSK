@@ -68,44 +68,53 @@ class ThermoElectric(plask.Solver):
 
         self.tfreq = 6
 
+    def _read_attr(self, tag, attr, solver, pyattr=None):
+        if pyattr is None: pyattr = attr
+        if attr in tag:
+            setattr(solver, pyattr, tag[attr])
+
     def load_xpl(self, xpl, manager):
         for tag in xpl:
-            if tag == 'geometry':
-                self.thermal.geometry = manager.geo[tag['thermal']]
-                self.electrical.geometry = manager.geo[tag['electrical']]
-            elif tag == 'mesh':
-                self.thermal.mesh = manager.msh[tag['thermal']]
-                self.electrical.mesh = manager.msh[tag['electrical']]
-            elif tag == 'junction':
-                if 'pnjcond' in tag: self.electrical.pnjcond = tag['pnjcond']
-                for key, val in tag.attrs.items():
-                    if key.startswith('beta') or key.startswith('js'):
-                        setattr(self.electrical, key, val)
-            elif tag == 'contacts':
-                if 'pcond' in tag: self.electrical.pcond = tag['pcond']
-                if 'ncond' in tag: self.electrical.ncond = tag['ncond']
-            elif tag == 'loop':
-                self.tfreq = tag.get('tfreq', self.tfreq)
-                if 'maxterr' in tag: self.thermal.maxerr = tag['maxterr']
-                if 'maxcerr' in tag: self.electrical.maxerr = tag['maxcerr']
-            elif tag == 'tmatrix':
-                if 'itererr' in tag: self.thermal.itererr = tag['itererr']
-                if 'iterlim' in tag: self.thermal.iterlim = tag['iterlim']
-                if 'logfreq' in tag: self.thermal.logfreq = tag['logfreq']
-            elif tag == 'ematrix':
-                if 'itererr' in tag: self.electrical.itererr = tag['itererr']
-                if 'iterlim' in tag: self.electrical.iterlim = tag['iterlim']
-                if 'logfreq' in tag: self.electrical.logfreq = tag['logfreq']
-            elif tag == 'temperature':
-                self.thermal.temperature_boundary.read_from_xpl(tag, manager)
-            elif tag == 'heatflux':
-                self.thermal.heatflux_boundary.read_from_xpl(tag, manager)
-            elif tag == 'convection':
-                self.thermal.convection_boundary.read_from_xpl(tag, manager)
-            elif tag == 'radiation':
-                self.thermal.radiation_boundary.read_from_xpl(tag, manager)
-            elif tag == 'voltage':
-                self.electrical.voltage_boundary.read_from_xpl(tag, manager)
+            self._parse_xpl(tag, manager)
+
+    def _parse_xpl(self, tag, manager):
+        if tag == 'geometry':
+            self.thermal.geometry = manager.geo[tag['thermal']]
+            self.electrical.geometry = manager.geo[tag['electrical']]
+        elif tag == 'mesh':
+            self.thermal.mesh = manager.msh[tag['thermal']]
+            self.electrical.mesh = manager.msh[tag['electrical']]
+        elif tag == 'junction':
+            self._read_attr(tag, 'pnjcond', self.electrical)
+            for key, val in tag.attrs.items():
+                if key.startswith('beta') or key.startswith('js'):
+                    setattr(self.electrical, key, val)
+        elif tag == 'contacts':
+            self._read_attr(tag, 'pcond', self.electrical)
+            self._read_attr(tag, 'ncond', self.electrical)
+        elif tag == 'loop':
+            self.tfreq = tag.get('tfreq', self.tfreq)
+            self._read_attr(tag, 'inittemp', self.thermal, 'inittemp')
+            self._read_attr(tag, 'maxterr', self.thermal, 'maxerr')
+            self._read_attr(tag, 'maxcerr', self.electrical, 'maxerr')
+        elif tag == 'tmatrix':
+            self._read_attr(tag, 'itererr', self.thermal)
+            self._read_attr(tag, 'iterlim', self.thermal)
+            self._read_attr(tag, 'logfreq', self.thermal)
+        elif tag == 'ematrix':
+            self._read_attr(tag, 'itererr', self.electrical)
+            self._read_attr(tag, 'iterlim', self.electrical)
+            self._read_attr(tag, 'logfreq', self.electrical)
+        elif tag == 'temperature':
+            self.thermal.temperature_boundary.read_from_xpl(tag, manager)
+        elif tag == 'heatflux':
+            self.thermal.heatflux_boundary.read_from_xpl(tag, manager)
+        elif tag == 'convection':
+            self.thermal.convection_boundary.read_from_xpl(tag, manager)
+        elif tag == 'radiation':
+            self.thermal.radiation_boundary.read_from_xpl(tag, manager)
+        elif tag == 'voltage':
+            self.electrical.voltage_boundary.read_from_xpl(tag, manager)
 
     def on_initialize(self):
         pass
@@ -126,7 +135,7 @@ class ThermoElectric(plask.Solver):
             save (bool or str): If `True` the computed fields are saved to the
                 HDF5 file named after the script name with the suffix denoting
                 either the batch job id or the current time if no batch system
-                is used. The filename can be overridden by setting this paramete
+                is used. The filename can be overridden by setting this parameter
                 as a string.
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
@@ -176,7 +185,7 @@ class ThermoElectric(plask.Solver):
         plask.save_field(curr, h5file, group + '/CurrentDensity')
         h5file.close()
 
-    def plot_temperature(self, geometry_color='0.75', mesh_color=None, **kwargs):
+    def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
         """
         Plot computed temperature to the current axes.
 
@@ -186,6 +195,10 @@ class ThermoElectric(plask.Solver):
 
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
+
+            geometry_alpha (float): Geometry opacity (1 — fully opaque, 0 – invisible).
+
+            mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
             kwargs: Keyword arguments passed to the plot function.
 
@@ -197,12 +210,12 @@ class ThermoElectric(plask.Solver):
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Temperature [K]")
         if geometry_color is not None:
-            plask.plot_geometry(self.thermal.geometry, color=geometry_color)
+            plask.plot_geometry(self.thermal.geometry, color=geometry_color, alpha=geometry_alpha)
         if mesh_color is not None:
-            plask.plot_mesh(self.thermal.mesh, color=mesh_color)
+            plask.plot_mesh(self.thermal.mesh, color=mesh_color, alpha=mesh_alpha)
         plask.window_title("Temperature")
 
-    def plot_voltage(self, geometry_color='0.75', mesh_color=None, **kwargs):
+    def plot_voltage(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
         """
         Plot computed voltage to the current axes.
 
@@ -212,6 +225,10 @@ class ThermoElectric(plask.Solver):
 
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
+
+            geometry_alpha (float): Geometry opacity (1 — fully opaque, 0 – invisible).
+
+            mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
             kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
 
@@ -223,9 +240,9 @@ class ThermoElectric(plask.Solver):
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Voltage [V]")
         if geometry_color is not None:
-            plask.plot_geometry(self.electrical.geometry, color=geometry_color)
+            plask.plot_geometry(self.electrical.geometry, color=geometry_color, alpha=geometry_alpha)
         if mesh_color is not None:
-            plask.plot_mesh(self.electrical.mesh, color=mesh_color)
+            plask.plot_mesh(self.electrical.mesh, color=mesh_color, alpha=mesh_alpha)
         plask.window_title("Voltage")
 
     def plot_vertical_voltage(self, at=0., **kwargs):
@@ -331,7 +348,7 @@ class ThermoElectric2D(ThermoElectric):
 
     The computations can be executed using `compute` method, after which
     the results may be save to the HDF5 file with `save` or presented visually
-    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`compute` method
     is *True* the fields are saved automatically after the computations.
     The file name is based on the name of the executed script with suffix denoting
     either the launch time or the identifier of a batch job if a batch system
@@ -391,7 +408,7 @@ class ThermoElectricCyl(ThermoElectric):
 
     The computations can be executed using `compute` method, after which
     the results may be save to the HDF5 file with `save` or presented visually
-    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`compute` method
     is *True* the fields are saved automatically after the computations.
     The file name is based on the name of the executed script with suffix denoting
     either the launch time or the identifier of a batch job if a batch system
@@ -451,7 +468,7 @@ class ThermoElectric3D(ThermoElectric):
 
     The computations can be executed using `compute` method, after which
     the results may be save to the HDF5 file with `save` or presented visually
-    using ``plot_...`` methods. If ``save`` parameter of the :meth:`run` method
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`compute` method
     is *True* the fields are saved automatically after the computations.
     The file name is based on the name of the executed script with suffix denoting
     either the launch time or the identifier of a batch job if a batch system

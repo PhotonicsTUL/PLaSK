@@ -1,8 +1,8 @@
 <plask loglevel="detail">
 
 <defines>
-  <define name="mesa" value="10."/>
-  <define name="aperture" value="{mesa-6.}"/>
+  <define name="mesa" value="40."/>
+  <define name="aperture" value="8."/>
 </defines>
 
 <materials>
@@ -17,40 +17,49 @@
 </materials>
 
 <geometry>
-  <cylindrical2d name="GeoTE" axes="r,z">
+  <cylindrical2d name="GeoE" axes="r,z" bottom="GaAs:C=2e+18">
     <stack>
-      <shelf>
-        <gap total="{mesa-1}"/>
+      <item right="{mesa/2-1}">
         <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
-      </shelf>
+      </item>
       <stack name="VCSEL">
-        <rectangle material="GaAs:Si=2e+18" dr="{mesa}" dz="0.0700"/>
+        <rectangle material="GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0700"/>
         <stack name="top-DBR" repeat="24">
-          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0795"/>
-          <rectangle material="GaAs:Si=2e+18" dr="{mesa}" dz="0.0700"/>
+          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0795"/>
+          <rectangle material="GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0700"/>
         </stack>
         <shelf>
-          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.0160"/>
-          <rectangle name="oxide" material="AlOx" dr="{mesa-aperture}" dz="0.0160"/>
+          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture/2}" dz="0.0160"/>
+          <rectangle name="oxide" material="AlOx" dr="{(mesa-aperture)/2}" dz="0.0160"/>
         </shelf>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa}" dz="0.0635"/>
-        <rectangle material="GaAs:Si=5e+17" dr="{mesa}" dz="0.1160"/>
+        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0635"/>
+        <rectangle material="GaAs:Si=5e+17" dr="{mesa/2}" dz="0.1160"/>
         <stack name="junction" role="active">
           <stack repeat="4">
-            <rectangle name="QW" role="QW" material="InGaAsQW" dr="{mesa}" dz="0.0050"/>
-            <rectangle material="GaAs" dr="{mesa}" dz="0.0050"/>
+            <rectangle name="QW" role="QW" material="InGaAsQW" dr="{mesa/2}" dz="0.0050"/>
+            <rectangle material="GaAs" dr="{mesa/2}" dz="0.0050"/>
           </stack>
           <again ref="QW"/>
         </stack>
-        <rectangle material="GaAs:C=5e+17" dr="{mesa}" dz="0.1160"/>
+        <rectangle material="GaAs:C=5e+17" dr="{mesa/2}" dz="0.1160"/>
         <stack name="bottom-DBR" repeat="30">
-          <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesa}" dz="0.0795"/>
-          <rectangle material="GaAs:C=2e+18" dr="{mesa}" dz="0.0700"/>
+          <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesa/2}" dz="0.0795"/>
+          <rectangle material="GaAs:C=2e+18" dr="{mesa/2}" dz="0.0700"/>
         </stack>
       </stack>
       <zero/>
-      <rectangle material="GaAs:C=2e+18" dr="200." dz="150."/>
-      <rectangle name="p-contact" material="Cu" dr="2500." dz="5000."/>
+      <rectangle name="p-contact" material="GaAs:C=2e+18" dr="{mesa/2}" dz="5."/>
+    </stack>
+  </cylindrical2d>
+  <cylindrical2d name="GeoT" axes="r,z">
+    <stack>
+      <item right="{mesa/2-1}">
+        <rectangle material="Au" dr="4" dz="0.0500"/>
+      </item>
+      <again ref="VCSEL"/>
+      <zero/>
+      <rectangle material="GaAs:C=2e+18" dr="2500." dz="150."/>
+      <rectangle material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
   <cylindrical2d name="GeoO" axes="r,z" outer="extend" bottom="GaAs" top="air">
@@ -81,91 +90,63 @@
 </grids>
 
 <solvers>
-  <thermal name="THERMAL" solver="StaticCyl" lib="static">
-    <geometry ref="GeoTE"/>
-    <mesh ref="default"/>
-    <temperature>
-    <condition value="300." place="bottom"/>
-  </temperature>
-  </thermal>
-  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
-    <geometry ref="GeoTE"/>
-    <mesh ref="default"/>
-    <junction beta0="11" js0="1"/>
+  <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
+    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
+    <mesh diffusion="diffusion" electrical="default" thermal="optical"/>
+    <optical start="980.5"/>
     <voltage>
-    <condition value="1.4">
-      <place object="p-contact" side="bottom"/>
-    </condition>
-    <condition value="0.0">
-      <place object="n-contact" side="top"/>
-    </condition>
-  </voltage>
-  </electrical>
-  <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">
-    <geometry ref="GeoO"/>
-    <mesh ref="diffusion"/>
-    <config accuracy="0.005" fem-method="parabolic"/>
-  </electrical>
-  <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
-    <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="10"/>
-  </gain>
-  <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
-    <geometry ref="GeoO"/>
-    <mesh ref="optical"/>
-    <mode lam0="980."/>
-  </optical>
+      <condition value="1.4">
+        <place side="bottom" object="p-contact"/>
+      </condition>
+      <condition value="0.0">
+        <place side="top" object="n-contact"/>
+      </condition>
+    </voltage>
+    <temperature>
+      <condition place="bottom" value="300."/>
+    </temperature>
+    <root bcond="0"/>
+    <junction beta0="11" js0="1"/>
+    <diffusion accuracy="0.005" fem-method="parabolic"/>
+    <gain lifetime="0.5" matrix-elem="10"/>
+  </meta>
 </solvers>
 
-<connects>
-  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>
-  <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="DIFFUSION.inCurrentDensity" out="ELECTRICAL.outCurrentDensity"/>
-  <connect in="GAIN.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="GAIN.inCarriersConcentration" out="DIFFUSION.outCarriersConcentration"/>
-  <connect in="OPTICAL.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="OPTICAL.inGain" out="GAIN.outGain"/>
-</connects>
-
 <script><![CDATA[
-plot_geometry(GEO.GeoTE, margin=0.01)
-defmesh = MSG.default(GEO.GeoTE.item)
+plot_geometry(GEO.GeoE, margin=0.01)
+defmesh = MSH.default(GEO.GeoE.item)
 plot_mesh(defmesh, color="0.75")
-plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
-              ELECTRICAL.geometry, color="b", marker="D")
-plot_boundary(THERMAL.temperature_boundary, defmesh,
-              THERMAL.geometry, color="r")
-gcf().canvas.set_window_title("Default mesh")
+plot_boundary(SOLVER.electrical.voltage_boundary, defmesh,
+              SOLVER.electrical.geometry, color="b", marker="D")
+window_title("Electrical mesh")
 
-task = algorithm.ThresholdSearch(THERMAL, ELECTRICAL, DIFFUSION,
-                                 GAIN, OPTICAL, 0, 1.5, 980.5)
-threshold_voltage = task.run()
-threshold_current = task.threshold_current
-print("Vth = {:.3f}V, Ith = {:.3f}mA"
+
+threshold_voltage = SOLVER.compute(1.5, save=False)
+threshold_current = SOLVER.threshold_current
+print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
     .format(threshold_voltage, threshold_current))
 
 figure()
-task.plot_optical_field()
+SOLVER.plot_optical_field()
 axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
+window_title("Light Intensity")
 
 
 # Find threshold for a new aperture
 
-new_aperture = 3.
-GEO.aperture.dr = new_aperture
-GEO.oxide.dr = mesa - new_aperture
+new_aperture = 6.
+GEO.aperture.dr = new_aperture / 2.
+GEO.oxide.dr = (mesa - new_aperture) / 2.
 
-threshold_voltage = task.run()
-threshold_current = task.threshold_current
-print("New aperture: Vth = {:.3f}V, Ith = {:.3f}mA"
+threshold_voltage = SOLVER.compute(1.5, save=False)
+threshold_current = SOLVER.threshold_current
+print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
     .format(threshold_voltage, threshold_current))
 
 figure()
-task.plot_optical_field()
+SOLVER.plot_optical_field()
 axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
-gcf().canvas.set_window_title("Light Intensity (new aperture)")
-
+window_title("Light Intensity (new aperture)")
 
 show()
 

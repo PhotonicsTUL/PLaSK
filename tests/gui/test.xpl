@@ -286,15 +286,16 @@
   <local name="test" solver="Test" lib="something">
     <geometry ref="simple"/>
   </local>
-  <meta name="meta2" solver="ThermoElectric2D" lib="solvers">
+  <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
     <geometry electrical="geo2d-copy" thermal="geo2d"/>
   </meta>
-  <meta name="metac" solver="ThermoElectricCyl" lib="solvers"/>
-  <meta name="meta3" solver="ThermoElectric3D" lib="solvers">
+  <meta name="metac" solver="ThermoElectricCyl" lib="shockley"/>
+  <meta name="meta3" solver="ThermoElectric3D" lib="shockley">
     <voltage>
       <condition place="bottom" value="1.0"/>
     </voltage>
   </meta>
+  <meta name="threshold" solver="ThresholdSearchCyl" lib="shockley"/>
 </solvers>
 
 <connects>

@@ -48,74 +48,63 @@ class ThresholdSearch(ThermoElectric):
         self.optical.inTemperature = self.thermal.outTemperature
         self.optical.inGain = self.gain.outGain
         self.optname = None
-        self.loss = 'auto'
-        self.vtol = 1e-4
+        self.optstart = None
+        self.optargs = {}
+        self.vtol = 1e-5
         self.quick = False
         self.threshold_current = None
 
-    def load_xpl(self, xpl, manager):
-        for tag in xpl:
+    def _parse_xpl(self, tag, manager):
+        if tag == 'root':
+            self.ivb = tag['bcond']
+            self.vtol = tag.get('vtol', self.vtol)
+            # self.quick = tag.get('quick', self.quick)
+        elif tag == 'diffusion':
+            self._read_attr(tag, 'fem-method', self.diffusion, 'fem_method')
+            self._read_attr(tag, 'accuracy', self.diffusion)
+            self._read_attr(tag, 'abs-accuracy', self.diffusion, 'abs_accuracy')
+            self._read_attr(tag, 'maxiters', self.diffusion)
+            self._read_attr(tag, 'maxrefines', self.diffusion)
+            self._read_attr(tag, 'interpolation', self.diffusion)
+        elif tag == 'gain':
+            self._read_attr(tag, 'lifetime', self.gain)
+            self._read_attr(tag, 'matrix-elem', self.gain, 'matrix_element')
+            self._read_attr(tag, 'strained', self.gain)
+        elif tag in ('optical-root', 'optical-stripe-root'):
+            name = {'optical-root': 'root', 'optical-stripe-root': 'stripe_root'}[tag.name]
+            root = getattr(self.optical, name)
+            self._read_attr(tag, 'method', root)
+            self._read_attr(tag, 'tolx', root)
+            self._read_attr(tag, 'tolf-min', root, 'tolf_min')
+            self._read_attr(tag, 'tolf-max', root, 'tolf_max')
+            self._read_attr(tag, 'maxstep', root)
+            self._read_attr(tag, 'maxiter', root)
+            self._read_attr(tag, 'alpha', root)
+            self._read_attr(tag, 'lambda', root)
+            self._read_attr(tag, 'initial-range', root, 'initial_range')
+        else:
             if tag == 'geometry':
-                self.thermal.geometry = manager.geo[tag['thermal']]
-                self.electrical.geometry = self.diffusion.geometry = self.gain.geometry = manager.geo[tag['electrical']]
+                self.diffusion.geometry = self.gain.geometry = manager.geo[tag['electrical']]
                 self.optical.geometry = manager.geo[tag['optical']]
             elif tag == 'mesh':
-                self.thermal.mesh = manager.msh[tag['thermal']]
-                self.electrical.mesh = manager.msh[tag['electrical']]
                 self.diffusion.mesh = manager.msh[tag['diffusion']]
                 if 'optical' in tag: self.optical.mesh = manager.msh[tag['optical']]
                 if 'gain' in tag: self.gain.mesh = manager.msh[tag['gain']]
-            elif tag == 'junction':
-                if 'pnjcond' in tag: self.electrical.pnjcond = tag['pnjcond']
-                for key, val in tag.attrs.items():
-                    if key.startswith('beta') or key.startswith('js'):
-                        setattr(self.electrical, key, val)
-            elif tag == 'contacts':
-                if 'pcond' in tag: self.electrical.pcond = tag['pcond']
-                if 'ncond' in tag: self.electrical.ncond = tag['ncond']
             elif tag == 'loop':
-                self.tfreq = tag.get('tfreq', self.tfreq)
-                if 'maxterr' in tag: self.thermal.maxerr = tag['maxterr']
-                if 'maxcerr' in tag: self.electrical.maxerr = tag['maxcerr']
-            elif tag == 'tmatrix':
-                if 'itererr' in tag: self.thermal.itererr = tag['itererr']
-                if 'iterlim' in tag: self.thermal.iterlim = tag['iterlim']
-                if 'logfreq' in tag: self.thermal.logfreq = tag['logfreq']
-            elif tag == 'ematrix':
-                if 'itererr' in tag: self.electrical.itererr = tag['itererr']
-                if 'iterlim' in tag: self.electrical.iterlim = tag['iterlim']
-                if 'logfreq' in tag: self.electrical.logfreq = tag['logfreq']
-            elif tag == 'temperature':
-                self.thermal.temperature_boundary.read_from_xpl(tag, manager)
-            elif tag == 'heatflux':
-                self.thermal.heatflux_boundary.read_from_xpl(tag, manager)
-            elif tag == 'convection':
-                self.thermal.convection_boundary.read_from_xpl(tag, manager)
-            elif tag == 'radiation':
-                self.thermal.radiation_boundary.read_from_xpl(tag, manager)
-            elif tag == 'voltage':
-                self.electrical.voltage_boundary.read_from_xpl(tag, manager)
-            elif tag == 'root':
-                self.ivb = tag['bcond']
-                self.vtol = tag.get('vtol', self.vtol)
-                # self.quick = tag.get('quick', self.quick)
-            elif tag == 'optical':
-                self.optstart = tag['start']
-                self.optname = tag['arg']
-
+                self._read_attr(tag, 'inittemp', self.gain, 'T0')
+            super(ThresholdSearch, self)._parse_xpl(tag, manager)
 
     def on_initialize(self):
+        super(ThresholdSearch, self).on_initialize()
         # if quick:
         #     raise NotImplemented('Quick threshold search not implemented')
-        pass
 
     def on_invalidate(self):
-        self.thermal.invalidate()
-        self.electrical.invalidate()
+        super(ThresholdSearch, self).on_invalidate()
         self.diffusion.invalidate()
         self.optical.invalidate()
 
-    def compute(self, start, save=True, invalidate=True, **optargs):
+    def compute(self, start, save=True, invalidate=True, **kwargs):
         """
         Execute the algorithm.
 
@@ -125,10 +114,12 @@ class ThresholdSearch(ThermoElectric):
         with zero optical losses.
 
         Args:
+            start (float or tuple of 2 floats): Voltage staring point or voltage
+                limits for the threshold search.
             save (bool or str): If `True` the computed fields are saved to the
                 HDF5 file named after the script name with the suffix denoting
                 either the batch job id or the current time if no batch system
-                is used. The filename can be overriden by setting this parameted
+                is used. The filename can be overridden by setting this parameter
                 as a string.
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
@@ -149,6 +140,11 @@ class ThresholdSearch(ThermoElectric):
             self.diffusion.invalidate()
             self.optical.invalidate()
 
+        self.initialize()
+
+        optargs = self.optargs.copy()
+        optargs.update(kwargs)
+
         def func(volt):
             """Function to search zero of"""
             self.electrical.voltage_boundary[self.ivb].value = volt
@@ -167,19 +163,12 @@ class ThresholdSearch(ThermoElectric):
             except AttributeError: pass
             optstart = self.optstart() if isinstance(self.optstart, collections.Callable) else self.optstart
             if self.optname is None:
-                self.modeno = self.optical.find_mode(optstart, **self.optargs)
+                self.modeno = self.optical.find_mode(optstart, **optargs)
             else:
-                okwargs = {self.optname: optstart}
-                okwargs.update(self.optargs)
-                self.modeno = self.optical.find_mode(**okwargs)
-            val = self.optical.modes[self.modeno].__getattribute__(self.loss)
-            if self.loss != 'loss':
-                if self.loss == 'wavelength':
-                    val = (4e7*pi / val).imag
-                else:
-                    val = val.imag
-            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g}{}"
-                            .format(volt, val, '' if self.loss == 'neff' else ' / cm'))
+                optargs[self.optname] = optstart
+                self.modeno = self.optical.find_mode(**optargs)
+            val = self.optical.modes[self.modeno].loss
+            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
             return val
 
         try:
@@ -210,7 +199,7 @@ class ThresholdSearch(ThermoElectric):
         h5file, group = h5open(filename, group)
         super(ThresholdSearch, self).save(h5file, group)
 
-    def plot_optical_field(self, hpoints=800, vpoints=600, geometry_color=(0.75, 0.75, 0.75, 0.35), **kwargs):
+    def plot_optical_field(self, hpoints=800, vpoints=600, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
         """
         Plot computed optical mode field at threshold.
 
@@ -219,6 +208,11 @@ class ThresholdSearch(ThermoElectric):
 
             vpoints (int): Number of points to plot in horizontal plot direction.
 
+            geometry_color (str or ``None``): Matplotlib color specification
+                for the geometry. If ``None``, structure is not plotted.
+
+            geometry_alpha (float): Geometry opacity (1 — fully opaque, 0 – invisible).
+
             kwargs: Keyword arguments passed to the plot function.
         """
 
@@ -226,8 +220,8 @@ class ThresholdSearch(ThermoElectric):
         intensity_mesh = plask.mesh.Rectangular2D(plask.mesh.Regular(box.left, box.right, hpoints),
                                                   plask.mesh.Regular(box.bottom, box.top, vpoints))
         field = self.optical.outLightMagnitude(self.modeno, intensity_mesh)
-        plask.plot_field(field)
-        plask.plot_geometry(self.optical.geometry, color=geometry_color)
+        plask.plot_field(field, **kwargs)
+        plask.plot_geometry(self.optical.geometry, color=geometry_color, alpha=geometry_alpha)
         plask.gcf().canvas.set_window_title("Light Intensity")
 
 
@@ -238,7 +232,7 @@ class ThresholdSearchCyl(ThresholdSearch):
     This solver performs thermo-electrical computations followed by
     determination ot threshold current and optical analysis in order to
     determine the threshold of a semiconductor laser. The search is
-    performed by scipy root finding algorithm in order to determine
+    performed by ``scipy`` root finding algorithm in order to determine
     the voltage and electric current ensuring no optical loss in the
     laser cavity.
 
@@ -296,9 +290,22 @@ class ThresholdSearchCyl(ThresholdSearch):
     solution less frequently.
     """
 
+    def __init__(self, name=''):
+        super(ThresholdSearchCyl, self).__init__(name)
+        self.optname = 'lam'
+
     def on_initialize(self):
         super(ThresholdSearchCyl, self).on_initialize()
-        if self.loss == 'auto': self._loss = 'loss'
-        else:self._loss = self.loss
-        if self._loss not in ('neff', 'wavelength', 'loss'):
-            raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
+        self.optical.lam0 = self.optstart() if isinstance(self.optstart, collections.Callable) else self.optstart
+
+    def _parse_xpl(self, tag, manager):
+        if tag == 'optical':
+            self.optstart = tag['start']
+            if 'm' in tag: self.optargs['m'] = tag['m']
+            self._read_attr(tag, 'vlam', self.optical)
+            self._read_attr(tag, 'vat', self.optical)
+        else:
+            super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
+
+
+__all__ = 'ThresholdSearchCyl',

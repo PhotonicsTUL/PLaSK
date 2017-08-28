@@ -46,7 +46,7 @@
     <xs:attribute name="category" type="xs:string" use="required"/>
     <xs:attribute name="lib" type="xs:string" use="optional"/>
     <xs:attribute name="obsolete" type="bool" use="optional"/>
-    <xs:attribute name="base" type="xs:string" use="optional"/>
+    <xs:attribute name="template" type="xs:string" use="optional"/>
   </xs:complexType>
 
   <xs:element name="solver" type="solver"/>

@@ -14,6 +14,7 @@
       <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
     </tag>
     <tag name="loop" label="Loop Configuration">
+      Configuration of the self-consistent loop.
       <attr name="tfreq" label="Thermal update frequency" default="6">
         Number of electrical iterations per single thermal step.
         As temperature tends to converge faster, it is reasonable to repeat
@@ -43,10 +44,149 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
+    <flow>
+      <provider name="outTemperature"/>
+      <provider name="outHeatFlux"/>
+      <provider name="outThermalConductivity"/>
+      <provider name="outVoltage"/>
+      <provider name="outCurrentDensity"/>
+      <provider name="outCurrentDensity"/>
+      <provider name="outHeat"/>
+      <provider name="outConductivity"/>
+    </flow>
+  </template>
+
+  <template name="ThresholdSearch" category="meta" lib="shockley">
+    <tag name="root" label="Threshold root-finder parameters">
+      Configuration of the root-finder used in threshold search.
+      <attr name="bcond" label="Voltage boundary to vary" type="int" required="yes">
+        Number of the voltage boundary condition to vary during the threshold search
+      </attr>
+      <attr name="vtol" label="Maximum voltage error" type="float" unit="V" default="1e-5">
+        Tolerance on voltage in the root search.
+      </attr>
+    </tag>
+    <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
+      Configuration of the effective model of p-n junction.
+      <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
+      <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
+      <attr name="pnjcond" label="Initial junctions conductivity" type="float" unit="S/m" default="5.0">Initial vertical conductivity of the junctions.</attr>
+    </tag>
+    <tag name="contacts" label="Properties of the Contacts">
+      Properties of the contact layers.
+      <attr name="pcond" label="p-contact conductivity" type="float" unit="S/m" default="5.0">p-contact conductivity.</attr>
+      <attr name="ncond" label="n-contact conductivity" type="float" unit="S/m" default="50.0">n-contact conductivity.</attr>
+    </tag>
+    <tag name="loop" label="Thermo-Electric Loop Configuration">
+      Configuration of the self-consistent thermo-electric loop.
+      <attr name="tfreq" label="Thermal update frequency" default="6">
+        Number of electrical iterations per single thermal step.
+        As temperature tends to converge faster, it is reasonable to repeat
+        thermal solution less frequently.
+      </attr>
+      <attr name="inittemp" label="Initial temperature" type="float" unit="K" default="300">Initial temperature used for the first computation.</attr>
+      <attr name="maxterr" label="Maximum temperature error" type="float" unit="K" default="0.05">Maximum allowed temperature error.</attr>
+      <attr name="maxcerr" label="Maximum current density error" type="float" unit="%" default="0.05">Maximum allowed current density error.</attr>
+    </tag>
+    <tag name="tmatrix" label="Thermal Matrix Solver">
+      Matrix configuration for the thermal solver.
+      <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
+        Algorithm used for solving set of linear positive-definite equations.
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+        <choice>iterative</choice>
+      </attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
+    </tag>
+    <tag name="ematrix" label="Electrical Matrix Solver">
+      Matrix configuration for the electrical solver.
+      <attr name="algorithm" label="Solution algorithm" type="choice" default="cholesky">
+        Algorithm used for solving set of linear positive-definite equations.
+        <choice>cholesky</choice>
+        <choice>gauss</choice>
+        <choice>iterative</choice>
+      </attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
+    </tag>
+    <tag label="Diffusion Configuration" name="diffusion">
+      Diffusion solver configuration.
+      <attr label="FEM order" name="fem-method" type="choice" default="parabolic">
+        Order of the finite-element method.
+        <choice>linear</choice>
+        <choice>parabolic</choice>
+      </attr>
+      <attr label="Relative accuracy" name="accuracy" type="float" unit="%" default="0.01">Required relative accuracy.</attr>
+      <attr label="Absolute accuracy" type="float" unit="cm&lt;sup&gt;-3&lt;/sup&gt;" name="abs-accuracy" default="5e15">Required absolute minimal concentration accuracy.</attr>
+      <attr label="Iterations to refine" name="maxiters" type="int" default="20">Maximum number of allowed iterations before attempting to refine mesh.</attr>
+      <attr label="Allowed refinements" name="maxrefines" type="int" default="5">Maximum number of allowed mesh refinements.</attr>
+      <attr label="Interpolation method" name="interpolation" type="choice" default="spline">
+        Current density interpolation method name.
+        <choice>linear</choice>
+        <choice>spline</choice>
+      </attr>
+    </tag>
+    <tag name="gain" label="Gain Parameters">
+      Gain solver parameters.
+      <attr name="lifetime" label="Carriers lifetime" type="float" unit="ps" default="0.1">
+        Average carriers lifetime. This parameter is used for gain spectrum broadening.
+      </attr>
+      <attr name="matrix-elem" label="Momentum matrix element"
+            unit="eV×m&lt;sub&gt;0&lt;/sub&gt;" type="float">
+        Value of the squared matrix element in gain computations.
+        If it is not set it is estimated automatically.
+      </attr>
+      <attr name="strained" label="Strained" type="bool" default="no">
+        Boolean attribute indicating if the solver should consider strain in the active region.
+        If set to &lt;i&gt;yes&lt;/i&gt; then there must a layer with the role "&lt;i&gt;substrate&lt;/i&gt;"
+        in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
+        the quantum wells.
+      </attr>
+    <tag name="optical-root" label="Parameters of the Optical Mode Finding">
+      Parameters of the horizontal root-finding algorithm in optical solver.
+      <attr name="method" label="Root finding method" type="choice" default="muller">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+        <choice>brent</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective frequency" type="float" default="1e-6">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float" default="1e-7">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float" default="2e-5">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step" type="float" default="0.1">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int" default="500">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex" default="1e-3">Initial range size (Muller method only).</attr>
+    </tag>
+
+    <tag name="optical-stripe-root" label="Parameters of the Optical Vertical Solution Finding">
+      Parameters of root-finding algorithm for one stripe in optical solver.
+      <attr name="method" label="Root finding method" type="choice" default="muller">
+        Root finding algorithm.
+        <choice>muller</choice>
+        <choice>broyden</choice>
+        <choice>brent</choice>
+      </attr>
+      <attr name="tolx" label="Tolerance on effective frequency" type="float" default="1e-6">Maximum change of the effective frequency parameter which is allowed for convergent solution.</attr>
+      <attr name="tolf-min" label="Sufficient determinant value" type="float" default="1e-7">Minimum value of the determinant sufficient to assume convergence.</attr>
+      <attr name="tolf-max" label="Required determinant value" type="float" default="1e-5">Maximum value of the determinant required to assume convergence.</attr>
+      <attr name="maxstep" label="Maximum Broyden iteration step" type="float" default="0.1">Maximum step in one iteration of root finding. Significant for the Broyden's method only.</attr>
+      <attr name="maxiter" label="Maximum number of iterations" type="int" default="500">Maximum number of root finding iterations.</attr>
+      <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
+      <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
+      <attr name="initial-range" label="Initial Muller range size" type="complex" default="1e-3">Initial range size (Muller method only).</attr>
+    </tag>
+
+    </tag>
+
     <flow>
       <provider name="outTemperature"/>
       <provider name="outHeatFlux"/>
@@ -67,19 +207,19 @@
     It computes electric current flow and tempereture distribution in
     a self-consistent loop until desired convergence is reached.
     <tag name="geometry" label="Geometry">
-      <attr name="thermal" label="Thermal" type="Cartesian2D geometry">
+      <attr name="thermal" label="Thermal" type="Cartesian2D geometry" required="yes">>
         Geometry used by the thermal solver.
       </attr>
-      <attr name="electrical" label="Electrical" type="Cartesian2D geometry">
+      <attr name="electrical" label="Electrical" type="Cartesian2D geometry" required="yes">>
         Geometry used by the electrical solver.
       </attr>
     </tag>
     <tag name="mesh" label="Mesh">
-      <attr name="thermal" label="Thermal" type="mesh">
+      <attr name="thermal" label="Thermal" type="mesh" required="yes">>
         Mesh used by the thermal solver.
         <type>Rectangular2D</type>
       </attr>
-      <attr name="electrical" label="Electrical" type="mesh">
+      <attr name="electrical" label="Electrical" type="mesh" required="yes">>
         Mesh used by the electrical solver.
         <type>Rectangular2D</type>
       </attr>
@@ -105,19 +245,19 @@
     It computes electric current flow and tempereture distribution in
     a self-consistent loop until desired convergence is reached.
     <tag name="geometry" label="Geometry">
-      <attr name="thermal" label="Thermal" type="cylindrical geometry">
+      <attr name="thermal" label="Thermal" type="cylindrical geometry" required="yes">>
         Geometry used by the thermal solver.
       </attr>
-      <attr name="electrical" label="Electrical" type="cylindrical geometry">
+      <attr name="electrical" label="Electrical" type="cylindrical geometry" required="yes">>
         Geometry used by the electrical solver.
       </attr>
     </tag>
     <tag name="mesh" label="Mesh">
-      <attr name="thermal" label="Thermal" type="mesh">
+      <attr name="thermal" label="Thermal" type="mesh" required="yes">>
         Mesh used by the thermal solver.
         <type>Rectangular2D</type>
       </attr>
-      <attr name="electrical" label="Electrical" type="mesh">
+      <attr name="electrical" label="Electrical" type="mesh" required="yes">>
         Mesh used by the electrical solver.
         <type>Rectangular2D</type>
       </attr>
@@ -143,19 +283,19 @@
     It computes electric current flow and tempereture distribution in
     a self-consistent loop until desired convergence is reached.
     <tag name="geometry" label="Geometry">
-      <attr name="thermal" label="Thermal" type="Cartesian3D geometry">
+      <attr name="thermal" label="Thermal" type="Cartesian3D geometry" required="yes">>
         Geometry used by the thermal solver.
       </attr>
-      <attr name="electrical" label="Electrical" type="Cartesian3D geometry">
+      <attr name="electrical" label="Electrical" type="Cartesian3D geometry" required="yes">>
         Geometry used by the electrical solver.
       </attr>
     </tag>
     <tag name="mesh" label="Mesh">
-      <attr name="thermal" label="Thermal" type="mesh">
+      <attr name="thermal" label="Thermal" type="mesh" required="yes">>
         Mesh used by the thermal solver.
         <type>Rectangular3D</type>
       </attr>
-      <attr name="electrical" label="Electrical" type="mesh">
+      <attr name="electrical" label="Electrical" type="mesh" required="yes">>
         Mesh used by the electrical solver.
         <type>Rectangular3D</type>
       </attr>
@@ -168,6 +308,75 @@
       Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
     <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular3D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+  </solver>
+
+  <solver name="ThresholdSearchCyl" category="meta" template="ThresholdSearch">
+    Solver for threshold search of semiconductor laser in cylindrical geometry.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    <tag name="geometry" label="Geometry">
+      <attr name="thermal" label="Thermal" type="cylindrical geometry">
+        Geometry used by the thermal solver.
+      </attr>
+      <attr name="electrical" label="Electrical" type="cylindrical geometry" required="yes">>
+        Geometry used by the electrical, diffusion, and gain solvers.
+      </attr>
+      <attr name="optical" label="Optical" type="cylindrical geometry" required="yes">>
+        Geometry used by the optical solver.
+      </attr>
+    </tag>
+    <tag name="mesh" label="Mesh">
+      <attr name="thermal" label="Thermal" type="mesh" required="yes">>
+        Mesh used by the thermal solver.
+        <type>Rectangular2D</type>
+      </attr>
+      <attr name="electrical" label="Electrical" type="mesh" required="yes">>
+        Mesh used by the electrical solver.
+        <type>Rectangular2D</type>
+      </attr>
+      <attr name="diffusion" label="Diffusion" type="mesh" required="yes">>
+        Mesh used by the carriers diffusion solver.
+        <type>Regular</type>
+      </attr>
+      <attr name="optical" label="Optical" type="mesh">
+        Mesh used by the carriers diffusion solver.
+        <type>Ordered</type>
+        <type>Regular</type>
+      </attr>
+    </tag>
+    <tag name="optical" label="Optical solver configuration">
+      Configuration of the optical solver
+      <attr name="start" label="Approximate wavelength" type="float" unit="nm" required="yes">
+        Approximation of the optical mode wavelength.
+      </attr>
+      <attr name="vlam" label="Vertical wavelength" type="float" unit="nm">
+        &quot;Vertical wavelength&quot; i.e. the wavelength what would be in the absence of lateral confinement;
+        setting this value helps to find models in very long resonators.
+      </attr>
+      <attr name="vat" label="Vertical solution coord" type="float" unit="µm">
+        Horizontal position of at which the vertical part of the field is calculated.
+      </attr>
+      <attr name="m" label="Angular mode number" type="int">
+        Angular mode number (0 for LP0x, 1 for LP1x, etc.).
+      </attr>
+    </tag>
+    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D"/>
+    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D"/>
+    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D">
+      This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
+      Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
+    </bcond>
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>

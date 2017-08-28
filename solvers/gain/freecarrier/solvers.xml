@@ -9,7 +9,10 @@
 
     <geometry type="Cartesian2D"/>
 
-    <mesh type="Ordered, Regular" optional="yes"/>
+    <mesh type="Ordered" optional="yes">
+      <type>Ordered</type>
+      <type>Regular</type>
+    </mesh>
 
     <tag name="config" label="Gain Parameters">
       Some important gain parameters.

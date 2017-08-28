@@ -23,8 +23,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
@@ -75,8 +75,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
@@ -131,8 +131,8 @@
         <choice>gauss</choice>
         <choice>iterative</choice>
       </attr>
-      <attr name="itererr" label="Max residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
-      <attr name="iterlim" label="Max number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
+      <attr name="itererr" label="Max. residual error" type="float" default="1e-8">Maximum allowed residual error for the iterative algorithm.</attr>
+      <attr name="iterlim" label="Max. number of iterations" type="int" default="10000">Maximum number of iterations for the iterative algorithm.</attr>
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 

@@ -351,7 +351,10 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 
     double getMatrixElem() const { return matrixelem; }
-    void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
+    void setMatrixElem(double iMatrixElem)  {
+        matrixelem = iMatrixElem;
+        this->invalidate();
+    }
 
     bool getStrained() const { return strained; }
     void setStrained(bool value) { strained = value; this->invalidate(); }

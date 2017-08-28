@@ -136,6 +136,12 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
+        RW_PROPERTY(matrix_element, getMatrixElem, setMatrixElem,
+                    u8"Momentum matrix element.\n\n"
+                    u8"Value of the squared matrix element in gain computations. If it is not set it\n"
+                    u8"is estimated automatically. (float [eV×m0])");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Average carriers lifetime.\n\n"
+            "This parameter is used for gain spectrum broadening. (float [ps])");
         RW_PROPERTY(strained, getStrained, setStrained,
                     u8"Boolean attribute indicating if the solver should consider strain in the active\n"
                     u8"region.\n\n"
@@ -205,6 +211,12 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
         RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
+        RW_PROPERTY(matrix_element, getMatrixElem, setMatrixElem,
+                    u8"Momentum matrix element.\n\n"
+                    u8"Value of the squared matrix element in gain computations. If it is not set it\n"
+                    u8"is estimated automatically. (float [eV×m0])");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Average carriers lifetime.\n\n"
+            "This parameter is used for gain spectrum broadening. (float [ps])");
         RW_PROPERTY(strained, getStrained, setStrained,
                     u8"Boolean attribute indicating if the solver should consider strain in the active\n"
                     u8"region.\n\n"
