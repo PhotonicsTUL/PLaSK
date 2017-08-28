@@ -121,12 +121,12 @@ class SolversController(Controller):
         selection_model = self.solvers_table.selectionModel()
         selection_model.selectionChanged.connect(self.solver_selected)
 
-        self.document.window.config_changed.connect(self.reconfig)
+        # self.document.window.config_changed.connect(self.reconfig)
 
-    def reconfig(self):
-        current_index = self._current_index
-        self._current_index = None
-        self.set_current_index(current_index)
+    # def reconfig(self):
+    #     current_index = self._current_index
+    #     self._current_index = None
+    #     self.set_current_index(current_index)
 
     def set_current_index(self, new_index):
         """

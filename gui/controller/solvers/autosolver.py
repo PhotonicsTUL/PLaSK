@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 from copy import deepcopy
 
+from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ..defines import get_defines_completer
@@ -170,37 +171,52 @@ class SolverAutoWidget(VerticalScrollArea):
         self.controls[group, attr.name] = edit
         return edit
 
+    def _make_header(self, header, rows):
+        button = QToolButton()
+        button.setCheckable(True)
+        button.setChecked(True)
+        button.setArrowType(Qt.DownArrow)
+        button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        button.setIconSize(QSize(8, 8))
+        button.setStyleSheet("""
+            border: none;
+            margin-left: -2px;
+            padding-left: 0px;
+        """)
+        button.setText(header)
+
+        def toggled(selected):
+            button.setArrowType(Qt.DownArrow if selected else Qt.RightArrow)
+            for edit in rows:
+                edit.setVisible(selected)
+
+        button.toggled.connect(toggled)
+
+        font = button.font()
+        font.setBold(True)
+        button.setFont(font)
+
+        self.form_layout.addRow(button)
+
+    def _add_row(self, label, edit, rows):
+        rows.append(edit)
+        self.form_layout.addRow(label + ':', edit)
+        label_widget = self.form_layout.labelForField(edit)
+        rows.append(label_widget)
+
     def __init__(self, controller, parent=None):
         super(SolverAutoWidget, self).__init__(parent)
 
         self.controller = controller
 
-        use_toolbox = CONFIG['solvers/collapsible_config']
+        self.form_layout = QFormLayout()
+        self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        layout = QFormLayout()
-        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        main = QWidget()
 
-        if use_toolbox:
-            main = QToolBox()
-        else:
-            main = QWidget()
-
+        rows = []
         if controller.model.geometry_type or controller.model.mesh_types:
-            if use_toolbox:
-                widget = QWidget()
-                color = QPalette().color(QPalette.Normal, QPalette.Window)
-                palette = widget.palette()
-                palette.setColor(QPalette.Base, color)
-                widget.setPalette(palette)
-                widget.setAutoFillBackground(True)
-                widget.setLayout(layout)
-                main.addItem(widget, "General")
-            else:
-                label = QLabel("General")
-                font = label.font()
-                font.setBold(True)
-                label.setFont(font)
-                layout.addRow(label)
+            self._make_header("General", rows)
 
         defines = get_defines_completer(self.controller.document.defines.model, self)
 
@@ -213,7 +229,7 @@ class SolverAutoWidget(VerticalScrollArea):
             self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                      u'Name of the existing geometry for use by this solver.')
             #TODO add some graphical thumbnail
-            layout.addRow("Geometry:", self.geometry)
+            self._add_row("Geometry", self.geometry, rows)
         else:
             self.geometry = None
 
@@ -226,7 +242,7 @@ class SolverAutoWidget(VerticalScrollArea):
                                  u'Name of the existing {} mesh for use by this solver.'
                                  .format(' or '.join(controller.model.mesh_types)))
             #TODO add some graphical thumbnail
-            layout.addRow("Mesh:", self.mesh)
+            self._add_row("Mesh", self.mesh, rows)
         else:
             self.mesh = None
 
@@ -239,18 +255,8 @@ class SolverAutoWidget(VerticalScrollArea):
             bc = isinstance(schema, SchemaBoundaryConditions)
             if last_header != schema.label:
                 last_header = schema.label
-                if use_toolbox:
-                    widget = QWidget()
-                    layout = QFormLayout()
-                    layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-                    widget.setLayout(layout)
-                    main.addItem(widget, schema.label)
-                else:
-                    label = QLabel(last_header)
-                    font = label.font()
-                    font.setBold(True)
-                    label.setFont(font)
-                    layout.addRow(label)
+                rows = []
+                self._make_header(last_header, rows)
             if isinstance(schema, SchemaTag):
                 for attr in schema.attrs:
                     if isinstance(attr, AttrGroup):
@@ -268,13 +274,13 @@ class SolverAutoWidget(VerticalScrollArea):
                             sep = ' '
                     else:
                         edit = self._add_attr(attr, defines, gname, group)
-                    layout.addRow(attr.label + ':', edit)
+                    self._add_row(attr.label, edit, rows)
             elif bc:
                 edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: self.edit_boundary_conditions(schema))
                 self.controls[group] = edit
-                layout.addRow(schema.label2 + ':', edit)
+                self._add_row(schema.label2, edit, rows)
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
@@ -283,12 +289,12 @@ class SolverAutoWidget(VerticalScrollArea):
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit
-                layout.addRow(edit)
+                rows.append(edit)
+                self.form_layout.addRow(edit)
                 #edit.textChanged.connect(self.controller.fire_changed)
                 edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
 
-        if not use_toolbox:
-            main.setLayout(layout)
+        main.setLayout(self.form_layout)
         self.setWidget(main)
 
     def _get_grids(self, mesh_types):

@@ -96,7 +96,6 @@ DEFAULTS = {
     'geometry/lattice_mark_color': '#e5ae38',
     'mesh/mesh_color': '#00aaff',
     'mesh/line_width': 1.0,
-    'solvers/collapsible_config': False,
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/blocking_jedi': False,
@@ -221,8 +220,6 @@ CONFIG_WIDGETS = OrderedDict([
                                               "in script editor.")),
         ]),
         ("Other", [
-            ("Collapse solvers config", CheckBox('solvers/collapsible_config',
-                                                 "Collapse sections in solvers configuration.")),
             ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
         ]),
     ])),

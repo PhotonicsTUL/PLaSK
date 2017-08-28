@@ -44,18 +44,20 @@ class LaunchDialog(QDialog):
         self.layout.addWidget(combo)
 
         if window.document.defines is not None:
-            defines_layout = QHBoxLayout()
-            defines_layout.setContentsMargins(0, 0, 0, 0)
             self.defines_button = QToolButton()
             self.defines_button.setCheckable(True)
             self.defines_button.setChecked(_defs_visible)
             self.defines_button.toggled.connect(self.show_defines)
-            self.defines_button.setArrowType(Qt.RightArrow)
-            self.defs_label = QLabel("Temporary de&fines:", self)
-            self.defs_label.setBuddy(self.defines_button)
-            defines_layout.addWidget(self.defines_button)
-            defines_layout.addWidget(self.defs_label)
-            self.layout.addLayout(defines_layout)
+            self.defines_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.defines_button.setIconSize(QSize(8, 8))
+            self.defines_button.setStyleSheet("""
+                border: none;
+                margin-left: -2px;
+                padding-left: 0px;
+            """)
+            self.defines_button.setArrowType(Qt.DownArrow if _defs_visible else Qt.RightArrow)
+            self.defines_button.setText("Temporary de&fines:")
+            self.layout.addWidget(self.defines_button)
 
             self.defines = QPlainTextEdit()
             self.layout.addWidget(self.defines)

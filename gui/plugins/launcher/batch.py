@@ -18,7 +18,7 @@ import os
 import re
 from stat import S_ISDIR
 
-from gui.qt.QtCore import Qt
+from gui.qt.QtCore import Qt, QSize
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
@@ -1009,19 +1009,20 @@ else:
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
-            other_params_layout = QHBoxLayout()
-            other_params_layout.setContentsMargins(0, 0, 0, 0)
             self.params_button = QToolButton()
-            self.params_button.setArrowType(Qt.RightArrow)
+            self.params_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.params_button.setIconSize(QSize(8, 8))
+            self.params_button.setStyleSheet("""
+                border: none;
+                margin-left: -2px;
+                padding-left: 0px;
+            """)
             self.params_button.setCheckable(True)
             self.params_button.setChecked(False)
             self.params_button.toggled.connect(
                 lambda visible: self.show_optional(self.other_params, visible, self.params_button))
-            label = QLabel("Other submit &parameters:")
-            label.setBuddy(self.params_button)
-            other_params_layout.addWidget(self.params_button)
-            other_params_layout.addWidget(label)
-            layout.addLayout(other_params_layout)
+            self.params_button.setText("Other submit &parameters:")
+            layout.addWidget(self.params_button)
             self.other_params = QLineEdit()
             self.other_params.setVisible(False)
             self.other_params.setToolTip("Other submit parameters. You can use them to precisely specify\n"
@@ -1029,19 +1030,21 @@ else:
                                          "for details.")
             layout.addWidget(self.other_params)
 
-            modules_layout = QHBoxLayout()
-            modules_layout.setContentsMargins(0, 0, 0, 0)
             self.modules_button = QToolButton()
+            self.modules_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.modules_button.setIconSize(QSize(8, 8))
+            self.modules_button.setStyleSheet("""
+                border: none;
+                margin-left: -2px;
+                padding-left: 0px;
+            """)
             self.modules_button.setArrowType(Qt.RightArrow)
             self.modules_button.setCheckable(True)
             self.modules_button.setChecked(False)
             self.modules_button.toggled.connect(
                 lambda visible: self.show_optional(self.modules, visible, self.modules_button))
-            label = QLabel("Environmental &Modules:")
-            label.setBuddy(self.modules_button)
-            modules_layout.addWidget(self.modules_button)
-            modules_layout.addWidget(label)
-            layout.addLayout(modules_layout)
+            self.modules_button.setText("Environmental &Modules:")
+            layout.addWidget(self.modules_button)
             self.modules = QPlainTextEdit()
             self.modules.setVisible(False)
             self.modules.setFixedHeight(3 * self.modules.fontMetrics().height())

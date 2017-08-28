@@ -28,7 +28,7 @@
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
-    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
+    <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
@@ -80,7 +80,7 @@
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
-    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
+    <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js#" label="Reverse bias current densities&lt;br/&gt;(one per line)" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;">Reverse bias current densities.</attr>
@@ -136,7 +136,7 @@
       <attr name="logfreq" label="Progress logging frequency" type="int" default="500">Number of iterations after which the progress is logged.</attr>
     </tag>
 
-    <tag name="junction" label="Configuration of the Effective Model of P-N Junction">
+    <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta" label="Junction coefficient" type="float" unit="1/V">Junction coefficient. This is an inverse of the junction thermal voltage.</attr>
       <attr name="js" label="Reverse bias current density" type="float" unit="A/m&lt;sup&gt;2&lt;/sup&gt;]&lt;br/&gt;">Reverse bias current density.</attr>
