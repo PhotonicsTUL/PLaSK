@@ -84,8 +84,7 @@ class ThresholdSearch(ThermoElectric):
             self._read_attr(tag, 'initial-range', root, 'initial_range')
         else:
             if tag == 'geometry':
-                self.diffusion.geometry = self.gain.geometry = manager.geo[tag.get_str('electrical')]
-                self.optical.geometry = manager.geo[tag.get_str('optical')]
+                self.optical.geometry = self.diffusion.geometry = self.gain.geometry = manager.geo[tag.get_str('optical')]
             elif tag == 'mesh':
                 self.diffusion.mesh = manager.msh[tag.get_str('diffusion')]
                 if 'optical' in tag: self.optical.mesh = manager.msh[tag.get_str('optical')]
@@ -292,15 +291,19 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def __init__(self, name=''):
         super(ThresholdSearchCyl, self).__init__(name)
+        self.optlam0 = None
         self.optname = 'lam'
 
     def on_initialize(self):
         super(ThresholdSearchCyl, self).on_initialize()
-        self.optical.lam0 = self.optstart() if isinstance(self.optstart, collections.Callable) else self.optstart
+        if self.optstart is None:
+            self.optstart = self.optlam0
+        self.optical.lam0 = self.optlam0() if isinstance(self.optlam0, collections.Callable) else self.optlam0
 
     def _parse_xpl(self, tag, manager):
         if tag == 'optical':
-            self.optstart = tag['start']
+            self.optlam0 = tag['lam0']
+            self.optstart = tag.get('start', None)
             if 'm' in tag: self.optargs['m'] = tag['m']
             self._read_attr(tag, 'vlam', self.optical)
             self._read_attr(tag, 'vat', self.optical)

@@ -91,7 +91,9 @@
 
     <tag name="mode" label="Mode Properties">
       Mode properties.
-      <attr name="lam0" label="Approximate wavelength" type="float" unit="nm">Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength</attr>
+      <attr name="lam0" label="Approximate wavelength" type="float" unit="nm">
+        Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength
+      </attr>
       <attr name="emission" label="Direction of emission" type="choice" default="top">
         Direction of the useful light emission. Necessary for the over-threshold model to correctly compute the output power.
         <choice>top</choice>

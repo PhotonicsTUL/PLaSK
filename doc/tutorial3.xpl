@@ -93,7 +93,7 @@
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="optical"/>
-    <optical start="980.5"/>
+    <optical lam0="980.5"/>
     <voltage>
       <condition value="1.4">
         <place side="bottom" object="p-contact"/>

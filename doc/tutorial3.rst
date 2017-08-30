@@ -144,7 +144,7 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
    <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
      <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
      <mesh diffusion="diffusion" electrical="default" thermal="optical"/>
-     <optical start="980.5"/>
+     <optical lam0="980.5"/>
      <voltage>
        <condition value="1.4">
          <place side="bottom" object="p-contact"/>
@@ -162,7 +162,7 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <gain lifetime="0.5" matrix-elem="10"/>
    </meta>
 
-The important parameters here are ``start`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode starting from 980.5 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.4 V) during the threshold search.
+The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980.5 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.4 V) during the threshold search.
 
 ---------------------------------------------------------------------------
 
