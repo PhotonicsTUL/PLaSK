@@ -276,7 +276,12 @@ namespace detail {
         auto value = reader->requireAttribute(key);
         py::str obj(value);
         try {
-            return py::eval(obj);
+            py::object val = py::eval(obj);
+            if (PyInt_Check(val.ptr()) ||  PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
+                PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
+                return val;
+            else
+                return obj;
         } catch (py::error_already_set) {
             PyErr_Clear();
             return obj;
@@ -288,13 +293,22 @@ namespace detail {
         if (value) {
             py::str obj(*value);
             try {
-                return py::eval(obj);
+                py::object val = py::eval(obj);
+                if (PyInt_Check(val.ptr()) ||  PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
+                    PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
+                    return val;
+                else
+                    return obj;
             } catch (py::error_already_set) {
                 PyErr_Clear();
                 return obj;
             }
         }
         else return deflt;
+    }
+
+    static std::string XMLReader_get_str(XMLReader* reader, const std::string& key, const std::string& deflt) {
+        return reader->getAttribute(key, deflt);
     }
 
 
@@ -332,6 +346,8 @@ void register_xml_reader() {
         .def("__getitem__", &detail::XMLReader__getitem__)
         .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=py::object()))
+        .def("get_str", detail::XMLReader_get_str, "Return tag attribute value as raw string or default if the attribute does not exist.",
+             (py::arg("key"), py::arg("default")=""))
         .add_property("attrs", &detail::XMLReader_attribs, "List of all the tag attributes.")
         .def("__contains__", &XMLReader::hasAttribute)
 

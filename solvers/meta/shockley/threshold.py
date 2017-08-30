@@ -84,12 +84,12 @@ class ThresholdSearch(ThermoElectric):
             self._read_attr(tag, 'initial-range', root, 'initial_range')
         else:
             if tag == 'geometry':
-                self.diffusion.geometry = self.gain.geometry = manager.geo[tag['electrical']]
-                self.optical.geometry = manager.geo[tag['optical']]
+                self.diffusion.geometry = self.gain.geometry = manager.geo[tag.get_str('electrical')]
+                self.optical.geometry = manager.geo[tag.get_str('optical')]
             elif tag == 'mesh':
-                self.diffusion.mesh = manager.msh[tag['diffusion']]
-                if 'optical' in tag: self.optical.mesh = manager.msh[tag['optical']]
-                if 'gain' in tag: self.gain.mesh = manager.msh[tag['gain']]
+                self.diffusion.mesh = manager.msh[tag.get_str('diffusion')]
+                if 'optical' in tag: self.optical.mesh = manager.msh[tag.get_str('optical')]
+                if 'gain' in tag: self.gain.mesh = manager.msh[tag.get_str('gain')]
             elif tag == 'loop':
                 self._read_attr(tag, 'inittemp', self.gain, 'T0')
             super(ThresholdSearch, self)._parse_xpl(tag, manager)

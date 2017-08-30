@@ -79,11 +79,11 @@ class ThermoElectric(plask.Solver):
 
     def _parse_xpl(self, tag, manager):
         if tag == 'geometry':
-            self.thermal.geometry = manager.geo[tag['thermal']]
-            self.electrical.geometry = manager.geo[tag['electrical']]
+            self.thermal.geometry = manager.geo[tag.get_str('thermal')]
+            self.electrical.geometry = manager.geo[tag.get_str('electrical')]
         elif tag == 'mesh':
-            self.thermal.mesh = manager.msh[tag['thermal']]
-            self.electrical.mesh = manager.msh[tag['electrical']]
+            self.thermal.mesh = manager.msh[tag.get_str('thermal')]
+            self.electrical.mesh = manager.msh[tag.get_str('electrical')]
         elif tag == 'junction':
             self._read_attr(tag, 'pnjcond', self.electrical)
             for key, val in tag.attrs.items():
