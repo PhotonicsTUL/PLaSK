@@ -120,7 +120,9 @@ plot_boundary(SOLVER.electrical.voltage_boundary, defmesh,
               SOLVER.electrical.geometry, color="b", marker="D")
 window_title("Electrical mesh")
 
-threshold_voltage = SOLVER.compute(1.5)
+volts = 1.4, 1.6
+
+threshold_voltage = SOLVER.compute(volts)
 threshold_current = SOLVER.threshold_current
 print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
     .format(threshold_voltage, threshold_current))
@@ -137,7 +139,7 @@ new_aperture = 6.
 GEO.aperture.dr = new_aperture / 2.
 GEO.oxide.dr = (mesa - new_aperture) / 2.
 
-threshold_voltage = SOLVER.compute(1.5)
+threshold_voltage = SOLVER.compute(volts)
 threshold_current = SOLVER.threshold_current
 print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
     .format(threshold_voltage, threshold_current))

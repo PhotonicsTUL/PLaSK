@@ -68,10 +68,22 @@ class ThermoElectric(plask.Solver):
 
         self.tfreq = 6
 
-    def _read_attr(self, tag, attr, solver, pyattr=None):
+    def _read_attr(self, tag, attr, solver, type, pyattr=None):
         if pyattr is None: pyattr = attr
         if attr in tag:
-            setattr(solver, pyattr, tag[attr])
+            if type is bool:
+                val = tag[attr].lower()
+                if val not in ('yes', 'no'):
+                    raise plask.XMLError("{}: Bool attribute '{}' has illegal value '{}'".format(tag, attr, val))
+                setattr(solver, pyattr, tag[attr].lower() == 'yes')
+            else:
+                try:
+                    val = type(tag[attr])
+                except ValueError:
+                    raise plask.XMLError(tag, "{}: {} attribute {} has illegal value '{}'".format(
+                        tag, type.__name__.title(), attr, tag[attr]))
+                else:
+                    setattr(solver, pyattr, val)
 
     def load_xpl(self, xpl, manager):
         for tag in xpl:
@@ -79,32 +91,36 @@ class ThermoElectric(plask.Solver):
 
     def _parse_xpl(self, tag, manager):
         if tag == 'geometry':
-            self.thermal.geometry = manager.geo[tag.get_str('thermal')]
-            self.electrical.geometry = manager.geo[tag.get_str('electrical')]
+            self.thermal.geometry = tag.getitem(manager.geo, 'thermal')
+            self.electrical.geometry = tag.getitem(manager.geo, 'electrical')
         elif tag == 'mesh':
-            self.thermal.mesh = manager.msh[tag.get_str('thermal')]
-            self.electrical.mesh = manager.msh[tag.get_str('electrical')]
+            self.thermal.mesh = tag.getitem(manager.msh, 'thermal')
+            self.electrical.mesh = tag.getitem(manager.msh, 'electrical')
         elif tag == 'junction':
-            self._read_attr(tag, 'pnjcond', self.electrical)
+            self._read_attr(tag, 'pnjcond', self.electrical, float)
             for key, val in tag.attrs.items():
                 if key.startswith('beta') or key.startswith('js'):
+                    try:
+                        val = float(val)
+                    except ValueError:
+                        raise plask.XMLError("{}: Float attribute '{}' has illegal value '{}'".format(tag, key, val))
                     setattr(self.electrical, key, val)
         elif tag == 'contacts':
-            self._read_attr(tag, 'pcond', self.electrical)
-            self._read_attr(tag, 'ncond', self.electrical)
+            self._read_attr(tag, 'pcond', self.electrical, float)
+            self._read_attr(tag, 'ncond', self.electrical, float)
         elif tag == 'loop':
-            self.tfreq = tag.get('tfreq', self.tfreq)
-            self._read_attr(tag, 'inittemp', self.thermal, 'inittemp')
-            self._read_attr(tag, 'maxterr', self.thermal, 'maxerr')
-            self._read_attr(tag, 'maxcerr', self.electrical, 'maxerr')
+            self.tfreq = int(tag.get('tfreq', self.tfreq))
+            self._read_attr(tag, 'inittemp', self.thermal, float, 'inittemp')
+            self._read_attr(tag, 'maxterr', self.thermal, float, 'maxerr')
+            self._read_attr(tag, 'maxcerr', self.electrical, float, 'maxerr')
         elif tag == 'tmatrix':
-            self._read_attr(tag, 'itererr', self.thermal)
-            self._read_attr(tag, 'iterlim', self.thermal)
-            self._read_attr(tag, 'logfreq', self.thermal)
+            self._read_attr(tag, 'itererr', self.thermal, float)
+            self._read_attr(tag, 'iterlim', self.thermal, int)
+            self._read_attr(tag, 'logfreq', self.thermal, int)
         elif tag == 'ematrix':
-            self._read_attr(tag, 'itererr', self.electrical)
-            self._read_attr(tag, 'iterlim', self.electrical)
-            self._read_attr(tag, 'logfreq', self.electrical)
+            self._read_attr(tag, 'itererr', self.electrical, float)
+            self._read_attr(tag, 'iterlim', self.electrical, int)
+            self._read_attr(tag, 'logfreq', self.electrical, int)
         elif tag == 'temperature':
             self.thermal.temperature_boundary.read_from_xpl(tag, manager)
         elif tag == 'heatflux':

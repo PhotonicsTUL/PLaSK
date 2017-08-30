@@ -39,7 +39,6 @@ PLaSK User Guide
 * :doc:`materials`
 * :doc:`meshes`
 * :doc:`solvers`
-* :doc:`algorithms`
 * :doc:`results`
 * :doc:`gui`
 * :doc:`units`

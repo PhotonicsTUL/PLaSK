@@ -595,7 +595,7 @@ private:
      * Get all attributes, empty if current node is not NODE_ELEMENT.
      * @return all attributes, reference is valid up to read() call
      */
-    const std::map<std::string, std::string>& getAttributes();
+    const std::map<std::string, std::string> getAttributes();
 
     /**
      * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.

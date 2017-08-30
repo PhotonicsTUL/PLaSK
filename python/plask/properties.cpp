@@ -251,10 +251,10 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
     "   Data filter for {2}: :class:`plask.flow.{0}Filter{1}`";
 }
 
-template PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>();
-template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>();
+// template PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>();
+// template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>();
+// template PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>();
+// template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>();
 
 
 PLASK_PYTHON_API py::object flow_module;

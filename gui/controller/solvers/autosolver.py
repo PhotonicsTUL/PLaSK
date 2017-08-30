@@ -153,7 +153,7 @@ class SolverAutoWidget(VerticalScrollArea):
                 edit.lineEdit().setPlaceholderText(attr.default)
         else:
             if attr.name[-1] == '#':
-                edit = MultiLineEdit(movable=True)
+                edit = MultiLineEdit(movable=True, document=self.controller.document)
                 # edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                 # edit.textChanged.connect(self.controller.fire_changed)
                 edit.change_cb = lambda edit=edit, group=group, name=attr.name, attr=attr: \

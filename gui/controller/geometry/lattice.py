@@ -57,7 +57,7 @@ class GNLatticeController(GNObjectController):
 
     def construct_lattice_edit(self, node_property_name=None, display_property_name=None,
                                change_cb=None, sep='\n', edit_cb=None):
-        res = MultiLineEdit(change_cb=change_cb)
+        res = MultiLineEdit(change_cb=change_cb, document=self.document)
         # res = TextEditWithCB(key_cb=key_cb)
         # res.setTabChangesFocus(True)
         # res.setFixedHeight(int(3.5 * QFontMetrics(res.font()).height()))

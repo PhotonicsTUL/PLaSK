@@ -16,15 +16,14 @@ from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 from ..qt import QtSignal
-
-from .qsignals import BlockQtSignals
-
-from ..utils.config import CONFIG
-
 try:
     from ..qt.QtGui import QStyleOptionViewItemV4 as QStyleOptionViewItem
 except ImportError:
     from ..qt.QtWidgets import QStyleOptionViewItem
+from .qsignals import BlockQtSignals
+
+from ..utils.config import CONFIG
+
 
 EDITOR_FONT = QFont()
 EDITOR_FONT.setBold(False)
@@ -360,6 +359,9 @@ class TextEditWithCB(QPlainTextEdit):
         if self.key_cb is not None: self.key_cb(event)
 
 
+from ..controller.defines import get_defines_completer
+
+
 class MultiLineEdit(QWidget):
     """
     Widget showing multiple lines
@@ -371,9 +373,14 @@ class MultiLineEdit(QWidget):
             self.deselect()
 
     class Delegate(QStyledItemDelegate):
+        def __init__(self, parent=None, defines=None):
+            super(MultiLineEdit.Delegate, self).__init__(parent)
+            self.defines = defines
         def createEditor(self, parent, option, index):
             editor = MultiLineEdit.LineEdit(parent)
             editor.setStyleSheet("border: 1px solid #888")
+            if self.defines is not None:
+                editor.setCompleter(get_defines_completer(self.defines, editor))
             return editor
         def initStyleOption(self, option, index):
             super(MultiLineEdit.Delegate, self).initStyleOption(option, index)
@@ -383,7 +390,7 @@ class MultiLineEdit(QWidget):
             if not self.parent().hasFocus():
                 option.state &= ~QStyle.State_Selected
 
-    def __init__(self, movable=False, change_cb=None, compact=True):
+    def __init__(self, movable=False, change_cb=None, document=None, compact=True):
         super(MultiLineEdit, self).__init__()
         self.change_cb = change_cb
         layout = QHBoxLayout()
@@ -408,11 +415,15 @@ class MultiLineEdit(QWidget):
         self.remove.setIcon(QIcon.fromTheme('list-remove'))
         self.remove.pressed.connect(self.remove_item)
         self._compact = compact
+        if document is not None:
+            defines = document.defines.model
+        else:
+            defines = None
         if compact:
             buttons.addWidget(self.remove, 1, 0)
             add.setStyleSheet('border: none;')
             self.remove.setStyleSheet('border: none;')
-            delegate = MultiLineEdit.Delegate(self.list_widget)
+            delegate = MultiLineEdit.Delegate(self.list_widget, defines)
             self.list_widget.setItemDelegate(delegate)
             self.list_widget.setEditTriggers(QAbstractItemView.CurrentChanged |
                                              QAbstractItemView.SelectedClicked |

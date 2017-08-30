@@ -272,8 +272,7 @@ namespace detail {
         return XMLIterator(reader);
     }
 
-    static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
-        auto value = reader->requireAttribute(key);
+    inline static py::object parse_value(const std::string& value) {
         py::str obj(value);
         try {
             py::object val = py::eval(obj);
@@ -288,40 +287,25 @@ namespace detail {
         }
     }
 
+    static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
+        return parse_value(reader->requireAttribute(key));
+    }
+
     static py::object XMLReader_get(XMLReader* reader, const std::string& key, const py::object& deflt) {
         auto value = reader->getAttribute(key);
-        if (value) {
-            py::str obj(*value);
-            try {
-                py::object val = py::eval(obj);
-                if (PyInt_Check(val.ptr()) ||  PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
-                    PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
-                    return val;
-                else
-                    return obj;
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                return obj;
-            }
-        }
+        if (value) return parse_value(*value);
         else return deflt;
     }
 
-    static std::string XMLReader_get_str(XMLReader* reader, const std::string& key, const std::string& deflt) {
-        return reader->getAttribute(key, deflt);
+    static py::object XMLReader_getitem(XMLReader* reader, const py::object& dict, const std::string& key) {
+        return dict[reader->requireAttribute(key)];
     }
 
 
     static py::object XMLReader_attribs(XMLReader* reader) {
         py::dict result;
         for (auto attr: reader->getAttributes()) {
-            py::str obj(attr.second);
-            try {
-                result[attr.first] = py::eval(obj);
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                result[attr.first] = obj;
-            }
+            result[attr.first] = parse_value(attr.second);
         }
         return result;
     }
@@ -334,6 +318,18 @@ namespace detail {
         return false;
     }
 
+    static std::string XMLReader__str__(const XMLReader& reader) {
+     return "XML line " + boost::lexical_cast<std::string>(reader.getLineNr()) +
+            ((reader.getNodeType() == XMLReader::NODE_ELEMENT)? " in <" + reader.getNodeName() + ">" :
+            (reader.getNodeType() == XMLReader::NODE_ELEMENT_END)? " in </" + reader.getNodeName() + ">" :
+            "");
+    }
+
+    static std::string XMLReader__repr__(const XMLReader* self) {
+        std::stringstream out;
+        out << "<plask.XplReader object at (" << self << ")>";
+        return out.str();
+    }
 }
 
 void register_xml_reader() {
@@ -346,11 +342,12 @@ void register_xml_reader() {
         .def("__getitem__", &detail::XMLReader__getitem__)
         .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=py::object()))
-        .def("get_str", detail::XMLReader_get_str, "Return tag attribute value as raw string or default if the attribute does not exist.",
+        .def("getitem", detail::XMLReader_getitem, "Return tag attribute value as raw string or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=""))
         .add_property("attrs", &detail::XMLReader_attribs, "List of all the tag attributes.")
         .def("__contains__", &XMLReader::hasAttribute)
-
+        .def("__str__", detail::XMLReader__str__)
+        .def("__repr__", detail::XMLReader__repr__)
     ;
 
     py::scope scope(xml);

@@ -33,7 +33,6 @@ else:
 
 from .thermoelectric import attribute, suffix, h5open, ThermoElectric
 
-
 class ThresholdSearch(ThermoElectric):
 
     def __init__(self, name):
@@ -60,37 +59,38 @@ class ThresholdSearch(ThermoElectric):
             self.vtol = tag.get('vtol', self.vtol)
             # self.quick = tag.get('quick', self.quick)
         elif tag == 'diffusion':
-            self._read_attr(tag, 'fem-method', self.diffusion, 'fem_method')
-            self._read_attr(tag, 'accuracy', self.diffusion)
-            self._read_attr(tag, 'abs-accuracy', self.diffusion, 'abs_accuracy')
-            self._read_attr(tag, 'maxiters', self.diffusion)
-            self._read_attr(tag, 'maxrefines', self.diffusion)
-            self._read_attr(tag, 'interpolation', self.diffusion)
+            self._read_attr(tag, 'fem-method', self.diffusion, str, 'fem_method')
+            self._read_attr(tag, 'accuracy', self.diffusion, float)
+            self._read_attr(tag, 'abs-accuracy', self.diffusion, float, 'abs_accuracy')
+            self._read_attr(tag, 'maxiters', self.diffusion, int)
+            self._read_attr(tag, 'maxrefines', self.diffusion, int)
+            self._read_attr(tag, 'interpolation', self.diffusion, str)
         elif tag == 'gain':
-            self._read_attr(tag, 'lifetime', self.gain)
-            self._read_attr(tag, 'matrix-elem', self.gain, 'matrix_element')
-            self._read_attr(tag, 'strained', self.gain)
+            self._read_attr(tag, 'lifetime', self.gain, float)
+            self._read_attr(tag, 'matrix-elem', self.gain, float, 'matrix_element')
+            self._read_attr(tag, 'strained', self.gain, bool)
         elif tag in ('optical-root', 'optical-stripe-root'):
             name = {'optical-root': 'root', 'optical-stripe-root': 'stripe_root'}[tag.name]
             root = getattr(self.optical, name)
-            self._read_attr(tag, 'method', root)
-            self._read_attr(tag, 'tolx', root)
-            self._read_attr(tag, 'tolf-min', root, 'tolf_min')
-            self._read_attr(tag, 'tolf-max', root, 'tolf_max')
-            self._read_attr(tag, 'maxstep', root)
-            self._read_attr(tag, 'maxiter', root)
-            self._read_attr(tag, 'alpha', root)
-            self._read_attr(tag, 'lambda', root)
-            self._read_attr(tag, 'initial-range', root, 'initial_range')
+            self._read_attr(tag, 'method', root, str)
+            self._read_attr(tag, 'tolx', root, float)
+            self._read_attr(tag, 'tolf-min', root, float, 'tolf_min')
+            self._read_attr(tag, 'tolf-max', root, float, 'tolf_max')
+            self._read_attr(tag, 'maxstep', root, float)
+            self._read_attr(tag, 'maxiter', root, int)
+            self._read_attr(tag, 'alpha', root, float)
+            self._read_attr(tag, 'lambda', root, float)
+            self._read_attr(tag, 'initial-range', root, tuple, 'initial_range')
         else:
             if tag == 'geometry':
-                self.optical.geometry = self.diffusion.geometry = self.gain.geometry = manager.geo[tag.get_str('optical')]
+                self.optical.geometry = self.diffusion.geometry = self.gain.geometry = \
+                    tag.getitem(manager.geo, 'optical')
             elif tag == 'mesh':
-                self.diffusion.mesh = manager.msh[tag.get_str('diffusion')]
-                if 'optical' in tag: self.optical.mesh = manager.msh[tag.get_str('optical')]
-                if 'gain' in tag: self.gain.mesh = manager.msh[tag.get_str('gain')]
+                self.diffusion.mesh = tag.getitem(manager.msh, 'diffusion')
+                if 'optical' in tag: self.optical.mesh = tag.getitem(manager.msh, 'optical')
+                if 'gain' in tag: self.gain.mesh = tag.getitem(manager.msh, 'gain')
             elif tag == 'loop':
-                self._read_attr(tag, 'inittemp', self.gain, 'T0')
+                self._read_attr(tag, 'inittemp', self.gain, float, 'T0')
             super(ThresholdSearch, self)._parse_xpl(tag, manager)
 
     def on_initialize(self):
@@ -103,7 +103,7 @@ class ThresholdSearch(ThermoElectric):
         self.diffusion.invalidate()
         self.optical.invalidate()
 
-    def compute(self, start, save=True, invalidate=True, **kwargs):
+    def compute(self, start, save=True, invalidate=False, **kwargs):
         """
         Execute the algorithm.
 
@@ -152,7 +152,7 @@ class ThresholdSearch(ThermoElectric):
                 self.electrical.invalidate()
                 self.diffusion.invalidate()
                 self.gain.invalidate()
-                self.optical.invalidate()
+            self.optical.invalidate()
             verr = 2. * self.electrical.maxerr
             terr = 2. * self.thermal.maxerr
             while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
@@ -305,8 +305,8 @@ class ThresholdSearchCyl(ThresholdSearch):
             self.optlam0 = tag['lam0']
             self.optstart = tag.get('start', None)
             if 'm' in tag: self.optargs['m'] = tag['m']
-            self._read_attr(tag, 'vlam', self.optical)
-            self._read_attr(tag, 'vat', self.optical)
+            self._read_attr(tag, 'vlam', self.optical, float)
+            self._read_attr(tag, 'vat', self.optical, float)
         else:
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 

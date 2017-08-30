@@ -131,7 +131,7 @@ class GNodeController(Controller):
 
     def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
                                   change_cb=None, sep='\n'):
-        res = MultiLineEdit(change_cb=change_cb)
+        res = MultiLineEdit(change_cb=change_cb, document=self.document)
         # res = TextEditWithCB(key_cb=key_cb)
         # res.setTabChangesFocus(True)
         # res.setFixedHeight(int(3.5 * QFontMetrics(res.font()).height()))

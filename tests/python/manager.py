@@ -250,6 +250,9 @@ class CustomSolverTest(unittest.TestCase):
         manager = plask.Manager()
         manager.load('''
         <plask>
+          <defines>
+            <define name="x" value="2"/>
+          </defines>
           <geometry>
             <cartesian2d name="main" axes="xy">
               <stack>
@@ -265,7 +268,7 @@ class CustomSolverTest(unittest.TestCase):
                   <val>passed</val>
                 </withtext>
               </something>
-              <config a="2" c="ok"/>
+              <config a="{x}" c="ok"/>
             </local>
           </solvers>
         </plask>

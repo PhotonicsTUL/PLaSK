@@ -490,9 +490,9 @@ BOOST_PYTHON_MODULE(_plask)
            "                 if tag == 'config':\n"
            "                     self.param = tag.get('param', self.param)\n"
            "                 elif tag == 'geometry':\n"
-           "                     self.geometry = manager.geo[tag['ref']]\n"
+           "                     self.geometry = tag.getitem(manager.geo, 'ref')\n"
            "                 elif tag == 'mesh':\n"
-           "                     self.mesh = manager.msh[tag['ref']]\n"
+           "                     self.mesh = tag.getitem(manager.msh, 'ref')\n"
            "                 elif tag == 'boundary':\n"
            "                     self.bc.read_from_xpl(tag, manager)\n\n"
 
@@ -565,7 +565,7 @@ BOOST_PYTHON_MODULE(_plask)
              "                         # Text must be read last\n"
              "                         self.text = subtag.text\n"
              "             elif tag == 'geometry':\n"
-             "                 self.geometry = manager.geo[tag['ref']]\n")
+             "                 self.geometry = tag.getitem(manager.geo, 'ref')\n")
     ;
     solver.attr("__module__") = "plask";
 

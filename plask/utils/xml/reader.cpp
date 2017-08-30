@@ -193,10 +193,24 @@ bool XMLReader::next() {
         return false;
 }
 
-const std::map<std::string, std::string>& XMLReader::getAttributes() {
+const std::map<std::string, std::string> XMLReader::getAttributes() {
     ensureHasCurrent();
     ignoreAllAttributes();
-    return getCurrent().attributes;
+    if (attributeFilter) {
+        std::map<std::string, std::string> parsed;
+        for (const auto& attr: getCurrent().attributes) {
+            try {
+                parsed[attr.first] = attributeFilter(attr.second);
+            } catch (const std::exception& e) {
+                throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) +
+                                " in <" + this->getCurrent().text + "> attribute '" + attr.first +
+                                "': Bad parsed expression", e.what());
+            }
+        }
+        return parsed;
+    } else {
+        return getCurrent().attributes;
+    }
 }
 
 void XMLReader::removeAlienNamespaceAttr() {
@@ -243,7 +257,7 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     auto res_it = this->getCurrent().attributes.find(name);
     if (res_it == this->getCurrent().attributes.end())
         return boost::optional<std::string>();
-    const_cast<std::set<std::string>&>(read_attributes).insert(name);   //TODO should this be thread-safty?
+    const_cast<std::set<std::string>&>(read_attributes).insert(name);   //TODO should this be thread-safe?
     if (attributeFilter) {
         try {
             return attributeFilter(res_it->second);

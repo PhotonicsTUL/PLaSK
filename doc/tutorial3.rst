@@ -212,15 +212,17 @@ With having the geometries and meshes prepared, we can move on to scripting the 
 
 .. code-block:: python
 
-   threshold_voltage = SOLVER.compute(1.5)
+   volts = 1.4, 1.6
 
-The method argument is the initial voltage on the boundary condition indicated in the solver configuration.
+   threshold_voltage = SOLVER.compute(volts)
+
+The variable ``volts`` passed as a method argument defines the voltage range, in which we expect to find the threshold. This voltage will be applied on the boundary condition indicated in the solver configuration.
 
 We need to add a little more code to see the actual results:
 
 .. code-block:: python
 
-   threshold_voltage = SOLVER.compute(1.5, save=False)
+   threshold_voltage = SOLVER.compute(volts)
    threshold_current = SOLVER.threshold_current
    print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
        .format(threshold_voltage, threshold_current))
@@ -252,7 +254,7 @@ Now we just have to repeat the calculations with the drawing part and to move th
 
 .. code-block:: python
 
-   threshold_voltage = SOLVER.compute(1.5)
+   threshold_voltage = SOLVER.compute(volts)
    threshold_current = SOLVER.threshold_current
    print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
        .format(threshold_voltage, threshold_current))
