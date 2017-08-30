@@ -540,7 +540,7 @@ else:
         def _config_list(cls, account, dialog, attr, name, label, command):
             box = QVBoxLayout()
             box.setContentsMargins(0, 0, 0, 0)
-            list_edit = MultiLineEdit(movable=True, placeholder='[{} name]'.format(attr))
+            list_edit = MultiLineEdit(movable=True, compact=False)
             list_edit.setToolTip("List of available {} at the execution host.\n"
                                  "If you are not sure about the correct value, contact\n"
                                  "the host administrator.".format(name))

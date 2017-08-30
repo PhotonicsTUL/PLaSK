@@ -840,6 +840,16 @@ if 'systemid' not in LICENSE or not LICENSE['systemid']:
     LICENSE['systemid'] = "{:X}".format(getnode())
 
 
+if os.name == 'nt':
+    def _handle_exception(exc_type, exc_value, exc_traceback):
+        if exc_type == SystemExit:
+            sys.exit(exc_value.code)
+        else:
+            import ctypes
+            MessageBox = ctypes.windll.user32.MessageBoxA
+            MessageBox(None, str(exc_value), "PLaSK - " + exc_type.__name__, 0x10)
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -917,6 +927,8 @@ def main():
         else:
             WINDOWS.add(MainWindow())
 
+    if os.name == 'nt':
+        sys.excepthook = _handle_exception
     exit_code = APPLICATION.exec_()
 
     sys.exit(exit_code)

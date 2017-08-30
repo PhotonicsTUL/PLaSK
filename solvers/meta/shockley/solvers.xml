@@ -350,7 +350,6 @@
       <attr name="optical" label="Optical" type="mesh">
         Mesh used by the carriers diffusion solver.
         <type>Ordered</type>
-        <type>Regular</type>
       </attr>
     </tag>
     <tag name="optical" label="Optical solver configuration">

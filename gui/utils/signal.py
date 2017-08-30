@@ -58,12 +58,16 @@ class Signal(object):
 
     def disconnect(self, slot):
         if inspect.ismethod(slot):
-            if slot.__self__ in self._methods:
+            try:
                 self._methods[slot.__self__].remove(slot.__func__)
+            except KeyError:
+                pass
         else:
-            if slot in self._functions:
+            try:
                 self._functions.remove(slot)
-                
+            except KeyError:
+                pass
+
     def __isub__(self, slot):
         self.disconnect(slot)
         return self

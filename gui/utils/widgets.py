@@ -365,10 +365,29 @@ class MultiLineEdit(QWidget):
     Widget showing multiple lines
     """
 
-    def __init__(self, movable=False, change_cb=None, placeholder=None):
+    class LineEdit(QLineEdit):
+        def focusInEvent(self, event):
+            super(MultiLineEdit.LineEdit, self).focusInEvent(event)
+            self.deselect()
+
+    class Delegate(QStyledItemDelegate):
+        def __init__(self, parent):
+            QItemDelegate.__init__(self, parent)
+        def createEditor(self, parent, option, index):
+            editor = MultiLineEdit.LineEdit(parent)
+            editor.setStyleSheet("border: 1px solid #888")
+            return editor
+        def initStyleOption(self, option, index):
+            super(MultiLineEdit.Delegate, self).initStyleOption(option, index)
+            option.state &= ~QStyle.State_MouseOver
+            if option.state & QStyle.State_Selected:
+                option.state |= QStyle.State_MouseOver
+            if not self.parent().hasFocus():
+                option.state &= ~QStyle.State_Selected
+
+    def __init__(self, movable=False, change_cb=None, compact=True):
         super(MultiLineEdit, self).__init__()
         self.change_cb = change_cb
-        self.placeholder = '[enter value]' if placeholder is None else placeholder
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
@@ -379,7 +398,6 @@ class MultiLineEdit(QWidget):
         buttons.setContentsMargins(0, 0, 0, 0)
         buttons.setSpacing(1)
         add = QToolButton()
-        add.setStyleSheet('border: none;')
         add.setIcon(QIcon.fromTheme('list-add'))
         add.pressed.connect(self.add_item)
         buttons.addWidget(add, 0, 0)
@@ -389,10 +407,29 @@ class MultiLineEdit(QWidget):
         act.setShortcutContext(Qt.WidgetShortcut)
         self.list_widget.addAction(act)
         self.remove = QToolButton()
-        self.remove.setStyleSheet('border: none;')
         self.remove.setIcon(QIcon.fromTheme('list-remove'))
         self.remove.pressed.connect(self.remove_item)
-        buttons.addWidget(self.remove, 1, 0)
+        self._compact = compact
+        if compact:
+            buttons.addWidget(self.remove, 1, 0)
+            add.setStyleSheet('border: none;')
+            self.remove.setStyleSheet('border: none;')
+            delegate = MultiLineEdit.Delegate(self.list_widget)
+            self.list_widget.setItemDelegate(delegate)
+            self.list_widget.setEditTriggers(QAbstractItemView.CurrentChanged |
+                                             QAbstractItemView.SelectedClicked |
+                                             QAbstractItemView.DoubleClicked |
+                                             QAbstractItemView.EditKeyPressed)
+            self.list_widget.setFixedHeight(60)
+            self.edit = None
+        else:
+            self.edit = QToolButton()
+            self.edit.setIcon(QIcon.fromTheme('document-edit'))
+            self.edit.pressed.connect(self.edit_item)
+            buttons.addWidget(self.edit, 1, 0)
+            buttons.addWidget(self.remove, 2, 0)
+            self.list_widget.setEditTriggers(QAbstractItemView.DoubleClicked |
+                                             QAbstractItemView.EditKeyPressed)
         act = QAction(self.list_widget)
         act.setShortcut(QKeySequence(Qt.Key_Delete))
         act.triggered.connect(self.remove_item)
@@ -401,7 +438,6 @@ class MultiLineEdit(QWidget):
         self._movable = movable
         if movable:
             self.up = QToolButton()
-            self.up.setStyleSheet('border: none;')
             self.up.setIcon(QIcon.fromTheme('go-up'))
             self.up.pressed.connect(self.move_up)
             act = QAction(self.list_widget)
@@ -409,17 +445,22 @@ class MultiLineEdit(QWidget):
             act.triggered.connect(self.move_up)
             act.setShortcutContext(Qt.WidgetShortcut)
             self.list_widget.addAction(act)
-            buttons.addWidget(self.up, 0, 1)
             self.down = QToolButton()
-            self.down.setStyleSheet('border: none;')
             self.down.setIcon(QIcon.fromTheme('go-down'))
             self.down.pressed.connect(self.move_down)
-            buttons.addWidget(self.down, 1, 1)
             act = QAction(self.list_widget)
             act.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
             act.triggered.connect(self.move_down)
             act.setShortcutContext(Qt.WidgetShortcut)
             self.list_widget.addAction(act)
+            if compact:
+                self.up.setStyleSheet('border: none;')
+                self.down.setStyleSheet('border: none;')
+                buttons.addWidget(self.up, 0, 1)
+                buttons.addWidget(self.down, 1, 1)
+            else:
+                buttons.addWidget(self.up, 3, 0)
+                buttons.addWidget(self.down, 4, 0)
         else:
             self.up = None
             self.down = None
@@ -432,34 +473,36 @@ class MultiLineEdit(QWidget):
         # self.list_widget.addAction(act)
         self.list_widget.itemSelectionChanged.connect(self.selected)
         self.list_widget.itemChanged.connect(self.item_changed)
-        self.list_widget.setEditTriggers(QAbstractItemView.CurrentChanged |
-                                         QAbstractItemView.SelectedClicked |
-                                         QAbstractItemView.DoubleClicked |
-                                         QAbstractItemView.EditKeyPressed)
-        self.list_widget.setFixedHeight(60)
+
+    def disable_actions(self):
+        self.remove.setEnabled(False)
+        if self.edit is not None: self.edit.setEnabled(False)
+        if self.up is not None: self.up.setEnabled(False)
+        if self.down is not None: self.down.setEnabled(False)
 
     def selected(self):
         row = self.list_widget.currentRow()
         if row != -1:
             self.remove.setEnabled(True)
-            if self.up is not None:
-                self.up.setEnabled(row > 0)
-            if self.down is not None:
-                self.down.setEnabled(row < self.list_widget.count()-1)
+            if self.edit is not None: self.edit.setEnabled(True)
+            if self.up is not None: self.up.setEnabled(row > 0)
+            if self.down is not None: self.down.setEnabled(row < self.list_widget.count()-1)
         else:
-            self.remove.setEnabled(False)
-            if self.up is not None: self.up.setEnabled(False)
-            if self.down is not None: self.down.setEnabled(False)
+            self.disable_actions()
 
     def item_changed(self, item):
         if item is not None:
             self.list_widget.setCurrentItem(item)
         if self.change_cb is not None:
             self.change_cb()
+        self.selected()
 
     def add_item(self):
         with BlockQtSignals(self.list_widget):
-            item = QListWidgetItem(self.placeholder)
+            if self._compact:
+                item = QListWidgetItem()
+            else:
+                item = QListWidgetItem('[enter value]')
             item.setFlags(item.flags() | Qt.ItemIsEditable)
             current = self.list_widget.currentRow()
             if self._movable and current != -1:
@@ -468,6 +511,8 @@ class MultiLineEdit(QWidget):
                 self.list_widget.addItem(item)
         self.list_widget.setCurrentItem(None)
         self.list_widget.scrollToItem(item)
+        if self._compact:
+            self.remove.setEnabled(True)
         self.list_widget.editItem(item)
 
     def edit_item(self):

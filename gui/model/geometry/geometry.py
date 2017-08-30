@@ -178,7 +178,7 @@ class GNCylindrical(GNGeometryBase):
 
     def accept_as_child(self, node):
         if not self.accept_new_child(): return False
-        return super(GNCartesian, self).accept_as_child(node) or isinstance(node, GNRevolution)
+        return super(GNCylindrical, self).accept_as_child(node) or isinstance(node, GNRevolution)
 
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))

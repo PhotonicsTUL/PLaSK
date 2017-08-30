@@ -34,7 +34,7 @@ class GNZero(GNode):
         result.set_xml_element(element, conf)
         return result
 
-    def add_parent_options(self):
+    def add_parent_options(self, current_parent=None):
         return []
 
 
@@ -83,7 +83,7 @@ class GNGap(GNode):
         result.set_xml_element(element, conf)
         return result
 
-    def add_parent_options(self):
+    def add_parent_options(self, current_parent=None):
         return []
 
 

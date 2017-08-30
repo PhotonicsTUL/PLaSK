@@ -57,21 +57,26 @@
       </attr>
     </tag>
 
-    <tag name="interface" label="Matching Interface Position in the Stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
+    <tag name="interface" label="Matching Interface Position in the Stack">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
         <conflicts attr="position"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
         <conflicts attr="index"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
         <conflicts attr="index"/>
         <conflicts attr="position"/>
       </attr>
-      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
+      </attr>
     </tag>
 
     <tag name="pml" label="Horizontal PMLs">
@@ -240,21 +245,25 @@
       </attr>
     </tag>
 
-    <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
+    <tag name="interface" label="Matching interface position in the stack">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
         <conflicts attr="position"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
         <conflicts attr="index"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
         <conflicts attr="index"/>
         <conflicts attr="position"/>
       </attr>
       <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
       </attr>
     </tag>
 
@@ -276,7 +285,7 @@
         <conflicts tag="pmls/long" attr="size"/>
         <conflicts tag="pmls/tran" attr="size"/>
       </attr>
-      <tag name="long" label="Longitudinal PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
+      <tag name="long" label="Longitudinal PML (overrides ‘Longitudinal and transverse PMLs’)">
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.
           <conflicts tag="pmls" attr="factor"/>
@@ -291,7 +300,7 @@
           <conflicts tag="size" attr="factor"/>
         </attr>
       </tag>
-      <tag name="tran" label="Transverse PML &lt;span style=&quot;font-weight: normal;&quot;&gt;(overrides ‘Longitudinal and transverse PMLs’)&lt;/span&gt;">
+      <tag name="tran" label="Transverse PML (overrides ‘Longitudinal and transverse PMLs’)">
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
         <attr name="factor" label="Scaling factor" type="complex">PML scaling factor.
           <conflicts tag="pmls" attr="factor"/>
@@ -399,21 +408,26 @@
       </attr>
     </tag>
 
-    <tag name="interface" label="Matching interface position in the stack &lt;span style=&quot;font-weight: normal;&quot;&gt;(set only one)&lt;/span&gt;">
+    <tag name="interface" label="Matching interface position in the stack">
       Matching interface position in the stack.
       <attr name="index" label="Layer index" type="int">Index of the layer, below which the interface is located.
         <conflicts attr="position"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="position" label="Position" type="float" unit="µm">Interface will be located as close as possible to the vertical coordinate specified in this attribute.
         <conflicts attr="index"/>
         <conflicts attr="object"/>
+        <conflicts attr="path"/>
       </attr>
       <attr name="object" label="Object name" type="geometry object">Name of the geometry object below which the interface is located.
         <conflicts attr="index"/>
         <conflicts attr="position"/>
       </attr>
-      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.</attr>
+      <attr name="path" label="Object path" type="geometry path">Optional path name, specifying particular instance of the object given in the object attribute.
+        <conflicts attr="index"/>
+        <conflicts attr="position"/>
+      </attr>
     </tag>
 
     <tag name="transfer" label="Transfer Algorithm Settings">
@@ -451,7 +465,7 @@
       <attr name="initial-range" label="Initial Muller range size" type="complex" default="0.001">Initial range size (Muller method only).</attr>
     </tag>
 
-    <tag name="pml" label="Radial PMLs &lt;span style=&quot;font-weight: normal;&quot;&gt;(for finite domain only)&lt;/span&gt;">
+    <tag name="pml" label="Radial PMLs (for finite domain only)">
       Side absorbing perfectly matched layer boundary conditions parameters.
       <attr name="factor" label="Scaling factor" type="complex" default="1.0">PML scaling factor.</attr>
       <attr name="shape" label="Shape order" type="float" default="1">PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).</attr>
@@ -461,6 +475,7 @@
 
      <flow>
       <receiver name="inTemperature"/>
+
       <receiver name="inGain"/>
       <provider name="outLightMagnitude"/>
       <provider name="outRefractiveIndex"/>
