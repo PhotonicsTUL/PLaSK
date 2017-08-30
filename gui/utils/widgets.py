@@ -371,8 +371,6 @@ class MultiLineEdit(QWidget):
             self.deselect()
 
     class Delegate(QStyledItemDelegate):
-        def __init__(self, parent):
-            QItemDelegate.__init__(self, parent)
         def createEditor(self, parent, option, index):
             editor = MultiLineEdit.LineEdit(parent)
             editor.setStyleSheet("border: 1px solid #888")
