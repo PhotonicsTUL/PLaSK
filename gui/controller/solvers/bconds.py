@@ -313,7 +313,8 @@ class BoundaryConditionsDialog(QDialog):
             self.model.rowsInserted.connect(self.update_plot)
             self.model.rowsRemoved.connect(self.update_plot)
             self.model.rowsMoved.connect(self.update_plot)
-            self.table.selectionModel().selectionChanged.connect(self.highlight_plot)
+            selection_model = self.table.selectionModel()
+            selection_model.selectionChanged.connect(self.highlight_plot)
         else:
             self.preview = self.info = None
             layout.addWidget(table_with_manipulators(self.table))
