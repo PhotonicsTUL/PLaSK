@@ -261,13 +261,13 @@ class GridsController(Controller):
                         raise ValueError("You must select geometry to preview generators")
                 else:
                     self.generate_mesh_action.setEnabled(True)
-                    mesh = manager.msg[model.name](self.plotted_geometry)
+                    mesh = manager.msh[model.name](self.plotted_geometry)
             else:
                 mesh = None
             if model != self.plotted_model:
                 self.clear = self.mesh_preview.toolbar._views.clear()
-            self.mesh_preview.update_mesh_plot(mesh, self.plotted_geometry, set_limits=set_limits,
-                                               plane=self.checked_plane)
+            self.mesh_preview.update_plot(mesh, self.plotted_geometry, set_limits=set_limits,
+                                          plane=self.checked_plane)
         except Exception as e:
             self.model.info_message("Could not update mesh preview: {}".format(str(e)), Info.WARNING)
             # self.status_bar.setText(str(e))

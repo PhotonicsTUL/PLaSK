@@ -9,21 +9,66 @@ using namespace plask::thermal::tstatic;
 
 namespace plask { namespace thermal { namespace tstatic {
 
-    std::string Convection__repr__(const Convection& self) {
-        return "Convection(" + str(self.coeff) + "," + str(self.ambient) + ")";
+template <typename T>
+struct Bc {
+
+    static const char* NAME;
+    static const char* FIRST;
+
+    inline static double& first(T& self);
+
+    static void* convertible(PyObject* obj) {
+        if (!PyDict_Check(obj)) return nullptr;
+        return obj;
+    }
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor2<double>>*)data)->storage.bytes;
+        double first = py::extract<double>(PyDict_GetItemString(obj, FIRST));
+        PyObject* pyambient = PyDict_GetItemString(obj, "ambient");
+        double ambient = pyambient? py::extract<double>(pyambient) : 300.;
+        new(storage) T(first, ambient);
+        data->convertible = storage;
     }
 
-    std::string Convection__str__(const Convection& self) {
-        return str(self.coeff) + " (" + str(self.ambient) + "K)";
+    Bc(const char* doc) {
+        py::converter::registry::push_back(&convertible, &construct, boost::python::type_id<T>());
+        py::class_<T>(NAME, doc, py::init<double,double>())
+            .def("__repr__", &Bc<T>::__repr__)
+            .def("__str__", &Bc<T>::__str__)
+            .def("__getitem__", &Bc<T>::__getitem__)
+            .def("__setitem__", &Bc<T>::__setitem__)
+        ;
     }
 
-    std::string Radiation__repr__(const Radiation& self) {
-        return "Radiation(" + str(self.emissivity) + "," + str(self.ambient) + ")";
+    static std::string __str__(T& self) {
+        return str(first(self)) + " (" + str(self.ambient) + "K)";
     }
 
-    std::string Radiation__str__(const Radiation& self) {
-        return str(self.emissivity) + " (" + str(self.ambient) + "K)";
+    static std::string __repr__(T& self) {
+        return "{'" + std::string(FIRST) + "': " + str(first(self)) + ", 'ambient': " + str(self.ambient) + "}";
     }
+
+    static double __getitem__(T& self, const std::string& key) {
+        if (key == FIRST) return first(self);
+        else if (key == "ambient") return self.ambient;
+        else throw KeyError(key);
+    }
+
+    static void __setitem__(T& self, const std::string& key, double value) {
+        if (key == FIRST) first(self) = value;
+        else if (key == "ambient") self.ambient = value;
+        else throw KeyError(key);
+    }
+
+};
+
+template<> const char* Bc<Convection>::NAME = "Convection";
+template<> const char* Bc<Convection>::FIRST = "coeff";
+template<> double& Bc<Convection>::first(Convection& self) { return self.coeff; }
+
+template<> const char* Bc<Radiation>::NAME = "Radiation";
+template<> const char* Bc<Radiation>::FIRST = "emissivity";
+template<> double& Bc<Radiation>::first(Radiation& self) { return self.emissivity; }
 
 }}}
 
@@ -42,19 +87,8 @@ BOOST_PYTHON_MODULE(static)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py::class_<Convection>("Convection", "Convective boundary condition value.", py::init<double,double>())
-        .def_readwrite("coeff", &Convection::coeff)
-        .def_readwrite("ambient", &Convection::ambient)
-        .def("__repr__", &Convection__repr__)
-        .def("__str__", &Convection__str__)
-    ;
-
-    py::class_<Radiation>("Radiation", "Radiative boundary condition value.", py::init<double,double>())
-        .def_readwrite("emissivity", &Radiation::emissivity)
-        .def_readwrite("ambient", &Radiation::ambient)
-        .def("__repr__", &Radiation__repr__)
-        .def("__str__", &Radiation__str__)
-    ;
+    Bc<Convection>("Convective boundary condition value.");
+    Bc<Radiation>("Radiative boundary condition value.");
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D",
         "Finite element thermal solver for 2D Cartesian Geometry.")

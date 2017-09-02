@@ -12,7 +12,28 @@
 #   define NEXT "next"
 #endif
 
-namespace plask { namespace python {
+namespace plask {
+
+template <> inline boost::python::object parseBoundaryValue<boost::python::object>(const XMLReader& tag_with_value)
+{
+    std::map<std::string, std::string> attributes = tag_with_value.getAttributes();
+    attributes.erase("place");
+    attributes.erase("placename");
+    attributes.erase("placeref");
+    if (attributes.size() == 1) {
+        auto found = attributes.find("value");
+        if (found != attributes.end())
+            return python::eval_common_type(found->second);
+    }
+    boost::python::dict result;
+    for (const auto& item: attributes) {
+        result[item.first] = python::eval_common_type(item.second);
+    }
+    return result;
+}
+
+
+namespace python {
 
 namespace detail {
 

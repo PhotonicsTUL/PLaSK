@@ -193,9 +193,9 @@ bool XMLReader::next() {
         return false;
 }
 
-const std::map<std::string, std::string> XMLReader::getAttributes() {
+const std::map<std::string, std::string> XMLReader::getAttributes() const {
     ensureHasCurrent();
-    ignoreAllAttributes();
+    this->ignoreAllAttributes();
     if (attributeFilter) {
         std::map<std::string, std::string> parsed;
         for (const auto& attr: getCurrent().attributes) {

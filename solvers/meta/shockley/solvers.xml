@@ -224,14 +224,14 @@
         <type>Rectangular2D</type>
       </attr>
     </tag>
-    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D"/>
-    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D"/>
-    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D"/>
-    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D" geometry="geometry:electrical" mesh="mesh:electrical"/>
+    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
@@ -262,14 +262,14 @@
         <type>Rectangular2D</type>
       </attr>
     </tag>
-    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D"/>
-    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D"/>
-    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D"/>
-    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D" geometry="geometry:electrical" mesh="mesh:electrical"/>
+    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
@@ -300,14 +300,14 @@
         <type>Rectangular3D</type>
       </attr>
     </tag>
-    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular3D"/>
-    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular3D"/>
-    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular3D"/>
-    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular3D">
+    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular3D" geometry="geometry:electrical" mesh="mesh:electrical"/>
+    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular3D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular3D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular3D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular3D">
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular3D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
@@ -371,14 +371,14 @@
         Angular mode number (0 for LP0x, 1 for LP1x, etc.).
       </attr>
     </tag>
-    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D"/>
-    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D"/>
-    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D"/>
-    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D" geometry="geometry:electrical" mesh="mesh:electrical"/>
+    <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="heatflux" label="Heat Flux" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
+    <bcond name="convection" label="Convective" values="coeff,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;coeff&lt;/i&gt; for convection coefficient and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>
-    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D">
+    <bcond name="radiation" label="Radiative" values="emissivity,ambient" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal">
       This boundary condition does not have &lt;i&gt;value&lt;/i&gt; attribute.
       Use &lt;i&gt;emissivity&lt;/i&gt; for surface emissivity and &lt;i&gt;ambient&lt;/i&gt; for ambient temperature instead.
     </bcond>

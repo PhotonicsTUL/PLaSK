@@ -576,10 +576,15 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         boost::optional<std::string> place = reader.getAttribute("place");
         boost::optional<std::string> placename = reader.getAttribute("placename");
         //boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
-        ConditionT value = parseBoundaryValue<ConditionT>(reader);
+        ConditionT value;
+        try {
+            value = parseBoundaryValue<ConditionT>(reader);
+        } catch (...) {
+            if (!draft) throw;
+        }
         if (place) {
             boundary = parseBoundary<MeshT>(*place, *this);
-            if (boundary.isNull()) throw XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place));
+            if (boundary.isNull() && !draft) throw XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place));
         } else {
             place = reader.getAttribute("placeref");
             if (place) {
@@ -591,7 +596,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
                 reader.requireTag("place");
                 if (!placename) placename = reader.getAttribute("name");
                 boundary = parseBoundary<MeshT>(reader, *this);
-                if (boundary.isNull()) throw XMLException(reader, "Can't parse boundary place from XML.");
+                if (boundary.isNull() && !draft) throw XMLException(reader, "Can't parse boundary place from XML.");
             }
         }
         /*if (!value) {   // value still not known, must be read from tag <value>...</value>
@@ -604,7 +609,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
                 throw NamesConflictException("Place (boundary)", *placename);
         }
         dest.add(std::move(boundary), /*std::move(*value)*/ std::move(value));
-        reader.requireTagEnd(); //</condition>
+        reader.requireTagEnd(); // </condition>
     }
 }
 

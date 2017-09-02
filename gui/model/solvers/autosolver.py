@@ -348,8 +348,15 @@ def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
                 values = tag.attrib.get('values')
                 if values is not None: values = values.split(',')
                 mt = tag.attrib.get('type', mesh_type)
+                ma = tag.attrib.get('mesh')
+                if ma is not None:
+                    ma = ma.split(':')
+                ga = tag.attrib.get('geometry')
+                if ga is not None:
+                    ga = ga.split(':')
                 BCond = BCONDS[mt]
-                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"), mt, values))
+                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"),
+                                    mt, ma, ga, values))
 
         flow = solver.find(xns+'flow')
         if flow is not None:

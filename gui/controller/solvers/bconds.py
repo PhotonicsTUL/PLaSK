@@ -10,10 +10,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from collections import OrderedDict
+import sys
+
+from gui import QtSignal
+from lxml.etree import tostring
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
+from ...qt import QtSignal
+from ...utils.config import CONFIG
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ..defines import DefinesCompletionDelegate, get_defines_completer
@@ -21,12 +27,13 @@ from ..table import table_with_manipulators
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 
 try:
-    from ..geometry.plot_widget import PlotWidget as GeometryPlotWidget, NavigationToolbar as GeometryNavigationToolbar
+    import plask
+    from ...utils.matplotlib import PlotWidgetBase, BwColor
 except ImportError:
     preview_available = False
 else:
     preview_available = True
-
+    import matplotlib
 
 class PlaceDetailsEditor(QWidget):
     pass
@@ -137,45 +144,48 @@ class RectangularPlaceLine(PlaceDetailsEditor):
 
 
 if preview_available:
-    class NavigationToolbar(GeometryNavigationToolbar):
 
-        toolitems = (
-            ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
-            ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
-            (None, None, None, None, None),
-            ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
-            ('Back', 'Back to previous view', 'go-previous', 'back', None),
-            ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-            (None, None, None, None, None),
-            ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
-            ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
-            (None, None, None, None, None),
-            ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
-            (None, None, None, None, None),
-            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-             (('tran-long', 'long-vert', 'tran-vert'), 2)),
-        )
+    class PlotWidget(PlotWidgetBase):
 
-        def __init__(self, *args, **kwargs):
-            super(NavigationToolbar, self).__init__(*args, **kwargs)
-            self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
-            self.disable_planes(('long','tran','vert'))
+        class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
-        def home(self):
-            if self.controller.plotted_geometry is not None:
-                box = self.controller.plotted_geometry.bbox
-                self.parent.zoom_bbox(box)
+            def __init__(self, *args, **kwargs):
+                super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
+                self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
 
-        def select_plane(self, index):
-            plane = ('10', '02', '12')[index]
-            self._axes = self._axes_names[int(plane[0])], self._axes_names[int(plane[1])]
-            self.controller.checked_plane = plane
-            if self.controller.plot_auto_refresh: self.controller.plot()
-            self.set_message(self.mode)
+            def select_plane(self, index):
+                super(PlotWidget.NavigationToolbar, self).select_plane(index)
+                if self.controller.plot_auto_refresh: self.controller.plot_bboundaries()
 
+        def __init__(self, controller=None, parent=None):
+            super(PlotWidget, self).__init__(controller, parent)
+            self.get_color = BwColor(self.axes)
+            self.first = True
 
-    class PlotWidget(GeometryPlotWidget):
+        def update_plot(self, bconds, mesh, geometry, colors, plane='12'):
+            # for b in bconds:
+            #     print list(b.place(mesh, geometry)), b.value
+            updater = self.plot_updater(self.first, plane)
+            if bconds is not None:
+                for m in updater:
+                    points = plask.plot_boundary(bconds, mesh, geometry, colors=colors, plane=plane, axes=self.axes)
+                    if geometry is not None:
+                        try:
+                            plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, zorder=1,
+                                                plane=plane, lw=1.0, get_color=self.get_color,
+                                                margin=m if self.first else None)
+                        except:
+                            pass
+                self.first = False
+            else:
+                points = []
+            self.canvas.draw()
+            return points
+
+    class fake_plask_gui_solver(object):
         pass
+
+    sys.modules['fake_plask_gui_solver'] = fake_plask_gui_solver
 
 
 class BoundaryConditionsDialog(QDialog):
@@ -193,13 +203,15 @@ class BoundaryConditionsDialog(QDialog):
         self.checked_plane = '12'
 
         self.table = QTableView()
-        model = BoundaryConditionsModel(schema, data)
-        self.table.setModel(model)
-        cols = model.columnCount(None)  # column widths:
+        self.model = BoundaryConditionsModel(schema, data)
+        self.table.setModel(self.model)
+        cols = self.model.columnCount(None)  # column widths:
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 250)
+        self.table.verticalHeader().show()
+
         try:
             self.table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
         except AttributeError:
@@ -211,7 +223,7 @@ class BoundaryConditionsDialog(QDialog):
 
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
         defines_completer = get_defines_completer(controller.document.defines.model, self)
-        for i in range(2, model.columnCount()):
+        for i in range(2, self.model.columnCount()):
             self.table.setColumnWidth(i, 150)
             self.table.setItemDelegateForColumn(i, self.defines_delegate)
             label = schema.keys[i-2].lower()
@@ -226,25 +238,168 @@ class BoundaryConditionsDialog(QDialog):
         self.place_details_delegate = PlaceDetailsDelegate(controller, defines_completer, self.table)
         self.table.setItemDelegateForColumn(1, self.place_details_delegate)
 
-        self.resize(800, 400)
+        self.place_delegate.placeChanged.connect(self.update)
+
+        self.resize(800, 600)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(2, 2, 2, 6)
-        layout.addWidget(table_with_manipulators(self.table))
 
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
+        if preview_available:
+            self.document = controller.document
+
+            mesh_name = controller.model.mesh if schema.mesh_attr is None else \
+                        controller.model.data[schema.mesh_attr[0]][schema.mesh_attr[1]]
+            geometry_name = controller.model.geometry if schema.geometry_attr is None else \
+                            controller.model.data[schema.geometry_attr[0]][schema.geometry_attr[1]]
+            self.manager = plask.Manager(draft=True)
+            self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+            try:
+                self.geometry = self.manager.geo[str(geometry_name)]
+            except KeyError:
+                self.geometry = None
+            try:
+                mesh = self.manager.msh[str(mesh_name)]
+                if isinstance(mesh, plask.mesh.MeshGenerator):
+                    if self.geometry is not None:
+                        self.mesh = mesh(self.geometry)
+                    else:
+                        self.mesh = None
+                else:
+                    self.mesh = mesh
+            except KeyError:
+                self.mesh = None
+
+            if self.geometry is None or self.mesh is None:
+                self.preview = self.info = None
+                label = QLabel("Specify proper geometry and mesh for the solver to show boundary conditions preview.")
+                layout.addWidget(label)
+                layout.addWidget(table_with_manipulators(self.table))
+            else:
+                self.info = QTextEdit(self)
+                self.info.setVisible(False)
+                self.info.setReadOnly(True)
+                self.info.setContentsMargins(0, 0, 0, 0)
+                self.info.setFrameStyle(0)
+                pal = self.info.palette()
+                pal.setColor(QPalette.Base, QColor("#ffc"))
+                self.info.setPalette(pal)
+                self.info.acceptRichText()
+                self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+                splitter = QSplitter(self)
+                splitter.setOrientation(Qt.Vertical)
+                self.preview = PlotWidget(self, splitter)
+                wid = QWidget()
+                lay = QVBoxLayout()
+                lay.setContentsMargins(0, 0, 0, 0)
+                lay.setSpacing(0)
+                lay.addWidget(self.preview)
+                lay.addWidget(self.info)
+                wid.setLayout(lay)
+                splitter.addWidget(wid)
+                splitter.addWidget(table_with_manipulators(self.table))
+                layout.addWidget(splitter)
+
+            if schema.mesh_type not in fake_plask_gui_solver.__dict__:
+                Mesh = getattr(plask.mesh, schema.mesh_type)
+                class Solver(plask.Solver):
+                    __name__ = schema.mesh_type
+                    def load_xpl(self, xpl, manager):
+                        self.bconds = Mesh.BoundaryConditions()
+                        for tag in xpl:
+                            self.bconds.read_from_xpl(tag, manager)
+                setattr(fake_plask_gui_solver, schema.mesh_type, Solver)
+            self.model.dataChanged.connect(self.update_plot)
+            self.model.rowsInserted.connect(self.update_plot)
+            self.model.rowsRemoved.connect(self.update_plot)
+            self.model.rowsMoved.connect(self.update_plot)
+            self.table.selectionModel().selectionChanged.connect(self.highlight_plot)
+        else:
+            self.preview = self.info = None
+            layout.addWidget(table_with_manipulators(self.table))
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
         self.setLayout(layout)
 
-    def plot_boundaries(self):
-        if not preview_available: return
+        self.points = []
+        self.plot()
+
+    def message(self, msg):
+        if msg:
+            self.info.setText(msg)
+            self.info.show()
+            self.info.setFixedHeight(self.info.document().size().height())
+        else:
+            self.info.clear()
+            self.info.hide()
+
+    def highlight_plot(self):
+        if self.points:
+            colors = [CONFIG['boundary_conditions/color']] * len(self.points)
+            for index in self.table.selectionModel().selectedRows():
+                colors[index.row()] = CONFIG['boundary_conditions/selected_color']
+            for points, color in zip(self.points, colors):
+                points.set_color(color)
+        self.preview.canvas.draw()
+
+    def resizeEvent(self, event):
+        if self.info is not None and self.info.isVisible():
+            self.info.setFixedHeight(self.info.document().size().height())
+
+    def update_plot(self, index1=None, index2=None):
+        if self.plot_auto_refresh and (index1 is None or index1.column() < 2):
+            self.plot()
+
+    def plot(self):
+        from ... import _DEBUG
+        if not preview_available or self.preview is None or \
+           self.geometry is None or self.mesh is None:
+            return
+
+        text = self.document.get_content(sections=('defines'))
+        xml = self.schema.to_xml(self.model.entries)
+        xml = tostring(xml) if xml is not None else ''
+        if _DEBUG:
+            print(xml)
+        text = text[:-9] + """\
+          <solvers>
+            <local name="bconds" solver="{solver}" lib="fake_plask_gui_solver">
+                {value}
+            </local>
+          </solvers>
+        </plask>""".format(solver=self.schema.mesh_type, value=xml)
+        try:
+            for p in self.points:
+                p.remove()
+            self.points = []
+            self.preview.clear()
+            self.manager.solvers.clear()
+            self.manager.load(text)
+            solver = self.manager.solvers['bconds']
+            plotted_bconds = solver.bconds
+            colors = [CONFIG['boundary_conditions/color']] * len(plotted_bconds)
+            for index in self.table.selectionModel().selectedRows():
+                colors[index.row()] = CONFIG['boundary_conditions/selected_color']
+
+            self.points = self.preview.update_plot(plotted_bconds, self.mesh, self.geometry,
+                                                   plane=self.checked_plane, colors=colors)
+            self.plotted_bconds = plotted_bconds
+            self.message(None)
+        except Exception as e:
+            self.message(str(e))
+            self.plotted_bconds = None
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
 
 
 class PlaceDelegate(QStyledItemDelegate):
+
+    placeChanged = QtSignal()
 
     def createEditor(self, parent, option, index):
         schema = index.model().schema
@@ -275,6 +430,8 @@ class PlaceDelegate(QStyledItemDelegate):
             completer = combo.completer()
             completer.setCaseSensitivity(Qt.CaseSensitive)
             combo.setCompleter(completer)
+
+        combo.currentIndexChanged.connect(lambda: self.placeChanged.emit())
 
         return combo
 
@@ -312,6 +469,7 @@ class PlaceDetailsDelegate(HTMLDelegate):
         row = index.row()
         place = model.entries[row][0]
         editor.save_data(place)
+        model.dataChanged.emit(index, index)
 
 
 PLACES_EDITORS = {

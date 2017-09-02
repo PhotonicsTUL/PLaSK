@@ -222,7 +222,6 @@ class ManagerTest(unittest.TestCase):
         self.assertEqual( manager.geo.block2.dims[1], 1 )
 
 
-
 class FakeModule(object):
 
     class CustomSolver(Solver):

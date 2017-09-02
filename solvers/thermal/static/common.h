@@ -36,11 +36,8 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
-
-    
-    
 }} // # namespace thermal::tstatic
-    
+
 template <> inline thermal::tstatic::Convection parseBoundaryValue<thermal::tstatic::Convection>(const XMLReader& tag_with_value)
 {
     return thermal::tstatic::Convection(tag_with_value.requireAttribute<double>("coeff"), tag_with_value.requireAttribute<double>("ambient"));
@@ -52,7 +49,7 @@ template <> inline thermal::tstatic::Radiation parseBoundaryValue<thermal::tstat
 }
 
 
-} // # namespace plask::thermal::tstatic
+} // # namespace plask
 
 #endif // PLASK__SOLVER__THERMAL_STATIC_COMMON_H
 

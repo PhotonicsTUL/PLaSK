@@ -94,6 +94,8 @@ DEFAULTS = {
     'geometry/lattice_line_color': '#30a2da',
     'geometry/lattice_active_color': '#fc4f30',
     'geometry/lattice_mark_color': '#e5ae38',
+    'boundary_conditions/color': '#000088',
+    'boundary_conditions/selected_color': '#ffea00',
     'mesh/mesh_color': '#00aaff',
     'mesh/line_width': 1.0,
     'workarounds/jedi_no_dot': False,
@@ -200,6 +202,12 @@ CONFIG_WIDGETS = OrderedDict([
             ("Mesh color", Color('mesh/mesh_color', "Mesh color in the preview plot.")),
             ("Mesh line width", FloatSpinBox('mesh/line_width', step=0.1, min=0.1,
                                              help="Mesh lines width in the preview plot.")),
+        ]),
+        ("Boundary Conditions Preview", [
+            ("Marker color", Color('boundary_conditions/color',
+                                   "Marker color in the boundary conditions preview plot.")),
+            ("Selected color", Color('boundary_conditions/selected_color',
+                                   "Marker color of the selected boundary condition.")),
         ]),
         ("Text Editor", [
             ("Editor font", Font('editor/font', "Font in text editors.")),

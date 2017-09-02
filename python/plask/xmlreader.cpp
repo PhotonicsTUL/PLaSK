@@ -272,41 +272,24 @@ namespace detail {
         return XMLIterator(reader);
     }
 
-    inline static py::object parse_value(const std::string& value) {
-        py::str obj(value);
-        try {
-            py::object val = py::eval(obj);
-            if (PyInt_Check(val.ptr()) ||  PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
-                PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
-                return val;
-            else
-                return obj;
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-            return obj;
-        }
-    }
-
     static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
-        return parse_value(reader->requireAttribute(key));
+        return eval_common_type(reader->requireAttribute(key));
     }
 
     static py::object XMLReader_get(XMLReader* reader, const std::string& key, const py::object& deflt) {
         auto value = reader->getAttribute(key);
-        if (value) return parse_value(*value);
+        if (value) return eval_common_type(*value);
         else return deflt;
     }
 
     static py::object XMLReader_getitem(XMLReader* reader, const py::object& dict, const std::string& key) {
-        return dict[reader->requireAttribute(key)];
+        return dict[eval_common_type(reader->requireAttribute(key))];
     }
-
 
     static py::object XMLReader_attribs(XMLReader* reader) {
         py::dict result;
-        for (auto attr: reader->getAttributes()) {
-            result[attr.first] = parse_value(attr.second);
-        }
+        for (auto attr: reader->getAttributes())
+            result[attr.first] = eval_common_type(attr.second);
         return result;
     }
 

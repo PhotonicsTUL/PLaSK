@@ -344,7 +344,24 @@ struct Overriden
 
 };
 
-}} // namespace python::plask
+// ----------------------------------------------------------------------------------------------------------------------
+// Helper for XML reads
 
+/// Evalueate common Python types
+inline static py::object eval_common_type(const std::string& value) {
+    try {
+        py::object val = py::eval(value.c_str());
+        if (PyInt_Check(val.ptr()) || PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
+            PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
+            return val;
+        else
+            return py::str(value);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        return py::str(value);
+    }
+}
+
+}} // namespace plask::python
 
 #endif // PLASK__PYTHON_GLOBALS_H

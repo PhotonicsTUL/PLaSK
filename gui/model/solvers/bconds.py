@@ -27,7 +27,9 @@ else:
 
 class SchemaBoundaryConditions(object):
 
-    def __init__(self, name, label, group, mesh_type, values=None):
+    def __init__(self, name, label, group, mesh_type, mesh_attr=None, geometry_attr=None, values=None):
+        self.geometry_attr = geometry_attr
+        self.mesh_attr = mesh_attr
         self.name = name
         if group is None:
             self.label = "Boundary Conditions"
@@ -75,7 +77,8 @@ class RectangularBC(SchemaBoundaryConditions):
         def label(self):
             return self.side.title()
         def __eq__(self, other):
-            return self.side == other.side and self.object == other.object and self.path == other.path
+            return type(other) == RectangularBC.PlaceSide and \
+                   self.side == other.side and self.object == other.object and self.path == other.path
         def __str__(self):
             if self.object is None: return ''
             if self.path is None:
@@ -105,7 +108,8 @@ class RectangularBC(SchemaBoundaryConditions):
         def label(self):
             return self.line.title() + ' Line'
         def __eq__(self, other):
-            return self.line == other.line and self.at == other.at and \
+            return type(other) == RectangularBC.PlaceLine and \
+                   self.line == other.line and self.at == other.at and \
                    self.start == other.start and self.stop== other.stop
         def __str__(self):
             return "<i>Pos:</i>&nbsp;{0.at}&nbsp;&nbsp;&nbsp;&nbsp;" \
@@ -187,11 +191,14 @@ class BoundaryConditionsModel(QAbstractTableModel):
     def columnCount(self, parent=QModelIndex()):
         return 2 + len(self.schema.keys)
 
-    def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            if col == 0: return 'Place'
-            elif col == 1: return 'Place Details'
-            else: return self.schema.keys[col-2].title()
+    def headerData(self, no, orientation, role):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                if no == 0: return 'Place'
+                elif no == 1: return 'Place Details'
+                else: return self.schema.keys[no - 2].title()
+            elif orientation == Qt.Vertical:
+                return str(no)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -229,10 +236,12 @@ class BoundaryConditionsModel(QAbstractTableModel):
             self.entries[row] = new_place, self.entries[row][1]
             if type(old_place) == type(new_place):
                 new_place.copy_from(old_place)
+            self.dataChanged.emit(index, index)
         elif col == 1:
             return False
         else:
             self.entries[row][1][self.schema.keys[col-2]] = value
+            self.dataChanged.emit(index, index)
         return True
 
     def flags(self, index):

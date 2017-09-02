@@ -523,6 +523,7 @@ static void register_manager_dict(const std::string name) {
         .def("values", &dict_values<T>)
         .def("items", &dict_items<T>)
         .def("__getattr__", &dict__getattr__<T>)
+        .def("clear", &std::map<std::string, T>::clear, "Remove all elements from the dictionary.")
         // .def("__setattr__", &dict__setattr__<T>)
         // .def("__delattr__", &dict__delattr__<T>)
     ;

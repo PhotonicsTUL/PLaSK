@@ -377,7 +377,7 @@ class PLASK_API XMLReader {
     std::vector<std::string> path;
 
     /// Attributes which was read in the current tag.
-    std::set<std::string> read_attributes;
+    mutable std::set<std::string> read_attributes;
 
 public:
     /// Parsers used to interpret string values.
@@ -401,7 +401,7 @@ public:
 private:
 
     /// true if the reader should check if there are no spurious attributes in the current element
-    bool check_if_all_attributes_were_read;
+    mutable bool check_if_all_attributes_were_read;
 
     /**
      * Check if current XML state is available.
@@ -595,7 +595,7 @@ private:
      * Get all attributes, empty if current node is not NODE_ELEMENT.
      * @return all attributes, reference is valid up to read() call
      */
-    const std::map<std::string, std::string> getAttributes();
+    const std::map<std::string, std::string> getAttributes() const;
 
     /**
      * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.
@@ -606,7 +606,7 @@ private:
     /**
      * Allow to have unread attributes in currect tag.
      */
-    void ignoreAllAttributes() { check_if_all_attributes_were_read = false; }
+    void ignoreAllAttributes() const { check_if_all_attributes_were_read = false; }
 
     /**
      * Check if current node has attribute with given @p name.

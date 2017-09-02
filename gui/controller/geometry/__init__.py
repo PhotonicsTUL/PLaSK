@@ -161,7 +161,6 @@ class GeometryController(Controller):
         search_action.triggered.connect(lambda checked=False: self.search_box.setFocus())
         self.main_splitter.addAction(search_action)
 
-
         if PlotWidget is not None:
             self.geometry_view = PlotWidget(self, picker=True)
             self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
@@ -355,10 +354,6 @@ class GeometryController(Controller):
             self.model.info_message()
             # self.status_bar.setText('')
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
-
-    #def _construct_plot_dock(self):
-    #    self.geometry_view = PlotWidget()
-    #    self.document.window.addDockWidget(Qt.RightDockWidgetArea, self.geometry_view.dock_window(self.document.window))
 
     def _construct_toolbar(self):
         toolbar = QToolBar()

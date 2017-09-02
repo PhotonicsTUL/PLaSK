@@ -90,9 +90,9 @@ def save_field(field, file, path='', mode='a'):
     else:
         dest = file
 
-    data = dest.create_dataset('data', data=field.array)
+    data = dest.create_dataset('_data', data=field.array)
 
-    mesh_group = dest.create_group('mesh')
+    mesh_group = dest.create_group('_mesh')
     if mst in (plask.mesh.Ordered, plask.mesh.Regular):
         axis_dataset = save_rectangular1d(mesh_group, 'points', msh)
         if type(msh) is plask.mesh.Ordered:
@@ -157,8 +157,17 @@ def load_field(file, path=''):
     else:
         close = False
 
-    mesh = file[path+'/mesh']
-    mtype = mesh.attrs['type']
+    group = file[path]
+    data = '/_data'
+    try:
+        try:
+            mesh = group['/_mesh']
+        except KeyError:
+            mesh = group['/mesh']
+            data = '/data'
+        mtype = mesh.attrs['type']
+    except KeyError:
+        raise TypeError('Group {} is not a PLaSK field'.format(path))
     if mtype in ('Rectilinear2D', 'Regular2D'): mtype = Rectangular2D
     if mtype in ('Rectilinear3D', 'Regular3D'): mtype = Rectangular3D
     mst = plask.mesh.__dict__[mtype]
@@ -168,7 +177,10 @@ def load_field(file, path=''):
     elif mst in (plask.mesh.Rectangular2D, plask.mesh.Rectangular3D):
         msh = mst(*tuple(load_rectangular1d(mesh, axis) for axis in mesh))
 
-    data = file[path+'/data']
+    try:
+        data = group[data]
+    except KeyError:
+        raise TypeError('Group {} is not a PLaSK field'.format(path))
     data = numpy.array(data)
     result = plask.Data(numpy.array(data), msh)
 

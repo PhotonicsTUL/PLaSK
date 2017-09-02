@@ -509,7 +509,7 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
         return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, color=color, **kwargs)
 
 
-def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
+def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=None, axes=None, figure=None, zorder=4, **kwargs):
     """
     Plot boundary conditions.
 
@@ -529,15 +529,23 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
             conditions are defined. Normally it should be the geometry configured
             for the solver whose boundary conditions are plotted.
 
-        cmap (str or None): Name of a color map to use for coloring the boundary
-            conditions. If this is ``None``, all the points have the same color.
+        colors (str): Sequence of colors of the boundary conditions points. The
+            length ot this sequence must be equal to the number of distinct boundary
+            conditions. If this is None, all points have the same color.
 
-        color (str): Color of the boundary conditions points if ``cmap`` is None.
+        color (str): Color of the boundary conditions points if ``colors`` is None.
 
         plane (str): If the field to plot is a 3D one, this argument must be used
             to select to which the field is projected. The field mesh must be flat
             in this plane i.e. all its poinst must lie at the same level alongside
             the axis perpendicular to the specified plane.
+
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
 
         zorder (float): Ordering index of the geometry plot in the graph.
                 Elements with higher `zorder` are drawn on top of the ones
@@ -552,36 +560,41 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
         ...               cmap='summer')
     """
 
+    if axes is None:
+        if figure is None:
+            axes = matplotlib.pylab.gca()
+        else:
+            axes = figure.add_subplot(111)
+
     if not isinstance(mesh, plask.mesh.Mesh):
         if isinstance(mesh, (plask.mesh.Generator1D, plask.mesh.Generator2D, plask.mesh.Generator3D)):
             mesh = mesh(geometry)
         else:
             raise TypeError("plot_boundary called for non-mesh type")
 
-    if type(cmap) == str: cmap = get_cmap(cmap)
-    if cmap is not None: c = []
-    else: c = color
     if isinstance(mesh, plask.mesh.Mesh3D):
         ax = _get_2d_axes(plane)
     else:
         ax = (0,1)
-    x = []
-    y = []
-    for place, value in boundary:
-        points = place(mesh, geometry)
-        for i in points:
-            x.append(mesh[i][ax[0]])
-            y.append(mesh[i][ax[1]])
-        if cmap is not None:
-            c.extend(len(points) * [value])
-
-    axes = matplotlib.pylab.gca()
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
+
+    scatters = []
+    for i, (place, value) in enumerate(boundary):
+        x = []
+        y = []
+        points = place(mesh, geometry)
+        for j in points:
+            x.append(mesh[j][ax[0]])
+            y.append(mesh[j][ax[1]])
+        if colors is not None:
+            color = colors[i]
+        scatters.append(axes.scatter(x, y, c=color, zorder=zorder, **kwargs))
+
     xlabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[0]]))
     ylabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[1]]))
 
-    return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
+    return scatters
 
 
 # ### plot_mesh ###

@@ -12,6 +12,7 @@
   <define name="h_start" value="0"/>
   <define name="h_end" value="24"/>
   <define name="f" value="0"/>
+  <define name="lineto" value="200."/>
 </defines>
 
 <materials>
@@ -232,10 +233,10 @@
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <temperature>
-      <condition place="bottom" value="300."/>
-      <condition value="270.">
-        <place line="horizontal" at="10" start="0" stop="15"/>
+      <condition value="320.">
+        <place line="horizontal" at="10" start="0" stop="{lineto}"/>
       </condition>
+      <condition place="bottom" value="300."/>
     </temperature>
   </thermal>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
@@ -244,7 +245,6 @@
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
-    <mesh ref="default"/>
     <voltage>
       <condition value="2.0">
         <place side="bottom" object="p-contact"/>
