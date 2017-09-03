@@ -71,7 +71,6 @@
   <generator method="divide" name="default" type="rectangular2d">
     <postdiv by0="3" by1="2"/>
     <refinements>
-      <axis1 object="p-contact" at="50"/>
       <axis0 object="oxide" at="-0.1"/>
       <axis0 object="oxide" at="-0.05"/>
       <axis0 object="aperture" at="0.1"/>
@@ -82,17 +81,14 @@
     <axis start="0" stop="{mesa}" num="2000"></axis>
   </mesh>
   <generator method="divide" name="optical" type="rectangular2d">
-    <prediv by0="10" by1="3"/>
-  </generator>
-  <generator method="divide" name="plots" type="rectangular2d">
-    <postdiv by="30"/>
+    <prediv by0="10"/>
   </generator>
 </grids>
 
 <solvers>
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
-    <mesh diffusion="diffusion" electrical="default" thermal="optical"/>
+    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
     <optical lam0="980.5"/>
     <voltage>
       <condition value="1.4">

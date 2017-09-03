@@ -222,7 +222,7 @@ def _get_component(comp, total):
     return comp
 
 
-def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, **kwargs):
+def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, axes=None, figure=None, **kwargs):
     """
     Plot scalar real fields as two-dimensional color map.
 
@@ -240,7 +240,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
         plane (str): If the field to plot is a 3D one, this argument must be used
                      to select to which the field is projected. The field mesh must
-                     be flat in this plane i.e. all its poinst must lie at the same
+                     be flat in this plane i.e. all its points must lie at the same
                      level alongside the axis perpendicular to the specified plane.
 
         fill (bool): If True, ``contourf`` is used to plot the field i.e. the bands
@@ -253,8 +253,21 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
                            specify the component to plot. It can be either
                            a component number or its name.
 
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
         **kwargs: Keyword arguments passed to ``contourf`` or ``contour``.
     """
+
+    if axes is None:
+        if figure is None:
+            axes = matplotlib.pylab.gca()
+        else:
+            axes = figure.add_subplot(111)
 
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
         if fill and levels is None:
@@ -280,9 +293,15 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             axis2 = plask.mesh.Regular(field.mesh.axis2[0], field.mesh.axis2[-1], len(field.mesh.axis2))
             field = field.interpolate(plask.mesh.Rectangular3D(axis0, axis1, axis2), 'linear')
         data = field.array.real
-        ax = _get_2d_axes(plane)
-        if data.shape[3-sum(ax)] != 1:
-            raise ValueError("Field mesh must have dimension {} equal to 1".format(3-sum(ax)))
+        if plane is None:
+            if data.shape[2] == 1: ax = 1, 0
+            elif data.shape[1] == 1: ax = 0, 2
+            elif data.shape[0] == 1: ax = 1, 2
+            else: raise ValueError("Field mesh must have one dimension equal to 1")
+        else:
+            ax = _get_2d_axes(plane)
+            if data.shape[3-sum(ax)] != 1:
+                raise ValueError("Field mesh must have dimension {} equal to 1".format(3-sum(ax)))
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
             if comp is None:
@@ -303,25 +322,24 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
     if fill:
         if levels is not None:
-            result = contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
+            result = axes.contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
         else:
-            result = imshow(data, extent=(xaxis[0], xaxis[-1], yaxis[0], yaxis[-1]), origin='lower', **kwargs)
+            result = axes.imshow(data, extent=(xaxis[0], xaxis[-1], yaxis[0], yaxis[-1]), origin='lower', **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
-            result = contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
+            result = axes.contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
         else:
-            result = contour(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
+            result = axes.contour(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
 
-    axes = matplotlib.pylab.gca()
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
+    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
+    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
 
     return result
 
 
-def plot_profile(field, comp=None, swap_axes=False, **kwargs):
+def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kwargs):
     """
     Plot a scalar real field value along one axis.
 
@@ -342,9 +360,15 @@ def plot_profile(field, comp=None, swap_axes=False, **kwargs):
                           axis and the field value on the vertical one and otherwise
                           if this argument is True.
 
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
         **kwargs: Keyword arguments passed to ``plot`` function.
     """
-    #TODO documentation
 
     data = field.array
 
@@ -384,12 +408,18 @@ def plot_profile(field, comp=None, swap_axes=False, **kwargs):
     else:
         raise NotImplementedError("Mesh type not supported")
 
+    if axes is None:
+        if figure is None:
+            axes = matplotlib.pylab.gca()
+        else:
+            axes = figure.add_subplot(111)
+
     if swap_axes:
-        ylabel(u"${}$ [µm]".format(plask.config.axes[ax]))
-        return plot(data.ravel(), axis, **kwargs)
+        axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        return axes.plot(data.ravel(), axis, **kwargs)
     else:
-        xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
-        return plot(axis, data.ravel(), **kwargs)
+        axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        return axes.plot(axis, data.ravel(), **kwargs)
 
 
 def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):

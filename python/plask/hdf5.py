@@ -158,13 +158,13 @@ def load_field(file, path=''):
         close = False
 
     group = file[path]
-    data = '/_data'
+    data = '_data'
     try:
         try:
-            mesh = group['/_mesh']
+            mesh = group['_mesh']
         except KeyError:
-            mesh = group['/mesh']
-            data = '/data'
+            mesh = group['mesh']
+            data = 'data'
         mtype = mesh.attrs['type']
     except KeyError:
         raise TypeError('Group {} is not a PLaSK field'.format(path))

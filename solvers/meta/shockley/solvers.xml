@@ -355,7 +355,7 @@
     <tag name="optical" label="Optical solver configuration">
       Configuration of the optical solver
       <attr name="lam0" label="Approximate wavelength" type="float" unit="nm" required="yes">
-        Approximate wavelength, around which the solution is searched. The refractive and group idexes are computed for this wavelength
+        Approximate wavelength, around which the solution is searched. The refractive and group indexes are computed for this wavelength
       </attr>
       <attr name="start" label="Starting wavelength" type="float" unit="nm">
         Starting wavelength for the optical mode search.

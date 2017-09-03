@@ -31,6 +31,7 @@ else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
+
 class Cursors(object):
     # this class is only used as a simple namespace
     HAND, POINTER, SELECT_REGION, MOVE = range(4)
@@ -88,7 +89,8 @@ class PlotWidgetBase(QWidget):
             self.widgets = {}
             super(PlotWidgetBase.NavigationToolbar, self).__init__(canvas, parent, coordinates)
             self.controller = controller
-            self.disable_planes(('long','tran','vert'))
+            if 'select_plane' in self._actions:
+                self.disable_planes(('long','tran','vert'))
 
         def _icon(self, name):
             if name is not None:

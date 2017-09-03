@@ -250,35 +250,48 @@ class ThresholdSearchCyl(ThresholdSearch):
     Gain = gain.freecarrier.FreeCarrierCyl
     Optical = optical.effective.EffectiveFrequencyCyl
 
-    outTemperature = property(lambda self: self.thermal.outTemperature,
-                              doc=Thermal.outTemperature.__doc__)
-
-    outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
-                           doc=Thermal.outHeatFlux.__doc__)
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
                                       doc=Thermal.outThermalConductivity.__doc__)
-
-    outVoltage = property(lambda self: self.electrical.outVoltage,
-                          doc=Electrical.outVoltage.__doc__)
-
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=Electrical.outVoltage.__doc__)
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
                                  doc=Electrical.outCurrentDensity.__doc__)
-
-    outHeat = property(lambda self: self.electrical.outHeat,
-                       doc=Electrical.outHeat.__doc__)
-
-    outConductivity = property(lambda self: self.electrical.outConductivity,
-                               doc=Electrical.outConductivity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=Electrical.outConductivity.__doc__)
+    outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
+                                        doc=Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=Gain.outGain.__doc__)
+    outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=Optical.outLightMagnitude.__doc__)
+    outLoss = property(lambda self: self.optical.outLoss, doc=Optical.outLoss.__doc__)
+    outWavelength = property(lambda self: self.optical.outWavelength, doc=Optical.outWavelength.__doc__)
+    outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=Optical.outRefractiveIndex.__doc__)
+    outElectricField = property(lambda self: self.optical.outElectricField, doc=Optical.outElectricField.__doc__)
 
     thermal = attribute(Thermal.__name__+"()")
     """
-    :class:`thermal.static.Static2D` solver used for thermal calculations.
+    :class:`thermal.static.StaticCyl` solver used for thermal calculations.
     """
 
     electrical = attribute(Electrical.__name__+"()")
     """
-    :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
+    :class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations.
+    """
+
+    diffusion = attribute(Diffusion.__name__+"()")
+    """
+    :class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations.
+    """
+
+    gain = attribute(Gain.__name__+"()")
+    """
+    :class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations.
+    """
+
+    optical = attribute(Optical.__name__+"()")
+    """
+    :class:`optical.effectice.EffectiveFrequencyCyl` solver used for optical calculations.
     """
 
     tfreq = 6.0
@@ -287,6 +300,19 @@ class ThresholdSearchCyl(ThresholdSearch):
     
     As temperature tends to converge faster, it is reasonable to repeat thermal
     solution less frequently.
+    """
+
+    optlam0 = None
+    """
+    Approximate wavelength.
+    
+    Around this wavelength, the solution is searched. The refractive and group
+    indexes are computed for this wavelength.
+    """
+
+    optstart = None
+    """
+    Starting wavelength for the optical mode search.
     """
 
     def __init__(self, name=''):

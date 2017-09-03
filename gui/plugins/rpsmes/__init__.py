@@ -18,6 +18,8 @@ import_dan_operation = import_module('.import', package=__name__).import_dan_ope
 from .export import export_dan_operation
 from .efm import import_efm_operation
 
+if gui.ACTIONS:
+    gui.ACTIONS.append(None)
 gui.ACTIONS.append(import_efm_operation)
 gui.ACTIONS.append(import_dan_operation)
 

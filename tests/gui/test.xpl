@@ -1,8 +1,8 @@
 <plask loglevel="detail">
 
 <defines>
-  <define name="mesaRadius" value="10."/>
-  <define name="aperture" value="{mesaRadius-6.}"/>
+  <define name="aperture" value="8"/>
+  <define name="mesa" value="{4. * aperture}"/>
   <define name="beta_def" value="19"/>
   <define name="js_def" value="1"/>
   <define name="L" value="4.0"/>
@@ -89,71 +89,6 @@
       </lattice>
     </stack>
   </cartesian3d>
-  <cylindrical2d name="GeoTE" axes="rz">
-    <stack name="stack">
-      <zero/>
-      <item path="abs123" right="{mesaRadius-1}">
-        <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
-      </item>
-      <stack name="VCSEL">
-        <stack name="top-DBR" repeat="24">
-          <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-        </stack>
-        <rectangle material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
-        <shelf>
-          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
-          <rectangle name="oxide" material="AlOx" dr="{mesaRadius-aperture}" dz="0.01603"/>
-          <gap size="12"/>
-        </shelf>
-        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
-        <rectangle material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
-        <stack name="junction" role="active">
-          <rectangle role="QW" material="In(0.2)GaAs_QW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
-          <stack repeat="4">
-            <rectangle material="GaAs" dr="{mesaRadius}" dz="0.005"/>
-            <rectangle role="QW" material="In(0.2)GaAs_QW:Si=1e18" dr="{mesaRadius}" dz="0.005"/>
-          </stack>
-        </stack>
-        <rectangle material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
-        <stack name="bottom-DBR" repeat="29">
-          <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-          <rectangle material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
-        </stack>
-        <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
-      </stack>
-      <rectangle material="GaAs:C=2e+18" dr="200." dz="150."/>
-      <rectangle name="p-contact" material="Cu" dr="2500." dz="5000."/>
-    </stack>
-  </cylindrical2d>
-  <cylindrical2d name="GeoO" axes="x,y,z" outer="extend" bottom="GaAs" top="air">
-    <align left="0" bottom="0">
-      <clip>
-        <again ref="VCSEL"/>
-      </clip>
-    </align>
-  </cylindrical2d>
-  <cartesian3d name="geo3d-1" axes="x,y,z">
-    <align>
-      <revolution>
-        <again ref="VCSEL"/>
-      </revolution>
-      <item xcenter="0" ycenter="0">
-        <arrange dy="6.0" count="8">
-          <cuboid material="GaAs" dx="44.0" dy="2.0" dz="0.5"/>
-        </arrange>
-      </item>
-    </align>
-  </cartesian3d>
-  <cartesian3d name="geo3d2" axes="long,tran,vert">
-    <align back="0" tran="0" top="0">
-      <extrusion length="10">
-        <again ref="stack"/>
-      </extrusion>
-      <cuboid material="GaAs" dlong="1" dtran="100" dvert="100"/>
-    </align>
-  </cartesian3d>
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
     <clip>
       <align x="0" y="0" top="0">
@@ -192,6 +127,54 @@
       </align>
     </clip>
   </cartesian3d>
+  <cylindrical2d name="GeoE" axes="r,z">
+    <stack>
+      <item right="{mesa/2-1}">
+        <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
+      </item>
+      <stack name="VCSEL">
+        <rectangle material="GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0700"/>
+        <stack name="top-DBR" repeat="24">
+          <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0795"/>
+          <rectangle material="GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0700"/>
+        </stack>
+        <shelf>
+          <rectangle name="aperture" material="AlAs:Si=2e+18" dr="{aperture/2}" dz="0.0160"/>
+          <rectangle name="oxide" material="AlOx" dr="{(mesa-aperture)/2}" dz="0.0160"/>
+        </shelf>
+        <rectangle material="Al(0.73)GaAs:Si=2e+18" dr="{mesa/2}" dz="0.0635"/>
+        <rectangle material="GaAs:Si=5e+17" dr="{mesa/2}" dz="0.1160"/>
+        <stack name="junction" role="active">
+          <stack repeat="4">
+            <rectangle name="QW" role="QW" material="InGaAsQW" dr="{mesa/2}" dz="0.0050"/>
+            <rectangle material="GaAs" dr="{mesa/2}" dz="0.0050"/>
+          </stack>
+          <again ref="QW"/>
+        </stack>
+        <rectangle material="GaAs:C=5e+17" dr="{mesa/2}" dz="0.1160"/>
+        <stack name="bottom-DBR" repeat="30">
+          <rectangle material="Al(0.73)GaAs:C=2e+18" dr="{mesa/2}" dz="0.0795"/>
+          <rectangle material="GaAs:C=2e+18" dr="{mesa/2}" dz="0.0700"/>
+        </stack>
+      </stack>
+      <zero/>
+      <rectangle name="p-contact" material="GaAs:C=2e+18" dr="{mesa/2}" dz="5."/>
+    </stack>
+  </cylindrical2d>
+  <cylindrical2d name="GeoT" axes="r,z">
+    <stack>
+      <item right="{mesa/2-1}">
+        <rectangle material="Au" dr="4" dz="0.0500"/>
+      </item>
+      <again ref="VCSEL"/>
+      <zero/>
+      <rectangle material="GaAs:C=2e+18" dr="2500." dz="150."/>
+      <rectangle material="Cu" dr="2500." dz="5000."/>
+    </stack>
+  </cylindrical2d>
+  <cylindrical2d name="GeoO" axes="r,z" outer="extend" bottom="GaAs" top="air">
+    <again ref="VCSEL"/>
+  </cylindrical2d>
 </geometry>
 
 <grids>
@@ -348,7 +331,7 @@ for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
 
-print(mesaRadius + 0, )
+print(mesa + 0, )
 
 print_log('data', "łóżko")
 print_log('info', "informacja")
@@ -439,7 +422,7 @@ ylabel("z [\xb5m]")
 
 new_aperture = 3.
 GEO["aperture"].dr = new_aperture
-GEO["oxide"].dr = DEF["mesaRadius"] - new_aperture
+GEO["oxide"].dr = DEF["mesa"] - new_aperture
 
 OPTICAL.lam0=982.
 threshold_voltage = scipy.optimize.brentq(loss_on_voltage, 0.5, 2., xtol=0.01)

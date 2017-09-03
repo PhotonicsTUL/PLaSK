@@ -17,6 +17,7 @@ import re
 import subprocess
 import pkgutil
 import webbrowser
+import traceback
 from datetime import datetime
 from lxml import etree
 from uuid import getnode
@@ -428,8 +429,9 @@ class MainWindow(QMainWindow):
         WINDOWS.add(new_window)
 
     def open(self, filename=None):
+
         if not filename:
-            filename = QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
+            filename = QFileDialog.getOpenFileName(self, "Open File", CURRENT_DIR,
                                                          "PLaSK file (*.xpl *.py);;"
                                                          "PLaSK structure data (*.xpl);;"
                                                          "Python script (*.py)")
@@ -840,14 +842,38 @@ if 'systemid' not in LICENSE or not LICENSE['systemid']:
     LICENSE['systemid'] = "{:X}".format(getnode())
 
 
-if os.name == 'nt':
-    def _handle_exception(exc_type, exc_value, exc_traceback):
-        if exc_type == SystemExit:
-            sys.exit(exc_value.code)
+def _handle_exception(exc_type, exc_value, exc_traceback):
+    if exc_type == SystemExit:
+        sys.exit(exc_value.code)
+    else:
+        dat = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
+        if _DEBUG:
+            msg = dat
         else:
+            msg = exc_type.__name__ + ": " + str(exc_value)
+
+        if _DEBUG and os.name != 'nt':
+            out = sys.stderr
+        else:
+            import time
+            outname = os.path.join(CURRENT_DIR,
+                                   time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log", time.localtime(time.time())))
+            out = open(outname, 'w')
+            msg += "\n\n Error details saved to:\n{}".format(outname)
+        out.write(dat)
+        out.flush()
+
+        if os.name == 'nt':
             import ctypes
             MessageBox = ctypes.windll.user32.MessageBoxA
-            MessageBox(None, str(exc_value), "PLaSK - " + exc_type.__name__, 0x10)
+            MessageBox(None, msg, "PLaSK GUI Error", 0x10)
+        elif not _DEBUG:
+            try:
+                QMessageBox.critical(None, "PLaSK GUI Error", msg)
+            except:
+                pass
+
+sys.excepthook = _handle_exception
 
 
 def main():
@@ -861,12 +887,6 @@ def main():
         _DEBUG = True
 
     if _DEBUG:
-        import traceback
-        def excepthook(exc_type, exc_val, tracebackobj):
-            msg = ''.join(traceback.format_exception(exc_type, exc_val, tracebackobj)) + '\n'
-            sys.stderr.write(msg)
-            sys.stderr.flush()
-        sys.excepthook = excepthook
         sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
 
     global APPLICATION, pysparkle
@@ -927,8 +947,6 @@ def main():
         else:
             WINDOWS.add(MainWindow())
 
-    if os.name == 'nt':
-        sys.excepthook = _handle_exception
     exit_code = APPLICATION.exec_()
 
     sys.exit(exit_code)
