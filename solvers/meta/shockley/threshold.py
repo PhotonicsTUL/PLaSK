@@ -11,8 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import collections
-
 import plask
 from plask import *
 
@@ -33,6 +31,7 @@ else:
 
 from .thermoelectric import attribute, suffix, h5open, ThermoElectric
 
+
 class ThresholdSearch(ThermoElectric):
 
     def __init__(self, name):
@@ -46,15 +45,18 @@ class ThresholdSearch(ThermoElectric):
         self.gain.inCarriersConcentration = self.diffusion.outCarriersConcentration
         self.optical.inTemperature = self.thermal.outTemperature
         self.optical.inGain = self.gain.outGain
-        self.optname = None
-        self.optstart = None
-        self.optargs = {}
+        self.vmin = None
+        self.vmax = None
+        self.optarg = None
         self.vtol = 1e-5
         self.quick = False
         self.threshold_current = None
+        self._invalidate = None
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
+            self.vmin = tag.get('vmin', self.vmin)
+            self.vmax = tag.get('vmax', self.vmax)
             self.ivb = tag['bcond']
             self.vtol = tag.get('vtol', self.vtol)
             # self.quick = tag.get('quick', self.quick)
@@ -95,6 +97,9 @@ class ThresholdSearch(ThermoElectric):
 
     def on_initialize(self):
         super(ThresholdSearch, self).on_initialize()
+        self.diffusion.initialize()
+        self.gain.initialize()
+        self.optical.initialize()
         # if quick:
         #     raise NotImplemented('Quick threshold search not implemented')
 
@@ -103,7 +108,69 @@ class ThresholdSearch(ThermoElectric):
         self.diffusion.invalidate()
         self.optical.invalidate()
 
-    def compute(self, start, save=True, invalidate=False, **kwargs):
+    def _optargs(self):
+        return {}
+
+    def _optstart(self):
+        pass
+
+    def _compute_ted(self):
+        self.initialize()
+        if self._invalidate:
+            self.thermal.invalidate()
+            self.electrical.invalidate()
+            self.diffusion.invalidate()
+            self.gain.invalidate()
+        self.optical.invalidate()
+        verr = 2. * self.electrical.maxerr
+        terr = 2. * self.thermal.maxerr
+        while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
+            verr = self.electrical.compute(self.tfreq)
+            terr = self.thermal.compute(1)
+        self.diffusion.compute_threshold()
+
+    def step(self, volt):
+        """
+        Function performing one step of the threshold search.
+
+        Args:
+            volt (float): Voltage on a specified boundary condition [V].
+
+        Returns:
+            float: Loss of a specified mode
+        """
+        self.electrical.voltage_boundary[self.ivb].value = volt
+        self._compute_ted()
+        optstart = self._optstart()
+        if self.optarg is None:
+            self.modeno = self.optical.find_mode(optstart, **self._optargs())
+        else:
+            optargs = self._optargs().copy()
+            optargs[self.optarg] = optstart
+            self.modeno = self.optical.find_mode(**optargs)
+        val = self.optical.modes[self.modeno].loss
+        plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
+        return val
+
+    def optical_determinant(self, lam):
+        """
+        Function computing determinant of the optical solver.
+
+        Args:
+             lam (float of array): Wavelength to compute the determinant for [V].
+
+        Returns:
+            float or array: Optical determinant.
+        """
+        self._compute_ted()
+        if self.optarg is None:
+            return self.optical.get_determinant(lam, **self._optargs())
+        else:
+            optargs = self._optargs().copy()
+            optargs[self.optarg] = lam
+            return self.optical.get_determinant(**optargs)
+
+    def compute(self, save=True, invalidate=False):
         """
         Execute the algorithm.
 
@@ -113,8 +180,6 @@ class ThresholdSearch(ThermoElectric):
         with zero optical losses.
 
         Args:
-            start (float or tuple of 2 floats): Voltage staring point or voltage
-                limits for the threshold search.
             save (bool or str): If `True` the computed fields are saved to the
                 HDF5 file named after the script name with the suffix denoting
                 either the batch job id or the current time if no batch system
@@ -122,8 +187,6 @@ class ThresholdSearch(ThermoElectric):
                 as a string.
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
-            **optargs (dict): Other arguments for optical solver's ``find_mode``
-                              and ``get_determinant`` methods.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
@@ -138,44 +201,15 @@ class ThresholdSearch(ThermoElectric):
             self.electrical.invalidate()
             self.diffusion.invalidate()
             self.optical.invalidate()
-
+        self._invalidate = invalidate
         self.initialize()
 
-        optargs = self.optargs.copy()
-        optargs.update(kwargs)
-
-        def func(volt):
-            """Function to search zero of"""
-            self.electrical.voltage_boundary[self.ivb].value = volt
-            if invalidate:
-                self.thermal.invalidate()
-                self.electrical.invalidate()
-                self.diffusion.invalidate()
-                self.gain.invalidate()
-            self.optical.invalidate()
-            verr = 2. * self.electrical.maxerr
-            terr = 2. * self.thermal.maxerr
-            while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
-                verr = self.electrical.compute(self.tfreq)
-                terr = self.thermal.compute(1)
-            try: self.diffusion.compute_threshold()
-            except AttributeError: pass
-            optstart = self.optstart() if isinstance(self.optstart, collections.Callable) else self.optstart
-            if self.optname is None:
-                self.modeno = self.optical.find_mode(optstart, **optargs)
-            else:
-                optargs[self.optname] = optstart
-                self.modeno = self.optical.find_mode(**optargs)
-            val = self.optical.modes[self.modeno].loss
-            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
-            return val
-
-        try:
-            vmin, vmax = start
-        except TypeError:
-            result = scipy.optimize.newton(func, start, tol=self.vtol)
+        if (self.vmin is None) != (self.vmax is None):
+            raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
+        if self.vmin is None:
+            result = scipy.optimize.newton(self.step, self.electrical.voltage_boundary[self.ivb].value, tol=self.vtol)
         else:
-            result = scipy.optimize.brentq(func, vmin, vmax, xtol=self.vtol)
+            result = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
 
         if save:
@@ -302,37 +336,85 @@ class ThresholdSearchCyl(ThresholdSearch):
     solution less frequently.
     """
 
-    optlam0 = None
+    vmin = None
     """
-    Approximate wavelength.
+    Minimum voltage to search threshold for.
     
-    Around this wavelength, the solution is searched. The refractive and group
-    indexes are computed for this wavelength.
+    It should be below the threshold.
     """
 
-    optstart = None
+    vmax = None
     """
-    Starting wavelength for the optical mode search.
+    Maximum voltage to search threshold for.
+    
+    It should be above the threshold.
+    """
+
+    maxlam = attribute("lam0")
+    """
+    Maximum wavelength considered for the optical mode search.
+    """
+
+    dlam = 0.02
+    """
+    Wavelength step.
+      
+    Step, by which the wavelength is sweep while searching for the approximate mode.
+    """
+
+    lpm = 0
+    """
+      Angular mode number $m$.
+       
+      0 for LP0x, 1 for LP1x, etc.
+    """
+
+    lpn = 1
+    """
+      Radial mode number $n$.
+       
+      1 for LPx1, 2 for LPx2, etc.
     """
 
     def __init__(self, name=''):
         super(ThresholdSearchCyl, self).__init__(name)
-        self.optlam0 = None
-        self.optname = 'lam'
+        self.optarg = 'lam'
+        self.maxlam = None
+        self.dlam = 0.02
+        self.lpm = 0
+        self.lpn = 1
 
-    def on_initialize(self):
-        super(ThresholdSearchCyl, self).on_initialize()
-        if self.optstart is None:
-            self.optstart = self.optlam0
-        self.optical.lam0 = self.optlam0() if isinstance(self.optlam0, collections.Callable) else self.optlam0
+    # def on_initialize(self):
+    #     super(ThresholdSearchCyl, self).on_initialize()
+
+    def _optstart(self):
+        lam = self.maxlam if self.maxlam is not None else self.optical.lam0
+        n = 0
+        prev = 0.
+        decr = False
+        while n < self.lpn and lam.real > 0.:
+            curr = abs(self.optical.get_determinant(lam=lam, m=self.lpm))
+            if decr and curr > prev:
+                n += 1
+            decr = curr < prev
+            prev = curr
+            lam -= self.dlam
+        if n == self.lpn:
+            return lam + 2. * self.dlam
+        raise ValueError("Approximation of mode LP{.lpm}{.lpn} not found".format(self))
+
+    def _optargs(self):
+        return dict(m=self.lpm)
 
     def _parse_xpl(self, tag, manager):
         if tag == 'optical':
-            self.optlam0 = tag['lam0']
-            self.optstart = tag.get('start', None)
-            if 'm' in tag: self.optargs['m'] = tag['m']
+            self._read_attr(tag, 'lam0', self.optical, float)
             self._read_attr(tag, 'vlam', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
+            self.maxlam = tag.get('maxlam', self.maxlam)
+            self.dlam = tag.get('dlam', self.dlam)
+            self.lpm = tag.get('m', self.lpm)
+            self.lpn = tag.get('n', self.lpn)
         else:
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 

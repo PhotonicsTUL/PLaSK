@@ -45,6 +45,7 @@ def h5open(filename, group):
         h5file = filename
         filename = h5file.filename
     else:
+        plask.print_log(plask.LOG_INFO, "Saving results to file '{}'".format(filename))
         h5file = h5py.File(filename, 'a')
     orig_group = group; idx = 1
     while group in h5file:
@@ -80,7 +81,7 @@ class ThermoElectric(plask.Solver):
                 try:
                     val = type(tag[attr])
                 except ValueError:
-                    raise plask.XMLError(tag, "{}: {} attribute {} has illegal value '{}'".format(
+                    raise plask.XMLError("{}: {} attribute {} has illegal value '{}'".format(
                         tag, type.__name__.title(), attr, tag[attr]))
                 else:
                     setattr(solver, pyattr, val)
@@ -133,7 +134,8 @@ class ThermoElectric(plask.Solver):
             self.electrical.voltage_boundary.read_from_xpl(tag, manager)
 
     def on_initialize(self):
-        pass
+        self.thermal.initialize()
+        self.electrical.initialize()
 
     def on_invalidate(self):
         self.thermal.invalidate()

@@ -89,7 +89,7 @@
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
-    <optical lam0="980.5"/>
+    <optical lam0="980." maxlam="981."/>
     <voltage>
       <condition value="1.4">
         <place side="bottom" object="p-contact"/>
@@ -101,7 +101,7 @@
     <temperature>
       <condition place="bottom" value="300."/>
     </temperature>
-    <root bcond="0" vmin="1.4" vmax="1.6"/>
+    <root bcond="0" vmax="1.6" vmin="1.4"/>
     <junction beta0="11" js0="1"/>
     <diffusion accuracy="0.005" fem-method="parabolic"/>
     <gain lifetime="0.5" matrix-elem="10"/>
@@ -109,12 +109,8 @@
 </solvers>
 
 <script><![CDATA[
-plot_geometry(GEO.GeoE, margin=0.01)
-defmesh = MSH.default(GEO.GeoE.item)
-plot_mesh(defmesh, color="0.75")
-plot_boundary(SOLVER.electrical.voltage_boundary, defmesh,
-              SOLVER.electrical.geometry, color="b", marker="D")
-window_title("Electrical mesh")
+# lams = linspace(975., 985., 101)
+# plot(lams, abs(SOLVER.optical_determinant(lams)))
 
 threshold_voltage = SOLVER.compute()
 threshold_current = SOLVER.threshold_current
@@ -126,25 +122,7 @@ SOLVER.plot_optical_field()
 axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
 window_title("Light Intensity")
 
-
-# Find threshold for a new aperture
-
-new_aperture = 6.
-GEO.aperture.dr = new_aperture / 2.
-GEO.oxide.dr = (mesa - new_aperture) / 2.
-
-threshold_voltage = SOLVER.compute()
-threshold_current = SOLVER.threshold_current
-print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
-    .format(threshold_voltage, threshold_current))
-
-figure()
-SOLVER.plot_optical_field()
-axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
-window_title("Light Intensity (new aperture)")
-
 show()
-
 ]]></script>
 
 </plask>

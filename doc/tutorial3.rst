@@ -152,13 +152,13 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <temperature>
        <condition place="bottom" value="300."/>
      </temperature>
-     <root bcond="0"/>
+     <root bcond="0" vmin="1.4" vmax="1.6"/>
      <junction beta0="11" js0="1"/>
      <diffusion accuracy="0.005" fem-method="parabolic"/>
      <gain lifetime="0.5" matrix-elem="10"/>
    </meta>
 
-The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980.5 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.4 V) during the threshold search.
+The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980.5 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.4 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries.
 
 ---------------------------------------------------------------------------
 
@@ -207,17 +207,13 @@ With having the geometries and meshes prepared, we can move on to scripting the 
 
 .. code-block:: python
 
-   volts = 1.4, 1.6
-
-   threshold_voltage = SOLVER.compute(volts)
-
-The variable ``volts`` passed as a method argument defines the voltage range, in which we expect to find the threshold. This voltage will be applied on the boundary condition indicated in the solver configuration.
+   threshold_voltage = SOLVER.compute()
 
 We need to add a little more code to see the actual results:
 
 .. code-block:: python
 
-   threshold_voltage = SOLVER.compute(volts)
+   threshold_voltage = SOLVER.compute()
    threshold_current = SOLVER.threshold_current
    print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
        .format(threshold_voltage, threshold_current))
@@ -249,7 +245,7 @@ Now we just have to repeat the calculations with the drawing part and to move th
 
 .. code-block:: python
 
-   threshold_voltage = SOLVER.compute(volts)
+   threshold_voltage = SOLVER.compute()
    threshold_current = SOLVER.threshold_current
    print("New aperture:  Vth = {:.3f} V,  Ith = {:.3f} mA"
        .format(threshold_voltage, threshold_current))

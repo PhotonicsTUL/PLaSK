@@ -61,15 +61,6 @@
   </template>
 
   <template name="ThresholdSearch" category="meta" lib="shockley">
-    <tag name="root" label="Threshold root-finder parameters">
-      Configuration of the root-finder used in threshold search.
-      <attr name="bcond" label="Voltage boundary to vary" type="int" required="yes">
-        Number of the voltage boundary condition to vary during the threshold search
-      </attr>
-      <attr name="vtol" label="Maximum voltage error" type="float" unit="V" default="1e-5">
-        Tolerance on voltage in the root search.
-      </attr>
-    </tag>
     <tag name="junction" label="Configuration of the Effective Model of p-n Junction">
       Configuration of the effective model of p-n junction.
       <attr name="beta#" label="Junction coefficients&lt;br/&gt;(one per line)" type="float" unit="1/V">Junction coefficients. This is an inverse of the junction thermal voltage.</attr>
@@ -354,11 +345,22 @@
     </tag>
     <tag name="optical" label="Optical solver configuration">
       Configuration of the optical solver
+      <group label="LP&lt;i&gt;mn&lt;/i&gt; mode identification">
+        <attr name="m" label="&lt;i&gt;m&lt;/i&gt; (angular)" type="int" default="0">
+          Angular mode number &lt;i&gt;m&lt;/i&gt; (0 for LP0x, 1 for LP1x, etc.).
+        </attr>
+        <attr name="n" label="&lt;i&gt;n&lt;/i&gt; (radial)" type="int" default="1">
+          Radial mode number &lt;i&gt;n&lt;/i&gt; (1 for LPx1, 2 for LPx2, etc.).
+        </attr>
+      </group>
       <attr name="lam0" label="Approximate wavelength" type="float" unit="nm" required="yes">
         Approximate wavelength, around which the solution is searched. The refractive and group indexes are computed for this wavelength
       </attr>
-      <attr name="start" label="Starting wavelength" type="float" unit="nm">
-        Starting wavelength for the optical mode search.
+      <attr name="maxlam" label="Maximum wavelength" type="float" unit="nm">
+        Maximum wavelength considered for the optical mode search.
+      </attr>
+      <attr name="dlam" label="Wavelength step" type="float" unit="nm" default="0.02">
+        Step, by which the wavelength is sweep while searching for the approximate mode.
       </attr>
       <attr name="vlam" label="Vertical wavelength" type="float" unit="nm">
         &quot;Vertical wavelength&quot; i.e. the wavelength what would be in the absence of lateral confinement;
@@ -367,8 +369,22 @@
       <attr name="vat" label="Vertical solution coord" type="float" unit="µm">
         Horizontal position of at which the vertical part of the field is calculated.
       </attr>
-      <attr name="m" label="Angular mode number" type="int">
-        Angular mode number (0 for LP0x, 1 for LP1x, etc.).
+    </tag>
+    <tag name="root" label="Threshold root-finder parameters">
+      Configuration of the root-finder used in threshold search.
+      <attr name="bcond" label="Voltage boundary to vary" type="int" required="yes">
+        Number of the voltage boundary condition to vary during the threshold search
+      </attr>
+      <group label="Voltage range" unit="V">
+        <attr name="vmin" label="min.">
+          Minimum voltage to search threshold for. It should be below the threshold.
+        </attr>
+        <attr name="vmax" label="max.">
+          Maximum voltage to search threshold for. It should be above the threshold.
+        </attr>
+      </group>
+      <attr name="vtol" label="Maximum voltage error" type="float" unit="V" default="1e-5">
+        Tolerance on voltage in the root search.
       </attr>
     </tag>
     <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D" geometry="geometry:electrical" mesh="mesh:electrical"/>
