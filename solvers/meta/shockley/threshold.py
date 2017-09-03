@@ -111,8 +111,8 @@ class ThresholdSearch(ThermoElectric):
     def _optargs(self):
         return {}
 
-    def _optstart(self):
-        pass
+    def get_lam(self):
+        raise NotImplemented('get_lam')
 
     def _compute_ted(self):
         self.initialize()
@@ -141,7 +141,7 @@ class ThresholdSearch(ThermoElectric):
         """
         self.electrical.voltage_boundary[self.ivb].value = volt
         self._compute_ted()
-        optstart = self._optstart()
+        optstart = self.get_lam()
         if self.optarg is None:
             self.modeno = self.optical.find_mode(optstart, **self._optargs())
         else:
@@ -387,7 +387,22 @@ class ThresholdSearchCyl(ThresholdSearch):
     # def on_initialize(self):
     #     super(ThresholdSearchCyl, self).on_initialize()
 
-    def _optstart(self):
+    def get_lam(self):
+        """
+        Get approximate wavelength for optical computations.
+
+        This method returns approximate wavelength for optical computations.
+        By default if browses the wavelength range starting from :attr:`maxlam`,
+        decreasing it by :attr:`dlam` until radial mode :attr:`lpn` is found.
+
+        You can override this method to use custom mode approximation.
+
+        Example:
+             >>> solver = ThresholdSearchCyl()
+             >>> solver.get_lam = lambda: 980.
+             >>> solver.compute()
+        """
+
         lam = self.maxlam if self.maxlam is not None else self.optical.lam0
         n = 0
         prev = 0.
