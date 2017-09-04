@@ -84,7 +84,7 @@ class FieldWidget(QWidget):
         vbox.setContentsMargins(0, 0, 2, 1)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
-        self.cax, _ = matplotlib.colorbar.make_axes_gridspec(self.axes)
+        self.cax = None
 
         self.aspect_locked = False
 
@@ -124,6 +124,10 @@ class FieldWidget(QWidget):
             self.toolbar.enable_component(len(field.array.shape) > 3)
 
         if is_profile:
+            if self.cax is not None:
+                self.figure.clf()
+                self.axes = self.figure.add_subplot(111, adjustable='datalim')
+                self.cax = None
             self.controller.plotted = plask.plot_profile(field, axes=self.axes, comp=self.toolbar.comp)
         else:
             self.controller.plotted = plask.plot_field(field, axes=self.axes, plane=plane, comp=self.toolbar.comp)
@@ -135,6 +139,8 @@ class FieldWidget(QWidget):
                                         plane=plane, lw=1.0, color='w', alpha=0.25)
                 except:
                     pass
+            if self.cax is None:
+                self.cax, _ = matplotlib.colorbar.make_axes_gridspec(self.axes)
             self.figure.colorbar(mappable=self.controller.plotted, ax=self.axes, cax=self.cax)
 
         self.plotted_field = field
