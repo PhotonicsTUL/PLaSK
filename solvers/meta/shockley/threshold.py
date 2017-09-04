@@ -11,14 +11,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import plask
-from plask import *
-
-import thermal.static
-import electrical.shockley
 import electrical.diffusion
+import electrical.shockley
 import gain.freecarrier
 import optical.effective
+import thermal.static
+
+from plask import *
 
 try:
     import scipy
@@ -29,7 +28,7 @@ except ImportError:
 else:
     import scipy.optimize
 
-from .thermoelectric import attribute, suffix, h5open, ThermoElectric
+from .thermoelectric import attribute, h5open, ThermoElectric
 
 
 class ThresholdSearch(ThermoElectric):
@@ -52,6 +51,7 @@ class ThresholdSearch(ThermoElectric):
         self.quick = False
         self.threshold_current = None
         self._invalidate = None
+        self.maxiter = 50
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -59,6 +59,7 @@ class ThresholdSearch(ThermoElectric):
             self.vmax = tag.get('vmax', self.vmax)
             self.ivb = tag['bcond']
             self.vtol = tag.get('vtol', self.vtol)
+            self.maxiter = tag.get('maxiter', self.maxiter)
             # self.quick = tag.get('quick', self.quick)
         elif tag == 'diffusion':
             self._read_attr(tag, 'fem-method', self.diffusion, str, 'fem_method')
@@ -208,17 +209,30 @@ class ThresholdSearch(ThermoElectric):
             raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
         if self.vmin is None:
             volt = self.electrical.voltage_boundary[self.ivb].value
-            self.threshold_voltage = scipy.optimize.newton(self.step, volt, tol=self.vtol)
+            self.threshold_voltage = scipy.optimize.newton(self.step, volt, tol=self.vtol, maxiter=self.maxiter)
         else:
-            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol)
-        self.threshold_current = self.electrical.get_total_current()
+            res, info = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol,
+                                                                 full_output=True)
+            if not info.converged:
+                raise RuntimeError("Failed to converge after {} iterations, value is {}".format(self.maxiter, res))
+            self.threshold_voltage = res
+
+        self.threshold_current = abs(self.electrical.get_total_current())
 
         if save:
-            self.save(None if save is True else save)
+            filename = self.save(None if save is True else save)
+            if filename.endswith('.h5'): filename = filename[:-3]
+            self._save_info(filename)
 
         plask.print_log('important', "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA"
                         .format(self.threshold_voltage, self.threshold_current))
         return self.threshold_voltage
+
+    def _save_info(self, filename):
+        with open(filename + '.out', 'w') as out:
+            out.write("Threshold voltage [V]:     {:8.3f}\n".format(self.threshold_voltage))
+            out.write("Threshold current [mA]:    {:8.3f}\n".format(self.threshold_current))
+            out.write("Maximum temperature [K]:   {:8.3f}\n".format(max(self.thermal.outTemperature(self.thermal.mesh))))
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=(800, 600)):
         """
@@ -235,7 +249,7 @@ class ThresholdSearch(ThermoElectric):
             optical_resolution (tuple of ints): Number of points in horizontal and vertical directions
                 for optical field.
         """
-        h5file, group = h5open(filename, group)
+        h5file, group, filename = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
         for no, mesh in levels:
@@ -250,6 +264,7 @@ class ThresholdSearch(ThermoElectric):
         ofield = self.optical.outLightMagnitude(self.modeno, omesh)
         plask.save_field(ofield, h5file, group + '/LightMagnitude')
         h5file.close()
+        return filename
 
     def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
         """
@@ -449,6 +464,12 @@ class ThresholdSearchCyl(ThresholdSearch):
             self.lpn = tag.get('n', self.lpn)
         else:
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
+
+    def _save_info(self, filename):
+        super(ThresholdSearchCyl, self)._save_info(filename)
+        with open(filename + '.out', 'a') as out:
+            out.write("LP{}{} mode wavelength [nm]: {:8.3f}\n".format(self.lpm, self.lpn,
+                                                                      self.optical.modes[self.modeno].lam.real))
 
 
 __all__ = 'ThresholdSearchCyl',

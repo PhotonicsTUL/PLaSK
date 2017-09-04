@@ -386,6 +386,9 @@
       <attr name="vtol" label="Maximum voltage error" type="float" unit="V" default="1e-5">
         Tolerance on voltage in the root search.
       </attr>
+      <attr name="maxiter" label="Max. iterations" type="int" default="50">
+        Maximum number of root finding iterations.
+      </attr>
     </tag>
     <bcond name="voltage" label="Voltage" group="Electrical" type="Rectangular2D" geometry="geometry:electrical" mesh="mesh:electrical"/>
     <bcond name="temperature" label="Temperature" group="Thermal" type="Rectangular2D" geometry="geometry:thermal" mesh="mesh:thermal"/>
