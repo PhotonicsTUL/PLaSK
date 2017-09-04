@@ -229,7 +229,7 @@ class ThresholdSearch(ThermoElectric):
         return self.threshold_voltage
 
     def _save_info(self, filename):
-        with open(filename + '.out', 'w') as out:
+        with open(filename + '.txt', 'w') as out:
             out.write("Threshold voltage [V]:     {:8.3f}\n".format(self.threshold_voltage))
             out.write("Threshold current [mA]:    {:8.3f}\n".format(self.threshold_current))
             out.write("Maximum temperature [K]:   {:8.3f}\n".format(max(self.thermal.outTemperature(self.thermal.mesh))))
@@ -467,7 +467,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def _save_info(self, filename):
         super(ThresholdSearchCyl, self)._save_info(filename)
-        with open(filename + '.out', 'a') as out:
+        with open(filename + '.txt', 'a') as out:
             out.write("LP{}{} mode wavelength [nm]: {:8.3f}\n".format(self.lpm, self.lpn,
                                                                       self.optical.modes[self.modeno].lam.real))
 
