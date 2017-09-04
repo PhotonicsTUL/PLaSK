@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 
 import plask
 
-from gui import CURRENT_DIR, ACTIONS
+import gui
 from gui.qt import QT_API
 from gui.qt.QtCore import Qt
 from gui.qt.QtGui import *
@@ -93,43 +93,45 @@ class FieldWidget(QWidget):
         self.axes.clear()
         plane = None
 
+        is_profile = False
+
         if isinstance(field.mesh, plask.mesh.Mesh1D):
             self._actions['select_component'].setVisible(len(field.array.shape) > 1)
-            self.controller.plotted_field = plask.plot_profile(field, axes=self.axes, comp=self.toolbar.comp)
-
-        else:
-            if isinstance(field.mesh, plask.mesh.Rectangular2D):
+            is_profile = True
+        elif isinstance(field.mesh, plask.mesh.Rectangular2D):
+            if len(field.mesh.axis0) == 1 or len(field.mesh.axis1) == 1:
+                is_profile = True
+            elif reset_zoom:
+                xlim = field.mesh.axis0[0], field.mesh.axis0[-1]
+                ylim = field.mesh.axis1[0], field.mesh.axis1[-1]
+            self.toolbar.enable_component(len(field.array.shape) > 2)
+        elif isinstance(field.mesh, plask.mesh.Rectangular3D):
+            axs = field.mesh.axis0, field.mesh.axis1, field.mesh.axis2
+            axl = tuple(len(a) for a in axs)
+            axi = tuple(i for i in range(3) if axl[i] != 1)
+            if axi == (0, 1): axi = (1, 0)
+            if len(axi) == 1:
+                is_profile = True
+            elif len(axi) == 2:
                 if reset_zoom:
-                    xlim = field.mesh.axis0[0], field.mesh.axis0[-1]
-                    ylim = field.mesh.axis1[0], field.mesh.axis1[-1]
-                self.toolbar.enable_component(len(field.array.shape) > 2)
-            elif isinstance(field.mesh, plask.mesh.Rectangular3D):
-                if len(field.mesh.axis2) == 1:
-                    plane = '10'
-                    if reset_zoom:
-                        xlim = field.mesh.axis1[0], field.mesh.axis1[-1]
-                        ylim = field.mesh.axis0[0], field.mesh.axis0[-1]
-                elif len(field.mesh.axis1) == 1:
-                    plane = '02'
-                    if reset_zoom:
-                        xlim = field.mesh.axis0[0], field.mesh.axis0[-1]
-                        ylim = field.mesh.axis2[0], field.mesh.axis2[-1]
-                elif len(field.mesh.axis0) == 1:
-                    plane = '12'
-                    if reset_zoom:
-                        xlim = field.mesh.axis1[0], field.mesh.axis1[-1]
-                        ylim = field.mesh.axis2[0], field.mesh.axis2[-1]
-                else: raise ValueError("Field mesh must have one dimension equal to 1")
-                self.toolbar.enable_component(len(field.array.shape) > 3)
-            self.controller.plotted_field = plask.plot_field(field, axes=self.axes, plane=plane, comp=self.toolbar.comp)
+                    xlim = axs[axi[0]][0], axs[axi[0]][-1]
+                    ylim = axs[axi[1]][0], axs[axi[1]][-1]
+                plane = '{}{}'.format(*axi)
+            else:
+                raise ValueError("Field mesh must have one dimension equal to 1")
+            self.toolbar.enable_component(len(field.array.shape) > 3)
+
+        if is_profile:
+            self.controller.plotted = plask.plot_profile(field, axes=self.axes, comp=self.toolbar.comp)
+        else:
+            self.controller.plotted = plask.plot_field(field, axes=self.axes, plane=plane, comp=self.toolbar.comp)
             self.axes.set_xlim(*xlim)
             self.axes.set_ylim(*ylim)
             if geometry is not None:
                 try:
                     plask.plot_geometry(axes=self.axes, geometry=geometry, fill=False,
-                                        plane=plane, lw=1.0, color='w', alpha=0.35)
-                except:
-                    pass
+                                        plane=plane, lw=1.0, color='w', alpha=0.25)
+                except: pass
 
         self.plotted_field = field
         self.plotted_geometry = geometry
@@ -155,6 +157,7 @@ class ResultsWindow(QMainWindow):
 
     def __init__(self, filename, parent=None):
         super(ResultsWindow, self).__init__(parent)
+        self.setWindowTitle(filename)
         self.plotted_field = None
 
         self.h5file = h5py.File(filename, 'r')
@@ -257,7 +260,7 @@ class AnalyzeResultsAction(QAction):
         self.triggered.connect(self.execute)
 
     def execute(self):
-        filename = QFileDialog.getOpenFileName(None, "Open HDF5 File", CURRENT_DIR, "HDF5 file (*.h5)")
+        filename = QFileDialog.getOpenFileName(None, "Open HDF5 File", gui.CURRENT_DIR, "HDF5 file (*.h5)")
         if type(filename) == tuple: filename = filename[0]
         if not filename: return
 
@@ -265,6 +268,6 @@ class AnalyzeResultsAction(QAction):
         window.show()
 
 
-if ACTIONS:
-    ACTIONS.append(None)
-ACTIONS.append(AnalyzeResultsAction)
+if gui.ACTIONS:
+    gui.ACTIONS.append(None)
+gui.ACTIONS.append(AnalyzeResultsAction)

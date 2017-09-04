@@ -16,6 +16,7 @@ from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...utils.qthread import BackgroundTask, Lock
 from ...utils.config import CONFIG
+
 try:
     import jedi
 except ImportError:
@@ -23,6 +24,7 @@ except ImportError:
 
 
 JEDI_MUTEX = QMutex()
+
 
 PREAMBLE = """\
 from pylab import *
@@ -33,8 +35,10 @@ from plask import geometry, mesh, material, flow, phys, algorithm
 from plask.pylab import *
 from plask.hdf5 import *
 """
+
+
 def preload_jedi_modules():
-    with Lock(JEDI_MUTEX) as lck:
+    with Lock(JEDI_MUTEX):
         jedi.Script(PREAMBLE, 8, 0, None).completions()
 
 

@@ -40,9 +40,7 @@ class BackgroundTask(object):
     def task_finished(self):
         del self.thread
         if self.callback is not None:
-            if self.result is None:
-                self.callback()
-            elif type(self.result) is tuple:
+            if type(self.result) is tuple:
                 self.callback(*self.result)
             else:
                 self.callback(self.result)

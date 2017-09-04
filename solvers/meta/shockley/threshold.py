@@ -215,9 +215,11 @@ class ThresholdSearch(ThermoElectric):
         if save:
             self.save(None if save is True else save)
 
+        plask.print_log('result',
+                        "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA".format(result, self.threshold_current))
         return result
 
-    def save(self, filename=None, group='ThresholdSearch'):
+    def save(self, filename=None, group='ThresholdSearch', optical_resolution=(800, 600)):
         """
         Save the computation results to the HDF5 file.
 
@@ -228,18 +230,31 @@ class ThresholdSearch(ThermoElectric):
                 the current time if no batch system is used.
 
             group (str): HDF5 group to save the data under.
+
+            optical_resolution (tuple of ints): Number of points in horizontal and vertical directions
+                for optical field.
         """
         h5file, group = h5open(filename, group)
-        super(ThresholdSearch, self).save(h5file, group)
+        levels = self._save_thermoelectric(h5file, group)
+        for name, mesh in levels:
+            value = self.diffusion.outCarriersConcentration(mesh)
+            plask.save_field(value, h5file, group + '/Junction'+name+'CarriersConcentration')
+        for name, mesh in levels:
+            value = self.gain.outGain(mesh, self.optical.lam0.real)
+            plask.save_field(value, h5file, group + '/Junction'+name+'Gain')
+        obox = self.optical.geometry.bbox
+        omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
+                                         plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
+        ofield = self.optical.outLightMagnitude(self.modeno, omesh)
+        plask.save_field(ofield, h5file, group + '/LightMagnitude')
+        h5file.close()
 
-    def plot_optical_field(self, hpoints=800, vpoints=600, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
+    def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
         """
         Plot computed optical mode field at threshold.
 
         Args:
-            hpoints (int): Number of points to plot in vertical plot direction.
-
-            vpoints (int): Number of points to plot in horizontal plot direction.
+            resolution (tuple of ints): Number of points in horizontal and vertical directions.
 
             geometry_color (str or ``None``): Matplotlib color specification
                 for the geometry. If ``None``, structure is not plotted.
@@ -250,8 +265,8 @@ class ThresholdSearch(ThermoElectric):
         """
 
         box = self.optical.geometry.bbox
-        intensity_mesh = plask.mesh.Rectangular2D(plask.mesh.Regular(box.left, box.right, hpoints),
-                                                  plask.mesh.Regular(box.bottom, box.top, vpoints))
+        intensity_mesh = plask.mesh.Rectangular2D(plask.mesh.Regular(box.left, box.right, resolution[0]),
+                                                  plask.mesh.Regular(box.bottom, box.top, resolution[1]))
         field = self.optical.outLightMagnitude(self.modeno, intensity_mesh)
         plask.plot_field(field, **kwargs)
         plask.plot_geometry(self.optical.geometry, color=geometry_color, alpha=geometry_alpha)
@@ -350,7 +365,7 @@ class ThresholdSearchCyl(ThresholdSearch):
     It should be above the threshold.
     """
 
-    maxlam = attribute("lam0")
+    maxlam = attribute("optical.lam0")
     """
     Maximum wavelength considered for the optical mode search.
     """

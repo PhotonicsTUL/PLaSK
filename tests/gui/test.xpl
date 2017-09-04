@@ -188,7 +188,7 @@
     </refinements>
   </generator>
   <mesh name="diffusion" type="regular">
-    <axis start="0" stop="{mesaRadius}" num="200"></axis>
+    <axis start="0" stop="{mesa}" num="200"></axis>
   </mesh>
   <generator method="divide" name="optical" type="rectangular2d">
     <prediv by0="10" by1="3"/>
@@ -213,7 +213,7 @@
 
 <solvers>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
-    <geometry ref="GeoTE"/>
+    <geometry ref="GeoT"/>
     <mesh ref="default"/>
     <temperature>
       <condition value="320.">

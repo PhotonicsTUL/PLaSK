@@ -265,7 +265,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
     if axes is None:
         if figure is None:
-            axes = matplotlib.pylab.gca()
+            axes = gca()
         else:
             axes = figure.add_subplot(111)
 
@@ -336,6 +336,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
 
+    if axes == gca(): sci(result)
     return result
 
 
@@ -410,7 +411,7 @@ def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kw
 
     if axes is None:
         if figure is None:
-            axes = matplotlib.pylab.gca()
+            axes = gca()
         else:
             axes = figure.add_subplot(111)
 
@@ -422,7 +423,7 @@ def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kw
         return axes.plot(axis, data.ravel(), **kwargs)
 
 
-def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
+def plot_vectors(field, plane=None, axes=None, figure=None, angles='xy', scale_units='xy', **kwargs):
     """
     Plot vector field with arrows.
 
@@ -438,6 +439,13 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
                      be flat in this plane i.e. all its poinst must lie at the same
                      level alongside the axis perpendicular to the specified plane.
 
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
         angles (str): This is equivalent to the ``angles`` argument of ``quiver``,
                       however, the default value is 'xy', which makes more sense
                       for the physical fields.
@@ -447,6 +455,12 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
 
         **kwargs: Keyword arguments passed to ``quiver``.
     """
+
+    if axes is None:
+        if figure is None:
+            axes = gca()
+        else:
+            axes = figure.add_subplot(111)
 
     m = field.mesh
 
@@ -466,16 +480,18 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
     else:
         raise NotImplementedError("mesh type not supported")
 
-    axes = matplotlib.pylab.gca()
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
+    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
-    return quiver(array(xaxis), array(yaxis), data[:,:,0].real, data[:,:,1].real, angles=angles, scale_units=scale_units, **kwargs)
+    result = axes.quiver(array(xaxis), array(yaxis), data[:,:,0].real, data[:,:,1].real,
+                         angles=angles, scale_units=scale_units, **kwargs)
+    if axes == gca(): sci(result)
+    return result
 
 
-def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
+def plot_stream(field, plane=None, axes=None, figure=None, scale=8.0, color='k', **kwargs):
     """
     Plot vector field as a streamlines.
 
@@ -491,12 +507,25 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
                      be flat in this plane i.e. all its poinst must lie at the same
                      level alongside the axis perpendicular to the specified plane.
 
+        axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
+                (the default), new axes are created.
+
+        figure (Figure): Matplotlib destination figure. This parameter is
+                ignored if `axes` are given. In *None*, the geometry
+                is plotted to the current figure.
+
         scale (float): Scale by which the streamlines widths are multiplied.
 
         color (str): Color of the streamlines.
 
         **kwargs: Keyword arguments passed to ``streamplot``.
     """
+
+    if axes is None:
+        if figure is None:
+            axes = gca()
+        else:
+            axes = figure.add_subplot(111)
 
     m = field.mesh
 
@@ -527,16 +556,18 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
     if color == 'norm':
         color = norm
 
-    axes = matplotlib.pylab.gca()
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
+    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
     if scale:
-        return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)
+        result = axes.streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)
     else:
-        return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, color=color, **kwargs)
+        result = axes.streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, color=color, **kwargs)
+
+    if axes == gca(): sci(result.lines)
+    return result
 
 
 def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=None, axes=None, figure=None, zorder=4, **kwargs):
@@ -592,7 +623,7 @@ def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=Non
 
     if axes is None:
         if figure is None:
-            axes = matplotlib.pylab.gca()
+            axes = gca()
         else:
             axes = figure.add_subplot(111)
 
@@ -665,7 +696,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
     if axes is None:
         if figure is None:
-            axes = matplotlib.pylab.gca()
+            axes = gca()
         else:
             axes = figure.add_subplot(111)
 

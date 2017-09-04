@@ -90,6 +90,7 @@
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
     <optical lam0="980.5"/>
+    <root bcond="0" vmax="1.6" vmin="1.4"/>
     <voltage>
       <condition value="1.4">
         <place side="bottom" object="p-contact"/>
@@ -101,7 +102,6 @@
     <temperature>
       <condition place="bottom" value="300."/>
     </temperature>
-    <root bcond="0" vmin="1.4" vmax="1.6"/>
     <junction beta0="11" js0="1"/>
     <diffusion accuracy="0.005" fem-method="parabolic"/>
     <gain lifetime="0.5" matrix-elem="10"/>
@@ -118,7 +118,7 @@ window_title("Electrical mesh")
 
 threshold_voltage = SOLVER.compute()
 threshold_current = SOLVER.threshold_current
-print("Vth = {:.3f} V,  Ith = {:.3f} 4mA"
+print("Vth = {:.3f} V,  Ith = {:.3f} mA"
     .format(threshold_voltage, threshold_current))
 
 figure()

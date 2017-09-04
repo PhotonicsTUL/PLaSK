@@ -386,7 +386,10 @@ class _Importer(object):
                         deeper_paths.append(new)
                 return follow_path(directories, deeper_paths)
 
-        with open(os.path.join(found_path, '__init__.py'), 'rb') as f:
+        found_path_init = os.path.join(found_path, '__init__.py')
+        if not os.path.exists(found_path_init):
+            return []
+        with open(found_path_init, 'rb') as f:
             content = common.source_to_unicode(f.read())
             # these are strings that need to be used for namespace packages,
             # the first one is ``pkgutil``, the second ``pkg_resources``.
@@ -461,6 +464,8 @@ class _Importer(object):
             # is a directory module
             if is_package_directory:
                 path = os.path.join(path, '__init__.py')
+                if not os.path.exists(path):
+                    raise ModuleNotFound(s)
                 with open(path, 'rb') as f:
                     source = f.read()
             else:

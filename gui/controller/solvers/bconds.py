@@ -248,57 +248,67 @@ class BoundaryConditionsDialog(QDialog):
         if preview_available:
             self.document = controller.document
 
+            self.info = QTextEdit(self)
+            self.info.setVisible(False)
+            self.info.setReadOnly(True)
+            self.info.setContentsMargins(0, 0, 0, 0)
+            self.info.setFrameStyle(0)
+            pal = self.info.palette()
+            pal.setColor(QPalette.Base, QColor("#ffc"))
+            self.info.setPalette(pal)
+            self.info.acceptRichText()
+            self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.info.hide()
+
             mesh_name = controller.model.mesh if schema.mesh_attr is None else \
                         controller.model.data[schema.mesh_attr[0]][schema.mesh_attr[1]]
             geometry_name = controller.model.geometry if schema.geometry_attr is None else \
                             controller.model.data[schema.geometry_attr[0]][schema.geometry_attr[1]]
             self.manager = plask.Manager(draft=True)
-            self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             try:
-                self.geometry = self.manager.geo[str(geometry_name)]
-            except KeyError:
-                self.geometry = None
-            try:
-                mesh = self.manager.msh[str(mesh_name)]
-                if isinstance(mesh, plask.mesh.MeshGenerator):
-                    if self.geometry is not None:
-                        self.mesh = mesh(self.geometry)
-                    else:
-                        self.mesh = None
-                else:
-                    self.mesh = mesh
-            except KeyError:
-                self.mesh = None
-
-            if self.geometry is None or self.mesh is None:
-                self.preview = self.info = None
-                label = QLabel("Specify proper geometry and mesh for the solver to show boundary conditions preview.")
-                layout.addWidget(label)
+                self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+            except Exception as err:
+                self.preview = None
+                self.info.setText(str(err))
+                self.info.show()
+                layout.addWidget(self.info)
                 layout.addWidget(table_with_manipulators(self.table))
             else:
-                self.info = QTextEdit(self)
-                self.info.setVisible(False)
-                self.info.setReadOnly(True)
-                self.info.setContentsMargins(0, 0, 0, 0)
-                self.info.setFrameStyle(0)
-                pal = self.info.palette()
-                pal.setColor(QPalette.Base, QColor("#ffc"))
-                self.info.setPalette(pal)
-                self.info.acceptRichText()
-                self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-                splitter = QSplitter(self)
-                splitter.setOrientation(Qt.Vertical)
-                self.preview = PlotWidget(self, splitter)
-                wid = QWidget()
-                lay = QVBoxLayout()
-                lay.setContentsMargins(0, 0, 0, 0)
-                lay.setSpacing(0)
-                lay.addWidget(self.preview)
-                lay.addWidget(self.info)
-                wid.setLayout(lay)
-                splitter.addWidget(wid)
-                splitter.addWidget(table_with_manipulators(self.table))
-                layout.addWidget(splitter)
+                try:
+                    self.geometry = self.manager.geo[str(geometry_name)]
+                except KeyError:
+                    self.geometry = None
+                try:
+                    mesh = self.manager.msh[str(mesh_name)]
+                    if isinstance(mesh, plask.mesh.MeshGenerator):
+                        if self.geometry is not None:
+                            self.mesh = mesh(self.geometry)
+                        else:
+                            self.mesh = None
+                    else:
+                        self.mesh = mesh
+                except KeyError:
+                    self.mesh = None
+
+                if self.geometry is None or self.mesh is None:
+                    self.preview = self.info = None
+                    label = QLabel("Specify proper geometry and mesh for the solver to show boundary conditions preview.")
+                    layout.addWidget(label)
+                    layout.addWidget(table_with_manipulators(self.table))
+                else:
+                    splitter = QSplitter(self)
+                    splitter.setOrientation(Qt.Vertical)
+                    self.preview = PlotWidget(self, splitter)
+                    wid = QWidget()
+                    lay = QVBoxLayout()
+                    lay.setContentsMargins(0, 0, 0, 0)
+                    lay.setSpacing(0)
+                    lay.addWidget(self.preview)
+                    lay.addWidget(self.info)
+                    wid.setLayout(lay)
+                    splitter.addWidget(wid)
+                    splitter.addWidget(table_with_manipulators(self.table))
+                    layout.addWidget(splitter)
 
             if schema.mesh_type not in fake_plask_gui_solver.__dict__:
                 Mesh = getattr(plask.mesh, schema.mesh_type)
@@ -346,6 +356,11 @@ class BoundaryConditionsDialog(QDialog):
             for points, color in zip(self.points, colors):
                 points.set_color(color)
         self.preview.canvas.draw()
+
+    def showEvent(self, event):
+        super(BoundaryConditionsDialog, self).showEvent(event)
+        if self.info is not None and self.info.isVisible():
+            self.info.setFixedHeight(self.info.document().size().height())
 
     def resizeEvent(self, event):
         if self.info is not None and self.info.isVisible():

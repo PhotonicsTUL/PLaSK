@@ -169,7 +169,7 @@ class GridWithoutConf(Grid):
 
     def get_controller(self, document):
         from ...controller import NoConfController
-        return NoConfController(self.type_and_kind_str + ' has no configuration.')
+        return NoConfController(self.type_and_kind_str + ' has no configuration.', document=document, model=self)
 
 
 from ...controller.grids.new_dialog import construct_grid_using_dialog

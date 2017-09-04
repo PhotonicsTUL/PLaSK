@@ -179,6 +179,50 @@ class ThermoElectric(plask.Solver):
         """
         return self.electrical.get_total_current(nact)
 
+    def _junction_levels(self, mesh):
+        if isinstance(mesh, plask.mesh.Rectangular2D):
+            hor = mesh.axis0,
+            Mesh = plask.mesh.Rectangular2D
+        elif isinstance(mesh, plask.mesh.Rectangular3D):
+            hor = mesh.axis0, mesh.axis1
+            Mesh = plask.mesh.Rectangular3D
+        else:
+            return
+
+        points = Mesh.SimpleGenerator()(self.electrical.geometry).get_midpoints()
+        levels = {}
+        for p in points:
+            roles = self.electrical.geometry.get_roles(p)
+            for role in roles:
+                no = None
+                if role.startswith('active'):
+                    no = role[6:]
+                elif role.startswith('junction'):
+                    no = role[8:]
+                if no is not None:
+                    levels[no] = p[-1]
+
+        for name, v in levels.items():
+            axs = hor + ([v],)
+            mesh2 = Mesh(*axs)
+            yield name, mesh2
+
+    def _save_thermoelectric(self, h5file, group):
+        tmesh = self.thermal.mesh
+        vmesh = self.electrical.mesh
+        jmesh = vmesh.get_midpoints()
+        temp = self.thermal.outTemperature(tmesh)
+        volt = self.electrical.outVoltage(vmesh)
+        curr = self.electrical.outCurrentDensity(jmesh)
+        plask.save_field(temp, h5file, group + '/Temperature')
+        plask.save_field(volt, h5file, group + '/Potential')
+        plask.save_field(curr, h5file, group + '/CurrentDensity')
+        levels = list(self._junction_levels(jmesh))
+        for name, jmesh2 in levels:
+            curr2 = self.electrical.outCurrentDensity(jmesh2)
+            plask.save_field(curr2, h5file, group + '/Junction'+name+'CurrentDensity')
+        return levels
+
     def save(self, filename=None, group='ThermoElectric'):
         """
         Save the computation results to the HDF5 file.
@@ -192,15 +236,7 @@ class ThermoElectric(plask.Solver):
             group (str): HDF5 group to save the data under.
         """
         h5file, group = h5open(filename, group)
-        tmesh = self.thermal.mesh
-        vmesh = self.electrical.mesh
-        jmesh = vmesh.get_midpoints()
-        temp = self.thermal.outTemperature(tmesh)
-        volt = self.electrical.outVoltage(vmesh)
-        curr = self.electrical.outCurrentDensity(jmesh)
-        plask.save_field(temp, h5file, group + '/Temperature')
-        plask.save_field(volt, h5file, group + '/Potential')
-        plask.save_field(curr, h5file, group + '/CurrentDensity')
+        self._save_thermoelectric(h5file, group)
         h5file.close()
 
     def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
