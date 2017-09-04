@@ -10,17 +10,18 @@
 namespace plask {
 
 PLASK_API std::string host_name();
-    
+
 enum LogLevel {
     LOG_CRITICAL_ERROR = 0, ///< Exceptions and errors unconditionally interrupting program flow
     LOG_ERROR = 1,          ///< Non-critical errors (e.g. failed convergence etc.), user can decide if the program should continue
     LOG_ERROR_DETAIL = 2,   ///< Details of an error (e.g. stack trace)
     LOG_WARNING = 3,        ///< Warning
-    LOG_INFO = 4,           ///< Basic log level, gives general information on the program flow
-    LOG_RESULT = 5,         ///< Single value results (also provided with provider mechanism) for easy tracking
-    LOG_DATA = 6,           ///< Intermediate data/results, mainly for presentation in live plots
-    LOG_DETAIL = 7,         ///< Less important details on computations (i.e. recomputations of Jacobian in Broyden method)
-    LOG_DEBUG = 8           ///< Pretty much everything
+    LOG_IMPORTANT = 4,      ///< Important messages
+    LOG_INFO = 5,           ///< Basic log level, gives general information on the program flow
+    LOG_RESULT = 6,         ///< Single value results (also provided with provider mechanism) for easy tracking
+    LOG_DATA = 7,           ///< Intermediate data/results, mainly for presentation in live plots
+    LOG_DETAIL = 8,         ///< Less important details on computations (i.e. recomputations of Jacobian in Broyden method)
+    LOG_DEBUG = 9           ///< Pretty much everything
 };
 
 /// Maximum log level

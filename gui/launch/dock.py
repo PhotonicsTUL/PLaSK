@@ -59,44 +59,52 @@ class OutputWindow(QDockWidget):
         self.action_warning.triggered.connect(self.update_view)
         self.action_warning.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_warning.setShortcut('2')
+        self.action_important = QAction(self)
+        self.action_important.setText("I&mportant")
+        self.action_important.setCheckable(True)
+        self.action_important.setChecked(launcher.important.isChecked())
+        self.action_important.triggered.connect(self.update_view)
+        self.action_important.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.action_important.setShortcut('3')
         self.action_info = QAction(self)
         self.action_info.setText("&Info")
         self.action_info.setCheckable(True)
         self.action_info.setChecked(launcher.info.isChecked())
         self.action_info.triggered.connect(self.update_view)
         self.action_info.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        self.action_info.setShortcut('3')
+        self.action_info.setShortcut('4')
         self.action_result = QAction(self)
         self.action_result.setText("&Result")
         self.action_result.setCheckable(True)
         self.action_result.setChecked(launcher.result.isChecked())
         self.action_result.triggered.connect(self.update_view)
         self.action_result.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        self.action_result.setShortcut('4')
+        self.action_result.setShortcut('5')
         self.action_data = QAction(self)
         self.action_data.setText("&Data")
         self.action_data.setCheckable(True)
         self.action_data.setChecked(launcher.data.isChecked())
         self.action_data.triggered.connect(self.update_view)
         self.action_data.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        self.action_data.setShortcut('5')
+        self.action_data.setShortcut('6')
         self.action_detail = QAction(self)
         self.action_detail.setText("De&tail")
         self.action_detail.setCheckable(True)
         self.action_detail.setChecked(launcher.detail.isChecked())
         self.action_detail.triggered.connect(self.update_view)
         self.action_detail.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        self.action_detail.setShortcut('6')
+        self.action_detail.setShortcut('7')
         self.action_debug = QAction(self)
         self.action_debug.setText("De&bug")
         self.action_debug.setCheckable(True)
         self.action_debug.setChecked(launcher.debug.isChecked())
         self.action_debug.triggered.connect(self.update_view)
         self.action_debug.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        self.action_debug.setShortcut('7')
+        self.action_debug.setShortcut('8')
 
         self.addAction(self.action_error)
         self.addAction(self.action_warning)
+        self.addAction(self.action_important)
         self.addAction(self.action_info)
         self.addAction(self.action_result)
         self.addAction(self.action_data)
@@ -106,6 +114,7 @@ class OutputWindow(QDockWidget):
         view_menu = QMenu("Show")
         view_menu.addAction(self.action_error)
         view_menu.addAction(self.action_warning)
+        view_menu.addAction(self.action_important)
         view_menu.addAction(self.action_info)
         view_menu.addAction(self.action_result)
         view_menu.addAction(self.action_data)
@@ -190,6 +199,7 @@ class OutputWindow(QDockWidget):
         if   cat == "CRITICAL ERROR:": color = "red    "
         elif cat == "ERROR         :": color = "red    "
         elif cat == "WARNING       :": color = "brown  "
+        elif cat == "IMPORTANT     :": color = "magenta"
         elif cat == "INFO          :": color = "blue   "
         elif cat == "RESULT        :": color = "green  "
         elif cat == "DATA          :": color = "#006060"
@@ -218,6 +228,7 @@ class OutputWindow(QDockWidget):
                 for cat, line in self.lines[self.printed_lines:total_lines]:
                     if 'ERROR' in cat and not self.action_error.isChecked(): continue
                     if cat == 'WARNING' and not self.action_warning.isChecked(): continue
+                    if cat == 'IMPORTANT' and not self.action_important.isChecked(): continue
                     if cat == 'INFO' and not self.action_info.isChecked(): continue
                     if cat == 'RESULT' and not self.action_result.isChecked(): continue
                     if cat == 'DATA' and not self.action_data.isChecked(): continue

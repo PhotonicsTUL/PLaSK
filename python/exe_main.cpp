@@ -294,6 +294,7 @@ int main(int argc, const char *argv[])
                 else if (ll == "error") loglevel.reset(plask::LOG_ERROR);
                 else if (ll == "error_detail") loglevel.reset(plask::LOG_ERROR_DETAIL);
                 else if (ll == "warning") loglevel.reset(plask::LOG_WARNING);
+                else if (ll == "important") loglevel.reset(plask::LOG_IMPORTANT);
                 else if (ll == "info") loglevel.reset(plask::LOG_INFO);
                 else if (ll == "result") loglevel.reset(plask::LOG_RESULT);
                 else if (ll == "data") loglevel.reset(plask::LOG_DATA);
@@ -428,7 +429,7 @@ int main(int argc, const char *argv[])
             globals["plask"] = plask;           // import plask
             from_import_all("plask", globals);  // from plask import *
 
-            
+
             py::object runpy = py::import("runpy");
             py::object runasmain = runpy.attr("_run_module_as_main");
             runasmain(runmodule, true);

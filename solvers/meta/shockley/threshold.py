@@ -23,9 +23,9 @@ import optical.effective
 try:
     import scipy
 except ImportError:
-    plask.print_log(plask.LOG_WARNING, "scipy could not be imported."
-                                       " You will not be able to run some algorithms."
-                                       " Install scipy to resolve this issue.")
+    plask.print_log('warning', "scipy could not be imported."
+                               " You will not be able to run some algorithms."
+                               " Install scipy to resolve this issue.")
 else:
     import scipy.optimize
 
@@ -207,17 +207,18 @@ class ThresholdSearch(ThermoElectric):
         if (self.vmin is None) != (self.vmax is None):
             raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
         if self.vmin is None:
-            result = scipy.optimize.newton(self.step, self.electrical.voltage_boundary[self.ivb].value, tol=self.vtol)
+            volt = self.electrical.voltage_boundary[self.ivb].value
+            self.threshold_voltage = scipy.optimize.newton(self.step, volt, tol=self.vtol)
         else:
-            result = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol)
+            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol)
         self.threshold_current = self.electrical.get_total_current()
 
         if save:
             self.save(None if save is True else save)
 
-        plask.print_log('result',
-                        "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA".format(result, self.threshold_current))
-        return result
+        plask.print_log('important', "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA"
+                        .format(self.threshold_voltage, self.threshold_current))
+        return self.threshold_voltage
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=(800, 600)):
         """
@@ -235,13 +236,14 @@ class ThresholdSearch(ThermoElectric):
                 for optical field.
         """
         h5file, group = h5open(filename, group)
-        levels = self._save_thermoelectric(h5file, group)
-        for name, mesh in levels:
+        self._save_thermoelectric(h5file, group)
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
+        for no, mesh in levels:
             value = self.diffusion.outCarriersConcentration(mesh)
-            plask.save_field(value, h5file, group + '/Junction'+name+'CarriersConcentration')
-        for name, mesh in levels:
+            plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
+        for no, mesh in levels:
             value = self.gain.outGain(mesh, self.optical.lam0.real)
-            plask.save_field(value, h5file, group + '/Junction'+name+'Gain')
+            plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
         obox = self.optical.geometry.bbox
         omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
                                          plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))

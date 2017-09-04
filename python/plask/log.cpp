@@ -114,28 +114,30 @@ struct PythonSysLogger: public plask::Logger {
 const char* PythonSysLogger::head(LogLevel level) {
     if (color == PythonSysLogger::COLOR_ANSI)
         switch (level) {
-            case LOG_CRITICAL_ERROR:return ANSI_BRIGHT_RED  "CRITICAL ERROR";
-            case LOG_ERROR:         return ANSI_BRIGHT_RED  "ERROR         ";
-            case LOG_WARNING:       return ANSI_BROWN       "WARNING       ";
-            case LOG_INFO:          return ANSI_BRIGHT_BLUE "INFO          ";
-            case LOG_RESULT:        return ANSI_GREEN       "RESULT        ";
-            case LOG_DATA:          return ANSI_CYAN        "DATA          ";
-            case LOG_DETAIL:        return ANSI_DEFAULT     "DETAIL        ";
-            case LOG_ERROR_DETAIL:  return ANSI_RED         "ERROR DETAIL  ";
-            case LOG_DEBUG:         return ANSI_GRAY        "DEBUG         ";
+            case LOG_CRITICAL_ERROR:return ANSI_BRIGHT_RED     "CRITICAL ERROR";
+            case LOG_ERROR:         return ANSI_BRIGHT_RED     "ERROR         ";
+            case LOG_WARNING:       return ANSI_BROWN          "WARNING       ";
+            case LOG_IMPORTANT:     return ANSI_BRIGHT_MAGENTA "IMPORTANT     ";
+            case LOG_INFO:          return ANSI_BRIGHT_BLUE    "INFO          ";
+            case LOG_RESULT:        return ANSI_GREEN          "RESULT        ";
+            case LOG_DATA:          return ANSI_CYAN           "DATA          ";
+            case LOG_DETAIL:        return ANSI_DEFAULT        "DETAIL        ";
+            case LOG_ERROR_DETAIL:  return ANSI_RED            "ERROR DETAIL  ";
+            case LOG_DEBUG:         return ANSI_GRAY           "DEBUG         ";
         }
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     else if (color == PythonSysLogger::COLOR_WINDOWS)
         switch (level) {
-            case LOG_ERROR:         setcolor(COL_BRIGHT_RED); return "ERROR         ";
-            case LOG_CRITICAL_ERROR:setcolor(COL_BRIGHT_RED); return "CRITICAL ERROR";
-            case LOG_WARNING:       setcolor(COL_BROWN); return "WARNING       ";
-            case LOG_INFO:          setcolor(COL_BRIGHT_CYAN); return "INFO          ";
-            case LOG_RESULT:        setcolor(COL_GREEN); return "RESULT        ";
-            case LOG_DATA:          setcolor(COL_CYAN); return "DATA          ";
-            case LOG_DETAIL:        return "DETAIL        ";
-            case LOG_ERROR_DETAIL:  setcolor(COL_RED); return "ERROR DETAIL  ";
-            case LOG_DEBUG:         setcolor(COL_GRAY); return "DEBUG         ";
+            case LOG_ERROR:         setcolor(COL_BRIGHT_RED);     return "ERROR         ";
+            case LOG_CRITICAL_ERROR:setcolor(COL_BRIGHT_RED);     return "CRITICAL ERROR";
+            case LOG_WARNING:       setcolor(COL_BROWN);          return "WARNING       ";
+            case LOG_IMPORTANT:     setcolor(COL_BRIGHT_MAGENTA); return "IMPORTANT     ";
+            case LOG_INFO:          setcolor(COL_BRIGHT_CYAN);    return "INFO          ";
+            case LOG_RESULT:        setcolor(COL_GREEN);          return "RESULT        ";
+            case LOG_DATA:          setcolor(COL_CYAN);           return "DATA          ";
+            case LOG_DETAIL:                                      return "DETAIL        ";
+            case LOG_ERROR_DETAIL:  setcolor(COL_RED);            return "ERROR DETAIL  ";
+            case LOG_DEBUG:         setcolor(COL_GRAY);           return "DEBUG         ";
         }
 #endif
     else
@@ -143,6 +145,7 @@ const char* PythonSysLogger::head(LogLevel level) {
             case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
             case LOG_ERROR:         return "ERROR         ";
             case LOG_WARNING:       return "WARNING       ";
+            case LOG_IMPORTANT:     return "IMPORTANT     ";
             case LOG_INFO:          return "INFO          ";
             case LOG_RESULT:        return "RESULT        ";
             case LOG_DATA:          return "DATA          ";
@@ -292,6 +295,7 @@ void register_python_log()
     loglevel.value("CRITICAL", LOG_CRITICAL_ERROR); scope.attr("LOG_CRITICAL") = "CRITICAL";
     LOG_ENUM(ERROR);
     LOG_ENUM(WARNING);
+    LOG_ENUM(IMPORTANT);
     LOG_ENUM(INFO);
     LOG_ENUM(RESULT);
     LOG_ENUM(DATA);

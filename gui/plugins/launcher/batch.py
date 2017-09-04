@@ -1058,7 +1058,7 @@ else:
             label = QLabel("&Log level:")
             layout.addWidget(label)
             self.loglevel = QComboBox()
-            loglevels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
+            loglevels = ["Error", "Warning", "Important", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(loglevels)
             self.loglevel.setToolTip("Logging level of the executed script.")
             if isinstance(main_window.document, XPLDocument):

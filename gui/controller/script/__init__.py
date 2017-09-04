@@ -308,12 +308,12 @@ class ScriptController(SourceEditController):
             source.toolbar.addWidget(spacer)
             source.toolbar.addWidget(QLabel("Log Level: "))
             self.loglevel = QComboBox()
-            levels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
+            levels = ["Error", "Warning", "Important", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(levels)
             try:
                 self.loglevel.setCurrentIndex(levels.index(loglevel.title()))
             except ValueError:
-                self.loglevel.setCurrentIndex(5)
+                self.loglevel.setCurrentIndex(6)
             self.loglevel.currentIndexChanged[str].connect(self.document.set_loglevel)
             source.toolbar.addWidget(self.loglevel)
 

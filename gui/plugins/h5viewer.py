@@ -15,6 +15,7 @@ import sys
 import h5py
 
 from matplotlib.figure import Figure
+import matplotlib.colorbar
 
 import plask
 
@@ -83,13 +84,14 @@ class FieldWidget(QWidget):
         vbox.setContentsMargins(0, 0, 2, 1)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
+        self.cax, _ = matplotlib.colorbar.make_axes_gridspec(self.axes)
 
         self.aspect_locked = False
 
         self.setLayout(vbox)
 
     def update_plot(self, field, geometry=None, reset_zoom=True):
-        xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()
+        xlim, ylim = self.axes.get_xlim(), self.axes.get_ylim()
         self.axes.clear()
         plane = None
 
@@ -131,7 +133,9 @@ class FieldWidget(QWidget):
                 try:
                     plask.plot_geometry(axes=self.axes, geometry=geometry, fill=False,
                                         plane=plane, lw=1.0, color='w', alpha=0.25)
-                except: pass
+                except:
+                    pass
+            self.figure.colorbar(mappable=self.controller.plotted, ax=self.axes, cax=self.cax)
 
         self.plotted_field = field
         self.plotted_geometry = geometry

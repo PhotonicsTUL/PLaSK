@@ -70,7 +70,7 @@ class Launcher(object):
         layout.addLayout(dirlayout)
         layout.addWidget(QLabel("Log level:"))
         self.loglevel = QComboBox()
-        loglevels = ["Error", "Warning", "Info", "Result", "Data", "Detail", "Debug"]
+        loglevels = ["Error", "Warning", "Important", "Info", "Result", "Data", "Detail", "Debug"]
         self.loglevel.addItems(loglevels)
         if isinstance(main_window.document, XPLDocument):
             try:

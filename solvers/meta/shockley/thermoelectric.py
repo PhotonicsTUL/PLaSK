@@ -45,16 +45,16 @@ def h5open(filename, group):
         h5file = filename
         filename = h5file.filename
     else:
-        plask.print_log(plask.LOG_INFO, "Saving results to file '{}'".format(filename))
+        plask.print_log('important', "Saving fields to HDF5 file '{}'".format(filename))
         h5file = h5py.File(filename, 'a')
     orig_group = group; idx = 1
     while group in h5file:
         group = "{}-{}".format(orig_group, idx)
         idx += 1
     if group is not orig_group:
-        plask.print_log(plask.LOG_WARNING,
+        plask.print_log('warning',
                         "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
-                            .format(orig_group, filename, group))
+                        .format(orig_group, filename, group))
     return h5file, group
 
 
@@ -179,8 +179,12 @@ class ThermoElectric(plask.Solver):
         """
         return self.electrical.get_total_current(nact)
 
-    def _junction_levels(self, mesh):
-        if isinstance(mesh, plask.mesh.Rectangular2D):
+    @staticmethod
+    def _get_levels(geometry, mesh, *required):
+        if isinstance(mesh, plask.mesh.Mesh1D):
+            hor = mesh,
+            Mesh = plask.mesh.Rectangular2D
+        elif isinstance(mesh, plask.mesh.Rectangular2D):
             hor = mesh.axis0,
             Mesh = plask.mesh.Rectangular2D
         elif isinstance(mesh, plask.mesh.Rectangular3D):
@@ -189,18 +193,18 @@ class ThermoElectric(plask.Solver):
         else:
             return
 
-        points = Mesh.SimpleGenerator()(self.electrical.geometry).get_midpoints()
+        points = Mesh.SimpleGenerator()(geometry).get_midpoints()
         levels = {}
         for p in points:
-            roles = self.electrical.geometry.get_roles(p)
+            roles = geometry.get_roles(p)
+            suffix = None
             for role in roles:
-                no = None
-                if role.startswith('active'):
-                    no = role[6:]
-                elif role.startswith('junction'):
-                    no = role[8:]
-                if no is not None:
-                    levels[no] = p[-1]
+                for prefix in ('active', 'junction'):
+                    if role.startswith(prefix):
+                        suffix = role[len(prefix):]
+                        break
+            if suffix is not None and (not required or any(role in required for role in roles)):
+                levels[suffix] = p[-1]
 
         for name, v in levels.items():
             axs = hor + ([v],)
@@ -217,11 +221,9 @@ class ThermoElectric(plask.Solver):
         plask.save_field(temp, h5file, group + '/Temperature')
         plask.save_field(volt, h5file, group + '/Potential')
         plask.save_field(curr, h5file, group + '/CurrentDensity')
-        levels = list(self._junction_levels(jmesh))
-        for name, jmesh2 in levels:
+        for name, jmesh2 in self._get_levels(self.electrical.geometry, jmesh):
             curr2 = self.electrical.outCurrentDensity(jmesh2)
-            plask.save_field(curr2, h5file, group + '/Junction'+name+'CurrentDensity')
-        return levels
+            plask.save_field(curr2, h5file, group + '/Junction' + name + 'CurrentDensity')
 
     def save(self, filename=None, group='ThermoElectric'):
         """
