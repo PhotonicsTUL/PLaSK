@@ -140,6 +140,7 @@
         in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and
         the quantum wells.
       </attr>
+    </tag>
     <tag name="optical-root" label="Parameters of the Optical Mode Finding">
       Parameters of the horizontal root-finding algorithm in optical solver.
       <attr name="method" label="Root finding method" type="choice" default="muller">
@@ -174,8 +175,6 @@
       <attr name="alpha" label="Broyden decrease factor" type="float" default="1e-7">Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).</attr>
       <attr name="lambda" label="Minimum Broyden step decrease ratio" type="float" default="1e-8">Minimum decrease ratio of one step (Broyden method only).</attr>
       <attr name="initial-range" label="Initial Muller range size" type="complex" default="1e-3">Initial range size (Muller method only).</attr>
-    </tag>
-
     </tag>
 
     <flow>
@@ -339,8 +338,9 @@
         <type>Regular</type>
       </attr>
       <attr name="optical" label="Optical" type="mesh">
-        Mesh used by the carriers diffusion solver.
+        Mesh used by the optical solver.
         <type>Ordered</type>
+        <type>Rectangular2D</type>
       </attr>
     </tag>
     <tag name="optical" label="Optical solver configuration">

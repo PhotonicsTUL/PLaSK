@@ -140,10 +140,9 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
    <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
      <geometry electrical="GeoE" thermal="GeoT" optical="GeoO"/>
      <mesh electrical="default" thermal="default" diffusion="diffusion" optical="optical"/>
-     <optical lam0="980.5"/>
+     <optical lam0="980." vat="0"/>
      <voltage>
-       <condition value="1.4">
-         <place side="bottom" object="p-contact"/>
+       <condition value="1.7" object="p-contact"/>
        </condition>
        <condition value="0.0">
          <place side="top" object="n-contact"/>
@@ -152,13 +151,14 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <temperature>
        <condition place="bottom" value="300."/>
      </temperature>
-     <root bcond="0" vmin="1.4" vmax="1.6"/>
+     <root bcond="0" vmin="1.5" vmax="1.9"/>
      <junction beta0="11" js0="1"/>
      <diffusion accuracy="0.005" fem-method="parabolic"/>
      <gain lifetime="0.5" matrix-elem="10"/>
+     <optical-root method="broyden"/>
    </meta>
 
-The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980.5 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.4 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries.
+The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.7 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries. ``<optical-root>`` tag specifies settings for the optical mode finder: we set its method to *broyden* which is slower than the default, but usually more safe.
 
 ---------------------------------------------------------------------------
 

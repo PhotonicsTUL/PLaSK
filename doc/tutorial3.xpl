@@ -80,19 +80,19 @@
   <mesh name="diffusion" type="regular">
     <axis start="0" stop="{mesa}" num="2000"></axis>
   </mesh>
-  <generator method="divide" name="optical" type="rectangular2d">
-    <prediv by0="10"/>
+  <generator method="divide" name="optical" type="ordered">
+    <prediv by="10"/>
   </generator>
 </grids>
 
 <solvers>
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
-    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
-    <optical lam0="980.5"/>
-    <root bcond="0" vmax="1.6" vmin="1.4"/>
+    <mesh diffusion="diffusion" electrical="default" optical="optical" thermal="default"/>
+    <optical dlam="0.01" lam0="980." maxlam="980." vat="0"/>
+    <root bcond="0" vmax="1.9" vmin="1.5"/>
     <voltage>
-      <condition value="1.4">
+      <condition value="1.7">
         <place side="bottom" object="p-contact"/>
       </condition>
       <condition value="0.0">
@@ -105,6 +105,7 @@
     <junction beta0="11" js0="1"/>
     <diffusion accuracy="0.005" fem-method="parabolic"/>
     <gain lifetime="0.5" matrix-elem="10"/>
+    <optical-root method="broyden"/>
   </meta>
 </solvers>
 

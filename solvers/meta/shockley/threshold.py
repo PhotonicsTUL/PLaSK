@@ -122,7 +122,6 @@ class ThresholdSearch(ThermoElectric):
             self.electrical.invalidate()
             self.diffusion.invalidate()
             self.gain.invalidate()
-        self.optical.invalidate()
         verr = 2. * self.electrical.maxerr
         terr = 2. * self.thermal.maxerr
         while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
@@ -142,6 +141,7 @@ class ThresholdSearch(ThermoElectric):
         """
         self.electrical.voltage_boundary[self.ivb].value = volt
         self._compute_ted()
+        self.optical.invalidate()
         optstart = self.get_lam()
         if self.optarg is None:
             self.modeno = self.optical.find_mode(optstart, **self._optargs())
@@ -211,25 +211,23 @@ class ThresholdSearch(ThermoElectric):
             volt = self.electrical.voltage_boundary[self.ivb].value
             self.threshold_voltage = scipy.optimize.newton(self.step, volt, tol=self.vtol, maxiter=self.maxiter)
         else:
-            res, info = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol,
-                                                                 full_output=True)
-            if not info.converged:
-                raise RuntimeError("Failed to converge after {} iterations, value is {}".format(self.maxiter, res))
-            self.threshold_voltage = res
+            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol,
+                                                           maxiter=self.maxiter, disp=True)
 
         self.threshold_current = abs(self.electrical.get_total_current())
 
         if save:
             filename = self.save(None if save is True else save)
             if filename.endswith('.h5'): filename = filename[:-3]
-            self._save_info(filename)
+            self._save_info(filename+'.txt')
 
         plask.print_log('important', "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA"
                         .format(self.threshold_voltage, self.threshold_current))
         return self.threshold_voltage
 
     def _save_info(self, filename):
-        with open(filename + '.txt', 'w') as out:
+        plask.print_log('important', "Results saved to file '{}'".format(filename))
+        with open(filename, 'w') as out:
             out.write("Threshold voltage [V]:     {:8.3f}\n".format(self.threshold_voltage))
             out.write("Threshold current [mA]:    {:8.3f}\n".format(self.threshold_current))
             out.write("Maximum temperature [K]:   {:8.3f}\n".format(max(self.thermal.outTemperature(self.thermal.mesh))))
@@ -264,6 +262,7 @@ class ThresholdSearch(ThermoElectric):
         ofield = self.optical.outLightMagnitude(self.modeno, omesh)
         plask.save_field(ofield, h5file, group + '/LightMagnitude')
         h5file.close()
+        plask.print_log('important', "Fields saved to file '{}'".format(filename))
         return filename
 
     def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
@@ -467,7 +466,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def _save_info(self, filename):
         super(ThresholdSearchCyl, self)._save_info(filename)
-        with open(filename + '.txt', 'a') as out:
+        with open(filename, 'a') as out:
             out.write("LP{}{} mode wavelength [nm]: {:8.3f}\n".format(self.lpm, self.lpn,
                                                                       self.optical.modes[self.modeno].lam.real))
 

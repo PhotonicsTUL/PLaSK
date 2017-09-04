@@ -45,7 +45,6 @@ def h5open(filename, group):
         h5file = filename
         filename = h5file.filename
     else:
-        plask.print_log('important', "Saving fields to HDF5 file '{}'".format(filename))
         h5file = h5py.File(filename, 'a')
     orig_group = group; idx = 1
     while group in h5file:
@@ -240,6 +239,7 @@ class ThermoElectric(plask.Solver):
         h5file, group, filename = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         h5file.close()
+        plask.print_log('important', "Fields saved to file '{}'".format(filename))
         return filename
 
     def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
