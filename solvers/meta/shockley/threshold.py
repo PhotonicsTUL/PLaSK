@@ -115,7 +115,14 @@ class ThresholdSearch(ThermoElectric):
     def get_lam(self):
         raise NotImplemented('get_lam')
 
-    def _compute_ted(self):
+    def compute_thermoelectric(self):
+        """
+        Perform thermo-electric calculations.
+
+        This method may be called manually to perform thermo-electric calculations.
+        Afterwards, one may investigate gain spectrum or verify settings of the optical
+        solver.
+        """
         self.initialize()
         if self._invalidate:
             self.thermal.invalidate()
@@ -140,7 +147,7 @@ class ThresholdSearch(ThermoElectric):
             float: Loss of a specified mode
         """
         self.electrical.voltage_boundary[self.ivb].value = volt
-        self._compute_ted()
+        self.compute_thermoelectric()
         self.optical.invalidate()
         optstart = self.get_lam()
         if self.optarg is None:
@@ -163,7 +170,7 @@ class ThresholdSearch(ThermoElectric):
         Returns:
             float or array: Optical determinant.
         """
-        self._compute_ted()
+        self.compute_thermoelectric()
         if self.optarg is None:
             return self.optical.get_determinant(lam, **self._optargs())
         else:

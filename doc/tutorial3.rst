@@ -127,7 +127,7 @@ Having the geometry completed, we need to define meshes for all the solvers we a
      <axis start="0" stop="{mesa}" num="2000"/>
    </mesh>
 
-   <generator type="rectangular2d" method="divide" name="optical">
+   <generator type="ordered" method="divide" name="optical">
      <prediv by0="10"/>
    </generator>
 
