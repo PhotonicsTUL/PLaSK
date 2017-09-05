@@ -1,0 +1,55 @@
+- solver: YourSolver
+  lib: your_solver
+  category: skel
+
+  geometry: YourGeometry
+  mesh: YourMesh
+
+  tags:
+  - tag: configuration-tag
+    label: Configuration Tag
+    help: >
+      Documentation of your configuration tag. It can contain multiple lines
+      like this, so you cann put longer text here.
+    attrs:
+    - attr: tag-attr
+      label: Tag attribute
+      type: attribute type
+      unit: unit
+      help: >
+        Pull all the configuration attributes like this.
+    - attr: other-attr
+      label: Other attribute
+      type: choice
+      choices:
+      - First choice
+      - Second choice
+      - Third choice
+      help: >
+        Another configuration attribute.
+
+  - tag: another-configuration-tag
+    label: Different Configuration Tag
+    help: >
+      Another tag help.
+    attrs:
+    - attr: attribute
+      label: Some attribute
+      type: attribute type
+      unit: unit
+      help: >
+        Pull all the configuration attributes like this.
+
+  - bcond: boundary_condtion
+    label: Boundary Condition
+
+  - bcond: other_boundary_condtion
+    label: Another Boundary Condition
+    help: >
+      Additional description of boundary condition in help.
+
+  providers:
+  - outProvider: QuantityIfNameDifferent
+
+  receivers:
+  - inReceiver

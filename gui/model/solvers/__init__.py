@@ -268,10 +268,10 @@ def update_solvers(filename, model):
         cwd = os.path.dirname(filename)
     else:
         cwd = '.'
-    solvers_file = os.path.join(cwd, 'solvers.xml')
+    solvers_file = os.path.join(cwd, 'solvers.yml')
     if os.path.isfile(solvers_file):
-        from .autosolver import load_xml
+        from .autosolver import load_yaml
         try:
-            load_xml(solvers_file, model.local_categories, model.local_solvers)
+            load_yaml(solvers_file, model.local_categories, model.local_solvers)
         except:
             pass

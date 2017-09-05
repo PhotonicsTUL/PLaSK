@@ -1,0 +1,155 @@
+- solver: Shockley2D
+  lib: shockley
+  category: electrical
+  geometry: Cartesian2D
+  mesh: Rectangular2D
+  tags:
+  - &voltage
+    bcond: voltage
+    label: Voltage
+  - &loop
+    tag: loop
+    label: Configuration of the Self-Consistent Loop
+    help: Configuration of the self-consistent loop.
+    attrs:
+    - attr: maxerr
+      label: Maximum current density error
+      type: float
+      unit: '%'
+      default: 0.05
+      help: Maximum allowed current density error.
+  - &matrix
+    tag: matrix
+    label: Matrix Solver
+    help: Configuration of the matrix solver.
+    attrs:
+    - attr: algorithm
+      label: Solution algorithm
+      type: choice
+      default: cholesky
+      choices:
+      - cholesky
+      - gauss
+      - iterative
+      help: Algorithm used for solving set of linear positive-definite equations.
+    - attr: itererr
+      label: Max. residual error
+      type: float
+      default: 1.0e-08
+      help: Maximum allowed residual error for the iterative algorithm.
+    - attr: iterlim
+      label: Max. number of iterations
+      type: int
+      default: 10000
+      help: Maximum number of iterations for the iterative algorithm.
+    - attr: logfreq
+      label: Progress logging frequency
+      type: int
+      default: 500
+      help: Number of iterations after which the progress is logged.
+  - &junction
+    tag: junction
+    label: Configuration of the Effective Model of p-n Junction
+    help: Configuration of the effective model of p-n junction.
+    attrs:
+    - attr: beta#
+      label: Junction coefficients<br/>(one per line)
+      type: float
+      unit: 1/V
+      help: Junction coefficients. This is an inverse of the junction thermal voltage.
+    - attr: js#
+      label: Reverse bias current densities<br/>(one per line)
+      type: float
+      unit: A/m<sup>2</sup>
+      help: Reverse bias current densities.
+    - &pnjcond
+      attr: pnjcond
+      label: Initial junctions conductivity
+      type: float
+      unit: S/m
+      default: 5.0
+      help: Initial vertical conductivity of the junctions.
+    - &heat
+      attr: heat
+      label: Heat generation method
+      type: choice
+      default: joules
+      choices:
+      - joules
+      - wavelength
+      help: Method of determination of the heat generated in the junction.
+    - &wavelength
+      attr: wavelength
+      label: Emitted wavelength
+      type: float
+      unit: nm
+      help: Emitted wavelength if heat generation method is set to ‘<i>wavelength</i>’.
+  - &contacts
+    tag: contacts
+    label: Properties of the Contacts
+    help: Properties of the contact layers.
+    attrs:
+    - attr: pcond
+      label: p-contact conductivity
+      type: float
+      unit: S/m
+      default: 5.0
+      help: p-contact conductivity.
+    - attr: ncond
+      label: n-contact conductivity
+      type: float
+      unit: S/m
+      default: 50.0
+      help: n-contact conductivity.
+  providers:
+  - outCurrentDensity
+  receivers:
+  - inTemperature
+- solver: ShockleyCyl
+  lib: shockley
+  category: electrical
+  geometry: Cylindrical
+  mesh: Rectangular2D
+  tags:
+  - *voltage
+  - *loop
+  - *matrix
+  - *junction
+  - *contacts
+  providers: &providers
+  - outVoltage
+  - outCurrentDensity
+  - outHeat
+  - outConductivity
+  receivers: &receivers
+  - inWavelength
+  - inTemperature
+- solver: Shockley3D
+  lib: shockley
+  category: electrical
+  geometry: Cartesian3D
+  mesh: Rectangular3D
+  tags:
+  - *voltage
+  - *loop
+  - *matrix
+  - tag: junction
+    label: Configuration of the Effective Model of p-n Junction
+    help: Configuration of the effective model of p-n junction.
+    attrs:
+    - attr: beta
+      label: Junction coefficient
+      type: float
+      unit: 1/V
+      help: Junction coefficient. This is an inverse of the junction thermal voltage.
+    - attr: js
+      label: Reverse bias current density
+      type: float
+      unit: A/m<sup>2</sup>]<br/>
+      help: Reverse bias current density.
+    - *pnjcond
+    - *heat
+    - *wavelength
+  - *contacts
+  providers: *providers
+  receivers: *receivers

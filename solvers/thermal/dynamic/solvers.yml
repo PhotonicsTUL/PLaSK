@@ -1,0 +1,99 @@
+- solver: Dynamic2D
+  lib: dynamic
+  category: thermal
+  geometry: Cartesian2D
+  mesh: Rectangular2D
+  tags:
+  - &temperature
+    bcond: temperature
+    label: Temperature
+  - &loop
+    tag: loop
+    label: Time-Evolution Loop
+    help: Configuration of the time-evolution loop.
+    attrs:
+    - attr: inittemp
+      label: Initial temperature
+      type: float
+      unit: K
+      default: 300
+      help: Initial temperature used for the first computation.
+    - attr: timestep
+      label: Time step
+      type: float
+      unit: ns
+      default: 0.1
+      help: Single-iteration time step.
+    - attr: rebuildfreq
+      label: Matrix rebuild frequency
+      type: int
+      default: 0
+      help: Number of iterations until the whole matrix is rebuilt. The larger this number is, the more
+        efficient computations are, however it may be less accurate is material parameters strongly depend
+        on temperature. If this parameter is set to zero, matrix is never rebuilt.
+    - attr: logfreq
+      label: Logging frequency
+      type: int
+      default: 500
+      help: Number of iterations until the computations progress is reported.
+  - &matrix
+    tag: matrix
+    label: Matrix Solver
+    help: Configuration of the matrix solver.
+    attrs:
+    - attr: methodparam
+      label: Method parameter
+      type: float
+      default: 0.5
+      help: Mid-step parameter for implicit finite-difference time discretization. Defaults to ½, which
+        results in the Crank-Nicholson method. 0 makes the method explicit, while 1 results in backward
+        Euler method.
+    - attr: lumping
+      label: Lumping
+      type: bool
+      default: true
+      help: This attribute determines whether the mass matrix is lumped or non-lumped (consistent).
+    - attr: algorithm
+      label: Solution algorithm
+      type: choice
+      default: cholesky
+      choices:
+      - cholesky
+      - gauss
+      help: Algorithm used for solving set of linear positive-definite equations. Defaults to "<i>cholesky</i>"
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  receivers:
+  - inHeat
+- solver: DynamicCyl
+  lib: dynamic
+  category: thermal
+  geometry: Cylindrical
+  mesh: Rectangular2D
+  tags:
+  - *temperature
+  - *loop
+  - *matrix
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  receivers:
+  - inHeat
+- solver: Dynamic3D
+  lib: dynamic
+  category: thermal
+  geometry: Cartesian3D
+  mesh: Rectangular3D
+  tags:
+  - *temperature
+  - *loop
+  - *matrix
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  receivers:
+  - inHeat

@@ -132,13 +132,13 @@ macro(make_default)
         endif()
     endif()
 
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml)
-        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml
-                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml
-                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml
-                            )
-        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.xml)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.xml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.xml COMPONENT solvers)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml)
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml
+                           DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml
+                          )
+        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.yml COMPONENT solvers)
     endif()
 
     if(BUILD_TESTING)
@@ -152,7 +152,7 @@ endmacro()
 macro(make_pure_python)
 
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR})
-    file(GLOB sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py solvers.xml)
+    file(GLOB sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py solvers.yml)
     foreach(file ${sources})
         list(APPEND python_targets ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file})
         add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file}

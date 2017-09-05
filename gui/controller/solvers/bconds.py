@@ -260,10 +260,16 @@ class BoundaryConditionsDialog(QDialog):
             self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.info.hide()
 
-            mesh_name = controller.model.mesh if schema.mesh_attr is None else \
-                        controller.model.data[schema.mesh_attr[0]][schema.mesh_attr[1]]
-            geometry_name = controller.model.geometry if schema.geometry_attr is None else \
-                            controller.model.data[schema.geometry_attr[0]][schema.geometry_attr[1]]
+            try:
+                mesh_name = controller.model.mesh if schema.mesh_attr is None else \
+                            controller.model.data[schema.mesh_attr['tag']][schema.mesh_attr['attr']]
+            except KeyError:
+                mesh_name = None
+            try:
+                geometry_name = controller.model.geometry if schema.geometry_attr is None else \
+                                controller.model.data[schema.geometry_attr['tag']][schema.geometry_attr['attr']]
+            except KeyError:
+                geometry_name = None
             self.manager = plask.Manager(draft=True)
             try:
                 self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))

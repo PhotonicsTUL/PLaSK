@@ -1,0 +1,72 @@
+- solver: Diffusion2D
+  lib: diffusion
+  category: electrical
+  geometry: Cartesian2D
+  mesh: Regular
+  tags:
+  - &config
+    tag: config
+    label: Solver Configuration
+    help: Solver configuration.
+    attrs:
+    - attr: fem-method
+      label: FEM order
+      type: choice
+      default: parabolic
+      choices:
+      - linear
+      - parabolic
+      help: Order of the finite-element method.
+    - attr: accuracy
+      label: Relative accuracy
+      type: float
+      unit: '%'
+      default: 0.01
+      help: Required relative accuracy.
+    - attr: abs-accuracy
+      label: Absolute accuracy
+      type: float
+      unit: cm<sup>-3</sup>
+      default: 5000000000000000.0
+      help: Required absolute minimal concentration accuracy.
+    - attr: maxiters
+      label: Iterations to refine
+      type: int
+      default: 20
+      help: Maximum number of allowed iterations before attempting to refine mesh.
+    - attr: maxrefines
+      label: Allowed refinements
+      type: int
+      default: 5
+      help: Maximum number of allowed mesh refinements.
+    - attr: interpolation
+      label: Interpolation method
+      type: choice
+      default: spline
+      choices:
+      - linear
+      - spline
+      help: Current density interpolation method name.
+  providers:
+  - outCarriersConcentration
+  receivers:
+  - inTemperature
+  - inCurrentDensity
+  - inGain
+  - inLightMagnitude
+  - inWavelength
+- solver: DiffusionCyl
+  lib: diffusion
+  category: electrical
+  geometry: Cylindrical
+  mesh: Regular
+  tags:
+  - *config
+  providers:
+  - outCarriersConcentration
+  receivers:
+  - inTemperature
+  - inCurrentDensity
+  - inGain
+  - inLightMagnitude
+  - inWavelength

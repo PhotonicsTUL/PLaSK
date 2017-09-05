@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
-  <solver name="Fermi2D" category="gain" lib="simple" obsolete="yes"/>
-  <solver name="FermiCyl" category="gain" lib="simple" obsolete="yes"/>
-</solvers>
-

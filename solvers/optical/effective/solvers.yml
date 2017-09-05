@@ -1,0 +1,271 @@
+- solver: EffectiveIndex2D
+  lib: effective
+  category: optical
+
+  geometry: Cartesian2D
+  mesh: [Rectangular2D, Ordered, Regular]
+
+  tags:
+  - tag: mode
+    label: Mode Properties
+    help: >
+      Mode properties
+    attrs:
+    - attr: polarization
+      label: Polarization
+      type: choice
+      default: TE
+      choices: [TE, TM]
+      help: >
+        Longitudnally-propagating mode polarization (TE or TM).
+    - attr: wavelength
+      label: Wavelength
+      type: float
+      unit: nm
+      help: >
+        Mode wavelength.
+    - attr: vneff
+      label: Vertical effective index
+      type: float
+      unit: '-'
+      help: >
+        Initial vertical effective index of the in location in which the vertical solution is calculated;
+        setting this value helps to find models in very long resonators.
+    - attr: vat
+      label: Vertical solution coord
+      type: float
+      unit: µm
+      default: 0.0
+      help: >
+        Horizontal position of at which the vertical part of the field is calculated.
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: front
+      choices: [front, back]
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power.
+
+  - tag: root
+    label: Parameters of the Horizontal Root-Finding Algorithm
+    help: >
+      Parameters of the horizontal root-finding algorithm.
+    attrs:
+    - &method
+      attr: method
+      label: Root finding method
+      type: choice
+      default: muller
+      choices:
+      - muller
+      - broyden
+      - brent
+      help: >
+        Root finding algorithm.
+    - &tolx
+      attr: tolx
+      label: Tolerance on effective index
+      type: float
+      default: 1.0e-06
+      help: >
+        Maximum change of the effective frequency parameter which is allowed for convergent solution.
+    - &tolf-min
+      attr: tolf-min
+      label: Sufficient determinant value
+      type: float
+      default: 1.0e-07
+      help: >
+        Minimum value of the determinant sufficient to assume convergence.
+    - &tolf-max
+      attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 2.0e-05
+      help: >
+        Maximum value of the determinant required to assume convergence.
+    - &maxstep
+      attr: maxstep
+      label: Maximum Broyden iteration step
+      type: float
+      default: 0.1
+      help: >
+        Maximum step in one iteration of root finding. Significant for the Broyden's method only.
+    - &maxiter
+      attr: maxiter
+      label: Maximum number of iterations
+      type: int
+      default: 500
+      help: >
+        Maximum number of root finding iterations.
+    - &alpha
+      attr: alpha
+      label: Broyden decrease factor
+      type: float
+      default: 1.0e-07
+      help: >
+        Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
+    - &lambda
+      attr: lambda
+      label: Minimum Broyden step decrease ratio
+      type: float
+      default: 1.0e-08
+      help: >
+        Minimum decrease ratio of one step (Broyden method only).
+    - &initial-range
+      attr: initial-range
+      label: Initial Muller range size
+      type: complex
+      default: 0.001
+      help: >
+        Initial range size (Muller method only).
+
+  - tag: stripe-root
+    label: Parameters of the Vertical Root-Finding Algorithm
+    help: >
+      Parameters of root-finding algorithm for one stripe.
+    attrs:
+    - attr: method
+      label: Root finding method
+      type: choice
+      choices:
+      - muller
+      - broyden
+      - brent
+      help: >
+        Root finding algorithm.
+    - *tolx
+    - *tolf-min
+    - &stripe-tolf-max
+      attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 1.0e-05
+      help: >
+        Maximum value of the determinant required to assume convergence.
+    - *maxstep
+    - *maxiter
+    - *alpha
+    - *lambda
+    - *initial-range
+
+  - tag: mirrors
+    label: Mirror Losses
+    help: >
+      Mirror losses.
+    attrs:
+    - attr: R1
+      label: Front reflectivity
+      type: float
+      help: >
+        Reflectivity of the front mirror.
+    - attr: R2
+      label: Back reflectivity
+      type: float
+      help: >
+        Reflectivity of the back mirror.
+
+  providers:
+  - outLightMagnitude
+  - outRefractiveIndex
+  - outHeat
+  - outLoss
+  - outWavelength
+
+  receivers:
+  - inTemperature
+  - inGain
+
+
+- solver: EffectiveFrequencyCyl
+  lib: effective
+  category: optical
+  geometry: Cylindrical
+  mesh:
+  - Rectangular2D
+  - Ordered
+  - Regular
+
+  tags:
+  - tag: mode
+    label: Mode Properties
+    help: >
+      Mode properties.
+    attrs:
+    - attr: lam0
+      label: Approximate wavelength
+      type: float
+      unit: nm
+      help: >
+        Approximate wavelength, around which the solution is searched. The refractive and group idexes
+        are computed for this wavelength
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: top
+      choices:
+      - top
+      - bottom
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power.
+    - attr: vlam
+      label: Vertical wavelength
+      type: float
+      unit: nm
+      help: >
+        '"Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
+        setting this value helps to find models in very long resonators.'
+    - attr: vat
+      label: Vertical solution coord
+      type: float
+      unit: µm
+      help: >
+        Horizontal position of at which the vertical part of the field is calculated.
+
+  - tag: root
+    label: Parameters of the Horizontal Root-Finding Algorithm
+    help: >
+      Parameters of the horizontal root-finding algorithm.
+    attrs:
+    - *method
+    - &tolx-efm
+      attr: tolx
+      label: Tolerance on effective frequency
+      type: float
+      default: 1.0e-06
+      help: >
+        Maximum change of the effective frequency parameter which is allowed for convergent solution.
+    - *tolf-min
+    - *tolf-max
+    - *maxstep
+    - *maxiter
+    - *alpha
+    - *lambda
+    - *initial-range
+
+  - tag: stripe-root
+    label: Parameters of the Vertical Root-Finding Algorithm
+    help: >
+      Parameters of root-finding algorithm for one stripe.
+    attrs:
+    - *method
+    - *tolx-efm
+    - *tolf-min
+    - *stripe-tolf-max
+    - *maxstep
+    - *maxiter
+    - *alpha
+    - *lambda
+    - *initial-range
+
+  providers:
+  - outLightMagnitude
+  - outRefractiveIndex
+  - outHeat
+  - outLoss: ModalLoss
+  - outWavelength
+
+  receivers:
+  - inTemperature
+  - inGain

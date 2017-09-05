@@ -14,6 +14,11 @@
 import os
 from lxml import etree
 
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
 from ...utils.xml import AttributeReader, print_interior
 from . import Solver, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
@@ -56,7 +61,9 @@ class Attr(object):
         self.name = name
         self.label = label
         self.help = help
-        self.default = default
+        if default is None:self.default = ''
+        elif isinstance(default, bool): self.default = 'yes' if default else 'no'
+        else: self.default = str(default)
         self.conflicts = set()
 
 class AttrMulti(Attr):
@@ -93,45 +100,41 @@ class AttrMesh(AttrChoice):
     pass
 
 
-def read_attr(tn, attr, xns):
-        an = attr.attrib['name']
-        al = attr.attrib['label']
-        ah = attr.text
-        at = attr.attrib.get('type', '')
-        au = attr.attrib.get('unit')
-        ad = attr.attrib.get('default')
-        if au is not None:
-            al += u' [{}]'.format(au)
+def read_attr(tn, attr, au=None):
+    an = attr['attr']
+    al = attr['label']
+    ah = attr['help']
+    at = attr.get('type', '')
+    au = attr.get('unit', au)
+    ad = attr.get('default')
+    if au is not None:
+        al += u' [{}]'.format(au)
+    if at == u'choice':
+        ac = tuple(ch.strip() for ch in attr['choices'])
+        result = AttrChoice(tn, an, al, ah, ac, ad)
+    elif at == u'bool':
+        result = AttrBool(tn, an, al, ah, ad)
+    elif at == u'geometry object':
+        result = AttrGeometryObject(tn, an, al, ah)
+    elif at == u'geometry path':
+        result = AttrGeometryPath(tn, an, al, ah)
+    elif at.endswith(u' geometry'):
+        result = AttrGeometry(tn, an, al, ah, at[:-9].lower())
+    elif at == u'mesh':
+        ac = tuple(ch.strip() for ch in attr['mesh types'])
+        result = AttrMesh(tn, an, al, ah, ac)
+    else:
+        if at:
+            ah += u' ({})'.format(at)
+        if an.endswith('#'):
+            result = AttrMulti(tn, an, al, ah)
         else:
-            au = attr.getparent().attrib.get('unit')
-        if au is not None:
-            at += u' [{}]'.format(au)
-        if at == u'choice':
-            ac = tuple(ch.text.strip() for ch in attr.findall(xns+'choice'))
-            result = AttrChoice(tn, an, al, ah, ac, ad)
-        elif at == u'bool':
-            result = AttrBool(tn, an, al, ah, ad)
-        elif at == u'geometry object':
-            result = AttrGeometryObject(tn, an, al, ah)
-        elif at == u'geometry path':
-            result = AttrGeometryPath(tn, an, al, ah)
-        elif at.endswith(u' geometry'):
-            result = AttrGeometry(tn, an, al, ah, at[:-9].lower())
-        elif at == u'mesh':
-            ac = tuple(ch.text.strip() for ch in attr.findall(xns + 'type'))
-            result = AttrMesh(tn, an, al, ah, ac)
-        else:
-            if at:
-                ah += u' ({})'.format(at)
-            if an.endswith('#'):
-                result = AttrMulti(tn, an, al, ah)
-            else:
-                result = Attr(tn, an, al, ah, ad)
-        for conflict in attr.findall(xns+'conflicts'):
-            ct = conflict.attrib.get('tag', tn)
-            ca = conflict.attrib['attr']
-            result.conflicts.add((ct, ca))
-        return result
+            result = Attr(tn, an, al, ah, ad)
+    for conflict in attr.get('conflicts', []):
+        ct = conflict.get('tag', tn)
+        ca = conflict['attr']
+        result.conflicts.add((ct, ca))
+    return result
 
 
 class SchemaTag(object):
@@ -265,124 +268,80 @@ class AutoSolverFactory(object):
         return result
 
 
-def _iter_tags(parent, ns):
-    for tag in parent.xpath('p:tag|p:bcond', namespaces={'p': ns}):
+def _iter_tags(tags):
+    for tag in tags:
         yield tag
-        for t in _iter_tags(tag, ns):
-            t.attrib['name'] = tag.attrib['name'] + '/' + t.attrib['name']
-            yield t
+        if 'tags' in tag:
+            for t in _iter_tags(tag['tags']):
+                t['tag'] = tag['tag'] + '/' + t['tag']
+                yield t
 
 
-def load_xml(filename, categories=CATEGORIES, solvers=SOLVERS):
+def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
+    if yaml is None: return
 
-    dom = etree.parse(filename)
-    root = dom.getroot()
+    for solver in yaml.load(open(filename)):
+        # try:
+            if not isinstance(solver, dict): continue
 
-    ns = root.nsmap.get(None, '')
-    xns = '{'+ns+'}' if ns else ''
+            name = solver.get('solver')
+            if name is None: continue
 
-    if root.tag != xns+'solvers': return
+            schema = []
 
-    data = {}
+            cat = solver.get('category')
+            if cat is None: raise ValueError('Unspecified category')
 
-    for solver in root:
-        if solver.tag not in (xns+'solver', xns+'template'):
-            continue
-        if solver.attrib.get('obsolete'):
-            continue
-
-        name = solver.attrib.get('name')
-        if name is None: return
-
-        schema = []
-        geometry_type = None
-        mesh_type = None
-        providers = []
-        receivers = []
-
-        cat = solver.attrib.get('category')
-        if cat is None:
-            raise ValueError('Unspecified category')
-        lib = solver.attrib.get('lib')
-
-        g = solver.find(xns+'geometry')
-        try:
-            geometry_type = g.attrib['type']
-        except (KeyError, AttributeError):
-            pass
-            # if name.endswith('Cyl'):
-            #     geometry_type = "Cylindrical"
-            # else:
-            #     geometry_type = "Cartesian" + name[-2:]
-
-        mesh_types = set()
-        m = solver.find(xns+'mesh')
-        if m is not None:
-            try:
-                mesh_type = m.attrib['type']
-            except (KeyError):
-                mesh_type = None
-            else:
-                mesh_types.add(mesh_type)
-            for t in m.findall(xns+'type'):
-                mesh_types.add(t.text)
-
-        for tag in _iter_tags(solver, ns):
-            if tag.tag == xns+'tag':
-                tn, tl = tag.attrib['name'], tag.attrib['label']
-                attrs = AttrList()
-                for attr in tag.iterchildren(xns+'attr', xns+'group'):
-                    if attr.tag == xns+'attr':
-                        attrs.append(read_attr(tn, attr, xns))
-                    elif attr.tag == xns+'group':
-                        gl = attr.attrib['label']
-                        gu = attr.attrib.get('unit')
-                        if gu is not None:
-                            gl += u' [{}]'.format(gu)
-                        group = AttrGroup(gl)
-                        for attr in attr.findall(xns+'attr'):
-                            group.append(read_attr(tn, attr, xns))
-                        attrs.append(group)
-                schema.append(SchemaTag(tn, tl, attrs))
-            elif tag.tag == xns+'bcond':
-                values = tag.attrib.get('values')
-                if values is not None: values = values.split(',')
-                mt = tag.attrib.get('type', mesh_type)
-                ma = tag.attrib.get('mesh')
-                if ma is not None:
-                    ma = ma.split(':')
-                ga = tag.attrib.get('geometry')
-                if ga is not None:
-                    ga = ga.split(':')
-                BCond = BCONDS[mt]
-                schema.append(BCond(tag.attrib['name'], tag.attrib['label'], tag.attrib.get("group"),
-                                    mt, ma, ga, values))
-
-        flow = solver.find(xns+'flow')
-        if flow is not None:
-            providers.extend((e.attrib['name'], e.attrib.get('for', e.attrib['name'][3:]))
-                         for e in flow.findall(xns+'provider'))
-            receivers.extend((e.attrib['name'], e.attrib.get('for', e.attrib['name'][2:]))
-                         for e in flow.findall(xns+'receiver'))
-
-        template = solver.attrib.get('template')
-        if template and template in data:
-            s, l, g, m, p, r = data[template]
-            schema.extend(s)
-            if geometry_type is None: geometry_type = g
-            mesh_types.update(m)
-            providers.extend(p)
-            receivers.extend(r)
-            if lib is None: lib = l
-        else:
+            lib = solver.get('lib')
             if lib is None: lib = os.path.basename(os.path.dirname(filename)[:-4])
 
-        data[name] = schema, lib, geometry_type, mesh_types, providers, receivers
+            geometry_type = solver.get('geometry')
+            mesh_type = solver.get('mesh')
+            if mesh_type:
+                if isinstance(mesh_type, list):
+                    mesh_types = set(mesh_type)
+                    mesh_type = mesh_type[0]
+                else:
+                    mesh_types = {mesh_type}
+            else:
+                mesh_types = set()
 
-        if solver.tag == xns+'solver':
+            for tag in _iter_tags(solver['tags']):
+                if 'tag' in tag:
+                    tn, tl = tag['tag'], tag['label']
+                    attrs = AttrList()
+                    for attr in tag['attrs']:
+                        if 'attr' in attr:
+                            attrs.append(read_attr(tn, attr))
+                        elif 'group' in attr:
+                            gl = attr['group']
+                            gu = attr.get('unit')
+                            if gu is not None:
+                                gl += u' [{}]'.format(gu)
+                            group = AttrGroup(gl)
+                            for a in attr.get('attrs', []):
+                                group.append(read_attr(tn, a, gu))
+                            attrs.append(group)
+                    schema.append(SchemaTag(tn, tl, attrs))
+                elif 'bcond' in tag:
+                    values = tag.get('values')
+                    if values is not None and not isinstance(values, list):
+                        values = [values]
+                    mt = tag.get('mesh type', mesh_type)
+                    ma = tag.get('mesh')
+                    ga = tag.get('geometry')
+                    BCond = BCONDS[mt]
+                    schema.append(BCond(tag['bcond'], tag['label'], tag.get("group"), mt, ma, ga, values))
+
+            providers = [it for it in solver.get('providers', [])]
+            receivers = [it for it in solver.get('receivers', [])]
+
             if cat not in categories:
                 categories.append(cat)
             solvers[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, providers, receivers)
+
+        # except:
+        #     continue
 
 
 # Find XML files with solvers configuration
@@ -391,5 +350,5 @@ from os.path import dirname as _d
 for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(_d(__file__)))), 'solvers')):
     if os.path.split(_dirname)[-1] == 'skel': continue
     for _f in _files:
-        if _f.endswith('.xml'):
-            load_xml(os.path.join(_dirname, _f))
+        if _f.endswith('.yml'):
+            load_yaml(os.path.join(_dirname, _f))

@@ -1,0 +1,154 @@
+- solver: DriftDiffusion2D
+  lib: ddm2d
+  category: electrical
+  geometry: Cartesian2D
+  mesh: Rectangular2D
+  tags:
+  - bcond: voltage
+    label: Voltage
+  - tag: loop
+    label: Configuration of the Self-Consistent Loop
+    help: Configuration of the self-consistent loop.
+    attrs:
+    - attr: stat
+      label: Statistics
+      type: choice
+      default: Maxwell-Boltzmann
+      choices:
+      - Maxwell-Boltzmann
+      - Fermi-Dirac
+      help: Statistics assumed in drift-diffusion equations.
+    - attr: conttype
+      label: Type of contacts
+      type: choice
+      default: ohmic
+      choices:
+      - ohmic
+      - Schottky
+      help: Type of contacts.
+    - attr: SchottkyP
+      label: Schottky barrier for p-type contact
+      type: float
+      default: 0.0
+      help: Schottky barrier for p-type contact.
+    - attr: SchottkyN
+      label: Schottky barrier for n-type contact
+      type: float
+      default: 0.0
+      help: Schottky barrier for n-type contact.
+    - attr: Rsrh
+      label: SRH recombination
+      type: bool
+      default: false
+      help: Consider Shockley-Read-Hall recombination.
+    - attr: Rrad
+      label: Radiative recombination
+      type: bool
+      default: false
+      help: Consider radiative recombination.
+    - attr: Raug
+      label: Auger recombination
+      type: bool
+      default: false
+      help: Consider Auger recombination.
+    - attr: Pol
+      label: Polarization effects
+      type: bool
+      default: false
+      help: Polarization effects.
+    - attr: FullIon
+      label: Complete ionization of dopants
+      type: bool
+      default: true
+      help: Complete ionization of dopants.
+    - attr: maxerrVi
+      label: Max. initial potential update
+      type: float
+      unit: V
+      default: 1.0e-06
+      help: Limit for the initial potential estimate updates.
+    - attr: maxerrV0
+      label: Max. built-in potential update
+      type: float
+      unit: V
+      default: 1.0e-06
+      help: Limit for the built-in potential updates.
+    - attr: maxerrV
+      label: Max. potential update
+      type: float
+      unit: V
+      default: 1.0e-06
+      help: Limit for the potential updates.
+    - attr: maxerrFn
+      label: Max. <i>F<sub>n</sub></i> update
+      type: float
+      unit: eV
+      default: 0.0001
+      help: Limit for the electrons quasi-Fermi level updates.
+    - attr: maxerrFp
+      label: Max. <i>F<sub>p</sub></i> update
+      type: float
+      unit: eV
+      default: 0.0001
+      help: Limit for the holes quasi-Fermi level updates.
+    - attr: loopsVi
+      label: Initial potential loop limit
+      type: int
+      default: 10000
+      help: Loops limit for the initial potential estimate.
+    - attr: loopsV0
+      label: Built-in potential loop limit
+      type: int
+      default: 200
+      help: Loops limit for the built-in potential.
+    - attr: loopsV
+      label: Potential loop limit
+      type: int
+      default: 3
+      help: Loops limit for the potential.
+    - attr: loopsFn
+      label: <i>F<sub>n</sub></i> loop limit
+      type: int
+      default: 3
+      help: Loops limit for the electrons quasi-Fermi level.
+    - attr: loopsFp
+      label: <i>F<sub>p</sub></i> loop limit
+      type: int
+      default: 3
+      help: Loops limit for the holes quasi-Fermi level.
+  - tag: matrix
+    label: Matrix Solver
+    help: Configuration of the matrix solver.
+    attrs:
+    - attr: algorithm
+      label: Solution algorithm
+      type: choice
+      default: cholesky
+      choices:
+      - cholesky
+      - gauss
+      - iterative
+      help: Algorithm used for solving set of linear positive-definite equations.
+    - attr: itererr
+      label: Max. residual error
+      type: float
+      default: 1.0e-08
+      help: Maximum allowed residual error for the iterative algorithm.
+    - attr: iterlim
+      label: Max. number of iterations
+      type: int
+      default: 10000
+      help: Maximum number of iterations for the iterative algorithm.
+    - attr: logfreq
+      label: Progress logging frequency
+      type: int
+      default: 500
+      help: Number of iterations after which the progress is logged.
+  providers:
+  - outPotential
+  - outQuasiFermiEnergyLevelForElectrons
+  - outQuasiFermiEnergyLevelForHoles
+  - outConductionBandEdge
+  - outValenceBandEdge
+  receivers:
+  - inTemperature

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <boost/algorithm/string.hpp>
 
 #include "manager.h"
 
@@ -230,19 +231,21 @@ void Manager::loadSolvers(XMLReader& reader) {
                 boost::filesystem::directory_iterator end;
                 while (iter != end) {
                     boost::filesystem::path p = iter->path();
-                    if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".xml") {
-                        XMLReader xml(p.string().c_str());
-                        xml.requireTag();
-                        while(xml.requireTagOrEnd()) {
-                            std::string tag = xml.getTagName();
-                            if (tag != "solver" && tag.substr(max(tag.length(),size_t(7))-7) != " solver")
-                                continue;
-                            auto cls = xml.requireAttribute("name");
-                            auto lib = xml.getAttribute("lib");
-                            if (!lib) lib.reset(); //TODO should we do this?
-                            libs[cls] = *lib;
-                            xml.ignoreAllAttributes();
-                            xml.gotoEndOfCurrentTag();
+                    std::string current_solver;
+                    if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".yml") {
+                        // Look for lib in yaml file
+                        std::ifstream yaml(p.string());
+                        std::string line;
+                        while (std::getline(yaml, line)) {
+                            if (line.substr(0, 9) == "- solver:") {
+                                current_solver = line.substr(9);
+                                boost::trim(current_solver);
+                            }
+                            else if (current_solver != "" && line.substr(0, 6) == "  lib:") {
+                                std::string lib = line.substr(6);
+                                boost::trim(lib);
+                                libs[current_solver] = lib;
+                            }
                         }
                     }
                     ++iter;

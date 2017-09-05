@@ -4,7 +4,7 @@ from __future__ import print_function
 import sys
 import os
 
-from lxml import etree as et
+import yaml
 
 source = sys.argv[1]
 target = sys.argv[2]
@@ -16,29 +16,30 @@ if category == 'skel': exit()
 
 data = []
 
+cls = None
+
 # Find XML files with solvers configuration
 for dirname, _, files in os.walk(source):
-    if 'solvers.xml' in files:
+    if 'solvers.yaml' in files:
         library = os.path.basename(dirname)
         try:
-            dom = et.parse(os.path.join(dirname, 'solvers.xml'))
-        except et.XMLSyntaxError:
+            source = yaml.load(open(os.path.join(dirname, 'solvers.yaml')))
+        except:
             continue
 
-        root = dom.getroot()
-        xns = root.nsmap.get(None, '')
-        if xns: xns = '{'+xns+'}'
+        for solver in source:
+            if not isinstance(solver, dict): continue
+            cls = solver.get('solver')
+            if cls is None: continue
 
-        for solver in root.findall(xns+'solver'):
-            cat = solver.attrib.get('category', category)
-            dat = solver.attrib.get('lib', library), solver.attrib['name'], \
-                  solver.attrib.get('obsolete', '').lower() not in ('yes', 'true', '1')
+            lib = solver.get('lib', library)
+            dat = lib, cls
             data.append(dat)
 
 out = open(os.path.join(target, '__init__.py'), 'w')
 
-for lib0,cls0,ok0 in data:
-    if not ok0: break
+if cls is None:
+    sys.exit(0)
 
 out.write("# Automatically generated. All your changes will be lost on recompilation!\n\n")
 out.write('''"""
@@ -51,8 +52,8 @@ module.
 Example:
 
     >>> import %(category)s
-    >>> %(category)s.%(cls0)s('mysolver')
-    <%(category)s.%(lib0)s.%(cls0)s at 0x42ac2b8>
+    >>> %(category)s.%(cls)s('mysolver')
+    <%(category)s.%(lib)s.%(cls)s at 0x42ac2b8>
 
 Solver classes
 --------------
@@ -63,28 +64,21 @@ Solver classes
 
 ''' % locals())
 
-for lib,cls,ok in data:
-    if ok:
-        out.write('   %(lib)s.%(cls)s\n' % locals())
+for lib, cls in data:
+    out.write('   %(lib)s.%(cls)s\n' % locals())
 
 out.write('"""\n')
 
-for lib,cls,ok in data:
-  if ok:
+for lib, cls in data:
     out.write('''\n\ndef %(cls)s(name=''):
     """
     Create %(cls)s solver.
-
+    
     This function automatically loads ``%(lib)s`` submodule and creates
     ``%(lib)s.%(cls)s`` class.
-
+    
     Args:
         name (str): Solver name.
     """
-    import %(category)s.%(lib)s
-    return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals())
-  else:
-    out.write('''\n\ndef %(cls)s(name=''):
-    "obsolete"
     import %(category)s.%(lib)s
     return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals())

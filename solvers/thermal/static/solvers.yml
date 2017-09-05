@@ -1,0 +1,114 @@
+- solver: Static2D
+  lib: static
+  category: thermal
+  geometry: Cartesian2D
+  mesh: Rectangular2D
+  tags:
+  - &temperature
+    bcond: temperature
+    label: Temperature
+  - &heatflux
+    bcond: heatflux
+    label: Heat Flux
+  - &convection
+    bcond: convection
+    label: Convective
+    values:
+    - coeff
+    - ambient
+    help: This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
+      coefficient and <i>ambient</i> for ambient temperature instead.
+  - &radiation
+    bcond: radiation
+    label: Radiative
+    values:
+    - emissivity
+    - ambient
+    help: This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
+      emissivity and <i>ambient</i> for ambient temperature instead.
+  - &loop
+    tag: loop
+    label: Self-Consistent Loop
+    help: Configuration of the self-consistent loop.
+    attrs:
+    - attr: inittemp
+      label: Initial temperature
+      type: float
+      unit: K
+      default: 300
+      help: Initial temperature used for the first computation.
+    - attr: maxerr
+      label: Maximum allowed error
+      type: float
+      unit: K
+      default: 0.05
+      help: Maximum allowed error in a self-consistent loop.
+  - &matrix
+    tag: matrix
+    label: Matrix Solver
+    help: Configuration of the matrix solver.
+    attrs:
+    - attr: algorithm
+      label: Solution algorithm
+      type: choice
+      default: cholesky
+      choices:
+      - cholesky
+      - gauss
+      - iterative
+      help: Algorithm used for solving set of linear positive-definite equations.
+    - attr: itererr
+      label: Max. residual error
+      type: float
+      default: 1.0e-08
+      help: Maximum allowed residual error for the iterative algorithm.
+    - attr: iterlim
+      label: Max. number of iterations
+      type: int
+      default: 10000
+      help: Maximum number of iterations for the iterative algorithm.
+    - attr: logfreq
+      label: Progress logging frequency
+      type: int
+      default: 500
+      help: Number of iterations after which the progress is logged.
+  providers:
+  - outTemperature
+  receivers:
+  - inHeat
+- solver: StaticCyl
+  lib: static
+  category: thermal
+  geometry: Cylindrical
+  mesh: Rectangular2D
+  tags:
+  - *temperature
+  - *heatflux
+  - *convection
+  - *radiation
+  - *loop
+  - *matrix
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  receivers:
+  - inHeat
+- solver: Static3D
+  lib: static
+  category: thermal
+  geometry: Cartesian3D
+  mesh: Rectangular3D
+  tags:
+  - *temperature
+  - *heatflux
+  - *convection
+  - *radiation
+  - *loop
+  - *matrix
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  receivers:
+  - inHeat

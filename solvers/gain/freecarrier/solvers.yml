@@ -1,0 +1,55 @@
+- solver: FreeCarrier2D
+  lib: freecarrier
+  category: gain
+  geometry: Cartesian2D
+  mesh:
+  - Ordered
+  - Ordered
+  - Regular
+  tags:
+  - &config
+    tag: config
+    label: Gain Parameters
+    help: Some important gain parameters.
+    attrs:
+    - attr: lifetime
+      label: Carriers lifetime
+      type: float
+      unit: ps
+      default: 0.1
+      help: Average carriers lifetime. This parameter is used for gain spectrum broadening.
+    - attr: matrix-elem
+      label: Momentum matrix element
+      type: float
+      unit: eV×m<sub>0</sub>
+      help: Value of the squared matrix element in gain computations. If it is not set it is estimated automatically.
+    - attr: strained
+      label: Strained
+      type: bool
+      default: false
+      help: Boolean attribute indicating if the solver should consider strain in the active region. If set
+        to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
+        is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
+    - attr: T0
+      label: Reference temperature
+      type: float
+      unit: K
+      default: 300
+      help: Reference temperature. This is the temperature used for initial computation of the energy levels.
+  providers:
+  - outGain
+  receivers:
+  - inTemperature
+  - inCarriersConcentration
+- solver: FreeCarrierCyl
+  lib: freecarrier
+  category: gain
+  geometry: Cylindrical
+  mesh: Ordered, Regular
+  tags:
+  - *config
+  providers:
+  - outGain
+  receivers:
+  - inTemperature
+  - inCarriersConcentration

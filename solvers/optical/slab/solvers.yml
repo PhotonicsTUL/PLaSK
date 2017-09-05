@@ -1,0 +1,615 @@
+- solver: Fourier2D
+  lib: slab
+  category: optical
+  geometry: Cartesian2D
+  tags:
+  - tag: expansion
+    label: Details on Fourier Expansion
+    help: Details on Fourier expansion used in computations
+    attrs:
+    - &lam0
+      attr: lam0
+      label: Wavelength for parameters
+      type: float
+      unit: nm
+      help: This is a wavelength at which refractive index is retrieved from the structure. If this parameter
+        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is most accurate, but can be very inefficient.
+    - &update-gain
+      attr: update-gain
+      label: Always update gain
+      type: bool
+      default: false
+      help: If this attribute is set to 'yes', material parameters are always recomputed for layers with
+        gains. This allows to set 'lam0' for better efficiency and still update gain for slight changes
+        of wavelength.
+    - &size2
+      attr: size
+      label: Expansion size
+      type: int
+      default: 12
+      help: Expansion size.
+    - attr: refine
+      label: Averaging points
+      type: int
+      default: 32
+      help: Number of refinement points for refractive index averaging.
+    - attr: oversampling
+      label: Oversampling
+      type: float
+      default: 1
+      help: Factor by which the number of coefficients is increased for FFT.
+    - &dct
+      attr: dct
+      label: Symmetric transform type
+      type: choice
+      default: 2
+      choices:
+      - '1'
+      - '2'
+      help: Type of discrete cosine transform for symmetric expansion.
+    - &smooth
+      attr: smooth
+      label: Smoothing parameter
+      type: float
+      default: 0.00025
+      help: Smoothing parameter for material boundaries (increases convergence).
+    - &group-layers
+      attr: group-layers
+      label: Layers grouping
+      type: bool
+      default: true
+      help: Should similar layers be grouped for better performance.
+  - tag: mode
+    label: Mode Properties
+    help: Mode properties.
+    attrs:
+    - &wavelength
+      attr: wavelength
+      label: Wavelength
+      type: float
+      unit: nm
+      help: Light wavelength.
+    - group: Wavevector
+      unit: µm<sup>-1</sup>
+      attrs:
+      - &k-long
+        attr: k-long
+        label: Longitudinal
+        type: float
+        default: 0
+        help: Longitudinal wave-vector component.
+      - &k-tran
+        attr: k-tran
+        label: Transverse
+        type: float
+        default: 0
+        help: Transverse wave-vector component.
+    - attr: symmetry
+      label: Mode symmetry
+      type: choice
+      default: none
+      choices:
+      - none
+      - Etran
+      - Elong
+      help: Mode symmetry. Specify a symmetric field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
+    - attr: polarization
+      label: Mode polarization
+      type: choice
+      default: none
+      choices:
+      - none
+      - Etran
+      - Elong
+      help: Mode polarization. Give an existing field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
+    - &emission
+      attr: emission
+      label: Direction of emission
+      type: choice
+      default: undefined
+      choices:
+      - undefined
+      - top
+      - bottom
+      help: Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power. Currently, the fields are normalized only for top and bottom emission.
+  - tag: interface
+    label: Matching Interface Position in the Stack
+    help: Matching interface position in the stack.
+    attrs:
+    - &index
+      attr: index
+      label: Layer index
+      type: int
+      conflicts:
+      - attr: position
+      - attr: object
+      - attr: path
+      help: Index of the layer, below which the interface is located.
+    - &position
+      attr: position
+      label: Position
+      type: float
+      unit: µm
+      conflicts:
+      - attr: index
+      - attr: object
+      - attr: path
+      help: Interface will be located as close as possible to the vertical coordinate specified in this
+        attribute.
+    - &object
+      attr: object
+      label: Object name
+      type: geometry object
+      conflicts:
+      - attr: index
+      - attr: position
+      help: Name of the geometry object below which the interface is located.
+    - &path
+      attr: path
+      label: Object path
+      type: geometry path
+      conflicts:
+      - attr: index
+      - attr: position
+      help: Optional path name, specifying particular instance of the object given in the object attribute.
+  - tag: pml
+    label: Horizontal PMLs
+    help: Side absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - &factor2
+      attr: factor
+      label: Scaling factor
+      type: complex
+      default: 1.0
+      help: PML scaling factor.
+    - &shape2
+      attr: shape
+      label: Shape order
+      type: float
+      default: 1
+      help: PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+    - attr: dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 0.5
+      help: PML distance from the structure.
+    - attr: size
+      label: Size
+      type: float
+      unit: µm
+      default: 1.0
+      help: PML size.
+  - &transfer
+    tag: transfer
+    label: Transfer Algorithm Settings
+    help: Vertical field transfer settings.
+    attrs:
+    - attr: method
+      label: Transfer method
+      type: choice
+      default: auto
+      choices:
+      - auto
+      - reflection
+      - admittance
+      help: Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic,
+        in which case the reflection computations will use reflection transfer and eigenmode search is done
+        with admittance transfer.
+  - &vpml
+    tag: vpml
+    label: Vertical PMLs
+    help: Vertical absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - attr: factor
+      label: Scaling factor
+      type: complex
+      default: (1-2j)
+      help: PML scaling factor.
+    - attr: dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 10.0
+      help: PML distance from the structure.
+    - attr: size
+      label: Size
+      type: float
+      unit: µm
+      default: 2.0
+      help: PML size.
+  - &root
+    tag: root
+    label: Parameters of the Root-Finding Algorithm
+    help: Parameters of the global root-finding algorithm.
+    attrs:
+    - attr: method
+      label: Root finding method
+      type: choice
+      default: muller
+      choices:
+      - muller
+      - broyden
+      - brent
+      help: Root finding algorithm (Muller's method or Broyden's method).
+    - attr: tolx
+      label: Tolerance on argument
+      type: float
+      default: 1.0e-06
+      help: Maximum change of the argument which is allowed for convergent solution.
+    - attr: tolf-min
+      label: Sufficient determinant value
+      type: float
+      default: 1.0e-07
+      help: Minimum value of the determinant sufficient to assume convergence.
+    - attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 1.0e-05
+      help: Maximum value of the determinant required to assume convergence.
+    - attr: maxstep
+      label: Maximum Broyden iteration step
+      type: float
+      default: 0.1
+      help: Maximum step in one iteration of root finding. Significant for the Broyden's method only.
+    - attr: maxiter
+      label: Maximum number of iterations
+      type: int
+      default: 500
+      help: Maximum number of root finding iterations.
+    - attr: alpha
+      label: Broyden decrease factor
+      type: float
+      default: 1.0e-07
+      help: Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
+    - attr: lambda
+      label: Minimum Broyden step decrease ratio
+      type: float
+      default: 1.0e-08
+      help: Minimum decrease ratio of one step (Broyden method only).
+    - attr: initial-range
+      label: Initial Muller range size
+      type: complex
+      default: 0.001
+      help: Initial range size (Muller method only).
+  - tag: mirrors
+    label: Mirror Losses
+    help: ''
+    attrs:
+    - attr: R1
+      label: Front reflectivity
+      type: float
+      help: Reflectivity of the front mirror.
+    - attr: R2
+      label: Back reflectivity
+      type: float
+      help: Reflectivity of the back mirror.
+  providers:
+  - outLightMagnitude
+  - outRefractiveIndex
+  - outHeat
+  receivers:
+  - inTemperature
+  - inGain
+- solver: Fourier3D
+  lib: slab
+  category: optical
+  geometry: Cartesian3D
+  tags:
+  - tag: expansion
+    label: Details on Fourier Expansion
+    help: ''
+    attrs:
+    - *lam0
+    - *update-gain
+    - attr: size
+      label: Expansion sizes
+      type: int
+      default: 12
+      conflicts:
+      - attr: size-tran
+      - attr: size-long
+      help: Expansion sizes along longitudinal and transverse directions. You cannot set this attribute
+        together with ‘Longitudinal expansion size’ (<tt>size-long</tt>) and ‘Transverse expansion size’
+        (<tt>size-tran</tt>)
+    - group: Expansion sizes
+      attrs:
+      - attr: size-long
+        label: Longitudinal
+        type: int
+        conflicts:
+        - attr: size
+        help: Expansion size along longitudinal axis. You cannot set this attribute together with ‘Expansion
+          sizes’ (<tt>size</tt>).
+      - attr: size-tran
+        label: Transverse
+        type: int
+        conflicts:
+        - attr: size
+        help: Expansion size along transverse axis. You cannot set this attribute together with ‘Expansion
+          sizes’ (<tt>size</tt>).
+    - attr: refine
+      label: Averaging points
+      type: int
+      default: 16
+      conflicts:
+      - attr: refine-tran
+      - attr: refine-long
+      help: Number of refinement points for refractive index averaging along longitudinal and transverse
+        directions. You cannot set this attribute together with ‘Longitudinal averaging points’ (<tt>refine-long</tt>)
+        and ‘Transverse averaging points’ (<tt>refine-tran</tt>) .
+    - group: Averaging points
+      attrs:
+      - attr: refine-long
+        label: Longitudinal
+        type: int
+        conflicts:
+        - attr: refine
+        help: Number of refinement points for refractive index averaging along longitudinal axis. You cannot
+          set this attribute together with ‘Averaging points’ (<tt>refine</tt>).
+      - attr: refine-tran
+        label: Transverse
+        type: int
+        conflicts:
+        - attr: refine
+        help: Number of refinement points for refractive index averaging along transverse axis. You cannot
+          set this attribute together with ‘Averaging points’ (<tt>refine</tt>).
+    - attr: oversampling
+      label: Oversampling
+      type: float
+      default: 1
+      conflicts:
+      - attr: oversampling-long
+      - attr: oversampling-tran
+      help: Factor by which the number of coefficients is increased for FFT along longitudinal and transverse
+        directions. You cannot set this attribute together with ‘Longitudinal oversampling’ (<tt>oversampling-long</tt>)
+        and ‘Transverse oversampling’ (<tt>oversampling-tran</tt>) .
+    - group: Oversampling
+      attrs:
+      - attr: oversampling-long
+        label: Longitudinal
+        type: float
+        conflicts:
+        - attr: oversampling
+        help: Factor by which the number of coefficients is increased for FFT along longitudinal direction.
+          You cannot set this attribute together with ‘Oversampling’ (<tt>oversampling</tt>).
+      - attr: oversampling-tran
+        label: Transverse
+        type: float
+        conflicts:
+        - attr: oversampling
+        help: Factor by which the number of coefficients is increased for FFT along transverse direction.
+          You cannot set this attribute together with ‘Oversampling’ (<tt>oversampling</tt>).
+    - *dct
+    - *smooth
+    - *group-layers
+  - tag: mode
+    label: Mode Properties
+    help: Mode properties.
+    attrs:
+    - *wavelength
+    - group: Wavevector
+      unit: µm<sup>-1</sup>
+      attrs:
+      - *k-long
+      - *k-tran
+    - group: Mode symmetry
+      attrs:
+      - attr: symmetry-long
+        label: Longitudinal
+        type: choice
+        default: none
+        choices:
+        - none
+        - Etran
+        - Elong
+        help: Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
+          '<i>Hx</i>').
+      - attr: symmetry-tran
+        label: Transverse
+        type: choice
+        default: none
+        choices:
+        - none
+        - Etran
+        - Elong
+        help: Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
+          '<i>Hx</i>').
+    - *emission
+  - &interface
+    tag: interface
+    label: Matching interface position in the stack
+    help: Matching interface position in the stack.
+    attrs:
+    - *index
+    - *position
+    - *object
+    - *path
+  - tag: pmls
+    label: Longitudinal and Transverse PMLs
+    help: Side absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - attr: factor
+      label: Scaling factor
+      type: complex
+      default: (1-2j)
+      conflicts:
+      - tag: pmls/long
+        attr: factor
+      - tag: pmls/tran
+        attr: factor
+      help: PML scaling factor.
+    - attr: shape
+      label: Shape order
+      type: float
+      default: 1
+      conflicts:
+      - tag: pmls/long
+        attr: shape
+      - tag: pmls/tran
+        attr: shape
+      help: PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+    - attr: dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 0.5
+      conflicts:
+      - tag: pmls/long
+        attr: dist
+      - tag: pmls/tran
+        attr: dist
+      help: PML distance from the structure.
+    - attr: size
+      label: Size
+      type: float
+      unit: µm
+      default: 1.0
+      conflicts:
+      - tag: pmls/long
+        attr: size
+      - tag: pmls/tran
+        attr: size
+      help: PML size.
+    tags:
+    - tag: long
+      label: Longitudinal PML (overrides ‘Longitudinal and transverse PMLs’)
+      help: Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
+      attrs:
+      - &factor
+        attr: factor
+        label: Scaling factor
+        type: complex
+        conflicts:
+        - tag: pmls
+          attr: factor
+        help: PML scaling factor.
+      - &shape
+        attr: shape
+        label: Shape order
+        type: float
+        conflicts:
+        - tag: shape
+          attr: factor
+        help: PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+      - &dist
+        attr: dist
+        label: Distance
+        type: float
+        unit: µm
+        conflicts:
+        - tag: dist
+          attr: factor
+        help: PML distance from the structure.
+      - &size
+        attr: size
+        label: Size
+        type: float
+        unit: µm
+        conflicts:
+        - tag: size
+          attr: factor
+        help: PML size.
+    - tag: tran
+      label: Transverse PML (overrides ‘Longitudinal and transverse PMLs’)
+      help: Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
+      attrs:
+      - *factor
+      - *shape
+      - *dist
+      - *size
+  - *transfer
+  - *vpml
+  - *root
+  providers:
+  - outLightMagnitude
+  - outRefractiveIndex
+  - outHeat
+  - outLoss: ModalLoss
+  - outWavelenght
+  receivers:
+  - inTemperature
+  - inGain
+- solver: BesselCyl
+  lib: slab
+  category: optical
+  geometry: Cartesian2D
+  mesh: Ordered
+  tags:
+  - tag: expansion
+    label: Details on Bessel Expansion
+    help: Details on Bessel expansion used in computations
+    attrs:
+    - attr: lam0
+      label: Wavelength for parameters
+      type: float
+      help: This is a wavelength at which refractive index is retrieved from the structure. If this parameter
+        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is most accurate, but can be very inefficient.
+    - *update-gain
+    - attr: domain
+      label: Computational domain
+      type: choice
+      default: infinite
+      choices:
+      - finite
+      - infinite
+      help: Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over
+        a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
+    - *size2
+    - *group-layers
+    - attr: integrals-error
+      label: Maximum integration error
+      type: float
+      default: 1.0e-06
+      help: Maximum error for Bessel functions integrals.
+    - attr: integrals-points
+      label: Maximum integration points
+      type: int
+      default: 1000
+      help: Maximum number of points each element is sampled for computing Bessel functions integrals.
+    - attr: k-method
+      label: Wavevectors selection method
+      type: choice
+      default: uniform
+      choices:
+      - uniform
+      - laguerre
+      help: Method of selecting wavevectors for numerical Hankel transform in infinite domain.
+    - attr: k-scale
+      label: Wavevectors scaling
+      type: float
+      default: 10
+      help: Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and divided
+        by the geometry width it is a maximum considered wavevector.
+  - *interface
+  - *transfer
+  - *vpml
+  - *root
+  - tag: pml
+    label: Radial PMLs (for finite domain only)
+    help: Side absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - *factor2
+    - *shape2
+    - attr: dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 20.0
+      help: PML distance from the structure.
+    - attr: size
+      label: Size
+      type: float
+      unit: µm
+      default: 0.0
+      help: PML size.
+  providers:
+  - outLightMagnitude
+  - outRefractiveIndex
+  - outHeat
+  receivers:
+  - inTemperature
+  - inGain

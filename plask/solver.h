@@ -60,7 +60,7 @@ Once you have your source tree set up, do the following:
 -# Write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
    \c solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
    of Python interface).
--# Write \c solvers.xml file that documents \c xpl configuration of your solver for generating the \c xpl reference in the user manual and
+-# Write \c solvers.yml file that documents \c xpl configuration of your solver for generating the \c xpl reference in the user manual and
    for automatic configuration panel creation in GUI.
 -# Finally write a good user manual for your solver ;)
 
@@ -430,40 +430,60 @@ TODO
 
 \subsection solvers_xpl_details Writing configuration description
 
-Once your solver is working, you should create the \b solvers.xml file in the main directory of your solver. In this file you should
+Once your solver is working, you should create the \b solvers.yml file in the main directory of your solver. In this file you should
 specify all the XML configuration tags and attributes that are read from an \c xpl file. An example of such file can be found in
-\c solvers/skel/solvers.xml. For the above example the file should look like:
+\c solvers/skel/solvers.yml. For the above example the file should look like:
 
-\code{.xml}
-<?xml version="1.0" encoding="utf-8" ?>
-<solvers xmlns="http://phys.p.lodz.pl/solvers.xsd">
-  <solver name="FiniteDifferences2D" category="optical" lib="fd">
-    Example finite difference solver.
-    <geometry type="Cartesian2D"/>
-    <mesh type="Rectangular2D"/>
-    <tag name="newton" label="Newton method settings">
-      Settings of the Newton root finding method.
-      <attr name="tolx" label="Argument tolerance" type="float">Tolerance of the argument.</attr>
-      <attr name="tolf" label="Function value tolerance" type="float">Tolerance of the function value.</attr>
-      <attr name="maxstep" label="Maximum step" type="float">Maximum step allowed in a single iteration.</attr>
-      <attr name="method" label="Root-finding method" type="choice">
-        Specific algorithm used for root finding.
-        <choice>raphson</choice>
-        <choice>secant</choice>
-      </attr>
-    </tag>
-    <tag name="wavelength" label="Wavelength">
-      Wavelength for which the calculations are performed.
-      <attr name="value" label="Value" type="float" unit="nm">Wavelength value.</attr>
-    </tag>
-    <bcond name="boundary" label="Boundary condition"/>
-    <flow>
-      <receiver name="inWavelength"/>
-      <receiver name="inReceiver"/>
-      <provider name="outProvider"/>
-    </flow>
-  </solver>
-</solvers>
+\code{.yml}
+- solver: YourSolver
+  lib: your_solver
+  category: skel
+
+  geometry: YourGeometry
+  mesh: YourMesh
+
+  tags:
+
+  - tag: configuration-tag
+    label: Configuration Tag
+    help: Documentation of your configuration tag
+    attrs:
+    - attr: tag-attr
+      label: Tag attribute
+      type: attribute type
+      unit: unit
+      help: Pull all the configuration attributes like this.
+    - attr: other-attr
+      label: Other attribute
+      type: choice
+      choices:
+      - First choice
+      - Second choice
+      - Third choice
+      help: Another configuration attribute.
+
+  - tag: another-configuration-tag
+    label: Different Configuration Tag
+    help: ''
+    attrs:
+    - attr: attribute
+      label: Some attribute
+      type: attribute type
+      unit: unit
+      help: Pull all the configuration attributes like this.
+
+  - bcond: boundary_condtion
+    label: Boundary Condition
+
+  - bcond: other_boundary_condtion
+    label: Another Boundary Condition
+    help: Additional description of boundary condition in help.
+
+  providers:
+  - outProvider: QuantityIfNameDifferent
+
+  receivers:
+  - inReceiver
 \endcode
 
 This concludes our short tutorial. Now you can go on and write your own calculation solver. Good luck!
