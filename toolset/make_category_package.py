@@ -20,10 +20,10 @@ cls = None
 
 # Find XML files with solvers configuration
 for dirname, _, files in os.walk(source):
-    if 'solvers.yaml' in files:
+    if 'solvers.yml' in files:
         library = os.path.basename(dirname)
         try:
-            source = yaml.load(open(os.path.join(dirname, 'solvers.yaml')))
+            source = yaml.load(open(os.path.join(dirname, 'solvers.yml')))
         except:
             continue
 
