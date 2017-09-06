@@ -519,7 +519,7 @@ int main(int argc, const char *argv[])
                         PyErr_Clear();
                         locals[keyval.first] = keyval.second;
                     }
-                    plask::writelog(plask::LOG_DATA, "{} = {}", keyval.first, keyval.second);
+                    plask::writelog(plask::LOG_IMPORTANT, "{} = {}", keyval.first, keyval.second);
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();

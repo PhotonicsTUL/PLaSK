@@ -224,38 +224,41 @@ void Manager::loadSolvers(XMLReader& reader) {
         }
         boost::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
+        std::string category = reader.getNodeName();
         if (!lib) {
-            auto libs = global_solver_names[reader.getNodeName()];
-            if (libs.empty()) { // read lib index from file
-                boost::filesystem::directory_iterator iter(plaskSolversPath(reader.getNodeName()));
-                boost::filesystem::directory_iterator end;
-                while (iter != end) {
-                    boost::filesystem::path p = iter->path();
-                    std::string current_solver;
-                    if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".yml") {
-                        // Look for lib in yaml file
-                        std::ifstream yaml(p.string());
-                        std::string line;
-                        while (std::getline(yaml, line)) {
-                            if (line.substr(0, 9) == "- solver:") {
-                                current_solver = line.substr(9);
-                                boost::trim(current_solver);
-                            }
-                            else if (current_solver != "" && line.substr(0, 6) == "  lib:") {
-                                std::string lib = line.substr(6);
-                                boost::trim(lib);
-                                libs[current_solver] = lib;
+            if (category != "local") {
+                auto libs = global_solver_names[category];
+                if (libs.empty()) { // read lib index from file
+                    boost::filesystem::directory_iterator iter(plaskSolversPath(category));
+                    boost::filesystem::directory_iterator end;
+                    while (iter != end) {
+                        boost::filesystem::path p = iter->path();
+                        std::string current_solver;
+                        if (boost::filesystem::is_regular_file(p) && p.extension().string() == ".yml") {
+                            // Look for lib in yaml file
+                            std::ifstream yaml(p.string());
+                            std::string line;
+                            while (std::getline(yaml, line)) {
+                                if (line.substr(0, 9) == "- solver:") {
+                                    current_solver = line.substr(9);
+                                    boost::trim(current_solver);
+                                }
+                                else if (current_solver != "" && line.substr(0, 6) == "  lib:") {
+                                    std::string lib = line.substr(6);
+                                    boost::trim(lib);
+                                    libs[current_solver] = lib;
+                                }
                             }
                         }
+                        ++iter;
                     }
-                    ++iter;
                 }
+                lib.reset(libs[solver_name]);
             }
-            lib.reset(libs[solver_name]);
         }
-        if (lib->empty())
-            throw XMLException(reader, format("Cannot determine library for {0}.{1} solver", reader.getNodeName(), solver_name));
-        shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
+        if (!lib || lib->empty())
+            throw XMLException(reader, format("Cannot determine library for {0}.{1} solver", category, solver_name));
+        shared_ptr<Solver> solver = loadSolver(category, *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
             throw NamesConflictException("Solver", name);

@@ -96,7 +96,7 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
 .. option:: -l loglevel
 
-      specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
+      specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``important``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
 
 .. option:: -c command
 

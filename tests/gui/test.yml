@@ -1,0 +1,23 @@
+- solver: OneFile
+  lib: test
+  category: local
+
+  geometry: Cylindrical
+  mesh: Rectangular2D
+
+  tags:
+  - tag: config
+    label: Configuration section
+    help: Configuration of something.
+    attrs:
+    - attr: value
+      label: Value
+      type: float
+      default: 0
+      help: Some value.
+
+  providers:
+  - outVoltage
+
+  receivers:
+  - inTemperature

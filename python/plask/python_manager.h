@@ -11,6 +11,9 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 //     /// List of constant profiles
 //     py::dict profiles;
 
+    /// List of overridden defines
+    py::tuple overrites;
+
     /// Locals read from &lt;defines&gt; section and supplied by user
     py::dict defs;
 

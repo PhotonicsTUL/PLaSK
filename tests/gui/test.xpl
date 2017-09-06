@@ -279,6 +279,7 @@
     </voltage>
   </meta>
   <meta name="threshold" solver="ThresholdSearchCyl" lib="shockley"/>
+  <local name="ooo" solver="OneFile" lib="test"/>
 </solvers>
 
 <connects>

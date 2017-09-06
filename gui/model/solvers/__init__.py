@@ -266,12 +266,14 @@ def update_solvers(filename, model):
     """
     if filename is not None:
         cwd = os.path.dirname(filename)
+        base, _ = os.path.splitext(filename)
+        solvers_files = [os.path.join(cwd, 'solvers.yml'), base+'.yml']
     else:
-        cwd = '.'
-    solvers_file = os.path.join(cwd, 'solvers.yml')
-    if os.path.isfile(solvers_file):
-        from .autosolver import load_yaml
-        try:
-            load_yaml(solvers_file, model.local_categories, model.local_solvers)
-        except:
-            pass
+        solvers_files = ['solvers.yml']
+    for solvers_file in solvers_files:
+        if os.path.isfile(solvers_file):
+            from .autosolver import load_yaml
+            try:
+                load_yaml(solvers_file, model.local_categories, model.local_solvers)
+            except:
+                pass

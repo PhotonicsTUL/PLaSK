@@ -17,7 +17,7 @@
       default: TE
       choices: [TE, TM]
       help: >
-        Longitudnally-propagating mode polarization (TE or TM).
+        Longitudinally-propagating mode polarization (TE or TM).
     - attr: wavelength
       label: Wavelength
       type: float

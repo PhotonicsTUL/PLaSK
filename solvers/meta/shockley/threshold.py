@@ -223,21 +223,34 @@ class ThresholdSearch(ThermoElectric):
 
         self.threshold_current = abs(self.electrical.get_total_current())
 
+        infolines = self._get_info()
+        plask.print_log('important', "Threshold Search Finished")
+        for line in infolines:
+            plask.print_log('important', "  " + line)
+
         if save:
             filename = self.save(None if save is True else save)
             if filename.endswith('.h5'): filename = filename[:-3]
-            self._save_info(filename+'.txt')
+            plask.print_log('info', "Results saved to file '{}'".format(filename))
+            with open(filename+'.txt', 'a') as out:
+                out.writelines(line + '\n' for line in infolines)
+                out.write("\n")
 
-        plask.print_log('important', "Found threshold:  Vth = {:.3f} V,  Ith = {:.3f} mA"
-                        .format(self.threshold_voltage, self.threshold_current))
         return self.threshold_voltage
 
-    def _save_info(self, filename):
-        plask.print_log('important', "Results saved to file '{}'".format(filename))
-        with open(filename, 'w') as out:
-            out.write("Threshold voltage [V]:     {:8.3f}\n".format(self.threshold_voltage))
-            out.write("Threshold current [mA]:    {:8.3f}\n".format(self.threshold_current))
-            out.write("Maximum temperature [K]:   {:8.3f}\n".format(max(self.thermal.outTemperature(self.thermal.mesh))))
+    def _get_info(self):
+        try:
+            import __main__
+            defines = ["  {} = {}".format(key, __main__.DEF[key]) for key in __main__.__overrites__]
+        except (NameError, KeyError):
+            defines = []
+        if defines:
+            defines = ["Temporary defines:"] + defines
+        return defines + [
+            "Threshold voltage [V]:     {:8.3f}".format(self.threshold_voltage),
+            "Threshold current [mA]:    {:8.3f}".format(self.threshold_current),
+            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+        ]
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=(800, 600)):
         """
@@ -269,7 +282,7 @@ class ThresholdSearch(ThermoElectric):
         ofield = self.optical.outLightMagnitude(self.modeno, omesh)
         plask.save_field(ofield, h5file, group + '/LightMagnitude')
         h5file.close()
-        plask.print_log('important', "Fields saved to file '{}'".format(filename))
+        plask.print_log('info', "Fields saved to file '{}'".format(filename))
         return filename
 
     def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
@@ -471,11 +484,10 @@ class ThresholdSearchCyl(ThresholdSearch):
         else:
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 
-    def _save_info(self, filename):
-        super(ThresholdSearchCyl, self)._save_info(filename)
-        with open(filename, 'a') as out:
-            out.write("LP{}{} mode wavelength [nm]: {:8.3f}\n".format(self.lpm, self.lpn,
-                                                                      self.optical.modes[self.modeno].lam.real))
+    def _get_info(self):
+        return super(ThresholdSearchCyl, self)._get_info() + [
+            "LP{}{} mode wavelength [nm]: {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
+        ]
 
 
 __all__ = 'ThresholdSearchCyl',

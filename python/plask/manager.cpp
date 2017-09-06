@@ -160,6 +160,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     XMLReader reader(std::move(source));
 
     // Variables
+    manager->overrites = py::tuple(vars.iterkeys());
     if (vars.has_key("self"))
         throw ValueError("Definition name 'self' is reserved");
     manager->defs = vars.copy();
@@ -334,6 +335,8 @@ void PythonManager::export_dict(py::object self, py::object dict) {
     dict["MSH"] = self.attr("msh");
     dict["MSG"] = self.attr("msh");  // TODO: Remove in the future
     dict["DEF"] = self.attr("defs");
+
+    dict["__overrites__"] = self.attr("overrites");
 
     PythonManager* ths = py::extract<PythonManager*>(self);
 
@@ -562,9 +565,10 @@ void register_manager() {
         .def_readonly("solvers", &Manager::solvers, "Dictionary of all named solvers.")
         // .def_readonly("profiles", &Manager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &Manager::script, "Script read from XML file.")
-        .def_readwrite("draft_material", &Manager::draft,
-                       "Flag indicating if unknown materials are allowed. If True then dummy material\n"
-                       "is created if the proper one cannot be found in the database.\n"
+        .def_readwrite("draft", &Manager::draft,
+                       "Flag indicating draft mode. If True then dummy material is created if the proper\n"
+                       "one cannot be found in the database.\n Also some objects do not need to have all\n"
+                       "the atttributes set, which are then filled with some reasonable defaults."
                        "Otherwise an exception is raised.")
         .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
         .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
@@ -605,12 +609,18 @@ void register_manager() {
              "        If this parameter is given, only the listed sections of the XPL file are\n"
              "        read and the other ones are skipped.\n",
              (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
-        .def_readwrite("defs", &PythonManager::defs,
+        .def_readonly("defs", &PythonManager::defs,
                        "Local defines.\n\n"
                        "This is a combination of the values specified in the :xml:tag:`<defines>`\n"
                        "section of the XPL file and the ones specified by the user in the\n"
-                       ":meth:`~plask.Manager.load` method."
+                       ":meth:`~plask.Manager.load` method.\n"
                       )
+        .def_readonly("overrites", &PythonManager::overrites,
+                      "Overriden local defines.\n\n"
+                      "This is a list of local defines that have been overriden in a ``plask`` command\n"
+                      "line or specified as a ``vars`` argument to the :meth:`~plask.Manager.load`\n"
+                      "method.\n"
+                     )
         .def("export", &PythonManager::export_dict,
              "Export loaded objects into a target dictionary.\n\n"
              "All the loaded solvers are exported with keys equal to their names and the other objects\n"

@@ -1,8 +1,10 @@
 - solver: Test
   lib: something
   category: local
+
   geometry: Cartesian2D
   mesh: Rectangular2D
+
   tags:
   - tag: tag
     label: Some tag
@@ -20,7 +22,9 @@
       - value1
       - value2
       help: Second attribute.
+
   providers:
   - outProvider
+
   receivers:
   - inReceiver
