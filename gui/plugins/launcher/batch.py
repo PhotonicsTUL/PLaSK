@@ -59,8 +59,24 @@ except ImportError:
             webbrowser.open(url.toString())
 
         def launch(self, main_window, args, defs):
-            if os.name == 'nt' and ('conda' in sys.version or 'Continuum' in sys.version):
-                subprocess.Popen(['conda', 'install', 'paramiko'])
+            if os.name == 'nt':
+                try:
+                    import _winreg as winreg
+                except ImportError:
+                    import winreg
+                if 'conda' in sys.version or 'Continuum' in sys.version:
+                    command = 'conda.exe'
+                else:
+                    command = 'pip.exe'
+                try:
+                    path = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                             r"SOFTWARE\Python\PythonCore\{}.{}\InstallPath"
+                                             .format(sys.version_info.major, sys.version_info.minor))
+                    path = os.path.join(path, 'Scripts', command)
+                    if os.path.exists(path): command = path
+                except:
+                    pass
+                subprocess.Popen([command, 'install', 'paramiko'])
             else:
                 dist = platform.dist()[0].lower()
                 if dist in ('ubuntu', 'debian', 'mint'):
@@ -73,11 +89,13 @@ except ImportError:
                     pkg = 'python3{}-paramiko'.format(sys.version_info.minor) if sys.version_info.major == 3 else \
                           'python-paramiko'
                 else:
-                    return
+                    term = 'xterm'
+                    cmd = 'pip3' if sys.version_info.major == 3 else 'pip'
+                    pkg = 'paramiko' if sys.version_info.major == 3 else 'python'
                 subprocess.Popen([term, '-e', 'sudo {} install {}'.format(cmd, pkg)])
-                QMessageBox.information(None, "Remote Batch Job Launcher",
-                                              "Once you have successfully installed Paramiko, please restart PLaSK "
-                                              "to use the remote batch launcher.")
+            QMessageBox.information(None, "{} Launcher".format(self.name),
+                                          "Once you have successfully installed Paramiko, please restart PLaSK "
+                                          "to use the remote batch launcher.")
 
 
 else:

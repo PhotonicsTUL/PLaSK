@@ -239,9 +239,9 @@ int main(int argc, const char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
-#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-        SetConsoleOutputCP(CP_UTF8);
-#   endif
+// #   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+//         SetConsoleOutputCP(CP_UTF8);
+// #   endif
 
     if (argc > 1 && std::string(argv[1]) == "-V") {
         printf("PLaSK " PLASK_VERSION "\n");

@@ -3,7 +3,7 @@
   category: optical
 
   geometry: Cartesian2D
-  mesh: [Rectangular2D, Ordered, Regular]
+  mesh: [ Rectangular2D, Ordered, Regular ]
 
   tags:
   - tag: mode
@@ -15,7 +15,7 @@
       label: Polarization
       type: choice
       default: TE
-      choices: [TE, TM]
+      choices: [ TE, TM ]
       help: >
         Longitudinally-propagating mode polarization (TE or TM).
     - attr: wavelength
@@ -42,7 +42,7 @@
       label: Direction of emission
       type: choice
       default: front
-      choices: [front, back]
+      choices: [ front, back ]
       help: >
         Direction of the useful light emission. Necessary for the over-threshold model to correctly
         compute the output power.
@@ -57,10 +57,7 @@
       label: Root finding method
       type: choice
       default: muller
-      choices:
-      - muller
-      - broyden
-      - brent
+      choices: [ muller, broyden, brent ]
       help: >
         Root finding algorithm.
     - &tolx
@@ -125,15 +122,7 @@
     help: >
       Parameters of root-finding algorithm for one stripe.
     attrs:
-    - attr: method
-      label: Root finding method
-      type: choice
-      choices:
-      - muller
-      - broyden
-      - brent
-      help: >
-        Root finding algorithm.
+    - *method
     - *tolx
     - *tolf-min
     - &stripe-tolf-max
@@ -172,7 +161,7 @@
   - outLoss
   - outWavelength
 
-  receivers:
+  receivers: &receivers
   - inTemperature
   - inGain
 
@@ -203,9 +192,7 @@
       label: Direction of emission
       type: choice
       default: top
-      choices:
-      - top
-      - bottom
+      choices: [ top, bottom ]
       help: >
         Direction of the useful light emission. Necessary for the over-threshold model to correctly
         compute the output power.
@@ -266,6 +253,4 @@
   - outLoss: ModalLoss
   - outWavelength
 
-  receivers:
-  - inTemperature
-  - inGain
+  receivers: *receivers
