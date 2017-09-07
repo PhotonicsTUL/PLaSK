@@ -248,6 +248,11 @@ static dcomplex getModeWavelength(const Mode& mode) {
     return 2e3 * M_PI / mode.k0;
 }
 
+template <typename Mode>
+static double getModeLoss(const Mode& mode) {
+    return 2e4 * mode.k0.imag();
+}
+
 #ifndef NDEBUG
 template <typename Solver>
 py::tuple Solver_getMatrices(Solver& self, size_t layer) {

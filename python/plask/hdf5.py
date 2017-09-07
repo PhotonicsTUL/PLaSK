@@ -182,7 +182,7 @@ def load_field(file, path=''):
     except KeyError:
         raise TypeError('Group {} is not a PLaSK field'.format(path))
     data = numpy.array(data)
-    result = plask.Data(numpy.array(data), msh)
+    result = plask.Data(data, msh)
 
     if close:
         file.close()

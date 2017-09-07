@@ -1,7 +1,9 @@
 - solver: Fourier2D
   lib: slab
+
   category: optical
   geometry: Cartesian2D
+
   tags:
   - tag: expansion
     label: Details on Fourier Expansion
@@ -23,7 +25,7 @@
       help: If this attribute is set to 'yes', material parameters are always recomputed for layers with
         gains. This allows to set 'lam0' for better efficiency and still update gain for slight changes
         of wavelength.
-    - &size2
+    - &size
       attr: size
       label: Expansion size
       type: int
@@ -44,9 +46,7 @@
       label: Symmetric transform type
       type: choice
       default: 2
-      choices:
-      - '1'
-      - '2'
+      choices: [ 1, 2 ]
       help: Type of discrete cosine transform for symmetric expansion.
     - &smooth
       attr: smooth
@@ -60,6 +60,7 @@
       type: bool
       default: true
       help: Should similar layers be grouped for better performance.
+
   - tag: mode
     label: Mode Properties
     help: Mode properties.
@@ -70,17 +71,16 @@
       type: float
       unit: nm
       help: Light wavelength.
-    - group: Wavevector
+    - &wavevector
+      group: Wavevector
       unit: µm<sup>-1</sup>
       attrs:
-      - &k-long
-        attr: k-long
+      - attr: k-long
         label: Longitudinal
         type: float
         default: 0
         help: Longitudinal wave-vector component.
-      - &k-tran
-        attr: k-tran
+      - attr: k-tran
         label: Transverse
         type: float
         default: 0
@@ -89,19 +89,13 @@
       label: Mode symmetry
       type: choice
       default: none
-      choices:
-      - none
-      - Etran
-      - Elong
+      choices: &none-tran-long [ none, Etran, Elong ]
       help: Mode symmetry. Specify a symmetric field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
     - attr: polarization
       label: Mode polarization
       type: choice
       default: none
-      choices:
-      - none
-      - Etran
-      - Elong
+      choices: *none-tran-long
       help: Mode polarization. Give an existing field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
     - &emission
       attr: emission
@@ -114,12 +108,13 @@
       - bottom
       help: Direction of the useful light emission. Necessary for the over-threshold model to correctly
         compute the output power. Currently, the fields are normalized only for top and bottom emission.
-  - tag: interface
+
+  - &interface
+    tag: interface
     label: Matching Interface Position in the Stack
     help: Matching interface position in the stack.
     attrs:
-    - &index
-      attr: index
+    - attr: index
       label: Layer index
       type: int
       conflicts:
@@ -127,8 +122,7 @@
       - attr: object
       - attr: path
       help: Index of the layer, below which the interface is located.
-    - &position
-      attr: position
+    - attr: position
       label: Position
       type: float
       unit: µm
@@ -138,34 +132,31 @@
       - attr: path
       help: Interface will be located as close as possible to the vertical coordinate specified in this
         attribute.
-    - &object
-      attr: object
+    - attr: object
       label: Object name
       type: geometry object
       conflicts:
       - attr: index
       - attr: position
       help: Name of the geometry object below which the interface is located.
-    - &path
-      attr: path
+    - attr: path
       label: Object path
       type: geometry path
       conflicts:
       - attr: index
       - attr: position
       help: Optional path name, specifying particular instance of the object given in the object attribute.
+
   - tag: pml
     label: Horizontal PMLs
     help: Side absorbing perfectly matched layer boundary conditions parameters.
     attrs:
-    - &factor2
-      attr: factor
+    - attr: factor
       label: Scaling factor
       type: complex
       default: 1.0
       help: PML scaling factor.
-    - &shape2
-      attr: shape
+    - attr: shape
       label: Shape order
       type: float
       default: 1
@@ -182,6 +173,7 @@
       unit: µm
       default: 1.0
       help: PML size.
+
   - &transfer
     tag: transfer
     label: Transfer Algorithm Settings
@@ -191,13 +183,11 @@
       label: Transfer method
       type: choice
       default: auto
-      choices:
-      - auto
-      - reflection
-      - admittance
+      choices: [ auto, reflection, admittance ]
       help: Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic,
         in which case the reflection computations will use reflection transfer and eigenmode search is done
         with admittance transfer.
+
   - &vpml
     tag: vpml
     label: Vertical PMLs
@@ -220,6 +210,7 @@
       unit: µm
       default: 2.0
       help: PML size.
+
   - &root
     tag: root
     label: Parameters of the Root-Finding Algorithm
@@ -229,10 +220,7 @@
       label: Root finding method
       type: choice
       default: muller
-      choices:
-      - muller
-      - broyden
-      - brent
+      choices: [ muller, broyden, brent ]
       help: Root finding algorithm (Muller's method or Broyden's method).
     - attr: tolx
       label: Tolerance on argument
@@ -274,9 +262,10 @@
       type: complex
       default: 0.001
       help: Initial range size (Muller method only).
+
   - tag: mirrors
     label: Mirror Losses
-    help: ''
+    help: Front and back mirror losses.
     attrs:
     - attr: R1
       label: Front reflectivity
@@ -286,18 +275,27 @@
       label: Back reflectivity
       type: float
       help: Reflectivity of the back mirror.
+
   providers:
   - outLightMagnitude
+  - outElectricField
+  - outMagneticField
   - outRefractiveIndex
-  - outHeat
-  receivers:
+  - outNeff
+
+  receivers: &receivers
   - inTemperature
   - inGain
+
+###########################################################################################
+
 - solver: Fourier3D
   lib: slab
+
   category: optical
   geometry: Cartesian3D
   tags:
+
   - tag: expansion
     label: Details on Fourier Expansion
     help: ''
@@ -385,48 +383,33 @@
     - *dct
     - *smooth
     - *group-layers
+
   - tag: mode
     label: Mode Properties
     help: Mode properties.
     attrs:
     - *wavelength
-    - group: Wavevector
-      unit: µm<sup>-1</sup>
-      attrs:
-      - *k-long
-      - *k-tran
+    - *wavevector
     - group: Mode symmetry
       attrs:
       - attr: symmetry-long
         label: Longitudinal
         type: choice
         default: none
-        choices:
-        - none
-        - Etran
-        - Elong
+        choices: *none-tran-long
         help: Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
           '<i>Hx</i>').
       - attr: symmetry-tran
         label: Transverse
         type: choice
         default: none
-        choices:
-        - none
-        - Etran
-        - Elong
+        choices: *none-tran-long
         help: Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
           '<i>Hx</i>').
     - *emission
-  - &interface
-    tag: interface
-    label: Matching interface position in the stack
-    help: Matching interface position in the stack.
-    attrs:
-    - *index
-    - *position
-    - *object
-    - *path
+    
+  - *interface
+
   - tag: pmls
     label: Longitudinal and Transverse PMLs
     help: Side absorbing perfectly matched layer boundary conditions parameters.
@@ -473,12 +456,13 @@
       - tag: pmls/tran
         attr: size
       help: PML size.
+
     tags:
     - tag: long
       label: Longitudinal PML (overrides ‘Longitudinal and transverse PMLs’)
       help: Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
       attrs:
-      - &factor
+      - &pml-factor
         attr: factor
         label: Scaling factor
         type: complex
@@ -486,57 +470,65 @@
         - tag: pmls
           attr: factor
         help: PML scaling factor.
-      - &shape
+      - &pml-shape
         attr: shape
         label: Shape order
         type: float
         conflicts:
-        - tag: shape
-          attr: factor
+        - tag: pmls
+          attr: shape
         help: PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
-      - &dist
+      - &pml-dist
         attr: dist
         label: Distance
         type: float
         unit: µm
         conflicts:
-        - tag: dist
-          attr: factor
+        - tag: pmls
+          attr: dist
         help: PML distance from the structure.
-      - &size
+      - &pml-size
         attr: size
         label: Size
         type: float
         unit: µm
         conflicts:
-        - tag: size
-          attr: factor
+        - tag: pmls
+          attr: size
         help: PML size.
+
     - tag: tran
       label: Transverse PML (overrides ‘Longitudinal and transverse PMLs’)
       help: Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
       attrs:
-      - *factor
-      - *shape
-      - *dist
-      - *size
+      - *pml-factor
+      - *pml-shape
+      - *pml-dist
+      - *pml-size
+
   - *transfer
+
   - *vpml
+
   - *root
+
   providers:
   - outLightMagnitude
+  - outElectricField
+  - outMagneticField
   - outRefractiveIndex
-  - outHeat
-  - outLoss: ModalLoss
-  - outWavelenght
-  receivers:
-  - inTemperature
-  - inGain
+
+  receivers: *receivers
+
+###########################################################################################
+
 - solver: BesselCyl
   lib: slab
   category: optical
-  geometry: Cartesian2D
+
+  geometry: Cylindrical
   mesh: Ordered
+
   tags:
   - tag: expansion
     label: Details on Bessel Expansion
@@ -558,7 +550,7 @@
       - infinite
       help: Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over
         a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
-    - *size2
+    - *size
     - *group-layers
     - attr: integrals-error
       label: Maximum integration error
@@ -574,9 +566,7 @@
       label: Wavevectors selection method
       type: choice
       default: uniform
-      choices:
-      - uniform
-      - laguerre
+      choices: [ uniform, laguerre ]
       help: Method of selecting wavevectors for numerical Hankel transform in infinite domain.
     - attr: k-scale
       label: Wavevectors scaling
@@ -584,16 +574,29 @@
       default: 10
       help: Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and divided
         by the geometry width it is a maximum considered wavevector.
+
   - *interface
+
   - *transfer
+
   - *vpml
+
   - *root
+
   - tag: pml
     label: Radial PMLs (for finite domain only)
     help: Side absorbing perfectly matched layer boundary conditions parameters.
     attrs:
-    - *factor2
-    - *shape2
+    - attr: factor
+      label: Scaling factor
+      type: complex
+      default: 1.0
+      help: PML scaling factor.
+    - attr: shape
+      label: Shape order
+      type: float
+      default: 1
+      help: PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
     - attr: dist
       label: Distance
       type: float
@@ -606,10 +609,13 @@
       unit: µm
       default: 0.0
       help: PML size.
+
   providers:
   - outLightMagnitude
+  - outLoss
+  - outElectricField
+  - outMagneticField
   - outRefractiveIndex
-  - outHeat
-  receivers:
-  - inTemperature
-  - inGain
+  - outWavelength
+
+  receivers: *receivers

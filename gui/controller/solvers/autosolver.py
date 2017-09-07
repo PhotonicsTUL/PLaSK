@@ -166,8 +166,9 @@ class SolverAutoWidget(VerticalScrollArea):
                                              self._change_attr(group, name, edit.text(), attr))
                 if attr.default is not None:
                     edit.setPlaceholderText(attr.default)
-        edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;<br/>{}'.format(
-            gname, attr.name, '' if attr.default is None else attr.default, attr.help))
+        edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;{}<br/>{}'.format(
+            gname, attr.name, '' if attr.default is None else attr.default,
+            " ({})".format(attr.typ) if attr.typ else "", attr.help.replace('\n', '<br/><br/>')))
         self.controls[group, attr.name] = edit
         return edit
 

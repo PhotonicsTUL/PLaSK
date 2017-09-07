@@ -297,6 +297,7 @@ void export_BesselSolverCyl()
     register_vector_of<BesselSolverCyl::Mode>("Modes");
     py::class_<BesselSolverCyl::Mode>("Mode", "Detailed information about the mode.", py::no_init)
         .add_property("lam", &getModeWavelength<BesselSolverCyl::Mode>, "Mode wavelength [nm].")
+        .add_property("loss", &getModeLoss<BesselSolverCyl::Mode>, "Mode loss [1/cm].")
         .add_property("wavelength", &getModeWavelength<BesselSolverCyl::Mode>, "Mode wavelength [nm].")
         .def_readonly("k0", &BesselSolverCyl::Mode::k0, "Mode normalized frequency [1/µm].")
         .def_readonly("m", &BesselSolverCyl::Mode::m, "Angular mode order.")

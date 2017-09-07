@@ -1351,7 +1351,7 @@ else:
             user, host = account.userhost.split('@')
             port = account.port
             document = main_window.document
-            loglevel = ("error_details", "warning", "info", "result", "data", "detail", "debug") \
+            loglevel = ("error_details", "warning", "important", "info", "result", "data", "detail", "debug") \
                        [self.loglevel.currentIndex()]
 
             ssh = self.connect(host, user, port)

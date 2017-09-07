@@ -42,7 +42,7 @@ def make_rst(dirname):
     category = os.path.basename(os.path.dirname(dirname))
     library = os.path.basename(dirname)
 
-    source = yaml.load(open(os.path.join(dirname, 'solvers.yaml')))
+    source = yaml.load(open(os.path.join(dirname, 'solvers.yml')))
 
     for solver in source:
         if not isinstance(solver, dict): continue
@@ -104,7 +104,7 @@ def make_rst(dirname):
 
         def write_attrs(attr, level, unit=None):
             if 'attr' in attr:
-                doc = u' '.join(line.strip() for line in html2rst(attr.get('help', '').strip()).split('\n'))
+                doc = html2rst(attr.get('help', '').strip())
                 req = attr.get('required')
                 typ = attr.get('type')
                 unit = attr.get('unit', unit)
@@ -114,7 +114,7 @@ def make_rst(dirname):
                 elif default is not None:
                     default = str(default)
                 if typ == 'choice':
-                    choices = [ch.strip() for ch in attr['choices']]
+                    choices = [str(ch).strip() for ch in attr['choices']]
                     if len(choices) == 0:
                         typ = u'choice'
                     elif len(choices) == 1:
@@ -144,8 +144,9 @@ def make_rst(dirname):
                         typ += u" " + html2rst(unit)
                 if typ:
                     typ = u'(' + typ + u')'
+                doc = (u'\n\n' + u'   ' * level).join(doc.split(u'\n'))
                 out(u'{}   :attr {}{}: {} {}'
-                    .format(u'   ' * level, u'required ' if req else u'', attr['attr'], doc, typ))
+                    .format(u'   ' * (level+1), u'required ' if req else u'', attr['attr'], doc, typ))
             else:
                 for a in attr['attrs']:
                     write_attrs(a, level, unit)
@@ -174,7 +175,7 @@ def make_rst(dirname):
         categories.setdefault(cat, []).append('{}.{}'.format(lib, name))
 
 for dirname, subdirs, files in os.walk(basedir):
-    if 'solvers.yaml' in files and not os.path.basename(dirname) == 'skel':
+    if 'solvers.yml' in files and not os.path.basename(dirname) == 'skel':
         make_rst(dirname)
 
 for cat in categories:

@@ -292,6 +292,7 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 # Python sources and files
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
+list(REMOVE_ITEM python_plask_py "${CMAKE_SOURCE_DIR}/python/plask/_plask.py")
 
 if(WIN32 AND NOT MSVC AND USE_MANIFEST)
     set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/${USE_MANIFEST}.manifest\"\n")

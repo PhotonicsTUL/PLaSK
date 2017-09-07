@@ -24,7 +24,7 @@ from gui.qt import QT_API
 from gui.qt.QtCore import Qt
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
-from gui.utils.matplotlib import PlotWidgetBase
+from gui.utils.matplotlib import PlotWidgetBase, cursors
 from gui.utils.qsignals import BlockQtSignals
 
 if QT_API == 'PyQt5':
@@ -59,10 +59,46 @@ class FieldWidget(QWidget):
 
         def select_component(self, index):
             self.comp = index
-            self.parent.update_plot(self.parent.plotted_field, self.parent.plotted_geometry, False)
+            self.parent.update_plot(self.parent.plotted_field, self.parent.plotted_geometry, None, False)
 
         def enable_component(self, visible):
             self._actions['select_component'].setVisible(visible)
+
+        def mouse_move(self, event):
+            if not event.inaxes or not self._active:
+                if self._lastCursor != cursors.POINTER:
+                    self.set_cursor(cursors.POINTER)
+                    self._lastCursor = cursors.POINTER
+            else:
+                if self._active == 'ZOOM':
+                    if self._lastCursor != cursors.SELECT_REGION:
+                        self.set_cursor(cursors.SELECT_REGION)
+                        self._lastCursor = cursors.SELECT_REGION
+                elif (self._active == 'PAN' and
+                      self._lastCursor != cursors.MOVE):
+                    self.set_cursor(cursors.MOVE)
+                    self._lastCursor = cursors.MOVE
+
+            if event.xdata is not None and event.ydata is not None:
+                if self.parent.is_profile:
+                    s = u'{2[0]} = {0:.4f} µm  value = {1:.3g}'\
+                        .format(float(event.xdata), float(event.ydata), self._axes)
+                else:
+                    s = u'{2[0]} = {0:.4f} µm  {2[1]} = {1:.4f} µm' \
+                        .format(float(event.xdata), float(event.ydata), self._axes)
+            else:
+                s = ''
+
+            if len(self.mode):
+                self.set_message('%s   %s' % (s, self.mode))
+            else:
+                self.set_message(s)
+
+        def set_axes_names(self, names, idx):
+            with BlockQtSignals(self.widgets['select_component']):
+                self.widgets['select_component'].clear()
+                self.widgets['select_component'].addItems(names)
+            self._axes = tuple(names[i] for i in idx)
 
     def __init__(self, controller=None, parent=None):
         super(FieldWidget, self).__init__(parent)
@@ -87,33 +123,35 @@ class FieldWidget(QWidget):
         self.cax = None
 
         self.aspect_locked = False
+        self.is_profile = None
 
         self.setLayout(vbox)
 
-    def update_plot(self, field, geometry=None, reset_zoom=True):
+    def update_plot(self, field, geometry, axes_names, reset_zoom=True):
         xlim, ylim = self.axes.get_xlim(), self.axes.get_ylim()
         self.axes.clear()
         plane = None
 
-        is_profile = False
-
+        self.is_profile = False
         if isinstance(field.mesh, plask.mesh.Mesh1D):
             self._actions['select_component'].setVisible(len(field.array.shape) > 1)
-            is_profile = True
+            self.is_profile = True
+            axi = -2,
         elif isinstance(field.mesh, plask.mesh.Rectangular2D):
             if len(field.mesh.axis0) == 1 or len(field.mesh.axis1) == 1:
-                is_profile = True
+                self.is_profile = True
             elif reset_zoom:
                 xlim = field.mesh.axis0[0], field.mesh.axis0[-1]
                 ylim = field.mesh.axis1[0], field.mesh.axis1[-1]
             self.toolbar.enable_component(len(field.array.shape) > 2)
+            axi = 1, 2
         elif isinstance(field.mesh, plask.mesh.Rectangular3D):
             axs = field.mesh.axis0, field.mesh.axis1, field.mesh.axis2
             axl = tuple(len(a) for a in axs)
             axi = tuple(i for i in range(3) if axl[i] != 1)
             if axi == (0, 1): axi = (1, 0)
             if len(axi) == 1:
-                is_profile = True
+                self.is_profile = True
             elif len(axi) == 2:
                 if reset_zoom:
                     xlim = axs[axi[0]][0], axs[axi[0]][-1]
@@ -122,8 +160,10 @@ class FieldWidget(QWidget):
             else:
                 raise ValueError("Field mesh must have one dimension equal to 1")
             self.toolbar.enable_component(len(field.array.shape) > 3)
+        else:
+            raise TypeError("Unsupported mesh")
 
-        if is_profile:
+        if self.is_profile:
             if self.cax is not None:
                 self.figure.clf()
                 self.axes = self.figure.add_subplot(111, adjustable='datalim')
@@ -142,6 +182,12 @@ class FieldWidget(QWidget):
             if self.cax is None:
                 self.cax, _ = matplotlib.colorbar.make_axes_gridspec(self.axes)
             self.figure.colorbar(mappable=self.controller.plotted, ax=self.axes, cax=self.cax)
+
+        if axes_names is not None:
+            self.toolbar.set_axes_names(axes_names, axi)
+            self.axes.set_xlabel(u"${}$ [µm]".format(axes_names[axi[0]]))
+            if not self.is_profile:
+                self.axes.set_ylabel(u"${}$ [µm]".format(axes_names[axi[1]]))
 
         self.plotted_field = field
         self.plotted_geometry = geometry
@@ -202,10 +248,15 @@ class ResultsWindow(QMainWindow):
         if len(fields) > 0:
             self.field_list.item(0).setSelected(True)
 
+        self.showMaximized()
+
     def update_geometries(self):
         self.manager = plask.Manager(draft=True)
-        self.geometries2d = [n.name for n in self.document.geometry.model.get_roots(2)]
-        self.geometries3d = [n.name for n in self.document.geometry.model.get_roots(3)]
+        self.geometries2d = [g.name for g in self.document.geometry.model.get_roots(2)]
+        self.geometries3d = [g.name for g in self.document.geometry.model.get_roots(3)]
+        roots = self.document.geometry.model.get_roots()
+        self.axes = {g.name: g.get_axes_conf() for g in roots}
+        self._default_axes = roots[0].get_axes_conf() if roots else plask.config.axes
         try:
             self.manager.load(self.document.get_content(sections=('defines', 'geometry')))
         except Exception as e:
@@ -215,7 +266,6 @@ class ResultsWindow(QMainWindow):
                 traceback.print_exc()
                 sys.stderr.flush()
             return False
-
 
     def resizeEvent(self, event):
         super(ResultsWindow, self).resizeEvent(event)
@@ -230,7 +280,7 @@ class ResultsWindow(QMainWindow):
             geometries.extend(self.geometries3d)
         if len(geometries) > 1:
             try:
-                geom = self.field_geometries[name]
+                geom = str(self.field_geometries[name])
                 index = geometries.index(geom)
             except (KeyError, ValueError):
                 geom = "(none)"
@@ -244,21 +294,22 @@ class ResultsWindow(QMainWindow):
             geom = "(none)"
             self.geometry_list.hide()
 
-        if str(geom) in self.manager.geo:
-            geometry = self.manager.geo[str(geom)]
+        if geom in self.manager.geo:
+            geometry = self.manager.geo[geom]
         else:
             geometry = None
-        self.plot_widget.update_plot(field, geometry)
+        self.plot_widget.update_plot(field, geometry, self.axes.get(geom, self._default_axes))
 
     def geometry_changed(self, geom):
+        geom = str(geom)
         fld = self.field_list.currentItem().text()
         field = plask.load_field(self.h5file, fld)
         self.field_geometries[fld] = geom
-        if str(geom) in self.manager.geo:
-            geometry = self.manager.geo[str(geom)]
+        if geom in self.manager.geo:
+            geometry = self.manager.geo[geom]
         else:
             geometry = None
-        self.plot_widget.update_plot(field, geometry, False)
+        self.plot_widget.update_plot(field, geometry, self.axes.get(geom, self._default_axes), False)
 
 
 class AnalyzeResultsAction(QAction):

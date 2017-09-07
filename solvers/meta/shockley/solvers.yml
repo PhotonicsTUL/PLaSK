@@ -5,26 +5,26 @@
   tags:
   - tag: geometry
     label: Geometry
-    help: > 
+    help: >
       Geometry settings for all solvers.
     attrs:
     - attr: thermal
       label: Thermal
       required: true
       type: Cartesian2D geometry
-      help: > 
+      help: >
         Geometry used by the thermal solver.
     - attr: electrical
       label: Electrical
       required: true
       type: Cartesian2D geometry
-      help: > 
+      help: >
         Geometry used by the electrical solver.
 
   - &mesh
     tag: mesh
     label: Mesh
-    help: > 
+    help: >
       Mesh settings for all solvers.
     attrs:
     - &mesh-2d-thermal
@@ -33,7 +33,7 @@
       required: true
       type: mesh
       mesh types: [ Rectangular2D ]
-      help: > 
+      help: >
         Mesh used by the thermal solver.
     - &mesh-2d-electrical
       attr: electrical
@@ -41,7 +41,7 @@
       required: true
       type: mesh
       mesh types: [ Rectangular2D ]
-      help: > 
+      help: >
         Mesh used by the electrical solver.
 
   - &voltage
@@ -72,7 +72,7 @@
     mesh type: Rectangular2D
     mesh: { tag: mesh, attr: thermal }
     geometry: { tag: geometry, attr: thermal }
-    help: > 
+    help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
       coefficient and <i>ambient</i> for ambient temperature instead.
 
@@ -83,40 +83,40 @@
     mesh type: Rectangular2D
     mesh: { tag: mesh, attr: thermal }
     geometry: { tag: geometry, attr: thermal }
-    help: > 
+    help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
       emissivity and <i>ambient</i> for ambient temperature instead.
 
   - &junction
     tag: junction
     label: Configuration of the Effective Model of p-n Junction
-    help: > 
+    help: >
       Configuration of the effective model of p-n junction.
     attrs:
     - attr: beta#
       label: Junction coefficients<br/>(one per line)
       type: float
       unit: 1/V
-      help: > 
+      help: >
         Junction coefficients. This is an inverse of the junction thermal voltage.
     - attr: js#
       label: Reverse bias current densities<br/>(one per line)
       type: float
       unit: A/m<sup>2</sup>
-      help: > 
+      help: >
         Reverse bias current densities.
     - attr: pnjcond
       label: Initial junctions conductivity
       type: float
       unit: S/m
       default: 5.0
-      help: > 
+      help: >
         Initial vertical conductivity of the junctions.
 
   - &contacts
     tag: contacts
     label: Properties of the Contacts
-    help: > 
+    help: >
       Properties of the contact layers.
     attrs:
     - attr: pcond
@@ -124,27 +124,27 @@
       type: float
       unit: S/m
       default: 5.0
-      help: > 
+      help: >
         p-contact conductivity.
     - attr: ncond
       label: n-contact conductivity
       type: float
       unit: S/m
       default: 50.0
-      help: > 
+      help: >
         n-contact conductivity.
 
   - &loop
     tag: loop
     label: Loop Configuration
-    help: > 
+    help: >
       Configuration of the self-consistent loop.
     attrs:
     - &tfreq
       attr: tfreq
       label: Thermal update frequency
       default: 6
-      help: > 
+      help: >
         Number of electrical iterations per single thermal step. As temperature tends to converge faster,
         it is reasonable to repeat thermal solution less frequently.
     - &inittemp
@@ -153,7 +153,7 @@
       type: float
       unit: K
       default: 300
-      help: > 
+      help: >
         Initial temperature used for the first computation.
     - &maxterr
       attr: maxterr
@@ -161,7 +161,7 @@
       type: float
       unit: K
       default: 0.05
-      help: > 
+      help: >
         Maximum allowed temperature error.
     - &maxcerr
       attr: maxcerr
@@ -169,13 +169,13 @@
       type: float
       unit: '%'
       default: 0.05
-      help: > 
+      help: >
         Maximum allowed current density error.
 
   - &tmatrix
     tag: tmatrix
     label: Thermal Matrix Solver
-    help: > 
+    help: >
       Matrix configuration for the thermal solver.
     attrs:
     - &algorithm
@@ -187,34 +187,34 @@
       - cholesky
       - gauss
       - iterative
-      help: > 
+      help: >
         Algorithm used for solving set of linear positive-definite equations.
     - &itererr
       attr: itererr
       label: Max. residual error
       type: float
       default: 1.0e-08
-      help: > 
+      help: >
         Maximum allowed residual error for the iterative algorithm.
     - &iterlim
       attr: iterlim
       label: Max. number of iterations
       type: int
       default: 10000
-      help: > 
+      help: >
         Maximum number of iterations for the iterative algorithm.
     - &logfreq
       attr: logfreq
       label: Progress logging frequency
       type: int
       default: 500
-      help: > 
+      help: >
         Number of iterations after which the progress is logged.
 
   - &ematrix
     tag: ematrix
     label: Electrical Matrix Solver
-    help: > 
+    help: >
       Matrix configuration for the electrical solver.
     attrs:
     - *algorithm
@@ -231,6 +231,7 @@
   - outHeat
   - outConductivity
 
+###########################################################################################
 
 - solver: ThermoElectricCyl
   lib: shockley
@@ -239,7 +240,7 @@
   tags:
   - tag: geometry
     label: Geometry
-    help: > 
+    help: >
       Geometry settings for all solvers.
     attrs:
     - &geometry-cyl-thermal
@@ -247,13 +248,13 @@
       label: Thermal
       required: true
       type: cylindrical geometry
-      help: > 
+      help: >
         Geometry used by the thermal solver.
     - attr: electrical
       label: Electrical
       required: true
       type: cylindrical geometry
-      help: > 
+      help: >
         Geometry used by the electrical solver.
 
   - *mesh
@@ -280,6 +281,7 @@
 
   providers: *thermoelectric-providers
 
+###########################################################################################
 
 - solver: ThermoElectric3D
   lib: shockley
@@ -288,25 +290,25 @@
   tags:
   - tag: geometry
     label: Geometry
-    help: > 
+    help: >
       Geometry settings for all solvers.
     attrs:
     - attr: thermal
       label: Thermal
       required: true
       type: Cartesian3D geometry
-      help: > 
+      help: >
         Geometry used by the thermal solver.
     - attr: electrical
       label: Electrical
       required: true
       type: Cartesian3D geometry
-      help: > 
+      help: >
         Geometry used by the electrical solver.
 
   - tag: mesh
     label: Mesh
-    help: > 
+    help: >
       Mesh settings for all solvers.
     attrs:
     - attr: thermal
@@ -314,14 +316,14 @@
       required: true
       type: mesh
       mesh types: [ Rectangular3D ]
-      help: > 
+      help: >
         Mesh used by the thermal solver.
     - attr: electrical
       label: Electrical
       required: true
       type: mesh
       mesh types: [ Rectangular3D ]
-      help: > 
+      help: >
         Mesh used by the electrical solver.
 
   - bcond: voltage
@@ -354,7 +356,7 @@
     mesh type: Rectangular3D
     mesh: { tag: mesh, attr: thermal }
     geometry: { tag: geometry, attr: thermal }
-    help: > 
+    help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
       coefficient and <i>ambient</i> for ambient temperature instead.
 
@@ -364,7 +366,7 @@
     mesh type: Rectangular3D
     mesh: { tag: mesh, attr: thermal }
     geometry: { tag: geometry, attr: thermal }
-    help: > 
+    help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
       emissivity and <i>ambient</i> for ambient temperature instead.
 
@@ -375,60 +377,65 @@
   - *loop
 
   - *tmatrix
-  
+
   - *ematrix
 
   providers: *thermoelectric-providers
 
+###########################################################################################
 
 - solver: ThresholdSearchCyl
   lib: shockley
   category: meta
 
   tags:
-  - tag: geometry
+  - &threshold-cylindrical-geometry
+    tag: geometry
     label: Geometry
-    help: > 
+    help: >
       Geometry settings for all solvers.
     attrs:
     - *geometry-cyl-thermal
-    - attr: electrical
+    - &geometry-cyl-electrical
+      attr: electrical
       label: Electrical
       required: true
       type: cylindrical geometry
-      help: > 
+      help: >
         Geometry used by the electrical, diffusion, and gain solvers.
-    - attr: optical
+    - &geometry-cyl-optical
+      attr: optical
       label: Optical
       required: true
       type: cylindrical geometry
-      help: > 
+      help: >
         Geometry used by the optical solver.
 
   - tag: mesh
     label: Mesh
-    help: > 
+    help: >
       Mesh settings for all solvers.
     attrs:
     - *mesh-2d-thermal
     - *mesh-2d-electrical
-    - attr: diffusion
+    - &mesh-2d-diffusion
+      attr: diffusion
       label: Diffusion
       required: true
       type: mesh
       mesh types: [ Regular ]
-      help: > 
+      help: >
         Mesh used by the carriers diffusion solver.
     - attr: optical
       label: Optical
       type: mesh
       mesh types: [ Ordered, Rectangular2D ]
-      help: > 
+      help: >
         Mesh used by the optical solver.
 
   - tag: optical
     label: Optical solver configuration
-    help: > 
+    help: >
       Configuration of the optical solver
     attrs:
     - group: LP<i>mn</i> mode identification
@@ -437,83 +444,89 @@
         label: <i>m</i> (angular)
         type: int
         default: 0
-        help: > 
+        help: >
           Angular mode number <i>m</i> (0 for LP0x, 1 for LP1x, etc.).
       - attr: n
         label: <i>n</i> (radial)
         type: int
         default: 1
-        help: > 
+        help: >
           Radial mode number <i>n</i> (1 for LPx1, 2 for LPx2, etc.).
-    - attr: lam0
+    - &lam0
+      attr: lam0
       label: Approximate wavelength
       required: true
       type: float
       unit: nm
-      help: > 
+      help: >
         Approximate wavelength, around which the solution is searched. The refractive and group indexes
         are computed for this wavelength
-    - attr: maxlam
+    - &maxlam
+      attr: maxlam
+      var: maxlam
       label: Maximum wavelength
       type: float
       unit: nm
-      help: > 
+      help: >
         Maximum wavelength considered for the optical mode search.
-    - attr: dlam
+    - &dlam
+      attr: dlam
+      var: dlam
       label: Wavelength step
       type: float
       unit: nm
       default: 0.02
-      help: > 
+      help: >
         Step, by which the wavelength is sweep while searching for the approximate mode.
     - attr: vlam
       label: Vertical wavelength
       type: float
       unit: nm
-      help: > 
+      help: >
         '"Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
         setting this value helps to find models in very long resonators.'
     - attr: vat
       label: Vertical solution coord
       type: float
       unit: µm
-      help: > 
+      help: >
         Horizontal position of at which the vertical part of the field is calculated.
 
-  - tag: root
+  - &threshold-root
+    tag: root
     label: Threshold root-finder parameters
-    help: > 
+    help: >
       Configuration of the root-finder used in threshold search.
     attrs:
     - attr: bcond
       label: Voltage boundary to vary
       required: true
       type: int
-      help: > 
+      help: >
         Number of the voltage boundary condition to vary during the threshold search
     - group: Voltage range
       unit: V
       attrs:
       - attr: vmin
         label: min.
-        help: > 
+        help: >
           Minimum voltage to search threshold for. It should be below the threshold.
       - attr: vmax
         label: max.
-        help: > 
+        help: >
           Maximum voltage to search threshold for. It should be above the threshold.
     - attr: vtol
       label: Maximum voltage error
       type: float
       unit: V
       default: 1.0e-05
-      help: > 
+      help: >
         Tolerance on voltage in the root search.
     - attr: maxiter
       label: Max. iterations
       type: int
       default: 50
-      help: > 
+      help: >
         Maximum number of root finding iterations.
 
   - *voltage
@@ -530,9 +543,10 @@
 
   - *contacts
 
-  - tag: loop
+  - &threshold-thermoelectric-loop
+    tag: loop
     label: Thermo-Electric Loop Configuration
-    help: > 
+    help: >
       Configuration of the self-consistent thermo-electric loop.
     attrs:
     - *tfreq
@@ -544,9 +558,10 @@
 
   - *ematrix
 
-  - tag: diffusion
+  - &diffusion
+    tag: diffusion
     label: Diffusion Configuration
-    help: > 
+    help: >
       Diffusion solver configuration.
     attrs:
     - attr: fem-method
@@ -556,33 +571,33 @@
       choices:
       - linear
       - parabolic
-      help: > 
+      help: >
         Order of the finite-element method.
     - attr: accuracy
       label: Relative accuracy
       type: float
       unit: '%'
       default: 0.01
-      help: > 
+      help: >
         Required relative accuracy.
     - attr: abs-accuracy
       label: Absolute accuracy
       type: float
       unit: cm<sup>-3</sup>
       default: 5000000000000000.0
-      help: > 
+      help: >
         Required absolute minimal concentration accuracy.
     - attr: maxiters
       label: Iterations to refine
       type: int
       default: 20
-      help: > 
+      help: >
         Maximum number of allowed iterations before attempting to refine mesh.
     - attr: maxrefines
       label: Allowed refinements
       type: int
       default: 5
-      help: > 
+      help: >
         Maximum number of allowed mesh refinements.
     - attr: interpolation
       label: Interpolation method
@@ -591,12 +606,13 @@
       choices:
       - linear
       - spline
-      help: > 
+      help: >
         Current density interpolation method name.
 
-  - tag: gain
+  - &gain
+    tag: gain
     label: Gain Parameters
-    help: > 
+    help: >
       Gain solver parameters.
     attrs:
     - attr: lifetime
@@ -604,26 +620,26 @@
       type: float
       unit: ps
       default: 0.1
-      help: > 
+      help: >
         Average carriers lifetime. This parameter is used for gain spectrum broadening.
     - attr: matrix-elem
       label: Momentum matrix element
       type: float
       unit: eV×m<sub>0</sub>
-      help: > 
+      help: >
         Value of the squared matrix element in gain computations. If it is not set it is estimated automatically.
     - attr: strained
       label: Strained
       type: bool
       default: false
-      help: > 
+      help: >
         Boolean attribute indicating if the solver should consider strain in the active region. If set
         to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
         is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
 
   - tag: optical-root
     label: Parameters of the Optical Mode Finding
-    help: > 
+    help: >
       Parameters of the horizontal root-finding algorithm in optical solver.
     attrs:
     - &method
@@ -631,71 +647,68 @@
       label: Root finding method
       type: choice
       default: muller
-      choices:
-      - muller
-      - broyden
-      - brent
-      help: > 
+      choices: [ muller, broyden, brent ]
+      help: >
         Root finding algorithm.
     - &tolx
       attr: tolx
       label: Tolerance on effective frequency
       type: float
       default: 1.0e-06
-      help: > 
+      help: >
         Maximum change of the effective frequency parameter which is allowed for convergent solution.
     - &tolf-min
       attr: tolf-min
       label: Sufficient determinant value
       type: float
       default: 1.0e-07
-      help: > 
+      help: >
         Minimum value of the determinant sufficient to assume convergence.
     - attr: tolf-max
       label: Required determinant value
       type: float
       default: 2.0e-05
-      help: > 
+      help: >
         Maximum value of the determinant required to assume convergence.
     - &maxstep
       attr: maxstep
       label: Maximum Broyden iteration step
       type: float
       default: 0.1
-      help: > 
+      help: >
         Maximum step in one iteration of root finding. Significant for the Broyden's method only.
     - &maxiter
       attr: maxiter
       label: Maximum number of iterations
       type: int
       default: 500
-      help: > 
+      help: >
         Maximum number of root finding iterations.
     - &alpha
       attr: alpha
       label: Broyden decrease factor
       type: float
       default: 1.0e-07
-      help: > 
+      help: >
         Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
     - &lambda
       attr: lambda
       label: Minimum Broyden step decrease ratio
       type: float
       default: 1.0e-08
-      help: > 
+      help: >
         Minimum decrease ratio of one step (Broyden method only).
     - &initial-range
       attr: initial-range
       label: Initial Muller range size
       type: complex
       default: 0.001
-      help: > 
+      help: >
         Initial range size (Muller method only).
 
   - tag: optical-stripe-root
     label: Parameters of the Optical Vertical Solution Finding
-    help: > 
+    help: >
       Parameters of root-finding algorithm for one stripe in optical solver.
     attrs:
     - *method
@@ -705,7 +718,7 @@
       label: Required determinant value
       type: float
       default: 1.0e-05
-      help: > 
+      help: >
         Maximum value of the determinant required to assume convergence.
     - *maxstep
     - *maxiter
@@ -713,7 +726,7 @@
     - *lambda
     - *initial-range
 
-  providers:
+  providers: &threshold-providers
   - outTemperature
   - outHeatFlux
   - outThermalConductivity
@@ -722,3 +735,290 @@
   - outCurrentDensity
   - outHeat
   - outConductivity
+
+###########################################################################################
+
+- solver: ThresholdSearchBesselCyl
+  lib: shockley
+  category: meta
+
+  tags:
+  - *threshold-cylindrical-geometry
+
+  - tag: mesh
+    label: Mesh
+    help: >
+      Mesh settings for all solvers.
+    attrs:
+    - *mesh-2d-thermal
+    - *mesh-2d-electrical
+    - *mesh-2d-diffusion
+    - attr: optical
+      label: Optical
+      type: mesh
+      mesh types: [ Ordered ]
+      help: >
+        Mesh used by the optical solver.
+
+  - tag: optical
+    label: Optical solver configuration
+    help: >
+      Configuration of the optical solver
+    attrs:
+    - group: HE<i>mn</i> mode identification
+      attrs:
+      - attr: m
+        var: hem
+        label: <i>m</i> (angular)
+        type: int
+        default: 0
+        help: >
+          Angular mode number <i>m</i> (0 for LP0x, 1 for LP1x, etc.).
+      - attr: n
+        var: hen
+        label: <i>n</i> (radial)
+        type: int
+        default: 1
+        help: >
+          Radial mode number <i>n</i> (1 for LPx1, 2 for LPx2, etc.).
+    - attr: lam0
+      var: optical.lam0
+      label: Wavelength for parameters
+      type: float
+      help: >
+        This is a wavelength at which refractive index is retrieved from the structure. If this parameter
+        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is most accurate, but can be very inefficient.
+    - attr: update-gain
+      var: optical.update_gain
+      label: Always update gain
+      type: bool
+      default: false
+      help: >
+        If this attribute is set to 'yes', material parameters are always recomputed for layers with
+        gains. This allows to set 'lam0' for better efficiency and still update gain for slight changes
+        of wavelength.
+    - attr: domain
+      var: optical.domain
+      label: Computational domain
+      type: choice
+      default: infinite
+      choices: [ finite, infinite ]
+      help: >
+        Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over
+        a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
+    - attr: size
+      var: optical.size
+      label: Expansion size
+      type: int
+      default: 12
+      help: >
+        Expansion size.
+    - attr: group-layers
+      var: optical.group_layers
+      label: Layers grouping
+      type: bool
+      default: true
+      help: >
+        Should similar layers be grouped for better performance.
+    - attr: k-method
+      var: optical.kmethod
+      label: Wavevectors selection method
+      type: choice
+      default: uniform
+      choices: [ uniform, laguerre ]
+      help: >
+        Method of selecting wavevectors for numerical Hankel transform in infinite domain.
+    - attr: k-scale
+      var: optical.kscale
+      label: Wavevectors scaling
+      type: float
+      default: 10
+      help: >
+        Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and divided
+        by the geometry width it is a maximum considered wavevector.
+    - attr: transfer
+      var: optical.transfer
+      label: Transfer method
+      type: choice
+      default: auto
+      choices: [ auto, reflection, admittance ]
+      help: >
+        Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic,
+        in which case the reflection computations will use reflection transfer and eigenmode search is done
+        with admittance transfer.
+    - attr: lam
+      label: Initial wavelength
+      type: float
+      unit: nm
+      help: >
+        Initial wavelength for optical search. If this value is set, the computations are started from this value.
+        If this value is set, the radial mode number <i>n</i> is ignored.
+        Note that it is safer to leave this empty and allow the solver to look for it automatically, however, it may
+        increase the time of optical computations.
+    - *maxlam
+    - attr: dlam
+      var: dlam
+      label: Wavelength step
+      type: float
+      unit: nm
+      default: 0.05
+      help: >
+        Step, by which the wavelength is sweep while searching for the approximate mode.
+
+  - *threshold-root
+
+  - *voltage
+
+  - *temperature
+
+  - *heatflux
+
+  - *convection
+
+  - *radiation
+
+  - &interface
+    tag: optical-interface
+    label: Optical Matching Interface Position
+    help: >
+      Matching interface position in the stack for optical solver.
+    attrs:
+    - attr: index
+      label: Layer index
+      type: int
+      conflicts:
+      - attr: position
+      - attr: object
+      - attr: path
+      help: >
+        Index of the layer, below which the interface is located.
+    - attr: position
+      label: Position
+      type: float
+      unit: µm
+      conflicts:
+      - attr: index
+      - attr: object
+      - attr: path
+      help: >
+        Interface will be located as close as possible to the vertical coordinate specified in this
+        attribute.
+    - attr: object
+      label: Object name
+      type: geometry object
+      conflicts:
+      - attr: index
+      - attr: position
+      help: >
+        Name of the geometry object below which the interface is located.
+    - attr: path
+      label: Object path
+      type: geometry path
+      conflicts:
+      - attr: index
+      - attr: position
+      help: >
+        Optional path name, specifying particular instance of the object given in the object attribute.
+
+  - &vpml
+    tag: optical-vpml
+    label: Vertical Optical PMLs
+    help: >
+      Vertical absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - attr: factor
+      var: optical.vpml.factor
+      label: Scaling factor
+      type: complex
+      default: 1-2j
+      help: >
+        PML scaling factor.
+    - attr: dist
+      var: optical.vpml.dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 10.0
+      help: >
+        PML distance from the structure.
+    - attr: size
+      var: optical.vpml.size
+      label: Size
+      type: float
+      unit: µm
+      default: 2.0
+      help: >
+        PML size.
+
+  - tag: optical-pml
+    label: Radial Optical PMLs (for finite domain only)
+    help: >
+      Side absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - attr: factor
+      var: optical.pml.factor
+      label: Scaling factor
+      type: complex
+      default: 1.0
+      help: >
+        PML scaling factor.
+    - attr: shape
+      var: optical.pml.shape
+      label: Shape order
+      type: float
+      default: 1
+      help: >
+        PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+    - attr: dist
+      var: optical.pml.dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 20.0
+      help: >
+        PML distance from the structure.
+    - attr: size
+      var: optical.pml.size
+      label: Size
+      type: float
+      unit: µm
+      default: 0.0
+      help: >
+        PML size.
+
+  - *junction
+
+  - *contacts
+
+  - *threshold-thermoelectric-loop
+
+  - *tmatrix
+
+  - *ematrix
+
+  - *diffusion
+
+  - *gain
+
+  - tag: optical-root
+    label: Parameters of the Optical Mode Finding
+    help: >
+      Parameters of the root-finding algorithm in optical solver.
+    attrs:
+    - *method
+    - *tolx
+    - *tolf-min
+    - attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 1.0e-05
+      help: >
+        Maximum value of the determinant required to assume convergence.
+    - *maxstep
+    - *maxiter
+    - *alpha
+    - *lambda
+    - *initial-range
+
+  providers: *threshold-providers

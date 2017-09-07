@@ -23,7 +23,7 @@ class GNLeafController(GNObjectController):
         material_form = self.construct_group('Material')
 
         self.material_selection_type = QComboBox()
-        self.material_selection_type.addItems(['Solid', 'Bottom/Top'])
+        self.material_selection_type.addItems(['Solid', 'Vertical Gradient'])
         self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
 
         self.material_solid = self.construct_material_combo_box(items=[''],

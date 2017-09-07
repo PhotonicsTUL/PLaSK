@@ -160,7 +160,12 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     XMLReader reader(std::move(source));
 
     // Variables
-    manager->overrites = py::tuple(vars.iterkeys());
+
+#   if PY_VERSION_HEX >= 0x03000000
+        manager->overrites = py::tuple(vars.keys());
+#   else
+        manager->overrites = py::tuple(vars.iterkeys());
+#   endif
     if (vars.has_key("self"))
         throw ValueError("Definition name 'self' is reserved");
     manager->defs = vars.copy();

@@ -680,11 +680,11 @@ class MainWindow(QMainWindow):
             details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
             details = ""
-        user = LICENSE.get('user')
-        if user:
+        user = LICENSE.get('user', '')
+        institution = LICENSE.get('institution', '')
+        if user or institution:
             try: user = user.decode('utf8')
             except AttributeError: pass
-            institution = LICENSE.get('institution', '')
             if institution:
                 try: institution = institution.decode('utf8')
                 except AttributeError: pass

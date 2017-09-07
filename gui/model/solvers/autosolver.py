@@ -56,11 +56,12 @@ class AttrGroup(list):
 
 
 class Attr(object):
-    def __init__(self, tag, name, label, help, default=None):
+    def __init__(self, tag, name, label, help, typ, default=None):
         self.tag = tag
         self.name = name
         self.label = label
         self.help = help
+        self.typ = typ
         if default is None:self.default = ''
         elif isinstance(default, bool): self.default = 'yes' if default else 'no'
         else: self.default = str(default)
@@ -71,19 +72,19 @@ class AttrMulti(Attr):
 
 
 class AttrChoice(Attr):
-    def __init__(self, tag, name, label, help, choices, default=None):
-        super(AttrChoice, self).__init__(tag, name, label, help, default)
+    def __init__(self, tag, name, label, help, typ, choices, default=None):
+        super(AttrChoice, self).__init__(tag, name, label, help, typ, default)
         self.choices = choices
 
 
 class AttrBool(AttrChoice):
-    def __init__(self, tag, name, label, help, default=None):
-        super(AttrBool, self).__init__(tag, name, label, help, ('yes', 'no'), default)
+    def __init__(self, tag, name, label, help, typ, default=None):
+        super(AttrBool, self).__init__(tag, name, label, help, typ, ('yes', 'no'), default)
 
 
 class AttrGeometry(Attr):
-    def __init__(self, tag, name, label, help, geometry_type, default=None):
-        super(AttrGeometry, self).__init__(tag, name, label, help, default)
+    def __init__(self, tag, name, label, help, typ, geometry_type, default=None):
+        super(AttrGeometry, self).__init__(tag, name, label, help, typ, default)
         self.type = geometry_type
     pass
 
@@ -103,33 +104,31 @@ class AttrMesh(AttrChoice):
 def read_attr(tn, attr, au=None):
     an = attr['attr']
     al = attr['label']
-    ah = attr['help']
+    ah = attr['help'].strip()
     at = attr.get('type', '')
     au = attr.get('unit', au)
     ad = attr.get('default')
     if au is not None:
         al += u' [{}]'.format(au)
     if at == u'choice':
-        ac = tuple(ch.strip() for ch in attr['choices'])
-        result = AttrChoice(tn, an, al, ah, ac, ad)
+        ac = tuple(str(ch).strip() for ch in attr['choices'])
+        result = AttrChoice(tn, an, al, ah, at, ac, ad)
     elif at == u'bool':
-        result = AttrBool(tn, an, al, ah, ad)
+        result = AttrBool(tn, an, al, ah, at, ad)
     elif at == u'geometry object':
-        result = AttrGeometryObject(tn, an, al, ah)
+        result = AttrGeometryObject(tn, an, al, ah, at)
     elif at == u'geometry path':
-        result = AttrGeometryPath(tn, an, al, ah)
+        result = AttrGeometryPath(tn, an, al, ah, at)
     elif at.endswith(u' geometry'):
-        result = AttrGeometry(tn, an, al, ah, at[:-9].lower())
+        result = AttrGeometry(tn, an, al, ah, at, at[:-9].lower())
     elif at == u'mesh':
-        ac = tuple(ch.strip() for ch in attr['mesh types'])
-        result = AttrMesh(tn, an, al, ah, ac)
+        ac = tuple(str(ch).strip() for ch in attr['mesh types'])
+        result = AttrMesh(tn, an, al, ah, at, ac)
     else:
-        if at:
-            ah += u' ({})'.format(at)
         if an.endswith('#'):
-            result = AttrMulti(tn, an, al, ah)
+            result = AttrMulti(tn, an, al, ah, at)
         else:
-            result = Attr(tn, an, al, ah, ad)
+            result = Attr(tn, an, al, ah, at, ad)
     for conflict in attr.get('conflicts', []):
         ct = conflict.get('tag', tn)
         ca = conflict['attr']

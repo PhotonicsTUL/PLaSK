@@ -1,15 +1,5 @@
-#coding: utf8
+# coding: utf8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the license, or (at your
-# opinion) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
 
 import plask
 
@@ -58,6 +48,9 @@ def h5open(filename, group):
 
 
 class ThermoElectric(plask.Solver):
+
+    Thermal = None
+    Electrical = None
 
     def __init__(self, name):
         super(ThermoElectric, self).__init__(name)
@@ -131,6 +124,8 @@ class ThermoElectric(plask.Solver):
             self.thermal.radiation_boundary.read_from_xpl(tag, manager)
         elif tag == 'voltage':
             self.electrical.voltage_boundary.read_from_xpl(tag, manager)
+        else:
+            raise plask.XMLError("{}: Unrecognized tag '{}'".format(tag, tag.name))
 
     def on_initialize(self):
         self.thermal.initialize()

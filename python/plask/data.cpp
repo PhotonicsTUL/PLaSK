@@ -111,6 +111,10 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<Vec<2,dcomplex>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<Vec<3,double>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<Vec<3,dcomplex>>() { return 3; }
+    template <> constexpr inline npy_intp type_dim<Tensor2<double>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<Tensor2<dcomplex>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<Tensor3<double>>() { return 4; }
+    template <> constexpr inline npy_intp type_dim<Tensor3<dcomplex>>() { return 4; }
     template <> constexpr inline npy_intp type_dim<const Vec<2,double>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<const Vec<2,dcomplex>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
