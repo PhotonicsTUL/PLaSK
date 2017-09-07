@@ -64,22 +64,13 @@ class ThermoElectric(plask.Solver):
     def _read_attr(self, tag, attr, solver, type, pyattr=None):
         if pyattr is None: pyattr = attr
         if attr in tag:
-            if type is bool:
-                val = tag[attr].lower()
-                if isinstance(val, str):
-                    val = val.lower()
-                    if val not in ('yes', 'no'):
-                        raise plask.XMLError("{}: Bool attribute '{}' has illegal value '{}'".format(tag, attr, val))
-                    val = val == 'yes'
-                setattr(solver, pyattr, val)
+            try:
+                val = type(tag[attr])
+            except ValueError:
+                raise plask.XMLError("{}: {} attribute {} has illegal value '{}'".format(
+                    tag, type.__name__.title(), attr, tag[attr]))
             else:
-                try:
-                    val = type(tag[attr])
-                except ValueError:
-                    raise plask.XMLError("{}: {} attribute {} has illegal value '{}'".format(
-                        tag, type.__name__.title(), attr, tag[attr]))
-                else:
-                    setattr(solver, pyattr, val)
+                setattr(solver, pyattr, val)
 
     def load_xpl(self, xpl, manager):
         for tag in xpl:

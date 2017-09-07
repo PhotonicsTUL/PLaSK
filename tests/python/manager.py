@@ -267,7 +267,7 @@ class CustomSolverTest(unittest.TestCase):
                   <val>passed</val>
                 </withtext>
               </something>
-              <config a="{x}" c="ok"/>
+              <config a="{x}" c="ok" d="yes"/>
             </local>
           </solvers>
         </plask>
@@ -275,10 +275,10 @@ class CustomSolverTest(unittest.TestCase):
         solver = manager.solvers['custom']
         self.assertIsInstance( solver, FakeModule.CustomSolver )
         self.assertEqual( solver.text, "passed" )
-        self.assertEqual( solver.attrs, dict(a=2, c='ok') )
         self.assertEqual( solver.a, 4 )
         self.assertEqual( solver.b, 0 )
         self.assertEqual( solver.c, "ok" )
+        self.assertEqual( solver.attrs, dict(a=2, c='ok', d=True) )
         self.assertEqual( solver.geometry, manager.geo.main )
 
 
