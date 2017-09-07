@@ -465,10 +465,10 @@ class ThresholdSearchCyl(ThresholdSearch):
             self._read_attr(tag, 'lam0', self.optical, float)
             self._read_attr(tag, 'vlam', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
-            self.maxlam = tag.get('maxlam', self.maxlam)
-            self.dlam = tag.get('dlam', self.dlam)
-            self.lpm = tag.get('m', self.lpm)
-            self.lpn = tag.get('n', self.lpn)
+            self.maxlam = complex(tag.get('maxlam', self.maxlam))
+            self.dlam = float(tag.get('dlam', self.dlam))
+            self.lpm = int(tag.get('m', self.lpm))
+            self.lpn = int(tag.get('n', self.lpn))
         else:
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 
@@ -653,7 +653,6 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     def _parse_xpl(self, tag, manager):
         if tag == 'optical':
             self._read_attr(tag, 'lam0', self.optical, float)
-            self.optical.lam0 = tag['lam0']
             self._read_attr(tag, 'update-gain', self.optical, bool, 'update_gain')
             self._read_attr(tag, 'domain', self.optical, str, 'domain')
             self._read_attr(tag, 'size', self.optical, int, 'size')
@@ -661,11 +660,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             self._read_attr(tag, 'k-method', self.optical, str, 'kmethod')
             self._read_attr(tag, 'k-scale', self.optical, float, 'kscale')
             self._read_attr(tag, 'transfer', self.optical, str, 'transfer')
-            self.maxlam = tag.get('maxlam', self.maxlam)
-            self.dlam = tag.get('dlam', self.dlam)
+            self.maxlam = complex(tag.get('maxlam', self.maxlam))
+            self.dlam = float(tag.get('dlam', self.dlam))
             self.lam = tag.get('lam', self.lam)
-            self.hem = tag.get('m', self.hem)
-            self.hen = tag.get('n', self.hen)
+            if self.lam is not None: self.lam = complex(self.lam)
+            self.hem = int(tag.get('m', self.hem))
+            self.hen = int(tag.get('n', self.hen))
         elif tag == 'optical-interface':
             attrs = {key: val for (key, val) in ((key, tag.get(key)) for key in ('index', 'position', 'object', 'path'))
                      if val is not None}

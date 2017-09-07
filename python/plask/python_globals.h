@@ -349,6 +349,9 @@ struct Overriden
 
 /// Evalueate common Python types
 inline static py::object eval_common_type(const std::string& value) {
+    if (value == "") return py::object();
+    if (value == "yes") return py::object(true);
+    if (value == "no") return py::object(false);
     try {
         py::object val = py::eval(value.c_str());
         if (PyInt_Check(val.ptr()) || PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||

@@ -66,9 +66,12 @@ class ThermoElectric(plask.Solver):
         if attr in tag:
             if type is bool:
                 val = tag[attr].lower()
-                if val not in ('yes', 'no'):
-                    raise plask.XMLError("{}: Bool attribute '{}' has illegal value '{}'".format(tag, attr, val))
-                setattr(solver, pyattr, tag[attr].lower() == 'yes')
+                if isinstance(val, str):
+                    val = val.lower()
+                    if val not in ('yes', 'no'):
+                        raise plask.XMLError("{}: Bool attribute '{}' has illegal value '{}'".format(tag, attr, val))
+                    val = val == 'yes'
+                setattr(solver, pyattr, val)
             else:
                 try:
                     val = type(tag[attr])

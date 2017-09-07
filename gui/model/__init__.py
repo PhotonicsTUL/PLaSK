@@ -120,7 +120,7 @@ class SectionModel(TreeFragmentModel):
         """
         res = self.undo_stack.createUndoAction(parent)
         res.setIcon(QIcon.fromTheme('edit-undo'))
-        res.setShortcut(Qt.ALT + Qt.Key_Z)
+        res.setShortcut(Qt.CTRL + Qt.Key_Z)
         return res
 
     def create_redo_action(self, parent):
@@ -130,7 +130,7 @@ class SectionModel(TreeFragmentModel):
         """
         res = self.undo_stack.createRedoAction(parent)
         res.setIcon(QIcon.fromTheme('edit-redo'))
-        res.setShortcut(Qt.ALT + Qt.SHIFT + Qt.Key_Z)
+        res.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Z)
         return res
 
     def set_text(self, text):
