@@ -98,6 +98,7 @@ class FieldWidget(QWidget):
             with BlockQtSignals(self.widgets['select_component']):
                 self.widgets['select_component'].clear()
                 self.widgets['select_component'].addItems(names)
+                self.widgets['select_component'].setCurrentIndex(self.comp)
             self._axes = tuple(names[i] for i in idx)
 
     def __init__(self, controller=None, parent=None):
