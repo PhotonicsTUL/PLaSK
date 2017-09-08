@@ -690,7 +690,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             self._read_attr(tag, 'k-method', self.optical, str, 'kmethod')
             self._read_attr(tag, 'k-scale', self.optical, float, 'kscale')
             self._read_attr(tag, 'transfer', self.optical, str, 'transfer')
-            self.maxlam = complex(tag.get('maxlam', self.maxlam))
+            maxlam = tag.get('maxlam')
+            if maxlam is not None:
+                try:
+                    self.maxlam = complex(maxlam)
+                except ValueError:
+                    raise plask.XMLError("{}: attribute maxlam has illegal value '{}'".format(tag, maxlam))
             self.dlam = float(tag.get('dlam', self.dlam))
             self.lam = tag.get('lam', self.lam)
             if self.lam is not None: self.lam = complex(self.lam)
