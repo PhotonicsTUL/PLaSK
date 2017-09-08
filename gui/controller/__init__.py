@@ -207,7 +207,7 @@ def select_index_from_info(info, model, table):
         current_row = table.currentIndex().row()
         rows = sorted(info.rows)
         try:
-            table.setCurrentIndex(model.createIndex(rows[(sorted_index(rows, current_row)+1)%len(rows)], col))
+            table.setCurrentIndex(model.createIndex(rows[(sorted_index(rows, current_row)+1) % len(rows)], col))
         except ValueError:
             table.setCurrentIndex(model.createIndex(rows[0], col))
         return True

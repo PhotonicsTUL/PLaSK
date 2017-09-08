@@ -151,7 +151,7 @@ class InfoSource(object):
         """
         self.infoChanged(self)
 
-    def create_info(self):
+    def create_info(self, *args, **kwargs):
         """
             Create table with messages.
             :return: array of Info objects

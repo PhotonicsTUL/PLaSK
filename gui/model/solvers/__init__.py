@@ -253,6 +253,7 @@ class SolversModel(TableModel):
                 res.append(Info('Solver name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(2,)))
             else:
                 names.setdefault(entry.name, []).append(i)
+            res.extend(entry.create_info(i))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated solver name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
@@ -272,7 +273,7 @@ def update_solvers(filename, model):
         solvers_files = ['solvers.yml']
     for solvers_file in solvers_files:
         if os.path.isfile(solvers_file):
-            from .autosolver import load_yaml
+            from .schemasolver import load_yaml
             try:
                 load_yaml(solvers_file, model.local_categories, model.local_solvers)
             except:

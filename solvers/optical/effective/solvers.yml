@@ -4,6 +4,7 @@
 
   geometry: Cartesian2D
   mesh: [ Rectangular2D, Ordered, Regular ]
+  need mesh: false
 
   tags:
   - tag: mode
@@ -165,15 +166,15 @@
   - inTemperature
   - inGain
 
+###########################################################################################
 
 - solver: EffectiveFrequencyCyl
   lib: effective
   category: optical
   geometry: Cylindrical
-  mesh:
-  - Rectangular2D
-  - Ordered
-  - Regular
+
+  mesh: [ Rectangular2D, Ordered, Regular ]
+  need mesh: false
 
   tags:
   - tag: mode

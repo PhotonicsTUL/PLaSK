@@ -224,10 +224,11 @@
   </thermal>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config matrix-elem="10"/>
+    <config lifetime="axa" matrix-elem="10" strained="???"/>
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
+    <mesh ref="default"/>
     <voltage>
       <condition value="2.0">
         <place side="bottom" object="p-contact"/>
@@ -263,24 +264,33 @@
   <filter for="Temperature" geometry="GeoTE" name="filtr"/>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
-    <mesh ref="optical"/>
   </optical>
-  <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d"/>
+  <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
+    <geometry ref="geo2d"/>
+    <mesh ref="optical"/>
+  </electrical>
   <local name="test" solver="Test" lib="something">
     <geometry ref="simple"/>
   </local>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
     <geometry electrical="geo2d-copy" thermal="geo2d"/>
+    <mesh electrical="default" thermal="default"/>
   </meta>
-  <meta name="metac" solver="ThermoElectricCyl" lib="shockley"/>
   <meta name="meta3" solver="ThermoElectric3D" lib="shockley">
+    <geometry electrical="vcsel" thermal="vcsel"/>
+    <mesh electrical="sss" thermal="sss"/>
     <voltage>
       <condition place="bottom" value="1.0"/>
     </voltage>
   </meta>
-  <meta name="threshold" solver="ThresholdSearchCyl" lib="shockley"/>
-  <local name="ooo" solver="OneFile" lib="test"/>
-  <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley"/>
+  <local name="ooo" solver="OneFile" lib="test">
+    <geometry ref="GeoE"/>
+    <mesh ref="default"/>
+  </local>
+  <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley">
+    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
+    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
+  </meta>
 </solvers>
 
 <connects>

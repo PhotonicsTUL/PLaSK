@@ -98,7 +98,8 @@ def make_rst(dirname):
             if mesh is not None:
                 if isinstance(mesh, list): mesh = ', '.join(mesh)
                 out(u'\n      .. xml:tag:: <mesh> [in {}.{}]'.format(cat, name))
-                out(u'\n         {} mesh used by this solver.'.format(mesh))
+                out(u'\n         {}{} mesh used by this solver.'
+                    .format(u'' if solver.get('need mesh', True) else u'Optional ', mesh))
                 out(u'\n         :attr required ref: Name of a {} mesh defined in the :xml:tag:`<grids>` section.'
                     .format(mesh))
 

@@ -294,8 +294,8 @@
 
   category: optical
   geometry: Cartesian3D
-  tags:
 
+  tags:
   - tag: expansion
     label: Details on Fourier Expansion
     help: ''
@@ -528,6 +528,7 @@
 
   geometry: Cylindrical
   mesh: Ordered
+  need mesh: false
 
   tags:
   - tag: expansion

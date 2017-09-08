@@ -1,11 +1,11 @@
 - solver: FreeCarrier2D
   lib: freecarrier
   category: gain
+
   geometry: Cartesian2D
-  mesh:
-  - Ordered
-  - Ordered
-  - Regular
+  mesh: [ Ordered, Regular ]
+  need mesh: false
+
   tags:
   - &config
     tag: config
@@ -36,20 +36,27 @@
       unit: K
       default: 300
       help: Reference temperature. This is the temperature used for initial computation of the energy levels.
-  providers:
+
+  providers: &providers
   - outGain
-  receivers:
+
+  receivers: &receivers
   - inTemperature
   - inCarriersConcentration
+
+###########################################################################################
+
 - solver: FreeCarrierCyl
   lib: freecarrier
+
   category: gain
   geometry: Cylindrical
-  mesh: Ordered, Regular
+  mesh: [ Ordered, Regular ]
+  need mesh: false
+
   tags:
   - *config
-  providers:
-  - outGain
-  receivers:
-  - inTemperature
-  - inCarriersConcentration
+
+  providers: *providers
+
+  receivers: *receivers

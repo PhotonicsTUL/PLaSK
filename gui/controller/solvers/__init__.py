@@ -19,7 +19,7 @@ from ...utils.widgets import table_last_col_fill, table_edit_shortcut
 from .. import Controller, select_index_from_info
 from ..table import table_with_manipulators
 from ..defines import get_defines_completer
-from .autosolver import SolverAutoWidget
+from .schemasolver import SolverWidget
 
 
 def _solvers_key(slv):
@@ -178,8 +178,8 @@ class SolversController(Controller):
 
     def select_info(self, info):
         if select_index_from_info(info, self.model, self.solvers_table):
-            #TODO try to select property of solver
-            pass
+            if self._current_controller is not None:
+                self._current_controller.select_info(info)
 
 
 class NewSolverDialog(QDialog):

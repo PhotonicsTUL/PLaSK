@@ -28,6 +28,15 @@ class ThresholdSearch(ThermoElectric):
     Diffusion = None
     Gain = None
     Optical = None
+    _optarg = 'lam'
+
+    tfreq = 6.0
+    vmin = None
+    vmax = None
+    optical_resolution = (800, 600)
+    vtol = 1e-5
+    quick = False
+    maxiter = 50
 
     def __init__(self, name):
         super(ThresholdSearch, self).__init__(name)
@@ -40,14 +49,9 @@ class ThresholdSearch(ThermoElectric):
         self.gain.inCarriersConcentration = self.diffusion.outCarriersConcentration
         self.optical.inTemperature = self.thermal.outTemperature
         self.optical.inGain = self.gain.outGain
-        self.vmin = None
-        self.vmax = None
-        self.optarg = None
-        self.vtol = 1e-5
-        self.quick = False
+        self.threshold_voltage = None
         self.threshold_current = None
         self._invalidate = None
-        self.maxiter = 50
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -79,6 +83,9 @@ class ThresholdSearch(ThermoElectric):
             self._read_attr(tag, 'alpha', root, float)
             self._read_attr(tag, 'lambda', root, float)
             self._read_attr(tag, 'initial-range', root, tuple, 'initial_range')
+        elif tag == 'output':
+            self.optical_resolution = tag.get('optical-res-x', self.optical_resolution[0]), \
+                                      tag.get('optical-res-y', self.optical_resolution[1])
         else:
             if tag == 'geometry':
                 self.optical.geometry = self.diffusion.geometry = self.gain.geometry = \
@@ -104,7 +111,7 @@ class ThresholdSearch(ThermoElectric):
         self.diffusion.invalidate()
         self.optical.invalidate()
 
-    def _optargs(self):
+    def __optargs(self):
         return {}
 
     def get_lam(self):
@@ -145,12 +152,12 @@ class ThresholdSearch(ThermoElectric):
         self.compute_thermoelectric()
         self.optical.invalidate()
         optstart = self.get_lam()
-        if self.optarg is None:
-            self.modeno = self.optical.find_mode(optstart, **self._optargs())
+        if self._optarg is None:
+            self.modeno = self.optical.find_mode(optstart, **self.__optargs())
         else:
-            optargs = self._optargs().copy()
-            optargs[self.optarg] = optstart
-            self.modeno = self.optical.find_mode(**optargs)
+            _optargs = self.__optargs().copy()
+            _optargs[self._optarg] = optstart
+            self.modeno = self.optical.find_mode(**_optargs)
         val = self.optical.modes[self.modeno].loss
         plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
         return val
@@ -166,12 +173,12 @@ class ThresholdSearch(ThermoElectric):
             float or array: Optical determinant.
         """
         self.compute_thermoelectric()
-        if self.optarg is None:
-            return self.optical.get_determinant(lam, **self._optargs())
+        if self._optarg is None:
+            return self.optical.get_determinant(lam, **self.__optargs())
         else:
-            optargs = self._optargs().copy()
-            optargs[self.optarg] = lam
-            return self.optical.get_determinant(**optargs)
+            _optargs = self.__optargs().copy()
+            _optargs[self._optarg] = lam
+            return self.optical.get_determinant(**_optargs)
 
     def compute(self, save=True, invalidate=False):
         """
@@ -247,7 +254,7 @@ class ThresholdSearch(ThermoElectric):
             "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
 
-    def save(self, filename=None, group='ThresholdSearch', optical_resolution=(800, 600)):
+    def save(self, filename=None, group='ThresholdSearch', optical_resolution=None):
         """
         Save the computation results to the HDF5 file.
 
@@ -262,6 +269,7 @@ class ThresholdSearch(ThermoElectric):
             optical_resolution (tuple of ints): Number of points in horizontal and vertical directions
                 for optical field.
         """
+        if optical_resolution is None: optical_resolution = self.optical_resolution
         h5file, group, filename = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
@@ -296,7 +304,7 @@ class ThresholdSearch(ThermoElectric):
 
             kwargs: Keyword arguments passed to the plot function.
         """
-
+        if resolution is None: resolution = self.optical_resolution
         box = self.optical.geometry.bbox
         intensity_mesh = plask.mesh.Rectangular2D(plask.mesh.Regular(box.left, box.right, resolution[0]),
                                                   plask.mesh.Regular(box.bottom, box.top, resolution[1]))
@@ -389,6 +397,12 @@ class ThresholdSearchCyl(ThresholdSearch):
     It should be above the threshold.
     """
 
+    vtol = 1e-5
+    "Tolerance on voltage in the root search."
+
+    maxiter = 50
+    "Maximum number of root finding iterations."
+
     maxlam = attribute("optical.lam0")
     "Maximum wavelength considered for the optical mode search."
 
@@ -413,15 +427,13 @@ class ThresholdSearchCyl(ThresholdSearch):
     1 for LPx1, 2 for LPx2, etc.
     """
 
+    optical_resolution = (800, 600)
+
     def __init__(self, name=''):
         from optical.effective import EffectiveFrequencyCyl
         self.Optical = EffectiveFrequencyCyl
         super(ThresholdSearchCyl, self).__init__(name)
-        self.optarg = 'lam'
         self.maxlam = None
-        self.dlam = 0.02
-        self.lpm = 0
-        self.lpn = 1
 
     # def on_initialize(self):
     #     super(ThresholdSearchCyl, self).on_initialize()
@@ -457,7 +469,7 @@ class ThresholdSearchCyl(ThresholdSearch):
             return lam + 2. * self.dlam
         raise ValueError("Approximation of mode LP{0.lpm}{0.lpn} not found".format(self))
 
-    def _optargs(self):
+    def __optargs(self):
         return dict(m=self.lpm)
 
     def _parse_xpl(self, tag, manager):
@@ -563,6 +575,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     It should be above the threshold.
     """
 
+    vtol = 1e-5
+    "Tolerance on voltage in the root search."
+
+    maxiter = 50
+    "Maximum number of root finding iterations."
+
     maxlam = attribute("optical.lam0")
     "Maximum wavelength considered for the optical mode search."
 
@@ -602,16 +620,13 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
         import optical.slab
         self.Optical = optical.slab.BesselCyl
         super(ThresholdSearchBesselCyl, self).__init__(name)
-        self.optarg = 'lam'
         self.maxlam = None
-        self._lam_cache = None
 
     # def on_initialize(self):
-    #     super(VectorThresholdSearchCyl, self).on_initialize()
+    #     super(ThresholdSearchBesselCyl, self).on_initialize()
 
-    def on_invalidate(self):
-        super(ThresholdSearchBesselCyl, self).on_invalidate()
-        self._lam_cache = None
+    # def on_invalidate(self):
+    #     super(ThresholdSearchBesselCyl, self).on_invalidate()
 
     def get_lam(self):
         """
@@ -647,7 +662,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             return lam + 2. * self.dlam
         raise ValueError("Approximation of mode HE{0.hem}{0.hen} not found".format(self))
 
-    def _optargs(self):
+    def __optargs(self):
         return dict(m=self.hem)
 
     def _parse_xpl(self, tag, manager):

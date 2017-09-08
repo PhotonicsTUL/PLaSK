@@ -434,7 +434,7 @@
         Mesh used by the optical solver.
 
   - tag: optical
-    label: Optical solver configuration
+    label: Optical Solver Configuration
     help: >
       Configuration of the optical solver
     attrs:
@@ -494,7 +494,7 @@
 
   - &threshold-root
     tag: root
-    label: Threshold root-finder parameters
+    label: Threshold Root-Finder Parameters
     help: >
       Configuration of the root-finder used in threshold search.
     attrs:
@@ -503,7 +503,7 @@
       required: true
       type: int
       help: >
-        Number of the voltage boundary condition to vary during the threshold search
+        Number of the voltage boundary condition to vary during the threshold search.
     - group: Voltage range
       unit: V
       attrs:
@@ -726,6 +726,27 @@
     - *lambda
     - *initial-range
 
+  - &threshold-output
+    tag: output
+    label: Output Settings
+    help: >
+      Settings for the solver output.
+    attrs:
+      - group: Optical field resolution
+        attrs:
+        - attr: optical-res-x
+          label: horizontal
+          type: int
+          default: 800
+          help: >
+            Number of points along the horizontal axis for the saved and plotted optical field.
+        - attr: optical-res-y
+          label: vertical
+          type: int
+          default: 600
+          help: >
+            Number of points along the vertical axis for the saved and plotted optical field.
+
   providers: &threshold-providers
   - outTemperature
   - outHeatFlux
@@ -761,7 +782,7 @@
         Mesh used by the optical solver.
 
   - tag: optical
-    label: Optical solver configuration
+    label: Optical Solver Configuration
     help: >
       Configuration of the optical solver
     attrs:
@@ -1020,5 +1041,7 @@
     - *alpha
     - *lambda
     - *initial-range
+
+  - *threshold-output
 
   providers: *threshold-providers

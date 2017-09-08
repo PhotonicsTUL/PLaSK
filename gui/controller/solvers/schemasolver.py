@@ -23,7 +23,7 @@ from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.autosolver import SchemaTag, \
+from ...model.solvers.schemasolver import SchemaTag, \
     AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
@@ -76,7 +76,7 @@ def set_conflict(widget, conflict):
             pass
 
 
-class SolverAutoWidget(VerticalScrollArea):
+class SolverWidget(VerticalScrollArea):
 
     def _change_attr(self, group, name, value, attr=None):
         node = self.controller.solver_model
@@ -206,7 +206,7 @@ class SolverAutoWidget(VerticalScrollArea):
         rows.append(label_widget)
 
     def __init__(self, controller, parent=None):
-        super(SolverAutoWidget, self).__init__(parent)
+        super(SolverWidget, self).__init__(parent)
 
         self.controller = controller
 
@@ -403,19 +403,19 @@ class SolverAutoWidget(VerticalScrollArea):
             self._change_boundary_condition(schema, data)
 
 
-class AutoSolverController(Controller):
+class SchemaSolverController(Controller):
     """
     Class for solvers defined in configuration dictionary
         :param document:
         :param model: model of solver to configure TODO should be section model?
     """
     def __init__(self, document, model):
-        super(AutoSolverController, self).__init__(document, model)
+        super(SchemaSolverController, self).__init__(document, model)
         try:
             widget_class = self.model.widget
             if widget_class is None: raise AttributeError
         except AttributeError:
-            widget_class = SolverAutoWidget
+            widget_class = SolverWidget
         self.widget = widget_class(self)
         self.section_model.changed.connect(self._model_change_cb)
 
@@ -425,7 +425,7 @@ class AutoSolverController(Controller):
     @property
     def solver_model(self):
         """
-            :return AutoSolver: model of edited solver
+            :return SchemaSolver: model of edited solver
         """
         return self.model
 
@@ -442,3 +442,12 @@ class AutoSolverController(Controller):
     def on_edit_enter(self):
         with self.mute_changes():
             self.widget.load_data()
+
+    def select_info(self, info):
+        if info.what == 'geometry' and self.widget.geometry is not None:
+            self.widget.geometry.setFocus()
+        elif info.what == 'mesh' and self.widget.mesh is not None:
+            self.widget.mesh.setFocus()
+        elif isinstance(info.what, tuple) and info.what in self.widget.controls:
+            self.widget.controls[info.what].setFocus()
+

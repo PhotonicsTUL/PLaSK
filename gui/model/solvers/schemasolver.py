@@ -19,9 +19,13 @@ try:
 except ImportError:
     yaml = None
 
+from ..info import Info
 from ...utils.xml import AttributeReader, print_interior
+from ...utils.validators import can_be_int, can_be_float, can_be_bool
 from . import Solver, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
+
+VALIDATORS = {'int': can_be_int, 'float': can_be_float, 'bool': can_be_bool}
 
 try:
     unicode = unicode
@@ -56,10 +60,11 @@ class AttrGroup(list):
 
 
 class Attr(object):
-    def __init__(self, tag, name, label, help, typ, default=None):
+    def __init__(self, tag, name, label, required, help, typ, default=None):
         self.tag = tag
         self.name = name
         self.label = label
+        self.required = required
         self.help = help
         self.typ = typ
         if default is None:self.default = ''
@@ -72,19 +77,19 @@ class AttrMulti(Attr):
 
 
 class AttrChoice(Attr):
-    def __init__(self, tag, name, label, help, typ, choices, default=None):
-        super(AttrChoice, self).__init__(tag, name, label, help, typ, default)
+    def __init__(self, tag, name, label, required, help, typ, choices, default=None):
+        super(AttrChoice, self).__init__(tag, name, label, required, help, typ, default)
         self.choices = choices
 
 
 class AttrBool(AttrChoice):
-    def __init__(self, tag, name, label, help, typ, default=None):
-        super(AttrBool, self).__init__(tag, name, label, help, typ, ('yes', 'no'), default)
+    def __init__(self, tag, name, label, required, help, typ, default=None):
+        super(AttrBool, self).__init__(tag, name, label, required, help, typ, ('yes', 'no'), default)
 
 
 class AttrGeometry(Attr):
-    def __init__(self, tag, name, label, help, typ, geometry_type, default=None):
-        super(AttrGeometry, self).__init__(tag, name, label, help, typ, default)
+    def __init__(self, tag, name, label, required, help, typ, geometry_type, default=None):
+        super(AttrGeometry, self).__init__(tag, name, label, required, help, typ, default)
         self.type = geometry_type
     pass
 
@@ -101,41 +106,6 @@ class AttrMesh(AttrChoice):
     pass
 
 
-def read_attr(tn, attr, au=None):
-    an = attr['attr']
-    al = attr['label']
-    ah = attr['help'].strip()
-    at = attr.get('type', '')
-    au = attr.get('unit', au)
-    ad = attr.get('default')
-    if au is not None:
-        al += u' [{}]'.format(au)
-    if at == u'choice':
-        ac = tuple(str(ch).strip() for ch in attr['choices'])
-        result = AttrChoice(tn, an, al, ah, at, ac, ad)
-    elif at == u'bool':
-        result = AttrBool(tn, an, al, ah, at, ad)
-    elif at == u'geometry object':
-        result = AttrGeometryObject(tn, an, al, ah, at)
-    elif at == u'geometry path':
-        result = AttrGeometryPath(tn, an, al, ah, at)
-    elif at.endswith(u' geometry'):
-        result = AttrGeometry(tn, an, al, ah, at, at[:-9].lower())
-    elif at == u'mesh':
-        ac = tuple(str(ch).strip() for ch in attr['mesh types'])
-        result = AttrMesh(tn, an, al, ah, at, ac)
-    else:
-        if an.endswith('#'):
-            result = AttrMulti(tn, an, al, ah, at)
-        else:
-            result = Attr(tn, an, al, ah, at, ad)
-    for conflict in attr.get('conflicts', []):
-        ct = conflict.get('tag', tn)
-        ca = conflict['attr']
-        result.conflicts.add((ct, ca))
-    return result
-
-
 class SchemaTag(object):
     def __init__(self, name, label, attrs):
         self.name = name
@@ -143,17 +113,18 @@ class SchemaTag(object):
         self.attrs = attrs
 
 
-class AutoSolver(Solver):
+class SchemaSolver(Solver):
     """Model for solver with its configuration specified in a scheme file solvers.xml
        and automatically generated controller widget"""
 
-    def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_types=None, name='',
-                 parent=None, info_cb=None):
-        super(AutoSolver, self).__init__(category, solver, name, parent, info_cb)
+    def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_types=None,
+                 need_mesh=True, name='', parent=None, info_cb=None):
+        super(SchemaSolver, self).__init__(category, solver, name, parent, info_cb)
         self.lib = lib
         self.schema = schema
         self.geometry_type = geometry_type
         self.mesh_types = mesh_types
+        self.need_mesh = need_mesh
         self.set_fresh_data()
 
     def set_fresh_data(self):
@@ -204,7 +175,7 @@ class AutoSolver(Solver):
 
     def set_xml_element(self, element):
         self.set_fresh_data()
-        super(AutoSolver, self).set_xml_element(element)
+        super(SchemaSolver, self).set_xml_element(element)
         el = element.find('geometry')
         if el is not None:
             self.geometry = el.attrib.get('ref')
@@ -235,8 +206,37 @@ class AutoSolver(Solver):
                     self.data[schema.name] = print_interior(el)
 
     def get_controller(self, document):
-        from ...controller.solvers.autosolver import AutoSolverController
-        return AutoSolverController(document, self)
+        from ...controller.solvers.schemasolver import SchemaSolverController
+        return SchemaSolverController(document, self)
+
+    def _create_info_for_attrs(self, res, row, tag, attrs):
+        for attr in attrs:
+            if isinstance(attr, AttrGroup):
+                self._create_info_for_attrs(res, row, tag, attr)
+            elif isinstance(attr, Attr):
+                value = self.data[tag.name][attr.name]
+                if attr.required and not value:
+                    res.append(Info("{attr.label} (in {tag.label}) required in solver '{name}' [row: {row}]"
+                                    .format(attr=attr, tag=tag, name=self.name, row=row+1),
+                                    Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
+                elif attr.typ in VALIDATORS and not VALIDATORS[attr.typ](value):
+                    res.append(Info("{typ} value required for {attr.label} (in {tag.label})"
+                                    " in solver '{name}' [row: {row}]"
+                                    .format(attr=attr, tag=tag, name=self.name, row=row+1, typ=attr.typ.title()),
+                                    Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
+
+    def create_info(self, row):
+        res = super(SchemaSolver, self).create_info(row)
+        if not self.geometry and self.geometry_type is not None:
+            res.append(Info("Geometry required for solver '{}' [row: {}]".format(self.name, row+1),
+                            Info.ERROR, rows=(row,), what='geometry'))
+        if not self.mesh and self.mesh_types and self.need_mesh:
+            res.append(Info("Mesh required for solver '{}' [row: {}]".format(self.name, row+1),
+                            Info.ERROR, rows=(row,), what='mesh'))
+        for tag in self.schema:
+            if isinstance(tag, SchemaTag):
+                self._create_info_for_attrs(res, row, tag, tag.attrs)
+        return res
 
     def stub(self):
         if self.lib is not None:
@@ -245,26 +245,63 @@ class AutoSolver(Solver):
             return "import {1}.{2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
 
 
-class AutoSolverFactory(object):
+class SchemaSolverFactory(object):
 
-    def __init__(self, category, lib, solver, schema, geometry_type, mesh_types, providers, receivers):
+    def __init__(self, category, lib, solver, schema, geometry_type, mesh_types, need_mesh, providers, receivers):
         self.category = category
         self.solver = solver
         self.schema = schema
         self.geometry_type = geometry_type
         self.mesh_types = mesh_types
+        self.need_mesh = need_mesh
         self.lib = lib
         self.providers = providers
         self.receivers = receivers
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
-        result = AutoSolver(self.category, self.schema, self.lib, self.solver, self.geometry_type, self.mesh_types,
-                            name, parent, info_cb)
+        result = SchemaSolver(self.category, self.schema, self.lib, self.solver, self.geometry_type, self.mesh_types,
+                              self.need_mesh, name, parent, info_cb)
         if element is not None:
             result.set_xml_element(element)
         if self.lib is not None and result.lib != self.lib:
             result.lib = self.lib  # force solver lib
         return result
+
+
+def read_attr(tn, attr, au=None):
+    an = attr['attr']
+    al = attr['label']
+    ah = attr['help'].strip()
+    at = attr.get('type', '')
+    au = attr.get('unit', au)
+    ad = attr.get('default')
+    ar = attr.get('required', False)
+    if au is not None:
+        al += u' [{}]'.format(au)
+    if at == u'choice':
+        ac = tuple(str(ch).strip() for ch in attr['choices'])
+        result = AttrChoice(tn, an, al, ar, ah, at, ac, ad)
+    elif at == u'bool':
+        result = AttrBool(tn, an, al, ar, ah, at, ad)
+    elif at == u'geometry object':
+        result = AttrGeometryObject(tn, an, al, ar, ah, at)
+    elif at == u'geometry path':
+        result = AttrGeometryPath(tn, an, al, ar, ah, at)
+    elif at.endswith(u' geometry'):
+        result = AttrGeometry(tn, an, al, ar, ah, at, at[:-9].lower())
+    elif at == u'mesh':
+        ac = tuple(str(ch).strip() for ch in attr['mesh types'])
+        result = AttrMesh(tn, an, al, ar, ah, at, ac)
+    else:
+        if an.endswith('#'):
+            result = AttrMulti(tn, an, al, ar, ah, at)
+        else:
+            result = Attr(tn, an, al, ar, ah, at, ad)
+    for conflict in attr.get('conflicts', []):
+        ct = conflict.get('tag', tn)
+        ca = conflict['attr']
+        result.conflicts.add((ct, ca))
+    return result
 
 
 def _iter_tags(tags):
@@ -280,7 +317,7 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
     if yaml is None: return
 
     for solver in yaml.load(open(filename)):
-        # try:
+        try:
             if not isinstance(solver, dict): continue
 
             name = solver.get('solver')
@@ -296,6 +333,7 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
             geometry_type = solver.get('geometry')
             mesh_type = solver.get('mesh')
+            need_mesh = solver.get('need mesh', True)
             if mesh_type:
                 if isinstance(mesh_type, list):
                     mesh_types = set(mesh_type)
@@ -337,10 +375,11 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
 
             if cat not in categories:
                 categories.append(cat)
-            solvers[cat,name] = AutoSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, providers, receivers)
+            solvers[cat,name] = SchemaSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, need_mesh,
+                                                    providers, receivers)
 
-        # except:
-        #     continue
+        except:
+            continue
 
 
 # Find XML files with solvers configuration
