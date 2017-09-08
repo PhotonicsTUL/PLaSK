@@ -373,7 +373,7 @@ class ThresholdSearchCyl(ThresholdSearch):
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
     optical = attribute("EffectiveFrequencyCyl()")
-    ":class:`optical.effectice.EffectiveFrequencyCyl` solver used for optical calculations."
+    ":class:`optical.effective.EffectiveFrequencyCyl` solver used for optical calculations."
 
     tfreq = 6.0
     """
@@ -428,6 +428,10 @@ class ThresholdSearchCyl(ThresholdSearch):
     """
 
     optical_resolution = (800, 600)
+    """
+    Number of points along the horizontal and vertical axes for the saved
+    and plotted optical field.
+    """
 
     def __init__(self, name=''):
         from optical.effective import EffectiveFrequencyCyl
@@ -477,7 +481,12 @@ class ThresholdSearchCyl(ThresholdSearch):
             self._read_attr(tag, 'lam0', self.optical, float)
             self._read_attr(tag, 'vlam', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
-            self.maxlam = complex(tag.get('maxlam', self.maxlam))
+            maxlam = tag.get('maxlam')
+            if maxlam is not None:
+                try:
+                    self.maxlam = complex(maxlam)
+                except ValueError:
+                    raise plask.XMLError("{}: attribute maxlam has illegal value '{}'".format(tag, maxlam))
             self.dlam = float(tag.get('dlam', self.dlam))
             self.lpm = int(tag.get('m', self.lpm))
             self.lpn = int(tag.get('n', self.lpn))
@@ -550,8 +559,8 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     gain = attribute(Gain.__name__ + "()")
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
-    optical = attribute("EffectiveFrequencyCyl()")
-    ":class:`optical.effectice.EffectiveFrequencyCyl` solver used for optical calculations."
+    optical = attribute("BesselCyl()")
+    ":class:`optical.slab.BesselFrequencyCyl` solver used for optical calculations."
 
     tfreq = 6.0
     """
@@ -614,6 +623,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     Note that it is safer to leave this empty and allow the solver to look for it
     automatically, however, it may increase the time of optical computations.
+    """
+
+    optical_resolution = (800, 600)
+    """
+    Number of points along the horizontal and vertical axes for the saved
+    and plotted optical field.
     """
 
     def __init__(self, name=''):
