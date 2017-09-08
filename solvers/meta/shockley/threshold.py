@@ -72,7 +72,7 @@ class ThresholdSearch(ThermoElectric):
             self._read_attr(tag, 'lifetime', self.gain, float)
             self._read_attr(tag, 'matrix-elem', self.gain, float, 'matrix_element')
             self._read_attr(tag, 'strained', self.gain, bool)
-        elif tag in self._OPTICAL_ROOTS:
+        elif tag.name in self._OPTICAL_ROOTS:
             root = getattr(self.optical, self._OPTICAL_ROOTS[tag.name])
             self._read_attr(tag, 'method', root, str)
             self._read_attr(tag, 'tolx', root, float)
