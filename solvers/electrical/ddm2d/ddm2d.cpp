@@ -1726,7 +1726,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
         this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
         if (nEigVal<1)
             return 1; /// no energy levels for electrons
-        //std::cout << "The eigenvalues of Hc are:" << std::endl << ces.eigenvalues() << std::endl; /// TEST
+        std::cout << "The eigenvalues of Hc are:" << std::endl << ces.eigenvalues() << std::endl; /// TEST
         //std::cout << "The eigenvectors of Hc are:" << std::endl << ces.eigenvectors() << std::endl; /// TEST
         this->writelog(LOG_INFO, "Done");
 
