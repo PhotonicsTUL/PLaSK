@@ -4,10 +4,12 @@
 #include <plask/plask.hpp>
 #include <limits>
 
+#include <eigen3/Eigen/Eigen>
 #include "fd.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"
 #include "gauss_matrix.h"
+#include <fstream>
 
 namespace plask { namespace solvers { namespace drift_diffusion {
 
@@ -248,6 +250,40 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     template <typename MatrixT>
     double doCompute(unsigned loops=1);
 
+    /// Set some parameters
+    int setSomeParams();
+
+    /// Set mesh for region where energy levels will be found
+    int setMeshActive(double _z1, double _z2, double _dz);
+
+    /// Set vector with CB for active region
+    int setCBel(std::vector<double> _CBel);
+
+    /// Set vector with Me for active region
+    int setCBelM(std::vector<double> _CBelM);
+
+    /// Find energy levels for electrons in CB
+    int findCBelLev();
+
+    /// Find band edges for claddings
+    int findCladBE();
+
+    /// Parameters used to calculate energy levels of electrons
+    std::vector<double> CBel; /// vector with energy band diagram for electrons from CB (nm)
+    std::vector<double> CBelM; /// vector with masses of electrons from CB (m0)
+    std::vector<double> CBelLev; /// energy levels of electrons from CB
+    std::vector<double> z; /// vector with mesh-node positions along z-axis (nm)
+    double dz; /// step - distance between mesh-nodes (nm)
+    int nz; /// z-mesh size (number of all nodes)
+    int ne; /// z-mesh size (number of all elements)
+    double hhm; /// hb*hb/m, unit: eV*nm*nm
+    double hh2m; /// hb*hb/(2m), unit: eV*nm*nm
+    std::vector<double> lev_el; /// energy levels of electrons
+    int n_lev_el; /// number of energy levels of electrons
+    double Ec_min, Ec_max; /// min./max. conduction bands edges for claddings (the same for both claddings); unit: eV
+    double T; /// temperature; unit: K
+    double Eupshift; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
+
   public:
 
     double maxerr;              ///< Maximum relative current density correction accepted as convergence
@@ -303,6 +339,12 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
      * \return max correction of potential against the last call
      */
     double compute(unsigned loops=1);
+
+    /**
+     * Find energy levels - TEST
+     * \return nothing important
+     */
+    double findEnergyLevels();
 
     /**
      * Integrate vertical total current at certain level.

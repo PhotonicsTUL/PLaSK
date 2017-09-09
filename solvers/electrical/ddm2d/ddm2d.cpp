@@ -986,6 +986,45 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
     return 0.;
 }
 
+template <typename Geometry2DType>
+double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
+    setSomeParams();
+
+    double z1 = 0.; /// unit: nm
+    double z2 = 30.; /// unit: nm
+    double dz = 1.; /// unit: nm
+
+    std::vector<double> CBel;
+    CBel.clear();
+    for (int i(0); i<31; ++i)
+    {
+        if ((i>=13)&&(i<=18))
+            CBel.push_back(-1.0);
+        else
+            CBel.push_back(0.);
+    }
+
+    std::vector<double> CBelM;
+    CBelM.clear();
+    for (int i(0); i<30; ++i)
+    {
+        CBelM.push_back(0.050);
+    }
+
+    setMeshActive(z1, z2, dz);
+    setCBel(CBel);
+    setCBelM(CBelM);
+    int info = findCBelLev();
+
+    if (info == 1)
+    {
+        this->writelog(LOG_ERROR, "Number of energy levels of electrons is equal to 0.");
+        return 0;
+    }
+
+    return 0;
+}
+
 
 template <typename Geometry2DType>
 template <typename MatrixT>
@@ -1539,6 +1578,240 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
         }
     );
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::setSomeParams()
+{
+    hhm = phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/m, unit: eV*nm*nm, 10^9 is introduced to change m into nm
+    hh2m = 0.5 * hhm; /// hb*hb/(2m), unit: eV*nm*nm
+    //T = 300.; /// temperature; unit: K
+    Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
+    //test = false;
+    return 0;
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, double _z2, double _dz)
+{
+    this->writelog(LOG_INFO, "Setting mesh..");
+
+    dz = _dz; /// step - distance between mesh-nodes (nm)
+
+    nz = static_cast<int>((_z2-_z1+1e-6*dz)/dz)+1; /// z-mesh size
+    this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
+
+    z.clear();
+    for (int i(0); i<nz; ++i) /// filling the vector
+        z.push_back(_z1+i*dz); /// unit: nm
+    nz = z.size(); /// z-mesh size
+
+    ne = nz - 1;
+    this->writelog(LOG_INFO, "Number of elements: {0}", ne);
+
+    this->writelog(LOG_INFO, "Done.");
+
+    return 0;
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::setCBel(std::vector<double> _CBel)
+{
+    this->writelog(LOG_INFO, "Setting energy band (CB: el)..");
+
+    CBel.clear();
+    for (int i(0); i<nz; ++i) /// filling the vector
+        CBel.push_back(_CBel[i]); /// unit: nm
+
+    this->writelog(LOG_INFO, "Done.");
+
+    return 0;
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::setCBelM(std::vector<double> _CBelM)
+{
+    this->writelog(LOG_INFO, "Setting masses (CB: el)..");
+
+    CBelM.clear();
+    for (int i(0); i<ne; ++i) /// filling the vector
+        CBelM.push_back(_CBelM[i]); /// unit: m0
+
+    this->writelog(LOG_INFO, "Done.");
+
+    return 0;
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
+{
+    n_lev_el = 0; /// number of energy levels of electrons
+
+    findCladBE(); /// find band eges for claddings
+
+    double dzdz1 = 1./(dz*dz); /// 1/(dz*dz), unit: 1/nm^2
+    ///double dz1 = 1./(dz); /// 1/(dz), unit: 1/nm
+
+    /// CB: el
+    {
+        this->writelog(LOG_INFO, "Creating matrix for electrons..\n");
+
+        int K(1), /// the order of the small matrix for central-node for CB
+            N(nz*K); /// the order of the matrix for CB
+
+
+        this->writelog(LOG_INFO, "\tsize of the matrix for CB: {0} x {1}", N, N);
+
+        Eigen::MatrixXcd Hc(N, N);
+
+        for (int i(1); i<=nz; ++i) /// nz - number of nodes
+        {
+            std::complex<double> Hc_le_11(0.,0.), Hc_ce_11(0.,0.), Hc_ri_11(0.,0.); /// left/central/right 1x1 local matrix
+            {
+                int e_le = 0; /// left element number
+                int e_ri = 0; /// right element number
+
+                if (i==1)
+                {
+                    e_ri = 0; /// first element (counting from 0)
+                    e_le = 0; /// first element (counting from 0)
+                }
+                else if (i==nz)
+                {
+                    e_le = ne-1; /// last element (counting from 0)
+                    e_ri = ne-1; /// last element (counting from 0)
+                }
+                else
+                {
+                    e_le = i-2;
+                    e_ri = i-1;
+                }
+
+                double yc_le = 1. / CBelM[e_le];
+                double yc_ri = 1. / CBelM[e_ri];
+                //double yc_ce = 0.5 * (yc_le + yc_ri);
+
+                if (i>1)
+                {
+                    double pA_le_Re = - yc_le * hh2m * dzdz1; /// Re - real part., Im - imag part.
+                    Hc_le_11.real(pA_le_Re);
+                    Hc(i-1, i-2) = Hc_le_11;
+                    //if (test)
+                        std::cout << "Hc [" << i << ", le]: " << Hc_le_11 << "\n";
+                }
+                {
+                    double pA_ce_Re = hh2m * (yc_le + yc_ri) * dzdz1;
+                    double V = 0.5 * (CBel[e_le] + CBel[e_ri]) + Eupshift;
+                    Hc_ce_11.real(pA_ce_Re + V);
+                    Hc(i-1, i-1) = Hc_ce_11;
+                    //if (test)
+                        std::cout << "Hc [" << i << ", ce]: " << Hc_ce_11 << "\n";
+                }
+                if (i<nz)
+                {
+                    double pA_ri_Re = - yc_ri * hh2m * dzdz1;
+                    Hc_ri_11.real(pA_ri_Re);
+                    Hc(i-1, i) = Hc_ri_11;
+                    //if (test)
+                        std::cout << "Hc [" << i << ", ri]: " << Hc_ri_11 << "\n";
+                }
+            }
+        }
+        this->writelog(LOG_INFO, "Done");
+
+        this->writelog(LOG_INFO, "Finding energy levels and wave functions for electrons..");
+        Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+        ces.compute(Hc);
+        int nEigVal = ces.eigenvalues().rows();
+        this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
+        if (nEigVal<1)
+            return 1; /// no energy levels for electrons
+        //std::cout << "The eigenvalues of Hc are:" << std::endl << ces.eigenvalues() << std::endl; /// TEST
+        //std::cout << "The eigenvectors of Hc are:" << std::endl << ces.eigenvectors() << std::endl; /// TEST
+        this->writelog(LOG_INFO, "Done");
+
+        this->writelog(LOG_INFO, "Extracting energy levels and wave functions for electrons..");
+        int el_sol(0); /// number of solutions for electrons which were found
+        for (int i(0); i<nz; ++i) /// finding the lowest energy levels
+        {
+            double el_lev = ces.eigenvalues()[i].real();
+            if ((el_lev > Ec_min) && (el_lev < Ec_max))
+            {
+                this->writelog(LOG_INFO, "\tenergy level for electrons no {0} was found: {1}", i, (el_lev - Eupshift));
+                ++el_sol; /// one more solution found
+            }
+            else
+                break;
+        }
+        this->writelog(LOG_INFO, "Done");
+
+        std::ofstream f;
+
+        {
+            this->writelog(LOG_INFO, "Saving energy levels for electrons to file..");
+            lev_el.clear();
+            f.open("results/el_levels.txt");
+            for (int i(0); i<el_sol; ++i)
+            {
+                f << i << "\t";
+                lev_el.push_back(ces.eigenvalues()[i].real());
+                n_lev_el++;
+                f << std::fixed << std::setprecision(10) << lev_el[i] - Eupshift << "\n";
+            }
+            f.close();
+
+            this->writelog(LOG_INFO, "Done");
+        }
+
+        {
+            this->writelog(LOG_INFO, "Saving wave functions for electrons to file..");
+            f.open("results/el_functions.txt");
+            for (int i(0); i<nz; ++i)
+            {
+                f << i << "\t";
+                for (int j(0); j<el_sol; ++j)
+                    f << std::fixed << std::setprecision(10) << ces.eigenvectors().col(j)[i].real() << "\t";
+                f << "\n";
+            }
+            f.close();
+
+            this->writelog(LOG_INFO, "Done");
+        }
+
+        Hc.resize(0,0);
+    }
+
+    return 0;
+}
+
+template <typename Geometry2DType>
+int DriftDiffusionModel2DSolver<Geometry2DType>::findCladBE()
+{
+    this->writelog(LOG_INFO, "Find band edges for claddings..");
+
+    Ec_min = 1e6;
+    Ec_max = -1e6;
+//    Ev_min = 1e6; /// conduction/valence bands for claddings (the same for both); unit: eV;
+//    Ev_max = -1e6;
+
+    for (int i=0; i<ne; ++i)
+    {
+        double tEc0 = CBel[i];
+        if (tEc0 < Ec_min)
+            Ec_min = tEc0;
+        if (tEc0 > Ec_max)
+            Ec_max = tEc0;
+    }
+
+    Ec_min += Eupshift; /// "+ Eupshift" to go away from 0 (we want only positive values for energy levels)
+    Ec_max += Eupshift;
+
+    this->writelog(LOG_INFO, "\tEc_min: {0} eV", Ec_min - Eupshift);
+    this->writelog(LOG_INFO, "\tEc_max: {0} eV", Ec_max - Eupshift);
+
+    this->writelog(LOG_INFO, "Done");
+
+    return 0;
 }
 
 /*
