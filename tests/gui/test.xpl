@@ -224,7 +224,7 @@
   </thermal>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config lifetime="axa" matrix-elem="10" strained="???"/>
+    <config T0="300" lifetime="{axa}" matrix-elem="10"/>
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoTE"/>
@@ -237,7 +237,7 @@
         <place side="top" object="n-contact"/>
       </condition>
     </voltage>
-    <matrix itererr="2"/>
+    <matrix algorithm="dupa" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
   <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">

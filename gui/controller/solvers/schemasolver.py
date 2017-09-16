@@ -374,7 +374,7 @@ class SolverWidget(VerticalScrollArea):
                             elif isinstance(item, AttrMesh):
                                 try:
                                     edit.clear()
-                                    edit.addItems([''] + list(self._get_grids(item.choices)))
+                                    edit.addItems([''] + list(self._get_grids(item.types)))
                                 except AttributeError:
                                     pass
                             if type(edit) in (ComboBox, QComboBox):

@@ -21,7 +21,7 @@ except ImportError:
 
 from ..info import Info
 from ...utils.xml import AttributeReader, print_interior
-from ...utils.validators import can_be_int, can_be_float, can_be_bool
+from ...utils.validators import can_be_int, can_be_float, can_be_one_of, can_be_bool
 from . import Solver, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
 
@@ -91,7 +91,6 @@ class AttrGeometry(Attr):
     def __init__(self, tag, name, label, required, help, typ, geometry_type, default=None):
         super(AttrGeometry, self).__init__(tag, name, label, required, help, typ, default)
         self.type = geometry_type
-    pass
 
 
 class AttrGeometryObject(Attr):
@@ -102,8 +101,10 @@ class AttrGeometryPath(Attr):
     pass
 
 
-class AttrMesh(AttrChoice):
-    pass
+class AttrMesh(Attr):
+    def __init__(self, tag, name, label, required, help, typ, mesh_types, default=None):
+        super(AttrGeometry, self).__init__(tag, name, label, required, help, typ, default)
+        self.types = mesh_types
 
 
 class SchemaTag(object):
@@ -223,6 +224,12 @@ class SchemaSolver(Solver):
                     res.append(Info("{typ} value required for {attr.label} (in {tag.label})"
                                     " in solver '{name}' [row: {row}]"
                                     .format(attr=attr, tag=tag, name=self.name, row=row+1, typ=attr.typ.title()),
+                                    Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
+                elif isinstance(attr, AttrChoice) and not can_be_one_of(value, *attr.choices):
+                    res.append(Info("{attr.label} (in {tag.label}) must be one of {choices}"
+                                    " in solver '{name}' [row: {row}]"
+                                    .format(attr=attr, tag=tag, name=self.name, row=row+1,
+                                            choices=', '.join("'{}'".format(c) for c in attr.choices)),
                                     Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
 
     def create_info(self, row):
