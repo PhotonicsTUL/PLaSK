@@ -1,6 +1,7 @@
 - solver: Dynamic2D
   lib: dynamic
   category: thermal
+  help: Two-dimensional dynamic thermal solver in Cartesian geometry, based on finite-element method.
   geometry: Cartesian2D
   mesh: Rectangular2D
   tags:
@@ -67,9 +68,12 @@
   - outThermalConductivity
   receivers:
   - inHeat
+
+
 - solver: DynamicCyl
   lib: dynamic
   category: thermal
+  help: Two-dimensional dynamic thermal solver in cylindrical geometry, based on finite-element method.
   geometry: Cylindrical
   mesh: Rectangular2D
   tags:

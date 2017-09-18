@@ -1,8 +1,12 @@
 - solver: Diffusion2D
   lib: diffusion
   category: electrical
+  help: >
+    Two-dimensional diffusion solver in Cartesian geometry.
+
   geometry: Cartesian2D
   mesh: Regular
+
   tags:
   - &config
     tag: config
@@ -43,30 +47,33 @@
       label: Interpolation method
       type: choice
       default: spline
-      choices:
-      - linear
-      - spline
+      choices: [ linear, spline ]
       help: Current density interpolation method name.
-  providers:
+
+  providers: &providers
   - outCarriersConcentration
-  receivers:
+
+  receivers: &receivers
   - inTemperature
   - inCurrentDensity
   - inGain
   - inLightMagnitude
   - inWavelength
+
+################################################################################
+
 - solver: DiffusionCyl
   lib: diffusion
   category: electrical
+  help: >
+    Two-dimensional diffusion solver in cylindrical geometry.
+
   geometry: Cylindrical
   mesh: Regular
+
   tags:
   - *config
-  providers:
-  - outCarriersConcentration
-  receivers:
-  - inTemperature
-  - inCurrentDensity
-  - inGain
-  - inLightMagnitude
-  - inWavelength
+
+  providers: *providers
+
+  receivers: *receivers

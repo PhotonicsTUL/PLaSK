@@ -1,6 +1,9 @@
 - solver: Shockley2D
   lib: shockley
   category: electrical
+  help: >
+    Two-dimensional phenomenological solver in Cartesian geometry based on Shockley equation
+    and using finite-element method.
   geometry: Cartesian2D
   mesh: Rectangular2D
   tags:
@@ -105,9 +108,14 @@
   - outCurrentDensity
   receivers:
   - inTemperature
+
+
 - solver: ShockleyCyl
   lib: shockley
   category: electrical
+  help: >
+    Two-dimensional phenomenological solver in cylindrical geometry based on Shockley equation
+    and using finite-element method.
   geometry: Cylindrical
   mesh: Rectangular2D
   tags:

@@ -1,6 +1,11 @@
 - solver: FreeCarrier2D
   lib: freecarrier
   category: gain
+  help: >
+    Quantum-well gain using free-carrier approximation for two-dimensional Cartesian geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
 
   geometry: Cartesian2D
   mesh: [ Ordered, Regular ]
@@ -48,8 +53,13 @@
 
 - solver: FreeCarrierCyl
   lib: freecarrier
-
   category: gain
+  help: >
+    Quantum-well gain using free-carrier approximation for cylindrical geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+    However, if there is a mesh specified then the gain is computed only in the mesh points and interpolated in-between.
+
   geometry: Cylindrical
   mesh: [ Ordered, Regular ]
   need mesh: false

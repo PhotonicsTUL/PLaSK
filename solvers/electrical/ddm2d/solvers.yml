@@ -1,6 +1,8 @@
 - solver: DriftDiffusion2D
   lib: ddm2d
   category: electrical
+  help: >
+    Finite element drift-diffusion electrical solver for 2D Cartesian geometry using finite-element method.
   geometry: Cartesian2D
   mesh: Rectangular2D
   tags:

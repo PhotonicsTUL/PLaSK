@@ -237,6 +237,8 @@ def proceed(filename):
             else:
                 info['mesh'] = mesh_types
 
+        info['help'] = parse_text(solver.text)
+
         info['tags'] = tags = []
         iter_tags(solver, ns, xns, tags)
 

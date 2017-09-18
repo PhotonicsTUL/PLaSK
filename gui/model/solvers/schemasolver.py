@@ -103,7 +103,7 @@ class AttrGeometryPath(Attr):
 
 class AttrMesh(Attr):
     def __init__(self, tag, name, label, required, help, typ, mesh_types, default=None):
-        super(AttrGeometry, self).__init__(tag, name, label, required, help, typ, default)
+        super(AttrMesh, self).__init__(tag, name, label, required, help, typ, default)
         self.types = mesh_types
 
 
@@ -384,8 +384,11 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                 categories.append(cat)
             solvers[cat,name] = SchemaSolverFactory(cat, lib, name, schema, geometry_type, mesh_types, need_mesh,
                                                     providers, receivers)
-
         except:
+            from ... import _DEBUG
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
             continue
 
 

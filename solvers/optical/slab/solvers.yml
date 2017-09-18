@@ -1,7 +1,9 @@
 - solver: Fourier2D
   lib: slab
-
   category: optical
+  help: >
+    Vectorial optical solver based on the plane-wave reflection transfer method.
+
   geometry: Cartesian2D
 
   tags:
@@ -291,8 +293,10 @@
 
 - solver: Fourier3D
   lib: slab
-
   category: optical
+  help: >
+    Vectorial optical solver based on the plane-wave reflection transfer method.
+
   geometry: Cartesian3D
 
   tags:
@@ -407,7 +411,7 @@
         help: Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
           '<i>Hx</i>').
     - *emission
-    
+
   - *interface
 
   - tag: pmls
@@ -525,6 +529,8 @@
 - solver: BesselCyl
   lib: slab
   category: optical
+  help: >
+    Vectorial optical solver based on the Bessel expansion reflection transfer method.
 
   geometry: Cylindrical
   mesh: Ordered

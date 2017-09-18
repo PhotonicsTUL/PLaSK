@@ -61,12 +61,13 @@ def make_rst(dirname):
         def out(*args, **kwargs):
             print(*(a.encode('utf-8') for a in args), file=outfile, **kwargs)
 
-        def out_text(text, level):
+        def out_text(text, level, par=False):
             if text is None: return
             text = html2rst(text.strip())
             if text:
-                out()
+                if not par: out()
                 for line in text.split('\n'):
+                    if par: out()
                     out('   '*level + line.strip())
 
         out(name)
@@ -74,7 +75,7 @@ def make_rst(dirname):
         out(u'\n.. xml:tag:: <{cat} solver="{name}"> [{name}]\n'.format(**locals()))
         out(u'   Corresponding Python class: :py:class:`{cat}.{lib}.{name}`.'.format(**locals()))
 
-        out_text(solver.get('help'), 1)
+        out_text(solver.get('help'), 1, True)
 
         out(u'\n   :attr required name: Solver name.')
 
@@ -145,9 +146,9 @@ def make_rst(dirname):
                         typ += u" " + html2rst(unit)
                 if typ:
                     typ = u'(' + typ + u')'
-                doc = (u'\n\n' + u'   ' * level).join(doc.split(u'\n'))
+                doc = (u'\n\n' + u'   ' * (level+1)).join(doc.split(u'\n'))
                 out(u'{}   :attr {}{}: {} {}'
-                    .format(u'   ' * (level+1), u'required ' if req else u'', attr['attr'], doc, typ))
+                    .format(u'   ' * level, u'required ' if req else u'', attr['attr'], doc, typ))
             else:
                 for a in attr['attrs']:
                     write_attrs(a, level, unit)
@@ -156,7 +157,7 @@ def make_rst(dirname):
             for tag in outer:
                 if 'tag' in tag:
                     out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['tag'], cat, name))
-                    out_text(tag.get('help'), level+1)
+                    out_text(tag.get('help'), level+1, True)
                     attrs = tag['attrs']
                     if attrs:
                         out()
@@ -169,7 +170,7 @@ def make_rst(dirname):
                     out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['bcond'], cat, name))
                     out(u'\n{}   {} boundary conditions. See subsection :ref:`sec-xpl-Boundary-conditions`.'
                         .format('   '*level, tag['label']))
-                    out_text(tag.get('help'), level+1)
+                    out_text(tag.get('help'), level+1, True)
 
         write_tags(solver.get('tags', []))
 

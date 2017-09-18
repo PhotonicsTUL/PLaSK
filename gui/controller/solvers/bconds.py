@@ -326,12 +326,13 @@ class BoundaryConditionsDialog(QDialog):
                         for tag in xpl:
                             self.bconds.read_from_xpl(tag, manager)
                 setattr(fake_plask_gui_solver, schema.mesh_type, Solver)
-            self.model.dataChanged.connect(self.update_plot)
-            self.model.rowsInserted.connect(self.update_plot)
-            self.model.rowsRemoved.connect(self.update_plot)
-            self.model.rowsMoved.connect(self.update_plot)
-            selection_model = self.table.selectionModel()
-            selection_model.selectionChanged.connect(self.highlight_plot)
+            if self.preview is not None:
+                self.model.dataChanged.connect(self.update_plot)
+                self.model.rowsInserted.connect(self.update_plot)
+                self.model.rowsRemoved.connect(self.update_plot)
+                self.model.rowsMoved.connect(self.update_plot)
+                selection_model = self.table.selectionModel()
+                selection_model.selectionChanged.connect(self.highlight_plot)
         else:
             self.preview = self.info = None
             layout.addWidget(table_with_manipulators(self.table))

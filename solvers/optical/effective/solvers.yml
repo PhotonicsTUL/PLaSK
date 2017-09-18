@@ -1,6 +1,8 @@
 - solver: EffectiveIndex2D
   lib: effective
   category: optical
+  help: >
+    Scalar optical solver based on the effective index method.
 
   geometry: Cartesian2D
   mesh: [ Rectangular2D, Ordered, Regular ]
@@ -171,8 +173,10 @@
 - solver: EffectiveFrequencyCyl
   lib: effective
   category: optical
-  geometry: Cylindrical
+  help: >
+    Scalar optical solver based on the effective frequency method.
 
+  geometry: Cylindrical
   mesh: [ Rectangular2D, Ordered, Regular ]
   need mesh: false
 

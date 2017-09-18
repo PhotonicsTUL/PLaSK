@@ -1,6 +1,13 @@
 - solver: ThermoElectric2D
   lib: shockley
   category: meta
+  help: >
+    Solver performing thermo-electric calculations without the optical part
+    in Cartesian 2D geometry.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in
+    a self-consistent loop until desired convergence is reached.
 
   tags:
   - tag: geometry
@@ -236,6 +243,13 @@
 - solver: ThermoElectricCyl
   lib: shockley
   category: meta
+  help: >
+    Solver performing thermo-electric calculations without the optical part
+    in cylindrical 2D geometry.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in
+    a self-consistent loop until desired convergence is reached.
 
   tags:
   - tag: geometry
@@ -286,6 +300,13 @@
 - solver: ThermoElectric3D
   lib: shockley
   category: meta
+  help: >
+    Solver performing thermo-electric calculations without the optical part
+    in 3D geometry.
+
+    This solver performs under-threshold thermo-electrical computations.
+    It computes electric current flow and tempereture distribution in
+    a self-consistent loop until desired convergence is reached.
 
   tags:
   - tag: geometry
@@ -387,6 +408,15 @@
 - solver: ThresholdSearchCyl
   lib: shockley
   category: meta
+  help: >
+    Solver for threshold search of semiconductor laser in cylindrical geometry.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
 
   tags:
   - &threshold-cylindrical-geometry
@@ -762,6 +792,17 @@
 - solver: ThresholdSearchBesselCyl
   lib: shockley
   category: meta
+  help: >
+    Solver for threshold search of semiconductor laser in cylindrical geometry.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    The optical computations are done with vector method based on Bessel exansion.
 
   tags:
   - *threshold-cylindrical-geometry

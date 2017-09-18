@@ -320,7 +320,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
 
         size_t next = 0;
 
-        reader.requireTag();
+        if (!reader.requireTagOrEnd()) return;
 
         if (reader.getNodeName() == TAG_NAME_DEFINES) {
             next = 1;
