@@ -54,6 +54,11 @@ include(PLaSK)
 #set(SOLVER_PYTHON_LINK_LIBRARIES libplask_python)
 
 
+# Uncomment and edit the line below if your solver should be built after any
+# other targets. This is most useful for meta-solvers.
+#set(SOLVER_DEPENDS other-target)
+
+
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using CMake command add_test for binaries
 # and macro add_python_test(name file.py) for Python scripts. You should name

@@ -3,6 +3,8 @@
 #
 cmake_minimum_required(VERSION 2.8)
 
+cmake_policy(SET CMP0046 NEW)       # ensure add_dependencies raises error if target does not exist
+
 # Obtain relative path name
 string(REPLACE "${CMAKE_SOURCE_DIR}/solvers/" "" SOLVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -74,6 +76,10 @@ macro(make_default)
         set_target_properties(${SOLVER_LIBRARY} PROPERTIES COMPILE_FLAGS -DPLASK_SOLVERS_EXPORTS)
     endif()
 
+    if (NOT "${SOLVER_DEPENDS}" STREQUAL "")
+        add_dependencies(${SOLVER_LIBRARY} ${SOLVER_DEPENDS})
+    endif()
+
     if(WIN32)
         install(TARGETS ${SOLVER_LIBRARY} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     else()
@@ -111,10 +117,10 @@ macro(make_default)
             foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
                 STRING(TOUPPER "${CONF}" CONF)
                 set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
-                              RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+                                      RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
             endforeach()
             install(TARGETS ${SOLVER_PYTHON_MODULE} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
-                                                  LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
+                                                    LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()
             install(TARGETS ${SOLVER_PYTHON_MODULE} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
         endif()
@@ -137,7 +143,7 @@ macro(make_default)
                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml
                           )
-        add_custom_target(${SOLVER_LIBRARY}-xml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml)
+        add_custom_target(${SOLVER_LIBRARY}-yml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.yml COMPONENT solvers)
     endif()
 
@@ -160,7 +166,7 @@ macro(make_pure_python)
                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         install(FILES ${file} DESTINATION lib/plask/solvers/${SOLVER_DIR} COMPONENT solvers)
     endforeach()
-    add_custom_target(${SOLVER_LIBRARY} DEPENDS ${python_targets})
+    add_custom_target(${SOLVER_LIBRARY} DEPENDS ${python_targets} ${SOLVER_DEPENDS})
 
     if(BUILD_GUI)
         string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
