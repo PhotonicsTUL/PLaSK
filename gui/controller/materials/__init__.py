@@ -146,11 +146,15 @@ class MaterialsComboBox(QComboBox):
         if materials_model is not None:
             line_edit = MaterialLineEdit(self, materials_model)
             self.setLineEdit(line_edit)
+        else:
+            line_edit = self.lineEdit()
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
         if defines_model is not None:
-            self.setCompleter(get_defines_completer(defines_model, parent, material_list))
+            completer = get_defines_completer(defines_model, parent, material_list)
+            completer.activated.connect(self.show_components_popup)
+            line_edit.setCompleter(completer)
         if material_list:
             self.addItems(material_list)
             self.setMaxVisibleItems(len(material_list))
@@ -236,7 +240,6 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         self.materials_model = materials_model
 
     def createEditor(self, parent, option, index):
-
         material_list = BASE_MATERIALS[:]
 
         if plask:
@@ -251,14 +254,12 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo = MaterialsComboBox(parent, self.materials_model, material_list, self.model,
                                   popup_select_cb=lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
-        try: combo.setCurrentIndex(material_list.index(index.data()))
-        except ValueError: pass
-        combo.insertSeparator(4)
-        combo.insertSeparator(len(material_list)-index.row()+1)
-        combo.setMaxVisibleItems(len(material_list))
-        #self.connect(combo, SIGNAL("currentIndexChanged(int)"),
-        #             self, SLOT("currentIndexChanged()"))
-        #combo.currentIndexChanged[str].connect()
+        with BlockQtSignals(combo):
+            try: combo.setCurrentIndex(material_list.index(index.data()))
+            except ValueError: pass
+            combo.insertSeparator(4)
+            combo.insertSeparator(len(material_list)-index.row()+1)
+            combo.setMaxVisibleItems(len(material_list))
         return combo
 
 

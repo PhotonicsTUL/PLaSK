@@ -8,6 +8,8 @@ import thermal.static
 
 import plask
 
+import numpy as np
+
 try:
     import scipy
 except ImportError:
@@ -60,7 +62,7 @@ class ThresholdSearch(ThermoElectric):
             self.ivb = tag['bcond']
             self.vtol = tag.get('vtol', self.vtol)
             self.maxiter = tag.get('maxiter', self.maxiter)
-            # self.quick = tag.get('quick', self.quick)
+            self.quick = tag.get('quick', self.quick)
         elif tag == 'diffusion':
             self._read_attr(tag, 'fem-method', self.diffusion, str, 'fem_method')
             self._read_attr(tag, 'accuracy', self.diffusion, float)
@@ -103,15 +105,13 @@ class ThresholdSearch(ThermoElectric):
         self.diffusion.initialize()
         self.gain.initialize()
         self.optical.initialize()
-        # if quick:
-        #     raise NotImplemented('Quick threshold search not implemented')
 
     def on_invalidate(self):
         super(ThresholdSearch, self).on_invalidate()
         self.diffusion.invalidate()
         self.optical.invalidate()
 
-    def __optargs(self):
+    def _optargs(self):
         return {}
 
     def get_lam(self):
@@ -148,19 +148,44 @@ class ThresholdSearch(ThermoElectric):
         Returns:
             float: Loss of a specified mode
         """
+        plask.print_log('detail', "ThresholdSearch: V = {0:.4f} V".format(volt))
         self.electrical.voltage_boundary[self.ivb].value = volt
         self.compute_thermoelectric()
         self.optical.invalidate()
         optstart = self.get_lam()
         if self._optarg is None:
-            self.modeno = self.optical.find_mode(optstart, **self.__optargs())
+            self.modeno = self.optical.find_mode(optstart, **self._optargs())
         else:
-            _optargs = self.__optargs().copy()
+            _optargs = self._optargs().copy()
             _optargs[self._optarg] = optstart
             self.modeno = self.optical.find_mode(**_optargs)
         val = self.optical.modes[self.modeno].loss
         plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
         return val
+
+    def _quickstep(self, arg):
+        """
+        Function performing one step of the quick threshold search.
+
+        Args:
+            arg (array): Array containing voltage on a specified boundary condition [V] and wavelength.
+
+        Returns:
+            array: Imaginary and real part of a specified mode
+        """
+        volt, lam = arg * self._quickscale
+        plask.print_log('detail', "ThresholdSearch: V = {0:.4f} V, lam = {1:g} nm".format(volt, lam))
+        self.electrical.voltage_boundary[self.ivb].value = volt
+        self.compute_thermoelectric()
+        if self._optarg is None:
+            det = self.optical.get_determinant(lam, **self._optargs())
+        else:
+            _optargs = self._optargs().copy()
+            _optargs[self._optarg] = lam
+            det = self.optical.get_determinant(**_optargs)
+        plask.print_log('result', "ThresholdSearch: V = {0:.4f} V, lam = {1:g} nm, det = {2.real}{2.imag:+g}j"
+                        .format(volt, lam, det))
+        return np.array([det.real, det.imag])
 
     def optical_determinant(self, lam):
         """
@@ -174,9 +199,9 @@ class ThresholdSearch(ThermoElectric):
         """
         self.compute_thermoelectric()
         if self._optarg is None:
-            return self.optical.get_determinant(lam, **self.__optargs())
+            return self.optical.get_determinant(lam, **self._optargs())
         else:
-            _optargs = self.__optargs().copy()
+            _optargs = self._optargs().copy()
             _optargs[self._optarg] = lam
             return self.optical.get_determinant(**_optargs)
 
@@ -218,9 +243,30 @@ class ThresholdSearch(ThermoElectric):
             raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
         if self.vmin is None:
             volt = self.electrical.voltage_boundary[self.ivb].value
-            self.threshold_voltage = scipy.optimize.newton(self.step, volt, tol=self.vtol, maxiter=self.maxiter)
+            if self.quick:
+                self.compute_thermoelectric()
+                lam = self.get_lam().real
+                self._quickscale = np.array([volt, lam])
+                result = scipy.optimize.root(self._quickstep, np.array([1., 1.]),
+                                             tol=1e-3 * min(self.vtol/volt, 1e-6),
+                                             options=dict(maxfev=2*self.maxiter, eps=1e-6))
+                if not result.status:
+                    raise plask.ComputationError(result.message)
+                self.threshold_voltage, lam = result.x * self._quickscale
+                if self._optarg is None:
+                    self.modeno = self.optical.set_mode(lam, **self._optargs())
+                else:
+                    _optargs = self._optargs().copy()
+                    _optargs[self._optarg] = lam
+                    self.modeno = self.optical.set_mode(**_optargs)
+            else:
+                self.threshold_voltage = scipy.optimize.newton(self.step, volt,
+                                                               tol=self.vtol/volt, maxiter=self.maxiter)
         else:
-            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, xtol=self.vtol,
+            if self.quick:
+                raise RuntimeError("Quick computation only allowed with a single starting point")
+            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax,
+                                                           xtol=self.vtol * 2. / (self.vmin+self.vmax),
                                                            maxiter=self.maxiter, disp=True)
 
         self.threshold_current = abs(self.electrical.get_total_current())
@@ -473,7 +519,7 @@ class ThresholdSearchCyl(ThresholdSearch):
             return lam + 2. * self.dlam
         raise ValueError("Approximation of mode LP{0.lpm}{0.lpn} not found".format(self))
 
-    def __optargs(self):
+    def _optargs(self):
         return dict(m=self.lpm)
 
     def _parse_xpl(self, tag, manager):
@@ -677,7 +723,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             return lam + 2. * self.dlam
         raise ValueError("Approximation of mode HE{0.hem}{0.hen} not found".format(self))
 
-    def __optargs(self):
+    def _optargs(self):
         return dict(m=self.hem)
 
     def _parse_xpl(self, tag, manager):

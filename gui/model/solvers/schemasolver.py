@@ -77,14 +77,17 @@ class AttrMulti(Attr):
 
 
 class AttrChoice(Attr):
-    def __init__(self, tag, name, label, required, help, typ, choices, default=None):
+    def __init__(self, tag, name, label, required, help, typ, choices, other=(), cs=False, default=None):
         super(AttrChoice, self).__init__(tag, name, label, required, help, typ, default)
         self.choices = choices
+        self.other = other
+        self.cs = cs
 
 
 class AttrBool(AttrChoice):
     def __init__(self, tag, name, label, required, help, typ, default=None):
-        super(AttrBool, self).__init__(tag, name, label, required, help, typ, ('yes', 'no'), default)
+        super(AttrBool, self).__init__(tag, name, label, required, help, typ,
+                                       ('yes', 'no'), ('true', 'false', '1', '0'), default)
 
 
 class AttrGeometry(Attr):
@@ -225,11 +228,12 @@ class SchemaSolver(Solver):
                                     " in solver '{name}' [row: {row}]"
                                     .format(attr=attr, tag=tag, name=self.name, row=row+1, typ=attr.typ.title()),
                                     Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
-                elif isinstance(attr, AttrChoice) and not can_be_one_of(value, *attr.choices):
+                elif isinstance(attr, AttrChoice) and not can_be_one_of(value, *(attr.choices + attr.other),
+                                                                        case_sensitive=attr.cs):
                     res.append(Info("{attr.label} (in {tag.label}) must be one of {choices}"
                                     " in solver '{name}' [row: {row}]"
                                     .format(attr=attr, tag=tag, name=self.name, row=row+1,
-                                            choices=', '.join("'{}'".format(c) for c in attr.choices)),
+                                            choices=', '.join("'{}'".format(c) for c in (attr.choices + attr.other))),
                                     Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
 
     def create_info(self, row):
@@ -287,7 +291,9 @@ def read_attr(tn, attr, au=None):
         al += u' [{}]'.format(au)
     if at == u'choice':
         ac = tuple(str(ch).strip() for ch in attr['choices'])
-        result = AttrChoice(tn, an, al, ar, ah, at, ac, ad)
+        ao = tuple(str(ch).strip() for ch in attr.get('other', ()))
+        ak = attr.get('case sensitive', False)
+        result = AttrChoice(tn, an, al, ar, ah, at, ac, ao, ak, ad)
     elif at == u'bool':
         result = AttrBool(tn, an, al, ar, ah, at, ad)
     elif at == u'geometry object':

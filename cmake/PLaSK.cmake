@@ -3,7 +3,9 @@
 #
 cmake_minimum_required(VERSION 2.8)
 
-cmake_policy(SET CMP0046 NEW)       # ensure add_dependencies raises error if target does not exist
+if(POLICY CMP0046)
+    cmake_policy(SET CMP0046 NEW)       # ensure add_dependencies raises error if target does not exist
+endif()
 
 # Obtain relative path name
 string(REPLACE "${CMAKE_SOURCE_DIR}/solvers/" "" SOLVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})

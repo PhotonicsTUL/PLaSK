@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mime-info>
-    <mime-type xmlns="http://www.freedesktop.org/standards/shared-mime-info" type="application/x-plask">
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-plask">
         <comment>PLaSK input file</comment>
         <icon name="application-x-plask"/>
         <glob-deleteall/>

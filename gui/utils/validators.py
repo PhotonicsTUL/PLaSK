@@ -65,7 +65,8 @@ def can_be_one_of(value, *values, **kwargs):
     """
     Check if given value can represent one of specified values
     :param str value: value to check, can be None
-    :param bool required: only if True, the function returns False if value is None or empty string
+    :param bool required: if True, the function returns False if value is None or empty string
+    :param bool case_sensitive: if True, the the comparison is case sensitive
     :param values: list of allowed values
     :return bool: True only if:
         - value includes '{' or
@@ -73,6 +74,7 @@ def can_be_one_of(value, *values, **kwargs):
         - value represents a valid boolean
     """
     required = kwargs.pop('required', False)
+    case_sensitive = kwargs.pop('case_sensitive', False)
     if len(kwargs) > 0:
         raise TypeError("can_be_one_of() got an unexpected keyword argument '{}'".format(list(kwargs.keys())[0]))
     if value is None: return not required
@@ -80,7 +82,10 @@ def can_be_one_of(value, *values, **kwargs):
     if not value: return not required
     if '{' in value:
         return bool(WITH_DEFINE_RE.match(value))
-    return value.lower() in values
+    if case_sensitive:
+        return value in values
+    else:
+        return value.lower() in (val.lower() for val in values)
 
 
 def can_be_bool(value, required=False):

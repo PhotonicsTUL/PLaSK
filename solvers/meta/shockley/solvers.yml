@@ -534,6 +534,13 @@
       type: int
       help: >
         Number of the voltage boundary condition to vary during the threshold search.
+#    - attr: quick
+#      label: Use quick method
+#      type: bool
+#      default: false
+#      help: >
+#        If this flag is set, the optical root finding is performed together with the threshold
+#        voltage search. It may increase performance in case of the long optical computations.
     - group: Voltage range
       unit: V
       attrs:

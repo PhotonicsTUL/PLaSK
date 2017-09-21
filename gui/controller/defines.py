@@ -14,6 +14,7 @@ from ..qt.QtCore import *
 
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
+from ..utils.qsignals import BlockQtSignals
 
 from ..model.defines import DefinesModel
 from .table import TableController
@@ -123,10 +124,13 @@ class DefinesCompletionDelegate(QStyledItemDelegate):
         ed.setCompleter(completer)
         return ed
 
-    #def setEditorData(self, editor, index):
-    #    editor.blockSignals(True)
-    #    editor.setCurrentIndex(int(index.model().data(index)))
-    #    editor.blockSignals(False)
+    def setEditorData(self, editor, index):
+        with BlockQtSignals(editor):
+            super(DefinesCompletionDelegate, self).setEditorData(editor, index)
+
+    # def setEditorData(self, editor, index):
+    #     with BlockQtSignals(editor):
+    #         editor.setCurrentIndex(int(index.model().data(index)))
 
     #def setModelData(self, editor, model, index):
     #    model.setData(index, editor.currentIndex())

@@ -203,7 +203,7 @@ CONFIG_WIDGETS = OrderedDict([
             ("Mesh line width", FloatSpinBox('mesh/line_width', step=0.1, min=0.1,
                                              help="Mesh lines width in the preview plot.")),
         ]),
-        ("Boundary Conditions Preview", [
+        ("Boundary Conditions", [
             ("Marker color", Color('boundary_conditions/color',
                                    "Marker color in the boundary conditions preview plot.")),
             ("Selected color", Color('boundary_conditions/selected_color',

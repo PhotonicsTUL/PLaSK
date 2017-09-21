@@ -30,6 +30,7 @@
   </material>
   <material name="name" base="semiconductor"/>
   <module name="mats"/>
+  <material name="GaAs2:Si" base="GaAs:Si"/>
 </materials>
 
 <geometry>
@@ -222,6 +223,10 @@
       <condition place="bottom" value="300."/>
     </temperature>
   </thermal>
+  <optical name="fourier2" solver="Fourier2D" lib="slab">
+    <geometry ref="geo2d"/>
+    <mode symmetry="Etran"/>
+  </optical>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
     <config T0="300" lifetime="{axa}" matrix-elem="10"/>

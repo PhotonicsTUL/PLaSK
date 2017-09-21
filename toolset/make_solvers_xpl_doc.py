@@ -116,7 +116,7 @@ def make_rst(dirname):
                 elif default is not None:
                     default = str(default)
                 if typ == 'choice':
-                    choices = [str(ch).strip() for ch in attr['choices']]
+                    choices = [str(ch).strip() for ch in (attr['choices'] + attr.get('other', []))]
                     if len(choices) == 0:
                         typ = u'choice'
                     elif len(choices) == 1:

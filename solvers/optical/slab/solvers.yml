@@ -92,12 +92,16 @@
       type: choice
       default: none
       choices: &none-tran-long [ none, Etran, Elong ]
+      other: &components [ Ex, Ey, Ez, Er, Ep, Et, El, Htran, Hlong, Hx, Hy, Hz, Hr, Hp, Ht, Hl ]
+      case sensitive: true
       help: Mode symmetry. Specify a symmetric field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
     - attr: polarization
       label: Mode polarization
       type: choice
       default: none
       choices: *none-tran-long
+      other: *components
+      case sensitive: true
       help: Mode polarization. Give an existing field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
     - &emission
       attr: emission
@@ -401,6 +405,8 @@
         type: choice
         default: none
         choices: *none-tran-long
+        other: *components
+        case sensitive: true
         help: Mode symmetry along longitudinal axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
           '<i>Hx</i>').
       - attr: symmetry-tran
@@ -408,6 +414,8 @@
         type: choice
         default: none
         choices: *none-tran-long
+        other: *components
+        case sensitive: true
         help: Mode symmetry along transverse axis. Specify a symmetric field component here (e.g. '<i>Etran</i>',
           '<i>Hx</i>').
     - *emission
