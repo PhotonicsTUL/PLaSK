@@ -1654,6 +1654,31 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
 
     /// CB: el
     {
+
+        // TEST
+        {
+            const int n = 4;
+            Eigen::MatrixXcd a(n, n);
+            typedef std::complex<double> C;
+            a <<
+            C(-3.97, -5.04), C(-4.11, 3.70), C(-0.34, 1.01), C(1.29, -0.86),
+            C(0.34, -1.50), C(1.52, -0.43), C(1.88, -5.38), C(3.36, 0.65),
+            C(3.31, -3.85), C(2.50, 3.45), C(0.88, -1.08), C(0.64, -1.48),
+            C(-1.10, 0.82), C(1.81, -1.59), C(3.25, 1.33), C(1.57, -3.44);
+            Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+            ces.compute(a);
+            std::cout << "The eigenvalues of a are:" << std::endl << ces.eigenvalues() << std::endl;
+            std::cout << "The eigenvectors of a are:" << std::endl << ces.eigenvectors() << std::endl;
+
+            std::cout << "Vec[0]: " << ces.eigenvalues()[0].real() << std::endl;
+            std::cout << "Vec[2]: " << ces.eigenvalues()[2].real() << std::endl;
+
+            std::cout << "Val[00]: " << ces.eigenvectors().col(0)[0].real() << std::endl;
+            std::cout << "Val[23]: " << ces.eigenvectors().col(2)[3].real() << std::endl;
+        }
+
+
+
         this->writelog(LOG_INFO, "Creating matrix for electrons..\n");
 
         int K(1), /// the order of the small matrix for central-node for CB
@@ -1663,6 +1688,17 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
         this->writelog(LOG_INFO, "\tsize of the matrix for CB: {0} x {1}", N, N);
 
         Eigen::MatrixXcd Hc(N, N);
+
+        for (int i(1); i<=nz; ++i) /// nz - number of nodes
+        {
+            std::complex<double> Hc_le(0.,0.);
+            for (int j(1); j<=nz; ++j) /// nz - number of nodes
+            {
+                Hc_le.real(0.);
+                Hc_le.imag(0.);
+                Hc(i-1, j-1) = Hc_le;
+            }
+        }
 
         for (int i(1); i<=nz; ++i) /// nz - number of nodes
         {
@@ -1779,6 +1815,10 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
         }
 
         Hc.resize(0,0);
+
+
+
+
     }
 
     return 0;
