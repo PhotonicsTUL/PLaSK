@@ -142,7 +142,7 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <mesh electrical="default" thermal="default" diffusion="diffusion" optical="optical"/>
      <optical lam0="980." vat="0"/>
      <voltage>
-       <condition value="1.7" object="p-contact"/>
+       <condition value="1.6" object="p-contact"/>
        </condition>
        <condition value="0.0">
          <place side="top" object="n-contact"/>
@@ -151,14 +151,15 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <temperature>
        <condition place="bottom" value="300."/>
      </temperature>
-     <root bcond="0" vmin="1.5" vmax="1.9"/>
+     <root bcond="0" vmin="1.50" vmax="1.55"/>
      <junction beta0="11" js0="1"/>
      <diffusion accuracy="0.005" fem-method="parabolic"/>
      <gain lifetime="0.5" matrix-elem="10"/>
-     <optical-root method="broyden"/>
    </meta>
 
-The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.7 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries. ``<optical-root>`` tag specifies settings for the optical mode finder: we set its method to *broyden* which is slower than the default, but usually more safe.
+The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.6 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries.
+
+.. ``<optical-root>`` tag specifies settings for the optical mode finder: we set its method to *broyden* which is slower than the default, but usually more safe.
 
 ---------------------------------------------------------------------------
 
@@ -238,8 +239,11 @@ To do this, at the end of the file we have to add lines modifying the size of th
    new_aperture = 6.
    GEO.aperture.dr = new_aperture / 2.
    GEO.oxide.dr = (mesa - new_aperture) / 2.
+   SOLVER.vmax = 1.60
 
 Note that we have used the variable *mesa* that we have defined in the *Defines* section. Every value specified there is available as Python variable in the script.
+
+We have also adjustrd solver properties, by increasing maximum voltage to 1.6 V, as the structure with lower aperture has larger threshold.
 
 Now we just have to repeat the calculations with the drawing part and to move the ``show()`` line to the end of the file:
 

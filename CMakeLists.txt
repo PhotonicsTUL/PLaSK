@@ -86,6 +86,7 @@ set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 message(STATUS "PLaSK version ${VERSION}")
 
 # ---------- Configurable options --------------------------------------------
+
 include(CMakeDependentOption)
 
 option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
@@ -143,6 +144,7 @@ elseif(USE_PROFILER STREQUAL "google")
 endif()
 
 # ---------- NuGet paths ---------------------------------------------------
+
 if(NUGET_PACKAGES_PATH)
     # TODO use the highest number not higher than compiler version intead of constants like "v110"
     file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
@@ -194,6 +196,7 @@ include_directories(${EXPAT_INCLUDE_DIR})
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
+
 set(boost_components system filesystem) # thread
 if(BUILD_TESTING)
     set(boost_components ${boost_components} unit_test_framework)
@@ -225,6 +228,7 @@ if(MINGW)
 endif()
 
 ## ---------- OpenMP -----------------------------------------------------------
+
 if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
     find_package(OpenMP 3.0)
     if(OPENMP_FOUND)
@@ -253,7 +257,8 @@ if(DETECT_FORTRAN_NAME_MANGLING)
     endif()
 endif(DETECT_FORTRAN_NAME_MANGLING)
 
-## ---------- libraries for better stack printing ------------------------------
+## ---------- Libraries for better stack printing ------------------------------
+
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(NOT MSVC)
@@ -281,6 +286,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInf
     endif()
 endif()
 endif()
+
+# ---------- Other external libraries -----------------------------------------
+
+find_package(BLAS)
+find_package(LAPACK)
 
 
 # ----------===== Build and Install =====--------------------------------------------
@@ -906,6 +916,9 @@ if(UNIX)
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3")
+    if("${BLAS_LIBRARIES}" MATCHES ".*libopenblas.so.*")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libopenblas-base")
+    endif()
     if (${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python (>= 2.${PYTHON_VERSION_MINOR}.0), python-numpy, python-matplotlib, python-h5py, python-scipy")
         set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython (>= 0.13)")
