@@ -145,19 +145,28 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
         irb = int(this->src_mesh->index(i0, i1_1)),
         irt = int(this->src_mesh->index(i0, i1));
 
-    if (invert_left) gl = -gl;
-    if (invert_right) gr = -gr;
-    if (invert_top) gt = -gt;
-    if (invert_bottom) gb = -gb;
+    SrcT diff0lb = diff0[ilb],
+         diff0lt = diff0[ilt],
+         diff0rb = diff0[irb],
+         diff0rt = diff0[irt],
+         diff1lb = diff1[ilb],
+         diff1lt = diff1[ilt],
+         diff1rb = diff1[irb],
+         diff1rt = diff1[irt];
+
+    if (invert_left)   { diff0lb = -this->flags.reflect(0, diff0lb); diff0lt = -this->flags.reflect(0, diff0lt); };
+    if (invert_right)  { diff0rb = -this->flags.reflect(0, diff0rb); diff0rt = -this->flags.reflect(0, diff0rt); };
+    if (invert_top)    { diff1lt = -this->flags.reflect(1, diff1lt); diff1rt = -this->flags.reflect(1, diff1rt); };
+    if (invert_bottom) { diff1lb = -this->flags.reflect(1, diff1lb); diff1rb = -this->flags.reflect(1, diff1rb); };
 
     SrcT data_lb = this->src_vec[ilb],
          data_lt = this->src_vec[ilt],
          data_rb = this->src_vec[irb],
          data_rt = this->src_vec[irt],
-         diff_l = gb * diff1[ilb] + gt * diff1[ilt],
-         diff_r = gb * diff1[irb] + gt * diff1[irt],
-         diff_b = gl * diff0[ilb] + gr * diff0[irb],
-         diff_t = gl * diff0[ilt] + gr * diff0[irt];
+         diff_l = gb * diff1lb + gt * diff1lt,
+         diff_r = gb * diff1rb + gt * diff1rt,
+         diff_b = gl * diff0lb + gr * diff0rb,
+         diff_t = gl * diff0lt + gr * diff0rt;
 
     if (invert_left)   { data_lb = this->flags.reflect(0, data_lb); data_lt = this->flags.reflect(0, data_lt); diff_l = this->flags.reflect(0, diff_l); }
     if (invert_right)  { data_rb = this->flags.reflect(0, data_rb); data_rt = this->flags.reflect(0, data_rt); diff_r = this->flags.reflect(0, diff_r); }
@@ -374,12 +383,44 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
            g2l = ((x2 - 2.) * x2 + 1.) * x2 * d2,
            g2h = (x2 - 1.) * x2 * x2 * d2;
 
-    if (invert_back) g0l = -g0l;
-    if (invert_front) g0h = -g0h;
-    if (invert_left) g1l = -g1l;
-    if (invert_right) g1h = -g1h;
-    if (invert_bottom) g2l = -g2l;
-    if (invert_top) g2h = -g2h;
+    SrcT diff0lll = diff0[illl],
+         diff0llh = diff0[illh],
+         diff0lhl = diff0[ilhl],
+         diff0lhh = diff0[ilhh],
+         diff0hll = diff0[ihll],
+         diff0hlh = diff0[ihlh],
+         diff0hhl = diff0[ihhl],
+         diff0hhh = diff0[ihhh],
+         diff1lll = diff1[illl],
+         diff1llh = diff1[illh],
+         diff1lhl = diff1[ilhl],
+         diff1lhh = diff1[ilhh],
+         diff1hll = diff1[ihll],
+         diff1hlh = diff1[ihlh],
+         diff1hhl = diff1[ihhl],
+         diff1hhh = diff1[ihhh],
+         diff2lll = diff2[illl],
+         diff2llh = diff2[illh],
+         diff2lhl = diff2[ilhl],
+         diff2lhh = diff2[ilhh],
+         diff2hll = diff2[ihll],
+         diff2hlh = diff2[ihlh],
+         diff2hhl = diff2[ihhl],
+         diff2hhh = diff2[ihhh];
+
+    if (invert_back)   { diff0lll = -this->flags.reflect(0, diff0lll); diff0llh = -this->flags.reflect(0, diff0llh);
+                         diff0lhl = -this->flags.reflect(0, diff0lhl); diff0lhh = -this->flags.reflect(0, diff0lhh); };
+    if (invert_front)  { diff0hll = -this->flags.reflect(0, diff0hll); diff0hlh = -this->flags.reflect(0, diff0hlh);
+                         diff0hhl = -this->flags.reflect(0, diff0hhl); diff0hhh = -this->flags.reflect(0, diff0hhh); };
+    if (invert_left)   { diff1lll = -this->flags.reflect(1, diff1lll); diff0llh = -this->flags.reflect(1, diff1llh);
+                         diff1hll = -this->flags.reflect(1, diff1hll); diff0hlh = -this->flags.reflect(1, diff1hlh); };
+    if (invert_right)  { diff1lhl = -this->flags.reflect(1, diff1lhl); diff0lhh = -this->flags.reflect(1, diff1lhh);
+                         diff1hhl = -this->flags.reflect(1, diff1hhl); diff0hhh = -this->flags.reflect(1, diff1hhh); };
+    if (invert_top)    { diff2lll = -this->flags.reflect(2, diff2lll); diff0lhl = -this->flags.reflect(2, diff2lhl);
+                         diff2hll = -this->flags.reflect(2, diff2hll); diff0hhl = -this->flags.reflect(2, diff2hhl); };
+    if (invert_bottom) { diff2llh = -this->flags.reflect(2, diff2llh); diff0lhh = -this->flags.reflect(2, diff2lhh);
+                         diff2hlh = -this->flags.reflect(2, diff2hlh); diff0hhh = -this->flags.reflect(2, diff2hhh); };
+
 
     SrcT data_lll = this->src_vec[illl],
          data_llh = this->src_vec[illh],
@@ -389,10 +430,10 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
          data_hlh = this->src_vec[ihlh],
          data_hhl = this->src_vec[ihhl],
          data_hhh = this->src_vec[ihhh],
-         D_ll = g0l * diff0[illl] + g0h * diff0[ihll], Dl_l = g1l * diff1[illl] + g1h * diff1[ilhl], Dll_ = g2l * diff2[illl] + g2h * diff2[illh],
-         D_lh = g0l * diff0[illh] + g0h * diff0[ihlh], Dl_h = g1l * diff1[illh] + g1h * diff1[ilhh], Dlh_ = g2l * diff2[ilhl] + g2h * diff2[ilhh],
-         D_hl = g0l * diff0[ilhl] + g0h * diff0[ihhl], Dh_l = g1l * diff1[ihll] + g1h * diff1[ihhl], Dhl_ = g2l * diff2[ihll] + g2h * diff2[ihlh],
-         D_hh = g0l * diff0[ilhh] + g0h * diff0[ihhh], Dh_h = g1l * diff1[ihlh] + g1h * diff1[ihhh], Dhh_ = g2l * diff2[ihhl] + g2h * diff2[ihhh];
+         D_ll = g0l * diff0lll + g0h * diff0hll, Dl_l = g1l * diff1lll + g1h * diff1lhl, Dll_ = g2l * diff2lll + g2h * diff2llh,
+         D_lh = g0l * diff0llh + g0h * diff0hlh, Dl_h = g1l * diff1llh + g1h * diff1lhh, Dlh_ = g2l * diff2lhl + g2h * diff2lhh,
+         D_hl = g0l * diff0lhl + g0h * diff0hhl, Dh_l = g1l * diff1hll + g1h * diff1hhl, Dhl_ = g2l * diff2hll + g2h * diff2hlh,
+         D_hh = g0l * diff0lhh + g0h * diff0hhh, Dh_h = g1l * diff1hlh + g1h * diff1hhh, Dhh_ = g2l * diff2hhl + g2h * diff2hhh;
 
 
     if (invert_back)   { data_lll = this->flags.reflect(0, data_lll); data_llh = this->flags.reflect(0, data_llh);
@@ -675,7 +716,7 @@ template struct PLASK_API HymanSplineRect3DLazyDataImpl<Tensor3<dcomplex>, Tenso
 
 namespace spline {
     template <typename DataT>
-    void computeDiffs(DataT* data, size_t stride, size_t stride1, size_t size1, size_t stride2, size_t size2,
+    static void computeDiffs(DataT* data, size_t stride, size_t stride1, size_t size1, size_t stride2, size_t size2,
                       int ax, const shared_ptr<MeshAxis>& axis, const InterpolationFlags& flags)
     {
         const size_t n0 = axis->size(),
@@ -684,54 +725,64 @@ namespace spline {
         double dl[n1], dd[n1+1], du[n1];
 
         DataT data1[size1*size2];
-        for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
-            size_t cc = c1 * size2;
-            for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
-                data1[cc+c2] = data[s1+s2];
-                data[s1+s2] = 3. * (data[s1+s2+stride] - data[s1+s2]);
-            }
-        }
-
-        for (size_t i = 1, si = stride; i != n1; ++i, si += stride) {
-            const double da = axis->at(i) - axis->at(i-1),
-                         db = axis->at(i+1) - axis->at(i);
-            dl[i-1] = da;
-            dd[i] = 2. * (da + db);
-            du[i] = db;
+        {
+            double left = (axis->at(0) >= 0.)? 0. : flags.low(ax);
+            const double da = 2. * (axis->at(0) - left), db = axis->at(1) - axis->at(0);
+            const double dab = da/db, dba = db/da;
             for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                 size_t cc = c1 * size2;
                 for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
-                    DataT t = data[s1+s2+si];
-                    data[s1+s2+si] = 3. * (data[s1+s2+si+stride] - data1[cc+c2]);
-                    data1[cc+c2] = t;
+                    data1[cc+c2] = data[s1+s2];
+                    DataT prev = flags.reflect(ax, data[s1+s2]);
+                    data[s1+s2] = 3. * (dab * data[s1+s2+stride] + (dba-dab) * data[s1+s2] - dba * prev);
                 }
             }
         }
 
+        for (size_t i = 1, si = stride; i != n1; ++i, si += stride) {
+            const double da = axis->at(i) - axis->at(i-1),      // d[i-1]
+                         db = axis->at(i+1) - axis->at(i);      // d[i]
+            const double dab = da/db, dba = db/da;
+            dl[i-1] = db;
+            dd[i] = 2. * (da + db);
+            du[i] = da;
+            for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
+                size_t cc = c1 * size2;
+                for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
+                    DataT current = data[s1+s2+si];
+                    data[s1+s2+si] = 3. * (dab * data[s1+s2+si+stride] + (dba-dab) * current - dba * data1[cc+c2]);
+                    data1[cc+c2] = current;
+                }
+            }
+        }
 
         if (!flags.periodic(ax) || flags.symmetric(ax)) {
 
             if (flags.symmetric(ax)) {
                 if ((flags.periodic(ax) && axis->at(0) != flags.low(ax)) || axis->at(0) > 0.) {
-                    double left = (axis->at(0) >= 0.)? 0. : flags.low(ax);
-                    dd[0] = 2. * (axis->at(1) - left);
-                    du[0] = axis->at(1) - axis->at(0);
+                    const double left = (axis->at(0) >= 0.)? 0. : flags.low(ax);
+                    dd[0] = 3.*axis->at(0) + axis->at(1) - 4.*left;                 //TODO consider asymmetric
+                    du[0] = 2. * (axis->at(0) - left);
                 } else {
-                    du[0] = 0.;
                     dd[0] = 1.;
+                    du[0] = 0.;
                     for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1)
                         for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
                             data[s1+s2] = 0. * DataT();
                 }
                 if ((flags.periodic(ax) && axis->at(n1) != flags.high(ax)) || axis->at(n1) < 0.) {
-                    double right = (axis->at(n1) <= 0.)? 0. : flags.high(ax);
-                    dd[n1] = 2. * (right - axis->at(n1-1));
-                    dl[n1-1] = axis->at(n1) - axis->at(n1-1);
+                    const double right = (axis->at(n1) <= 0.)? 0. : flags.high(ax);
+                    const double da = axis->at(n1) - axis->at(n1-1), db = 2. * (right - axis->at(n1));
+                    const double dab = da/db, dba = db/da;
+                    dl[n1-1] = db;
+                    dd[n1] = 4.*right - 3.*axis->at(n1) - axis->at(n1-1);           //TODO consider asymmetric
                     size_t ns = n1 * stride;
                     for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                         size_t cc = c1 * size2;
-                        for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
-                            data[s1+s2+ns] = 6. * (data[s1+s2+ns] - data1[cc+c2]);
+                        for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
+                            DataT next = flags.reflect(ax, data[s1+s2+ns]);
+                            data[s1+s2+ns] = 3. * (dab * next + (dba-dab) * data[s1+s2+ns] - dba * data1[cc+c2]);
+                        }
                     }
                 } else {
                     dl[n1-1] = 0.;
