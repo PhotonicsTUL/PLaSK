@@ -420,7 +420,8 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh);
 
 template <typename T, int dim>
 DataVectorWrap<T,dim> PLASK_PYTHON_API dataInterpolate(
-    const DataVectorWrap<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method);
+    const DataVectorWrap<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh,
+    InterpolationMethod method, const py::object& geometry=py::object());
 
 
 template <typename T>

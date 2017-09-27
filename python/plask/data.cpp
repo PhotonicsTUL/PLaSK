@@ -319,9 +319,6 @@ static py::object DataVectorWrap_Array(py::object oself) {
     return py::object(py::handle<>(arr));
 }
 
-template <typename T, int dim> DataVectorWrap<T,dim>
-dataInterpolate(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method);
-
 
 namespace detail {
 
@@ -560,7 +557,7 @@ static inline py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<
             "Accessing this field is efficient, as only the numpy array view is created and\n"
             "no data is copied in the memory.\n"
          )
-        .def("interpolate", dataInterpolate<const T,dim>, (py::arg("mesh"), "interpolation"),
+        .def("interpolate", dataInterpolate<const T,dim>, (py::arg("mesh"), "interpolation", py::arg("geometry")=py::object()),
             "Interpolate data to a different mesh.\n\n"
 
             "This method interpolated data into a different mesh using specified\n"
@@ -570,6 +567,7 @@ static inline py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<
             "Args:\n"
             "    mesh: Mesh to interpolate into.\n"
             "    interpolation: Requested interpolation method.\n"
+            "    geometry: Optional geometry, over which the interpolation is performed.\n"
             "Returns:\n"
             "    plask._Data: Interpolated data."
         )
@@ -677,11 +675,12 @@ namespace python {
 
 #define INTERPOLATE_NEAREST(M) \
     InterpolationAlgorithm<M<dim>, typename std::remove_const<T>::type, typename std::remove_const<T>::type, INTERPOLATION_NEAREST> \
-        ::interpolate(src_mesh, self, dst_mesh, InterpolationFlags())
+        ::interpolate(src_mesh, self, dst_mesh, flags)
 
 template <typename T, int dim>
 static inline typename std::enable_if<!detail::isBasicData<T>::value, DataVectorWrap<T,dim>>::type
-dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh,
+                    InterpolationMethod method, const InterpolationFlags& flags)
 {
     if (method != INTERPOLATION_NEAREST)
         writelog(LOG_WARNING, "Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
@@ -698,15 +697,16 @@ dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> ds
 
 template <typename T, int dim>
 static inline typename std::enable_if<detail::isBasicData<T>::value, DataVectorWrap<T,dim>>::type
-dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh,
+                    InterpolationMethod method, const InterpolationFlags& flags)
 {
 
     if (self.mesh_changed) throw Exception("Cannot interpolate, mesh changed since data retrieval");
 
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
-        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
+        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
     else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
-        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method), dst_mesh);
+        return DataVectorWrap<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
     // TODO add new mesh types here
 
     throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
@@ -715,9 +715,25 @@ dataInterpolateImpl(const DataVectorWrap<T,dim>& self, shared_ptr<MeshD<dim>> ds
 
 template <typename T, int dim>
 PLASK_PYTHON_API DataVectorWrap<T,dim> dataInterpolate(const DataVectorWrap<T,dim>& self,
-                                                       shared_ptr<MeshD<dim>> dst_mesh, InterpolationMethod method)
+                                                       shared_ptr<MeshD<dim>> dst_mesh,
+                                                       InterpolationMethod method,
+                                                       const py::object& geometry)
 {
-    return dataInterpolateImpl<T, dim>(self, dst_mesh, method);
+    InterpolationFlags flags;
+    if (geometry != py::object()) {
+        py::extract<shared_ptr<const GeometryD<2>>> geometry2d(geometry);
+        py::extract<shared_ptr<const GeometryD<3>>> geometry3d(geometry);
+        if (geometry2d.check())
+            flags = InterpolationFlags(geometry2d(),
+                                       InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
+        else if (geometry3d.check())
+            flags = InterpolationFlags(geometry3d(),
+                                       InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
+        else
+            throw TypeError("'geometry' argument must be geometry.Geometry instance");
+    }
+
+    return dataInterpolateImpl<T, dim>(self, dst_mesh, method, flags);
 }
 
 

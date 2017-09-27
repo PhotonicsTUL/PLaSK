@@ -22,7 +22,7 @@ This file contains classes which can hold (or points to) datas.
 
 namespace plask {
 
-namespace detail {
+namespace hyman {
 
 #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4
 // clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
@@ -127,7 +127,7 @@ struct DataVector {
     typedef typename std::remove_const<T>::type VT;
     typedef const T CT;
 
-    typedef detail::DataVectorGC Gc;
+    typedef hyman::DataVectorGC Gc;
   private:
 
     std::size_t size_;                  ///< size of the stored data
@@ -138,7 +138,7 @@ struct DataVector {
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc_ && gc_->count.fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
-            detail::destroy_array(data_, data_ + size_);
+            hyman::destroy_array(data_, data_ + size_);
             gc_->free(reinterpret_cast<void*>(const_cast<VT*>(data_)));
             delete gc_;
         }
@@ -169,7 +169,7 @@ struct DataVector {
      * @param size total size of the data
      */
     explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {
-        detail::construct_array(data_, data_ + size);
+        hyman::construct_array(data_, data_ + size);
     }
 
     /**
@@ -388,7 +388,7 @@ struct DataVector {
         //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
         dec_ref();
         data_ = aligned_malloc<T>(size);
-        detail::construct_array(data_, data_ + size);
+        hyman::construct_array(data_, data_ + size);
         gc_ = new Gc(1);
         size_ = size;
     }

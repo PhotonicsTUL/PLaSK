@@ -197,7 +197,7 @@ public:
     InterpolationFlags(shared_ptr<const Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
     InterpolationFlags(shared_ptr<Geometry3D> geometry): InterpolationFlags(geometry, Symmetry::POSITIVE, Symmetry::POSITIVE, Symmetry::POSITIVE) {}
 
-    bool symmetric(int axis) const { return sym[axis] != 0; }
+    unsigned char symmetric(int axis) const { return sym[axis]; }
 
     bool periodic(int axis) const { return (per & (1 << axis)) != 0; }
 
@@ -258,7 +258,7 @@ public:
                     pos[i] = std::fmod(pos[i], 2.*d);
                     if (pos[i] > d || (pos[i] < 0. && pos[i] > -d)) data = reflect(i, data);
                 } else {
-                    if (lo[i] >= 0) { if (pos[i] < 0.) data = reflect(i, data); }
+                    if (lo[i] >= 0.) { if (pos[i] < 0.) data = reflect(i, data); }
                     else { if (pos[i] > 0.) data = reflect(i, data); }
                 }
             }

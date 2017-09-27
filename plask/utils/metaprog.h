@@ -37,7 +37,7 @@ template <typename firstType, typename... restTypes> struct chooseType<0, firstT
 
 
 //http://talesofcpp.fusionfenix.com/post-11/true-story-call-me-maybe
-namespace detail {
+namespace hyman {
   template <typename T>
   using always_void = void;
 
@@ -108,7 +108,7 @@ namespace detail {
  */
 template <typename Expr>
 struct is_callable
-  : detail::is_callable_impl<Expr>
+  : hyman::is_callable_impl<Expr>
 {};
 
 
