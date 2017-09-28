@@ -724,7 +724,7 @@ namespace spline {
 
         double dl[n1], dd[n1+1], du[n1];
 
-        DataT data1[size1*size2];
+        std::unique_ptr<DataT[]> lastdata(new DataT[size1*size2]);
         {
             double left = (axis->at(0) >= 0.)? 0. : flags.low(ax);
             const double da = 2. * (axis->at(0) - left), db = axis->at(1) - axis->at(0);
@@ -732,9 +732,12 @@ namespace spline {
             for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                 size_t cc = c1 * size2;
                 for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
-                    data1[cc+c2] = data[s1+s2];
-                    DataT prev = flags.reflect(ax, data[s1+s2]);
-                    data[s1+s2] = 3. * (dab * data[s1+s2+stride] + (dba-dab) * data[s1+s2] - dba * prev);
+                    lastdata[cc+c2] = data[s1+s2];
+                    if (da == 0.) {
+                         data[s1+s2] = 0.5 * (data[s1+s2+stride] - flags.reflect(ax, data[s1+s2+stride]))  / db;
+                    } else {
+                        data[s1+s2] = 3. * (dab * data[s1+s2+stride] + (dba-dab) * lastdata[cc+c2] - dba * flags.reflect(ax, lastdata[cc+c2]));
+                    }
                 }
             }
         }
@@ -750,8 +753,8 @@ namespace spline {
                 size_t cc = c1 * size2;
                 for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
                     DataT current = data[s1+s2+si];
-                    data[s1+s2+si] = 3. * (dab * data[s1+s2+si+stride] + (dba-dab) * current - dba * data1[cc+c2]);
-                    data1[cc+c2] = current;
+                    data[s1+s2+si] = 3. * (dab * data[s1+s2+si+stride] + (dba-dab) * current - dba * lastdata[cc+c2]);
+                    lastdata[cc+c2] = current;
                 }
             }
         }
@@ -759,9 +762,13 @@ namespace spline {
         if (!flags.periodic(ax) || flags.symmetric(ax)) {
 
             if (flags.symmetric(ax)) {
-                if ((flags.periodic(ax) && axis->at(0) != flags.low(ax)) || axis->at(0) > 0.) {
+                if (axis->at(0) == 0. || (flags.periodic(ax) && is_zero(axis->at(0) - flags.low(ax)))) {
+                    dd[0] = 1.;
+                    du[0] = 0.;
+                } else if (axis->at(0) > 0. || flags.periodic(ax)) {
                     const double left = (axis->at(0) >= 0.)? 0. : flags.low(ax);
-                    dd[0] = 3.*axis->at(0) + axis->at(1) - 4.*left;                 //TODO consider asymmetric
+                    // dd[0] = 3.*axis->at(0) + axis->at(1) - 4.*left;
+                    dd[0] = 2.*axis->at(0) + 2.*axis->at(1) - 4.*left;  // hack, but should work for asymmetric as well
                     du[0] = 2. * (axis->at(0) - left);
                 } else {
                     dd[0] = 1.;
@@ -770,19 +777,29 @@ namespace spline {
                         for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
                             data[s1+s2] = 0. * DataT();
                 }
-                if ((flags.periodic(ax) && axis->at(n1) != flags.high(ax)) || axis->at(n1) < 0.) {
+                if (axis->at(n1) == 0. || (flags.periodic(ax) && is_zero(flags.high(ax) - axis->at(n1)))) {
+                    dd[n1] = 1.;
+                    dl[n1-1] = 0.;
+                    size_t ns = n1 * stride;
+                    double ih = 0.5 / (axis->at(n1) - axis->at(n1-1));
+                    for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
+                        size_t cc = c1 * size2;
+                        for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
+                            data[s1+s2+ns] = (flags.reflect(ax, lastdata[cc+c2]) - lastdata[cc+c2]) * ih;
+                        }
+                    }
+                } else if (axis->at(n1) < 0. || flags.periodic(ax)) {
                     const double right = (axis->at(n1) <= 0.)? 0. : flags.high(ax);
                     const double da = axis->at(n1) - axis->at(n1-1), db = 2. * (right - axis->at(n1));
                     const double dab = da/db, dba = db/da;
                     dl[n1-1] = db;
-                    dd[n1] = 4.*right - 3.*axis->at(n1) - axis->at(n1-1);           //TODO consider asymmetric
+                    // dd[n1] = 4.*right - 3.*axis->at(n1) - axis->at(n1-1);
+                    dd[n1] = 4.*right - 2.*axis->at(n1) - 2.*axis->at(n1-1);  // hack
                     size_t ns = n1 * stride;
                     for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                         size_t cc = c1 * size2;
-                        for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2) {
-                            DataT next = flags.reflect(ax, data[s1+s2+ns]);
-                            data[s1+s2+ns] = 3. * (dab * next + (dba-dab) * data[s1+s2+ns] - dba * data1[cc+c2]);
-                        }
+                        for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
+                            data[s1+s2+ns] = 3. * (dab * flags.reflect(ax, data[s1+s2+ns]) + (dba-dab) * data[s1+s2+ns] - dba * lastdata[cc+c2]);
                     }
                 } else {
                     dl[n1-1] = 0.;
