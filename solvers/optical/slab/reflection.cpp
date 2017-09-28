@@ -222,8 +222,11 @@ cvector ReflectionTransfer::getReflectionVector(const cvector& incident, Inciden
 cvector ReflectionTransfer::getTransmissionVector(const cvector& incident, IncidentDirection side)
 {
     determineReflectedFields(incident, side);
-    size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
-    return diagonalizer->TE(solver->stack[n]) * fields[n].B;
+    ptrdiff_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
+    return diagonalizer->TE(solver->stack[n]) *
+        (((side == INCIDENCE_BOTTOM && n < solver->interface) ||
+         (side == INCIDENCE_TOP && n >= solver->interface))?
+         fields[n].F : fields[n].B);
 }
 
 
@@ -461,7 +464,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Replace F and B above the interface for consistency in getFieldVectorE and getFieldVectorH
     switch (side)
     {
-        case INCIDENCE_TOP:    start = solver->interface; end = count; break;
+        case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
         case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
     }
     for (int n = start; n < end; n++) {
@@ -470,12 +473,12 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         gamma = diagonalizer->Gamma(solver->stack[n]);
         H = (n < count-1 && n > 0)? solver->vbounds[n] - solver->vbounds[n-1] : 0.;
         for (int i = 0; i < N; i++) {
-                dcomplex phas = exp(-I*gamma[i]*H);
-                dcomplex t = B2[i] / phas;
-                if (isnan(t) && B2[i] == 0.) t = 0.;
-                B2[i] = F2[i] * phas;
-                if (isnan(B2[i]) && F2[i] == 0.) B2[i] = 0.;
-                F2[i] = t;
+            dcomplex phas = exp(-I*gamma[i]*H);
+            dcomplex t = B2[i] / phas;
+            if (isnan(t) && B2[i] == 0.) t = 0.;
+            B2[i] = F2[i] * phas;
+            if (isnan(B2[i]) && F2[i] == 0.) B2[i] = 0.;
+            F2[i] = t;
         }
     }
 

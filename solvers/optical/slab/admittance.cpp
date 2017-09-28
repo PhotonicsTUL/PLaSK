@@ -542,8 +542,8 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
 
     // Finally revert fields at one side of the interface
     switch (side) {
-        case INCIDENCE_TOP:    start = solver->interface; end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = int(solver->interface); break;
+        case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
+        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
     }
     for (ptrdiff_t n = start; n < end; ++n) {
         std::swap(fields[n].E0, fields[n].Ed);
