@@ -31,7 +31,7 @@ Functions
 Descriptions
 ============
 
-.. autofunction::   lam
+.. autofunction::   wl
 .. autofunction::   eV2nm
 .. autofunction::   nm2eV
 """
@@ -65,7 +65,7 @@ class kB(object):
 kB = kB()
 
 
-def lam(mat, lam, T=300.):
+def wl(mat, lam, T=300.):
     """
     Compute real length of optical wavelength in specified material.
 

@@ -211,7 +211,7 @@ MI_PROPERTY(AlAs, nr,
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
             MIComment("fit by Leszek Frasunkiewicz")
            )
-double AlAs::nr(double wl, double T, double n) const {
+double AlAs::nr(double lam, double T, double n) const {
     double Al = 1.;
     double A = -0.4490233379*Al + 3.25759049;
     double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
@@ -221,11 +221,11 @@ double AlAs::nr(double wl, double T, double n) const {
     double Ad = 0.0003442176581*Al*Al*Al - 0.0005412098145*Al*Al + 0.00008671640556*Al + 0.0002093262406;
     double Bd = 132.1382231*exp(-8.32822628*Al*Al*Al + 14.65496754*Al*Al - 7.135900438*Al);
     double Cd = 117.24*Al -689.06;
-    double dndT = Ad*exp(Bd / (wl + Cd));
+    double dndT = Ad*exp(Bd / (lam + Cd));
 
-    return ( A*exp(B / (wl + C)) + dndT*(T-296) );
+    return ( A*exp(B / (lam + C)) + dndT*(T-296) );
     //old
-    //double L2 = wl*wl*1e-6;
+    //double L2 = lam*lam*1e-6;
     //double nR296K = sqrt(1.+7.055*L2/(L2-0.068));
     //return ( nR296K + nR296K*4.6e-5*(T-296.) );
 }
@@ -234,11 +234,11 @@ MI_PROPERTY(AlAs, absp,
             MISource(""),
             MIComment("calculated as for Si-doped AlAs but with n = 1e16")
            )
-double AlAs::absp(double wl, double T) const {
+double AlAs::absp(double lam, double T) const {
     double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., T);
     double tEgT = Eg(T,0.,'X');
     double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     double tN = 1e16; // concentration for undoped GaAs
     if (tWl <= 6.) // 0.85-6 um

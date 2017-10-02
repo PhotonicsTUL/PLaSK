@@ -52,15 +52,15 @@ MI_PROPERTY(GaAs_Be, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_Be::absp(double wl, double T) const {
+double GaAs_Be::absp(double lam, double T) const {
     double tAbsp(0.);
-    if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
+    if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 9. * pow(Nf_RT/1e18, 1.33);
-    else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
+    else if ((lam > 1450.) && (lam < 1650.)) // only for 1550 nm TODO
         tAbsp = 25. * pow(Nf_RT/1e18, 1.1);
-    else if ((wl > 2230.) && (wl < 2430.)) // only for 2330 nm TODO
+    else if ((lam > 2230.) && (lam < 2430.)) // only for 2330 nm TODO
         tAbsp = 320. * pow(Nf_RT/1e18, 0.7);
-    else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
+    else if ((lam > 8900.) && (lam < 9100.)) // only for 9000 nm TODO
         tAbsp = 1340. * pow(Nf_RT/1e18, 0.7);
     return ( tAbsp );
 }

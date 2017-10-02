@@ -30,7 +30,7 @@ MI_PROPERTY(In, absp,
             MISource(""),
             MIComment("TODO")
             )
-double In::absp(double wl, double T) const {
+double In::absp(double lam, double T) const {
     return ( 1e3 );
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(In, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double In::nr(double wl, double T, double n) const {
+double In::nr(double lam, double T, double n) const {
     return ( 1. );
 }
 

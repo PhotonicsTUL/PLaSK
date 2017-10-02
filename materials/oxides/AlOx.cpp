@@ -28,7 +28,7 @@ MI_PROPERTY(AlOx, absp,
             MISource(""),
             MIComment("TODO")
             )
-double AlOx::absp(double wl, double T) const {
+double AlOx::absp(double lam, double T) const {
     return ( 0. );
 }
 
@@ -40,10 +40,10 @@ MI_PROPERTY(AlOx, nr,
             MISource("T.Kitatani et al., Japanese Journal of Applied Physics (part1) 41 (2002) 2954-2957"),
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIComment("no temperature dependence"),
-            MIArgumentRange(MaterialInfo::wl, 400, 1600)
+            MIArgumentRange(MaterialInfo::lam, 400, 1600)
 			)
-double AlOx::nr(double wl, double T, double n) const {
-    return ( 0.30985*exp(-wl/236.7)+1.52829 );
+double AlOx::nr(double lam, double T, double n) const {
+    return ( 0.30985*exp(-lam/236.7)+1.52829 );
 }
 
 static MaterialsDB::Register<AlOx> materialDB_register_AlOx;

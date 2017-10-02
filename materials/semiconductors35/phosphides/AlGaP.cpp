@@ -234,14 +234,14 @@ Material::ConductivityType AlGaP::condtype() const { return Material::CONDUCTIVI
 MI_PROPERTY(AlGaP, nr,
             MIComment("TODO")
             )
-double AlGaP::nr(double wl, double T, double n) const {
+double AlGaP::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for AlGaP");
 }
 
 MI_PROPERTY(AlGaP, absp,
             MIComment("TODO")
             )
-double AlGaP::absp(double wl, double T) const {
+double AlGaP::absp(double lam, double T) const {
     throw NotImplemented("absp for AlGaP");
 }
 

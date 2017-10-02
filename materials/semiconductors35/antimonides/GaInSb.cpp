@@ -236,14 +236,14 @@ Material::ConductivityType GaInSb::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(GaInSb, nr,
             MIComment("TODO")
             )
-double GaInSb::nr(double wl, double T, double n) const {
+double GaInSb::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for GaInSb");
 }
 
 MI_PROPERTY(GaInSb, absp,
             MIComment("TODO")
             )
-double GaInSb::absp(double wl, double T) const {
+double GaInSb::absp(double lam, double T) const {
     throw NotImplemented("absp for GaInSb");
 }
 

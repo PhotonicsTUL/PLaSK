@@ -86,7 +86,7 @@ struct PLASK_API MaterialInfo {
     enum ARGUMENT_NAME {
         T,          ///< temperature
         e,          ///< strain
-        wl,         ///< wavelength
+        lam,        ///< wavelength
         n,          ///< carriers concentration
         h,          ///< thickness
         doping      ///< doping

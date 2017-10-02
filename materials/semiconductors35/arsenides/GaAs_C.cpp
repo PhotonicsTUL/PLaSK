@@ -85,9 +85,9 @@ Material::ConductivityType GaAs_C::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(GaAs_C, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )
-double GaAs_C::absp(double wl, double T) const {
+double GaAs_C::absp(double lam, double T) const {
     double tDWl = phys::h_eVc1e9*(Eg(300.,0.,'G')-Eg(T,0.,'G'))/(Eg(300.,0.,'G')*Eg(T,0.,'G'));
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um
         tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0173)+0.114*pow(tWl,4.00)+73.*exp(-0.76*pow(tWl-2.74,2.)));

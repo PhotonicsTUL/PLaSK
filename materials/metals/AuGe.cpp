@@ -30,7 +30,7 @@ MI_PROPERTY(AuGe, absp,
             MISource(""),
             MIComment("TODO")
             )
-double AuGe::absp(double wl, double T) const {
+double AuGe::absp(double lam, double T) const {
     return ( 1e3 );
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(AuGe, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double AuGe::nr(double wl, double T, double n) const {
+double AuGe::nr(double lam, double T, double n) const {
     return ( 1. );
 }
 

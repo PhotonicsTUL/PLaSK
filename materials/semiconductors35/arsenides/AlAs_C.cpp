@@ -60,11 +60,11 @@ Material::ConductivityType AlAs_C::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(AlAs_C, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )
-double AlAs_C::absp(double wl, double T) const {
+double AlAs_C::absp(double lam, double T) const {
     double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., 300.);
     double tEgT = Eg(T,0.,'X');
     double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um
         tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0173)+0.114*pow(tWl,4.00)+73.*exp(-0.76*pow(tWl-2.74,2.)));

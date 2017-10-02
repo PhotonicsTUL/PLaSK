@@ -33,24 +33,24 @@ Material::ConductivityType aSiO2::condtype() const { return Material::CONDUCTIVI
 
 MI_PROPERTY(aSiO2, nr,
             MISource("I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"),
-            MIArgumentRange(MaterialInfo::wl, 210, 3710)
+            MIArgumentRange(MaterialInfo::lam, 210, 3710)
             )
-double aSiO2::nr(double wl, double T, double n) const {
-    double L = wl*1e-3;
+double aSiO2::nr(double lam, double T, double n) const {
+    double L = lam*1e-3;
     double nR293K = sqrt( 1. + 0.6961663*L*L/(L*L-pow(0.0684043,2.)) + 0.4079426*L*L/(L*L-pow(0.1162414,2.)) + 0.8974794*L*L/(L*L-pow(9.896161,2.)) ); // 1e-3: nm-> um
     return ( nR293K + 1.1e-5*(T-293.) ); // based on fig.3 in "I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"
 }
 
 MI_PROPERTY(aSiO2, absp,
             MISource("TODO"),
-            MIArgumentRange(MaterialInfo::wl, 400, 4500),
+            MIArgumentRange(MaterialInfo::lam, 400, 4500),
             MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
             MIComment("fit by Lukasz Piskorski")
             )
-double aSiO2::absp(double wl, double T) const {
+double aSiO2::absp(double lam, double T) const {
     double tAbsRTL;
-    if (wl < 1173.15) tAbsRTL = -0.257 * pow(wl*1e-3,6.) - 1.72;
-    else tAbsRTL = 0.982 * (wl*1e-3) - 3.542;
+    if (lam < 1173.15) tAbsRTL = -0.257 * pow(lam*1e-3,6.) - 1.72;
+    else tAbsRTL = 0.982 * (lam*1e-3) - 3.542;
     double tAbsRT = pow(10.,tAbsRTL);
     return ( tAbsRT + tAbsRT*1e-3*(T-300.) );
 }

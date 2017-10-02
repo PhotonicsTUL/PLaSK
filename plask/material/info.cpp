@@ -63,7 +63,7 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
 const char* MaterialInfo::ARGUMENT_NAME_STRING[] = {
     "T",
     "e",
-    "wl",
+    "lam",
     "n",
     "h",
     "doping"

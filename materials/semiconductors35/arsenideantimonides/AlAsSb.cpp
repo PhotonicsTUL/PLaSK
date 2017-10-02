@@ -232,10 +232,10 @@ Material::ConductivityType AlAsSb::condtype() const { return Material::CONDUCTIV
 
 MI_PROPERTY(AlAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
-            MIArgumentRange(MaterialInfo::wl, 500, 7000) // TODO
+            MIArgumentRange(MaterialInfo::lam, 500, 7000) // TODO
             )
-double AlAsSb::nr(double wl, double T, double n) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double AlAsSb::nr(double lam, double T, double n) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 3.2;
     double tEd = 28.;
     double tEG = 2.338;
@@ -253,7 +253,7 @@ double AlAsSb::nr(double wl, double T, double n) const {
 MI_PROPERTY(AlAsSb, absp,
             MIComment("TODO")
             )
-double AlAsSb::absp(double wl, double T) const {
+double AlAsSb::absp(double lam, double T) const {
     throw NotImplemented("absp for AlAsSb");
 }
 

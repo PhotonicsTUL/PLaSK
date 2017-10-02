@@ -119,13 +119,13 @@ struct PLASK_API MixedMaterial: public Material {
 
     double cp(double T) const override;
 
-    double nr(double wl, double T, double n = 0.0) const override;
+    double nr(double lam, double T, double n = 0.0) const override;
 
-    double absp(double wl, double T) const override;
+    double absp(double lam, double T) const override;
 
-    dcomplex Nr(double wl, double T, double n = 0.0) const override;
+    dcomplex Nr(double lam, double T, double n = 0.0) const override;
 
-    Tensor3<dcomplex> NR(double wl, double T, double n = 0.0) const override;
+    Tensor3<dcomplex> NR(double lam, double T, double n = 0.0) const override;
 
     Tensor2<double> mobe(double T) const override;
 

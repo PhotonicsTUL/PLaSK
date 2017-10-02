@@ -48,8 +48,8 @@ Material::ConductivityType AlN_Mg::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(AlN_Mg, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )
-double AlN_Mg::absp(double wl, double T) const {
-    double a = phys::h_eVc1e9/wl - 6.28,
+double AlN_Mg::absp(double lam, double T) const {
+    double a = phys::h_eVc1e9/lam - 6.28,
            b = NA/1e18;
     return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }

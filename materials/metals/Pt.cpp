@@ -31,14 +31,14 @@ Tensor2<double> Pt::thermk(double T, double t) const {
 MI_PROPERTY(Pt, absp,
             MISource(""),
             MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::wl, 400, 12400)
+            MIArgumentRange(MaterialInfo::lam, 400, 12400)
             )
-double Pt::absp(double wl, double T) const {
-    double Wl = wl*1e-3;
-    if (wl<2500.)
-        return ( 1e6*(2.80215 - 15.3234*Wl + 51.5342*Wl*Wl -94.3547*pow(Wl,3.) + 101.1011*pow(Wl,4.) -65.11963*pow(Wl,5.) + 24.741*pow(Wl,6.) - 5.099038*pow(Wl,7.) + 0.4391658*pow(Wl,8.)) );
+double Pt::absp(double lam, double T) const {
+    double ulam = lam*1e-3;
+    if (ulam<2500.)
+        return ( 1e6*(2.80215 - 15.3234*ulam + 51.5342*ulam*ulam -94.3547*pow(ulam,3.) + 101.1011*pow(ulam,4.) -65.11963*pow(ulam,5.) + 24.741*pow(ulam,6.) - 5.099038*pow(ulam,7.) + 0.4391658*pow(ulam,8.)) );
     else
-        return ( -39538.4 + 305946*Wl - 67838.1*Wl*Wl + 7492.84*pow(Wl,3.) - 417.401*pow(Wl,4.) + 9.27859*pow(Wl,5.) );
+        return ( -39538.4 + 305946*ulam - 67838.1*ulam*ulam + 7492.84*pow(ulam,3.) - 417.401*pow(ulam,4.) + 9.27859*pow(ulam,5.) );
 }
 
 bool Pt::isEqual(const Material &other) const {
@@ -48,14 +48,14 @@ bool Pt::isEqual(const Material &other) const {
 MI_PROPERTY(Pt, nr,
             MISource(""),
             MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::wl, 280, 12400)
+            MIArgumentRange(MaterialInfo::lam, 280, 12400)
 			)
-double Pt::nr(double wl, double T, double n) const {
-    double Wl = wl*1e-3;
-    if (wl<3700.)
-        return ( 2.20873*exp(-2.70386*pow(Wl-1.76515,2.)) + 0.438205 + 3.87609*Wl - 1.5836*Wl*Wl+0.197125*pow(Wl,3.) );
+double Pt::nr(double lam, double T, double n) const {
+    double ulam = lam*1e-3;
+    if (ulam<3700.)
+        return ( 2.20873*exp(-2.70386*pow(ulam-1.76515,2.)) + 0.438205 + 3.87609*ulam - 1.5836*ulam*ulam+0.197125*pow(ulam,3.) );
     else
-        return ( 3.43266 - 0.963058*Wl + 0.260552*Wl*Wl - 0.00791393*pow(Wl,3.) );
+        return ( 3.43266 - 0.963058*ulam + 0.260552*ulam*ulam - 0.00791393*pow(ulam,3.) );
 }
 
 static MaterialsDB::Register<Pt> materialDB_register_Pt;

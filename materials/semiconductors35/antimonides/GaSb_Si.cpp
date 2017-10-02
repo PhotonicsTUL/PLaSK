@@ -60,13 +60,13 @@ MI_PROPERTY(GaSb_Si, nr,
             MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"),
             MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040"),
-            MIArgumentRange(MaterialInfo::wl, 620, 2560),
+            MIArgumentRange(MaterialInfo::lam, 620, 2560),
             MIComment("fit by Lukasz Piskorski"),
             MIComment("no fitting data from 827-1798nm wavelength range"),
             MIComment("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
             )
-double GaSb_Si::nr(double wl, double T, double) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double GaSb_Si::nr(double lam, double T, double) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double nR300K = 0.502*tE*tE*tE - 1.216*tE*tE + 1.339*tE + 3.419;
     double nR = nR300K - 0.0074*(Nf_RT*1e-18); // -7.4e-3 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
     return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
@@ -77,8 +77,8 @@ Material::ConductivityType GaSb_Si::condtype() const { return Material::CONDUCTI
 MI_PROPERTY(GaSb_Si, absp,
             MIComment("fit by Lukasz Piskorski")
             )
-double GaSb_Si::absp(double wl, double T) const {
-    double tAbs_RT = 1e24*exp(-wl/33.) + 2.02e-24*Nf_RT*pow(wl,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
+double GaSb_Si::absp(double lam, double T) const {
+    double tAbs_RT = 1e24*exp(-lam/33.) + 2.02e-24*Nf_RT*pow(lam,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 

@@ -35,18 +35,18 @@ MI_PROPERTY(GaN, absp,
             MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
             MIComment("no temperature dependence")
             )
-double GaN::absp(double wl, double T) const {
-    double dE = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
+double GaN::absp(double lam, double T) const {
+    double dE = phys::h_eVc1e9/lam - Eg(T, 0., 'G');
     return 19000.*exp(dE/0.019) + 330*exp(dE/0.07);
 }
 
 MI_PROPERTY(GaN, nr,
             MISource("fit - Maciej Kuc"),
-            MIArgumentRange(MaterialInfo::wl, 300, 580),
+            MIArgumentRange(MaterialInfo::lam, 300, 580),
             MIComment("no temperature dependence")
             )
-double GaN::nr(double wl, double T, double n) const {
-    double tE = phys::h_eVc1e9 / wl - (Eg(T) - Eg(300.)), nR;
+double GaN::nr(double lam, double T, double n) const {
+    double tE = phys::h_eVc1e9 / lam - (Eg(T) - Eg(300.)), nR;
 
     if (1.000 < tE && tE <= 2.138) nR = 0.013914*tE*tE*tE*tE - 0.096422*tE*tE*tE + 0.27318*tE*tE - 0.27725*tE + 2.3535;  // lambda: 580nm - 1240nm
     else if (tE <= 3.163) nR = 0.1152*tE*tE*tE - 0.7955*tE*tE + 1.959*tE + 0.68;                                         // lambda: 392nm - 580nm

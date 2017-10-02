@@ -30,14 +30,14 @@ Tensor2<double> Ti::thermk(double T, double t) const {
 MI_PROPERTY(Ti, absp,
             MISource(""),
             MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::wl, 480, 20700)
+            MIArgumentRange(MaterialInfo::lam, 480, 20700)
             )
-double Ti::absp(double wl, double T) const {
-    double Wl = wl*1e-3;
-    if (wl<1000.)
-        return ( (4.75779 -19.2528*Wl + 34.0917*Wl*Wl -27.2725*pow(Wl,3.) + 8.1585*pow(Wl,4.))*1e6 );
+double Ti::absp(double lam, double T) const {
+    double ulam = lam*1e-3;
+    if (ulam<1000.)
+        return ( (4.75779 -19.2528*ulam + 34.0917*ulam*ulam -27.2725*pow(ulam,3.) + 8.1585*pow(ulam,4.))*1e6 );
     else
-        return ( 864255*pow(exp(Wl),-1.18177) + 209715 + 6708.34*(Wl) - 633.799*Wl*Wl + 12.9902*pow(Wl,3.) );
+        return ( 864255*pow(exp(ulam),-1.18177) + 209715 + 6708.34*(ulam) - 633.799*ulam*ulam + 12.9902*pow(ulam,3.) );
 }
 
 bool Ti::isEqual(const Material &other) const {
@@ -47,11 +47,11 @@ bool Ti::isEqual(const Material &other) const {
 MI_PROPERTY(Ti, nr,
             MISource(""),
             MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::wl, 480, 20700)
+            MIArgumentRange(MaterialInfo::lam, 480, 20700)
 			)
-double Ti::nr(double wl, double T, double n) const {
-    double Wl = wl*1e-3;
-    return ( -0.443425 + 5.15294*Wl - 2.15683*Wl*Wl + 0.466666*pow(Wl,3.) - 0.0571905*pow(Wl,4.) + 0.00423617*pow(Wl,5.) - 0.000187612*pow(Wl,6.) + 4.56964e-6*pow(Wl,7.) - 4.70605e-8*pow(Wl,8.) );
+double Ti::nr(double lam, double T, double n) const {
+    double ulam = lam*1e-3;
+    return ( -0.443425 + 5.15294*ulam - 2.15683*ulam*ulam + 0.466666*pow(ulam,3.) - 0.0571905*pow(ulam,4.) + 0.00423617*pow(ulam,5.) - 0.000187612*pow(ulam,6.) + 4.56964e-6*pow(ulam,7.) - 4.70605e-8*pow(ulam,8.) );
 }
 
 static MaterialsDB::Register<Ti> materialDB_register_Ti;

@@ -56,15 +56,15 @@ MI_PROPERTY(InP_Zn, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Zn::absp(double wl, double T) const {
+double InP_Zn::absp(double lam, double T) const {
     double tAbsp(0.);
-    if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
+    if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 23. * pow(Nf_RT/1e18, 0.7);
-    else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
+    else if ((lam > 1450.) && (lam < 1650.)) // only for 1550 nm TODO
         tAbsp = 38. * pow(Nf_RT/1e18, 0.7);
-    else if ((wl > 2230.) && (wl < 2430.)) // only for 2330 nm TODO
+    else if ((lam > 2230.) && (lam < 2430.)) // only for 2330 nm TODO
         tAbsp = 52. * pow(Nf_RT/1e18, 1.2);
-    else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
+    else if ((lam > 8900.) && (lam < 9100.)) // only for 9000 nm TODO
         tAbsp = 200. * (Nf_RT/1e18);
     return ( tAbsp );
 }

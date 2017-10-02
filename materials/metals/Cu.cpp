@@ -32,7 +32,7 @@ MI_PROPERTY(Cu, absp,
             MISource(""),
             MIComment("TODO")
             )
-double Cu::absp(double wl, double T) const {
+double Cu::absp(double lam, double T) const {
     return ( 1e3 );
 }
 
@@ -44,7 +44,7 @@ MI_PROPERTY(Cu, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Cu::nr(double wl, double T, double n) const {
+double Cu::nr(double lam, double T, double n) const {
     return ( 1. );
 }
 

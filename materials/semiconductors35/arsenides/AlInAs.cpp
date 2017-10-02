@@ -238,8 +238,8 @@ MI_PROPERTY(AlInAs, nr,
             MISource("M.J. Mondry et al., IEEE Photon. Technol. Lett. 4 (1992) 627-630"),
             MIComment("data for the wavelength ranging 1000-2000 nm")
             )
-double AlInAs::nr(double wl, double T, double n) const {
-    double tnr = sqrt(8.677 + (1.214*wl*wl)/(wl*wl-730.8*730.8)), //wl: 1000-2000 nm
+double AlInAs::nr(double lam, double T, double n) const {
+    double tnr = sqrt(8.677 + (1.214*lam*lam)/(lam*lam-730.8*730.8)), //lam: 1000-2000 nm
            tBeta = 3.5e-4; //D. Dey for In = 0.365
     return ( tnr + tBeta*(T-300.) );
 }
@@ -247,7 +247,7 @@ double AlInAs::nr(double wl, double T, double n) const {
 MI_PROPERTY(AlInAs, absp,
             MIComment("TODO")
             )
-double AlInAs::absp(double wl, double T) const {
+double AlInAs::absp(double lam, double T) const {
     throw NotImplemented("absp for AlGaAs");
 }
 

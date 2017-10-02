@@ -29,9 +29,9 @@ MI_PROPERTY(ITO, absp,
             MISource("E.F. Schubert (2004) Refractive index and extinction coefficient of materials"),
             MISource("https://www.ecse.rpi.edu/~schubert/Educational-resources/Materials-Refractive-index-and-extinction-coefficient.pdf"),
             MIComment("fit: Lukasz Piskorski"),
-            MIArgumentRange(MaterialInfo::wl, 340, 1400)
+            MIArgumentRange(MaterialInfo::lam, 340, 1400)
             )
-double ITO::absp(double wl, double T) const {
+double ITO::absp(double lam, double T) const {
     double a6 = 2.22043e-18;
     double a5 = -1.09082e-14;
     double a4 = 2.21842e-11;
@@ -40,9 +40,9 @@ double ITO::absp(double wl, double T) const {
     double a1 = -4.40237e-3;
     double a0 = 5.75812e-1;
 
-    double k = a6*pow(wl,6) + a5*pow(wl,5) + a4*pow(wl,4) + a3*pow(wl,3) + a2*wl*wl + a1*wl + a0; // wl in nm
+    double k = a6*pow(lam,6) + a5*pow(lam,5) + a4*pow(lam,4) + a3*pow(lam,3) + a2*lam*lam + a1*lam + a0; // lam in nm
 
-    return (4. * M_PI * k / (wl*1e-7)); // result in 1/cm
+    return (4. * M_PI * k / (lam*1e-7)); // result in 1/cm
 }
 
 bool ITO::isEqual(const Material &other) const {
@@ -53,9 +53,9 @@ MI_PROPERTY(ITO, nr,
             MISource("E.F. Schubert (2004) Refractive index and extinction coefficient of materials"),
             MISource("https://www.ecse.rpi.edu/~schubert/Educational-resources/Materials-Refractive-index-and-extinction-coefficient.pdf"),
             MIComment("fit: Lukasz Piskorski"),
-            MIArgumentRange(MaterialInfo::wl, 340, 1400)
+            MIArgumentRange(MaterialInfo::lam, 340, 1400)
 			)
-double ITO::nr(double wl, double T, double n) const {
+double ITO::nr(double lam, double T, double n) const {
     double a6 = 4.75702e-18;
     double a5 = -2.752990e-14;
     double a4 = 6.45504e-11;
@@ -64,7 +64,7 @@ double ITO::nr(double wl, double T, double n) const {
     double a1 = -1.91542e-2;
     double a0 = 4.95369;
 
-    return (a6*pow(wl,6) + a5*pow(wl,5) + a4*pow(wl,4) + a3*pow(wl,3) + a2*wl*wl + a1*wl + a0); // wl in nm
+    return (a6*pow(lam,6) + a5*pow(lam,5) + a4*pow(lam,4) + a3*pow(lam,3) + a2*lam*lam + a1*lam + a0); // lam in nm
 }
 
 static MaterialsDB::Register<ITO> materialDB_register_ITO;

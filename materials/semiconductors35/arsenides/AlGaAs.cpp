@@ -236,7 +236,7 @@ MI_PROPERTY(AlGaAs, nr,
             //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
             MIComment("fit by Leszek Frasunkiewicz")
             )
-double AlGaAs::nr(double wl, double T, double n) const {
+double AlGaAs::nr(double lam, double T, double n) const {
     double A = -0.4490233379*Al + 3.25759049;
     double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
     double C = -304.7269552*Al*Al*Al + 335.1918592*Al*Al + 194.6726344*Al - 559.6098207;
@@ -245,12 +245,12 @@ double AlGaAs::nr(double wl, double T, double n) const {
     double Ad = 0.0003442176581*Al*Al*Al - 0.0005412098145*Al*Al + 0.00008671640556*Al + 0.0002093262406;
     double Bd = 132.1382231*exp(-8.32822628*Al*Al*Al + 14.65496754*Al*Al - 7.135900438*Al);
     double Cd = 117.24*Al -689.06;
-    double dndT = Ad*exp(Bd / (wl + Cd));
+    double dndT = Ad*exp(Bd / (lam + Cd));
 
-    return ( A*exp(B / (wl + C)) + dndT*(T-296) );
+    return ( A*exp(B / (lam + C)) + dndT*(T-296) );
 
     // old
-    //double L2 = wl*wl*1e-6;
+    //double L2 = lam*lam*1e-6;
     //double nR296K = sqrt(1.+(9.659-2.604*Al)*L2/(L2-(0.137-0.069*Al)));
     //return ( nR296K + nR296K*(Al*4.6e-5+Ga*4.5e-5)*(T-296.) );
 }
@@ -258,13 +258,13 @@ double AlGaAs::nr(double wl, double T, double n) const {
 MI_PROPERTY(AlGaAs, absp,
             MIComment("calculated as for Si-doped AlGaAs but with n = 1e16")
             )
-double AlGaAs::absp(double wl, double T) const {
+double AlGaAs::absp(double lam, double T) const {
     double tEgRef300 = mGaAs.Eg(300.,0.,'G');
     double tEgT = Eg(T,0.,'G');
     if (tEgT > Eg(T,0.,'X'))
         tEgT = Eg(T,0.,'X');
     double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     double tN = 1e16; // concentration for undoped GaAs
     if (tWl <= 6.) // 0.85-6 um

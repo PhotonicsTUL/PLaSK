@@ -233,14 +233,14 @@ Material::ConductivityType AlPSb::condtype() const { return Material::CONDUCTIVI
 MI_PROPERTY(AlPSb, nr,
             MIComment("TODO")
             )
-double AlPSb::nr(double wl, double T, double n) const {
+double AlPSb::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for AlPSb");
 }
 
 MI_PROPERTY(AlPSb, absp,
             MIComment("TODO")
             )
-double AlPSb::absp(double wl, double T) const {
+double AlPSb::absp(double lam, double T) const {
     throw NotImplemented("absp for AlPSb");
 }
 

@@ -238,11 +238,11 @@ MI_PROPERTY(InAsSb, nr,
             MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
             MIComment("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished; "),
             MIComment("do not use for InAsSb with Sb content higher than 0.20"),
-            MIArgumentRange(MaterialInfo::wl, 2050, 3450)
+            MIArgumentRange(MaterialInfo::lam, 2050, 3450)
             )
-double InAsSb::nr(double wl, double T, double n) const {
-    double nR_InAs080Sb020_300K = 0.01525*pow(wl*1e-3,1.783)+3.561; // 2.05 um < wl < 5.4 um
-    double nR_InAs_300K = 2.873e-5*pow(wl*1e-3,6.902)+3.438; // 2.05 um < wl < 3.45 um
+double InAsSb::nr(double lam, double T, double n) const {
+    double nR_InAs080Sb020_300K = 0.01525*pow(lam*1e-3,1.783)+3.561; // 2.05 um < lam < 5.4 um
+    double nR_InAs_300K = 2.873e-5*pow(lam*1e-3,6.902)+3.438; // 2.05 um < lam < 3.45 um
     double v = 5.*As-4;
     double nR300K = v*nR_InAs_300K + (1.-v)*nR_InAs080Sb020_300K;
 
@@ -256,7 +256,7 @@ double InAsSb::nr(double wl, double T, double n) const {
 MI_PROPERTY(InAsSb, absp,
             MIComment("TODO")
             )
-double InAsSb::absp(double wl, double T) const {
+double InAsSb::absp(double lam, double T) const {
     throw NotImplemented("absp for InAsSb");
 }
 

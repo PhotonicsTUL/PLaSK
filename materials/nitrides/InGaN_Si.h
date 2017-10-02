@@ -30,7 +30,7 @@ struct InGaN_Si: public InGaN {
     virtual Tensor2<double> cond(double T) const override;
     virtual ConductivityType condtype() const override;
     virtual Tensor2<double> thermk(double T, double t) const override;
-    virtual double absp(double wl, double T) const override;
+    virtual double absp(double lam, double T) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

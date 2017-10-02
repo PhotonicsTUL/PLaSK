@@ -202,24 +202,36 @@ class PythonEvalMaterial : public Material
     Tensor2<double> thermk(double T, double h) const override { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
     double dens(double T) const override { PYTHON_EVAL_CALL_1(double, dens, T) }
     double cp(double T) const override { PYTHON_EVAL_CALL_1(double, cp, T) }
-    double nr(double wl, double T, double n = .0) const override { PYTHON_EVAL_CALL_3(double, nr, wl, T, n) }
-    double absp(double wl, double T) const override { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
-    dcomplex Nr(double wl, double T, double n = .0) const override {
+    double nr(double lam, double T, double n = .0) const override {
+        if (cls->cache.nr) return *cls->cache.nr;
+        if (cls->nr == NULL) return base->nr(lam, T, n);
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+        return call<double>(cls->nr, locals, "nr");
+    }
+    double absp(double lam, double T) const override {
+        if (cls->cache.absp) return *cls->cache.absp;
+        if (cls->absp == NULL) return base->absp(lam, T);
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T;
+        return call<double>(cls->absp, locals, "absp");
+    }
+    dcomplex Nr(double lam, double T, double n = .0) const override {
         if (cls->cache.Nr) return *cls->cache.Nr;
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             return call<dcomplex>(cls->Nr, locals, "Nr");
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp)
-            return dcomplex(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
-        return base->Nr(wl, T, n);
+            return dcomplex(nr(lam, T, n), -7.95774715459e-09 * absp(lam, T)*lam);
+        return base->Nr(lam, T, n);
     }
-    Tensor3<dcomplex> NR(double wl, double T, double n = .0) const override {
+    Tensor3<dcomplex> NR(double lam, double T, double n = .0) const override {
         if (cls->cache.NR) return *cls->cache.NR;
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             return call<Tensor3<dcomplex>>(cls->NR, locals, "NR");
         }
         if (cls->cache.Nr) {
@@ -228,16 +240,16 @@ class PythonEvalMaterial : public Material
         }
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             dcomplex nc = call<dcomplex>(cls->Nr, locals, "Nr");
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            dcomplex nc(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
+            dcomplex nc(nr(lam, T, n), -7.95774715459e-09 * absp(lam, T)*lam);
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
-        return base->NR(wl, T, n);
+        return base->NR(lam, T, n);
     }
 
     Tensor2<double> mobe(double T) const override { PYTHON_EVAL_CALL_1(Tensor2<double>, mobe, T) }

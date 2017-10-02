@@ -84,7 +84,7 @@ bool Material::isSimple() const {
 
 double Material::A(double T) const { throwNotImplemented("A(double T)"); return 0; }
 
-double Material::absp(double wl, double T) const { return 0.; }
+double Material::absp(double lam, double T) const { return 0.; }
 
 double Material::B(double T) const { throwNotImplemented("B(double T)"); return 0; }
 
@@ -145,12 +145,12 @@ double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); retur
 
 double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); return 0; }
 
-double Material::nr(double wl, double T, double n) const { throwNotImplemented("nr(double wl, double T, double n)"); return 0; }
+double Material::nr(double lam, double T, double n) const { throwNotImplemented("nr(double lam, double T, double n)"); return 0; }
 
-dcomplex Material::Nr(double wl, double T, double n) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
+dcomplex Material::Nr(double lam, double T, double n) const { return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam); }
 
-Tensor3<dcomplex> Material::NR(double wl, double T, double n) const {
-    return Nr(wl, T);
+Tensor3<dcomplex> Material::NR(double lam, double T, double n) const {
+    return Nr(lam, T);
 }
 
 bool Material::operator ==(const Material &other) const {

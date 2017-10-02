@@ -76,8 +76,8 @@ Material::ConductivityType GaN_Mg::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(GaN_Mg, absp,
             MISeeClass<GaN>(MaterialInfo::absp)
             )
-double GaN_Mg::absp(double wl, double T) const {
-    double dE = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
+double GaN_Mg::absp(double lam, double T) const {
+    double dE = phys::h_eVc1e9/lam - Eg(T, 0., 'G');
     double N = Dop() * 1e-18;
     return  (19000.+200.*N) * exp(dE/(0.019+0.0001*N)) + (330.+30.*N) * exp(dE/(0.07+0.0008*N));
 }

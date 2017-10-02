@@ -225,13 +225,13 @@ MI_PROPERTY(GaSb, nr,
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009; "), // nR @ RT
             MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040; "), // nR @ RT
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.242"), // dnR/dT
-            MIArgumentRange(MaterialInfo::wl, 620, 4700),
+            MIArgumentRange(MaterialInfo::lam, 620, 4700),
             MIComment("nr(wv) relation fitted by L. Piskorski (PLaSK developer), unpublished; "),
             MIComment("fitting data from 650-830nm and 1800-2560nm wavelength ranges; "),
             MIComment("basing on fig.5a from Adachi nR(wv) relation can be used for 620-4700nm wavelength range")
             )
-double GaSb::nr(double wl, double T, double) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double GaSb::nr(double lam, double T, double) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double nR300K = 0.502*tE*tE*tE - 1.216*tE*tE + 1.339*tE + 3.419;
     return ( nR300K + nR300K*8.2e-5*(T-300.) );
 }

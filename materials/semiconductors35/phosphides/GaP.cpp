@@ -211,14 +211,14 @@ Material::ConductivityType GaP::condtype() const { return Material::CONDUCTIVITY
 MI_PROPERTY(GaP, nr,
             MIComment("TODO")
             )
-double GaP::nr(double wl, double T, double n) const {
+double GaP::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for GaP");
 }
 
 MI_PROPERTY(GaP, absp,
             MIComment("TODO")
             )
-double GaP::absp(double wl, double T) const {
+double GaP::absp(double lam, double T) const {
     throw NotImplemented("absp for GaP");
 }
 

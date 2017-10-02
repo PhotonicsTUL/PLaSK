@@ -43,8 +43,8 @@ struct AlGaAsSb: public Semiconductor {
     virtual double dens(double T) const override;
     virtual double cp(double T) const override;
     virtual ConductivityType condtype() const override;
-    virtual double nr(double wl, double T, double n = .0) const override;
-    virtual double absp(double wl, double T) const override;
+    virtual double nr(double lam, double T, double n = .0) const override;
+    virtual double absp(double lam, double T) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

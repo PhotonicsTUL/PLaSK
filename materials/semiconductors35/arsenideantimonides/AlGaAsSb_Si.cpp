@@ -65,11 +65,11 @@ Material::ConductivityType AlGaAsSb_Si::condtype() const { return Material::COND
 
 MI_PROPERTY(AlGaAsSb_Si, nr,
             MISource("Alibert, J. Appl. Phys (1991)"),
-            //MIArgumentRange(MaterialInfo::wl, 620, 2560),
+            //MIArgumentRange(MaterialInfo::lam, 620, 2560),
             MIComment("for AlGaAsSb lattice matched to GaSb")
             )
-double AlGaAsSb_Si::nr(double wl, double T, double) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double AlGaAsSb_Si::nr(double lam, double T, double) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 1.89*Ga+3.2*Al-0.36*Al*Ga;
     double tEd = 24.5*Ga+28.*Al-4.4*Al*Ga;
     double tEG = 0.725*Ga+2.338*Al-0.47*Al*Ga;
@@ -87,8 +87,8 @@ double AlGaAsSb_Si::nr(double wl, double T, double) const {
 MI_PROPERTY(AlGaAsSb_Si, absp,
             MIComment("fit by Lukasz Piskorski")
             )
-double AlGaAsSb_Si::absp(double wl, double T) const {
-    double tAbs_RT = 1e24*exp(-wl/33.) + 2.02e-24*Nf_RT*pow(wl,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
+double AlGaAsSb_Si::absp(double lam, double T) const {
+    double tAbs_RT = 1e24*exp(-lam/33.) + 2.02e-24*Nf_RT*pow(lam,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 

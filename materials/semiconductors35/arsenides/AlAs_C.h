@@ -25,7 +25,7 @@ struct AlAs_C: public AlAs {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
     virtual ConductivityType condtype() const override;
-    virtual double absp(double wl, double T) const override;
+    virtual double absp(double lam, double T) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

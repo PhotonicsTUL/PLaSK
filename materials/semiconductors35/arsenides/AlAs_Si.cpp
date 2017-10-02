@@ -60,11 +60,11 @@ Material::ConductivityType AlAs_Si::condtype() const { return Material::CONDUCTI
 MI_PROPERTY(AlAs_Si, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )
-double AlAs_Si::absp(double wl, double T) const {
+double AlAs_Si::absp(double lam, double T) const {
     double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., T);
     double tEgT = Eg(T,0.,'X');
     double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um
         tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));

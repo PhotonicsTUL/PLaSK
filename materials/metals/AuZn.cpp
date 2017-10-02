@@ -30,7 +30,7 @@ MI_PROPERTY(AuZn, absp,
             MISource(""),
             MIComment("TODO")
             )
-double AuZn::absp(double wl, double T) const {
+double AuZn::absp(double lam, double T) const {
     return ( 1e3 );
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(AuZn, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double AuZn::nr(double wl, double T, double n) const {
+double AuZn::nr(double lam, double T, double n) const {
     return ( 1. );
 }
 

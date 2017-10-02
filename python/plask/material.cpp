@@ -362,22 +362,22 @@ class PythonMaterial: public Material, Overriden<Material>
     Tensor2<double> thermk(double T, double t) const override { return call<Tensor2<double>>("thermk", &Material::thermk, cache->thermk, T, t); }
     double dens(double T) const override { return call<double>("dens", &Material::dens, cache->dens, T); }
     double cp(double T) const override { return call<double>("cp", &Material::cp, cache->cp, T); }
-    double nr(double wl, double T, double n) const override { return call<double>("nr", &Material::nr, cache->nr, wl, T, n); }
-    double absp(double wl, double T) const override { return call<double>("absp", &Material::absp, cache->absp, wl, T); }
-    dcomplex Nr(double wl, double T, double n) const override {
-        try { return call_override<dcomplex>("Nr", &Material::Nr, cache->Nr, wl, T, n); }
+    double nr(double lam, double T, double n) const override { return call<double>("nr", &Material::nr, cache->nr, lam, T, n); }
+    double absp(double lam, double T) const override { return call<double>("absp", &Material::absp, cache->absp, lam, T); }
+    dcomplex Nr(double lam, double T, double n) const override {
+        try { return call_override<dcomplex>("Nr", &Material::Nr, cache->Nr, lam, T, n); }
         catch (NotImplemented) {
-            try { return dcomplex(                     call<double>("nr", &Material::nr, cache->nr, wl, T, n),
-                                  -7.95774715459e-09 * call<double>("absp", &Material::absp, cache->absp, wl,T) * wl
+            try { return dcomplex(                     call<double>("nr", &Material::nr, cache->nr, lam, T, n),
+                                  -7.95774715459e-09 * call<double>("absp", &Material::absp, cache->absp, lam,T) * lam
                                  ); }
-            catch (NotImplemented) { return base->Nr(wl, T, n); }
+            catch (NotImplemented) { return base->Nr(lam, T, n); }
         }
     }
-    Tensor3<dcomplex> NR(double wl, double T, double n) const override {
-        try { return call_override<Tensor3<dcomplex>>("NR", &Material::NR, cache->NR, wl, T, n); }
+    Tensor3<dcomplex> NR(double lam, double T, double n) const override {
+        try { return call_override<Tensor3<dcomplex>>("NR", &Material::NR, cache->NR, lam, T, n); }
         catch (NotImplemented) {
-            try { dcomplex nr = Nr(wl, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
-            catch (NotImplemented) { return base->NR(wl, T, n); }
+            try { dcomplex nr = Nr(lam, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
+            catch (NotImplemented) { return base->NR(lam, T, n); }
         }
     }
 
@@ -824,10 +824,10 @@ py::dict getMaterialInfo(const std::string& name) {
     detail::getPropertyInfo(result, *minfo, MaterialInfo::thermk, MaterialInfo::T, MaterialInfo::h);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::dens, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::cp, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::nr, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::absp, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nr, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::NR, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::nr, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::absp, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nr, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::NR, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     return result;
 }
 
@@ -1169,30 +1169,30 @@ void initMaterials() {
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
-        .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+        .def("nr", &Material::nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
              "Get refractive index nr [-].\n\n"
              "Args:\n"
-             "    wl (float): Wavelength [nm].\n"
+             "    lam (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
              "    n (float): Injected carriers concentration [1/cm³].\n")
 
-        .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.),
+        .def("absp", &Material::absp, (py::arg("lam"), py::arg("T")=300.),
              "Get absorption coefficient alpha [1/cm].\n\n"
              "Args:\n"
-             "    wl (float): Wavelength [nm].\n"
+             "    lam (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n")
 
-        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+        .def("Nr", &Material::Nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
              "Get complex refractive index Nr [-].\n\n"
              "Args:\n"
-             "    wl (float): Wavelength [nm].\n"
+             "    lam (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
              "    n (float): Injected carriers concentration [1/cm³].\n")
 
-        .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+        .def("NR", &Material::NR, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
              "Get complex refractive index tensor Nr [-].\n\n"
              "Args:\n"
-             "    wl (float): Wavelength [nm].\n"
+             "    lam (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
              "    n (float): Injected carriers concentration [1/cm³].\n\n"
              ".. warning::\n"

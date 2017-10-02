@@ -45,7 +45,7 @@ This section contains specification of custom materials that can be used togethe
 
          Absorption coefficient *α* [cm\ :sup:`-1`].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K].
 
       .. xml:tag:: <ac>
 
@@ -303,20 +303,20 @@ This section contains specification of custom materials that can be used togethe
 
          Complex refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
       .. xml:tag:: <nr>
 
          Real refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
       .. xml:tag:: <NR>
 
          Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
          Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
          .. warning::
 

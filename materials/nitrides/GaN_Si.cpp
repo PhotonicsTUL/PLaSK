@@ -87,19 +87,19 @@ Tensor2<double> GaN_Si::thermk(double T, double t) const {
 
 MI_PROPERTY(GaN_Si, absp,
             MISource("P. Perlin et al., SPIE 8262, 826216"),
-            MIArgumentRange(MaterialInfo::wl, 380, 500),
+            MIArgumentRange(MaterialInfo::lam, 380, 500),
             MIComment("more data: 380, 390, 400, 420, 430, 440, 450"),
             MIComment("GaN:Si if Nf > 5e18 cm-3, else GaN(undoped)"),
             MIComment("no temperature dependence")
             )
-double GaN_Si::absp(double wl, double T) const {
-    double dE = phys::h_eVc1e9 / wl - Eg(T); // dE = E - Eg
+double GaN_Si::absp(double lam, double T) const {
+    double dE = phys::h_eVc1e9 / lam - Eg(T); // dE = E - Eg
     double N = Dop() * 1e-18;
 
-    double tNgr = -0.0003878*wl*wl + 0.3946*wl - 90.42;
+    double tNgr = -0.0003878*lam*lam + 0.3946*lam - 90.42;
     if (N > tNgr) { // Perlin
         double n = Nf(T) * 1e-18;
-        return 33500. * exp(0.08*n + (-0.00018*n - 0.0135) * wl);
+        return 33500. * exp(0.08*n + (-0.00018*n - 0.0135) * lam);
     } else // Piprek
         return (19000.+4000.*N) * exp(dE / (0.019 + 0.001*N)) + (330.+200.*N) * exp(dE/(0.07+0.016* N));
 }
@@ -115,8 +115,8 @@ MI_PROPERTY(GaN_Si, nr,
             MIComment("Nf > 1e19 cm-3"),
             MIComment("no temperature dependence")
             )
-double GaN_Si::nr(double wl, double T, double n) const {
-    return GaN::nr(wl,T) * (1. - 1.05e-22 * (n?n:Nf(T)));
+double GaN_Si::nr(double lam, double T, double n) const {
+    return GaN::nr(lam,T) * (1. - 1.05e-22 * (n?n:Nf(T)));
 }
 
 

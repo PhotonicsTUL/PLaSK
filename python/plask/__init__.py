@@ -442,6 +442,7 @@ else:
 ## ##  ## ##
 
 import plask.phys
+wl = phys.wl
 
 ## ##  ## ##
 

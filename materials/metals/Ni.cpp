@@ -32,7 +32,7 @@ MI_PROPERTY(Ni, absp,
             MISource(""),
             MIComment("TODO")
             )
-double Ni::absp(double wl, double T) const {
+double Ni::absp(double lam, double T) const {
     return ( 1e3 );
 }
 
@@ -44,7 +44,7 @@ MI_PROPERTY(Ni, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Ni::nr(double wl, double T, double n) const {
+double Ni::nr(double lam, double T, double n) const {
     return ( 1. );
 }
 

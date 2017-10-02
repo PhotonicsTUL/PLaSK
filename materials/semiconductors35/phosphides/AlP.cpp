@@ -206,14 +206,14 @@ Material::ConductivityType AlP::condtype() const { return Material::CONDUCTIVITY
 MI_PROPERTY(AlP, nr,
             MIComment("TODO")
             )
-double AlP::nr(double wl, double T, double n) const {
+double AlP::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for AlP");
 }
 
 MI_PROPERTY(AlP, absp,
             MIComment("TODO")
             )
-double AlP::absp(double wl, double T) const {
+double AlP::absp(double lam, double T) const {
     throw NotImplemented("absp for AlP");
 }
 

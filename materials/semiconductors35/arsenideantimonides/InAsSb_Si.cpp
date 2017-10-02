@@ -73,11 +73,11 @@ MI_PROPERTY(InAsSb_Si, nr,
             MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
             MIComment("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished; "),
             MIComment("do not use for InAsSb with Sb content higher than 0.20"),
-            MIArgumentRange(MaterialInfo::wl, 2050, 3450)
+            MIArgumentRange(MaterialInfo::lam, 2050, 3450)
             )
-double InAsSb_Si::nr(double wl, double T, double n) const {
-    double nR_InAs080Sb020_300K = 0.01525*pow(wl*1e-3,1.783)+3.561; // 2.05 um < wl < 5.4 um
-    double nR_InAs_300K = 2.873e-5*pow(wl*1e-3,6.902)+3.438; // 2.05 um < wl < 3.45 um
+double InAsSb_Si::nr(double lam, double T, double n) const {
+    double nR_InAs080Sb020_300K = 0.01525*pow(lam*1e-3,1.783)+3.561; // 2.05 um < lam < 5.4 um
+    double nR_InAs_300K = 2.873e-5*pow(lam*1e-3,6.902)+3.438; // 2.05 um < lam < 3.45 um
     double v = 5.*As-4;
     double nR300K = v*nR_InAs_300K + (1.-v)*nR_InAs080Sb020_300K;
 
@@ -92,11 +92,11 @@ double InAsSb_Si::nr(double wl, double T, double n) const {
 
 MI_PROPERTY(InAsSb, absp,
             MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
-            MIArgumentRange(MaterialInfo::wl, 2000, 20000),
+            MIArgumentRange(MaterialInfo::lam, 2000, 20000),
             MIComment("use it for highly doped InAsSb with high As content") // energy band narrowing included
             )
-double InAsSb_Si::absp(double wl, double T) const {
-    double tAbs_RT = 1e24*exp(-wl/33.) + ( As*6.5e-29*Nf_RT*pow(wl,3.) + Sb*2.8e-25*Nf_RT*pow(wl,2.) ) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
+double InAsSb_Si::absp(double lam, double T) const {
+    double tAbs_RT = 1e24*exp(-lam/33.) + ( As*6.5e-29*Nf_RT*pow(lam,3.) + Sb*2.8e-25*Nf_RT*pow(lam,2.) ) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 

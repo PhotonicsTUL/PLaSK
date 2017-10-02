@@ -19,10 +19,10 @@ namespace plask { namespace phys {
     /**
      * Energy of Photon
      * TODO doc
-     * \param wl [nm]
+     * \param lam [nm]
      * \return [eV]
      */
-    PLASK_API double PhotonEnergy(double wl);
+    PLASK_API double PhotonEnergy(double lam);
 
 }} // namespace plask::phys
 

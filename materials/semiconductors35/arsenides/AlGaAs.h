@@ -41,8 +41,8 @@ struct AlGaAs: public Semiconductor {
     double dens(double T) const override;
     double cp(double T) const override;
     ConductivityType condtype() const override;
-    double nr(double wl, double T, double n = .0) const override;
-    double absp(double wl, double T) const override;
+    double nr(double lam, double T, double n = .0) const override;
+    double absp(double lam, double T) const override;
     double eps(double T) const override;
 
 protected:

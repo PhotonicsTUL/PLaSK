@@ -22,18 +22,18 @@ MI_PROPERTY(AlN, absp,
             MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
             MIComment("no temperature dependence")
             )
-double AlN::absp(double wl, double T) const {
-    double a = phys::h_eVc1e9/wl - Eg(T,0.,'G');
+double AlN::absp(double lam, double T) const {
+    double a = phys::h_eVc1e9/lam - Eg(T,0.,'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
 MI_PROPERTY(AlN, nr,
             MISource("www.rpi.edu Educational Resources (E.F. Schubert 2004)"),
-            MIArgumentRange(MaterialInfo::wl, 225, 1240),
+            MIArgumentRange(MaterialInfo::lam, 225, 1240),
             MIComment("no temperature dependence")
             )
-double AlN::nr(double wl, double T, double n) const {
-    double a = phys::h_eVc1e9/wl;
+double AlN::nr(double lam, double T, double n) const {
+    double a = phys::h_eVc1e9/lam;
     return ( 0.0034417*pow(a,3) - 0.0172622*pow(a,2) + 0.0594128*a + 1.92953 );
 }
 

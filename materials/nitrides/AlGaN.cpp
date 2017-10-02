@@ -31,17 +31,17 @@ MI_PROPERTY(AlGaN, absp,
             MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
             MIComment("no temperature dependence")
             )
-double AlGaN::absp(double wl, double T) const {
-    double a = phys::h_eVc1e9/wl - Eg(T,0,'G');
+double AlGaN::absp(double lam, double T) const {
+    double a = phys::h_eVc1e9/lam - Eg(T,0,'G');
     return 19000*exp(a/0.019) + 330*exp(a/0.07);
 }
 
 MI_PROPERTY(AlGaN, nr,
             MIComment("shift of the nR for GaN")
             )
-double AlGaN::nr(double wl, double T, double n) const {
+double AlGaN::nr(double lam, double T, double n) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
-           Eold = phys::h_eVc1e9 / wl,
+           Eold = phys::h_eVc1e9 / lam,
            Enew = Eold - dEg;
 
     if (Enew > 1.000 && Enew < 2.138) // 580-1240 nm

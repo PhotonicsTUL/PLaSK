@@ -266,8 +266,8 @@ Material::ConductivityType AlGaAsSb::condtype() const { return Material::CONDUCT
 MI_PROPERTY(AlGaAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211")
             )
-double AlGaAsSb::nr(double wl, double T, double n) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double AlGaAsSb::nr(double lam, double T, double n) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 1.89*Ga+3.2*Al-0.36*Al*Ga;
     double tEd = 24.5*Ga+28.*Al-4.4*Al*Ga;
     double tEG = 0.725*Ga+2.338*Al-0.47*Al*Ga;
@@ -283,7 +283,7 @@ double AlGaAsSb::nr(double wl, double T, double n) const {
 MI_PROPERTY(AlGaAsSb, absp,
             MIComment("TODO")
             )
-double AlGaAsSb::absp(double wl, double T) const {
+double AlGaAsSb::absp(double lam, double T) const {
         throw NotImplemented("absp for AlGaAsSb");
 }
 

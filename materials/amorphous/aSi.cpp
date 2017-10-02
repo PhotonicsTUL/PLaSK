@@ -32,23 +32,23 @@ Material::ConductivityType aSi::condtype() const { return Material::CONDUCTIVITY
 
 MI_PROPERTY(aSi, nr,
             MISource("R.N. Kre et al., International Journal of the Physical Sciences 5 (2010) 675-682"),
-            MIArgumentRange(MaterialInfo::wl, 2200, 3900),
+            MIArgumentRange(MaterialInfo::lam, 2200, 3900),
             MIComment("fit by Lukasz Piskorski")
             )
-double aSi::nr(double wl, double T, double n) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double aSi::nr(double lam, double T, double n) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double nR300K = 0.144+3.308/(1.-0.0437*tE*tE); // 1e-3: nm-> um
     return ( nR300K + 2.2e-5*(T-300.) ); // assumed (see: dnRdT for SiO2)
 }
 
 MI_PROPERTY(aSi, absp,
             MISource("TODO"),
-            //MIArgumentRange(MaterialInfo::wl, 1600, 4700),
+            //MIArgumentRange(MaterialInfo::lam, 1600, 4700),
             MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
             MIComment("fit by Lukasz Piskorski")
             )
-double aSi::absp(double wl, double T) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double aSi::absp(double lam, double T) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double tAbs_RT = pow(10.,2.506*tE+0.2);
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }

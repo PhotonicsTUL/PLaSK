@@ -648,40 +648,40 @@ struct PLASK_API Material {
 
     /**
      * Get refractive index Nr [-].
-     * @param wl Wavelength [nm]
+     * @param lam Wavelength [nm]
      * @param T temperature [K]
      * @param n injected carriers concentration [1/cm]
      * @return refractive index Nr [-]
      */
-    virtual double nr(double wl, double T, double n = 0) const;
+    virtual double nr(double lam, double T, double n = 0) const;
 
     /**
      * Get absorption coefficient alpha [cm^(-1)].
-     * @param wl Wavelength [nm]
+     * @param lam Wavelength [nm]
      * @param T temperature [K]
      * @param n injected carriers concentration [1/cm]
      * @return absorption coefficient alpha cm^(-1)]
      */
-    virtual double absp(double wl, double T) const;
+    virtual double absp(double lam, double T) const;
 
     /**
      * Get refractive index Nr [-].
-     * @param wl Wavelength [nm]
+     * @param lam Wavelength [nm]
      * @param T temperature [K]
      * @return refractive index Nr[-]
      */
-    virtual dcomplex Nr(double wl, double T, double n = 0) const;
+    virtual dcomplex Nr(double lam, double T, double n = 0) const;
 
     /**
      * Get anisotropic refractive index tensor NR [-].
      * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
      * where \f$ n_i \f$ is i-th object of the returned tuple.
-     * @param wl Wavelength [nm]
+     * @param lam Wavelength [nm]
      * @param T temperature [K]
      * @param n injected carriers concentration [1/cm]
      * @return refractive index tensor NR[-]
      */
-    virtual Tensor3<dcomplex> NR(double wl, double T, double n = 0) const;
+    virtual Tensor3<dcomplex> NR(double lam, double T, double n = 0) const;
 
     // #330:
 

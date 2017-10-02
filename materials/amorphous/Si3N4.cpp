@@ -28,19 +28,19 @@ Material::ConductivityType Si3N4::condtype() const { return Material::CONDUCTIVI
 
 MI_PROPERTY(Si3N4, nr,
             MISource("refractiveindex.info"),
-            MIArgumentRange(MaterialInfo::wl, 207, 1240)
+            MIArgumentRange(MaterialInfo::lam, 207, 1240)
             )
-double Si3N4::nr(double wl, double T, double n) const {
-    double tL2 = wl*wl*1e-6;
+double Si3N4::nr(double lam, double T, double n) const {
+    double tL2 = lam*lam*1e-6;
     return ( sqrt(1+2.8939*tL2/(tL2-0.0195077089)));
 }
 MI_PROPERTY(Si3N4, absp,
             MISource("S. Zhou et al., Proc. SPIE 7995 (2011) 79950T"),
             MIComment("data for SiNx"),
-            MIArgumentRange(MaterialInfo::wl, 9000, 11000)
+            MIArgumentRange(MaterialInfo::lam, 9000, 11000)
             )
-double Si3N4::absp(double wl, double T) const {
-    double tL = wl*1e-3;
+double Si3N4::absp(double lam, double T) const {
+    double tL = lam*1e-3;
     return ( 1.06E-4*pow(tL,7.8) );
 }
 bool Si3N4::isEqual(const Material &other) const {

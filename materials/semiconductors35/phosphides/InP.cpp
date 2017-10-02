@@ -211,10 +211,10 @@ Material::ConductivityType InP::condtype() const { return Material::CONDUCTIVITY
 MI_PROPERTY(InP, nr,
             MISource("refractiveindex.info, Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994"),
             MISource("S. Adachi, Handbook on Physical Properties of Semiconductors, vol. 2 III-V Compound Semiconductors, Chapter 16, Kluwer Academic Publishers, 2004"),
-            MIArgumentRange(MaterialInfo::wl, 950, 10000)
+            MIArgumentRange(MaterialInfo::lam, 950, 10000)
             )
-double InP::nr(double wl, double T, double n) const {
-    double  twl = wl/1e3,
+double InP::nr(double lam, double T, double n) const {
+    double  twl = lam/1e3,
             tnr = sqrt(7.255+(2.316*twl*twl)/(twl*twl-0.6263*0.6263)+2.765*twl*twl/(twl*twl-32.935*32.935)),
             tBeta = 2.7e-5; //S. Adachi (long-wavelength limit)
     return ( tnr + tBeta*(T-300.) );
@@ -223,7 +223,7 @@ double InP::nr(double wl, double T, double n) const {
 MI_PROPERTY(InP, absp,
             MIComment("TODO")
             )
-double InP::absp(double wl, double T) const {
+double InP::absp(double lam, double T) const {
     throw NotImplemented("absp for InP");
 }
 

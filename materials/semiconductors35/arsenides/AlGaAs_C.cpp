@@ -88,13 +88,13 @@ Material::ConductivityType AlGaAs_C::condtype() const { return Material::CONDUCT
 MI_PROPERTY(AlGaAs_C, absp,
             MISource("fit by Lukasz Piskorski") // TODO
             )
-double AlGaAs_C::absp(double wl, double T) const {
+double AlGaAs_C::absp(double lam, double T) const {
     double tEgRef300 = mGaAs_C.Eg(300.,0.,'G');
     double tEgT = Eg(T,0.,'G');
     if (tEgT > Eg(T,0.,'X'))
         tEgT = Eg(T,0.,'X');
     double tDWl = phys::h_eVc1e9*(tEgRef300-tEgT)/(tEgRef300*tEgT);
-    double tWl = (wl-tDWl)*1e-3;
+    double tWl = (lam-tDWl)*1e-3;
     double tAbsp(0.);
     if (tWl <= 6.) // 0.85-6 um
         tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0173)+0.114*pow(tWl,4.00)+73.*exp(-0.76*pow(tWl-2.74,2.)));

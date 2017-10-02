@@ -63,11 +63,11 @@ Material::ConductivityType AlAsSb_Te::condtype() const { return Material::CONDUC
 
 MI_PROPERTY(AlAsSb_Te, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
-            MIArgumentRange(MaterialInfo::wl, 500, 7000),
+            MIArgumentRange(MaterialInfo::lam, 500, 7000),
             MIComment("TODO")
             )
-double AlAsSb_Te::nr(double wl, double T, double n) const {
-    double tE = phys::h_eVc1e9/wl; // wl -> E
+double AlAsSb_Te::nr(double lam, double T, double n) const {
+    double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 3.2;
     double tEd = 28.;
     double tEG = 2.338;
@@ -84,12 +84,12 @@ double AlAsSb_Te::nr(double wl, double T, double n) const {
 
 MI_PROPERTY(AlAsSb, absp,
             MISource("H. Hattasan (2013)"),
-            //MIArgumentRange(MaterialInfo::wl, 2000, 20000),
+            //MIArgumentRange(MaterialInfo::lam, 2000, 20000),
             MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
             MIComment("only free-carrier absorption assumed")
             )
-double AlAsSb_Te::absp(double wl, double T) const {
-    double tAbs_RT = 1.9e-24 * Nf_RT * pow(wl,2.);
+double AlAsSb_Te::absp(double lam, double T) const {
+    double tAbs_RT = 1.9e-24 * Nf_RT * pow(lam,2.);
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 

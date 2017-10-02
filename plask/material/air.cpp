@@ -13,7 +13,7 @@ Material::Kind Air::kind() const { return Material::NONE; }
 
 double Air::A(double T) const { RETURN_MATERIAL_NAN(A) }
 
-double Air::absp(double wl, double T) const { return 0.; }
+double Air::absp(double lam, double T) const { return 0.; }
 
 double Air::B(double T) const { RETURN_MATERIAL_NAN(B) }
 
@@ -73,7 +73,7 @@ MI_PROPERTY(Air, nr,
             MIComment("using equation in source the calculated values are 1.0002-1.0003 for 200-2000nm wavelength range"),
             MIArgumentRange(MaterialInfo::T, 200, 2000)
            )
-double Air::nr(double wl, double T, double n) const { return 1.; }
+double Air::nr(double lam, double T, double n) const { return 1.; }
 
 MI_PROPERTY(Air, cp,
             MISource("D.R. Lide, ed., CRC Handbook of Chemistry and Physics, Internet Version 2005, <http://www.hbcpnetbase.com>, CRC Press, Boca Raton, FL, 2005, section 6, p. 1")

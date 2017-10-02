@@ -33,8 +33,8 @@ double MixedMaterial::A(double T) const {
     return avg([&](const Material& m) { return m.A(T); });
 }
 
-double MixedMaterial::absp(double wl, double T) const {
-    return avg([&](const Material& m) { return m.absp(wl, T); });
+double MixedMaterial::absp(double lam, double T) const {
+    return avg([&](const Material& m) { return m.absp(lam, T); });
 }
 
 double MixedMaterial::B(double T) const {
@@ -156,21 +156,21 @@ double MixedMaterial::Ni(double T) const {
     return avg([&](const Material& m) { return m.Ni(T); });
 }
 
-double MixedMaterial::nr(double wl, double T, double n) const {
-    return avg([&](const Material& m) { return m.nr(wl, T, n); });
+double MixedMaterial::nr(double lam, double T, double n) const {
+    return avg([&](const Material& m) { return m.nr(lam, T, n); });
 }
 
-dcomplex MixedMaterial::Nr(double wl, double T, double n) const {
-    return avg([&](const Material& m) { return m.Nr(wl, T, n); });
+dcomplex MixedMaterial::Nr(double lam, double T, double n) const {
+    return avg([&](const Material& m) { return m.Nr(lam, T, n); });
 }
 
-Tensor3<dcomplex> MixedMaterial::NR(double wl, double T, double n) const {
+Tensor3<dcomplex> MixedMaterial::NR(double lam, double T, double n) const {
     Tensor3<dcomplex> result;
-    result.c00 = avg([&](const Material& m) { return m.NR(wl, T, n).c00; });
-    result.c11 = avg([&](const Material& m) { return m.NR(wl, T, n).c11; });
-    result.c22 = avg([&](const Material& m) { return m.NR(wl, T, n).c22; });
-    result.c01 = avg([&](const Material& m) { return m.NR(wl, T, n).c01; });
-    result.c11 = avg([&](const Material& m) { return m.NR(wl, T, n).c11; });
+    result.c00 = avg([&](const Material& m) { return m.NR(lam, T, n).c00; });
+    result.c11 = avg([&](const Material& m) { return m.NR(lam, T, n).c11; });
+    result.c22 = avg([&](const Material& m) { return m.NR(lam, T, n).c22; });
+    result.c01 = avg([&](const Material& m) { return m.NR(lam, T, n).c01; });
+    result.c11 = avg([&](const Material& m) { return m.NR(lam, T, n).c11; });
     return result;
 }
 

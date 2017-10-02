@@ -64,8 +64,8 @@ Material::ConductivityType InGaN_Mg::condtype() const { return Material::CONDUCT
 MI_PROPERTY(InGaN_Mg, absp,
             MISeeClass<InGaN>(MaterialInfo::absp)
             )
-double InGaN_Mg::absp(double wl, double T) const {
-    double E = phys::h_eVc1e9/wl;
+double InGaN_Mg::absp(double lam, double T) const {
+    double E = phys::h_eVc1e9/lam;
     return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
 }
 

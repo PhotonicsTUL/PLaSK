@@ -237,10 +237,10 @@ MI_PROPERTY(GaInAs, nr,
             MISource("S. Adachi, J. Appl. Phys. 53 (1982) 5863-5869; "),
             MISource("J. Piprek et al., IEEE Photon. Technol. Lett. 6 (1994) 139-142; "),
             MISource("D. Dey et al., Appl. Phys. Lett. 94 (2009) 081109"),
-            MIArgumentRange(MaterialInfo::wl, 950, 12400)
+            MIArgumentRange(MaterialInfo::lam, 950, 12400)
             )
-double GaInAs::nr(double wl, double T, double n) const {
-    double tEf = phys::PhotonEnergy(wl),
+double GaInAs::nr(double lam, double T, double n) const {
+    double tEf = phys::PhotonEnergy(lam),
            tEg = Eg(T,0,'G'),
            tDs0 = Dso(T,0),
            tA = 9.29 - 4.93*In,
@@ -261,7 +261,7 @@ double GaInAs::nr(double wl, double T, double n) const {
 MI_PROPERTY(GaInAs, absp,
             MIComment("TODO")
             )
-double GaInAs::absp(double wl, double T) const {
+double GaInAs::absp(double lam, double T) const {
     throw NotImplemented("absp for GaInAs");
 }
 

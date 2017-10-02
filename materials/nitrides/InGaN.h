@@ -22,8 +22,8 @@ struct InGaN: public Semiconductor {
     std::string name() const override;
     std::string str() const override;
     Tensor2<double> thermk(double T, double t) const override;
-    double nr(double wl, double T, double n=0.) const override;
-    double absp(double wl, double T) const override;
+    double nr(double lam, double T, double n=0.) const override;
+    double absp(double lam, double T) const override;
     double Eg(double T, double e, char point) const override;
     //double VB(double T, double e, char point, char hole) const override;
     double Dso(double T, double e) const override;

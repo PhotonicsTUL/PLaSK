@@ -234,14 +234,14 @@ Material::ConductivityType AlAsP::condtype() const { return Material::CONDUCTIVI
 MI_PROPERTY(AlAsP, nr,
             MIComment("TODO")
             )
-double AlAsP::nr(double wl, double T, double n) const {
+double AlAsP::nr(double lam, double T, double n) const {
     throw NotImplemented("nr for AlAsP");
 }
 
 MI_PROPERTY(AlAsP, absp,
             MIComment("TODO")
             )
-double AlAsP::absp(double wl, double T) const {
+double AlAsP::absp(double lam, double T) const {
     throw NotImplemented("absp for AlAsP");
 }
 
