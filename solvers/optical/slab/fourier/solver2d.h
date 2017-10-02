@@ -44,7 +44,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             ktran(expansion.ktran),
             power(1.),
             tolx(tolx) {}
-            
+
         bool operator==(const Mode& other) const {
             return is_equal(k0, other.k0) && is_equal(beta, other.beta) && is_equal(ktran, other.ktran)
                 && symmetry == other.symmetry && polarization == other.polarization &&
@@ -63,9 +63,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         bool operator!=(const T& other) const {
             return !(*this == other);
         }
-        
+
       private:
-    
+
         /// Compare mode arguments
         template <typename T>
         bool is_equal(T a, T b) const {

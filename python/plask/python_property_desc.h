@@ -46,7 +46,7 @@ template <> constexpr const char* docstring_provider<Gain>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out{0}(deriv='', mesh{4}, interpolation='default')\n\n"
+    ".. method:: solver.out{0}(deriv, mesh{4}, interpolation='default')\n\n"
 
     "   :param str deriv: Gain derivative to return. can be '' (empty) or 'conc'.\n"
     "                     In the latter case, the gain derivative over carriers\n"

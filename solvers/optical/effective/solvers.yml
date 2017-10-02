@@ -159,9 +159,10 @@
 
   providers:
   - outLightMagnitude
+  - outElectricField
   - outRefractiveIndex
   - outHeat
-  - outLoss
+  - outNeff: EffectiveIndex
   - outWavelength
 
   receivers: &receivers
@@ -253,6 +254,7 @@
 
   providers:
   - outLightMagnitude
+  - outElectricField
   - outRefractiveIndex
   - outHeat
   - outLoss: ModalLoss

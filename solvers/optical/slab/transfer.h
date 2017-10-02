@@ -212,7 +212,7 @@ struct PLASK_SOLVER_API Transfer {
     LazyData<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldE(1., dst_mesh, method, true);
+        return computeFieldE(1e3 * Z0, dst_mesh, method, true);
     }
 
     /**
@@ -225,7 +225,7 @@ struct PLASK_SOLVER_API Transfer {
     LazyData<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldH(1., dst_mesh, method, true);
+        return computeFieldH(1e3 * Z0, dst_mesh, method, true);
     }
 
     /**
@@ -238,7 +238,7 @@ struct PLASK_SOLVER_API Transfer {
     LazyData<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side,
                                                 const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldMagnitude(1., dst_mesh, method, true);
+        return computeFieldMagnitude(1e3 * Z0, dst_mesh, method, true);
     }
 
     /**

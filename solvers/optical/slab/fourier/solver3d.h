@@ -64,9 +64,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         bool operator!=(const T& other) const {
             return !(*this == other);
         }
-        
+
       private:
-    
+
         /// Compare mode arguments
         template <typename T>
         bool is_equal(T a, T b) const {
