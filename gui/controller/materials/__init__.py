@@ -206,7 +206,7 @@ class MaterialsComboBox(QComboBox):
         self.material_edit_popup.show()
 
     def close_popup(self, material_name):
-        self.material_edit_popup = None
+        # self.material_edit_popup = None   # this can cause crashes on Windows
         if self._valid:
             try:
                 self.setEditText(material_name)

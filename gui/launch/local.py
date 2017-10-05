@@ -22,19 +22,7 @@ from ..qt.QtCore import *
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..utils.config import CONFIG
-
-
-def which(program):
-    if os.path.split(program)[0]:
-        if os.path.isfile(program) and os.access(program, os.X_OK):
-            return program
-    else:
-        for path in [os.path.dirname(sys.executable)] + os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
-                return exe_file
-    return None
+from ..utils.files import which
 
 
 class PlaskThread(QThread):

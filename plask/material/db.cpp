@@ -194,7 +194,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
                 throw NoSuchMaterial(db_Key);
         }
         // throw NoSuchMaterial(composition, dopant_name);
-        throw NoSuchMaterial(db_Key + " (complex)");
+        throw NoSuchMaterial(db_Key + " (alloy)");
     }
     return it->second;
 }

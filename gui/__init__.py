@@ -820,23 +820,32 @@ class PlaskApplication(QApplication):
 try:
     VERSION = plask.version
 except NameError:
+    from .utils.files import which
     try:
-        si = subprocess.STARTUPINFO()
-        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-    except AttributeError:
-        proc = subprocess.Popen(['plask', '-V'], stdout=subprocess.PIPE)
-    else:
-        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-    info, err = proc.communicate()
-    VERSION, LICENSE = info.decode('utf8').strip().split("\n")
-    _, VERSION = VERSION.split()
-    _ls = LICENSE.rfind(' ')
-    LICENSE = dict(user=LICENSE[:_ls], date=LICENSE[_ls+1:])
+        plask_exe = which('plask') or 'plask'
+        try:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+        except AttributeError:
+            proc = subprocess.Popen([plask_exe, '-V'], stdout=subprocess.PIPE)
+        else:
+            proc = subprocess.Popen([plask_exe, '-V'], startupinfo=si, stdout=subprocess.PIPE)
+        info, err = proc.communicate()
+        info = info.decode('utf8').strip()
+        if '\n' in info:
+            VERSION, LICENSE = info.split("\n", 1)
+            _, VERSION = VERSION.split()
+            _ls = LICENSE.rfind(' ')
+            LICENSE = dict(user=LICENSE[:_ls], date=LICENSE[_ls + 1:])
+        else:
+            VERSION, LICENSE = info, {}
+    except:
+        VERSION, LICENSE = None, {}
 else:
     try:
         LICENSE = plask.license
-    except AttributeError:
+    except (AttributeError, NameError):
         LICENSE = dict(user='', date='')
 if 'systemid' not in LICENSE or not LICENSE['systemid']:
     LICENSE['systemid'] = "{:X}".format(getnode())
