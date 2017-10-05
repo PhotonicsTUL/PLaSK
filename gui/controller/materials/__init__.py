@@ -160,11 +160,6 @@ class MaterialsComboBox(QComboBox):
             self.setMaxVisibleItems(len(material_list))
         self.currentIndexChanged[str].connect(self.show_components_popup)
         self.material_edit_popup = None
-        self._valid = True
-        self.destroyed.connect(self._mark_destroyed)
-
-    def _mark_destroyed(self):
-        self._valid = False
 
     def focusOutEvent(self, event):
         if self.material_edit_popup is None:
@@ -207,11 +202,10 @@ class MaterialsComboBox(QComboBox):
 
     def close_popup(self, material_name):
         # self.material_edit_popup = None   # this can cause crashes on Windows
-        if self._valid:
-            try:
-                self.setEditText(material_name)
-            except:
-                pass  # it is possible that internal combo box has been deleted
+        try:
+            self.setEditText(material_name)
+        except:
+            pass  # it is possible that internal combo box has been deleted
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 
