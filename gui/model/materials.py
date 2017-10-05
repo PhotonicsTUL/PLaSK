@@ -35,7 +35,7 @@ MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
            [(u'T', u'temperature', u'K')])),
     ('absp', (u'Absorption coefficient <i>α</i>', u'cm<sup>-1</sup>',
-              [(u'lam', u'wavelength', 'nm'),
+              [(u'lam', u'wavelength', u'nm'),
                (u'T', u'temperature', u'K')])),
     ('ac', (u'Hydrostatic deformation potential for the conduction band <i>a</i><sub><i>c</i></sub>', u'eV',
             [(u'T', u'temperature', u'K')])),
@@ -131,17 +131,17 @@ MATERIALS_PROPERTES = OrderedDict((
     ('Ni', (u'Intrinsic carrier concentration <i>N</i><sub><i>i</i></sub>', u'cm<sup>-3</sup>',
             [(u'T', u'temperature', u'K')])),
     ('Nr', (u'Complex refractive index <i>n</i><sub><i>R</i></sub>', u'-',
-            [(u'lam', u'wavelength', 'nm'),
+            [(u'lam', u'wavelength', u'nm'),
              (u'T', u'temperature', u'K'),
              (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
-    ('nr', (u'Real refractive index <i>n</i><sub><i>R</i></sub>(', u'-',
-            [(u'lam', u'wavelength', 'nm'), (u'T', u'temperature', u'K'),
+    ('nr', (u'Real refractive index <i>n</i><sub><i>R</i></sub>', u'-',
+            [(u'lam', u'wavelength', u'nm'), (u'T', u'temperature', u'K'),
              (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('NR', (u'Anisotropic complex refractive index tensor <i>n</i><sub><i>R</i></sub>.<br/>'
             u'(mind that some solvers use Nr instead; '
             u'tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, '
             u'<i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>10</sub>])', u'-',
-            [(u'lam', u'wavelength', 'nm'), (u'T', u'temperature', u'K'),
+            [(u'lam', u'wavelength', u'nm'), (u'T', u'temperature', u'K'),
              (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')])),
     ('Psp', (u'Spontaneous polarization <i>P<sub>sp</sub></i>', u'C/m<sup>2</sup>',
               [(u'T', u'temperature', u'K')])),
@@ -164,34 +164,34 @@ ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 elements_re = re.compile(r"([A-Z][a-z]*)(?:\((\d*\.?\d*)\))?")
 
 
-def parse_material_components(material, cplx=None):
+def parse_material_components(material, alloy=None):
     """ Parse info on materials.
         :return: name, label, groups, doping
     """
     material = str(material)
-    if cplx is None:
+    if alloy is None:
         if plask:
             try:
                 mat = plask.material.db.get(material)
             except (ValueError, RuntimeError):
                 try:
-                    cplx = not plask.material.db.is_simple(material)
+                    alloy = not plask.material.db.is_simple(material)
                 except (ValueError, RuntimeError):
-                    cplx = False
+                    alloy = False
             else:
-                cplx = not mat.simple
+                alloy = not mat.simple
         else:
-            cplx = False
+            alloy = False
     if ':' in material:
-        name, doping = material.split(':')
+        name, doping = material.split(':', 1)
     else:
         name = material
         doping = None
     if '_' in name:
-        name, label = name.split('_')
+        name, label = name.split('_', 1)
     else:
         label = ''
-    if cplx:
+    if alloy:
         elements = elements_re.findall(name)
         groups = [[e for e in elements if e[0] in g] for g in ELEMENT_GROUPS]
     else:
@@ -238,7 +238,7 @@ class MaterialsModel(TableModel):
 
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
-        def __init__(self, materials_model, name, base=None, properties=None, cplx=False, comment=None,
+        def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comment=None,
                      parent=None, *args):
             QAbstractTableModel.__init__(self, parent, *args)
             TableModelEditMethods.__init__(self)
@@ -248,12 +248,12 @@ class MaterialsModel(TableModel):
             self.base = base
             self.properties = properties
             self.comment = comment
-            self.cplx = cplx
+            self.alloy = alloy
 
         def add_to_xml(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
-            if self.cplx: mat.attrib['alloy'] = 'yes'
+            if self.alloy: mat.attrib['alloy'] = 'yes'
             for (n, v) in self.properties:
                 if n:
                     ElementTree.SubElement(mat, n).text = v
@@ -401,14 +401,14 @@ class MaterialsModel(TableModel):
     def get(self, col, row):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].base
-        if col == 2: return self.entries[row].cplx
+        if col == 2: return self.entries[row].alloy
         if col == 3: return self.entries[row].comment
         raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
 
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value
         elif col == 1: self.entries[row].base = value
-        elif col == 2: self.entries[row].cplx = value
+        elif col == 2: self.entries[row].alloy = value
         elif col == 3: self.entries[row].comment = value
         else: raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
 
@@ -438,11 +438,11 @@ class MaterialsModel(TableModel):
                     res.append(Info(u'Material name is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
                 else:
                     names.setdefault(d.name, []).append(i)
-                if d.cplx:
+                if d.alloy:
                     name, label, groups, dope = parse_material_components(d.name, True)
                     elements = list(itertools.chain(*([e[0] for e in g] for g in groups)))
                     if len(''.join(elements)) != len(name):
-                        res.append(Info(u"Complex material's name does not consist of elements "
+                        res.append(Info(u"Alloy material's name does not consist of elements "
                                         u"and optional label [row: {}]"
                                         .format(i+1), Info.ERROR, rows=[i], cols=[0]))
                 if not d.base:
@@ -454,7 +454,7 @@ class MaterialsModel(TableModel):
                             mat += '=0'
                         plask.material.db.get(mat)
                     except (ValueError, RuntimeError) as err:
-                        if not(d.cplx and isinstance(err, ValueError) and
+                        if not(d.alloy and isinstance(err, ValueError) and
                                str(err).startswith("Material composition required")):
                             res.append(
                                 Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"

@@ -301,9 +301,9 @@ class MaterialPlot(QWidget):
         self.mat_toolbar.clear()
 
         entries = [e for e in self.model.entries if e.name == material]
-        if entries: cplx = entries[0].cplx
-        else: cplx = None
-        name, label, groups, dope = parse_material_components(material, cplx)
+        if entries: alloy = entries[0].alloy
+        else: alloy = None
+        name, label, groups, dope = parse_material_components(material, alloy)
 
         if groups:
             elements = tuple(itertools.chain(*([e[0] for e in g] + [None] for g in groups if len(g) > 1)))[:-1]
