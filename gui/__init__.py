@@ -18,8 +18,9 @@ import subprocess
 import pkgutil
 import webbrowser
 import traceback
-from datetime import datetime
+import datetime
 from lxml import etree
+from mock.mock import _patch
 from uuid import getnode
 
 if __name__ == '__main__':
@@ -691,8 +692,8 @@ class MainWindow(QMainWindow):
                 institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
             details += u"Licensed to:<br/>\n{}{}".format(
                 user.replace('<', '&lt;').replace('>', '&gt;'), institution)
-            if 'date' in LICENSE:
-                date = datetime.strptime(LICENSE['date'], '%d-%m-%Y').strftime('%x')
+            if 'expiration' in LICENSE:
+                date = LICENSE['expiration'].strftime('%x')
                 try: date = date.decode('utf8')
                 except AttributeError: pass
                 details += u"<br/>\nLicense active until " + date
@@ -753,10 +754,10 @@ class MainWindow(QMainWindow):
             else:
                 del LICENSE['institution']
             expiry = data.find('expiry')
-            if institution is not None:
-                LICENSE['date'] = expiry.text.encode('utf8')
+            if expiry is not None:
+                LICENSE['expiration'] = _parse_expiry(expiry.text.encode('utf8'))
             else:
-                del LICENSE['date']
+                del LICENSE['expiration']
             self.about()
 
 
@@ -767,7 +768,7 @@ class GotoDialog(QDialog):
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()
         label = QLabel()
-        label.setText("Line number:")
+        label.setexpiryText("Line number:")
         self.input = QLineEdit()
         self.input.setValidator(QIntValidator(self.input))
         hbox.addWidget(label)
@@ -817,6 +818,12 @@ class PlaskApplication(QApplication):
         return ok
 
 
+def _parse_expiry(expiry):
+    match = re.match('(\d+).(\d+).(\d+)', expiry)
+    if match is not None:
+        return datetime.date(*reversed([int(g) for g in match.groups()]))
+
+
 try:
     VERSION = plask.version
 except NameError:
@@ -835,9 +842,12 @@ except NameError:
         info = info.decode('utf8').strip()
         if '\n' in info:
             VERSION, LICENSE = info.split("\n", 1)
-            _, VERSION = VERSION.split()
-            _ls = LICENSE.rfind(' ')
-            LICENSE = dict(user=LICENSE[:_ls], date=LICENSE[_ls + 1:])
+            _, VERSION = VERSION.split(' ', 1)
+            user, expiry = LICENSE.rsplit(' ', 1)
+            LICENSE = dict(user=user)
+            expiry = _parse_expiry(expiry)
+            if expiry is not None:
+                LICENSE['expiration'] = expiry
         else:
             VERSION, LICENSE = info, {}
     except:

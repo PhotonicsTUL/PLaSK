@@ -23,9 +23,6 @@ class PLASK_API LicenseVerifier {
     std::string filename, content;
     std::string user, institution, expiration, system;
 
-    /// Parse date from the string in format DD/MM/YYYY.
-    static std::time_t extractDate(const std::string& s);
-
     /**
      * Try load license file (but not verify it). If success, fill @a filename and @a content members.
      * @param fname name of license file to load
@@ -36,6 +33,9 @@ class PLASK_API LicenseVerifier {
     void readData();
 
   public:
+
+    /// Parse date from the string in format DD/MM/YYYY.
+    static std::time_t extractDate(const std::string& s);
 
     LicenseVerifier();
 

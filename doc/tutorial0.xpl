@@ -42,9 +42,6 @@
 </solvers>
 
 <script><![CDATA[
-SOLVER.tfreq = 2
-print(SOLVER.tfreq, type(SOLVER.tfreq))
-
 SOLVER.compute()
 
 figure()

@@ -26,10 +26,12 @@ def h5open(filename, group):
     import h5py
     if filename is None:
         import sys
+        from os.path import basename, abspath
         filename = sys.argv[0]
         if filename.endswith('.py'): filename = filename[:-3]
         elif filename.endswith('.xpl'): filename = filename[:-4]
         elif filename == '': filename = 'console'
+        filename = abspath(basename(filename))
         filename += suffix + '.h5'
     if type(filename) is h5py.File:
         h5file = filename

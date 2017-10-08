@@ -7,6 +7,7 @@
 #include "python_numpy.h"
 #include "python_util/raw_constructor.h"
 #include <frameobject.h> // for Python traceback
+#include <datetime.h>
 
 #include <plask/version.h>
 #include <plask/exceptions.h>
@@ -632,7 +633,15 @@ BOOST_PYTHON_MODULE(_plask)
     py::dict license;
     license["user"] = plask::license_verifier.getUser();
     license["institution"] = plask::license_verifier.getInstitution();
-    license["date"] = plask::license_verifier.getExpiration();
+    std::time_t et = plask::LicenseVerifier::extractDate(plask::license_verifier.getExpiration());
+    if (et != (std::time_t)(-1)) {
+        std::tm* expiry = std::localtime(&et);
+        if (expiry) {
+            PyDateTime_IMPORT;
+            PyObject* pydate = PyDate_FromDate(expiry->tm_year+1900, expiry->tm_mon+1, expiry->tm_mday);
+            if (pydate) PyDict_SetItemString(license.ptr(), "expiration", pydate);
+        }
+    }
     license["systemid"] = plask::license_verifier.getSystemId();
     scope.attr("license") = license;
 #endif
