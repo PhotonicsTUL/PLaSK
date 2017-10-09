@@ -20,7 +20,6 @@ import webbrowser
 import traceback
 import datetime
 from lxml import etree
-from mock.mock import _patch
 from uuid import getnode
 
 if __name__ == '__main__':
